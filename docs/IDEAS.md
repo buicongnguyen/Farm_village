@@ -1,5 +1,7 @@
 # Willowmere — ideas to make the game more attractive (October 2026)
 
+> Background, written in October 2026 to improve Willowmere. For Farm Village's decisions, read `GAME-CONCEPT.md` first.
+
 A broad catalogue of ideas, beyond the roadmap in `docs/GAME-DIRECTION.md`, each tied to what players are shown to enjoy
 in `docs/MARKET-RESEARCH.md` (strengths S1–S12). The aim is a game people **want to come back to every day and want to
 show their friends**, while staying single-player, server-free and kind.

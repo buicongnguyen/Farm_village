@@ -1,5 +1,7 @@
 # Willowmere — market research and where to grow (October 2026)
 
+> Background, written in October 2026 to improve Willowmere. For Farm Village's decisions, read `GAME-CONCEPT.md` first.
+
 What similar games teach, which of their strengths are backed by evidence, whether they need online multiplayer, how AI
 friends could replace it, and a scored ranking of the ways Willowmere can grow its audience. Companion to
 `docs/GAME-DIRECTION.md`.

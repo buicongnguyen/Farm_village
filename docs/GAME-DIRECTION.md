@@ -1,5 +1,7 @@
 # Willowmere — game direction (October 2026)
 
+> Background, written in October 2026 to improve Willowmere. For Farm Village's decisions, read `GAME-CONCEPT.md` first.
+
 Where the game stands, what makes it more attractive, and the next big step: land you plan cell by cell. It also covers how to
 test every facility at once, and how this game becomes the standard kit for future games.
 
