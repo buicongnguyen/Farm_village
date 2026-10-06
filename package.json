@@ -1,14 +1,20 @@
 {
   "name": "farm-village",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "node scripts/build.mjs --serve --test-mode",
+    "build": "node scripts/build.mjs",
+    "build:test": "node scripts/build.mjs --test-mode",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "sim": "node scripts/sim.mjs",
     "pace": "node planning/pace-model.mjs",
     "proto": "node prototypes/serve.mjs 5240",
     "proto:measure": "node prototypes/big-farm/measure.mjs"
   },
   "dependencies": { "three": "0.180.0" },
-  "devDependencies": { "playwright": "1.61.1" },
+  "devDependencies": { "esbuild": "0.28.2", "playwright": "1.61.1" },
   "engines": { "node": ">=22" }
 }

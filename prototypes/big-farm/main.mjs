@@ -87,7 +87,7 @@ for (const g of Object.values(STANDIN)) { const n = g.attributes.position.count;
 const standinMat = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: ramp });
 
 const loader = new GLTFLoader();
-const load = f => loader.loadAsync(`./assets/${f}.glb`).then(g => Object.fromEntries(g.scene.children.map(c => [c.name, c])));
+const load = f => loader.loadAsync(`/public/assets/models/${f}.glb`).then(g => Object.fromEntries(g.scene.children.map(c => [c.name, c])));
 const [crops, scenery, farm, town] = await Promise.all(['crops', 'scenery', 'farm', 'town'].map(load));
 const M = {}; // model name → { geo, far, color, kind }
 const simplifier = new SimplifyModifier();

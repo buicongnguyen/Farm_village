@@ -23,16 +23,16 @@ tested. Times assume one main developer with AI help and are estimates only.
 ## M0 — Project setup and kit (2–3 days)
 
 **Tasks**
-- [ ] Decide hosting: a public repository, or a private source repository with a public play repository
+- [ ] (waiting for the user) Decide hosting: a public repository, or a private source repository with a public play repository
   (`TECH-PLAN.md` section 8).
-- [ ] Create the GitHub repository and push this one.
-- [ ] `package.json` (three 0.180, esbuild, playwright) and the code layout from `TECH-PLAN.md` section 2.
-- [ ] Copy the kit files and models listed in `TECH-PLAN.md` section 3. Record the source commit in `docs/ASSETS.md`.
-- [ ] `scripts/build.mjs` with the first-load budget; `npm run dev` on port 5240.
-- [ ] `index.html` with the loader guard; `keep-chunks.mjs`; the Pages workflow.
-- [ ] A blank scene: toon lights, the ground, the farmhouse, a camera you can pan and zoom.
-- [ ] `npm test` running an empty rules test and the translation coverage check.
-- [ ] `window.farm` test hook (test builds only).
+- [ ] (waiting for the user) Create the GitHub repository and push this one.
+- [x] `package.json` (three 0.180, esbuild, playwright) and the code layout from `TECH-PLAN.md` section 2.
+- [x] Copy the kit files and models listed in `TECH-PLAN.md` section 3. Record the source commit in `docs/ASSETS.md`.
+- [x] `scripts/build.mjs` with the first-load budget; `npm run dev` on port 5240.
+- [x] `index.html` with the loader guard; `keep-chunks.mjs`; the Pages workflow.
+- [x] A blank scene: toon lights, the ground, the farmhouse, a camera you can pan and zoom.
+- [x] `npm test` running an empty rules test and the translation coverage check.
+- [x] `window.farm` test hook (test builds only).
 
 **Done when:** the blank scene is live on Pages and opens on a phone, `npm test` passes, and a first browser test opens
 the page and finds the canvas.

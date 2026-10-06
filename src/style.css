@@ -1,0 +1,17 @@
+/* Farm Village look: warm, vivid, glossy round buttons (after Willowmere's hud-reference.css and Zoo Garden). */
+@font-face { font-family: 'Nunito'; src: url('../public/assets/nunito.woff2') format('woff2'); font-weight: 200 1000; font-display: swap; }
+:root {
+  --ink: #3b2a1a; --paper: #fff8ec; --paper-2: #ffeccc; --leaf: #5fae3e; --leaf-dark: #3f8a28; --sun: #ffc93c; --berry: #e2546b; --sky: #7cc4e8;
+  --shadow: 0 3px 0 #0002, 0 6px 14px #0002; --radius: 18px; --tap: 48px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #9fd3f0; color: var(--ink); font: 600 15px/1.3 'Nunito', 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
+#app, canvas { display: block; position: fixed; inset: 0; }
+#boot { display: grid; place-items: center; height: 100%; font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 #0003; }
+.hud { position: fixed; inset: 0; pointer-events: none; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+.hud > * { pointer-events: auto; }
+.hud-title { position: absolute; left: 12px; top: max(10px, env(safe-area-inset-top)); background: var(--paper); border-radius: var(--radius); padding: 8px 14px; font-weight: 900; box-shadow: var(--shadow); }
+.hud-tools { position: absolute; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); display: flex; gap: 8px; }
+button.round { width: var(--tap); height: var(--tap); border-radius: 50%; border: 0; background: linear-gradient(#fff, var(--paper-2)); color: var(--ink); font: 900 18px 'Nunito', sans-serif; box-shadow: var(--shadow); cursor: pointer; }
+button.round:active { transform: translateY(2px); box-shadow: 0 1px 0 #0002; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
