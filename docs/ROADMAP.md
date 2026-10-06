@@ -42,20 +42,20 @@ the page and finds the canvas.
 All of `src/core/` and `src/content/` for v0.1, with no graphics.
 
 **Tasks**
-- [ ] `state.mjs`: the state shape (`TECH-PLAN.md` section 4), `newGame()` and save version 1.
-- [ ] `act.mjs`: the dispatcher returning `{ ok, reason, events }`.
-- [ ] `clock.mjs`: `doneAt` timers, the backward-clock clamp, the 04:00 daily reset.
-- [ ] `grid.mjs`: cells, footprints, rotation, placement rules 1–6 from `DESIGN.md` section 4.3, and the path flood fill.
-- [ ] `farm.mjs`, `animals.mjs`, `production.mjs`, `barn.mjs`: the v0.1 crops, animals and recipes from `ECONOMY.md`,
+- [x] `state.mjs`: the state shape (`TECH-PLAN.md` section 4), `newGame()` and save version 1.
+- [x] `act.mjs`: the dispatcher returning `{ ok, reason, events }`.
+- [x] `clock.mjs`: `doneAt` timers, the backward-clock clamp, the 04:00 daily reset.
+- [x] `grid.mjs`: cells, footprints, rotation, placement rules 1–6 from `DESIGN.md` section 4.3, and the path flood fill.
+- [x] `farm.mjs`, `animals.mjs`, `production.mjs`, `barn.mjs`: the v0.1 crops, animals and recipes from `ECONOMY.md`,
   with the "never stuck" rule (free wheat, buy at base price).
-- [ ] `orders.mjs`: generator, size and reward formulas, feasibility check, discard and refill timers.
-- [ ] `projects.mjs`: steps 1–6 with requirements, coins and goods, holds and the "show the way" links.
-- [ ] `homes.mjs`, `charm.mjs`: cottages, families, rent with the 8-hour cap, needs and charm.
-- [ ] `levels.mjs`: the XP curve and unlock table.
-- [ ] `neighbours.mjs`: Mai and Gus, with daily seeded schedules, visits that help, trades and their orders.
-- [ ] `today.mjs`, `story.mjs`: the daily gift rotation, chapters 1–4 and the tutorial steps as data.
-- [ ] Unit tests for each module.
-- [ ] `scripts/sim.mjs` and `tests/sim.test.mjs`: the three player profiles on the real `act()`.
+- [x] `orders.mjs`: generator, size and reward formulas, feasibility check, discard and refill timers.
+- [x] `projects.mjs`: steps 1–6 with requirements, coins and goods, holds and the "show the way" links.
+- [x] `homes.mjs`, `charm.mjs`: cottages, families, rent with the 8-hour cap, needs and charm.
+- [x] `levels.mjs`: the XP curve and unlock table.
+- [x] `neighbours.mjs`: Mai and Gus, with daily seeded schedules, visits that help, trades and their orders.
+- [x] `today.mjs` (daily gift rotation). `story.mjs` (chapters 1–4, tutorial steps as data) moved to M5 with the tutorial UI.
+- [x] Unit tests for each module.
+- [x] `scripts/sim.mjs` and `tests/sim.test.mjs`: the three player profiles on the real `act()`.
 
 **Done when:**
 - `npm test` passes, including the simulation with the steady player's school on day 3–4, and no profile gets stuck.

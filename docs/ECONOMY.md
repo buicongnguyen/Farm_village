@@ -41,6 +41,26 @@ A casual player takes about 10 weeks for everything, which is fine: nothing is l
    instead of buying the bakery that makes bread. The fix is that a project card links each missing good to where it
    is made ("Needs bread → build a bakery"), and that building comes first.
 
+### 1.1 The simulation on the real rules (M1, 2026-10-07)
+
+`npm run sim -- steady 14` plays the same three profiles through the game's own `act()` and `tick()`
+(`scripts/sim.mjs`, `scripts/bot.mjs`). `tests/sim.test.mjs` fails the build if the targets break.
+
+| Profile | First cottage | School (paper model) | Cottages 3–4 |
+|---|---|---|---|
+| Casual | day 2 | **day 7** (8) | day 9 |
+| Steady | day 1 | **day 4** (4) | day 6 |
+| Keen | day 1 | **day 3** (3) | day 3 |
+
+**What the real rules added to the paper model:**
+1. **The barn fills up.** With 30 beds a harvest is 60 crops, more than the 50-space barn. A player has to collect bread
+   and eggs first, deliver orders to make room, and upgrade the barn early. The bot does this. In the game, the barn
+   button must warn before it is full and suggest the upgrade (M3).
+2. **Orders must fit the barn.** At higher levels the size formula asked for 57 wheat at once. Now no good may ask for
+   more than a quarter of the barn, and cheap goods drop out of large orders.
+3. **An unfinished fence blocks everything.** If coins run out halfway through a fence, no hens can move in, there are
+   no eggs and no corn bread, and the school stalls. The coop must say "The fence has a gap" and show where it is (M2/M3).
+
 ## 2. Items
 
 Value is the base price: what the roadside stall pays and what order rewards are built from.
@@ -87,7 +107,7 @@ Value is the base price: what the roadside stall pays and what order rewards are
 ## 3. Orders
 
 - **Size:** an order asks for goods worth about **16 + 14 × level** coins, split over 1–3 kinds of goods from what
-  the player has unlocked.
+  the player can make now. No good asks for more than a quarter of the barn's capacity.
 - **Reward:** **coins = 1.3 × value of the goods**, and **XP = 0.3 × value**. AI neighbours' orders pay 1.4 × (v0.2).
 - **Board slots:** 3 at the start, then +1 at levels 3, 5 and 7, up to 6.
 - **Replacement:** a filled card is replaced after 1 minute. A discarded card is replaced after 5 minutes, with no

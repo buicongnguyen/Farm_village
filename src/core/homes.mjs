@@ -1,0 +1,82 @@
+// Rental cottages, families and rent, and charm (DESIGN 10 and 12).
+import { BUILDINGS } from '../content/buildings.mjs';
+import { FAMILIES } from '../content/people.mjs';
+import { RENT, FAMILY_ARRIVAL_MS, HOUR } from '../content/economy.mjs';
+import { isBrook } from '../content/world.mjs';
+import { cellsOf, doorCell, cellType } from './grid.mjs';
+
+const CHARM_RADIUS = 3;
+/** A cottage's charm (DESIGN 12): decorations within 3 cells, a path at the door, the brook; production and pens cost a little. */
+export function charmOf(s, id) {
+  const p = s.placed[id]; if (!p) return 0;
+  const cells = cellsOf(p.kind, p.x, p.z, p.rot);
+  const xs = cells.map(c => c[0]), zs = cells.map(c => c[1]);
+  const x0 = Math.min(...xs) - CHARM_RADIUS, x1 = Math.max(...xs) + CHARM_RADIUS, z0 = Math.min(...zs) - CHARM_RADIUS, z1 = Math.max(...zs) + CHARM_RADIUS;
+  let charm = 0, brook = false;
+  for (const [oid, o] of Object.entries(s.placed)) {
+    if (oid === id) continue;
+    const def = BUILDINGS[o.kind];
+    if (!def.charm && !def.animals) continue;
+    const near = cellsOf(o.kind, o.x, o.z, o.rot).some(([x, z]) => x >= x0 && x <= x1 && z >= z0 && z <= z1);
+    if (!near) continue;
+    charm += def.charm ?? 0; if (def.animals) charm -= 1;
+  }
+  for (let z = z0; z <= z1 && !brook; z++) for (let x = x0; x <= x1; x++) if (isBrook(x, z)) { brook = true; break; }
+  if (brook) charm += 3;
+  const door = doorCell(p.kind, p.x, p.z, p.rot); if (door && cellType(s, door[0], door[1]) === 'path') charm += 2;
+  return Math.max(0, charm);
+}
+export const familyOf = (s, id) => FAMILIES.find(f => f.id === s.homes[id]?.family) ?? null;
+/** The next family waiting for a cottage, in order. */
+export const nextFamily = s => FAMILIES.find(f => !Object.values(s.homes).some(h => h.family === f.id)) ?? null;
+/** A new cottage: the next family is on its way (DESIGN 10, step 3). */
+export function arriveNext(ctx, id) {
+  const { s, now } = ctx, fam = nextFamily(s);
+  s.homes[id] = { level: 0, family: fam?.id ?? null, arrivesAt: now + FAMILY_ARRIVAL_MS, rentFrom: now + FAMILY_ARRIVAL_MS };
+  if (fam) ctx.emit('familyComing', { id, family: fam.id, at: now + FAMILY_ARRIVAL_MS });
+}
+/** Families with unmet needs pay a quarter less (DESIGN 10, step 6). v0.1 needs: a path at the door. */
+export function needsOf(s, id) {
+  const p = s.placed[id], door = p && doorCell(p.kind, p.x, p.z, p.rot);
+  return door && cellType(s, door[0], door[1]) !== 'path' ? ['path'] : [];
+}
+export function rentPerHour(s, id) {
+  const h = s.homes[id]; if (!h?.family) return 0;
+  return RENT.perHour[h.level] * (1 + RENT.charmBonus(charmOf(s, id))) * (needsOf(s, id).length ? 1 - RENT.unmetNeed : 1);
+}
+/** Rent waiting in the mailbox (capped at RENT.capHours per cottage). */
+export function rentWaiting(s, now) {
+  let total = 0;
+  for (const [id, h] of Object.entries(s.homes)) {
+    if (!h.family || h.arrivesAt > now) continue;
+    total += rentPerHour(s, id) * Math.min(RENT.capHours, Math.max(0, now - h.rentFrom) / HOUR);
+  }
+  return Math.floor(total);
+}
+
+export const actions = {
+  collectRent(ctx) {
+    const { s, now } = ctx, coins = rentWaiting(s, now);
+    if (coins <= 0) return ctx.fail('The mailbox is empty');
+    for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt <= now) h.rentFrom = now;
+    s.coins += coins; s.stats.coinsEarned += coins;
+    ctx.emit('rent', { coins });
+    return { coins };
+  },
+  /** Furnish a cottage one level up: { id }. */
+  upgradeHome(ctx, { id }) {
+    const { s, now } = ctx, h = s.homes[id]; if (!h) return ctx.fail('Not a cottage');
+    if (h.level >= RENT.perHour.length - 1) return ctx.fail('Already the best it can be');
+    const price = RENT.upgradeCost[h.level + 1]; if (s.coins < price) return ctx.fail('Not enough coins');
+    // rent so far is paid at the old rate first
+    actions.collectRent({ ...ctx, fail: () => ({}), emit: ctx.emit });
+    s.coins -= price; h.level++; h.rentFrom = Math.max(h.rentFrom, now);
+    ctx.emit('homeUpgraded', { id, level: h.level });
+    return { level: h.level };
+  },
+};
+/** Called by tick(): families whose arrival time has come move in. */
+export function tickHomes(ctx) {
+  const { s, now } = ctx;
+  for (const [id, h] of Object.entries(s.homes)) if (h.family && h.arrivesAt <= now && !h.arrived) { h.arrived = true; ctx.emit('familyArrived', { id, family: h.family }); }
+}

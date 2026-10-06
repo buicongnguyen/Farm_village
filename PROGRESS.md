@@ -5,15 +5,15 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
-- **Phase:** planning is complete; next is ROADMAP milestone M0 (project setup).
-- **Last finished:** the big-farm performance prototype. One 3D renderer shown like 2.5D holds the phone budgets with
-  2,704 crops in fields, about 3,000 trees and plants, 64 animals and the village (at most 199k triangles and 87 draws
-  at every zoom). Results are in `prototypes/big-farm/README.md`; the plan documents are updated.
-- **Next steps:**
-  1. Open the prototype on a real mid-range phone (`HOST=0.0.0.0 node prototypes/serve.mjs`, then
-     `http://<PC IP>:5240/prototypes/big-farm/`) and check for 30+ fps.
-  2. Confirm or change the working decisions (GAME-CONCEPT section 7) and choose hosting.
-  3. Start M0 (ROADMAP).
+- **Phase:** building v0.1. **M0 and M1 are done** (locally; no GitHub remote yet). **Next: M2**, the build mode on the
+  map (placing, ghost, fences, paths drawn from the rules state).
+- **Waiting for the user:** hosting (public repository, or private source with a public play repository) before the
+  first push and deploy.
+- **M1 in short:**
+  - **Code:** all v0.1 rules are in `src/core/` behind `act()`/`tick()`, with the data in `src/content/`.
+  - **Tests:** 29 tests, covering the rules, translation coverage including refusal reasons, and the pace targets.
+  - **Pace:** the simulation on the real rules (`npm run sim -- steady 14`) opens the school on day 7 (casual), day 4
+    (steady) and day 3 (keen), matching the paper model.
 
 ## Decisions so far
 
@@ -50,6 +50,9 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | Repository created with the research and ideas from Willowmere | 823b0e3 |
 | 2026-10-07 | Game concept: what the game is; activities kept, changed or cut | 35f3656 |
 | 2026-10-07 | Detailed plan: DESIGN, ECONOMY with the pace model, TECH-PLAN, ROADMAP | 90dd5d4 |
+| 2026-10-07 | The user confirmed phone performance is fine (their earlier reference code runs well on phones); started executing the roadmap | – |
+| 2026-10-07 | M0: build, loader guard, keep-chunks, Pages workflow, first scene (ground chunks, farmhouse, barn, woods, camera), i18n coverage test, browser suite | 50373cd |
+| 2026-10-07 | M1: rules core (grid, farm, animals, production, barn with holds, orders, build order, cottages with rent and charm, neighbours, Today, stall) behind act()/tick(); full Vietnamese for content and reasons; simulation on the real rules meets the pace targets; found and fixed: order XP bug, oversized orders, barn overflow handling | (M1 commit) |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume

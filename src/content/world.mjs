@@ -14,7 +14,7 @@ export const ROADS = [{ x0: 28, x1: 29, z0: 0, z1: N - 1 }, { x0: 0, x1: N - 1, 
 export const brookZ = x => 12 + Math.round(Math.sin(x / 9) * 3);
 export const BROOK_HALF = 1;
 // The village area (cottages and civic projects) south of the farm, along the east–west road.
-export const VILLAGE = { x0: 32, z0: 93, x1: 95, z1: 116 };
+export const VILLAGE = { x0: 32, z0: 92, x1: 95, z1: 116 };   // starts next to the road, so doors can open onto it
 // Where the four AI neighbours' roads leave the map (signposts).
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 

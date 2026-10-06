@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { VI } from '../src/i18n/vi.mjs';
 import * as content from '../src/content/index.mjs';
 
-const TEXT_FIELDS = new Set(['name', 'title', 'subtitle', 'line', 'lines', 'text', 'story', 'label', 'hint', 'role', 'wish', 'comment', 'comments', 'needText']);
+const TEXT_FIELDS = new Set(['name', 'title', 'subtitle', 'line', 'lines', 'text', 'story', 'label', 'hint', 'role', 'wish', 'comment', 'comments', 'needText', 'farm', 'ORDER_LINES']);
 async function files(dir) {
   const out = [];
   for (const e of await readdir(dir, { withFileTypes: true })) {
@@ -23,12 +23,13 @@ function contentStrings(value, key = '', out = new Set()) {
   return out;
 }
 
-test('every t() string in src/ has a Vietnamese line', async () => {
+test('every t() string and refusal reason in src/ has a Vietnamese line', async () => {
   const missing = new Set();
   for (const file of await files('src')) {
     if (file.includes(`${'i18n'}${process.platform === 'win32' ? '\\' : '/'}vi.mjs`)) continue;
     const text = await readFile(file, 'utf8');
-    for (const m of text.matchAll(/\bt\(\s*(['"])((?:\\.|(?!\1).)*)\1/g)) { const s = m[2].replace(/\\(['"\\])/g, '$1'); if (!(s in VI)) missing.add(`${s}   (${file})`); }
+    // t('…') in the interface, and the refusal reasons of the rules (ctx.fail('…'), reason: '…'), which the interface shows
+    for (const m of text.matchAll(/(?:\bt\(|ctx\.fail\(|reason: )\s*(['"])((?:\\.|(?!\1).)*)\1/g)) { const s = m[2].replace(/\\(['"\\])/g, '$1'); if (!(s in VI)) missing.add(`${s}   (${file})`); }
   }
   assert.deepEqual([...missing], [], `missing Vietnamese:\n${[...missing].join('\n')}`);
 });
