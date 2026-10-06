@@ -5,15 +5,16 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
-- **Phase:** building v0.1. **M0 and M1 are done** (locally; no GitHub remote yet). **Next: M2**, the build mode on the
-  map (placing, ghost, fences, paths drawn from the rules state).
+- **Phase:** building v0.1. **M0, M1 and M2 are done** (locally; no GitHub remote yet). **Next: M3**, the farm loop on
+  screen (crops and growth stages, animals, the radial menu and sweep, barn, orders, saves, new art for wheat, the feed
+  mill and the bakery, and the large-farm budget test).
 - **Waiting for the user:** hosting (public repository, or private source with a public play repository) before the
   first push and deploy.
-- **M1 in short:**
-  - **Code:** all v0.1 rules are in `src/core/` behind `act()`/`tick()`, with the data in `src/content/`.
-  - **Tests:** 29 tests, covering the rules, translation coverage including refusal reasons, and the pace targets.
-  - **Pace:** the simulation on the real rules (`npm run sim -- steady 14`) opens the school on day 7 (casual), day 4
-    (steady) and day 3 (keen), matching the paper model.
+- **What works now** (`npm run dev`, then open http://127.0.0.1:5240/):
+  - the map;
+  - build mode: catalogue, ghost, rotate, place, move, store, clear, fences, undo;
+  - refusal reasons in English and Vietnamese.
+  Nothing is saved yet (M3).
 
 ## Decisions so far
 
@@ -53,6 +54,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | The user confirmed phone performance is fine (their earlier reference code runs well on phones); started executing the roadmap | – |
 | 2026-10-07 | M0: build, loader guard, keep-chunks, Pages workflow, first scene (ground chunks, farmhouse, barn, woods, camera), i18n coverage test, browser suite | 50373cd |
 | 2026-10-07 | M1: rules core (grid, farm, animals, production, barn with holds, orders, build order, cottages with rent and charm, neighbours, Today, stall) behind act()/tick(); full Vietnamese for content and reasons; simulation on the real rules meets the pace targets; found and fixed: order XP bug, oversized orders, barn overflow handling | 63a36e2 |
+| 2026-10-07 | M2: land view from the rules state (cells, weeds, rocks, placed things, fences), build mode (catalogue, ghost, rotate/place/move/store/clear, fences on the nearest edge, undo), HUD with level and coins; 30 tests and 10 browser checks pass | (M2 commit) |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume

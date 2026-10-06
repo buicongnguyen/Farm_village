@@ -5,6 +5,12 @@ export const VI = {
   'Farm Village': 'Làng Nông Trại',
   'Turn the view': 'Xoay góc nhìn',
   'Language': 'Ngôn ngữ',
+  'Build': 'Xây dựng', 'Close': 'Đóng', 'Cancel': 'Hủy', 'Place': 'Đặt', 'Rotate': 'Xoay', 'Undo': 'Hoàn tác',
+  'Clear': 'Dọn dẹp', 'Move': 'Di chuyển', 'Store': 'Cất kho',
+  'Level {level}': 'Cấp {level}', 'Level {level}!': 'Lên cấp {level}!', 'Project done: {name}': 'Hoàn thành: {name}',
+  'Moving is free': 'Di chuyển miễn phí', '{count} stored': 'Trong kho: {count}', 'Tap where it should go': 'Chạm vào nơi muốn đặt',
+  'Tap something to move it': 'Chạm vào vật muốn di chuyển', 'Tap something to put it in storage': 'Chạm vào vật muốn cất kho',
+  'Tap weeds or rocks to clear them ({price} coins each)': 'Chạm vào cỏ dại hoặc đá để dọn ({price} xu mỗi ô)',
 
   // ── Goods ──
   'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô',
@@ -94,4 +100,5 @@ export const VI = {
   'This one is part of the story': 'Đơn này thuộc câu chuyện', 'No trade today': 'Hôm nay không có trao đổi',
   'Come back tomorrow for a new gift': 'Mai quay lại nhận quà mới nhé', 'Build a roadside stall first': 'Hãy xây sạp ven đường trước',
   'The stall is full': 'Sạp đã đầy', 'Nothing sold yet': 'Chưa bán được gì',
+  'Nothing to undo': 'Không có gì để hoàn tác', 'Something stands on it now': 'Đã có vật đặt lên trên', 'It is in use now: move it instead': 'Đang được dùng: hãy di chuyển thay vì hoàn tác',
 };

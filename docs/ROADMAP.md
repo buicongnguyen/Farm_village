@@ -67,26 +67,26 @@ The hardest part to get right on a phone, so it comes before the rest of the vie
 proven by `prototypes/big-farm/` (done on 2026-10-07); M2 turns it into the game's code.
 
 **Tasks**
-- [ ] Open the big-farm prototype on a real mid-range phone (`HOST=0.0.0.0 node prototypes/serve.mjs`) and confirm
+- [x] Open the big-farm prototype on a real mid-range phone (`HOST=0.0.0.0 node prototypes/serve.mjs`) and confirm
   30+ fps at every zoom. If it falls short, lower the close-zoom limit or the middle-detail share before going on.
-- [ ] `camera.mjs`: the fixed tilted orthographic view, one-finger pan, pinch zoom, 90° turns, bounds; mouse, wheel and
+- [x] `camera.mjs`: the fixed tilted orthographic view, one-finger pan, pinch zoom, 90° turns, bounds; mouse, wheel and
   keys on PC.
-- [ ] The 128 × 128 cell map with the farm's 4 × 4 parcels, the village area, the brook, roads and woods (`DESIGN.md`
+- [x] The 128 × 128 cell map with the farm's 4 × 4 parcels, the village area, the brook, roads and woods (`DESIGN.md`
   section 3.1).
-- [ ] `ground.mjs`: the cell grid in 32 × 32 chunks; weeds, rocks, paths, tilled cells and water drawn from the state;
+- [x] `ground.mjs`: the cell grid in 32 × 32 chunks; weeds, rocks, paths, tilled cells and water drawn from the state;
   only changed chunks rebuilt.
-- [ ] `batches.mjs`: chunked instancing with three levels of detail and per-level chunk sizes (8 / 16 / 32), taken from
+- [x] `batches.mjs`: chunked instancing with three levels of detail and per-level chunk sizes (8 / 16 / 32), taken from
   the prototype; partial rebuilds when something changes.
-- [ ] Blender export of `*_mid` models (Decimate, about 40 %) for crops, trees, plants and animals.
-- [ ] `placed.mjs`: every placed kind drawn through `batches.mjs`.
-- [ ] `picking.mjs`: tap to cell and object; the sweep gesture.
-- [ ] `ghost.mjs` and `build-view.mjs`: the catalogue, a ghost offset above the finger, green or red with the reason,
+- [ ] Blender export of `*_mid` models (Decimate, about 40 %) for crops, trees, plants and animals. (For now the loader simplifies at runtime; moved to the art pass in M3.)
+- [x] `placed.mjs` (as `land-view.mjs`): every placed kind drawn through `batches.mjs`.
+- [x] `picking.mjs` (in `world-view.mjs` and `grid.occupant`): tap to cell and object. The sweep gesture comes with farming in M3.
+- [x] `ghost.mjs` and `build-view.mjs`: the catalogue, a ghost offset above the finger, green or red with the reason,
   ⟳ ✔ ✕, move, store, undo (10 steps).
-- [ ] The charm overlay in build mode.
-- [ ] Fences on cell edges, with gates, and a closed-pen check.
+- [ ] The charm overlay in build mode. (Moved to M4, with cottages.)
+- [x] Fences on cell edges, with gates, and a closed-pen check.
 - [ ] New art from `village-kit.glb`: path stones, weeds, rocks, bench, lamp, sign, order board.
-- [ ] Browser test: place, rotate, move and store on a 390 × 844 portrait phone and a 844 × 390 landscape one.
-- [ ] Budget test: a fully planted farm (all 16 parcels, fields) at close, middle and far zoom stays within 120 draws and
+- [x] Browser test: place, rotate, move and store on a 390 × 844 portrait phone and a 844 × 390 landscape one.
+- [ ] (M3, once crops are drawn) Budget test: a fully planted farm (all 16 parcels, fields) at close, middle and far zoom stays within 120 draws and
   300k triangles.
 
 **Done when:**

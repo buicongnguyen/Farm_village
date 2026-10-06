@@ -203,3 +203,13 @@ test('store and move: contents travel, stored items come back free', () => {
   assert.ok(s.beds[bed], 'the crop moved with its bed');
   assert.equal(grid.cellType(s, 38, 56), 'tilled');
 });
+
+test('undo gives the last build actions back, and leaving build mode clears it', () => {
+  const s = game(); tutorial(s); setLevel(s, 3);
+  const coins = s.coins;
+  must(s, 'place', { kind: 'flowers', x: 40, z: 58 }); must(s, 'place', { kind: 'path', x: 40, z: 59 });
+  must(s, 'undo', {}); must(s, 'undo', {});
+  assert.equal(s.coins, coins); assert.equal(grid.cellType(s, 40, 59), 'grass'); assert.equal(s.counts.flowers, 0);
+  must(s, 'place', { kind: 'flowers', x: 40, z: 58 }); must(s, 'endBuild', {});
+  assert.equal(act(s, 'undo', {}).reason, 'Nothing to undo');
+});

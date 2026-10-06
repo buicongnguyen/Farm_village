@@ -14,6 +14,9 @@ export const priceOf = (s, kind) => {
 };
 const setCell = (s, x, z, type) => { s.cells[z * N + x] = CELL_TYPES[type]; grid.touch(s); };
 const count = (s, kind, d) => { s.counts[kind] = Math.max(0, (s.counts[kind] ?? 0) + d); };
+/** The undo stack (DESIGN 4.4): the last 10 build actions, refunded on undo, cleared when build mode ends. */
+const UNDO_MAX = 10;
+const remember = (s, entry) => { (s.undo ??= []).push(entry); if (s.undo.length > UNDO_MAX) s.undo.shift(); };
 /** Everything in the state that belongs to a placed item (crops, animals, queue, family) moves or goes with it. */
 const CONTENTS = ['beds', 'animals', 'production', 'homes'];
 
@@ -27,8 +30,9 @@ export const actions = {
     const fromStore = (s.stored?.[kind] ?? 0) > 0, price = fromStore ? 0 : priceOf(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; if (fromStore) s.stored[kind]--;
-    if (def.cell) { setCell(s, x, z, def.cell); if (kind === 'path') s.stats.paths++; count(s, kind, 1); ctx.emit('cellChanged', { x, z }); advance(ctx); return { price }; }
+    if (def.cell) { setCell(s, x, z, def.cell); if (kind === 'path') s.stats.paths++; count(s, kind, 1); remember(s, { type: 'cell', kind, x, z, price }); ctx.emit('cellChanged', { x, z }); advance(ctx); return { price }; }
     const id = `p${s.nextId++}`;
+    remember(s, { type: 'place', kind, id, price, fromStore });
     s.placed[id] = { kind, x, z, rot };
     if (def.tills) setCell(s, x, z, 'tilled');
     count(s, kind, 1); grid.touch(s);
@@ -48,6 +52,32 @@ export const actions = {
     ctx.emit('moved', { id, x, z, rot });
     return { id };
   },
+  /** Undo the last build action and give its price back. */
+  undo(ctx) {
+    const { s } = ctx, e = s.undo?.[s.undo.length - 1];
+    if (!e) return ctx.fail('Nothing to undo');
+    if (e.type === 'cell') {
+      if (grid.cellType(s, e.x, e.z) !== e.kind) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
+      if (grid.occupant(s, e.x, e.z)) return ctx.fail('Something stands on it now');
+      setCell(s, e.x, e.z, 'grass'); count(s, e.kind, -1); if (e.kind === 'path') s.stats.paths = Math.max(0, s.stats.paths - 1);
+      ctx.emit('cellChanged', { x: e.x, z: e.z });
+    } else if (e.type === 'edge') {
+      const key = grid.edgeKey(e.x, e.z, e.side); if (s.fences[key] !== e.kind) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
+      delete s.fences[key]; count(s, e.kind, -1); ctx.emit('fenceChanged', { x: e.x, z: e.z, side: e.side, kind: null });
+    } else {
+      const p = s.placed[e.id]; if (!p) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
+      if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived) return ctx.fail('It is in use now: move it instead');
+      if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
+      for (const k of CONTENTS) delete s[k][e.id];
+      delete s.placed[e.id]; count(s, p.kind, -1); grid.touch(s);
+      if (e.fromStore) s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
+      ctx.emit('stored', { id: e.id, kind: p.kind });
+    }
+    s.undo.pop(); s.coins += e.price;
+    return { undone: e.kind, refund: e.price };
+  },
+  /** Leaving build mode: the undo stack is cleared. */
+  endBuild(ctx) { ctx.s.undo = []; return {}; },
   /** Put a placed item away. Its price is kept as a stored credit so placing it again is free. */
   store(ctx, { id }) {
     const { s } = ctx, p = s.placed[id]; if (!p) return ctx.fail('Nothing to store');
@@ -87,7 +117,7 @@ export const actions = {
     const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlaceEdge(s, kind, x, z, side); if (!can.ok) return ctx.fail(can.reason, can.params);
     const price = priceOf(s, kind); if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; s.fences[grid.edgeKey(x, z, side)] = kind; count(s, kind, 1);
+    s.coins -= price; s.fences[grid.edgeKey(x, z, side)] = kind; count(s, kind, 1); remember(s, { type: 'edge', kind, x, z, side, price });
     ctx.emit('fenceChanged', { x, z, side, kind });
     return { price };
   },
