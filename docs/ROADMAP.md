@@ -7,7 +7,7 @@ tested. Times assume one main developer with AI help and are estimates only.
 |---|---|---|---|
 | **M0** | Project setup and kit | 2–3 days | An empty scene deployed to Pages, tests running |
 | **M1** | Rules core and economy simulation | 1 week | The whole v0.1 game playable in tests, pace targets passing |
-| **M2** | World, camera and build mode | 1–1.5 weeks | Placing beds, paths, fences and buildings on a phone feels good |
+| **M2** | World, camera and build mode | 1–1.5 weeks | Placing beds, paths, fences and buildings on a phone feels good; a full large farm holds the phone budgets |
 | **M3** | The farm loop on screen | 1 week | Plant, feed, produce and fill orders, with saves |
 | **M4** | Village, people and neighbours | 1 week | Cottages, families, rent, charm, the school project, Mai and Gus |
 | **M5** | First session and polish | 1 week | Tutorial, story cards, celebrations, sound, Vietnamese, phone performance |
@@ -63,12 +63,22 @@ All of `src/core/` and `src/content/` for v0.1, with no graphics.
 
 ## M2 — World, camera and build mode (1–1.5 weeks)
 
-The hardest part to get right on a phone, so it comes before the rest of the view.
+The hardest part to get right on a phone, so it comes before the rest of the view. The rendering approach is already
+proven by `prototypes/big-farm/` (done on 2026-10-07); M2 turns it into the game's code.
 
 **Tasks**
-- [ ] `camera.mjs`: one-finger pan, pinch zoom, 90° turns, bounds; mouse, wheel and keys on PC.
-- [ ] `ground.mjs`: the cell grid in chunks; weeds, rocks, paths, tilled cells and water drawn from the state.
-- [ ] `placed.mjs`: instanced models for every placed kind.
+- [ ] Open the big-farm prototype on a real mid-range phone (`HOST=0.0.0.0 node prototypes/serve.mjs`) and confirm
+  30+ fps at every zoom. If it falls short, lower the close-zoom limit or the middle-detail share before going on.
+- [ ] `camera.mjs`: the fixed tilted orthographic view, one-finger pan, pinch zoom, 90° turns, bounds; mouse, wheel and
+  keys on PC.
+- [ ] The 128 × 128 cell map with the farm's 4 × 4 parcels, the village area, the brook, roads and woods (`DESIGN.md`
+  section 3.1).
+- [ ] `ground.mjs`: the cell grid in 32 × 32 chunks; weeds, rocks, paths, tilled cells and water drawn from the state;
+  only changed chunks rebuilt.
+- [ ] `batches.mjs`: chunked instancing with three levels of detail and per-level chunk sizes (8 / 16 / 32), taken from
+  the prototype; partial rebuilds when something changes.
+- [ ] Blender export of `*_mid` models (Decimate, about 40 %) for crops, trees, plants and animals.
+- [ ] `placed.mjs`: every placed kind drawn through `batches.mjs`.
 - [ ] `picking.mjs`: tap to cell and object; the sweep gesture.
 - [ ] `ghost.mjs` and `build-view.mjs`: the catalogue, a ghost offset above the finger, green or red with the reason,
   ⟳ ✔ ✕, move, store, undo (10 steps).
@@ -76,10 +86,13 @@ The hardest part to get right on a phone, so it comes before the rest of the vie
 - [ ] Fences on cell edges, with gates, and a closed-pen check.
 - [ ] New art from `village-kit.glb`: path stones, weeds, rocks, bench, lamp, sign, order board.
 - [ ] Browser test: place, rotate, move and store on a 390 × 844 portrait phone and a 844 × 390 landscape one.
+- [ ] Budget test: a fully planted farm (all 16 parcels, fields) at close, middle and far zoom stays within 120 draws and
+  300k triangles.
 
 **Done when:**
 - Three people try build mode on a real phone and can place a fenced pen with a path to the road without help.
-- Frame rate holds 30+ fps on a mid-range phone with 200 placed items.
+- A real mid-range phone holds 30+ fps with a fully planted large farm.
+- The budget test passes.
 
 ## M3 — The farm loop on screen (1 week)
 
@@ -153,6 +166,11 @@ comments match what is on screen.
 ## After v0.1
 
 ### v0.2 — Deeper farm and the growing village (4–5 weeks)
+- **The large farm:**
+  - parcels 3–6;
+  - fields (plant and harvest a block in one action);
+  - helpers who tend fields;
+  - the pace model tuned again for land and fields (`ECONOMY.md` section 8).
 - **Fishing:**
   - the brook and the pond project, Ellis teaching, one calm catch;
   - fish in orders and in the field guide;
@@ -169,6 +187,7 @@ comments match what is on screen.
 - **Economy:** re-tune with the new products, so late steps ask for variety.
 
 ### v0.3 — Seasons and family (4–5 weeks)
+- **More land and tools:** parcels 7–11, and the seed drill and harvester in the workshop.
 - **The festival stage and festivals:** the fishing derby first, then the harvest fair. AI neighbours compete.
 - **Seasons** from the real calendar, with seasonal crops and decorations.
 - **Pip's homework:** a short optional daily quiz that shapes Pip's interests.
@@ -178,6 +197,7 @@ comments match what is on screen.
 - **Build steps 10–11:** the police post and the company office.
 
 ### v0.4 — Sharing and culture (4 weeks)
+- **Land and the tractor:** parcels 12–16, and the tractor for harvesting fields in one pass.
 - **The café:** June runs it. Villagers order dishes and rate them, with a calm rush-hour mini-game.
 - **Photo mode** and the village postcard.
 - **Visit a friend's village by link:** a read-only snapshot packed into the link, with gift notes.

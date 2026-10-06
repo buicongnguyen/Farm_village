@@ -46,9 +46,10 @@ Farm_village/
     view/                 Three.js: draws the state, never changes it directly
       scene.mjs           renderer, lights (toon), sky, day and night
       camera.mjs          pan, pinch zoom, 90° turns, bounds, touch and mouse
-      ground.mjs          terrain and the cell grid (vertex colours, one mesh per chunk)
-      placed.mjs          everything placed: one InstancedMesh per model kind
-      crops-view.mjs      crop growth stages (instanced per crop and stage)
+      ground.mjs          terrain and the cell grid (vertex colours, one mesh per 32 × 32 chunk)
+      batches.mjs         chunked InstancedMesh batches with three levels of detail (section 6)
+      placed.mjs          everything placed, drawn through batches.mjs
+      crops-view.mjs      crop growth stages and fields, drawn through batches.mjs
       ghost.mjs           build-mode ghost, green/red tint, footprint outline, charm overlay
       picking.mjs         taps and clicks to cells and objects, the sweep gesture
       people-view.mjs     avatar, family, villagers, neighbours walking (walk cycle, routes on paths)
@@ -171,6 +172,7 @@ so everything matches.
 | Model | Pieces | Notes | Version |
 |---|---|---|---|
 | `crops2.glb` | `crop_wheat` (4 stages), `crop_corn` stages if `crop_goldcorn` has none, `crop_tomato`, `crop_sugarcane` | Same style as `crops.glb` | v0.1 (wheat), v0.2 |
+| `*_mid` versions of every crop, tree, plant and animal | About 40 % of the triangles (Blender Decimate), exported next to the full models | Used at middle zoom | v0.1 |
 | `production.glb` | `feed_mill` (2 × 2), `bakery` (3 × 2) with a chimney smoke marker, `dairy`, `sugar_mill`, `loom` | Small, readable from the planning camera; each has a "working" animation node | v0.1 (mill, bakery), v0.2 |
 | `village-kit.glb` | `path_stone`, `path_gravel`, `bench`, `lamp`, `fountain`, `sign`, `order_board`, `weeds_a/b`, `rock_small`, `ruin_boards` (boarded-up overlay for empty civic buildings), `scaffold` (building animation) | Charm items and the tutorial clearing | v0.1 |
 | `cottage-dressing.glb` | Window boxes, porch lights, flower pots | Show the cozy and deluxe levels on the outside | v0.1 |
@@ -180,27 +182,65 @@ so everything matches.
 **Icons:** item icons are rendered from the models at build time (as Willowmere does), so new items automatically get an
 icon.
 
-## 6. Performance budgets
+## 6. Rendering and performance
+
+**One renderer, shown like 2.5D.**
+- **Camera:** Three.js with a fixed tilted orthographic camera (about 54° down), 90° turns and zoom.
+- **No second renderer:** no 2D mode and no separate phone renderer. Every feature is drawn once and tested once.
+
+**Proven by `prototypes/big-farm/`:**
+- **The scene:** a 128 × 128 cell map, 2,704 crops in fields, about 3,000 trees and plants, 64 moving animals and the
+  village.
+- **Phone results** (390 × 844 screen, CPU slowed 4×): at most **199k triangles, 87 draw calls and 2.3 ms of CPU per
+  frame** at every zoom.
+- **Worst case** (4,096 crops planted at random): 312k triangles at close zoom.
 
 | Budget | Target |
 |---|---|
 | First load (HTML + JS + CSS + first-scene models) | ≤ 1.1 MB compressed; the build fails above it |
 | Time to first scene | ≤ 3 s on a mid-range phone over 4G |
-| Frame rate | 60 fps on PC; 30+ fps on a mid-range phone with a full v0.1 village |
-| Draw calls | ≤ 120 on phones |
-| Triangles on screen | ≤ 300,000 on phones |
+| Frame rate | 60 fps on PC; 30+ fps on a mid-range phone with a full farm |
+| Draw calls | ≤ 120 on phones at every zoom |
+| Triangles drawn | ≤ 300,000 on phones at every zoom |
+| CPU per frame | ≤ 8 ms on a phone (the prototype needs about 2.5 ms slowed 4×) |
 
-**How:**
-- **Instancing:** one `InstancedMesh` per model kind and crop stage, so 30 beds of wheat take one draw call, not 30.
-  This follows the `smooth-dense-scenes` skill rules.
-- **Ground:** one ground mesh per 12 × 12 cell chunk, re-coloured when cells change.
-- **Loading:**
-  - **First:** the farm, crops and animals.
-  - **After the first frame:** town buildings.
-  - **When first needed:** everything else.
-- **Graphics governor:** `governor.mjs` lowers the shadow and pixel ratio when frames run slow.
-- **No per-frame allocation** in the game loop.
-- **Rendering pauses** when the tab is hidden.
+**The drawing rules** (each one measured in the prototype):
+1. **Baked models.** Every model is one geometry with vertex colours and no textures. Blender exports it that way;
+   the loader merges any leftover parts. One material, `MeshToonMaterial` with the kit's 4-step ramp, is shared by
+   everything.
+2. **Instancing.** One `InstancedMesh` per model per chunk. Nothing in the world is drawn one by one, except the
+   player's avatar and a few close-up characters.
+3. **Three levels of detail**, switched by zoom:
+
+| Zoom (view span) | Models | Chunk size |
+|---|---|---|
+| Close (up to 55 m) | Full models (crops about 350 triangles) | 8 × 8 cells |
+| Middle (55–110 m) | Simplified models, about 40 % of the triangles, made by Blender's Decimate at build time | 16 × 16 cells |
+| Far (over 110 m) | Stand-ins of 5–20 triangles, coloured per instance (crop, tree, animal) | 32 × 32 cells |
+
+   Close zoom needs small chunks for tight culling, and far zoom needs big ones for few draws. One chunk size fails
+   one end: 32-cell chunks drew 1.18M triangles close up, and 8-cell chunks needed 305 draws far out.
+4. **Static batches.** Buildings and fences keep full models at every zoom in 16 × 16 chunks; there are few of them.
+5. **Ground** is one mesh per 32 × 32 cell chunk, with one flat-coloured quad per cell. When cells change (tilling,
+   paths), only that chunk is rebuilt.
+6. **Rebuilding batches.** When something is planted, grows a stage, is placed or is moved, only the batches of that
+   chunk and model are rebuilt, at most once a frame. Growth stages change on timers, so a few chunks change per
+   second, not every frame.
+7. **Moving things** (animals, people) have their own batches per kind, updated every frame, with level of detail too.
+8. **Renderer settings:**
+   - pixel ratio capped at 2;
+   - antialiasing off at ratio 2 and above;
+   - no real-time shadows on phones (blob shadows from the kit's `shadow-proxy.mjs`);
+   - the graphics governor lowers the pixel ratio if frames run slow;
+   - rendering pauses when the tab is hidden.
+9. **Loading order:**
+   - **First:** the farm, crops and animals.
+   - **After the first frame:** the town buildings (1.7 MB).
+   - **Last:** everything else, when first needed.
+10. **The rules are tested.** A browser test (from `prototypes/big-farm/measure.mjs`) loads a fully planted farm and fails
+   if any zoom level goes over the draw-call or triangle budget.
+
+**Still to check:** a real mid-range phone's GPU (the prototype ran on a PC GPU with the CPU slowed). This is part of M2.
 
 ## 7. Testing
 
@@ -237,7 +277,7 @@ The browser hook `window.farm` exposes `state()`, `act()`, `setNow(ms)` and `ski
 
 | Risk | Handling |
 |---|---|
-| Phone performance with a big village | Instancing and chunks from the start, the governor, and draw-call and triangle budgets checked by a browser test |
+| Phone performance with a big farm and village | Proven in `prototypes/big-farm/`: per-level chunks, three levels of detail, the governor, and a browser test on the budgets. Still to confirm on a real phone in M2 |
 | The economy drifts as content grows | The simulation test fails the build when pace targets break |
 | Placement feels fiddly on phones | Large snap targets, an offset ghost above the finger, an undo stack; tested on real phone sizes in M2 before anything else is built on it |
 | Too much at once for new players | Tutorial script plus gated HUD (`DESIGN.md` section 15); playtests each release |

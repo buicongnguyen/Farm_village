@@ -119,6 +119,10 @@ of `DESIGN.md`.
 2. **Platform:** phone first, with full PC support.
 3. **Code start:** a fresh repository that copies Willowmere's reusable parts (`TECH-PLAN.md` section 3).
 4. **Name:** "Farm Village" as the working name; the village in the story is Hollowbrook (placeholder).
+5. **Rendering:** one 3D renderer shown like a 2.5D game (fixed tilted camera, 90° turns, zoom). There is no separate
+   2D or phone mode. `prototypes/big-farm/` showed it stays within phone budgets with thousands of crops.
+6. **Map:** one large map of 128 × 128 cells. The farm grows to 64 × 64 cells (2,000–3,000 crops) through land parcels,
+   with fields, helpers and tools so a big farm is not a chore. v0.1 stays small.
 
 Still open, to decide at M0: the hosting set-up, either a public repository or a private source with a public play
 repository.

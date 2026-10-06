@@ -108,7 +108,7 @@ Value is the base price: what the roadside stall pays and what order rewards are
 | Bed number *n* (7–30) | 10 × 1.15^(n − 6), rounded: bed 7 costs 12, bed 12 costs 23, bed 20 costs 71, bed 30 costs 286 |
 | Bed allowance | Up to 6 + 3 × level beds (all 30 at level 8) |
 | Path tile / fence segment / gate | 1 / 3 / 10 coins |
-| Land parcel (6 × 12 cells) | 2,000 / 6,000 / 15,000 / 30,000 (v0.2) |
+| Land parcel (16 × 16 cells) | 2nd parcel 500 (v0.1, level 4). From v0.2: parcels 3–6 cost 2,000 / 4,000 / 7,000 / 11,000; parcels 7–16 rise by about 40 % each, up to about 300,000 |
 
 ### 4.2 Buildings
 
@@ -191,7 +191,31 @@ ask for variety rather than a pile of one item. Re-run the model when that chang
 - **The model buys like a sensible player** who saves for the next project. A real player will waste some coins on
   decorations, so expect real pace to be a little slower than the model.
 
-## 8. How to change a number
+## 8. The large farm (v0.2 onwards)
+
+The map allows a farm of 64 × 64 cells with 2,000–3,000 crop cells (`DESIGN.md` section 3.1). v0.1 keeps the 30-bed cap,
+so the numbers above stand. Before v0.2, the pace model gets these additions and is tuned again:
+
+- **Land:** buying parcels (section 4.1). The bed allowance becomes a **crop-cell allowance**: 30 + 60 per parcel beyond
+  the first, up to about 3,000.
+- **Fields and helpers:**
+  - a field counts as its cells but costs one action;
+  - a helper tends up to 4 fields for a daily wage of about 15 % of what those fields earn.
+  The model's player stops being limited by taps and becomes limited by land, the barn and demand.
+- **Demand grows with supply:**
+  - order size scales with crop cells as well as level;
+  - the weekly cart takes 6–9 crates;
+  - the market square's three stalls sell continuously;
+  - AI neighbours' trades get larger.
+  Without this, a big farm floods the barn and coins pile up (the same problem Willowmere had).
+- **Barn:** upgrades keep pace with land. Each parcel raises the barn's upgrade limit.
+- **Targets for v0.2:**
+  - buying all 16 parcels takes a steady player 3–5 months;
+  - a full farm earns at most 3× what a 6-parcel farm does, so land stays worth buying without making older goals
+    trivial;
+  - no profile gets stuck or ends with more than a week of income unspent once everything is bought.
+
+## 9. How to change a number
 
 1. Change it in `planning/pace-model.mjs` and in this document.
 2. Run the three profiles. Keep the steady player's school on day 3–4 and the festival stage in weeks 4–8.

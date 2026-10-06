@@ -1,0 +1,14 @@
+{
+  "name": "farm-village",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pace": "node planning/pace-model.mjs",
+    "proto": "node prototypes/serve.mjs 5240",
+    "proto:measure": "node prototypes/big-farm/measure.mjs"
+  },
+  "dependencies": { "three": "0.180.0" },
+  "devDependencies": { "playwright": "1.61.1" },
+  "engines": { "node": ">=22" }
+}

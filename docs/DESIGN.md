@@ -9,6 +9,8 @@ first versions. The numbers are in `ECONOMY.md`, the code plan in `TECH-PLAN.md`
 |---|---|
 | Energy bar | **None.** Timers, orders and storage set the pace. |
 | Platform | **Phone first**, with full PC support (mouse and keys). Portrait and landscape. |
+| Rendering | **One 3D renderer shown like a 2.5D game** (fixed tilted orthographic camera, 90° turns). No separate 2D mode. Proven by `prototypes/big-farm/`. |
+| Map | **One map of 128 × 128 cells.** The farm grows to 64 × 64 cells (2,000–3,000 crops) through parcels; v0.1 stays small. |
 | Code start | **Fresh repository** that copies Willowmere's reusable parts (see `TECH-PLAN.md` section 3). |
 | Name | **"Farm Village"** is the working name. The village inside the game is called **Hollowbrook** (placeholder, easy to rename). |
 | Languages | English and Vietnamese from the first version. |
@@ -53,16 +55,41 @@ Everything keeps growing and producing while the game is closed. **Nothing spoil
 
 ## 3. The world
 
-### 3.1 Layout
-- **The homestead** (the player's land) starts as a **12 × 12 cell** area (1 cell = 2 × 2 m, so 24 × 24 m) beside the
-  farmhouse, partly overgrown. More land is bought in **parcels of 6 × 12 cells** (up to 4 extra parcels by v1.0).
-- **The village** lies along the brook road: plots for cottages and civic buildings. In v0.1 the village area is also a
-  cell grid (24 × 16 cells) where cottages and the school are placed. Empty civic buildings stand as boarded-up ruins
-  until their project is built.
-- **Around the edges:** the brook (later fishing), woods, and the roads to four AI neighbours' farms, seen at the map
-  edge with their signposts.
+### 3.1 Layout: one large map
+The whole world is one map of **128 × 128 cells** (1 cell = 2 × 2 m, so 256 m × 256 m). Everything is on it; there are no
+loading screens between places.
+
+```
+ north: the brook ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ (fishing, v0.2)
+ woods | road |  THE FARM: 4 × 4 parcels of 16 × 16 cells      | orchard and
+       |      |  (64 × 64 cells when all are bought)           | pastures
+       |      |  farmhouse, barn, production, fields           |
+ ------+------+------------------------------------------------+-----------------
+       |  THE VILLAGE: cottages, school, clinic, market, police, office, stage
+ south: roads to the four AI neighbours' farms (signposts at the map edge)
+```
+
+- **The farm** is a 4 × 4 grid of **parcels of 16 × 16 cells**, 64 × 64 cells in all.
+  - **At the start:** you own one parcel next to the farmhouse, partly overgrown.
+  - **Buying more:** each parcel you buy is cleared with the same tutorial gestures.
+  - **By version:** up to 2 parcels in v0.1, 6 in v0.2 and all 16 by v1.0.
+- **The village** lies south of the farm along the road: about 64 × 24 cells of plots for cottages and civic buildings.
+  Empty civic buildings stand as boarded-up ruins until their project is built.
+- **Around the edges:** the brook, woods, an orchard hill and the roads to the AI neighbours' farms.
+- **How much grows:** a full farm has room for **2,000–3,000 crop cells** plus orchards, pens, production buildings and
+  decorations. The big-farm prototype (`prototypes/big-farm/`) runs 2,704 crops in fields plus about 3,000 trees,
+  64 animals and the village inside the phone budgets.
 
 ### 3.2 Camera and controls
+**One renderer, shown like a 2.5D game.** The game is drawn in 3D (Three.js), but the camera works like a 2.5D farm
+game's:
+- a **fixed, tilted, orthographic view** (about 54° down);
+- **four directions** (90° turns);
+- **zoom** from about 12 cells across (close) to the whole map.
+
+There is no free orbit and no separate 2D mode. This keeps one art pipeline and one code path. It still gives real
+light, day and night, and turning the view for free. The prototype proved it fast enough with thousands of crops.
+
 Phone first: you plan and tap. You do not have to walk to every bed.
 
 | Action | Phone | PC |
@@ -77,6 +104,14 @@ Phone first: you plan and tap. You do not have to walk to every bed.
 
 The avatar (you) walks to where you act and plays the action animation. That is for life and charm only; the action
 itself happens straight away, so sweeping 20 beds never makes you wait.
+
+**Zoom levels.**
+- **Close:** full models, with all actions available.
+- **Middle:** simplified models, with all actions available.
+- **Far:** a map-like view. Crops become small coloured stand-ins and labels show fields and buildings. A tap zooms to
+  that spot.
+
+The changes between levels are soft and quick, so the player only notices that the far view looks like a map.
 
 ### 3.3 Time
 - **Real time.** Crops and production run on real minutes and keep running while the game is closed.
@@ -93,6 +128,7 @@ of cells (its footprint).
 | Thing | Footprint | Notes |
 |---|---|---|
 | Crop bed | 1 × 1 (tilled cell) | Plant one crop in it |
+| Field (v0.2) | 2 × 2 to 4 × 4 tilled cells | Planted and harvested as one; counts as that many beds |
 | Fruit tree (v0.2) | 1 × 1 | Harvest every few hours |
 | Flower, bush | 1 × 1 | Charm |
 | Bench, lamp, sign | 1 × 1 | Charm |
@@ -147,8 +183,26 @@ Build mode (🔨) opens the catalogue: **Farm**, **Animals**, **Production**, **
 - **Growth:** visible in four model stages (sprout, young, growing, ready). Ready crops bob gently and show a sparkle.
 - **No watering and no wilting.** In Willowmere, watering was the main chore. Here, crops simply take their time.
 - **Speed-up:** none to buy. Neighbour visits (section 9) and later the greenhouse speed things up.
+- **Ready at a glance:** a field that is ready shows one sparkle and a small icon above it. Ready crops bob gently close
+  up.
 
-Crops by version (numbers in `ECONOMY.md`):
+### 5.1 Fields: farming at scale without chores
+A big farm must never mean thousands of taps. The player's reach grows with the land:
+
+| Tool | What it does | Version |
+|---|---|---|
+| **Sweep** | Drag across beds to plant, harvest or feed many in one gesture | v0.1 |
+| **Fields** | Till a block of 2 × 2 up to 4 × 4 cells as one field. One tap plants the whole field with one crop and one tap harvests it. A field counts as that many beds. | v0.2 |
+| **Helpers** | Hire a villager (from the families in your cottages) to tend 1–4 fields: they replant and harvest on their own, and the crops go to the barn. Helpers have names, lines and a small wage per day. | v0.2 |
+| **Seed drill and harvester** | Workshop tools that plant or harvest every field in a parcel with one action | v0.3 |
+| **Tractor** | Drive across fields to harvest them in one pass (fun, optional) | v0.4 |
+
+The economy keeps up with the farm: bigger orders, a bigger barn, the weekly cart and the market square take the
+larger harvests (`ECONOMY.md` section 8). **v0.1 stays small** (up to 30 beds on 1–2 parcels), so the pace model and
+the first session keep their numbers. The large farm opens from v0.2.
+
+### 5.2 Crops by version
+Numbers are in `ECONOMY.md`.
 - **v0.1:** wheat, carrot, corn, pumpkin.
 - **v0.2:** tomato, berry, sugarcane.
 - **v0.3:** radish, sunflower, coffee, plus seasonal crops.
