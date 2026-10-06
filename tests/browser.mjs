@@ -110,6 +110,64 @@ await check('build mode: fences go on the edge nearest the tap', async () => {
   await ctx.close();
 });
 
+// ── M3: the farm loop on screen ──
+const setupFarm = page => page.evaluate(() => {
+  const g = farm.game; g.s.coins = 5000;
+  g.do('clear', { cells: [[34, 59], [35, 60], [34, 61]] });
+  for (let z = 56; z <= 71; z++) for (let x = 32; x <= 47; x++) g.do('clear', { x, z });
+  for (let x = 30; x <= 47; x++) g.do('place', { kind: 'path', x, z: 63 });
+  for (let i = 0; i < 6; i++) g.do('place', { kind: 'bed', x: 33 + i, z: 58 });
+  farm.focus(35, 58, 30);
+});
+for (const device of ['phone', 'pc']) await check(`farm loop: plant by tap and sweep, harvest, deliver Ada's order (${device})`, async () => {
+  const { ctx, page, errors } = await open(device, '?new');
+  await setupFarm(page);
+  await tapCell(page, 33, 58);
+  await page.click('.radial-btn[data-crop="wheat"]');
+  // sweep across the other five beds
+  const pts = await page.evaluate(() => [34, 35, 36, 37, 38].map(x => farm.cellToScreen(x, 58)));
+  await page.mouse.move(pts[0].x, pts[0].y); await page.mouse.down();
+  for (const p of pts) await page.mouse.move(p.x, p.y, { steps: 4 });
+  await page.mouse.up();
+  const planted = await page.evaluate(() => Object.keys(farm.state().beds).length);
+  expect(planted === 6, `${planted} beds planted`);
+  await page.evaluate(() => farm.setClockOffset(40_000));
+  await tapCell(page, 35, 58);
+  await page.click('.radial-btn[data-act="harvestAll"]');
+  const wheat = await page.evaluate(() => farm.state().barn.items.wheat);
+  expect(wheat === 18, `wheat in the barn: ${wheat}`);
+  await page.click('[data-act="orders"]');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.order.can [data-do="deliver"]');
+  expect(await page.evaluate(() => farm.state().coins) > coins, 'no coins for the order');
+  expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('saves: the farm is still there after a reload, and time away counts', async () => {
+  const { ctx, page } = await open('pc', '?new');
+  await setupFarm(page);
+  await page.evaluate(() => { const g = farm.game; g.s.story.firstWheat = false; g.do('plant', { ids: Object.keys(g.s.placed), crop: 'wheat' }); });
+  await page.waitForTimeout(1400);                                   // autosave runs a second after the last change
+  await page.evaluate(() => farm.setClockOffset(8 * 3600e3));        // eight hours later
+  await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  const s = await page.evaluate(() => ({ beds: farm.state().counts.bed, ready: Object.values(farm.state().beds).filter(b => b.doneAt <= farm.game.now).length }));
+  expect(s.beds === 6, `beds after reload: ${s.beds}`); expect(s.ready === 6, `ready after 8 hours: ${s.ready}`);
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('budget: a fully planted large farm stays within the phone budgets at every zoom', async () => {
+  const { ctx, page } = await open('phone', '?new');
+  const n = await page.evaluate(() => farm.fillFarm());
+  expect(n > 2500, `${n} crops`);
+  for (const span of [40, 90, 220]) {
+    const info = await page.evaluate(s => { farm.view(s, 128, 112); return new Promise(r => setTimeout(r, 1200)).then(() => farm.measure(800)); }, span);
+    expect(info.draws <= 120 && info.triangles <= 300000, `span ${span}: ${info.draws} draws, ${info.triangles} triangles`);
+    console.log(`     span ${span}: ${info.draws} draws, ${Math.round(info.triangles / 1000)}k triangles, ${info.fps} fps`);
+  }
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

@@ -42,3 +42,5 @@ button.round[disabled] { opacity: .45; }
   .place-bar { left: 12px; transform: none; bottom: 12px; max-width: 38vw; }
   .hud[data-mode="build"] .hud-tools { bottom: 12px; right: calc(min(420px, 46vw) + 12px); }
 }
+/* `hidden` must win over the display rules above */
+.sheet[hidden], .place-bar[hidden], .radial[hidden] { display: none !important; }

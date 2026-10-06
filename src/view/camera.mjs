@@ -34,16 +34,24 @@ export class GameCamera {
   lookAt(x, z, span = this.span) { Object.assign(this, { x, z, span }); this.update(); }
   /** Pointer, wheel and key controls on an element. Taps (little movement) are passed to onTap(clientX, clientY). */
   attach(el, { onTap } = {}) {
-    const pointers = new Map(); let pinch = 0, moved = 0;
-    el.addEventListener('pointerdown', e => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; el.setPointerCapture?.(e.pointerId); });
+    // dragHook (optional): { start(x, y) → true to take the drag (e.g. sweeping across beds), move(x, y), end() }
+    const pointers = new Map(); let pinch = 0, moved = 0, hooked = false;
+    el.addEventListener('pointerdown', e => {
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; el.setPointerCapture?.(e.pointerId);
+      hooked = pointers.size === 1 && !!this.dragHook?.start(e.clientX, e.clientY);
+    });
     el.addEventListener('pointermove', e => {
       const p = pointers.get(e.pointerId); if (!p) return;
+      if (hooked) { this.dragHook.move(e.clientX, e.clientY); p.x = e.clientX; p.y = e.clientY; return; }
       const dx = e.clientX - p.x, dy = e.clientY - p.y; moved += Math.abs(dx) + Math.abs(dy);
       if (pointers.size === 1 && moved > 6) this.panPixels(dx, dy);
       p.x = e.clientX; p.y = e.clientY;
       if (pointers.size === 2) { const [a, b] = [...pointers.values()], dist = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) this.zoom(pinch / dist); pinch = dist; }
     });
-    const up = e => { const tap = pointers.size === 1 && moved <= 6; pointers.delete(e.pointerId); pinch = 0; if (tap && e.type === 'pointerup') onTap?.(e.clientX, e.clientY); };
+    const up = e => {
+      if (hooked) { hooked = false; pointers.delete(e.pointerId); this.dragHook.end(); return; }
+      const tap = pointers.size === 1 && moved <= 6; pointers.delete(e.pointerId); pinch = 0; if (tap && e.type === 'pointerup') onTap?.(e.clientX, e.clientY);
+    };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
     el.addEventListener('wheel', e => { e.preventDefault(); this.zoom(e.deltaY > 0 ? 1.12 : 1 / 1.12); }, { passive: false });
     addEventListener('keydown', e => {

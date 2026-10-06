@@ -86,7 +86,7 @@ proven by `prototypes/big-farm/` (done on 2026-10-07); M2 turns it into the game
 - [x] Fences on cell edges, with gates, and a closed-pen check.
 - [ ] New art from `village-kit.glb`: path stones, weeds, rocks, bench, lamp, sign, order board.
 - [x] Browser test: place, rotate, move and store on a 390 × 844 portrait phone and a 844 × 390 landscape one.
-- [ ] (M3, once crops are drawn) Budget test: a fully planted farm (all 16 parcels, fields) at close, middle and far zoom stays within 120 draws and
+- [x] (M3, once crops are drawn) Budget test: a fully planted farm (all 16 parcels, fields) at close, middle and far zoom stays within 120 draws and
   300k triangles.
 
 **Done when:**
@@ -97,17 +97,17 @@ proven by `prototypes/big-farm/` (done on 2026-10-07); M2 turns it into the game
 ## M3 — The farm loop on screen (1 week)
 
 **Tasks**
-- [ ] `crops-view.mjs`: four growth stages per crop, the ready bob and sparkle.
-- [ ] New art: `crop_wheat` stages; `feed_mill` and `bakery` with working animations.
-- [ ] `animals-view.mjs`: hens and cows wandering in their fence, hungry and ready markers.
-- [ ] `radial.mjs`: plant, harvest, feed, collect and queue actions; sweep for beds and animals.
-- [ ] `barn-view.mjs`: items, capacity, upgrade, held goods.
-- [ ] `orders-view.mjs`: cards with portrait, line, goods, reward, deliver and discard; a badge on the HUD.
-- [ ] Roadside stall.
-- [ ] `hud.mjs`: level ring, coins, buttons fading in by unlock.
-- [ ] `fx.mjs`: icons flying to the barn, coin bursts.
-- [ ] Saves through the kit's profiles, export and import.
-- [ ] Browser tests: a full farm loop; save, reload and catch up after moving the clock forward 8 hours.
+- [x] `crops-view.mjs`: four growth stages per crop, the ready bob and sparkle.
+- [x] New art (`art/blender/build_farm_kit.py` → `farm-kit.glb`): `crop_wheat`, `feed_mill`, `bakery`, `bench`, `lamp`, `order_board`. Working animations come with the polish pass (M5).
+- [x] `animals-view.mjs`: hens and cows wandering in their fence, hungry and ready markers.
+- [x] `radial.mjs`: plant, harvest, feed, collect and queue actions; sweep for beds and animals.
+- [x] `barn-view.mjs`: items, capacity, upgrade, held goods.
+- [x] `orders-view.mjs`: cards with portrait, line, goods, reward, deliver and discard; a badge on the HUD.
+- [x] Roadside stall.
+- [x] `hud.mjs`: level ring, coins, buttons fading in by unlock.
+- [x] `fx.mjs`: icons flying to the barn, coin bursts.
+- [x] Saves (autosave, backup copy, offline catch-up). Profiles and export/import move to M5 with Settings.
+- [x] Browser tests: a full farm loop; save, reload and catch up after moving the clock forward 8 hours.
 
 **Done when:** you can play from a fresh farm to level 5 in the browser with test mode off, and every action feels
 instant.

@@ -400,7 +400,7 @@ Shown on the first visit of each real day, and any time from the HUD:
 | 0:20 | Ada: "Let's clear a patch." Three weed cells glow. The player taps them. | Tapping, clearing |
 | 0:40 | Ada: "A path to the gate." A ghost path appears and the player places 3 path tiles. | Build mode, paths |
 | 1:10 | Six beds: the player places them on glowing tilled cells (free). | Placing, tilling |
-| 1:30 | Plant wheat: tap a bed, then sweep across the others. The first wheat takes **30 seconds** (tutorial only). | Planting, sweeping |
+| 1:30 | Plant wheat: tap a bed, then sweep across the others. Every wheat planted before the first harvest takes **30 seconds** (tutorial only), however it is planted. | Planting, sweeping |
 | 2:00 | Harvest with a sweep. The barn opens to show 12 wheat. | Harvest, barn |
 | 2:20 | First order from Ada: 6 wheat. Deliver it and earn coins plus XP. Level 2. | Order board |
 | 3:00 | Replant with carrots (5 min). Build the feed mill (step 3). | Production building |

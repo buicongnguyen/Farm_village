@@ -1,0 +1,51 @@
+/* Farm panels (orders, barn, production, stall), HUD badges, the radial menu and flying icons. */
+.hud-tools button { position: relative; }
+.badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--berry); color: #fff; font: 900 12px/20px 'Nunito', sans-serif; font-style: normal; padding: 0 5px; }
+.badge[hidden] { display: none; }
+.badge.cap { background: #6f8f4c; font-size: 10px; right: -10px; }
+.badge.cap.full { background: var(--berry); }
+
+.panel { max-height: 62vh; overflow-y: auto; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; }
+.panel-head h2 { margin: 2px 4px; font-size: 20px; font-weight: 900; }
+.btn { border: 0; border-radius: 14px; padding: 10px 14px; min-height: 44px; background: var(--paper-2); color: var(--ink); font: 800 14px 'Nunito', sans-serif; box-shadow: 0 2px 0 #0002; cursor: pointer; }
+.btn.primary { background: linear-gradient(#9be27f, var(--leaf)); color: #fff; }
+.btn.ghost { background: #fff; }
+.btn[disabled] { opacity: .5; }
+.order-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 8px; }
+.order { background: #fff; border-radius: 16px; padding: 10px; display: grid; gap: 6px; box-shadow: 0 2px 0 #0001; }
+.order.can { outline: 2px solid var(--leaf); }
+.order .who { display: flex; align-items: center; gap: 8px; }
+.order .face { font-size: 26px; }
+.order .line { margin: 0; font-size: 13px; color: #6a5440; }
+.needs { display: flex; flex-wrap: wrap; gap: 4px; }
+.good { background: var(--paper-2); border-radius: 10px; padding: 3px 7px; font-weight: 800; font-size: 13px; }
+.good.ok { background: #e3f7d8; color: #2f6b1a; }
+.good.short { background: #ffe9e0; color: #9a3b12; }
+.reward { font-weight: 900; }
+.order-buttons { display: flex; gap: 6px; }
+.order-buttons .primary { flex: 1; }
+.cap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cap-bar { flex: 1; min-width: 120px; height: 12px; background: #0001; border-radius: 6px; overflow: hidden; }
+.cap-bar i { display: block; height: 100%; background: var(--leaf); }
+.goods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.good-tile { border: 0; background: #fff; border-radius: 14px; padding: 8px 4px; display: grid; justify-items: center; gap: 1px; font: 700 12px 'Nunito', sans-serif; color: var(--ink); }
+.good-tile .icon { font-size: 26px; }
+.good-tile b { font-size: 16px; }
+.good-tile small { color: #7a6650; text-align: center; }
+.queue { display: flex; gap: 6px; flex-wrap: wrap; }
+.slot { width: 64px; height: 64px; border-radius: 14px; background: #fff; display: grid; place-items: center; align-content: center; font-size: 22px; border: 0; }
+.slot.empty { background: #0000000a; }
+.slot.ready { outline: 3px solid var(--sun); }
+.slot.buy { font: 900 22px 'Nunito', sans-serif; color: var(--leaf-dark); }
+.slot small { font-size: 11px; font-weight: 800; }
+.recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 6px; }
+.recipe { border: 0; background: #fff; border-radius: 14px; padding: 8px; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; text-align: left; font: 700 13px 'Nunito', sans-serif; color: var(--ink); cursor: pointer; }
+.recipe .icon { grid-row: span 3; font-size: 28px; align-self: center; }
+.hint, .empty { margin: 4px; color: #7a6650; font-size: 13px; }
+
+.radial { position: fixed; z-index: 7; width: 0; height: 0; }
+.radial-info { position: absolute; transform: translate(-50%, 28px); white-space: nowrap; background: var(--paper); border-radius: 12px; padding: 5px 10px; font-weight: 900; box-shadow: var(--shadow); }
+.radial-btn { position: absolute; left: -28px; top: -28px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: linear-gradient(#fff, var(--paper-2)); box-shadow: var(--shadow); display: grid; place-items: center; align-content: center; font-size: 22px; padding: 0; cursor: pointer; }
+.radial-btn small { font: 900 10px 'Nunito', sans-serif; margin-top: -2px; white-space: nowrap; }
+.fly { position: fixed; z-index: 8; font-size: 26px; pointer-events: none; transition: transform .7s cubic-bezier(.5, -0.2, .6, 1), opacity .7s; margin: -13px 0 0 -13px; }

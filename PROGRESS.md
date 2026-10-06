@@ -5,16 +5,18 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
-- **Phase:** building v0.1. **M0, M1 and M2 are done** (locally; no GitHub remote yet). **Next: M3**, the farm loop on
-  screen (crops and growth stages, animals, the radial menu and sweep, barn, orders, saves, new art for wheat, the feed
-  mill and the bakery, and the large-farm budget test).
+- **Phase:** building v0.1. **M0–M3 are done** (locally; no GitHub remote yet). **Next: M4**, the village: cottages and
+  families on screen, the projects panel with "show the way", the school, people walking, Mai and Gus visiting, and
+  the Today board.
 - **Waiting for the user:** hosting (public repository, or private source with a public play repository) before the
   first push and deploy.
-- **What works now** (`npm run dev`, then open http://127.0.0.1:5240/):
-  - the map;
-  - build mode: catalogue, ghost, rotate, place, move, store, clear, fences, undo;
-  - refusal reasons in English and Vietnamese.
-  Nothing is saved yet (M3).
+- **What works now** (`npm run dev`, then http://127.0.0.1:5240/; add `?new` for a fresh farm):
+  - **Building:** clear the land, place paths and beds.
+  - **Farming:** plant by tapping, then sweep across more beds; crops grow in stages; harvest.
+  - **Animals and production:** feed mill and coop with fenced hens; the bakery and its queue.
+  - **Selling:** fill orders on the order board; the barn has a capacity and an upgrade; the roadside stall.
+  - **Saving:** the game saves itself and counts time away.
+  - **Phone budget:** a fully planted large farm holds it.
 
 ## Decisions so far
 
@@ -55,6 +57,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | M0: build, loader guard, keep-chunks, Pages workflow, first scene (ground chunks, farmhouse, barn, woods, camera), i18n coverage test, browser suite | 50373cd |
 | 2026-10-07 | M1: rules core (grid, farm, animals, production, barn with holds, orders, build order, cottages with rent and charm, neighbours, Today, stall) behind act()/tick(); full Vietnamese for content and reasons; simulation on the real rules meets the pace targets; found and fixed: order XP bug, oversized orders, barn overflow handling | 63a36e2 |
 | 2026-10-07 | M2: land view from the rules state (cells, weeds, rocks, placed things, fences), build mode (catalogue, ghost, rotate/place/move/store/clear, fences on the nearest edge, undo), HUD with level and coins; 30 tests and 10 browser checks pass | b80badb |
+| 2026-10-07 | M3: farm-kit models from Blender (wheat, feed mill, bakery, bench, lamp, order board); crops in growth stages, animals wandering in their fences, produce and sparkles; tap menu with sweep; order board, barn, production and stall panels; flying icons; autosave with backup and time-away catch-up; budget check on a fully planted 64 × 64 farm (≤ 69 draws, ≤ 143k triangles); quick tutorial wheat now lasts until the first harvest | (M3 commit) |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume

@@ -1,6 +1,6 @@
 // Draws the rules state on the map: cell colours, weeds and rocks, everything placed, fences on edges.
 // sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
-import { N, CELL } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD } from '../content/world.mjs';
 import { footprint } from '../content/buildings.mjs';
 import { cellType } from '../core/grid.mjs';
 import { KIND_MODELS, modelFor } from './kinds.mjs';
@@ -21,6 +21,7 @@ export class LandView {
       this.world.batches.register(name, { geo, mid: spec.lod === 'static' ? geo : simplify(geo), kind: spec.lod, color: averageColor(geo) });
     }
     this.geometries = name => this.world.batches.models.get(name)?.geo;
+    this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
     this.ready = true; this.sync();
   }
   get s() { return this.game.s; }
@@ -72,7 +73,7 @@ export class LandView {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') this.drawPlaced(e.id);
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
-      else if (e.type === 'parcelBought') this.sync();
+      else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }
   }
 }

@@ -1,5 +1,6 @@
 // window.farm: the browser-test hook. Only in builds made with --test-mode (TEST_MODE is false in public builds, so
 // esbuild leaves this file out of them entirely).
+import { touch } from '../core/grid.mjs';
 export function installTestHook(parts) {
   const { world } = parts;
   window.farm = {
@@ -25,6 +26,22 @@ export function installTestHook(parts) {
       world.cam.panPixels(target.x - here.x, target.y - here.y);
     },
     state: () => parts.game?.s,
+    /** Run the game clock ahead by ms (kept for this tab across reloads). */
+    setClockOffset(ms) { sessionStorage.setItem('fv-clock-offset', String(ms)); parts.game.clock = () => Date.now() + ms; parts.game.tick(); },
+    /** The budget test (TECH-PLAN 6): own all 16 parcels and fill them with 4 × 4 fields of crops at mixed stages. */
+    fillFarm() {
+      const s = parts.game.s, now = parts.game.now, crops = ['wheat', 'carrot', 'corn', 'pumpkin'], grow = { wheat: 120e3, carrot: 300e3, corn: 900e3, pumpkin: 3600e3 };
+      s.parcels = []; for (let px = 0; px < 4; px++) for (let pz = 0; pz < 4; pz++) s.parcels.push(`${px},${pz}`);
+      let n = 0;
+      for (let z = 24; z < 88; z++) for (let x = 32; x < 96; x++) {
+        if ((x - 32) % 5 === 4 || (z - 24) % 5 === 4) { s.cells[z * 128 + x] = 3; continue; }   // paths between fields
+        const field = Math.floor((x - 32) / 5) * 31 + Math.floor((z - 24) / 5) * 17, crop = crops[field % 4], stage = (field % 7) / 6;
+        const id = `p${s.nextId++}`; s.placed[id] = { kind: 'bed', x, z, rot: 0 }; s.cells[z * 128 + x] = 4;
+        s.beds[id] = { crop, doneAt: now + grow[crop] * (1 - stage) }; n++;
+      }
+      s.counts.bed = n; touch(s); parts.game.emit({ ok: true, events: [{ type: 'loaded' }] }, 'test');
+      return n;
+    },
     /** Average frame time and draw statistics over `ms` of real rendering. */
     async measure(ms = 2000) {
       const dts = []; let last = performance.now();

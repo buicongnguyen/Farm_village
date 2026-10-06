@@ -11,6 +11,14 @@ export const VI = {
   'Moving is free': 'Di chuyển miễn phí', '{count} stored': 'Trong kho: {count}', 'Tap where it should go': 'Chạm vào nơi muốn đặt',
   'Tap something to move it': 'Chạm vào vật muốn di chuyển', 'Tap something to put it in storage': 'Chạm vào vật muốn cất kho',
   'Tap weeds or rocks to clear them ({price} coins each)': 'Chạm vào cỏ dại hoặc đá để dọn ({price} xu mỗi ô)',
+  'Order board': 'Bảng đơn hàng', 'Barn': 'Nhà kho', 'Deliver': 'Giao hàng', 'Discard': 'Bỏ đơn', 'Harvest': 'Thu hoạch', 'Free': 'Miễn phí',
+  'Ready': 'Xong', 'All ({count})': 'Tất cả ({count})', 'Collect ({count})': 'Thu ({count})', 'Collect {count}': 'Lấy {count}',
+  'Collect {coins} coins': 'Nhận {coins} xu', 'Feed ({count})': 'Cho ăn ({count})', 'Upgrade (+{step})': 'Nâng cấp (+{step})', '{count} held': 'giữ {count}',
+  'New orders are on their way.': 'Đơn hàng mới sắp đến.', 'The barn is empty.': 'Nhà kho đang trống.',
+  'The barn is full: fill orders or upgrade it': 'Kho đã đầy: hãy giao đơn hoặc nâng cấp kho',
+  'Passers-by buy one thing every few minutes, at its base price.': 'Người qua đường cứ vài phút mua một món, theo giá gốc.',
+  'Drag across more beds to plant them': 'Kéo qua các luống khác để trồng tiếp', 'Your farmhouse': 'Nhà của bạn',
+  'A new family has moved in!': 'Một gia đình mới đã dọn đến!',
 
   // ── Goods ──
   'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô',

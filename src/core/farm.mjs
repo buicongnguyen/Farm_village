@@ -30,7 +30,6 @@ export const actions = {
       planted++;
     }
     if (!planted) return ctx.fail('Nothing to plant here');
-    if (crop === 'wheat' && s.story.firstWheat) s.story.firstWheat = false;
     ctx.emit('planted', { crop, count: planted });
     return { planted };
   },
@@ -45,6 +44,7 @@ export const actions = {
     }
     if (!done) return ctx.fail(full ? 'The barn is full' : 'Nothing is ready yet');
     s.stats.harvested += done * 2; gainXp(ctx, XP.harvest * done * 2);
+    s.story.firstWheat = false;   // the tutorial's quick wheat lasts until the first harvest, however it was planted
     if (full) ctx.emit('barnFull', {});
     return { harvested: done };
   },

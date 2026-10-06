@@ -1,10 +1,14 @@
 // The HUD (DESIGN 16): level ring and coins top left, tools bottom right, short messages (toasts) at the top.
 import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
+import { fillable } from './panels.mjs';
+import { used as barnUsed } from '../core/barn.mjs';
+import { NEIGHBOURS } from '../content/people.mjs';
+const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
 
 export class Hud {
-  constructor(root, game, { onBuild, onTurn } = {}) {
-    Object.assign(this, { game, onBuild, onTurn, buttons: new Map() });
+  constructor(root, game, { onBuild, onTurn, onPanel } = {}) {
+    Object.assign(this, { game, onBuild, onTurn, onPanel, buttons: new Map() });
     this.el = document.createElement('div'); this.el.className = 'hud';
     this.el.innerHTML = `
       <div class="hud-top"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
@@ -13,6 +17,8 @@ export class Hud {
       <div class="hud-tools">
         <button class="round" data-act="turn">⟳</button>
         <button class="round" data-act="lang"></button>
+        <button class="round" data-act="barn">🏚<i class="badge cap"></i></button>
+        <button class="round" data-act="orders">📋<i class="badge"></i></button>
         <button class="round big" data-act="build">🔨</button>
       </div>`;
     this.el.addEventListener('click', e => {
@@ -20,6 +26,7 @@ export class Hud {
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi');
       if (act === 'build') onBuild?.();
+      if (act === 'orders' || act === 'barn') onPanel?.(act);
     });
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.toast(t(r.reason, r.params), 'warn'); for (const e of r.events ?? []) this.event(e); });
@@ -35,10 +42,19 @@ export class Hud {
     this.el.querySelector('[data-act="turn"]').setAttribute('aria-label', t('Turn the view'));
     this.el.querySelector('[data-act="lang"]').setAttribute('aria-label', t('Language'));
     this.el.querySelector('[data-act="build"]').setAttribute('aria-label', t('Build'));
+    this.el.querySelector('[data-act="orders"]').setAttribute('aria-label', t('Order board'));
+    this.el.querySelector('[data-act="barn"]').setAttribute('aria-label', t('Barn'));
+    const can = fillable(s), badge = this.el.querySelector('[data-act="orders"] .badge');
+    badge.textContent = can || ''; badge.hidden = !can;
+    const used = barnUsed(s), cap = this.el.querySelector('[data-act="barn"] .badge');
+    cap.textContent = `${used}/${s.barn.cap}`; cap.classList.toggle('full', used >= s.barn.cap * 0.9);
   }
   event(e) {
     if (e.type === 'levelUp') this.toast(t('Level {level}!', { level: e.level }), 'good');
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good');
+    if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn');
+    if (e.type === 'neighbourVisit') this.toast(`${t(NAMES[e.id] ?? e.id)}: ${t(e.comment)}`, 'info');
+    if (e.type === 'familyArrived') this.toast(t('A new family has moved in!'), 'good');
   }
   toast(text, kind = 'info') {
     const box = this.el.querySelector('.toasts'), el = document.createElement('div');
