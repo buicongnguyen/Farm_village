@@ -50,7 +50,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | Repository created with the research and ideas from Willowmere | 823b0e3 |
 | 2026-10-07 | Game concept: what the game is; activities kept, changed or cut | 35f3656 |
 | 2026-10-07 | Detailed plan: DESIGN, ECONOMY with the pace model, TECH-PLAN, ROADMAP | 90dd5d4 |
-| 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | (this commit) |
+| 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume
 
