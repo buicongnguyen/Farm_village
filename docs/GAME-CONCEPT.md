@@ -1,7 +1,15 @@
 # Farm Village — the game concept (October 2026)
 
 This is the one page to read first. It states what the game is, based on the research, and which activities from
-Willowmere stay, change or go. The other documents are the background:
+Willowmere stay, change or go.
+
+The detailed plan:
+- `DESIGN.md`: the full game design.
+- `ECONOMY.md`: numbers and pace, checked by `planning/pace-model.mjs`.
+- `TECH-PLAN.md`: code, reuse from Willowmere, testing and shipping.
+- `ROADMAP.md`: milestones M0–M6 to v0.1, then v0.2–v1.0.
+
+The background:
 
 - `MARKET-RESEARCH.md`: the evidence and the scored directions.
 - `IDEAS.md`: the wider list of ideas.
@@ -73,15 +81,15 @@ An activity that does none of these is cut or postponed. That rule answers the f
 
 ## 5. Pace targets
 
-The pace is designed from the start and checked with an economy simulation (as `scripts/economy-sim.mjs` did for
-Willowmere) before any release.
+The pace is designed from the start. A paper model (`planning/pace-model.mjs`) already meets these targets with the
+numbers in `ECONOMY.md`, and an economy simulation on the real rules will check them on every change.
 
 | Measure | Target |
 |---|---|
 | A play session | 10–20 minutes, with a reason to come back later that day |
 | Crop growth | 2 minutes (first crop) up to a few hours (late crops); production 5 minutes to 2 hours |
 | First session | First harvest in under 2 minutes; first order filled in about 5 minutes; first cottage built in about 15 minutes |
-| School | Built around day 2–3 of real play |
+| School | Built on day 3–4 of real play (steady player: 3 short visits a day) |
 | Full first village (all 10 build steps) | 4–8 weeks of daily play |
 | Coins | Always something worth saving for; a keen player must not finish all goals in a week |
 
@@ -91,7 +99,7 @@ Willowmere) before any release.
 - One homestead on a grid: tilled cells, paths, fences, gates.
 - Four crops, chickens and cows, and two production buildings (mill and bakery).
 - The order board, with six villagers and two AI neighbours posting orders.
-- Build steps 1–5: clear the land, farm plot, coop and pen, first rental cottage, then the **school**.
+- Build steps 1–6: clear the land, farm plot, feed mill and coop, two rental cottages, then the **school**.
 - The Today board with a daily gift.
 - Saves, English and Vietnamese, phone and PC controls.
 - Test mode with "unlock everything".
@@ -102,11 +110,15 @@ steps 6–10.
 **Done means:** a new player understands what to do without help, the simulation meets the pace targets, and three to
 five first-time players want to come back the next day.
 
-## 7. Decisions for you
+## 7. Working decisions
 
-1. **Energy bar:** drop it (proposed) or keep a gentle version?
-2. **Phone first or PC first?** Phone first matches Hay Day's players; both will work.
-3. **How to start the code:** a fresh project that copies Willowmere's reusable parts (look, menus, interiors, saves,
-   translation, deploy guard), or a fork of Willowmere with the unneeded parts removed? Fresh is recommended: it keeps
-   the game small and avoids carrying Pandora and the old economy.
-4. **Name:** keep "Farm Village" as the working name, or choose the final name now?
+The open questions are answered as proposed, so planning can go on. Each can still be changed; see the table at the top
+of `DESIGN.md`.
+
+1. **Energy bar:** none.
+2. **Platform:** phone first, with full PC support.
+3. **Code start:** a fresh repository that copies Willowmere's reusable parts (`TECH-PLAN.md` section 3).
+4. **Name:** "Farm Village" as the working name; the village in the story is Hollowbrook (placeholder).
+
+Still open, to decide at M0: the hosting set-up, either a public repository or a private source with a public play
+repository.
