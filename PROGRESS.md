@@ -54,7 +54,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | The user confirmed phone performance is fine (their earlier reference code runs well on phones); started executing the roadmap | – |
 | 2026-10-07 | M0: build, loader guard, keep-chunks, Pages workflow, first scene (ground chunks, farmhouse, barn, woods, camera), i18n coverage test, browser suite | 50373cd |
 | 2026-10-07 | M1: rules core (grid, farm, animals, production, barn with holds, orders, build order, cottages with rent and charm, neighbours, Today, stall) behind act()/tick(); full Vietnamese for content and reasons; simulation on the real rules meets the pace targets; found and fixed: order XP bug, oversized orders, barn overflow handling | 63a36e2 |
-| 2026-10-07 | M2: land view from the rules state (cells, weeds, rocks, placed things, fences), build mode (catalogue, ghost, rotate/place/move/store/clear, fences on the nearest edge, undo), HUD with level and coins; 30 tests and 10 browser checks pass | (M2 commit) |
+| 2026-10-07 | M2: land view from the rules state (cells, weeds, rocks, placed things, fences), build mode (catalogue, ghost, rotate/place/move/store/clear, fences on the nearest edge, undo), HUD with level and coins; 30 tests and 10 browser checks pass | b80badb |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume
