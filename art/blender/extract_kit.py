@@ -10,6 +10,7 @@ Spec mode (used for props.glb, nature.glb, rural-extra.glb and farm.glb):
       "drop": ["<node name>", ...],      (optional: leave these child nodes out, e.g. the fruit for a bare tree)
       "recolor": {"<material>": "#hex"}, (optional: new base colours by material name)
       "boost": 1.1,                      (optional: saturation boost of the colours, 1 = none)
+      "gain": 1.1,                       (optional: lightness gain of the colours, 1 = none)
       "mid": "<GLB>" | 0.35,             (optional: <name>_mid from another file (an LOD copy) or by decimating to this ratio)
       "far": "<GLB>" | 0.1,              (optional: <name>_far, the same way)
       "keep": true                       (optional: keep the root's materials instead of baking them into vertex colours)
@@ -85,17 +86,17 @@ def base_color(m):
     return (c[0], c[1], c[2])
 
 
-def boosted(c, k):
-    if k == 1:
+def boosted(c, k, gain=1.0):
+    """Saturation boost k and lightness gain, in display (sRGB-like) space."""
+    if k == 1 and gain == 1:
         return c
-    # boost saturation in sRGB-ish space
     s = [v ** (1 / 2.2) for v in c]
     h, l, sat = colorsys.rgb_to_hls(*s)
-    r, g, b = colorsys.hls_to_rgb(h, l, min(1, sat * k))
+    r, g, b = colorsys.hls_to_rgb(h, min(.92, l * gain), min(1, sat * k))
     return tuple(max(0, v) ** 2.2 for v in (r, g, b))
 
 
-def bake_colors(obj, recolor, boost):
+def bake_colors(obj, recolor, boost, gain=1.0):
     """Write (existing COLOR_0) x (material colour) into a fresh corner colour attribute 'FVCol'."""
     me = obj.data
     old = me.color_attributes.active_color or (me.color_attributes[0] if len(me.color_attributes) else None)
@@ -106,7 +107,7 @@ def bake_colors(obj, recolor, boost):
             mats.append(rgba(recolor[m.name.split('.')[0]])[:3])
         else:
             mats.append(base_color(m))
-    mats = [boosted(c, boost) for c in mats] or [(1, 1, 1)]
+    mats = [boosted(c, boost, gain) for c in mats] or [(1, 1, 1)]
     olddata = None
     if old is not None:
         olddata = [tuple(d.color[:3]) for d in old.data]
@@ -155,7 +156,7 @@ def make_piece(roots, spec, name):
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     if not spec.get('keep'):
         for c in copies:
-            bake_colors(c, spec.get('recolor'), spec.get('boost', 1))
+            bake_colors(c, spec.get('recolor'), spec.get('boost', 1), spec.get('gain', 1))
     if len(copies) > 1:
         bpy.ops.object.join()
     o = bpy.context.view_layer.objects.active
@@ -191,7 +192,7 @@ def spec_mode(spec_path):
                 continue
             if isinstance(v, str):
                 lr = import_roots(v)
-                lo = make_piece(lr, {k: p[k] for k in ('recolor', 'boost', 'drop', 'keep') if k in p} | {'root': None}, '__lod')
+                lo = make_piece(lr, {k: p[k] for k in ('recolor', 'boost', 'gain', 'drop', 'keep') if k in p} | {'root': None}, '__lod')
                 made.append(lo)
                 for r in lr:
                     for x in [r] + list(r.children_recursive):

@@ -5,7 +5,7 @@
 // whose kind has an EARLY stand-in draws with that, and anything else waits.
 export const KIND_MODELS = {
   coop:      { kit: 'farm-kit', node: 'coop', authored: true, lod: 'static' },
-  cow_barn:  { kit: 'farm', node: 'cow_shelter', width: 5.6, lod: 'static' },
+  cow_barn:  { kit: 'farm-kit', node: 'cow_barn', authored: true, lod: 'static' },
   feed_mill: { kit: 'farm-kit', node: 'feed_mill', authored: true, lod: 'static' },
   feed_mill_sails: { kit: 'farm-kit', node: 'feed_mill_sails', authored: true, lod: 'static', ao: 0 },
   bakery:    { kit: 'farm-kit', node: 'bakery', authored: true, lod: 'static' },
@@ -101,6 +101,7 @@ export const ANCHORS = {
   "feed_mill": {"window":[[-0.75,2.025,1.16,0,1], [0.75,2.025,1.16,0,1], [-1.26,1.95,0.2,-1,0], [0,3.05,1.15,0,1]],"door":[[0,0.32,1.17]],"sails":[[0,3.3,1.6]],"chimney":[[-0.65,4.15,-0.65]]},
   "bakery": {"window":[[1.25,1.25,1.4,0,1], [-1.55,1.35,1.41,0,1], [-2.36,1.45,0,-1,0], [2.36,1.45,0,1,0]],"door":[[-0.2,0.3,1.42]],"chimney":[[1.5,4.45,-0.5]]},
   "coop": {"window":[[0.72,1.17,-0.015,0,1]],"door":[[0,0,0.775]]},
+  "cow_barn": {"window":[[-1.65,1.275,1.56,0,1], [1.65,1.275,1.56,0,1]],"door":[[0,0.2,1.57]]},
   "feed_mill_sails": {"hub":[[0,0,0]]},
   "lamp": {"light":[[0,2.33,0]]},
   "door_lantern": {"light":[[0,0.39,0.3]]},

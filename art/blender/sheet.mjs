@@ -7,6 +7,7 @@
 // Examples:
 //   node art/blender/sheet.mjs sheet.png farm-kit decor
 //   node art/blender/sheet.mjs crops.png "farm-kit:^crop_" --cols 6 --cell 2.4
+//   node art/blender/sheet.mjs style.png "town:^house_gable$@w5.6" "nature:^tree_apple$@w3.4" --game   (game sizes and camera yaw)
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 import { resolve, dirname, extname, join } from 'node:path';
@@ -16,7 +17,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const args = process.argv.slice(2), out = args.shift();
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
 const cols = +opt('--cols', 8), cell = +opt('--cell', 6), [W, H] = opt('--size', '1800x1200').split('x').map(Number), night = args.includes('--night');
-const kits = args.filter(a => !a.startsWith('--')).map(a => { const [kit, filter] = a.split(':'); return { kit, filter: filter ?? '' }; });
+const game = args.includes('--game');
+const kits = args.filter(a => !a.startsWith('--')).map(a => {
+  const [spec, size] = a.split('@'), [kit, filter] = spec.split(':');
+  const fit = !size ? { scale: 1 } : size[0] === 'w' ? { width: +size.slice(1) } : { height: +size.slice(1) };
+  return { kit, filter: filter ?? '', fit };
+});
 const TYPES = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.glb': 'model/gltf-binary', '.html': 'text/html' };
 const page_ = `<!doctype html><html><head><style>body{margin:0;background:#86c55e;font:600 13px system-ui}#l div{position:absolute;transform:translate(-50%,0);
 color:#1d2a12;background:#fffbe9cc;border-radius:6px;padding:1px 5px;white-space:nowrap}</style>
@@ -29,19 +35,20 @@ const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true
 const scene = new THREE.Scene(); scene.background = new THREE.Color(${night ? "'#0b1530'" : "'#9fd3f0'"}); addLights(scene);
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000).rotateX(-Math.PI / 2), new THREE.MeshToonMaterial({ color: '#7cc95a' })); scene.add(ground);
 const items = [];
-for (const { kit, filter } of ${JSON.stringify(kits)}) {
+for (const { kit, filter, fit } of ${JSON.stringify(kits)}) {
   const k = await loadKit(kit), re = new RegExp(filter);
-  for (const name of Object.keys(k)) if (re.test(name)) items.push([kit, name, tiers(k, name, { scale: 1 }).geo]);
+  for (const name of Object.keys(k)) if (re.test(name)) items.push([kit, name, tiers(k, name, fit).geo]);
 }
 const C = ${cell}, n = ${cols}, rows = Math.ceil(items.length / n);
 items.forEach(([kit, name, geo], i) => {
-  const m = new THREE.Mesh(geo, toon()); m.position.set((i % n - (n - 1) / 2) * C, 0, (Math.floor(i / n) - (rows - 1) / 2) * C); scene.add(m);
+  const gx = (i % n - (n - 1) / 2) * C, gz = (Math.floor(i / n) - (rows - 1) / 2) * C, yw = ${game ? 'Math.PI / 4' : 0};
+  const m = new THREE.Mesh(geo, toon()); m.position.set(gx * Math.cos(yw) + gz * Math.sin(yw), 0, -gx * Math.sin(yw) + gz * Math.cos(yw)); scene.add(m);
   m.userData.label = name + ' ' + (geo.index ? geo.index.count : geo.attributes.position.count) / 3;
 });
 const span = Math.max(n * C * 1.05, rows * C * 1.5), aspect = ${W} / ${H};
 const cam = new THREE.OrthographicCamera(-span / 2, span / 2, span / 2 / aspect, -span / 2 / aspect, 1, 2000);
-const yaw = ${args.includes('--front') ? 0 : 'Math.PI / 4'} * 0, pitch = 0.95;
-cam.position.set(0, Math.sin(pitch) * 300, Math.cos(pitch) * 300); cam.lookAt(0, 0, 0); cam.zoom = 1; cam.updateProjectionMatrix();
+const yaw = ${game ? 'Math.PI / 4' : 0}, pitch = 0.95;
+cam.position.set(Math.sin(yaw) * Math.cos(pitch) * 300, Math.sin(pitch) * 300, Math.cos(yaw) * Math.cos(pitch) * 300); cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
 r.render(scene, cam);
 const l = document.getElementById('l');
 for (const o of scene.children) if (o.userData.label) { const v = o.position.clone().project(cam); const d = document.createElement('div'); d.textContent = o.userData.label;

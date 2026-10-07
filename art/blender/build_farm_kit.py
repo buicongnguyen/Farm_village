@@ -31,7 +31,7 @@ for n, c in {
         'paper': '#FFF6D8', 'pink': '#FF7FB5', 'sky': '#35B6F2', 'mint': '#5EDFB0', 'sun': '#FFC83A', 'gold': '#F5B21E',
         'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
         # crops
-        'wheat': '#F5C242', 'wheatl': '#FFE07A', 'wheatd': '#D9A02E', 'wstalk': '#E0BA48', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
+        'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
         'leaf': '#4FBF3A', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
         'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
@@ -424,7 +424,56 @@ def coop():
         p.append(ball('grain', .05, -.4 + i * .17, .45 + (i % 2) * .2, .01, 'hay', sub=0, sc=(1, 1, .4)))
     return p, A
 
-for name, gen in (('feed_mill', feed_mill), ('bakery', bakery), ('coop', coop)):
+def cow_barn():
+    """3 x 2 cells: a red gambrel-roofed barn with white trim, X-braced doors, a hay loft and a trough."""
+    p, A = [], {'window': []}
+    W, D, H = 4.4, 2.9, 1.9
+    p.append(bx('base', W + .24, D + .24, .2, 0, 0, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .2, 'barn', bev=.05, seg=2))
+    for i in range(11):   # vertical boards on the front
+        p.append(bx('board', .05, .04, H - .1, -W / 2 + .2 + i * (W - .4) / 10, D / 2 + .02, .25, 'barnd', bev=0))
+    for x in (-W / 2, W / 2):
+        p.append(bx('corner', .14, D + .08, H, x, 0, .2, 'white', bev=.03))
+    p.append(bx('eave', W + .1, D + .1, .1, 0, 0, H + .15, 'white', bev=.02))
+    # gambrel roof: steep lower slopes and a shallow upper pair, ridge along x
+    z0, hd = H + .25, D / 2 + .25
+    for side in (-1, 1):
+        lo = box('roofl', (W + .5, 1.15, .12), (0, -side * (hd - .38), z0 + .52), C['roofd'], bev=.03, seg=1, rot=(side * 1.05, 0, 0))
+        up = box('roofu', (W + .5, 1.05, .12), (0, -side * .45, z0 + 1.2), C['roof'], bev=.03, seg=1, rot=(side * .42, 0, 0))
+        p += [lo, up]
+    p.append(cl('ridge', .08, W + .6, 0, 0, 0, 'white', verts=6, rot=(0, math.pi / 2, 0)))
+    p[-1].location = (0, 0, z0 + 1.4)
+    gable = [(-hd + .2, 0), (hd - .2, 0), (hd - .62, .95), (0, 1.38), (-hd + .62, .95)]
+    for s_ in (-1, 1):
+        p.append(extrude_outline('gend', gable, .1, (s_ * (W / 2 - .02), 0, z0 - .05), C['barn'], rot=(0, 0, math.pi / 2), bev=.01))
+    # front gable trim and hay loft (the front is +y on the plan; the gable faces the sides, so the loft sits on the long front wall's dormer)
+    p += [bx('dormer', 1.2, .8, 1.0, 0, D / 2 - .1, H + .1, 'barn', bev=.03), bx('dormtrim', 1.3, .85, .08, 0, D / 2 - .1, H + 1.1, 'white', bev=.02),
+          extrude_outline('dormroof', [(-.8, 0), (.8, 0), (0, .55)], 1.0, (0, -(D / 2 - .2), H + 1.15), C['roof'], bev=.02),
+          bx('loft', .7, .06, .62, 0, D / 2 + .3, H + .28, 'wooddd', bev=.02), bx('loftframe', .84, .05, .76, 0, D / 2 + .29, H + .21, 'white', bev=.02)]
+    for k in range(3):
+        p.append(ball('hay', .16, -.18 + k * .18, D / 2 + .36, H + .3 + (k % 2) * .06, 'hay', sub=1, sc=(1.2, .7, .8)))
+    p.append(bx('pulley', .08, .5, .08, 0, D / 2 + .5, H + 1.02, 'woodd', bev=0))
+    # double doors with white X braces
+    for s_ in (-1, 1):
+        x = s_ * .55
+        p += [bx('door', 1.05, .08, 1.5, x, D / 2 + .05, .2, 'barnd', bev=.02), bx('dtrim', 1.1, .06, .1, x, D / 2 + .1, 1.65, 'white', bev=.01),
+              bx('dtrim', 1.1, .06, .1, x, D / 2 + .1, .2, 'white', bev=.01), bx('dtrimv', .1, .06, 1.5, x + s_ * .5, D / 2 + .1, .2, 'white', bev=.01)]
+        for r in (.95, -.95):
+            o = box('brace', (.08, .05, 1.65), (x, -(D / 2 + .11), .95), C['white'], bev=.01, seg=1, rot=(0, r * .58, 0)); p.append(o)
+    A['door'] = [(0, D / 2 + .12, .2)]
+    for x in (-1.65, 1.65):
+        wp, c = window(x, D / 2 + .02, 1.05, .5, .45, 'front', shutters='white'); p += wp; A['window'].append(c)
+    # cupola with a weather vane
+    p += [bx('cup', .5, .5, .45, 1.1, 0, z0 + 1.38, 'white', bev=.03), extrude_outline('cuproof', [(-.36, 0), (.36, 0), (0, .3)], .66, (1.1, 0, z0 + 1.83), C['roof'], bev=.02),
+          cl('vane', .02, .5, 1.1, 0, z0 + 2.1, 'iron', verts=4), bx('arrow', .45, .03, .08, 1.1, 0, z0 + 2.45, 'iron', bev=0)]
+    # trough and a round bale beside it
+    p += [bx('trough', 1.1, .45, .35, -1.45, D / 2 + .55, 0, 'wood', bev=.04), bx('water', 1.0, .36, .04, -1.45, D / 2 + .55, .3, 'water', bev=0),
+          cl('bale', .38, .55, 1.75, D / 2 + .55, .38, 'hay', verts=14, rot=(0, math.pi / 2, 0)), ]
+    p[-1].location = (1.75, -(D / 2 + .55), .38)
+    p.append(cl('baleband', .39, .06, 0, 0, 0, 'twine' if 'twine' in C else 'redd', verts=14, rot=(0, math.pi / 2, 0))); p[-1].location = (1.75, -(D / 2 + .55), .38)
+    return p, A
+
+for name, gen in (('feed_mill', feed_mill), ('bakery', bakery), ('coop', coop), ('cow_barn', cow_barn)):
     parts, A = gen()
     piece(name, parts)
     anchors[name] = A

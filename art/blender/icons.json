@@ -130,8 +130,8 @@
  },
  {
   "id": "cow_barn",
-  "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
-  "root": "barn"
+  "src": "raw:farm-kit",
+  "root": "cow_barn"
  },
  {
   "id": "feed_mill",

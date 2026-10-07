@@ -1,24 +1,160 @@
-{"out": "public/assets/models/nature.glb", "pieces": [
- {"src": "3D_game_scene/public/models/lilypads.glb", "name": "lilypads", "boost": 1.15},
- {"src": "3D_game_scene/public/models/reeds.glb", "name": "reeds", "boost": 1.15, "mid": 0.4},
- {"src": "3D_game_scene/public/models/stepping-stone.glb", "name": "stepping_stone_a", "boost": 1.05},
- {"src": "3D_game_scene/public/models/stepping-stone-b.glb", "name": "stepping_stone_b", "boost": 1.05},
- {"src": "3D_game_scene/public/models/rock-a.glb", "name": "rock_a", "boost": 1.1, "mid": 0.3},
- {"src": "3D_game_scene/public/models/rock-b.glb", "name": "rock_b", "boost": 1.1, "mid": 0.3},
- {"src": "3D_game_scene/public/models/rock-c.glb", "name": "rock_c", "boost": 1.1, "mid": 0.3},
- {"src": "3D_game_scene/public/models/flowers-a.glb", "name": "flowers_a", "boost": 1.2, "mid": 0.35},
- {"src": "3D_game_scene/public/models/flowers-b.glb", "name": "flowers_b", "boost": 1.2, "mid": 0.35},
- {"src": "3D_game_scene/public/models/hydrangea.glb", "name": "hydrangea", "boost": 1.15, "mid": 0.3},
- {"src": "3D_game_scene/public/models/bush-a.glb", "name": "bush_a", "boost": 1.2, "mid": 0.3},
- {"src": "3D_game_scene/public/models/bush-b.glb", "name": "bush_b", "boost": 1.2, "mid": 0.3},
- {"src": "3D_game_scene/public/models/grass-tuft.glb", "name": "grass_tuft", "boost": 1.2},
- {"src": "3D_game_scene/public/models/tree-broadleaf-a.glb", "name": "tree_broadleaf_a", "boost": 1.2, "mid": "3D_game_scene/public/models/tree-broadleaf-a-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-broadleaf-b.glb", "name": "tree_broadleaf_b", "boost": 1.2, "mid": "3D_game_scene/public/models/tree-broadleaf-b-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-maple.glb", "name": "tree_maple", "boost": 1.15, "mid": "3D_game_scene/public/models/tree-maple-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-sakura.glb", "name": "tree_sakura", "boost": 1.1, "mid": "3D_game_scene/public/models/tree-sakura-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-chestnut.glb", "name": "tree_chestnut", "boost": 1.15, "mid": "3D_game_scene/public/models/tree-chestnut-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-peach.glb", "name": "tree_peach", "boost": 1.2, "mid": 0.3},
- {"src": "3D_game_scene/public/models/tree-peach.glb", "name": "tree_peach_bare", "boost": 1.2, "drop": ["Fruit"], "mid": "3D_game_scene/public/models/tree-peach-lod.glb"},
- {"src": "3D_game_scene/public/models/tree-peach.glb", "name": "tree_apple", "boost": 1.2, "recolor": {"Peach": "#E8333A", "Leaves": "#3F9E2A"}, "mid": 0.3},
- {"src": "3D_game_scene/public/models/tree-peach.glb", "name": "tree_apple_bare", "boost": 1.2, "drop": ["Fruit"], "recolor": {"Leaves": "#3F9E2A"}, "mid": 0.3}
-]}
+{
+ "out": "public/assets/models/nature.glb",
+ "pieces": [
+  {
+   "src": "3D_game_scene/public/models/lilypads.glb",
+   "name": "lilypads",
+   "boost": 1.4,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/reeds.glb",
+   "name": "reeds",
+   "boost": 1.4,
+   "mid": 0.4,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/stepping-stone.glb",
+   "name": "stepping_stone_a",
+   "boost": 1.05
+  },
+  {
+   "src": "3D_game_scene/public/models/stepping-stone-b.glb",
+   "name": "stepping_stone_b",
+   "boost": 1.05
+  },
+  {
+   "src": "3D_game_scene/public/models/rock-a.glb",
+   "name": "rock_a",
+   "boost": 1.1,
+   "mid": 0.3
+  },
+  {
+   "src": "3D_game_scene/public/models/rock-b.glb",
+   "name": "rock_b",
+   "boost": 1.1,
+   "mid": 0.3
+  },
+  {
+   "src": "3D_game_scene/public/models/rock-c.glb",
+   "name": "rock_c",
+   "boost": 1.1,
+   "mid": 0.3
+  },
+  {
+   "src": "3D_game_scene/public/models/flowers-a.glb",
+   "name": "flowers_a",
+   "boost": 1.2,
+   "mid": 0.35
+  },
+  {
+   "src": "3D_game_scene/public/models/flowers-b.glb",
+   "name": "flowers_b",
+   "boost": 1.2,
+   "mid": 0.35
+  },
+  {
+   "src": "3D_game_scene/public/models/hydrangea.glb",
+   "name": "hydrangea",
+   "boost": 1.4,
+   "mid": 0.3,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/bush-a.glb",
+   "name": "bush_a",
+   "boost": 1.4,
+   "mid": 0.3,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/bush-b.glb",
+   "name": "bush_b",
+   "boost": 1.4,
+   "mid": 0.3,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/grass-tuft.glb",
+   "name": "grass_tuft",
+   "boost": 1.4,
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-broadleaf-a.glb",
+   "name": "tree_broadleaf_a",
+   "boost": 1.4,
+   "mid": "3D_game_scene/public/models/tree-broadleaf-a-lod.glb",
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-broadleaf-b.glb",
+   "name": "tree_broadleaf_b",
+   "boost": 1.4,
+   "mid": "3D_game_scene/public/models/tree-broadleaf-b-lod.glb",
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-maple.glb",
+   "name": "tree_maple",
+   "boost": 1.4,
+   "mid": "3D_game_scene/public/models/tree-maple-lod.glb",
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-sakura.glb",
+   "name": "tree_sakura",
+   "boost": 1.1,
+   "mid": "3D_game_scene/public/models/tree-sakura-lod.glb"
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-chestnut.glb",
+   "name": "tree_chestnut",
+   "boost": 1.4,
+   "mid": "3D_game_scene/public/models/tree-chestnut-lod.glb",
+   "gain": 1.18
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-peach.glb",
+   "name": "tree_peach",
+   "boost": 1.35,
+   "mid": 0.3,
+   "gain": 1.15
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-peach.glb",
+   "name": "tree_peach_bare",
+   "boost": 1.35,
+   "drop": [
+    "Fruit"
+   ],
+   "mid": "3D_game_scene/public/models/tree-peach-lod.glb",
+   "gain": 1.15
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-peach.glb",
+   "name": "tree_apple",
+   "boost": 1.35,
+   "recolor": {
+    "Peach": "#E8333A",
+    "Leaves": "#3F9E2A"
+   },
+   "mid": 0.3,
+   "gain": 1.15
+  },
+  {
+   "src": "3D_game_scene/public/models/tree-peach.glb",
+   "name": "tree_apple_bare",
+   "boost": 1.35,
+   "drop": [
+    "Fruit"
+   ],
+   "recolor": {
+    "Leaves": "#3F9E2A"
+   },
+   "mid": 0.3,
+   "gain": 1.15
+  }
+ ]
+}
