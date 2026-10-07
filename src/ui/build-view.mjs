@@ -14,7 +14,7 @@ import { charmPreview } from '../core/homes.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { iconHtml, glyph, coinMark } from './icon.mjs';
 
-const TOOLS = [{ id: 'clear', icon: 'tool:clear', name: 'Clear' }, { id: 'move', icon: 'tool:move', name: 'Move' }, { id: 'store', icon: 'tool:store', name: 'Store' }];
+const TOOLS = [{ id: 'clear', icon: 'tool:clear', name: 'Clear' }, { id: 'move', icon: 'tool:move', name: 'Move' }, { id: 'store', icon: 'tool:store', name: 'Store' }, { id: 'demolish', icon: 'demolish', name: 'Demolish' }];
 const QUICK = kind => BUILDINGS[kind].edge || (BUILDINGS[kind].size[0] === 1 && BUILDINGS[kind].size[1] === 1);
 
 export class BuildView {
@@ -113,7 +113,7 @@ export class BuildView {
     const s = this.game.s, placing = this.mode === 'place' || this.mode === 'moving';
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
-      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage')
+      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building to take it down for part of its price')
       : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(priceOf(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, c.params) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
@@ -134,6 +134,7 @@ export class BuildView {
     if (!cell) return;
     const s = this.game.s;
     if (this.mode === 'clear') { this.game.do('clear', { x: cell.x, z: cell.z }); return; }
+    if (this.mode === 'demolish') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('demolish', { id }); else this.hud.refuse('Nothing to demolish'); return; }
     if (this.mode === 'store') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('store', { id }); else this.hud.refuse('Nothing to store'); return; }
     if (this.mode === 'move') {
       const id = occupant(s, cell.x, cell.z); if (!id) { this.hud.refuse('Nothing to move'); return; }

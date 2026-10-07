@@ -8,6 +8,7 @@ import { rng, hash } from './rng.mjs';
 import * as barn from './barn.mjs';
 import { animalCount } from './animals.mjs';
 import { neighbourHelp } from './cart.mjs';
+import { neighbourFix } from './condition.mjs';
 
 const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); };
 /** Plan a neighbour's day: visit times between 08:00 and 21:00 and the trade offer. Same day + same save = same plan. */
@@ -78,6 +79,7 @@ export function tickNeighbours(ctx) {
       const said = commentFor(s, id, n.total), crate = neighbourHelp(ctx, id);
       // exactly one neighbourVisit per visit; `comment` is the English template for t(comment, params)
       ctx.emit('neighbourVisit', { id, helped: growing.length, comment: said.text, params: said.params, visit: n.total, crate });
+      neighbourFix(ctx, id, n.total);   // sometimes they mend something too (a bonus, never a duty)
     }
   }
 }

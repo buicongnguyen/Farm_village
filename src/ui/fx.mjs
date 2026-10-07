@@ -33,7 +33,7 @@ export class Fx {
       else if (e.type === 'produced') this.add(goods, e.good, this.screenOf(e.building), e.count);
       else if (e.type === 'orderFilled' || e.type === 'rent' || e.type === 'stallSold' || e.type === 'coins') coins += e.coins ?? 0;
       else if (e.type === 'giftClaimed' && e.coins) coins += e.coins;
-      else if (e.type === 'levelUp' || e.type === 'projectDone' || e.type === 'familyArrived') this.confetti(e.type === 'levelUp' ? 26 : 40);
+      else if (e.type === 'levelUp' || e.type === 'projectDone' || e.type === 'familyArrived' || (e.type === 'repaired' && e.broken)) this.confetti(e.type === 'levelUp' ? 26 : 40);
     }
     if (this.reduced) return;
     let delay = 0;

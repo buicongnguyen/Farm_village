@@ -22,6 +22,9 @@ const giftText = g => g.coins ? `${coinMark()} ${num(g.coins)}` : g.goods ? Obje
 const milestone = at => CHARM_MILESTONES.find(m => m.at === at);
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
+  repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
+  neighbourRepair: e => `${glyph('wrench', 'g')} ${t('{name} mended the {thing}!', { name: t(NEIGHBOURS.find(n => n.id === e.id)?.name ?? ''), thing: t(BUILDINGS[e.kind]?.name ?? '') })}`,
+  houseUpgraded: e => `${glyph('home', 'g')} ${t('The farmhouse is now level {level}', { level: e.level })}`,
   projectDone: e => `${glyph('projects', 'g')} ${t('Project done: {name}', { name: t(e.name) })}`,
   familyArrived: e => `${iconHtml('cottage', '', 'mini')} ${t('{family} moved in', { family: t(FAMILIES.find(f => f.id === e.family)?.name ?? '') })}`,
   neighbourVisit: e => `${faceHtml(e.id, 'mini-face')} ${t('{name} visited and helped your crops', { name: neighbour(e.id) })}`,

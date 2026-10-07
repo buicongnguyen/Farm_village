@@ -445,6 +445,15 @@ export const VI = {
   'This one is part of the story': 'Đơn này thuộc câu chuyện', 'No trade today': 'Hôm nay không có trao đổi',
   'Come back tomorrow for a new gift': 'Mai quay lại nhận quà mới nhé', 'Build a roadside stall first': 'Hãy xây sạp ven đường trước',
   'The stall is full': 'Sạp đã đầy', 'Nothing sold yet': 'Chưa bán được gì',
+  // ── v0.3: repairs, wear, demolishing, roads ──
+  'Worn': 'Sờn cũ', 'Shabby': 'Xuống cấp', 'Broken': 'Hỏng', 'Fine': 'Tốt', 'Being repaired': 'Đang sửa', 'Open': 'Mở', 'Farmhouse': 'Nhà chính', 'Demolish': 'Phá bỏ',
+  'Repair started: {name}': 'Bắt đầu sửa: {name}', 'Repaired: {name}': 'Đã sửa xong: {name}', '{name} mended the {thing}!': '{name} đã sửa giúp {thing}!',
+  'Taken down: {name} (+{coins})': 'Đã dỡ: {name} (+{coins})', 'The farmhouse is now level {level}': 'Nhà chính nay đã lên cấp {level}',
+  'Tap a building to take it down for part of its price': 'Chạm vào công trình để dỡ bỏ, được hoàn lại một phần tiền',
+  'It is being repaired': 'Đang được sửa', 'It needs repairs first': 'Cần sửa chữa trước', 'Nothing to repair': 'Không có gì cần sửa',
+  'Nothing to demolish': 'Không có gì để phá bỏ', 'Repair the farmhouse first': 'Hãy sửa ngôi nhà chính trước',
+  'Village buildings can be moved, not demolished': 'Công trình của làng chỉ di chuyển được, không phá bỏ được',
+  'The brook road': 'Đường bên suối', 'Village street': 'Phố làng', 'The east road': 'Đường phía đông', 'The north lane': 'Lối phía bắc',
   'Nothing to undo': 'Không có gì để hoàn tác', 'Something stands on it now': 'Đã có vật đặt lên trên', 'It is in use now: move it instead': 'Đang được dùng: hãy di chuyển thay vì hoàn tác',
   // heart scenes for Ada, Cora, Mai and Gus (the fixer pass)
   "I found Ellis's old hat in the shed. It still smells of pipe smoke and brook water.": 'Bà tìm thấy cái mũ cũ của ông Ellis trong nhà kho. Vẫn còn mùi thuốc tẩu và nước suối.',

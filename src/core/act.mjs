@@ -15,14 +15,15 @@ import { actions as stall, tickStall } from './stall.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
+import { actions as condition, tickCondition } from './condition.mjs';
 import { actions as testmode } from './testmode.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { ORDERS, STALL, FAMILY_ARRIVAL_MS } from '../content/economy.mjs';
+import { ORDERS, STALL, FAMILY_ARRIVAL_MS, REPAIR } from '../content/economy.mjs';
 
 export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall,
-  ...trees, ...bonds, ...cart, ...testmode };
+  ...trees, ...bonds, ...cart, ...condition, ...testmode };
 
 function context(s, now) {
   const events = [];
@@ -51,13 +52,13 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); advance(ctx); tickCart(ctx); tickBonds(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { events: ctx.events };
 }
 /** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */
-const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter']);
+const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter', 'repaired', 'neighbourRepair', 'houseUpgraded']);
 // "First times" for the album (DESIGN 13): the moment each first happened.
 const FIRSTS = { harvested: 'harvest', collected: 'egg', orderFilled: 'order', familyArrived: 'family', traded: 'trade', produced: 'product',
   picked: 'fruit', gifted: 'gift', wishGranted: 'wish', cartSent: 'cart', heartScene: 'heartScene', letter: 'letter' };
@@ -74,6 +75,8 @@ function guardClock(s, now) {
   for (const b of Object.values(s.beds)) b.doneAt = clampDone(b.doneAt, now, CROPS[b.crop].growMs);
   for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null) a.doneAt = clampDone(a.doneAt, now, ANIMALS[a.kind].everyMs);
   for (const q of Object.values(s.production)) { let t = now; for (const j of q.queue) { j.doneAt = clampDone(j.doneAt, Math.max(t, now), RECIPES[j.recipe].timeMs); t = j.doneAt; } }
+  for (const r of Object.values(s.repairing ?? {})) r.doneAt = Math.min(r.doneAt, now + REPAIR.broken.ms);
+  if (s.wearAt) s.wearAt = Math.min(s.wearAt, now);
   // waits that are not stored as a duration: never longer than their full length after a clock moved back
   if (s.orders?.pending) s.orders.pending = s.orders.pending.map(at => Math.min(at, now + ORDERS.discardMs));
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);

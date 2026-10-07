@@ -59,7 +59,7 @@ await check('play: test helpers, fruit trees, gifts, wishes, the cart and the st
   await page.evaluate(() => window.__fvSave?.());
   await page.reload(); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
   const back = await page.evaluate(() => ({ v: farm.state().version, trees: Object.keys(farm.state().trees).length, cart: farm.state().cart?.n, flowers: Object.values(farm.state().placed).filter(q => q.kind === 'garden_flower').length }));
-  expect(back.v === 2 && back.trees === 2 && back.cart === 2 && back.flowers === day2.flowers, `after reload: ${JSON.stringify(back)}`);
+  expect(back.v === 3 && back.trees === 2 && back.cart === 2 && back.flowers === day2.flowers, `after reload: ${JSON.stringify(back)}`);
   await page.evaluate(() => { farm.skipIntro(); farm.focus(24, 58, 36); }); await page.waitForTimeout(500); await shot(page, 'play-homestead');
   const info = await page.evaluate(() => farm.measure(800));
   expect(info.draws <= 120 && info.triangles <= 300000, `budget: ${info.draws} draws, ${info.triangles} triangles`);

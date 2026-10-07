@@ -1,9 +1,10 @@
 // Rental cottages, families and rent, and charm (DESIGN 10 and 12).
 import { BUILDINGS } from '../content/buildings.mjs';
 import { FAMILIES } from '../content/people.mjs';
-import { RENT, FAMILY_ARRIVAL_MS, HOUR } from '../content/economy.mjs';
+import { RENT, FAMILY_ARRIVAL_MS, HOUR, WEAR } from '../content/economy.mjs';
 import { isBrook } from '../content/world.mjs';
 import { cellsOf, doorCell, cellType, reachesRoad } from './grid.mjs';
+import { levelOf } from './working.mjs';
 
 const CHARM_RADIUS = 3;
 /** A cottage's charm (DESIGN 12): decorations within 3 cells, a path at the door, the brook; production and pens cost a little. */
@@ -24,6 +25,7 @@ export function charmOf(s, id) {
   for (let z = z0; z <= z1 && !brook; z++) for (let x = x0; x <= x1; x++) if (isBrook(x, z)) { brook = true; break; }
   if (brook) charm += 3;
   const door = doorCell(p.kind, p.x, p.z, p.rot); if (door && cellType(s, door[0], door[1]) === 'path' && reachesRoad(s, door[0], door[1])) charm += 2;
+  charm -= Math.min(2, levelOf(s, id)) * WEAR.charm;   // a worn cottage is a little less charming
   return Math.max(0, charm);
 }
 /** Which cottages a charm item at (x, z) would help, and by how much (the build-mode charm preview, DESIGN 12). */
@@ -54,7 +56,8 @@ export function needsOf(s, id) {
 }
 export function rentPerHour(s, id) {
   const h = s.homes[id]; if (!h?.family) return 0;
-  return RENT.perHour[h.level] * (1 + RENT.charmBonus(charmOf(s, id))) * (needsOf(s, id).length ? 1 - RENT.unmetNeed : 1);
+  const wear = 1 - WEAR.rent * Math.min(2, levelOf(s, id));   // worn and shabby cottages pay a few percent less
+  return RENT.perHour[h.level] * (1 + RENT.charmBonus(charmOf(s, id))) * wear * (needsOf(s, id).length ? 1 - RENT.unmetNeed : 1);
 }
 /** Rent waiting in the mailbox (capped at RENT.capHours per cottage). */
 export function rentWaiting(s, now) {

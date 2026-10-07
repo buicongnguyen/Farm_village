@@ -1,6 +1,6 @@
 // Build-mode actions: place, move, store, clear cells, fences, land parcels and the barn upgrade (DESIGN 4).
 import { BUILDINGS } from '../content/buildings.mjs';
-import { CLEAR, XP, PARCELS, BARN } from '../content/economy.mjs';
+import { CLEAR, XP, PARCELS, BARN, DEMOLISH } from '../content/economy.mjs';
 import { N, FARM, PARCEL } from '../content/world.mjs';
 import { CELL_TYPES, overgrow } from './state.mjs';
 import * as grid from './grid.mjs';
@@ -49,9 +49,11 @@ export const actions = {
     if (!spot(x, z) || ![0, 1, 2, 3].includes(rot)) return ctx.fail('Outside your land');
     const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlace(s, kind, x, z, rot); if (!can.ok) return ctx.fail(can.reason, can.params);
-    const fromStore = (s.stored?.[kind] ?? 0) > 0, price = fromStore ? 0 : priceOf(s, kind);
+    // a thing taken away earlier (stored) comes back free; one demolished earlier costs half (a rebuild credit)
+    const fromStore = (s.stored?.[kind] ?? 0) > 0, fromRebuild = !fromStore && (s.rebuild?.[kind] ?? 0) > 0;
+    const price = fromStore ? 0 : fromRebuild ? Math.round(priceOf(s, kind) * DEMOLISH.rebuild) : priceOf(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; if (fromStore) s.stored[kind]--;
+    s.coins -= price; if (fromStore) s.stored[kind]--; if (fromRebuild) s.rebuild[kind]--;
     if (def.cell) { setCell(s, x, z, def.cell); if (kind === 'path') s.stats.paths++; count(s, kind, 1); remember(s, { type: 'cell', kind, x, z, price }); ctx.emit('cellChanged', { x, z }); advance(ctx); return { price }; }
     const id = `p${s.nextId++}`;
     s.placed[id] = { kind, x, z, rot };
@@ -63,7 +65,7 @@ export const actions = {
     // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.
     const built = (s.stats.built ??= {}); let xp = 0;
     if ((def.cost || def.project) && s.counts[kind] > (built[kind] ?? 0)) { built[kind] = s.counts[kind]; xp = XP.build; gainXp(ctx, xp); }
-    remember(s, { type: 'place', kind, id, price, fromStore, xp });
+    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp });
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
     return { id, price };
@@ -101,6 +103,7 @@ export const actions = {
       for (const k of CONTENTS) delete s[k]?.[e.id];
       delete s.placed[e.id]; count(s, p.kind, -1); grid.touch(s);
       if (e.fromStore) s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
+      if (e.fromRebuild) (s.rebuild ??= {})[p.kind] = (s.rebuild[p.kind] ?? 0) + 1;
       if (e.xp) { s.xp = Math.max(xpFor(s.level), s.xp - e.xp); s.stats.built[p.kind] = Math.max(0, (s.stats.built?.[p.kind] ?? 1) - 1); }   // levels never go down
       ctx.emit('stored', { id: e.id, kind: p.kind });
     }

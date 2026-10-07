@@ -8,7 +8,7 @@ const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/', SHOTS = process.e
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
 const results = [];
-async function open(device = PHONE, { intro = false, query = '', before } = {}) {
+async function open(device = PHONE, { intro = false, query = '?new', before } = {}) {   // ?new in a test build: the empty field (a fresh public game opens on the restored village)
   const ctx = await browser.newContext(device), page = await ctx.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });

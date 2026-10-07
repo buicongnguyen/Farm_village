@@ -57,6 +57,12 @@ down, so the game should be about **restoring what is already there**, not start
 - **Chores:** Pip collects ready eggs, June waters or replants a few beds. Children help a little while you are away.
   This is gentle: a few items, never the whole farm.
 - They appear in the world (already drawn by the cast package) and speak on events.
+- **Varied people from the reference game** (the user's request): Willowmere's hero bodies (man and woman at tiny, teen, tall
+  and grown sizes, `hero-*.glb`), its 13 outfits (`wm-garments.glb`) and 4 kids' outfits (`wm-kids.glb`), moved with its
+  part-based walk cycle (`walk-cycle.mjs`), so each family member has their own shape and clothes instead of sharing three
+  bodies. Provenance goes in `docs/ASSETS.md`.
+- **More item art from the reference game**: its crop icons (28), fish icons (20) and item icons (172) for the extra crops and
+  the fishing planned for v0.2.
 
 ### P5 — Money, pace and the first session (D9)
 - Starting money (about 500 coins) and starter goods; first-week daily gifts are larger.
@@ -99,4 +105,5 @@ then P7. Each package is committed when its tests pass.
 | Date | What happened | Commit |
 |---|---|---|
 | 2026-10-07 | The user played v0.1 and asked for a pre-built, restore-style start, gentle decay, a market with transport, starting money, a neater phone UI, a household of three with helping children, and neighbours who sometimes fix things. Plan written. | (this commit) |
+| 2026-10-07 | The user asked to reuse the reference game's people shapes and item art: added to P4 (varied people) and the icon list. P1/P2 rules started (start layout data, road ring, repair/wear numbers). | (next commit) |
 | 2026-10-07 | Before this plan: the AAA pass (v0.2: art, world, juice, cast, story, play and ui packages) was merged and deployed. | a57b43d |

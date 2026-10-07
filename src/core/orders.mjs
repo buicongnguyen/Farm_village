@@ -8,11 +8,12 @@ import { gainXp } from './levels.mjs';
 import { familiesIn } from './projects.mjs';
 import { animalCount } from './animals.mjs';
 import { addHearts } from './bonds.mjs';
+import { outOfOrder } from './working.mjs';
 
 export const slots = s => ORDERS.slots(s.level);
 /** Goods an order may ask for: things the player can make right now (fruit only once a tree of that kind is planted). */
 export function orderable(s) {
-  const has = kind => (s.counts[kind] ?? 0) > 0, fruitOk = id => has(FRUITS[id].tree);
+  const has = kind => (s.counts[kind] ?? 0) - outOfOrder(s, kind) > 0, fruitOk = id => has(FRUITS[id].tree);
   return Object.keys(GOODS).filter(id => {
     if (CROPS[id]) return CROPS[id].level <= s.level;
     if (FRUITS[id]) return fruitOk(id);

@@ -12,6 +12,8 @@ import { KIND_MODELS, EARLY, modelFor, sizeOf, anchorPoints, ANCHORS } from './k
 import { loadKit, loadKitLater, bake, fit, tiers } from './models.mjs';
 import { toon } from '../kit/toon.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
+import { levelOf, isRepairing } from '../core/working.mjs';
+import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
 const OWN = /^(p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
@@ -77,6 +79,7 @@ export class LandView {
     if (t === 'path') return { color: GROUND_COLORS.path };
     if (t === 'tilled') return { color: GROUND_COLORS.tilled, jitter: 0.02 };
     if (t === 'weeds' || t === 'rock') return { color: GROUND_COLORS.weeds ?? '#86c062' };
+    if (t === 'road') { const seg = roadSegmentAt(x, z); if (seg && levelOf(s, seg.id) >= 3) return { color: '#a98d68', jitter: 0.09 }; }   // a damaged stretch: cracked, patchy earth
     // inside an animal pen the grass is trodden to warm earth in patches (review: 'flat empty grass')
     if (t === 'grass' && this.pens.get(z * N + x)?.worn) return { color: PEN_EARTH, jitter: 0.05 };
     return fixed;
@@ -120,12 +123,36 @@ export class LandView {
     const at = st.doneAt ?? st.readyAt ?? st.queue?.[0]?.doneAt;
     return at == null ? true : at <= now;
   }
+  /**
+   * The worn look of a model (PLAN-v0.3): its colours drift toward dusty brown and darken with the condition (1 worn, 2 shabby,
+   * 3 broken). Made once per model and level, from the registered geometry, and shared by every thing that looks that way.
+   */
+  dusty(name, level) {
+    const key = `${name}@${level}`, b = this.world.batches;
+    if (b.has(key)) return key;
+    const m = b.models.get(name); if (!m) return name;
+    const k = [0, 0.2, 0.38, 0.6][level], dark = [1, 0.97, 0.92, 0.82][level], tone = [0.56, 0.5, 0.42];
+    const tint = g => {
+      if (!g) return g; const c = g.clone(), col = c.attributes.color; if (!col) return c;
+      for (let i = 0; i < col.count; i++) { const grey = (col.getX(i) + col.getY(i) + col.getZ(i)) / 3; col.setXYZ(i, (col.getX(i) * (1 - k) + (grey * 0.6 + tone[0] * 0.4) * k) * dark, (col.getY(i) * (1 - k) + (grey * 0.6 + tone[1] * 0.4) * k) * dark, (col.getZ(i) * (1 - k) + (grey * 0.6 + tone[2] * 0.4) * k) * dark); }
+      col.needsUpdate = true; return c;
+    };
+    b.register(key, { geo: tint(m.geo), mid: m.mid === m.geo ? undefined : tint(m.mid), kind: m.kind, color: m.color });
+    return key;
+  }
+  /** The farmhouse is not a placed thing: it is drawn by the world view and re-drawn here when its condition changes. */
+  drawHouse() {
+    const b = this.world.batches, it = b.items.get('farmhouse'); if (!it) return;
+    this.houseBase ??= { ...it, model: 'farmhouse' };
+    const lv = levelOf(this.s, 'house'), want = lv > 0 ? this.dusty('farmhouse', lv) : 'farmhouse';
+    if (it.model !== want) b.set('farmhouse', { ...this.houseBase, model: want });
+  }
   /** World position of a placed item's centre. */
   centre(kind, x, z, rot) { const [w, d] = footprint(kind, rot); return { x: (x + w / 2) * CELL, z: (z + d / 2) * CELL }; }
   drawPlaced(id) {
     const p = this.s.placed[id], b = this.world.batches, old = this.pos.get(id);
     if (old) { this.world.ground.markDirty(old.x, old.z); this.pos.delete(id); }
-    b.remove(`sails:${id}`); this.undress(id);
+    b.remove(`sails:${id}`); b.remove(`scaffold:${id}`); this.undress(id);
     if (this.beds.has(id)) { this.rimDirty.add(this.beds.get(id).chunk); this.beds.delete(id); }
     if (!p) { b.remove(id); return; }
     this.pos.set(id, { x: p.x, z: p.z }); this.world.ground.markDirty(p.x, p.z);
@@ -137,8 +164,10 @@ export class LandView {
     }
     const model = this.model(p.kind, id);
     if (!model) return;                                                 // its model is still loading; sync() draws it later
-    const c = this.centre(p.kind, p.x, p.z, p.rot), item = { model, x: c.x, z: c.z, rot: p.rot * Math.PI / 2 };
+    const lv = levelOf(this.s, id), c = this.centre(p.kind, p.x, p.z, p.rot), item = { model: lv > 0 ? this.dusty(model, lv) : model, x: c.x, z: c.z, rot: p.rot * Math.PI / 2 };
     b.set(id, item);
+    // scaffolding against the front of a building while its repair runs
+    if (isRepairing(this.s, id) && b.has('scaffold')) { const [w, d] = footprint(p.kind, p.rot), cs = Math.cos(item.rot), sn = Math.sin(item.rot), ox = -1.2, oz = d * CELL / 2 + 0.3; b.set(`scaffold:${id}`, { model: 'scaffold', x: c.x + ox * cs + oz * sn, z: c.z - ox * sn + oz * cs, rot: item.rot, scale: 0.9 }); }
     if (p.kind === 'feed_mill' && b.has('feed_mill_sails')) {
       const [at] = anchorPoints('feed_mill', 'sails', item), hub = ANCHORS.feed_mill_sails?.hub?.[0] ?? [0, 0, 0];
       if (at) b.set(`sails:${id}`, { model: 'feed_mill_sails', x: at.x, z: at.z, y: at.y - hub[1], rot: item.rot });
@@ -305,7 +334,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins();
+    this.drawRuins(); this.drawHouse();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
@@ -318,6 +347,11 @@ export class LandView {
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
+      else if (e.type === 'repairStarted' || e.type === 'repaired' || e.type === 'worn') {
+        if (this.s.placed[e.id]) this.drawPlaced(e.id);
+        else if (e.id === 'house') this.drawHouse();
+        else if (ROAD_SEGMENTS.some(r => r.id === e.id)) this.world.ground.markAll();
+      } else if (e.type === 'demolished') { this.drawPlaced(e.id); this.refreshPens(); }
       else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }
     if (events.some(e => e.type === 'fenceChanged' || e.type === 'placed' || e.type === 'moved' || e.type === 'stored' || e.type === 'cellChanged')) this.refreshPens();

@@ -41,6 +41,8 @@ export const GLYPHS = {
   cart: svg(`<path d="M5 16h30l-3 15H9z" fill="#d9894a" stroke="${O}" stroke-width="3"/><path d="M8 22h26M7 27h26" stroke="${O}" stroke-width="2"/><circle cx="14" cy="36" r="5" fill="#ffd25a" stroke="${O}" stroke-width="3"/><circle cx="30" cy="36" r="5" fill="#ffd25a" stroke="${O}" stroke-width="3"/><path d="M35 19l8-5" stroke="${O}" stroke-width="3"/>`),
   crate: svg(`<rect x="7" y="12" width="34" height="27" rx="3" fill="#d9894a" stroke="${O}" stroke-width="3"/><path d="M7 21h34M7 30h34" stroke="${O}" stroke-width="2.5"/><path d="M12 12l24 27" stroke="#b3672e" stroke-width="3"/>`),
   star: svg(`<path d="M24 5l5.6 12 13 1.6-9.6 9 2.5 13L24 34.2 12.5 40.6l2.5-13-9.6-9 13-1.6z" fill="#ffd23f" stroke="${O}" stroke-width="3"/>`),
+  wrench: svg(`<path d="M30 6a11 11 0 0 0-9.6 15.4L6.6 35.2a4.4 4.4 0 0 0 6.2 6.2l13.8-13.8A11 11 0 0 0 42 18l-6.6 6.6-6-6L36 12z" fill="#c8d3de" stroke="${O}" stroke-width="3"/>${shine(9, 33, 3, 7)}`),
+  demolish: svg(`<rect x="6" y="9" width="26" height="13" rx="3" fill="#ef7a4c" stroke="${O}" stroke-width="3" transform="rotate(25 19 15)"/><path d="M22 24l15 15" stroke="${O}" stroke-width="10"/><path d="M22 24l15 15" stroke="#d9894a" stroke-width="5"/><path d="M33 38l9 3-3 3z" fill="#ffc93c" stroke="${O}" stroke-width="2"/>`),
   home: svg(`<path d="M6 24L24 9l18 15" fill="#ef5b4c" stroke="${O}" stroke-width="3"/><rect x="11" y="22" width="26" height="19" fill="#fff4dc" stroke="${O}" stroke-width="3"/><rect x="20" y="29" width="8" height="12" fill="#c77d3e" stroke="${O}" stroke-width="2.5"/>`),
 };
 const ALIAS = { coin: 'ui:coin', xp: 'ui:xp', barn: 'ui:barn', orders: 'ui:orders' };

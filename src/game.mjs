@@ -6,7 +6,7 @@ import { act, tick } from './core/act.mjs';
 export class Game {
   constructor(s = null, clock = () => Date.now()) {
     Object.assign(this, { clock, listeners: new Set(), timer: 0 });
-    this.s = s ?? newGame(clock());
+    this.s = s ?? newGame(clock(), undefined, { restore: true });   // a new game opens on the village as it stands
   }
   get now() { return this.clock(); }
   on(f) { this.listeners.add(f); return () => this.listeners.delete(f); }

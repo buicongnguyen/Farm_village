@@ -2,11 +2,13 @@
 import { START } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
+import { applyRestore } from './restore.mjs';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
-export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
+/** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
+export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { restore = false } = {}) {
   const s = {
     version: SAVE_VERSION, createdAt: now, lastSeen: now, seed,
     coins: START.coins, xp: 0, level: 1,
@@ -39,10 +41,15 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
     stored: {},                             // kind → how many are in the storage shed (placing them again is free)
     undo: [],                               // the last build actions, for undo (DESIGN 4.4)
     news: [],                               // the latest notable events for the Today board
+    mode: null,                             // 'restore' for the restored village (wear applies), null for an empty start
+    cond: {},                               // condition by id: { level 0–3, ms } (condition.mjs)
+    repairing: {},                          // broken things being repaired: id → { doneAt }
+    house: null,                            // the farmhouse: { level } in a restored village
+    rebuild: {},                            // kind → rebuild credits (a demolished thing costs half to build again)
     settings: { daylight: 'real', textSize: 1, reducedMotion: false, quality: 'auto', sound: 0.8, music: 0.6 },
   };
   overgrow(s, START_PARCEL);
-  return s;
+  return restore ? applyRestore(s, now) : s;
 }
 /** Scatter weeds and a few rocks over a parcel (new land arrives overgrown; clearing it is the first tutorial). */
 export function overgrow(s, parcel) {
@@ -65,12 +72,14 @@ export function migrate(save) {
   // v1 → v2 (the AAA pass): fruit trees, letters, wishes, the weekly cart, village charm, the streak garden and heart scenes.
   // Hearts already earned stay; a heart scene whose threshold was passed before this version plays on the next heart gained.
   if ((save.version ?? 1) < 2) save.version = 2;
+  // v2 → v3 (restore the village): condition, repairs, the farmhouse and rebuild credits start empty; a farm built before keeps what it built
+  if (save.version < 3) save.version = 3;
   return withDefaults(save);
 }
 /** Fill every field a newer game expects with its default, keeping what the save has. */
 export function withDefaults(s) {
   const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
-  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes']) if (s[k] === undefined) s[k] = fresh[k];
+  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild']) if (s[k] === undefined) s[k] = fresh[k];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid

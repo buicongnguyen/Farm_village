@@ -5,6 +5,7 @@ import { RECIPES, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { XP } from '../content/economy.mjs';
 import * as barn from './barn.mjs';
+import { committedCount } from './working.mjs';
 import { gainXp } from './levels.mjs';
 
 export const stepIndex = id => STEPS.findIndex(st => st.id === id);
@@ -29,15 +30,17 @@ export function allowance(s, kind) {
   return max;
 }
 /** Can this kind be placed at all right now (ignoring the spot)? { ok, reason, params } */
-export function mayBuild(s, kind) {
+export function mayBuild(s, kind, { repair = false } = {}) {
   const def = BUILDINGS[kind];
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
   if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name, project: def.after, kind, lock: 'project' } };
-  if ((s.counts[kind] ?? 0) >= allowance(s, kind)) return { ok: false, reason: 'You have built all you can of this for now', params: { kind, lock: 'max' } };
+  // repairing a broken thing needs a free place among the working ones; building needs a free place among all that stand
+  const have = repair ? committedCount(s, kind) : s.counts[kind] ?? 0;
+  if (have >= allowance(s, kind)) return { ok: false, reason: 'You have built all you can of this for now', params: { kind, lock: 'max' } };
   // a step's building waits until its goods are delivered
   const step = currentStep(s);
-  if (step?.builds.includes(kind) && step.deliver && !deliveredAll(s, step) && (kind !== 'cottage' || (s.counts.cottage ?? 0) >= (STEPS[s.projects.step - 1]?.allow?.cottage ?? 0)))
+  if (step?.builds.includes(kind) && step.deliver && !deliveredAll(s, step) && (kind !== 'cottage' || have >= (STEPS[s.projects.step - 1]?.allow?.cottage ?? 0)))
     return { ok: false, reason: 'Deliver the goods for "{name}" first', params: { name: step.name, project: step.id, kind, lock: 'goods' } };
   return { ok: true };
 }

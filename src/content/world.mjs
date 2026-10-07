@@ -10,7 +10,16 @@ export const FARMHOUSE = { x: 22, z: 62, model: 'home_t1', width: 9 };       // 
 export const BARN = { x: 22, z: 72, model: 'barn', width: 8 };
 export const ORDER_BOARD = { x: 28, z: 58 };
 // Roads (2 cells wide) and the brook.
-export const ROADS = [{ x0: 28, x1: 29, z0: 0, z1: N - 1 }, { x0: 0, x1: N - 1, z0: 90, z1: 91 }];
+// A ring road round the farm and the village (after Willowmere's county layout): west, south, east and north, with the
+// old lane through the middle of the village. Each stretch has an id so it can be damaged and repaired (condition.mjs).
+export const ROAD_SEGMENTS = [
+  { id: 'road_west', name: 'The brook road', x0: 28, x1: 29, z0: 0, z1: N - 1 },
+  { id: 'road_south', name: 'Village street', x0: 0, x1: N - 1, z0: 90, z1: 91 },
+  { id: 'road_east', name: 'The east road', x0: 100, x1: 101, z0: 20, z1: 89 },
+  { id: 'road_north', name: 'The north lane', x0: 30, x1: 99, z0: 20, z1: 21 },
+];
+export const ROADS = ROAD_SEGMENTS;
+export const roadSegmentAt = (x, z) => ROAD_SEGMENTS.find(r => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1) ?? null;
 export const brookZ = x => 12 + Math.round(Math.sin(x / 9) * 3);
 export const BROOK_HALF = 1;
 // The village area (cottages and civic projects) south of the farm, along the east–west road.

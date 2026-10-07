@@ -5,6 +5,7 @@ import { SLOTS, XP } from '../content/economy.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
+import { isWorking } from './working.mjs';
 
 export const queueOf = (s, id) => (s.production[id] ??= { slots: SLOTS.start, queue: [] });
 /** A recipe is open at its level, or earlier when a heart scene taught it (s.known). */
@@ -18,6 +19,7 @@ export const actions = {
   produce(ctx, { building, recipe }) {
     const { s, now } = ctx, p = s.placed[building], r = RECIPES[recipe];
     if (!p || !BUILDINGS[p.kind].produces) return ctx.fail('This building makes nothing');
+    if (!isWorking(s, building)) return ctx.fail('It needs repairs first');
     if (!r || r.at !== p.kind) return ctx.fail('Not made here');
     if (!recipeOpen(s, recipe)) return ctx.fail('Reach level {level} first', { level: r.level, recipe, lock: 'level' });
     const q = s.production[building] ?? { slots: SLOTS.start, queue: [] };   // not stored until the recipe is accepted

@@ -2,6 +2,21 @@
 export const MIN = 60_000, HOUR = 3_600_000, DAY = 86_400_000;
 
 export const START = { coins: 50, barnCap: 50, stock: { wheat: 6 } };
+// A new game starts in Hollowbrook as it is: things stand, many run down (content/start.mjs). The player gets some money
+// and stock to speed up the first repairs (PLAN-v0.3 D9).
+export const START_RESTORE = { coins: 500, barnCap: 50, stock: { wheat: 12, bread: 2 } };
+// Repairs (D2, D6, D7): a broken building (only at the start) is out of order until repaired: coins and a short wait.
+// Wear (D3) is very gentle: it grows only while the game is open, never stops anything and costs a few percent of rent and charm.
+export const REPAIR = {
+  broken: { share: 0.6, min: 25, ms: 90_000, xp: 10 },     // coins = max(min, share × the thing's price); the wait is `ms`
+  worn: { share: 0.08, min: 5 },                           // wear level 1; level 2 costs half as much again
+  road: 40, house: 400, helpMs: 45_000,
+};
+export const WEAR = { ms: [3 * HOUR, 9 * HOUR], rent: 0.05, charm: 1, tickCapMs: 2 * MIN };   // play time to "worn" and "shabby"; one tick never counts more than tickCapMs
+// The farmhouse (D4): a one-floor home that can be upgraded. Each level adds barn room.
+export const HOUSE = { levels: 3, upgradeCost: [0, 300, 1100], level: [1, 4, 7], barn: 25, price: 400 };
+// Demolishing gives back this share of the price and leaves a rebuild credit (the same thing again costs half).
+export const DEMOLISH = { refund: 0.4, rebuild: 0.5 };
 export const LEVELS = {
   xpFor: L => Math.round(10 * (L - 1) ** 2.6),       // total XP needed to reach level L
   max: 60,

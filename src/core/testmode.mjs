@@ -39,6 +39,9 @@ export const actions = {
   testAddFamily(ctx) {
     const { s, now } = ctx, fam = nextFamily(s);
     if (!fam) return ctx.fail('Every family has a home');
+    // a restored village: mend a run-down cottage (the family moves in at once)
+    const broken = Object.keys(s.placed).find(id => s.placed[id].kind === 'cottage' && !s.homes[id]?.family);
+    if (broken) { delete s.cond[broken]; delete s.repairing[broken]; arriveNext(ctx, broken); s.homes[broken].arrivesAt = now; s.homes[broken].rentFrom = now; tickHomes(ctx); return { id: broken, family: fam.id }; }
     for (let i = 0; i < 15; i++) {
       const x = 33 + 4 * i, z = 93, door = [x + 1, 92];
       if (grid.cellType(s, ...door) !== 'path' && (grid.occupant(s, ...door) || !['grass', 'weeds', 'rock'].includes(grid.cellType(s, ...door)))) continue;

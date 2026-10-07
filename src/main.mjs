@@ -6,6 +6,7 @@ import './ui/farm.css';
 import './ui/village.css';
 import './ui/polish.css';
 import { Game } from './game.mjs';
+import { newGame } from './core/state.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { dressWorld } from './view/dress.mjs';
@@ -43,7 +44,9 @@ const profile = (() => { try { return Math.min(3, Math.max(1, +(localStorage.get
 // test builds can run the clock ahead (kept for the tab, so a reload sees the same time)
 const clockOffset = TEST_MODE ? +(sessionStorage.getItem('fv-clock-offset') ?? 0) : 0;
 // ?new starts a fresh farm (test builds only: in the public game a stray link must never replace a saved farm)
-const game = new Game(TEST_MODE && params.has('new') ? null : load(profile), () => Date.now() + clockOffset);
+// a test build's ?new starts on an empty field (the browser suites build their own farm); add &restore for the restored village
+const clock = () => Date.now() + clockOffset, emptyStart = TEST_MODE && params.has('new') && !params.has('restore');
+const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : load(profile), clock);
 const world = new WorldView(app);
 const land = new LandView(world, game);
 const ghost = new Ghost(world);
@@ -102,7 +105,7 @@ canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !
 addEventListener('pointerdown', unlockAudio, { capture: true });
 
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin' };
+const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');

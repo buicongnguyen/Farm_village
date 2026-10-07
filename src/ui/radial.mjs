@@ -19,6 +19,10 @@ import { cartHere, CART_SPOT } from '../core/cart.mjs';
 import * as barn from '../core/barn.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { iconHtml, coinMark, glyph } from './icon.mjs';
+import { levelOf, isRepairing, repairCost, kindOf } from '../core/condition.mjs';
+import { thingName, condLabel } from './repair-ui.mjs';
+import { HOUSE, REPAIR } from '../content/economy.mjs';
+import { roadSegmentAt } from '../content/world.mjs';
 
 const near = (cell, spot, r) => Math.abs(cell.x - spot.x) <= r && Math.abs(cell.z - spot.z) <= r;
 const nearCart = cell => cell.x >= CART_SPOT.x - 1 && cell.x <= CART_SPOT.x + CART_SPOT.w && cell.z >= CART_SPOT.z - 1 && cell.z <= CART_SPOT.z + CART_SPOT.d;
@@ -61,8 +65,28 @@ export class Radial {
   }
   hide() { this.el.hidden = true; this.target = null; this.outline(null); }
   /** A tap on the map outside build mode. */
-  tap(cell, x, y) {
+  /** The menu of something that is worn, broken or being repaired: its state, and Repair (and its usual menu if it still works). */
+  repairMenu(id, def) {
+    const s = this.s, now = this.game.now, lv = levelOf(s, id), name = thingName(s, id) ?? '';
+    if (isRepairing(s, id)) { const left = Math.max(0, s.repairing[id].doneAt - now); return { buttons: [], info: `${name} · ${condLabel(s, id)} · ${shortTime(left)}${bar(1 - left / REPAIR.broken.ms)}` }; }
+    const cost = repairCost(s, id), buttons = [{ act: 'repair', id, icon: iconHtml('wrench', '', 'ic'), label: `${coinMark()}${num(cost)}`, disabled: s.coins < cost }];
+    if (lv < 3 && (def?.produces || def?.stall || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.stall ? 'stall' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
+    return { buttons, info: `${name} · ${condLabel(s, id)}` };
+  }
+  /** The farmhouse: its repair when worn, and the upgrade to the next level. */
+  houseMenu() {
+    const s = this.s, lv = s.house?.level ?? 1, buttons = [];
+    let info = `${t('Your farmhouse')} · ${t('Level {level}', { level: lv })}`;
+    if (levelOf(s, 'house') > 0 || isRepairing(s, 'house')) { const m = this.repairMenu('house'); buttons.push(...m.buttons); info = m.info; }
+    if (lv < HOUSE.levels && levelOf(s, 'house') < 3 && !isRepairing(s, 'house')) {
+      const cost = HOUSE.upgradeCost[lv], need = HOUSE.level[lv], ok = s.level >= need && s.coins >= cost;
+      buttons.push({ act: 'upgradeHouse', icon: glyph('up', 'ic'), label: s.level < need ? t('Level {level}', { level: need }) : `${coinMark()}${num(cost)}`, disabled: !ok });
+    }
+    return { buttons, info };
+  }
+  tap(cell, x, y, opts = {}) {
     if (!cell) { this.hide(); return; }
+    this.last = { cell, x, y };
     const s = this.s, now = this.game.now;
     let id = occupant(s, cell.x, cell.z);
     const animal = !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
@@ -70,7 +94,8 @@ export class Radial {
     const who = !id && this.people?.pick(x, y); if (who) { this.hide(); this.people.talk(who); return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '', land = null;
-    if (p?.kind === 'bed') {
+    if (p && !opts.open && levelOf(s, id) > 0) ({ buttons, info } = this.repairMenu(id, def));
+    else if (p?.kind === 'bed') {
       const b = s.beds[id];
       if (!b) buttons = Object.entries(CROPS).filter(([, c]) => c.level <= s.level).map(([c, def]) => {
         const price = plantPrice(s, c), have = barn.stock(s, c);
@@ -100,19 +125,20 @@ export class Radial {
       info = `${iconHtml('sale_sign', '', 'mini')} ${t('Land for sale')} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;
       buttons = [{ act: 'buyParcel', parcel: land.parcel, icon: iconHtml('sale_sign'), label: t('Buy'), disabled: !land.ok }];
     }
+    else if (cellType(s, cell.x, cell.z) === 'road' && roadSegmentAt(cell.x, cell.z) && levelOf(s, roadSegmentAt(cell.x, cell.z).id) > 0) ({ buttons, info } = this.repairMenu(roadSegmentAt(cell.x, cell.z).id));
     else if (['weeds', 'rock'].includes(cellType(s, cell.x, cell.z))) buttons = [{ act: 'clear', icon: iconHtml('tool:clear'), label: `${coinMark()}${CLEAR[cellType(s, cell.x, cell.z)]}` }];
     else if (cartHere(s) && nearCart(cell)) { this.hide(); this.panels.show('cart'); return; }
     else if (near(cell, MAILBOX, 1)) { this.hide(); this.panels.show('mail'); return; }
     else if (near(cell, ORDER_BOARD, 1)) { this.hide(); this.panels.show('orders'); return; }
     else if (near(cell, BARN, 4)) { this.hide(); this.panels.show('barn'); return; }
-    else if (near(cell, FARMHOUSE, 4)) info = t('Your farmhouse');
+    else if (near(cell, FARMHOUSE, 4)) ({ buttons, info } = this.houseMenu());
     if (!buttons.length && !info) { this.hide(); return; }
     this.target = { id, cell, land };
     this.outline(land);
     const r = Math.max(64, 30 + buttons.length * 9);
     this.el.innerHTML = (info ? `<div class="radial-info">${info}</div>` : '') + buttons.map((b, i) => {
       const a = -Math.PI / 2 + (i - (buttons.length - 1) / 2) * 0.9, bx = Math.cos(a) * r, by = Math.sin(a) * r;
-      return `<button class="radial-btn" style="--x:${bx.toFixed(1)}px;--y:${by.toFixed(1)}px;--i:${i}" data-act="${b.act}"${b.crop ? ` data-crop="${b.crop}"` : ''}${b.parcel ? ` data-parcel="${b.parcel}"` : ''}${b.disabled ? ' disabled' : ''}>${b.icon}<small>${b.label}</small></button>`;
+      return `<button class="radial-btn" style="--x:${bx.toFixed(1)}px;--y:${by.toFixed(1)}px;--i:${i}" data-act="${b.act}"${b.crop ? ` data-crop="${b.crop}"` : ''}${b.parcel ? ` data-parcel="${b.parcel}"` : ''}${b.id ? ` data-id="${b.id}"` : ''}${b.disabled ? ' disabled' : ''}>${b.icon}<small>${b.label}</small></button>`;
     }).join('');
     const margin = r + 44;
     this.el.style.left = `${Math.min(innerWidth - margin, Math.max(margin, x))}px`; this.el.style.top = `${Math.min(innerHeight - margin, Math.max(margin + 20, y))}px`;
@@ -146,6 +172,9 @@ export class Radial {
     else if (d.act === 'buyAnimal') g.do('buyAnimal', { home: id });
     else if (d.act === 'clear') g.do('clear', { x: cell.x, z: cell.z });
     else if (d.act === 'pick') g.do('pick', { id });
+    else if (d.act === 'repair') g.do('repair', { id: d.id });
+    else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
+    else if (d.act === 'open') { const l = this.last; if (l) this.tap(l.cell, l.x, l.y, { open: true }); }
     else if (d.act === 'buyParcel') {
       const r = g.do('buyParcel', { parcel: d.parcel });
       if (r.ok && land) { this.fx?.confetti?.(40); this.world.cam.flyTo?.((land.x + PARCEL / 2) * CELL, (land.z + PARCEL / 2) * CELL, Math.max(this.world.cam.span, 60), 1000); }

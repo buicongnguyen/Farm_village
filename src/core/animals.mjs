@@ -5,6 +5,7 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
 import { penOf } from './grid.mjs';
+import { isWorking } from './working.mjs';
 
 const homesOf = (s, kind) => Object.entries(s.placed).filter(([, p]) => BUILDINGS[p.kind].animals === kind).map(([id]) => id);
 export const animalCount = (s, kind) => homesOf(s, kind).reduce((n, id) => n + (s.animals[id]?.length ?? 0), 0);
@@ -16,6 +17,7 @@ export const actions = {
   buyAnimal(ctx, { home }) {
     const { s } = ctx, p = s.placed[home], kind = p && BUILDINGS[p.kind].animals;
     if (!kind) return ctx.fail('Animals need their own home');
+    if (!isWorking(s, home)) return ctx.fail('It needs repairs first');
     const a = ANIMALS[kind];
     if (s.level < a.level) return ctx.fail('Reach level {level} first', { level: a.level, animal: kind, lock: 'level' });
     const list = s.animals[home] ?? [];   // not stored until the animal is bought
@@ -31,7 +33,7 @@ export const actions = {
   feed(ctx, { home } = {}) {
     const { s, now } = ctx; let fed = 0, noFeed = false;
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
-      if (an.doneAt != null) continue;
+      if (an.doneAt != null || !isWorking(s, id)) continue;
       const a = ANIMALS[an.kind];
       if (!barn.take(s, { [a.eats]: 1 }, false)) { noFeed = true; continue; }
       an.doneAt = now + a.everyMs; fed++;
