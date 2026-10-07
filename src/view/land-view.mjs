@@ -171,7 +171,9 @@ export class LandView {
       const at = { x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 };
       if (b.has(id)) { if (built) b.remove(id); else b.set(id, { model: id, ...at }); }
       const working = !built && step?.builds?.includes(r.kind) && b.has('scaffold');
-      if (working) b.set(`scaffold:${r.kind}`, { model: 'scaffold', x: at.x + Math.cos(at.rot) * 0.6, z: at.z, rot: at.rot, scale: 1.25 });
+      // against the ruin's front wall, a little off centre
+      const ox = -1.6, oz = d * CELL / 2 - 0.6, c = Math.cos(at.rot), sn = Math.sin(at.rot);
+      if (working) b.set(`scaffold:${r.kind}`, { model: 'scaffold', x: at.x + ox * c + oz * sn, z: at.z - ox * sn + oz * c, rot: at.rot, scale: 1.1 });
       else b.remove(`scaffold:${r.kind}`);
     }
   }
