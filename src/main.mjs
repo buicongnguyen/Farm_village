@@ -8,11 +8,7 @@ import './ui/polish.css';
 import { Game } from './game.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
-import { LifeView } from './view/life-view.mjs';
-import { PeopleView } from './view/people-view.mjs';
 import { dressWorld } from './view/dress.mjs';
-import { Juice } from './view/juice.mjs';
-import { Critters } from './view/critters.mjs';
 import { Daylight } from './view/daylight.mjs';
 import { Ghost } from './view/ghost.mjs';
 import { Hud } from './ui/hud.mjs';
@@ -24,11 +20,15 @@ import { Guide } from './ui/guide.mjs';
 import { initModals } from './ui/modal.mjs';
 import { showWelcome } from './ui/village-panels.mjs';
 import { load, autosave, save, pack, unpack, erase } from './kit/save.mjs';
-import { t } from './kit/i18n.mjs';
+import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL } from './content/world.mjs';
 import { BUILDINGS } from './content/buildings.mjs';
 
+// Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
+// cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs')]);
+await languageReady;   // the Vietnamese lines load first when the player reads Vietnamese
 const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 app.innerHTML = '';
@@ -68,8 +68,7 @@ panels = new Panels(app, game, hud, {
   },
 });
 panels.profile = profile;
-const people = new PeopleView(world, game, app);
-radial = new Radial(app, { game, world, panels, hud, people });
+radial = new Radial(app, { game, world, panels, hud });   // people and life are handed over once their chunk is in
 new Fx(app, { game, world });
 
 const canvas = world.renderer.domElement;
@@ -105,8 +104,10 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }] = await living;
 const life = new LifeView(world, game);
-radial.life = life;
+const people = new PeopleView(world, game, app);
+radial.life = life; radial.people = people;
 new Juice(world, game, app);
 new Critters(world, game);
 new Daylight(world, game);
@@ -114,6 +115,8 @@ game.start();
 applySettings();
 autosave(game, profile);
 new Guide(app, { game, world, hud });
+// the Vietnamese lines come down once the farm is running, so a language switch is instant
+(globalThis.requestIdleCallback ?? setTimeout)(() => loadVietnamese().catch(() => {}), { timeout: 4000 });
 // the Today board opens by itself once a day, for players who have started farming (a first visit gets the tutorial)
 if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); game.do('seeToday'); }
 

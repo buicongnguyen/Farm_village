@@ -57,7 +57,7 @@ export class Panels {
     else if (d.do === 'showWay') { this.close(); this.onShowWay?.(d.at); }
     else if (d.do === 'collectRent') g.do('collectRent');
     else if (d.do === 'upgradeHome') g.do('upgradeHome', { id: d.id });
-    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
+    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => this.render()); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
     else if (d.do === 'export' || d.do === 'newGame' || d.do === 'profile') this.onSave?.(d.do, d.n);
   }
   render() {
