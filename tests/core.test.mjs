@@ -81,7 +81,7 @@ test('the barn caps storage; the harvest that does not fit is sold on the spot, 
   must(s, 'plant', { ids: beds, crop: 'wheat' }); s.story.firstWheat = false;
   const r = act(s, 'harvest', { ids: beds }, T0 + HOUR);
   const coins = s.coins; assert.equal(r.ok, true); assert.ok(s.barn.items.wheat <= 50, 'never over the cap'); assert.ok(s.coins > coins || s.stats.coinsEarned > 0, 'the extra is sold');
-  s.coins = 500; must(s, 'upgradeBarn', {}); assert.equal(s.barn.cap, 75);
+  s.coins = 500; must(s, 'upgradeBarn', {}); assert.equal(s.barn.cap, 150);
   s.barn.items.wheat = 20; const c2 = s.coins; must(s, 'sellGood', { good: 'wheat', n: 5 }); assert.equal(s.barn.items.wheat, 15); assert.equal(s.coins, c2 + 5 * 2);
 });
 

@@ -1,5 +1,5 @@
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
-import { START } from '../content/economy.mjs';
+import { START, START_RESTORE } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
 import { applyRestore } from './restore.mjs';
@@ -94,6 +94,7 @@ export function withDefaults(s) {
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };
+  if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger
   s.village.milestones ??= []; s.village.decor ??= [];
   for (const b of Object.values(s.people)) b.scenes ??= [];
   return s;

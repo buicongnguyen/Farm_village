@@ -21,6 +21,7 @@ import { unread } from '../core/bonds.mjs';
 import { cartHere } from '../core/cart.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
+import { STEPS } from '../content/projects.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
 /** Translate a message's string parameters too (a family's name, a good), then the message. */
@@ -34,7 +35,7 @@ export class Hud {
     this.el.innerHTML = `
       <div class="hud-top"><div class="hud-stats"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
         <div class="pill coins" data-hud="coins">${iconHtml('ui:coin', '', 'pill-icon')}<b></b></div></div>
-        <div class="village-name" data-hud="village"></div>
+        <button class="village-name" data-act="village" data-hud="village"></button>
         <div class="hud-status" data-hud="status"></div></div>
       <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
@@ -55,6 +56,7 @@ export class Hud {
       const st = e.target.closest('[data-status]')?.dataset.status;
       if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
+      if (act === 'village') { this.onPanel?.('projects'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
@@ -72,7 +74,7 @@ export class Hud {
     q('.ring').style.strokeDasharray = `${Math.round(p.ratio * 100)} 100`;
     if (s.level !== this.level) { this.level = s.level; this.pulse(q('[data-hud="level"]')); }
     this.rollCoins(s.coins);
-    q('[data-hud="village"]').textContent = t(VILLAGE_NAME);
+    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${Math.min(s.projects.step, STEPS.length)}/${STEPS.length}`;   // how far the village is restored; a tap opens the projects
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
