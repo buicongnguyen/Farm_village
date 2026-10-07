@@ -1,6 +1,6 @@
 // Draws the rules state on the map: cell colours, weeds and rocks, everything placed, fences on edges.
 // sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
-import { N, CELL, ORDER_BOARD } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS } from '../content/world.mjs';
 import { footprint } from '../content/buildings.mjs';
 import { cellType } from '../core/grid.mjs';
 import { KIND_MODELS, modelFor } from './kinds.mjs';
@@ -21,6 +21,13 @@ export class LandView {
       this.world.batches.register(name, { geo, mid: spec.lod === 'static' ? geo : simplify(geo), kind: spec.lod, color: averageColor(geo) });
     }
     this.geometries = name => this.world.batches.models.get(name)?.geo;
+    // ruins: the town buildings in faded, dusty colours (DESIGN 11)
+    const town = kits.town ?? await loadKit('town');
+    for (const r of RUINS) {
+      const geo = fit(bake(town[r.model]), { width: r.width }), c = geo.attributes.color;
+      for (let i = 0; i < c.count; i++) { const g = (c.getX(i) + c.getY(i) + c.getZ(i)) / 3; c.setXYZ(i, g * 0.55 + c.getX(i) * 0.2 + 0.08, g * 0.55 + c.getY(i) * 0.2 + 0.07, g * 0.55 + c.getZ(i) * 0.2 + 0.05); }
+      this.world.batches.register(`ruin:${r.kind}`, { geo, kind: 'static' });
+    }
     this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
     this.ready = true; this.sync();
   }
@@ -58,6 +65,14 @@ export class LandView {
     const X = +x * CELL, Z = +z * CELL;
     b.set(id, side === 'n' ? { model: kind, x: X + CELL / 2, z: Z, rot: 0 } : { model: kind, x: X, z: Z + CELL / 2, rot: Math.PI / 2 });
   }
+  /** A ruin stays until its building stands somewhere in the village. */
+  drawRuins() {
+    for (const r of RUINS) {
+      const id = `ruin:${r.kind}`, built = (this.s.counts[r.kind] ?? 0) > 0;
+      if (built) this.world.batches.remove(id);
+      else { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; this.world.batches.set(id, { model: id, x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 }); }
+    }
+  }
   sync() {
     if (!this.ready || !this.s) return;
     const b = this.world.batches;
@@ -65,6 +80,7 @@ export class LandView {
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const t = this.s.cells[z * N + x]; if (t === 1 || t === 2) this.drawCell(x, z); }
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
+    this.drawRuins();
     this.world.ground.markAll();
   }
   apply(events) {
@@ -72,6 +88,7 @@ export class LandView {
     for (const e of events) {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') this.drawPlaced(e.id);
+      else if (e.type === 'projectDone') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }

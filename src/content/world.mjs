@@ -16,6 +16,14 @@ export const BROOK_HALF = 1;
 // The village area (cottages and civic projects) south of the farm, along the east–west road.
 export const VILLAGE = { x0: 32, z0: 92, x1: 95, z1: 116 };   // starts next to the road, so doors can open onto it
 // Where the four AI neighbours' roads leave the map (signposts).
+// Boarded-up civic buildings waiting for their project (DESIGN 11): seen from the start, rebuilt in the build order.
+export const RUINS = [
+  { kind: 'school', model: 'school', x: 50, z: 106, rot: 2, width: 9.6 },
+  { kind: 'clinic', model: 'hospital', x: 62, z: 106, rot: 2, width: 8 },
+  { kind: 'police', model: 'police', x: 73, z: 106, rot: 2, width: 6 },
+  { kind: 'company', model: 'company', x: 83, z: 106, rot: 2, width: 8 },
+];
+export const MAILBOX = { x: 27, z: 60 };
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 
 export const parcelOrigin = id => { const [px, pz] = id.split(',').map(Number); return { x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL }; };

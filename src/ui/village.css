@@ -1,0 +1,34 @@
+/* Village: the Today board, projects, cottages, the welcome card and speech bubbles. */
+.hud-right { position: absolute; right: 12px; top: max(10px, env(safe-area-inset-top)); display: flex; gap: 8px; }
+.hud-right button { position: relative; }
+.badge.dot { min-width: 12px; width: 12px; height: 12px; padding: 0; top: 0; right: 0; }
+.today h3, .project h3 { margin: 10px 4px 4px; font-size: 15px; font-weight: 900; }
+.today ul, .steps { margin: 0; padding-left: 4px; list-style: none; display: grid; gap: 4px; }
+.today li, .steps li { font-size: 14px; }
+.gift { display: flex; align-items: center; gap: 10px; background: #fff7e0; border-radius: 16px; padding: 10px; }
+.gift .icon { font-size: 34px; } .gift > div { flex: 1; display: grid; } .gift small { font-size: 14px; } .gift .done { color: var(--leaf-dark); font-weight: 900; }
+.next-project { width: 100%; text-align: left; border: 0; border-radius: 14px; background: #fff; padding: 10px; font: 800 15px 'Nunito', sans-serif; color: var(--ink); display: grid; }
+.next-project small { color: #7a6650; font-size: 12px; }
+.trade { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #fff; border-radius: 14px; padding: 8px; margin-bottom: 6px; }
+.trade .face { font-size: 24px; } .trade span:nth-child(2) { flex: 1; min-width: 140px; font-weight: 700; }
+.project p { margin: 4px; }
+.req { margin: 4px; font-weight: 800; color: #9a3b12; } .req.ok { color: var(--leaf-dark); }
+.needs-list { display: grid; gap: 6px; margin: 6px 0; }
+.need-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.link { border: 0; background: none; color: #2e7bbf; font: 800 13px 'Nunito', sans-serif; text-decoration: underline; cursor: pointer; padding: 6px 2px; }
+.project .btn { width: 100%; margin-top: 6px; }
+.steps li.done { color: var(--leaf-dark); } .steps li.now { font-weight: 900; } .steps li { color: #9a8670; }
+.cottage .family { display: flex; gap: 8px; flex-wrap: wrap; }
+.person { display: grid; justify-items: center; background: #fff; border-radius: 14px; padding: 8px 10px; min-width: 84px; }
+.person .face { font-size: 28px; } .person small { color: #7a6650; font-size: 12px; text-align: center; }
+.cottage .stats { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 2px; font-weight: 800; }
+.cottage .row { display: flex; gap: 6px; flex-wrap: wrap; }
+.hint.warn { color: #9a3b12; font-weight: 800; }
+.modal { position: fixed; inset: 0; background: #2b1d1066; display: grid; place-items: center; z-index: 20; padding: 16px; }
+.card-modal { background: var(--paper); border-radius: 24px; padding: 18px; width: min(440px, 100%); max-height: 86vh; overflow-y: auto; box-shadow: 0 10px 30px #0004; display: grid; gap: 10px; }
+.card-modal h2 { margin: 0; font-size: 22px; font-weight: 900; }
+.person-line { display: flex; gap: 10px; align-items: flex-start; } .person-line .face { font-size: 34px; } .person-line p { margin: 2px 0 0; color: #5d4733; }
+.bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+.bubble { position: absolute; left: 0; top: 0; max-width: min(240px, 70vw); background: #fff; border-radius: 14px; padding: 7px 11px; font-weight: 700; font-size: 13px; box-shadow: var(--shadow); }
+.bubble::after { content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -7px; border: 7px solid transparent; border-bottom: 0; border-top-color: #fff; }
+body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }

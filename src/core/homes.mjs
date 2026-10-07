@@ -26,6 +26,17 @@ export function charmOf(s, id) {
   const door = doorCell(p.kind, p.x, p.z, p.rot); if (door && cellType(s, door[0], door[1]) === 'path') charm += 2;
   return Math.max(0, charm);
 }
+/** Which cottages a charm item at (x, z) would help, and by how much (the build-mode charm preview, DESIGN 12). */
+export function charmPreview(s, kind, x, z, rot = 0) {
+  const value = BUILDINGS[kind]?.charm; if (!value) return null;
+  const cells = cellsOf(kind, x, z, rot), helped = [];
+  for (const [id, p] of Object.entries(s.placed)) {
+    if (!BUILDINGS[p.kind].home) continue;
+    const hc = cellsOf(p.kind, p.x, p.z, p.rot), xs = hc.map(c => c[0]), zs = hc.map(c => c[1]);
+    if (cells.some(([cx, cz]) => cx >= Math.min(...xs) - CHARM_RADIUS && cx <= Math.max(...xs) + CHARM_RADIUS && cz >= Math.min(...zs) - CHARM_RADIUS && cz <= Math.max(...zs) + CHARM_RADIUS)) helped.push(id);
+  }
+  return { value, homes: helped };
+}
 export const familyOf = (s, id) => FAMILIES.find(f => f.id === s.homes[id]?.family) ?? null;
 /** The next family waiting for a cottage, in order. */
 export const nextFamily = s => FAMILIES.find(f => !Object.values(s.homes).some(h => h.family === f.id)) ?? null;

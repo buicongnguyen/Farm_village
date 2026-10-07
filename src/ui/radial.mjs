@@ -4,7 +4,8 @@ import { t, num } from '../kit/i18n.mjs';
 import { CROPS, ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE } from '../content/world.mjs';
+import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX } from '../content/world.mjs';
+import { rentWaiting } from '../core/homes.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
 import { plantPrice } from '../core/farm.mjs';
 import { animalPrice, animalState } from '../core/animals.mjs';
@@ -13,8 +14,8 @@ import { shortTime } from '../core/clock.mjs';
 
 const near = (cell, spot, r) => Math.abs(cell.x - spot.x) <= r && Math.abs(cell.z - spot.z) <= r;
 export class Radial {
-  constructor(root, { game, world, panels, hud }) {
-    Object.assign(this, { game, world, panels, hud, armed: null, armedUntil: 0, swept: new Set() });
+  constructor(root, { game, world, panels, hud, people }) {
+    Object.assign(this, { game, world, panels, hud, people, armed: null, armedUntil: 0, swept: new Set() });
     this.el = document.createElement('div'); this.el.className = 'radial'; this.el.hidden = true;
     root.appendChild(this.el);
     this.el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) this.choose(b.dataset); });
@@ -45,6 +46,7 @@ export class Radial {
     if (!cell) { this.hide(); return; }
     const s = this.s, id = occupant(s, cell.x, cell.z), now = this.game.now;
     if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
+    const who = !id && this.people?.pick(x, y); if (who) { this.hide(); this.people.talk(who); return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '';
     if (p?.kind === 'bed') {
@@ -57,6 +59,8 @@ export class Radial {
       else info = `${CROPS[b.crop].icon} ${shortTime(b.doneAt - now)}`;
     } else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
+    else if (def?.home) { this.hide(); this.panels.show('cottage', id); return; }
+    else if (p?.kind === 'school') info = t('The school is open!');
     else if (def?.animals) {
       const list = s.animals[id] ?? [], kind = def.animals, a = ANIMALS[kind], pen = penOf(s, id);
       const hungry = list.filter(x => animalState(x, now) === 'hungry').length, ready = list.filter(x => animalState(x, now) === 'ready').length;
@@ -65,6 +69,7 @@ export class Radial {
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: kind === 'hen' ? '🐔' : '🐄', label: animalPrice(s, kind) ? `🪙 ${num(animalPrice(s, kind))}` : t('Free') });
       info = pen.closed ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
     } else if (!id && ['weeds', 'rock'].includes(cellType(s, cell.x, cell.z))) buttons = [{ act: 'clear', icon: '🧹', label: `🪙 ${CLEAR[cellType(s, cell.x, cell.z)]}` }];
+    else if (!id && near(cell, MAILBOX, 1)) { const rent = rentWaiting(s, now); if (rent) buttons = [{ act: 'collectRent', icon: '📬', label: `🪙 ${num(rent)}` }]; else info = t('The mailbox is empty'); }
     else if (!id && near(cell, ORDER_BOARD, 1)) { this.hide(); this.panels.show('orders'); return; }
     else if (!id && near(cell, BARN, 4)) { this.hide(); this.panels.show('barn'); return; }
     else if (!id && near(cell, FARMHOUSE, 4)) info = t('Your farmhouse');
@@ -88,5 +93,6 @@ export class Radial {
     else if (d.act === 'feed') g.do('feed', { home: id });
     else if (d.act === 'buyAnimal') g.do('buyAnimal', { home: id });
     else if (d.act === 'clear') g.do('clear', { x: cell.x, z: cell.z });
+    else if (d.act === 'collectRent') g.do('collectRent');
   }
 }

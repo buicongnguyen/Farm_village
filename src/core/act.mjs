@@ -35,6 +35,7 @@ export function act(s, action, payload = {}, now = Date.now()) {
   if (out.ok === false) return { ...out, events: [] };
   advance(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
+  remember(s, ctx.events, now);
   return { ok: true, ...out, events: ctx.events };
 }
 export function tick(s, now = Date.now()) {
@@ -43,7 +44,14 @@ export function tick(s, now = Date.now()) {
   if (now < s.lastSeen) guardClock(s, now);
   tickToday(ctx); tickHomes(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); advance(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
+  remember(s, ctx.events, now);
   return { events: ctx.events };
+}
+/** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */
+const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp']);
+function remember(s, events, now) {
+  for (const e of events) if (NEWS.has(e.type)) (s.news ??= []).unshift({ ...e, at: now });
+  if (s.news?.length > 12) s.news.length = 12;
 }
 function guardClock(s, now) {
   for (const b of Object.values(s.beds)) b.doneAt = clampDone(b.doneAt, now, CROPS[b.crop].growMs);

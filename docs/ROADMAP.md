@@ -82,7 +82,7 @@ proven by `prototypes/big-farm/` (done on 2026-10-07); M2 turns it into the game
 - [x] `picking.mjs` (in `world-view.mjs` and `grid.occupant`): tap to cell and object. The sweep gesture comes with farming in M3.
 - [x] `ghost.mjs` and `build-view.mjs`: the catalogue, a ghost offset above the finger, green or red with the reason,
   ⟳ ✔ ✕, move, store, undo (10 steps).
-- [ ] The charm overlay in build mode. (Moved to M4, with cottages.)
+- [x] The charm preview in build mode ("+2 charm for 1 cottage" in the placement bar).
 - [x] Fences on cell edges, with gates, and a closed-pen check.
 - [ ] New art from `village-kit.glb`: path stones, weeds, rocks, bench, lamp, sign, order board.
 - [x] Browser test: place, rotate, move and store on a 390 × 844 portrait phone and a 844 × 390 landscape one.
@@ -115,16 +115,16 @@ instant.
 ## M4 — Village, people and neighbours (1 week)
 
 **Tasks**
-- [ ] The village area grid, the ruins of civic buildings (`ruin_boards`), and the building animation (`scaffold`).
-- [ ] `projects-view.mjs`: the next project with ticks, held goods, "show the way" links, the ghost outline on the map.
-- [ ] Cottages from `town.glb` houses, the cozy and deluxe dressing, the furnish menu.
-- [ ] Families arriving (the Trans, the Okafors) with a short arrival scene; rent in the mailbox; needs with kind
+- [x] The village area grid and the ruins of civic buildings (faded town models). The building animation moves to M5.
+- [x] `projects-view.mjs`: the next project with ticks, held goods, "show the way" links, the ghost outline on the map.
+- [x] Cottages from `town.glb` houses and the furnish menu (the cozy and deluxe outside dressing moves to the M5 art pass).
+- [x] Families arriving (the Trans, the Okafors) with a short arrival scene; rent in the mailbox; needs with kind
   explanations.
-- [ ] The school project and Cora; the cow barn unlocking with it.
-- [ ] `people-view.mjs`: family, villagers and neighbours walking on paths (kit timetables), name labels, a tap for a
+- [x] The school project and Cora; the cow barn unlocking with it.
+- [x] `people-view.mjs`: family, villagers and neighbours walking on paths (kit timetables), name labels, a tap for a
   line.
-- [ ] Mai and Gus visiting: walking in, a comment written from the real layout, helping 3 crops, the daily trade.
-- [ ] `today-view.mjs`: the daily gift, "while you were away", the next project, village news.
+- [x] Mai and Gus visiting: walking in, a comment written from the real layout, helping 3 crops, the daily trade.
+- [x] `today-view.mjs`: the daily gift, "while you were away", the next project, village news.
 
 **Done when:** a player can reach the school from a fresh farm, the village visibly fills with people, and neighbours'
 comments match what is on screen.

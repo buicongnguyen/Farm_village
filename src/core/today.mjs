@@ -27,6 +27,8 @@ export function board(s, now) {
   return { day: s.today.day, gift: GIFTS[s.today.giftDay], claimed: !!s.today.claimed, waiting: waiting(s, now), next: step && { id: step.id, ready: stepReady(s, now) } };
 }
 export const actions = {
+  /** The Today board was seen today (it opens by itself only once a day). */
+  seeToday(ctx) { ctx.s.today.seen = true; return {}; },
   claimGift(ctx) {
     const { s } = ctx; if (s.today.claimed) return ctx.fail('Come back tomorrow for a new gift');
     const g = GIFTS[s.today.giftDay];

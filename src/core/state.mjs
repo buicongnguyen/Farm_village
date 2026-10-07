@@ -31,6 +31,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
     counts: {},                             // kind → how many are placed (kept in step by place/store)
     stored: {},                             // kind → how many are in the storage shed (placing them again is free)
     undo: [],                               // the last build actions, for undo (DESIGN 4.4)
+    news: [],                               // the latest notable events for the Today board
     settings: { daylight: 'real', textSize: 1, reducedMotion: false, quality: 'auto', sound: 0.8, music: 0.6 },
   };
   overgrow(s, START_PARCEL);

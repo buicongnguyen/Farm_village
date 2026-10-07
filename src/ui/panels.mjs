@@ -9,6 +9,7 @@ import * as barn from '../core/barn.mjs';
 import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
+import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 
 const PEOPLE = Object.fromEntries(allPeople().map(p => [p.id, p]));
 export const FACES = { ada: '👵', cora: '👩‍🏫', minh: '👨‍🔧', lan: '👩‍🍳', bo: '👦', grace: '👩‍⚕️', sam: '📮', zara: '👧', elin: '🎨', olaf: '⚓', marisol: '👩‍⚕️', tomas: '🔧', pia: '👧', mai: '🌸', gus: '🧔' };
@@ -19,8 +20,8 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
 }).join('');
 
 export class Panels {
-  constructor(root, game, hud) {
-    Object.assign(this, { game, hud, open: null });
+  constructor(root, game, hud, { onBuild, onShowWay } = {}) {
+    Object.assign(this, { game, hud, open: null, onBuild, onShowWay });
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
     this.el.addEventListener('click', e => this.click(e));
@@ -28,7 +29,9 @@ export class Panels {
     setInterval(() => { if (this.open && !document.hidden) this.render(); }, 1000);   // timers count down
   }
   show(kind, arg) { this.open = { kind, arg }; this.el.hidden = false; this.el.dataset.kind = kind; this.render(); }
-  close() { this.open = null; this.el.hidden = true; }
+  close() { this.open = null; this.el.hidden = true; this.lift(); }
+  /** Keep the HUD buttons above the sheet while it is open. */
+  lift() { document.body.classList.toggle('panel-open', !!this.open); document.body.style.setProperty('--sheet-h', `${this.open ? this.el.offsetHeight : 0}px`); }
   toggle(kind, arg) { this.open?.kind === kind && this.open.arg === arg ? this.close() : this.show(kind, arg); }
   click(e) {
     const b = e.target.closest('[data-do]'); if (!b) return;
@@ -42,11 +45,24 @@ export class Panels {
     else if (d.do === 'buySlot') g.do('buySlot', { building: this.open.arg });
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
+    else if (d.do === 'claimGift') g.do('claimGift');
+    else if (d.do === 'trade') g.do('trade', { id: d.id, accept: true });
+    else if (d.do === 'decline') g.do('trade', { id: d.id, accept: false });
+    else if (d.do === 'projects') this.show('projects');
+    else if (d.do === 'projectDeliver') g.do('projectDeliver');
+    else if (d.do === 'buildProject') { this.close(); this.onBuild?.(d.kind); }
+    else if (d.do === 'showWay') { this.close(); this.onShowWay?.(d.at); }
+    else if (d.do === 'collectRent') g.do('collectRent');
+    else if (d.do === 'upgradeHome') g.do('upgradeHome', { id: d.id });
   }
   render() {
     const s = this.game.s, o = this.open; if (!o) return;
+    queueMicrotask(() => this.lift());
     const head = title => `<div class="panel-head"><h2>${title}</h2><button class="round small" data-do="close" aria-label="${t('Close')}">✕</button></div>`;
-    if (o.kind === 'orders') this.el.innerHTML = head(t('Order board')) + `<div class="order-list">${s.orders.cards.map(c => this.card(c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
+    if (o.kind === 'today') this.el.innerHTML = head(t('Today')) + renderToday(s, this.game.now);
+    else if (o.kind === 'projects') this.el.innerHTML = head(t('Village projects')) + renderProjects(s, this.game.now);
+    else if (o.kind === 'cottage') this.el.innerHTML = head(t('Rental cottage')) + renderCottage(s, o.arg, this.game.now);
+    else if (o.kind === 'orders') this.el.innerHTML = head(t('Order board')) + `<div class="order-list">${s.orders.cards.map(c => this.card(c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
       this.el.innerHTML = head(t('Barn')) + `<div class="cap"><div class="cap-bar"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i></div><b>${num(used)}/${num(s.barn.cap)}</b>

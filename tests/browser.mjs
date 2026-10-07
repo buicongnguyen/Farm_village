@@ -168,6 +168,63 @@ await check('budget: a fully planted large farm stays within the phone budgets a
   await ctx.close();
 });
 
+// ── M4: the village ──
+const villageSetup = page => page.evaluate(() => {
+  const g = farm.game; g.s.coins = 20000;
+  g.do('clear', { cells: [[34, 59], [35, 60], [34, 61]] });
+  for (let z = 56; z <= 71; z++) for (let x = 32; x <= 47; x++) g.do('clear', { x, z });
+  for (let x = 30; x <= 47; x++) g.do('place', { kind: 'path', x, z: 63 });
+  for (let i = 0; i < 6; i++) g.do('place', { kind: 'bed', x: 33 + i, z: 58 });
+  g.s.level = 5; g.s.xp = 400;
+  g.do('place', { kind: 'feed_mill', x: 32, z: 64, rot: 2 }); g.do('place', { kind: 'coop', x: 35, z: 64, rot: 2 });
+  for (const x of [34, 38]) g.do('place', { kind: 'path', x, z: 92 });
+  g.do('place', { kind: 'cottage', x: 33, z: 93, rot: 2 }); g.s.barn.items.bread = 5; g.do('projectDeliver');
+  g.do('place', { kind: 'cottage', x: 37, z: 93, rot: 2 });
+  farm.setClockOffset(3 * 60_000);
+  document.querySelectorAll('.modal').forEach(m => m.remove()); farm.panels.close();
+});
+await check('village: families walk, the projects panel builds the school on its ruin (phone)', async () => {
+  const { ctx, page, errors } = await open('phone', '?new');
+  await villageSetup(page);
+  await page.waitForTimeout(1500);
+  const walkers = await page.evaluate(() => farm.people ? [...farm.people.walkers.keys()] : []);
+  expect(walkers.includes('minh') && walkers.includes('zara'), `walkers: ${walkers}`);
+  await page.evaluate(() => { farm.game.s.barn.items.bread = 10; farm.game.s.barn.items.corn_bread = 4; document.querySelectorAll('.modal').forEach(m => m.remove()); });
+  await page.click('[data-act="projects"]');
+  await page.click('[data-do="projectDeliver"]');
+  await page.click('[data-do="buildProject"]');
+  await page.evaluate(() => farm.game.do('place', { kind: 'path', x: 52, z: 105 }));   // a path from the ruin's door ...
+  await page.evaluate(() => { for (let z = 92; z <= 104; z++) farm.game.do('place', { kind: 'path', x: 52, z }); farm.build.refreshGhost(); });   // ... to the road
+  for (let i = 0; i < 4 && !(await page.evaluate(() => farm.build.check().ok)); i++) await page.click('[data-bar="rotate"]');
+  await page.click('[data-bar="ok"]');
+  expect(await page.evaluate(() => farm.state().counts.school) === 1, `school not built: ${await page.evaluate(() => JSON.stringify(farm.build.check()))}`);
+  expect(await page.evaluate(() => !farm.world.batches.items.has('ruin:school')), 'the ruin is still there');
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => farm.people.walkers.has('cora')), 'Cora did not arrive with the school');
+  expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('village: a neighbour walks in and talks; Today gift; cottage rent', async () => {
+  const { ctx, page } = await open('pc', '?new');
+  await villageSetup(page);
+  await page.evaluate(() => farm.game.emit({ ok: true, events: [{ type: 'neighbourVisit', id: 'mai', helped: 0, comment: 'Your fields are so tidy!' }] }, 'test'));
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => farm.people.walkers.has('visit:mai')), 'Mai is not walking in');
+  await page.click('[data-act="today"]');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('[data-do="claimGift"]');
+  expect(await page.evaluate(() => farm.state().coins) !== coins || await page.evaluate(() => farm.state().today.claimed), 'gift not claimed');
+  await page.evaluate(() => farm.setClockOffset(3 * 3600e3));
+  const cottage = await page.evaluate(() => Object.keys(farm.state().homes)[0]);
+  await page.evaluate(id => farm.panels.show('cottage', id), cottage);
+  const before = await page.evaluate(() => farm.state().coins);
+  await page.click('[data-do="collectRent"]');
+  expect(await page.evaluate(() => farm.state().coins) > before, 'no rent collected');
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

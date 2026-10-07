@@ -8,6 +8,7 @@ import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
 import { mayBuild } from '../core/projects.mjs';
 import { priceOf } from '../core/build.mjs';
 import { CLEAR } from '../content/economy.mjs';
+import { charmPreview } from '../core/homes.mjs';
 
 export const ICONS = { bed: '🟫', path: '🟨', fence: '🚧', gate: '🚪', coop: '🐔', cow_barn: '🐄', feed_mill: '🌾', bakery: '🥖', stall: '🛒',
   cottage: '🏡', flowers: '🌷', bush: '🌳', tree: '🌸', bench: '🪑', lamp: '💡', school: '🏫' };
@@ -88,13 +89,19 @@ export class BuildView {
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
       : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage')
-      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · 🪙 ${num(priceOf(s, this.kind))}`) : c.reason ? t(c.reason, c.params) : t('Tap where it should go');
+      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · 🪙 ${num(priceOf(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, c.params) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
       <button class="round small" data-bar="undo" aria-label="${t('Undo')}">↶</button>
       ${big ? `<button class="round small" data-bar="rotate" aria-label="${t('Rotate')}">⟳</button><button class="round small ok" data-bar="ok" aria-label="${t('Place')}" ${c.ok ? '' : 'disabled'}>✔</button>` : ''}
       <button class="round small" data-bar="cancel" aria-label="${t('Cancel')}">✕</button></div>`;
   }
+  charmNote(c) {
+    if (!c.a) return ''; const p = charmPreview(this.game.s, this.kind, c.a.x, c.a.z, this.rot);
+    return p?.homes.length ? ` · ✨ ${t('+{charm} charm for {count} cottages', { charm: p.value, count: p.homes.length })}` : '';
+  }
+  /** Open build mode with `kind` chosen and its ghost at a suggested cell (from the projects panel). */
+  start(kind, at) { if (!this.open) this.show(); this.select(kind); if (at) { this.at = at; this.refreshGhost(); } }
   /** Pointer moved over the map (mouse hover) — only moves the ghost. */
   hover(cell) { if (!cell || (this.mode !== 'place' && this.mode !== 'moving')) return; this.at = cell; this.refreshGhost(); }
   /** A tap on the map while build mode is open. */
