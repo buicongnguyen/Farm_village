@@ -5,6 +5,8 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
+- **Now: v0.3 "Restore Hollowbrook"** — the plan, decisions and its own log are in [docs/PLAN-v0.3.md](docs/PLAN-v0.3.md).
+
 - **AAA pass (0.2.0) — fixer stage done on branch `aaa-integrate`** (not pushed, not merged to `main`). The six
   packages (juice, world, art, cast, story, play) and the ui package are merged; three reviewers (visual, rules, perf)
   reported 26 findings; every finding of severity 2 or more is fixed, with tests (see the log and CHANGELOG 0.2.0).
