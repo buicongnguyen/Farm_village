@@ -108,8 +108,20 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 - `hearts.mjs`: `HEART_SCENES[personId][3|6|9] = { lines: [{ who, text }] × 3, reward: { decor } | { coins } }`.
   Rewards are decorations unless the lines hand over money (ECONOMY.md section 1 keeps coin rewards out of the pace).
   `WISHES[personId] = [{ text, need: { kind, near: 'home' } }]`. `ARRIVALS[familyId] = [{ who, text }] × 3`.
-- `letters.mjs`: `LETTERS[] = { id, from, when: { type: 'chapter' | 'hearts' | 'level', value }, text }`. For `hearts`,
-  the value is the hearts of `from`.
+- `letters.mjs`: `LETTERS[] = { id, from, when, also?, text }`. `when` (and the optional second test `also`) is
+  `{ type: 'chapter' | 'hearts' | 'level', value }` or `{ type: 'stat', key, value }` (`s.stats[key]`, a dotted key reads
+  deeper, e.g. `liked.sam`) or `{ type: 'count', key, value }` (how many of a building). For `hearts`, the value is the
+  hearts of `from`. **A letter only names what has happened by then:** Ada's "you sold your first wheat" waits for the
+  first order (`stat ordersFilled 1`), Gus's "your fence is crooked" for a fence and a harvest, Sam's "thank you for
+  the pumpkins" for a liked gift to Sam.
+- Heart scenes exist for everyone who can earn hearts: residents, and Ada, Cora, Mai and Gus (Ada's carry the Ellis
+  thread: his hat, his empty place at the table, the lamp kept for the day Hollowbrook comes home; Gus's carry the
+  Harvest Festival: fence posts, the bread prize he won in Ada's oven, "somebody should start it again").
+- Story order: Ada names the Okafors ("the next family is Sam Okafor's") once the Trans live in the village and the
+  second cottage is the project, and Lan's welcome bread plays only after that. Every `likes` entry is a real good
+  (Elin likes peaches, fruit for a still life).
+- June's urgent tips are `JUNE_TIPS` in `people.mjs` (June says mình to the player); the pronoun test reads them and the
+  neighbours' `comments` too.
 
 ## 6. Writing checklist
 

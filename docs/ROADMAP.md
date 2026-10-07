@@ -13,7 +13,8 @@ tested. Times assume one main developer with AI help and are estimates only.
 | **M5** | First session and polish | 1 week | Tutorial, story cards, celebrations, sound, Vietnamese, phone performance |
 | **M6** | v0.1 release | 3–4 days | Playtested and live |
 | | **v0.1 total** | **about 6–7 weeks** | |
-| v0.2 | Fishing, dairy, more chains, clinic and market, heart scenes | 4–5 weeks | |
+| **AAA pass** (0.2.0) | Hay Day-level look and feel on v0.1's content: world, art, cast, juice, story, play, ui; then three reviews (visual, rules, perf) and a fixer pass | done on branch `aaa-integrate` | All review findings of severity 2+ fixed or answered; npm test and every browser suite green; budgets held with an all-ripe farm |
+| v0.2 | Fishing, dairy, more chains, clinic and market (heart scenes came early, in the AAA pass) | 4–5 weeks | |
 | v0.3 | Festivals, seasons, Pip's homework, album, pets, bees | 4–5 weeks | |
 | v0.4 | Café, photo mode and postcards, visit by link, Tết and Mid-Autumn | 4 weeks | |
 | v1.0 | All 12 build steps, polish, install as an app | 3 weeks | |
@@ -167,6 +168,14 @@ comments match what is on screen.
 ---
 
 ## After v0.1
+
+### Left over from the AAA pass (for v0.2)
+- A playtest of the AAA first session on a real phone (touch taps, the folded guide chip, the merged level card).
+- Cottages from Willowmere's `town.glb` still have plain fronts toward the lane; the camera-facing backs are dressed at
+  run time (flower boxes, bushes, flowers). A real facade pass needs the town generator brought over.
+- Authored `_far` crop and tree levels (batches still draws stand-in cones at the far zoom).
+- A water trough for pens (the cow barn has its own; the coop's yard has feeders).
+- Real-phone measurement of the first scene on 4G (emulated: 2.3 s plain, 1.7 s gzip).
 
 ### v0.2 — Deeper farm and the growing village (4–5 weeks)
 - **The large farm:**

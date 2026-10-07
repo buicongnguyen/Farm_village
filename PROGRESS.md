@@ -5,6 +5,17 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
+- **AAA pass (0.2.0) — fixer stage done on branch `aaa-integrate`** (not pushed, not merged to `main`). The six
+  packages (juice, world, art, cast, story, play) and the ui package are merged; three reviewers (visual, rules, perf)
+  reported 26 findings; every finding of severity 2 or more is fixed, with tests (see the log and CHANGELOG 0.2.0).
+  - **Next:** a real-phone playtest of the AAA first session, then merge `aaa-integrate` into `main` and deploy.
+  - Left over for v0.2: docs/ROADMAP.md, "Left over from the AAA pass".
+  - Browser checks for the review: `tests/review.browser.mjs` (touch taps, the guide over the build sheet, a merged
+    level card, bubbles, an all-ripe farm on budget, the boot error, the Vietnamese retry). Rules: `tests/review.test.mjs`
+    with frozen v0.1 saves in `tests/fixtures/`.
+
+**Before the AAA pass:**
+
 - **Phase:** building v0.1. **M0–M5 are done** (locally; no GitHub remote yet). **Next: M6**, the v0.1 release:
   - a playtest with 3–5 first-time players;
   - fixes;
@@ -37,6 +48,12 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | **Large map:** 128 × 128 cells; the farm is 4 × 4 parcels of 16 × 16 cells (2,000–3,000 crops), with fields, helpers and tools. v0.1 stays small (30 beds); the large farm opens in v0.2 | DESIGN 3.1 and 5.1, ECONOMY 8, ROADMAP |
 | 2026-10-07 | **Hosting:** public repository buicongnguyen/Farm_village, SSH push, Pages deployed by the workflow on push to main (same as Willowmere) | README, PROGRESS |
 | 2026-10-07 | **Drawing rules:** baked vertex-coloured models, chunked instancing, three levels of detail with chunk sizes 8 / 16 / 32 | TECH-PLAN 6, prototypes/big-farm |
+| 2026-10-07 | **Build XP is paid once per new building of a kind** (a high-water count); undo takes it back; a finished project step clears the undo stack | DESIGN 4.4, ECONOMY 6 |
+| 2026-10-07 | **Letters only name what has happened** (`stat` and `count` triggers, `also` for a second test); heart scenes for everyone who can earn hearts | STORY 5 |
+| 2026-10-07 | **A v0.1 save settles its story on load** (old letters filed as read but the newest two, past beats marked seen, order lines in the poster's voice, items moved off the reserved garden and cart cells) | `src/core/upgrade.mjs` |
+| 2026-10-07 | **Night is graded in the toon shader** toward moonlit blue by brightness (lamps, windows and bulbs stay warm); far-zoom clouds are a veil (42 % at most) | `src/kit/toon.mjs`, `src/view/sky.mjs` |
+| 2026-10-07 | **A touch tap swallows the browser's compatibility click** (the camera's tap handler), so a menu that springs up under the finger is never pressed by the same tap | `src/view/camera.mjs` |
+| 2026-10-07 | **The budget check includes an all-ripe farm** (a player back after hours finds every crop ripe) | `tests/review.browser.mjs` |
 
 ## Open questions
 
@@ -73,6 +90,11 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 | 2026-10-07 | AAA integration (branch aaa-integrate): the six packages merged; their cross-package hooks applied (crop stages, sails, window glows from anchors, charm milestones, For-sale signs from the rules, plaza kept clear, story beats, nature scatter, meshopt rigs, pond ducks once); npm test 74/74; first load 986 → 849 KB (cast, juice, sky life and Vietnamese lines in their own chunks); every browser suite green; story panels rendered; ui-package hooks listed for the next stage | 94efa53 |
 | 2026-10-07 | AAA ui package (branch aaa-integrate): rendered icons and toy SVG symbols replace every emoji in the HUD, panels, catalogue, tap menu and toasts; truly modal chapter card with story panels, Ada's line and Hollowbrook, then a flight to the weeds and a pointing hand; story beats once each; toasts deduped, two at most, lock refusals merged; level-up card with unlock tiles; rolling coin counter; hearts, gifts, wishes, mailbox letters, heart-scene and arrival cards; the weekly cart panel and the cart drawn at the gate; fruit picking, For-sale parcels with an outline, animal taps; photo mode; Test section; vivid cream-and-brown restyle with coloured rims and a title splash; 8 new browser checks (27/27), every suite green; first load 849 → 884 KB | 5135321 |
+
+| 2026-10-07 | AAA fixer pass, rules: build XP once per new building (place + undo or store + place minted 500 XP in 100 cycles), no undo past a finished project step (the school was refundable), the cart the day after the school (it came in the same action), story beats in order (Ada names the Okafors before Lan thanks them), event-true letter triggers, the daily gift waits for barn room, stall stacks of one or more (negative stacks minted goods), Elin likes peaches, heart scenes for Ada, Cora, Mai and Gus (+36 Vietnamese lines), autosave on every accepted action, v0.1 saves settle their story (frozen fixtures), charm catches up on load, refusals leave no trace, June and Pip's pronouns; 13 new rule tests | 664f767 |
+| 2026-10-07 | AAA fixer pass, phone: a touch tap no longer presses the menu that springs up under it (it planted corn, harvested, could buy land), Ada's guide folds to a chip above the build sheet and her hand points at the card, the sheet opens on the step's tab, build tabs on their own row, HUD buttons step aside in build mode, merged level card folds extra tiles with sticky buttons, bubbles clamped by their width with the name on its own line, boot error with Try again, Vietnamese download retried with a fresh URL | f56bee7 |
+| 2026-10-07 | AAA fixer pass, art and budget: all-ripe farm 358k → 288k triangles at span 90 (PC) by re-authoring wheat (dense golden stand, 752 → 244 near, 162 → 88 middle), leaner corn, carrot and pumpkin middle levels and woods; bed rims read as tilled soil; review browser suite (10 checks) | ee23026 |
+| 2026-10-07 | AAA fixer pass, look: moonlit blue night, far clouds a veil, cow barn back and gables dressed, cottage backs with flower boxes, bushes and flowers, pens with trodden earth and hay; CHANGELOG 0.2.0, docs | ec6847f |
 
 ## How to resume
 

@@ -173,7 +173,11 @@ Build mode (🔨) opens the catalogue: **Farm**, **Animals**, **Production**, **
    sink for new land.
 
 ### 4.4 Undo and safety
-- **Undo:** the last 10 build actions can be undone while still in build mode.
+- **Undo:** the last 10 build actions can be undone while still in build mode. Undo gives the price back and takes the
+  build XP back (a level already reached is kept). Once a project step finishes, the actions before it can no longer be
+  undone (the stack is cleared), so a project building is never refunded.
+- **Build XP:** paid once for each new building of a kind (a high-water count per kind, `s.stats.built`): placing again
+  what was undone or stored pays nothing.
 - **Refunds:** nothing is ever destroyed. A cottage cannot be stored while a family lives in it, but it can be moved
   (the family moves with it).
 

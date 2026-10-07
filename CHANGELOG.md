@@ -1,16 +1,38 @@
 # Changelog
 
-## Unreleased — AAA interface (branch aaa-integrate)
+## 0.2.0 — The AAA pass (2026-10-07, branch aaa-integrate, not yet published)
 
-- **Look:** warm cream panels with thick brown outlines and bevelled edges, chunky green and orange buttons, HUD discs
-  with coloured rims, rendered icons everywhere (no emoji), a title splash.
-- **First minute:** a chapter card with story pictures and Ada's words; after Begin the camera flies to the weeds and a
-  hand shows where to tap. Short story moments play between chapters.
-- **Rewards:** a level-up card with everything that opened, a coin counter that rolls up, a bouncing barn badge.
-- **Friends:** hearts on orders and in cottages, a gift a day, today's wishes, letters in the mailbox, heart scenes and
-  a welcome card with each family's portrait.
-- **New things to do:** the weekly cart at the farm gate, fruit picking, buying land at its For-sale sign, photo mode.
-- **Calmer messages:** at most two toasts, no repeats, locked items merged into one.
+Hollowbrook raised toward a Hay Day-level look and feel: vivid warm colour, a living world, a cast that walks and
+talks, a story with depth, and a first session that works by touch on a phone.
+
+- **World:** saturated warm grass and meadows, ochre lanes, a brook with banks and a plank bridge, a village plaza with
+  a well, woods and groves around the farm, ruins that show what the village needs next. Night is a moonlit very dark
+  blue with black-blue water, warm windows and lamp pools.
+- **Art:** crops in three growth stages (wheat, carrots, corn, pumpkins) with a dense golden wheat stand, raised beds
+  of dark tilled soil, rebuilt feed mill with turning sails, bakery, coop and cow barn dressed on every side the camera
+  sees, a picket-fence set, decorations (fountain, bunting, banner, flowerpots, street lamps, scarecrow, hay bales),
+  cottages that are dressed as they are furnished, and animal pens with trodden earth and hay.
+- **Cast:** rigged hens, cows, ducks and village people who walk the paths; June, Pip and the villagers talk in speech
+  bubbles; neighbours Mai and Gus visit.
+- **Game feel:** crops sway in one wind, things pop and bounce when planted, harvested and placed, flying icons, coin
+  counter, confetti, smoke and sparkles; reduced motion calms all of it.
+- **Story:** the chapter cards tell why Hollowbrook emptied and who Ada and Ellis are; story moments between chapters;
+  hearts, gifts, daily wishes and heart scenes for every resident and for Ada, Cora, Mai and Gus (Ada's carry the
+  Ellis thread, Gus's the lost Harvest Festival); letters in the mailbox that only name what has really happened.
+- **New things to do:** the weekly cart at the farm gate (from the day after the school opens), fruit trees, the streak
+  garden, village charm milestones, buying land at its For-sale sign, photo mode.
+- **Interface:** warm cream panels with thick brown outlines and chunky buttons, rendered icons everywhere (no emoji),
+  a title splash, a level-up card with the unlocks (extra tiles fold behind "+N more"), at most two toasts.
+- **Phone first session (review fixes):** a tap on the map no longer also presses the menu button that springs up
+  under the finger; Ada's guide folds to a chip above the build sheet and her hand points at the card to press; the
+  build tabs get their own row; speech bubbles stay on screen.
+- **Fairness (review fixes):** place-and-undo or store-and-place no longer mints XP; a finished project can no longer
+  be undone for a refund; the daily gift waits while the barn is full; the stall only takes whole stacks; saves from
+  v0.1 settle their story on load (no burst of old letters or replayed moments).
+- **Robustness:** a first-scene file that fails twice shows a message with Try again; one failed download of the
+  Vietnamese lines no longer breaks the language button; every accepted action is autosaved.
+- **Budgets:** first load about 896 KB of code (limit 1.1 MB); a fully planted farm with every crop ripe stays under
+  120 draws and 300k triangles at every zoom on phone and PC.
 
 ## 0.1.0 — release candidate (2026-10-07, not yet published)
 

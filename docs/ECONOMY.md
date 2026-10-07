@@ -77,9 +77,14 @@ and without the cart and the trees (every level within ±10 %, the school on the
 
 | Profile | School | Cottages 3–4 | Level 10 (hours from the first visit) | Carts in 2 weeks | Fruit picked |
 |---|---|---|---|---|---|
-| Casual | day 7 | day 9 | 168 (v0.1: 168) | 2 | 84 |
-| Steady | day 4 | day 5 | 96 (v0.1: 96) | 4 | 354 |
-| Keen | day 3 | day 4 | 51 (v0.1: 51) | 5 | 789 |
+| Casual | day 7 | day 9 | 168 (v0.1: 168) | 4 | 102 |
+| Steady | day 4 | day 6 | 96 (v0.1: 96) | 2 | 357 |
+| Keen | day 3 | day 3 | 51 (v0.1: 51) | 3 | 807 |
+
+Re-measured after the review fixes (fixer pass): the first cart now really comes the day after the school opens (it
+used to arrive in the same action, because the school's first-time stamp was written after the cart check), and build
+XP is paid once per new building. Levels up to 10 and the school day are unchanged; the steady player sends two carts
+in the fortnight instead of four, and `tests/sim.test.mjs` now asks for two or more.
 
 **What the simulation found:**
 1. **The v0.1 bot could sit in a dead end for days.** With the barn full of wheat and no order it could fill, the keen
@@ -269,6 +274,8 @@ ask for variety rather than a pile of one item. Re-run the model when that chang
 
 ## 6. Levels
 
+- **Build XP:** 5 per paid or project building, once for each new building of a kind (placing again what was undone
+  or stored pays nothing; undo takes the XP back). A finished project step pays 20.
 - **Total XP to reach level L:** 10 × (L − 1)^2.6, rounded. Level 2 needs 10, level 3 needs 61, level 5 needs 368,
   level 8 needs 1,575, level 10 needs 3,027, level 20 needs 21,123.
 - **Unlocks by level (v0.1):**
