@@ -32,3 +32,6 @@ play them side by side here; this is a design comparison, to be checked by a pla
 
 ## Done in this round
 The fence rule is gone (hens just need their coop repaired), a full barn sells the surplus and lets you sell anything from the barn, rent is worth having and families leave tips, the order board is a compact list with a short Sell button, and the top bars are rearranged (turn and settings top right, status stack top left, the album lives in Settings).
+
+## Update (v0.3d)
+Built from the list above: goals and favours, the weekly goal and daily hurry, Ellis's trail and festival, fish and fruit albums, player customisation (name, figure, shirt) and a migration for old saves. Still open: playtesting the pace with real sessions.

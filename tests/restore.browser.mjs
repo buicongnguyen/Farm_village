@@ -169,6 +169,28 @@ await check('the fish pond: tap it, cast a line, reel in a fish; a coin marks th
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
   await ctx.close();
 });
+await check('goals, hurry, albums and the player look: the status row opens three goals; a growing bed can be hurried; Settings has the album and the shirt colours', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.waitForSelector('[data-status="quests"]', { state: 'attached', timeout: 8000 });
+  await page.evaluate(() => { farm.closeCards(); document.querySelector('[data-status="quests"]').click(); });
+  await page.waitForSelector('[data-do="claimQuest"]', { state: 'attached', timeout: 5000 });
+  expect(await page.evaluate(() => document.querySelectorAll('.panel .goal').length) === 4, 'three goals and the weekly one');
+  await page.evaluate(() => farm.panels.close());
+  const bed = await page.evaluate(() => { const s = farm.game.s, id = Object.keys(s.beds)[0]; s.beds[id].doneAt = farm.game.now + 60_000; return [s.placed[id].x, s.placed[id].z]; });
+  await tap(page, ...bed);
+  expect(await page.isVisible('.radial-btn[data-act="hurry"]'), 'no Hurry button on a growing bed');
+  await page.click('.radial-btn[data-act="hurry"]');
+  expect(await page.evaluate(() => Object.values(farm.game.s.beds).some(b => b.doneAt <= farm.game.now)), 'the bed was not hurried');
+  await page.evaluate(() => farm.panels.show('settings'));
+  await page.waitForSelector('[data-do="album"]', { state: 'attached', timeout: 3000 });
+  expect(await page.evaluate(() => document.querySelectorAll('.swatch').length) === 6, 'no shirt colours');
+  await page.evaluate(() => document.querySelector('.swatch:nth-child(4)').click());
+  expect(await page.evaluate(() => farm.game.s.settings.playerColor) === '#3a86ff', 'the shirt colour did not change');
+  await page.evaluate(() => document.querySelector('[data-do="album"]').click());
+  await page.waitForFunction(() => document.querySelector('.panel')?.innerText.includes('Fish album') || document.querySelector('.panel')?.innerText.includes('Album cá'), null, { timeout: 3000 });
+  expect(!errors.length, errors.join(' | '));
+  await ctx.close();
+});
 await check('the market truck: repair the market and street, load wheat in the panel, send it, watch it drive off and come back with coins', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.evaluate(() => { const g = farm.game; g.s.coins = 3000; g.s.barn.items.wheat = 40; for (const id of ['road_south', ...Object.keys(g.s.placed).filter(i => g.s.placed[i].kind === 'market')]) g.do('repair', { id }); farm.setClockOffset(100_000); });

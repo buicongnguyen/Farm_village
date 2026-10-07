@@ -6,6 +6,8 @@ import { STEPS } from '../content/projects.mjs';
 import { FAMILIES } from '../content/people.mjs';
 import { iconHtml, glyph, faceHtml } from './icon.mjs';
 import { nameOf } from './bonds-panels.mjs';
+import { PLAYER_COLORS } from '../core/today.mjs';
+import { FISH_TABLE, FRUITS } from '../content/goods.mjs';
 
 const choice = (key, value, current, label) => `<button class="tab${current === value ? ' on' : ''}" data-do="setting" data-key="${key}" data-value="${value}">${label}</button>`;
 const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['step', 'Next tutorial step'], ['hour', 'Clock +1 hour'], ['day', 'Clock +1 day']];
@@ -14,6 +16,8 @@ export function renderSettings(s, profile) {
   return `<div class="settings">
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${choice('lang', 'en', getLanguage(), 'English')}${choice('lang', 'vi', getLanguage(), 'Tiếng Việt')}</div></div>
+    <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${st.playerName ?? ''}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Boy'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Girl'))}</div></div>
+    <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
     <div class="set-row"><b>${t('Music')}</b><input type="range" min="0" max="100" value="${Math.round(st.music * 100)}" data-range="music" aria-label="${t('Music')}"></div>
     <div class="set-row"><b>${t('Day and night')}</b><div class="tabs">${choice('daylight', 'real', st.daylight, t('Follow my clock'))}${choice('daylight', 'always', st.daylight, t('Always daytime'))}</div></div>
@@ -45,6 +49,8 @@ export function renderAlbum(s) {
       : ch.teaser && seen >= ch.id - 1 ? `<div class="chapter-tile teaser">${chapterArt(ch)}<b>${t(ch.title)}</b><small>${t('Coming soon')}</small></div>`
       : `<div class="chapter-tile locked">${glyph('lock', 'g big')}<b>${t('Chapter {n}', { n: ch.id })}</b></div>`).join('')}</div>
     ${families.length ? `<h3>${t('Families of Hollowbrook')}</h3><div class="portraits">${families.map(f => `<div class="portrait-tile">${iconHtml(`family:${f.id}`, '', 'family-art')}<b>${t(f.name)}</b></div>`).join('')}</div>` : ''}
+    <h3>${t('Fish album')}</h3><div class="portraits">${FISH_TABLE.map(f => { const n = s.album?.fish?.[f.id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(f.id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not caught yet')}</small></div>`; }).join('')}</div>
+    <h3>${t('Fruit album')}</h3><div class="portraits">${Object.entries(FRUITS).map(([id, f]) => { const n = s.album?.fruit?.[id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not picked yet')}</small></div>`; }).join('')}</div>
     <h3>${t('First times')}</h3><ul>${firsts.map(([k, icon, label]) => `<li>${iconHtml(icon, '', 'mini')} ${t(label)} · <small>${when(s.firsts[k])}</small></li>`).join('') || `<li>${t('Your first harvest is waiting.')}</li>`}</ul>
     ${hearts.length ? `<h3>${t('Heart scenes')}</h3><ul>${hearts.map(h => `<li>${faceHtml(h.person, 'mini-face')} ${t('{name} and you: {count} hearts', { name: nameOf(h.person), count: h.at })} · <small>${when(h.time)}</small></li>`).join('')}</ul>` : ''}
     ${projects.length ? `<h3>${t('Projects')}</h3><ul>${projects.map(st => `<li>${glyph('projects', 'g')} ${t(st.name)} · <small>${when(s.firsts[`project:${st.id}`])}</small></li>`).join('')}</ul>` : ''}

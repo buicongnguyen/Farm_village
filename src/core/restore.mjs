@@ -28,3 +28,4 @@ export function applyRestore(s, now) {
   s.stats.cleared = 3; s.stats.built = { ...s.counts }; s.story.tutorial = 0;   // the restored village has its own first session (content/story.mjs RESTORE_TUTORIAL)
   return s;
 }
+

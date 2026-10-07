@@ -11,7 +11,7 @@ import { isBroken } from '../core/working.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { MAILBOX } from '../content/world.mjs';
 
-const CAP = 160, SIZE = 13;
+const CAP = 160, SIZE = 7;
 function alertTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
   g.fillStyle = '#e8382f'; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();

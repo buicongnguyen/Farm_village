@@ -8,6 +8,7 @@ import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { nextTask } from '../core/next.mjs';
 import { rentWaiting } from '../core/homes.mjs';
+import { questsOf, ready as questReady } from '../core/quests.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
@@ -115,6 +116,9 @@ export class Hud {
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects' });
+    if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
+    if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
+    if (e.type === 'festival') this.toast(t('The Hollowbrook festival! {coins} coins and a warm night', { coins: num(e.coins) }), 'good', { icon: 'ui:heart' });
     if (e.type === 'familyTip') this.toast(t('A family left a tip: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:coin' });
     if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn' });
     if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn' });
@@ -165,6 +169,7 @@ export class Hud {
     const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
     const step = currentStep(s);
     if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: t(s.mode === 'restore' && step.restore ? step.restore.split('.')[0] : step.name) });
+    const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
     const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
     const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });
     const tr = s.truck; if (tr?.away) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t('Truck')}: ${shortTime(Math.max(0, tr.backAt - now))}` });

@@ -11,6 +11,8 @@ import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
 import { fishingOf } from '../core/fishing.mjs';
+import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
+import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 import { truckOf, loadUnits, loadValue, capacity, blocked as blockedWhy } from '../core/market.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
@@ -26,7 +28,7 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
   return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
-  stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
+  stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', quests: 'Goals', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
 const HEAD_ICONS = { settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
@@ -38,7 +40,7 @@ export class Panels {
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
     this.el.addEventListener('click', e => this.click(e));
-    this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
+    this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-name]')) this.game.do('setting', { key: 'playerName', value: e.target.value }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
     game.on(() => { if (this.open && !this.holding()) this.render(); });
     // timers count down: only the panels that show a countdown redraw on the clock (a redraw replaces every control, which
     // would cut off a slider being dragged in Settings)
@@ -71,6 +73,9 @@ export class Panels {
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
     else if (d.do === 'album') this.show('album');
+    else if (d.do === 'claimQuest') g.do('claimQuest', { id: d.id });
+    else if (d.do === 'claimWeekly') g.do('claimWeekly');
+    else if (d.do === 'hurry') g.do('hurry', { id: this.open.arg });
     else if (d.do === 'sellGood') g.do('sellGood', { good: d.good, n: d.all ? undefined : 1 });
     else if (d.do === 'castLine') g.do('castLine', { bait: d.bait === '1' });
     else if (d.do === 'reelIn') g.do('reelIn');
@@ -133,8 +138,20 @@ export class Panels {
       const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue[i]; if (!j) return `<div class="slot empty"></div>`;
         const def = RECIPES[j.recipe], left = j.doneAt - now, k = left <= 0 ? 1 : Math.max(0, 1 - left / def.timeMs);
         return `<div class="slot ${left <= 0 ? 'ready' : ''}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : shortTime(left)}</small></div>`; }).join('');
+      const hurry = hurryLeft(s) > 0 && hurryable(s, o.arg, now) ? `<button class="btn ghost wide" data-do="hurry">${glyph('clock', 'g')} ${t('Hurry')}</button>` : '';
       body = `<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
-        ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}<div class="recipes">${recipes}</div>`;
+        ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}${hurry}<div class="recipes">${recipes}</div>`;
+    } else if (o.kind === 'quests') {
+      const qs = questsOf(s), w = WEEKLY[s.weekly?.i ?? 0], wp = weeklyProgress(s), left = hurryLeft(s);
+      const card = q => { const def = q.favour ? null : QUESTS[q.t], pr = progressOf(s, q), ok = questReady(s, q);
+        const text = q.favour ? t('{name} would love {n} {good}', { name: nameOf(q.person), n: q.n, good: t(GOODS[q.good].name) }) : t(def.text, { n: q.n });
+        return `<div class="goal ${ok ? 'ok' : ''}">${q.favour ? faceHtml(q.person) : iconHtml(def.icon, '', 'goal-icon')}<div class="goal-main"><b>${text}</b><i class="progress"><i style="width:${Math.round(pr / q.n * 100)}%"></i></i><small>${num(pr)}/${num(q.n)} · ${coinMark()} ${num(q.coins)} ${xpMark()} ${num(q.xp)}</small></div>
+          <button class="btn primary small-btn" data-do="claimQuest" data-id="${q.id}" ${ok ? '' : 'disabled'}>${t('Claim')}</button></div>`; };
+      body = `<p class="hint">${glyph('clock', 'g')} ${t('Free hurry today')}: <b>${left}</b> · ${t('tap a growing crop, tree or repair, then Hurry')}</p>
+        ${qs.list.map(card).join('')}
+        <div class="goal weekly ${s.weekly?.claimed ? 'done' : wp >= w.n ? 'ok' : ''}">${iconHtml(w.icon, '', 'goal-icon')}<div class="goal-main"><b>${t(w.text, { n: w.n })}</b><i class="progress"><i style="width:${Math.round(wp / w.n * 100)}%"></i></i><small>${num(wp)}/${num(w.n)} · ${coinMark()} ${num(WEEKLY_REWARD.coins)} · +1 ${t('hurry')}</small></div>
+          <button class="btn orange small-btn" data-do="claimWeekly" ${!s.weekly?.claimed && wp >= w.n ? '' : 'disabled'}>${s.weekly?.claimed ? t('Done') : t('Claim')}</button></div>
+        <p class="hint">${t('Goals finished')}: ${num(qs.done)}</p>`;
     } else if (o.kind === 'pond') {
       const f = fishingOf(s), line = f.line, left = line ? Math.max(0, line.doneAt - now) : 0, bait = barn.free(s, 'chicken_feed') > 0, fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0);
       const status = !line ? t('No line in the water') : left > 0 ? `${t('Waiting for a bite')} · ${shortTime(left)}` : t('A fish is biting!');

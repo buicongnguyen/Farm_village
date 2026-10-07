@@ -11,6 +11,7 @@ import { occupant, touch } from './grid.mjs';
 import { hash } from './rng.mjs';
 import { BEATS, CHAPTERS } from '../content/story.mjs';
 
+export const PLAYER_COLORS = ['#e63946', '#f4a300', '#2a9d8f', '#3a86ff', '#9b5de5', '#ff6fa5'];
 export const GIFTS = [
   { coins: 50 }, { goods: { wheat: 10 } }, { stored: { flowers: 2 } }, { goods: { chicken_feed: 6 } },
   { coins: 100 }, { goods: { carrot: 8 } }, { stored: { bench: 1 } },
@@ -53,7 +54,8 @@ export const actions = {
   },
   /** Change a setting: { key, value } (DESIGN 17). */
   setting(ctx, { key, value }) {
-    const ok = { daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
+    if (key === 'playerName') { const v = String(value ?? '').replace(/[<>"`\&]/g, '').trim().slice(0, 12); ctx.s.settings.playerName = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
+    const ok = { playerColor: PLAYER_COLORS, playerBody: ['man', 'woman'], daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
     if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
     const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
     if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');

@@ -27,7 +27,7 @@ export const actions = {
       const t = s.trees?.[tid], f = fruitOf(s, tid); if (!t || !f || t.doneAt > now) continue;
       const good = fruitId(s, tid);
       sold += barn.addOrSell(s, good, f.yield); t.doneAt = now + f.regrowMs; delete t.first; picked++; xp += XP.harvest * f.yield;
-      s.stats.picked = (s.stats.picked ?? 0) + f.yield;
+      s.stats.picked = (s.stats.picked ?? 0) + f.yield; (s.album ??= { fish: {}, fruit: {} }).fruit[good] = (s.album.fruit[good] ?? 0) + f.yield;
       ctx.emit('picked', { id: tid, good, count: f.yield });
     }
     if (!picked) return ctx.fail('Nothing is ready yet');

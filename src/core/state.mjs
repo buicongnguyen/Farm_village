@@ -4,7 +4,7 @@ import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
 import { applyRestore } from './restore.mjs';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -27,6 +27,10 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     people: {},                             // person id → { hearts (0–10), scenes: [3, 6, 9 seen], giftDay }
     neighbours: {},                         // id → { friendship, day, visits: [ms], visited: 0, trade: {...} | null }
     stall: { items: [], nextSaleAt: 0 },
+    quests: { list: [], done: 0 },           // three live goals (quests.mjs)
+    weekly: null,                            // the weekly village goal { week, i, base, claimed }
+    hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
+    album: { fish: {}, fruit: {} },          // collections: what has been caught and picked
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
     truck: { level: 1, away: false, backAt: 0, load: [], coins: 0 },   // the delivery truck (market.mjs)
     today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
@@ -48,7 +52,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     repairing: {},                          // broken things being repaired: id → { doneAt }
     house: null,                            // the farmhouse: { level } in a restored village
     rebuild: {},                            // kind → rebuild credits (a demolished thing costs half to build again)
-    settings: { daylight: 'real', textSize: 1, reducedMotion: false, quality: 'auto', sound: 0.8, music: 0.6 },
+    settings: { daylight: 'real', textSize: 1, reducedMotion: false, quality: 'auto', sound: 0.8, music: 0.6, playerName: '', playerColor: '#e63946', playerBody: 'man' },
   };
   overgrow(s, START_PARCEL);
   return restore ? applyRestore(s, now) : s;
@@ -76,12 +80,16 @@ export function migrate(save) {
   if ((save.version ?? 1) < 2) save.version = 2;
   // v2 → v3 (restore the village): condition, repairs, the farmhouse and rebuild credits start empty; a farm built before keeps what it built
   if (save.version < 3) save.version = 3;
-  return withDefaults(save);
+  // v3 → v4 (goals, fishing, the market): an older farm gets the pond and the market square where there is room
+  const old = save.version < 4; if (save.version < 4) save.version = 4;
+  const s = withDefaults(save);
+  if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
+  return s;
 }
 /** Fill every field a newer game expects with its default, keeping what the save has. */
 export function withDefaults(s) {
   const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
-  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing']) if (s[k] === undefined) s[k] = fresh[k];
+  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing', 'quests', 'weekly', 'hurry', 'album']) if (s[k] === undefined) s[k] = fresh[k];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid

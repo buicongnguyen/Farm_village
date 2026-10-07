@@ -19,7 +19,7 @@ export function tickTruck(ctx) {
   const { s, now } = ctx, t = s.truck; if (!t?.away) return;
   if (t.backAt > now) return;
   const coins = Math.round(loadValue(t) * TRUCK.pay);
-  t.away = false; t.coins = (t.coins ?? 0) + coins; t.load = [];
+  t.away = false; t.coins = (t.coins ?? 0) + coins; t.load = []; s.stats.trips = (s.stats.trips ?? 0) + 1;
   ctx.emit('truckBack', { coins });
 }
 export const actions = {

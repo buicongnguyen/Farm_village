@@ -150,10 +150,10 @@ void main(){
 /** Butterflies and bees looping round anchors (flowers, crops) that the CPU refreshes near the camera every couple of seconds. */
 function flutter(count) {
   const g = flyerGeometry('butterfly'), iAnchor = new THREE.InstancedBufferAttribute(new Float32Array(count * 4), 4), iStyle = new Float32Array(count * 4), iColor = new Float32Array(count * 3);
-  const butterflies = ['#ff9f1c', '#ff5fa2', '#58c4ff', '#ffe14d', '#ffffff', '#b28dff'];
+  const butterflies = ['#ff7a00', '#ff2e88', '#19b5ff', '#ffd400', '#ff4040', '#8f5bff', '#22d36b'];
   for (let i = 0; i < count; i++) {
     const bee = i % 4 === 3;
-    iStyle.set([bee ? 32 + rand() * 6 : 14 + rand() * 6, 0.5 + rand() * 0.9, rand() * 6.28, bee ? 0.38 : 0.62 + rand() * 0.3], i * 4);
+    iStyle.set([bee ? 32 + rand() * 6 : 14 + rand() * 6, 0.5 + rand() * 0.9, rand() * 6.28, bee ? 0.19 : 0.31 + rand() * 0.15], i * 4);
     const c = new THREE.Color(bee ? '#ffc61a' : butterflies[i % butterflies.length]); iColor.set([c.r, c.g, c.b], i * 3);
   }
   iAnchor.setUsage(THREE.DynamicDrawUsage);
@@ -175,7 +175,7 @@ void main(){
   p.x *= 1.0 - 0.25 * abs(aWing) * max(flap, 0.0);
   vec3 w = c + right * p.x + up * p.y + fwd * p.z;
   gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
-  vColor = iColor * (0.8 + 0.2 * abs(aWing));
+  vColor = mix(iColor, iColor.gbr * 1.15, abs(aWing) * 0.5) * (0.85 + 0.3 * abs(aWing));   // two-tone wings: vivid at the tips
 }`,
     fragmentShader: FLYER_FRAG,
   });

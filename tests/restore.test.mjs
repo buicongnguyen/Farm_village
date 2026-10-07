@@ -192,3 +192,31 @@ test('the fish pond: there at the start; cast, wait, reel in a fish that sells; 
   tick(s, t0 + 2000); tick(s, t0 + 2000 + FISH.feeMs + 1000); assert.ok(s.fishing.coins > 0);
   const c = s.coins; must(s, 'collectFees', {}, t0 + 3000 + FISH.feeMs); assert.ok(s.coins > c);
 });
+
+test('goals: three live quests, claimable when done; favours take goods; the weekly goal and the hurry token work', async () => {
+  const s = fresh(); s.coins = 500; tick(s, T0 + 1000);
+  assert.equal(s.quests.list.length, 3);
+  const q = s.quests.list.find(x => !x.favour); assert.ok(q, 'a counter goal');
+  assert.equal(act(s, 'claimQuest', { id: q.id }, T0 + 2000).reason, 'Not finished yet');
+  s.stats[(await import('../src/content/quests.mjs')).QUESTS[q.t].stat] = (s.stats[(await import('../src/content/quests.mjs')).QUESTS[q.t].stat] ?? 0) + q.n;
+  const coins = s.coins; must(s, 'claimQuest', { id: q.id }, T0 + 2000); assert.ok(s.coins > coins); assert.equal(s.stats.questsDone, 1);
+  tick(s, T0 + 3000); assert.equal(s.quests.list.length, 3, 'a new goal takes its place');
+  // hurry: one free token a day finishes a growing bed
+  const bed = idOf(s, 'bed'); s.beds[bed].doneAt = T0 + 1e6;
+  must(s, 'hurry', { id: bed }, T0 + 4000); assert.ok(s.beds[bed].doneAt <= T0 + 4000);
+  const bed2 = idOf(s, 'bed', 1); s.beds[bed2].doneAt = T0 + 1e6; assert.equal(act(s, 'hurry', { id: bed2 }, T0 + 5000).reason, 'No hurry left today');
+  assert.equal(act(s, 'hurry', { id: idOf(s, 'coop') }, T0 + 5000).ok, false);
+  // the weekly goal pays a coin prize and one more hurry
+  const w = s.weekly; assert.ok(w); const { WEEKLY } = await import('../src/content/quests.mjs'); s.stats[WEEKLY[w.i].stat] = (s.stats[WEEKLY[w.i].stat] ?? 0) + WEEKLY[w.i].n;
+  must(s, 'claimWeekly', {}, T0 + 6000); assert.equal(act(s, 'claimWeekly', {}, T0 + 6000).reason, 'Already claimed');
+  must(s, 'hurry', { id: bed2 }, T0 + 7000);
+});
+
+test('an older save gets the pond and the market square; the player can be named and dressed', () => {
+  const s = newGame(T0, 7); s.version = 3; delete s.fishing; s.counts = {}; s.placed = { p1: { kind: 'bed', x: 33, z: 58, rot: 0 } }; s.counts.bed = 1;
+  const up = migrate(JSON.parse(JSON.stringify(s))); tick(up, T0 + 1000); assert.equal(up.version, SAVE_VERSION); assert.ok(up.fishing && up.quests);
+  assert.ok((up.counts.pond ?? 0) + (up.counts.market ?? 0) >= 1, 'a pond or a market found room');
+  const g = fresh(); must(g, 'setting', { key: 'playerName', value: '<b>Mina</b>' }); assert.equal(g.settings.playerName, 'bMina/b');
+  must(g, 'setting', { key: 'playerColor', value: '#3a86ff' }); assert.equal(act(g, 'setting', { key: 'playerColor', value: '#000' }).ok, false);
+  must(g, 'setting', { key: 'playerBody', value: 'woman' });
+});

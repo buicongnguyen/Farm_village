@@ -37,7 +37,7 @@ const OUTFITS = {
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
-const outfitOf = id => OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
+const outfitOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
 // What Pip says when things happen (the story package's lines win when it provides them), and June's stuck tips.
 const PIP_LINES = {
   firstHarvest: 'We did it! Our very first harvest!',
@@ -74,7 +74,7 @@ export class PeopleView {
   /** Who should be around: Ada, the family, residents of arrived families, and Cora once the school is open. */
   residents() {
     const s = this.s, now = this.game.now, home = [FARMHOUSE.x + 5, FARMHOUSE.z];
-    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: 'man', home, family: true, player: true }];
+    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: s.settings?.playerBody ?? 'man', home, family: true, player: true }];
     for (const [hid, h] of Object.entries(s.homes)) {
       if (!h.family || h.arrivesAt > now) continue;
       const p = s.placed[hid], door = p && doorCell(p.kind, p.x, p.z, p.rot), fam = FAMILIES.find(f => f.id === h.family);
@@ -94,7 +94,7 @@ export class PeopleView {
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
-    w.subject = this.cast.add({ rig: w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
+    w.subject = this.cast.add({ rig: w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     this.walkers.set(w.id, w); return w;
   }
   drop(w) { w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
@@ -326,6 +326,8 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
+    if (e.type === 'settingChanged' && ['playerColor', 'playerBody'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.drop(me); }   // sync() draws you again in the new look
+
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);
     if (e.type === 'familyArrived') setTimeout(() => { for (const w of this.walkers.values()) if (FAMILIES.find(f => f.id === e.family)?.people.some(p => p.id === w.id)) this.once(w, 'Wave', 1.5); }, 1500);
@@ -376,7 +378,7 @@ export class PeopleView {
     for (const w of this.walkers.values()) { if (w.indoors) continue; const p = this.screenOf(w, RIGS[w.body].height * 0.5); const d = Math.hypot(p.x - x, p.y - y); if (d < bestD) { best = w; bestD = d; } }
     return best;
   }
-  nameOf(w) { const who = PEOPLE[w.person ?? w.id]; return who ? t(who.name) : FAMILY_NAMES[w.id] ?? ''; }
+  nameOf(w) { if (w.player) return this.s.settings?.playerName || t('You'); const who = PEOPLE[w.person ?? w.id]; return who ? t(who.name) : FAMILY_NAMES[w.id] ?? ''; }
   say(w, text, ms = 5000) {
     w.bubble?.remove();
     const el = document.createElement('div'); el.className = 'bubble';

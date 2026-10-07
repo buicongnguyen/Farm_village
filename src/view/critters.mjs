@@ -27,6 +27,11 @@ export class Critters {
   spawnResidents() {
     const cat = this.add('cat', (FARMHOUSE.x + 3.2) * CELL, (FARMHOUSE.z - 3.4) * CELL, { clip: 'Sleep' });
     this.others.push({ sub: cat, kind: 'cat', home: [cat.x, cat.z], radius: 3, state: 'sleep', until: rand(10, 30) });
+    // hens pecking and strolling about the farmyard, so the farm has life before the coop's own hens arrive
+    for (const [dx, dz] of [[2.2, 1.5], [4.5, 3.2], [3.2, -2.2], [6, 0.6], [1.5, 4.6]]) {
+      const sub = this.add('hen', (FARMHOUSE.x + dx) * CELL, (FARMHOUSE.z + dz) * CELL);
+      this.others.push({ sub, kind: 'hen', home: [sub.x, sub.z], radius: 5, state: 'idle', until: rand(0.5, 5) });
+    }
     // rabbits where the meadow meets the farm: between the road and the farm fence, and along its north edge
     for (const [x, z] of [[31, 38], [31, 50], [40, 23]]) {
       const sub = this.add('rabbit', (x + 0.5) * CELL, (z + 0.5) * CELL);
@@ -96,6 +101,7 @@ export class Critters {
       // the cat dozes by day and prowls a little at night; rabbits nibble and hop about
       const r = Math.random();
       if (o.kind === 'cat') o.state = calm ? 'sleep' : night ? (r < 0.6 ? 'walk' : 'sit') : r < 0.65 ? 'sleep' : r < 0.85 ? 'sit' : 'walk';
+      else if (o.kind === 'hen') o.state = r < 0.6 && !calm ? 'walk' : 'idle';
       else o.state = r < 0.45 && !calm ? 'hop' : 'idle';   // reduced motion: rabbits sit and nibble
       o.until = this.time + (o.state === 'sleep' ? rand(20, 50) : o.state === 'hop' ? rand(0.6, 1.4) : rand(3, 8));
       if (o.state === 'walk' || o.state === 'hop') {
@@ -104,8 +110,8 @@ export class Critters {
       }
     }
     if ((o.state === 'walk' || o.state === 'hop') && o.target) {
-      const dx = o.target[0] - sub.x, dz = o.target[1] - sub.z, d = Math.hypot(dx, dz), speed = o.kind === 'cat' ? 0.7 : 1.6;
-      if (d > 0.1) { sub.rot = Math.atan2(dx, dz); const step = Math.min(d, speed * dt); sub.x += dx / d * step; sub.z += dz / d * step; sub.clip = o.kind === 'cat' ? 'Walk' : 'Hop'; sub.speed = o.kind === 'cat' ? speed / RIGS.cat.walk : 1.4; return; }
+      const dx = o.target[0] - sub.x, dz = o.target[1] - sub.z, d = Math.hypot(dx, dz), speed = o.kind === 'cat' ? 0.7 : o.kind === 'hen' ? 0.8 : 1.6;
+      if (d > 0.1) { sub.rot = Math.atan2(dx, dz); const step = Math.min(d, speed * dt); sub.x += dx / d * step; sub.z += dz / d * step; sub.clip = o.kind === 'cat' || o.kind === 'hen' ? 'Walk' : 'Hop'; sub.speed = o.kind === 'cat' ? speed / RIGS.cat.walk : o.kind === 'hen' ? speed / RIGS.hen.walk : 1.4; return; }
       o.state = 'idle';
     }
     sub.speed = 1; sub.clip = o.state === 'sleep' ? 'Sleep' : o.state === 'sit' ? 'Sit' : 'Idle';
