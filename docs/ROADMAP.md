@@ -1,5 +1,7 @@
 # Farm Village — roadmap
 
+> After v0.3 the plan is `JOURNEY.md`: eight stages from the homecoming to the valley of plenty, with the story and the build order (v0.4–v1.1). The v0.2–v1.0 rows below are the original plan and are kept for history.
+
 The order of work from an empty repository to v1.0. Each milestone lists its tasks, what "done" means and how it is
 tested. Times assume one main developer with AI help and are estimates only.
 

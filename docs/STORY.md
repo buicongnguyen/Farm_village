@@ -85,7 +85,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | 4 | A bell for the children | The school opens (end of v0.1) | Cora's bell. Marisol's letter about the clinic. Ada: Ellis carried the bell. |
 | 5 | Someone to care for us (teaser) | After card 4 | Marisol's list, Dr Hazel's reply and the burned festival poster. |
 
-**Chapters 5–9 (the plan for later versions):**
+**Chapters 5–9 (the plan for later versions):** (chapters 10–20 and how each chapter opens a stage of the game are in `JOURNEY.md`)
 
 | # | Title | Story | The mystery thread |
 |---|---|---|---|
