@@ -153,18 +153,24 @@ await check('people: you are on the farm and walk to what you tap; a villager wi
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
-await check('the fish pond: tap it, cast a line, reel in a fish; a coin marks the bite', async () => {
+await check('the village pond: fish pictures swim in it; tap it, cast a line, reel in a fish; a coin marks the bite; tap a person then the pond and they go fishing', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.waitForTimeout(2500);
-  const pond = await idOf(page, 'pond'); expect(!!pond, 'no pond at the start');
-  const [cx, cz] = await cellOf(page, pond);
-  await tap(page, cx, cz); await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
+  expect(await page.evaluate(() => farm.pondFish.meshes.reduce((a, m) => a + m.mesh.count, 0)) >= 7, 'no fish swim in the village pond');
+  await tap(page, 15, 42);   // the village pond by the farmhouse await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
   await page.evaluate(() => document.querySelector('[data-do="castLine"]').click());
   expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
   await page.evaluate(() => farm.setClockOffset(100_000)); await page.waitForTimeout(1500);
   expect(await page.evaluate(() => farm.marks.collect().coin.length) > 0, 'no coin marker over the biting pond');
   await page.evaluate(() => document.querySelector('[data-do="reelIn"]').click());
   expect(await page.evaluate(() => farm.state().fishing.caught) === 1, 'no fish was reeled in');
+  // tap Pip (picked straight from the people view), then the pond: Pip walks off to fish
+  await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('pip'); p.selectedUntil = performance.now() + 9000; });
+  await tap(page, 15, 42);
+  expect(await page.evaluate(() => !!farm.people.walkers.get('pip').target && farm.people.walkers.get('pip').fishing), 'Pip was not sent fishing');
+  await page.evaluate(() => { const p = farm.people; p.selected = p.walkers.get('you'); p.selectedUntil = performance.now() + 9000; });
+  await tap(page, 15, 42);
+  expect(await page.evaluate(() => !!farm.people.walkers.get('you').goal), 'you were not sent fishing');
   expect(!errors.length, errors.join(' | '));
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
   await ctx.close();

@@ -9,7 +9,6 @@ export const RESTORE = {
     { kind: 'feed_mill', x: 32, z: 64, rot: 2, cond: 'broken' },
     { kind: 'coop', x: 35, z: 64, rot: 2, cond: 'broken' },
     { kind: 'bakery', x: 40, z: 64, rot: 2, cond: 'broken' },
-    { kind: 'pond', x: 41, z: 56, rot: 0 },
     { kind: 'market', x: 75, z: 93, rot: 2, cond: 'broken' },
     { kind: 'cottage', x: 33, z: 93, rot: 2, cond: 'broken' },
     { kind: 'cottage', x: 37, z: 93, rot: 2, cond: 'broken' },

@@ -6,7 +6,7 @@
 // follows Pip. AI neighbours walk in from their signpost, say something about the farm, and leave. At night everyone
 // goes home. Tap a person to hear their line.
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
-import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE } from '../content/world.mjs';
+import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 const { JUNE_TIPS } = PEOPLE_DATA;
 import { STEPS } from '../content/projects.mjs';
@@ -141,8 +141,7 @@ export class PeopleView {
       return [this.route(here, r < 0.5 ? [ORDER_BOARD.x, ORDER_BOARD.z] : w.home), { act: r < 0.3 ? 'sweep' : 'idle', time: 5 + Math.random() * 6 }];
     }
     if (w.work && r < 0.6) return [this.route(here, w.home), { act: 'idle', time: 6 + Math.random() * 6 }];
-    const pond = Object.values(s.placed).find(p => p.kind === 'pond');
-    if (pond && !w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [pond.x + 4, pond.z + 2]), { act: 'fish', time: 18 + Math.random() * 12, face: [pond.x + 1, pond.z + 2] }];   // fishing folk sit by the pond
+    if (!w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [POND_DOCK.x, POND_DOCK.z]), { act: 'fish', time: 18 + Math.random() * 12, face: [POND_DOCK.x - 3, POND_DOCK.z] }];   // fishing folk sit by the village pond   // fishing folk sit by the pond
     const site = this.site();
     if (site && !w.kid && r < 0.22) return [this.route(here, site), { act: 'hammer', time: 10 + Math.random() * 10, face: site }];
     const bench = Object.values(s.placed).filter(p => p.kind === 'bench');
@@ -264,6 +263,15 @@ export class PeopleView {
       return;
     }
   }
+  /** Send someone fishing: to the village pond's dock (or a built pond); you cast a line when you get there. */
+  sendFishing(w, pond) {
+    const spot = pond ? [pond.x + 4, pond.z + 2] : [POND_DOCK.x, POND_DOCK.z], face = pond ? [pond.x + 1, pond.z + 2] : [POND_DOCK.x - 3, POND_DOCK.z];
+    const at = [(spot[0] + 0.5) * CELL, (spot[1] + 0.5) * CELL];
+    if (w.player) { w.goal = at; w.stay = 60; w.onArrive = () => { if (!this.s.fishing?.line) this.game.do('castLine'); w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z); w.clipFor = 'Sit'; w.wait = 20; }; }
+    else if (w.family) { w.target = at; w.wait = 0; w.fishing = true; }
+    else { w.route = this.route(this.cellOf(w), spot); w.todo = { act: 'fish', time: 40, face }; w.wait = 0; }
+    this.say(w, t('Off to the pond!'), 2500);
+  }
   // ── You: the main character walks to whatever you tap and does the chore there (the rules act at once; this is the show) ──
   playerGo(cell) { const w = this.walkers.get('you'); if (!w || w.indoors) return; w.goal = [(cell.x + 0.5) * CELL, (cell.z + 0.5) * CELL]; w.stay = 6; }
   livePlayer(w, dt, night) {
@@ -272,7 +280,7 @@ export class PeopleView {
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
     if (w.goal) {
       const dx = w.goal[0] - w.x, dz = w.goal[1] - w.z, d = Math.hypot(dx, dz), speed = 2.6;
-      if (d < 1.3) { w.goal = null; w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6; return; }
+      if (d < 1.3) { w.goal = null; if (w.onArrive) { const f = w.onArrive; w.onArrive = null; f(); return; } w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6; return; }
       this.turnTo(w, Math.atan2(dx, dz), dt, 10);
       const step = Math.min(d - 1.2, speed * dt), nx = w.x + Math.sin(w.rot) * step, nz = w.z + Math.cos(w.rot) * step;
       if (this.canStand(nx, nz) && !this.crossesFence(w.x, w.z, nx, nz)) { w.x = nx; w.z = nz; w.blocked = 0; this.walking(w, speed, 'Run'); return; }
@@ -290,6 +298,7 @@ export class PeopleView {
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
     if (w.target) {
       const dx = w.target[0] - w.x, dz = w.target[1] - w.z, d = Math.hypot(dx, dz), speed = w.id === 'pip' ? 1.6 : 1.3;
+      if (d < 0.2 && w.fishing) { w.target = null; w.fishing = false; w.wait = 30; w.clipFor = 'Sit'; w.faceTo = Math.atan2((POND_DOCK.x - 2.5) * CELL - w.x, (POND_DOCK.z + 0.5) * CELL - w.z); return; }
       if (d < 0.2) { w.target = null; w.wait = 3 + Math.random() * 6; w.clipFor = w.id === 'pip' && Math.random() < 0.3 ? 'Wave' : w.id === 'june' && Math.random() < 0.5 ? 'Sweep' : 'Idle'; }
       else {
         this.turnTo(w, Math.atan2(dx, dz), dt);

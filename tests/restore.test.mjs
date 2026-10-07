@@ -179,8 +179,8 @@ test('the next-task chip names the most useful thing: ripe things first, then or
   assert.equal(nextTask(s, T0).key, 'Harvest the ripe crops'); assert.deepEqual(nextTask(s, T0).at, { x: s.placed[bedId].x, z: s.placed[bedId].z });
 });
 
-test('the fish pond: there at the start; cast, wait, reel in a fish that sells; bait is quicker; fishing villagers leave fees', () => {
-  const s = fresh(); assert.equal(s.counts.pond, 1); assert.equal(isWorking(s, idOf(s, 'pond')), true);
+test('the village pond: fish from the start (no pond on the farm); cast, wait, reel in a fish that sells; bait is quicker; fishing villagers leave fees', () => {
+  const s = fresh(); assert.ok(!s.counts.pond, 'the farm keeps its space: the village pond is for fishing');
   const t0 = T0 + 1000;
   must(s, 'castLine', {}, t0); assert.equal(act(s, 'castLine', {}, t0 + 1).reason, 'The line is already in the water');
   assert.equal(act(s, 'reelIn', {}, t0 + 1000).reason, 'Nothing is biting yet');
@@ -215,7 +215,7 @@ test('goals: three live quests, claimable when done; favours take goods; the wee
 test('an older save gets the pond and the market square; the player can be named and dressed', () => {
   const s = newGame(T0, 7); s.version = 3; delete s.fishing; s.counts = {}; s.placed = { p1: { kind: 'bed', x: 33, z: 58, rot: 0 } }; s.counts.bed = 1;
   const up = migrate(JSON.parse(JSON.stringify(s))); tick(up, T0 + 1000); assert.equal(up.version, SAVE_VERSION); assert.ok(up.fishing && up.quests);
-  assert.ok((up.counts.pond ?? 0) + (up.counts.market ?? 0) >= 1, 'a pond or a market found room');
+  assert.equal(up.needsPlaces, undefined, 'the new places were looked for on the first tick');
   const g = fresh(); must(g, 'setting', { key: 'playerName', value: '<b>Mina</b>' }); assert.equal(g.settings.playerName, 'bMina/b');
   must(g, 'setting', { key: 'playerColor', value: '#3a86ff' }); assert.equal(act(g, 'setting', { key: 'playerColor', value: '#000' }).ok, false);
   must(g, 'setting', { key: 'playerBody', value: 'woman' });

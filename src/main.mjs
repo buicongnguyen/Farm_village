@@ -10,6 +10,7 @@ import { newGame } from './core/state.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { Marks } from './view/marks-view.mjs';
+import { PondFish } from './view/pond-fish.mjs';
 import { dressWorld } from './view/dress.mjs';
 import { Daylight } from './view/daylight.mjs';
 import { Ghost } from './view/ghost.mjs';
@@ -52,6 +53,7 @@ const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clo
 const world = new WorldView(app);
 const land = new LandView(world, game);
 const marks = new Marks(world, game, land);
+const pondFish = new PondFish(world, game);
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;
 // the camera eases to places the interface points at (the guide, "show the way", notifications)
@@ -150,7 +152,7 @@ if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); 
 
 if (TEST_MODE) {
   const { installTestHook } = await import('./kit/test-hook.mjs');
-  installTestHook({ world, game, land, marks, build, hud, panels, radial, people, juice: world.juice });
+  installTestHook({ world, game, land, marks, pondFish, build, hud, panels, radial, people, juice: world.juice });
 }
 /** The Settings panel's Test section (test builds only). */
 function testAction(what) {

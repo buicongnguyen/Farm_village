@@ -9,7 +9,7 @@ import { sfx } from '../kit/sound.mjs';
 import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf } from '../content/world.mjs';
+import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_DOCK } from '../content/world.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
 import { plantPrice } from '../core/farm.mjs';
 import { animalPrice, animalState } from '../core/animals.mjs';
@@ -94,7 +94,13 @@ export class Radial {
     if (id) this.people?.playerGo?.(cell);   // you walk over to what you tapped
     // a plain tap on an empty bed always opens the seed menu, so the crop can be changed; only a drag (or a harvest sweep) uses the armed tool
     if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
-    const who = !id && this.people?.pick(x, y); if (who) { this.hide(); this.people.talk(who); return; }
+    // a person picked a moment ago, then a pond: they walk there and fish (you cast a line when you get there)
+    const pondHere = isPond(cell.x, cell.z) || near(cell, POND_DOCK, 1) || (id && s.placed[id]?.kind === 'pond');
+    const sel = this.people?.selected;
+    if (pondHere && sel && performance.now() < (this.people.selectedUntil ?? 0)) { this.hide(); this.people.sendFishing(sel, id && s.placed[id]?.kind === 'pond' ? s.placed[id] : null); this.people.selected = null; return; }
+    if (pondHere && !id) { this.hide(); this.panels.show('pond'); return; }
+    const who = !id && this.people?.pick(x, y);
+    if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '', land = null;
     if (p && !opts.open && levelOf(s, id) > 0) ({ buttons, info } = this.repairMenu(id, def));

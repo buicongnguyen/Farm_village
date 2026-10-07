@@ -9,7 +9,7 @@ import { treeState } from '../core/trees.mjs';
 import { readyCount } from '../core/production.mjs';
 import { isBroken } from '../core/working.mjs';
 import { rentWaiting } from '../core/homes.mjs';
-import { MAILBOX } from '../content/world.mjs';
+import { MAILBOX, POND_DOCK } from '../content/world.mjs';
 
 const CAP = 160, SIZE = 7;
 function alertTexture() {
@@ -53,6 +53,7 @@ export class Marks {
       else if (def.stall) ready = (s.stall?.coins ?? 0) > 0;
       if (ready) coin.push([x, high, z]);
     }
+    if ((s.fishing?.coins ?? 0) > 0 || (s.fishing?.line && s.fishing.line.doneAt <= now)) coin.push([(POND_DOCK.x + 0.5) * CELL, 2.2, (POND_DOCK.z + 0.5) * CELL]);   // the village pond
     if (rentWaiting(s, now) >= 10) coin.push([(MAILBOX.x + 0.5) * CELL, 2.2, (MAILBOX.z + 0.5) * CELL]);   // rent waiting in the mailbox
     return { coin, alert };
   }

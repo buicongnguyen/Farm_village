@@ -7,7 +7,8 @@ import { rng, hash } from './rng.mjs';
 import { workingCount } from './working.mjs';
 
 export const fishingOf = s => (s.fishing ??= { line: null, coins: 0, caught: 0, feeAt: 0 });
-export const hasPond = s => workingCount(s, 'pond') > 0;
+// The village pond by the farmhouse (content/world.mjs POND) is always there to fish in; built ponds are extra.
+export const hasPond = () => true;
 /** The fish that bites: better odds for rare ones with bait. Pure, from the line's own seed. */
 export function pick(seed, bait) {
   const r = rng(hash(seed))(), table = FISH_TABLE.map(f => ({ ...f, w: f.rare ? f.weight * (bait ? 2 : 1) : f.weight })), total = table.reduce((a, f) => a + f.w, 0);

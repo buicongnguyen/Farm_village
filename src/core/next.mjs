@@ -8,7 +8,7 @@ import { isBroken, isRepairing, isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
 import { questsOf, ready as questReady } from './quests.mjs';
 import { rentWaiting } from './homes.mjs';
-import { MAILBOX } from '../content/world.mjs';
+import { MAILBOX, POND_DOCK } from '../content/world.mjs';
 
 const centre = p => { const [w, d] = footprint(p.kind, p.rot); return { x: Math.floor(p.x + w / 2), z: Math.floor(p.z + d / 2) }; };
 export function nextTask(s, now) {
@@ -24,8 +24,7 @@ export function nextTask(s, now) {
   if (goods) return { key: 'Collect the finished goods', at: at(goods), icon: 'bread', do: ['collectProducts', { building: goods }] };
   if (rentWaiting(s, now) >= 10) return { key: 'Collect the rent from the mailbox', at: { x: MAILBOX.x, z: MAILBOX.z }, icon: 'ui:coin', do: ['collectRent', {}] };
   if (questsOf(s).list.some(q => questReady(s, q))) return { key: 'Claim a finished goal', at: null, icon: 'ui:xp', panel: 'quests' };
-  const pond = of((id, p, d) => d.pond && s.fishing?.line && s.fishing.line.doneAt <= now)[0];
-  if (pond) return { key: 'Reel in the fish', at: at(pond), icon: 'perch', do: ['reelIn', {}] };
+  if (s.fishing?.line && s.fishing.line.doneAt <= now) return { key: 'Reel in the fish', at: { x: POND_DOCK.x, z: POND_DOCK.z }, icon: 'perch', do: ['reelIn', {}] };
   const truck = of((id, p, d) => d.market && (s.truck?.coins ?? 0) > 0)[0];
   if (truck) return { key: "Collect the truck's coins", at: at(truck), icon: 'market', do: ['collectTruck', {}] };
   if (s.orders.cards.some(c => barn.hasAll(s, c.need))) return { key: 'Deliver an order', at: null, icon: 'ui:orders', panel: 'orders' };

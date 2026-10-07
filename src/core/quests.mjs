@@ -12,7 +12,7 @@ import { animalState } from './animals.mjs';
 import { queueOf } from './production.mjs';
 
 const SLOTS = 3;
-const has = (s, needs) => !needs || (needs === 'production' ? workingCount(s, 'feed_mill') + workingCount(s, 'bakery') > 0
+const has = (s, needs) => !needs || needs === 'pond' || (needs === 'production' ? workingCount(s, 'feed_mill') + workingCount(s, 'bakery') > 0
   : needs === 'apple_tree' ? (s.counts.apple_tree ?? 0) > 0 : workingCount(s, needs) > 0);
 export const questsOf = s => (s.quests ??= { list: [], done: 0 });
 export const progressOf = (s, q) => q.favour ? Math.min(q.n, barn.free(s, q.good)) : Math.max(0, Math.min(q.n, (s.stats[QUESTS[q.t].stat] ?? 0) - q.base));
