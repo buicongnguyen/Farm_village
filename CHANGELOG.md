@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 — The orchard (2026-10-08, PR preview)
+
+- **Roadmap:** tap the village name for the current stage, deed progress and the next three unlocks. The goal stays in the status stack. Future meadow, dairy and cat features are explicitly marked as planned.
+- **Orchard:** cherry trees open at level 4 for 70 coins, give three cherries after 25 seconds and regrow in 40 seconds. A fruit stand takes fruit stacks and pays a small premium as visitors buy; goods and takings persist across saves and away time. Takings have a map marker and a one-tap Next action.
+- **Biscuit:** a kennel at level 5 gives the existing dog a job: run to grounded crows, bark them away and return home. He avoids fences and buildings and costs no upkeep. Reduced motion keeps crow protection without the chase animation.
+- **Clinic and chapter 5:** after the school and four settled households, donate 12 bread and nine cherries, then rebuild the clinic for 600 coins on the civic row. Dr Hazel returns; Marisol is the nurse and Grace has a vet room. New orchard, kennel and clinic story moments keep each speaker's Vietnamese voice.
+- **Night:** villagers leave an unfinished errand at dusk and walk directly home.
+- **Saves:** v0.3 farms keep their money and buildings; an already-seen chapter 5 teaser becomes chapter 4 so the real clinic ending can play. The fruit stand has separate stock and takings.
+- **Art and phones:** original Blender cherry tree, paired cherries, fruit stand and kennel; rendered icons and Hazel's portrait. Middle detail begins at span 40, distant detail at 90; wider distant batches keep the complete orchard and clinic inside 120 draws and 300k triangles, including detail boundaries.
+
+
 ## 0.3.0 — Restore Hollowbrook (in progress)
 
 - **Village life (v0.3f):** fishing happens at the village pond by the farmhouse (no pond on the farm at the start); Willowmere's 3D fish swim nose first under the water with swinging tails; tap a person, then the pond, and they go fishing (you cast a line when you arrive). Order cards list what to plant, make, collect or catch with a link to each place, the Next chip names the first step, and refusals say how to get past them. A school lane and civic row lead to the old school, clinic, police station and company; tap one for its name, what will rebuild it, and a one-time tidy-up. People say different things through the day (48 new lines, dealt so they rarely repeat). The barn upgrade costs 100 every time and adds 100; the village name shows how many projects are done and opens them.

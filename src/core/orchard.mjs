@@ -1,0 +1,41 @@
+// The fruit stand and Biscuit's home. All stock and takings change through act()/tick().
+import { FRUIT_STAND } from '../content/economy.mjs';
+import { FRUITS } from '../content/goods.mjs';
+import { workingCount, isWorking } from './working.mjs';
+import * as barn from './barn.mjs';
+export const kennelOf = s => Object.entries(s.placed).find(([id, p]) => p.kind === 'kennel' && isWorking(s, id))?.[1] ?? null;
+export const biscuitOnDuty = s => !!kennelOf(s);
+export const standOpen = s => workingCount(s, 'fruit_stand') > 0;
+export const fruitPrice = good => Math.round((FRUITS[good]?.value ?? 0) * FRUIT_STAND.bonus);
+export function tickOrchard(ctx) {
+  const { s, now } = ctx, st = s.fruitStand;
+  if (!standOpen(s) || !st.items.length) { st.nextSaleAt = 0; return; }
+  if (!st.nextSaleAt) st.nextSaleAt = now + FRUIT_STAND.everyMs;
+  let sold = 0, coins = 0;
+  while (st.items.length && st.nextSaleAt <= now) {
+    const item = st.items[0]; item.n--; sold++; coins += fruitPrice(item.good);
+    if (!item.n) st.items.shift();
+    st.nextSaleAt += FRUIT_STAND.everyMs;
+  }
+  if (sold) { st.coins += coins; s.stats.fruitSold += sold; ctx.emit('fruitSold', { sold, coins }); }
+  if (!st.items.length) st.nextSaleAt = 0;
+}
+export const actions = {
+  fruitList(ctx, { good, n = 1 }) {
+    const { s, now } = ctx;
+    if (!standOpen(s)) return ctx.fail('Build a fruit stand first');
+    if (!Object.hasOwn(FRUITS, good)) return ctx.fail('Only fruit goes on this stand');
+    if (!Number.isSafeInteger(n) || n < 1 || n > FRUIT_STAND.stack) return ctx.fail('Choose a whole stack of up to ten fruit');
+    if (s.fruitStand.items.length >= FRUIT_STAND.slots) return ctx.fail('The fruit stand is full');
+    if (!barn.take(s, { [good]: n })) return ctx.fail('Missing goods');
+    s.fruitStand.items.push({ good, n });
+    if (!s.fruitStand.nextSaleAt) s.fruitStand.nextSaleAt = now + FRUIT_STAND.everyMs;
+    ctx.emit('fruitListed', { good, n }); return { listed: n };
+  },
+  fruitCollect(ctx) {
+    const { s } = ctx, coins = s.fruitStand.coins;
+    if (!coins) return ctx.fail('Nothing sold yet');
+    s.coins += coins; s.stats.coinsEarned += coins; s.fruitStand.coins = 0;
+    ctx.emit('coins', { coins }); return { coins };
+  },
+};

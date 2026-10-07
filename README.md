@@ -1,7 +1,7 @@
 # Farm Village
 
 The next game after Willowmere: a cozy, single-player farm and village game in the browser, where you lead your family
-and grow your village. Version 0.1.0 (release candidate) is built; see CHANGELOG.md. **Play it: https://buicongnguyen.github.io/Farm_village/**
+and grow your village. Version 0.4.0 adds the orchard, Biscuit’s kennel, roadmap and clinic on a review branch; see CHANGELOG.md. The main branch publishes the live site after PR review. **Play it: https://buicongnguyen.github.io/Farm_village/**
 
 ## Play and develop
 
@@ -47,3 +47,7 @@ Town tales, saves, translation, deploy safety, Blender generators).
 2. Review the plan: GAME-CONCEPT first, then DESIGN, ECONOMY, TECH-PLAN and ROADMAP.
 3. Confirm or change the working decisions (GAME-CONCEPT section 7) and choose the hosting set-up.
 4. Start with ROADMAP milestone M0.
+
+## v0.4: the orchard
+
+Tap **Hollowbrook** above the status stack to open the roadmap. Cherry trees and the fruit stand open at level 4; Biscuit's kennel at level 5. After the school and four families, the Village projects panel asks for bread and cherries to reopen the clinic and finish chapter 5. Future unlocks in the roadmap are marked as planned.

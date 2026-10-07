@@ -21,13 +21,14 @@ const LAYOUT = {
   feed_mill: { x: 32, z: 64, rot: 2 }, coop: { x: 35, z: 64, rot: 2, pen: [35, 64, 38, 67, 38] },
   bakery: { x: 40, z: 64, rot: 2 }, cow_barn: { x: 44, z: 64, rot: 2, pen: [44, 64, 47, 67, 47] },
   stall: { x: 30, z: 65, rot: 2, path: [31, 64] },
+  clinic: { x: 62, z: 106, rot: 2, path: [64, 105] },
   school: { x: 50, z: 93, rot: 2, path: [52, 92] },
 };
 // cottages 1–3 stand in the restored village (content/start.mjs); a new one goes past the school's plot
 const cottageSpot = (i, restore = false) => { const x = restore && i >= 3 ? 57 + 4 * (i - 3) : 33 + 4 * i; return { x, z: 93, rot: 2, path: [x + 1, 92] }; };
 const treeCells = [];
 for (let z = 52; z <= 59; z++) for (const x of [31, 30]) treeCells.push([x, z]);
-const TREES = { apple_tree: 4, peach_tree: 2 };          // how many of each the bot plants
+const TREES = { apple_tree: 4, peach_tree: 2, cherry_tree: 2 };          // how many of each the bot plants
 const bedCells = [];
 for (let z = 57; z <= 62; z++) for (let x = 32; x <= 47; x++) bedCells.push([x, z]);
 for (let x = 32; x <= 47; x++) bedCells.push([x, 56]);
@@ -58,7 +59,7 @@ export class Bot {
   collect(now) {
     const s = this.s;
     // products and produce first (worth more), then orders make room, then the crops that fit
-    for (const a of ['collectProducts', 'collect', 'collectRent', 'stallCollect', 'pick']) this.do(a, {}, now);
+    for (const a of ['collectProducts', 'collect', 'collectRent', 'stallCollect', 'fruitCollect', 'pick']) this.do(a, {}, now);
     if (!s.today.claimed) this.do('claimGift', {}, now);
     this.orders(now);
     const ready = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now);
@@ -109,9 +110,15 @@ export class Bot {
     if (s.mode === 'restore') this.repairs(now);
     if (step.id === 'clear') { this.clearCells([[34, 59], [35, 60], [34, 61]], now); this.pave(this.spineTo(32), now); return; }
     if (step.id === 'plot') { for (let i = 0; i < 6; i++) this.do('place', { kind: 'bed', x: 32 + i, z: 57 }, now); return; }
+    // The clinic asks for cherries: plant their tree before reserving every coin for the building.
+    if (step.id === 'clinic' && this.opts.trees && !(s.counts.cherry_tree > 0) && s.coins >= priceOf(s, 'cherry_tree')) {
+      const cell = treeCells.find(([x,z]) => grid.canPlace(s, 'cherry_tree', x, z).ok);
+      if (cell) this.do('place', { kind: 'cherry_tree', x: cell[0], z: cell[1] }, now);
+    }
     if (step.deliver && stepReady(s, now).ok && !deliveredAll(s, step)) this.do('projectDeliver', {}, now);
     for (const kind of step.builds) {
       if (kind === 'path' || kind === 'bed' || kind === 'fence' || kind === 'gate' || !mayBuild(s, kind).ok) continue;
+      if (!stepReady(s, now).ok) continue;
       this.placeBuilding(kind, kind === 'cottage' ? cottageSpot(s.counts.cottage ?? 0, s.mode === 'restore') : LAYOUT[kind], now);
     }
   }
@@ -148,6 +155,12 @@ export class Bot {
       const building = ['bakery', 'feed_mill'].map(k => Object.keys(s.placed).find(id => s.placed[id].kind === k)).find(id => id && queueOf(s, id).slots < SLOTS.max && free >= SLOTS.cost[queueOf(s, id).slots]);
       if (building && this.do('buySlot', { building }, now).ok) continue;
       if ((this.barnFull || barn.used(s) > s.barn.cap * 0.8) && s.coins >= BARN.upgradeCost(s.barn.upgrades) + 20 && this.do('upgradeBarn', {}, now).ok) { this.barnFull = false; continue; }
+      if (completed(s, 'clinic')) for (const kind of ['fruit_stand', 'kennel']) {
+        if (!(s.counts[kind] > 0) && free >= priceOf(s, kind) + 20) {
+          const at = kind === 'fruit_stand' ? { x: 30, z: 61, rot: 0, path: [31,62] } : { x: 31, z: 70, rot: 0 };
+          this.placeBuilding(kind, at, now);
+        }
+      }
       if (this.reserve(now)) return;   // saving for the project: no cottage upgrades or decorations
       const home = Object.keys(s.homes).find(id => s.homes[id].family && s.homes[id].level < 2 && free >= RENT.upgradeCost[s.homes[id].level + 1]);
       if (home && this.do('upgradeHome', { id: home }, now).ok) continue;

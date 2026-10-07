@@ -60,3 +60,10 @@ MIT) is a build tool only, not a dependency of the game.
 | `src/kit/i18n.mjs`, `tests/i18n.test.mjs` | `src/i18n.mjs`, `scripts/vi-coverage.mjs` | Rewritten small: English text as key, coverage as a unit test |
 | `src/kit/toon.mjs` | `src/toon.mjs` | Rewritten small: same 4-step ramp and lights |
 | `src/view/batches.mjs`, `camera.mjs`, `models.mjs`, `ground.mjs` | `prototypes/big-farm/main.mjs` (this repository) | The measured rendering approach |
+
+## v0.4 orchard and clinic
+
+- `farm-kit.glb`: original `cute_cherry`, `cute_cherry_bare`, paired `cherries`, `fruit_stand` and `kennel` pieces in `art/blender/build_farm_kit.py`, using the existing vertex-colour style helpers. Generated with Blender 4.5.9 LTS and packed with `art/blender/pack.mjs` (287,336 → 314,988 bytes for the packed kit).
+- `clinic`: the existing `hospital` root in `town.glb`, originally authored by Willowmere's town generator; reused at a 4 × 3-cell footprint. No third-party asset added.
+- Icons `cherry`, `cherry_tree`, `fruit_stand`, `kennel`, `clinic`: `art/blender/render_icons.py` jobs in `icons.json`, rendered from the roots above. `person-hazel`: the existing Starline villager-woman portrait with grey hair and a light coat, using the same generator and recorded source path.
+- Chapter 5 reuses the existing clinic, petition and festival-poster story panels as the chapter's history; its text and ending are new.

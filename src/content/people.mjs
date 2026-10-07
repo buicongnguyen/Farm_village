@@ -48,6 +48,8 @@ export const FAMILIES = [
 // Villagers who are not in a rental family. `family: true` marks your own family: they never post orders (noOrders),
 // June gives tips, Pip comments on events in speech bubbles, and Ellis is away upriver: he appears only through letters.
 export const VILLAGERS = [
+  { id: 'hazel', name: 'Dr Hazel', role: 'Doctor', arrives: 'clinic', noOrders: true, noGifts: true,
+    line: 'A nurse, a vet, and a cherry tree outside. You have given me every reason to stay.' },
   { id: 'ada', name: 'Ada', role: 'Your grandmother', line: 'Bring Hollowbrook home, dear. Start with one seed.',
     orders: ['Ellis\'s favourite. I still make it for him, even when he is upriver.', 'For my oven. It has not been this busy since you were small.',
       'Pip asked for my old recipe. We will make it together.', 'A little something for whoever moves in next.',

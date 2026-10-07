@@ -780,6 +780,56 @@ def obstacle_log():
     return p
 piece('obstacle_log', obstacle_log(), decor)
 
+# =================================================================== orchard (v0.4)
+def cherry_tree(ripe=True):
+    p = cute('cherry', 'leafw', 'blossoml', 'leafwd')
+    # Paired cherries on thin green stems, below the bubbly canopy.
+    if ripe:
+        for i in range(7):
+            a = i * math.tau / 7 + .3
+            x, y, z = math.cos(a) * 1.5, math.sin(a) * 1.5, 2.3 + (i % 3) * .3
+            for dx in (-.14, .14):
+                p.append(st((x, y, z + .35), (x + dx, y, z), .025, 'leafd', sides=3))
+                p.append(ball('cherry', .17, x + dx, y, z, 'berry', sub=1))
+    return p
+piece('cute_cherry', cherry_tree())
+piece('cute_cherry_bare', cherry_tree(False))
+
+def cherries():
+    return [ball('cherry', .33, -.25, 0, .34, 'berry', sub=2), ball('cherry', .33, .27, .03, .34, 'fruitred', sub=2),
+            st((-.25, 0, .58), (.06, 0, 1.05), .035, 'leafd', sides=5), st((.27, .03, .58), (.06, 0, 1.05), .035, 'leafd', sides=5),
+            ball('leaf', .17, .18, 0, 1.06, 'leafwl', sub=1, sc=(1.5, .45, .7))]
+piece('cherries', cherries())
+
+def kennel():
+    p = [bx('floor', 1.65, 1.65, .12, 0, 0, 0, 'woodd'), bx('back', 1.5, .12, 1.1, 0, -.7, .12, 'wood'),
+         bx('side', .13, 1.5, 1.1, -.69, 0, .12, 'woodl'), bx('side', .13, 1.5, 1.1, .69, 0, .12, 'woodl'),
+         bx('front', .4, .12, 1.1, -.55, .7, .12, 'wood'), bx('front', .4, .12, 1.1, .55, .7, .12, 'wood'),
+         bx('lintel', .75, .12, .27, 0, .7, .96, 'woodl'), bx('cushion', .9, 1.1, .09, 0, .15, .12, 'red'),
+         gable('roof', 1.65, 1.7, .65, 0, 0, 1.22, 'teal'), bx('plaque', .57, .08, .2, 0, .87, 1.26, 'cream')]
+    for x in (-.18, .18):
+        p.append(ball('bone', .065, x, .93, 1.36, 'white', sub=1))
+    p.append(bx('bone', .32, .05, .065, 0, .93, 1.325, 'white'))
+    return p
+piece('kennel', kennel())
+
+def fruit_stand():
+    p = [bx('counter', 3.5, 1.35, .2, 0, 0, 1.12, 'woodl'), bx('front', 3.35, .15, .85, 0, .6, .27, 'wood'),
+         bx('shelf', 3.3, 1.2, .12, 0, 0, .18, 'woodd')]
+    for x in (-1.62, 1.62):
+        p.append(bx('post', .13, 1.1, 2.4, x, 0, .12, 'woodd'))
+    # A striped peach-and-cream canopy, with three open fruit crates.
+    for i in range(8):
+        p.append(bx('awning', .47, 1.9, .16, -1.645 + .47 * i, 0, 2.52, 'cream' if i % 2 else 'red'))
+        p.append(bx('valance', .47, .12, .23, -1.645 + .47 * i, .95, 2.32, 'cream' if i % 2 else 'red'))
+    for j, mt in enumerate(['berry', 'fruitred', 'fruitpeach']):
+        x = (j - 1) * 1.05
+        p.append(bx('crate', .9, .9, .16, x, 0, 1.32, 'woodd'))
+        for i in range(6):
+            p.append(ball('fruit', .13, x - .25 + (i % 3) * .25, -.18 + (i // 3) * .33, 1.56, mt, sub=1))
+    return p
+piece('fruit_stand', fruit_stand())
+
 # =================================================================== export
 def build(group):
     objs = []

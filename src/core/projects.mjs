@@ -18,6 +18,7 @@ export function stepReady(s, now = Infinity) {
   const step = currentStep(s); if (!step) return { ok: false, missing: [] };
   const missing = [];
   if (step.needs.level && s.level < step.needs.level) missing.push({ need: 'level', have: s.level, want: step.needs.level });
+  if (step.needs.families) { const have = familiesIn(s, now).length; if (have < step.needs.families) missing.push({ need: 'families', have, want: step.needs.families }); }
   if (step.needs.kidsFamilies) { const have = familiesIn(s, now).filter(f => f.kids).length; if (have < step.needs.kidsFamilies) missing.push({ need: 'kidsFamilies', have, want: step.needs.kidsFamilies }); }
   return { ok: !missing.length, missing };
 }
@@ -30,7 +31,7 @@ export function allowance(s, kind) {
   return max;
 }
 /** Can this kind be placed at all right now (ignoring the spot)? { ok, reason, params } */
-export function mayBuild(s, kind, { repair = false } = {}) {
+export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   const def = BUILDINGS[kind];
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
@@ -40,6 +41,7 @@ export function mayBuild(s, kind, { repair = false } = {}) {
   if (have >= allowance(s, kind)) return { ok: false, reason: 'You have built all you can of this for now', params: { kind, lock: 'max' } };
   // a step's building waits until its goods are delivered
   const step = currentStep(s);
+  if (def.project === 'clinic' && step?.id === 'clinic' && !stepReady(s, now).ok) return { ok: false, reason: 'The project is not open yet' };
   if (step?.builds.includes(kind) && step.deliver && !deliveredAll(s, step) && (kind !== 'cottage' || have >= (STEPS[s.projects.step - 1]?.allow?.cottage ?? 0)))
     return { ok: false, reason: 'Deliver the goods for "{name}" first', params: { name: step.name, project: step.id, kind, lock: 'goods' } };
   return { ok: true };
@@ -69,6 +71,7 @@ export const actions = {
     const { s, now } = ctx, step = currentStep(s);
     if (!step?.deliver) return ctx.fail('This project needs no goods');
     if (!stepReady(s, now).ok) return ctx.fail('The project is not open yet');
+    if (goods != null && (typeof goods !== 'object' || Array.isArray(goods) || Object.entries(goods).some(([id, n]) => !Object.hasOwn(step.deliver, id) || !Number.isSafeInteger(n) || n < 0))) return ctx.fail('Missing ingredients');
     let given = 0;
     for (const [id, want] of Object.entries(step.deliver)) {
       const left = want - (s.projects.delivered[id] ?? 0), n = Math.min(left, goods?.[id] ?? left, barn.stock(s, id));

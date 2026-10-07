@@ -1,6 +1,6 @@
 // The story (DESIGN 1, docs/STORY.md) and the first-session tutorial (DESIGN 15), as data.
 // Chapter cards show when their `when` test first passes. Card 1 opens the game; cards 2–4 close their chapter (the
-// DESIGN 1 "ends when" moment) with Ada's beat (`ada`); card 5 is a teaser for the next version (`teaser: true`).
+// DESIGN 1 "ends when" moment) with Ada's beat (`ada`); card 5 closes the clinic chapter.
 // `panels` are up to three illustrations in public/assets/story/ (the card falls back to text while one is missing).
 // Tutorial steps run in order; Ada speaks each one. Action verbs are bold (<b>), which the guide card renders as HTML.
 import { STEPS } from './projects.mjs';
@@ -35,15 +35,30 @@ export const CHAPTERS = [
     ada: 'Ellis carried that bell up the hill the year we married. Hear it? That is Hollowbrook saying thank you.',
     panels: panels(4, ['The school, with fresh paint.', 'Cora rings the bell.', 'Bo and Zara race to the door.']),
     when: s => (s.counts.school ?? 0) > 0 },
-  { id: 5, title: 'Someone to care for us', subtitle: 'Coming in the next chapter of Hollowbrook.', icon: '🩺', teaser: true,
-    text: 'Marisol has every family\'s name on her list, and a letter from Dr Hazel, who retired to the coast: “Show me a village worth coming home to.” In the dusty clinic, an old poster for the last Harvest Festival hangs on the wall, one corner burned black.',
-    ada: 'Hazel! She stitched Ellis\'s hand the summer of the fishing hook. Oh, we need her back.',
+  { id: 5, title: 'Someone to care for us', subtitle: 'The clinic opens its doors again.', icon: '🩺',
+    text: 'Four families sign Marisol’s list, and Dr Hazel comes home from the coast. The clinic opens, with Grace’s vet room at the back. Hazel pauses by the burned festival poster: she remembers treating Gus’s hands that night. Outside, Ada plants cherries for the grandchildren’s grandchildren.',
+    ada: 'Hazel is home, and Ellis has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.',
     panels: panels(5, ['The old clinic, shutters closed.', 'Marisol and her list.', 'Where the festival stage once stood.']),
-    when: s => (s.story.chapter ?? 0) >= 4 },
+    when: s => workingCount(s, 'clinic') > 0 && arrivedFamilies(s) >= 4 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
 export const BEATS = [
+  { id: 'first-cherries', chapter: 3, when: s => (s.album?.fruit?.cherry ?? 0) > 0, lines: [
+    { who: 'ada', text: 'Cherries for the grandchildren’s grandchildren. Ellis says that is a long time to wait for pie.' },
+    { who: 'june', text: 'A fruit stand by the lane, love. Let the orchard pay for its own next tree.' },
+    { who: 'pip', text: 'I can count the cherries! If nobody eats them while I count.' },
+  ] },
+  { id: 'biscuit-home', chapter: 3, when: s => (s.counts.kennel ?? 0) > 0 && Object.values(s.homes ?? {}).some(h => h.family === 'okafor' && h.arrived), lines: [
+    { who: 'grace', text: 'A kennel for Biscuit. No city poodle here: he has crows to chase and beds to watch.' },
+    { who: 'pip', text: 'Biscuit has a job! Does he get a lunch box?' },
+    { who: 'grace', text: 'No upkeep, no chores. A warm roof and a good friend are enough.' },
+  ] },
+  { id: 'clinic-home', chapter: 5, when: s => (s.story.chapter ?? 0) >= 5 && workingCount(s, 'clinic') > 0, lines: [
+    { who: 'marisol', text: 'Four names on the petition. Hazel, the waiting room is ready. I have another list.' },
+    { who: 'hazel', text: 'A nurse, a vet, and a cherry tree outside. You have given me every reason to stay.' },
+    { who: 'ada', text: 'Ellis will bring his fishing stories. Keep a chair by the window for him, Hazel.' },
+  ] },
   // the end of chapter 1: the first harvest delivered to Ada
   { id: 'first-loaf', chapter: 1, when: s => (s.stats.ordersFilled ?? 0) > 0, lines: [
     { who: 'ada', text: 'Flour on my hands again! Ellis would laugh to see me.' },

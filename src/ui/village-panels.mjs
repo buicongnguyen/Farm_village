@@ -70,6 +70,7 @@ export function renderProjects(s, now) {
   if (!step) return `<p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
   const ready = stepReady(s, now), reqs = [];
   if (step.needs.level) reqs.push([s.level >= step.needs.level, t('Reach level {level}', { level: step.needs.level })]);
+  if (step.needs.families) { const miss = ready.missing.find(m => m.need === 'families'); reqs.push([!miss, t('{count} settled families ({have} so far)', { count: step.needs.families, have: miss ? miss.have : step.needs.families })]); }
   if (step.needs.kidsFamilies) { const miss = ready.missing.find(m => m.need === 'kidsFamilies'); reqs.push([!miss, t('{count} families with children ({have} so far)', { count: step.needs.kidsFamilies, have: miss ? miss.have : step.needs.kidsFamilies })]); }
   const goods = Object.entries(step.deliver ?? {}).map(([g, n]) => {
     const given = s.projects.delivered[g] ?? 0, have = barn.stock(s, g), left = n - given, at = madeAt(g);
@@ -79,10 +80,10 @@ export function renderProjects(s, now) {
   const kind = step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
   // in the restored village the work is repairing what stands: the button takes you to the run-down thing
   const run = s.mode === 'restore' ? step.builds.find(k => Object.keys(s.placed).some(id => s.placed[id].kind === k && levelOf(s, id) >= 3 && !isRepairing(s, id))) : null, runMay = run && mayBuild(s, run, { repair: true });
-  return `<div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
+  return `<button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     ${goods ? `<div class="needs-list">${goods}</div>${ready.ok && !deliveredAll(s, step) ? `<button class="btn primary wide" data-do="projectDeliver">${t('Deliver goods')}</button>` : ''}` : ''}
-    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, runMay.params)}</p>` : ''}` : kind && s.mode !== 'restore' ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, may.params)}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
+    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, runMay.params)}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, may.params)}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
   </div><ul class="steps">${list}</ul>`;
 }
 

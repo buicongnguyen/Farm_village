@@ -3,6 +3,7 @@
 // along the brook and the pond. They are cast subjects drawn only as animated actors near the camera centre (the cast
 // lets at most a few critters animate at once), so they cost nothing when the view is elsewhere.
 import { CELL, N, FARMHOUSE, brookZ, isBrook, isRoad } from '../content/world.mjs';
+import { biscuitOnDuty } from '../core/orchard.mjs';
 import { occupant } from '../core/grid.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { castOf, RIGS } from './skinned.mjs';
@@ -74,7 +75,7 @@ export class Critters {
     }
     sub.clip = 'Idle';
     if (this.time > c.next) { c.next = this.time + rand(1.5, 4); sub.once = { clip: 'Hop' }; sub.rot += rand(-1.2, 1.2); }
-    if (this.time > c.until || this.watched(sub)) this.flyOff(c);
+    if (this.time > c.until || this.watched(sub) || (biscuitOnDuty(this.s) && document.body.classList.contains('reduced-motion'))) this.flyOff(c);
   }
   /** A scarecrow placed since the crow landed scares it off. */
   watched(sub) { const x = sub.x / CELL, z = sub.z / CELL; return Object.values(this.s.placed).some(p => p.kind === 'scarecrow' && Math.max(Math.abs(p.x - x), Math.abs(p.z - z)) <= SCARE_CELLS + 0.5); }

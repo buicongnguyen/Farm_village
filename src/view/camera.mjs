@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 
 export const PITCH = 0.95;               // about 54° down
-export const SPAN = { min: 24, max: 260, mid: 55, far: 110 };
+export const SPAN = { min: 24, max: 260, mid: 40, far: 90 };
 const RUBBER = 0.35;                     // how far past an edge a drag may go, as a share of the view
 const easeInOut = k => k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
 
@@ -17,7 +17,7 @@ export class GameCamera {
     this.update();
   }
   /** 0 = full models, 1 = simplified models, 2 = stand-ins (TECH-PLAN 6). */
-  get lod() { return this.span > SPAN.far ? 2 : this.span > SPAN.mid ? 1 : 0; }
+  get lod() { return this.span >= SPAN.far ? 2 : this.span >= SPAN.mid ? 1 : 0; }
   onChange(f) { this.listeners.add(f); return () => this.listeners.delete(f); }
   /** Apply the view. While a finger drags (soft), the edges give way with resistance instead of stopping hard. */
   update() {

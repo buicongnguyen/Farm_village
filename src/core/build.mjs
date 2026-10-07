@@ -47,7 +47,7 @@ export const actions = {
     const { s, now } = ctx, def = BUILDINGS[kind];
     if (!def || def.edge) return ctx.fail('Unknown item');
     if (!spot(x, z) || ![0, 1, 2, 3].includes(rot)) return ctx.fail('Outside your land');
-    const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
+    const may = mayBuild(s, kind, { now }); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlace(s, kind, x, z, rot); if (!can.ok) return ctx.fail(can.reason, can.params);
     // a thing taken away earlier (stored) comes back free; one demolished earlier costs half (a rebuild credit)
     const fromStore = (s.stored?.[kind] ?? 0) > 0, fromRebuild = !fromStore && (s.rebuild?.[kind] ?? 0) > 0;

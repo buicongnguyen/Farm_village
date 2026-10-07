@@ -9,6 +9,9 @@ import { BARN, SLOTS, TRUCK } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
 import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
+import { renderJourney } from './journey-panel.mjs';
+import { FRUIT_STAND } from '../content/economy.mjs';
+import { fruitPrice } from '../core/orchard.mjs';
 import { STACK } from '../core/stall.mjs';
 import { fishingOf } from '../core/fishing.mjs';
 import { planFor, STEP_TEXT } from '../core/plan.mjs';
@@ -28,9 +31,9 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
   const have = barn.free(s, g, honour), ok = have >= n;
   return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
-const TITLES = { settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
+const TITLES = { roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
   stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', quests: 'Goals', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
-const HEAD_ICONS = { settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
+const HEAD_ICONS = { roadmap: 'projects', fruit_stand: 'fruit_stand', clinic: 'clinic', settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
 /** Panels with nothing to count down. */
@@ -70,6 +73,9 @@ export class Panels {
     else if (d.do === 'produce') g.do('produce', { building: this.open.arg, recipe: d.recipe });
     else if (d.do === 'collectProducts') g.do('collectProducts', { building: this.open.arg });
     else if (d.do === 'buySlot') g.do('buySlot', { building: this.open.arg });
+    else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
+    else if (d.do === 'fruitCollect') g.do('fruitCollect');
+    else if (d.do === 'roadmap') this.show('roadmap');
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
@@ -115,7 +121,15 @@ export class Panels {
     queueMicrotask(() => this.lift());
     const now = this.game.now;
     let body = '', title = t(TITLES[o.kind] ?? ''), icon = HEAD_ICONS[o.kind];
-    if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
+    if (o.kind === 'roadmap') body = renderJourney(s);
+    else if (o.kind === 'clinic') body = `<div class="clinic-staff">${iconHtml('clinic', '', 'family-art')}<h3>${t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+    else if (o.kind === 'fruit_stand') {
+      const st = s.fruitStand, spare = Object.entries(s.barn.items).filter(([g]) => GOODS[g]?.kind === 'fruit' && barn.free(s, g) > 0);
+      body = `<p class="hint">${t('Orchard fruit sells for a little more here. A visitor buys one every thirty seconds.')}</p><div class="stall-slots">${st.items.map(it => `<div class="slot">${goodIcon(it.good)}<b>×${it.n}</b><small>${coinMark()} ${fruitPrice(it.good)}</small></div>`).join('')}</div>
+        ${st.coins ? `<button class="btn primary wide" data-do="fruitCollect">${t('Collect {coins} coins', { coins: num(st.coins) })}</button>` : ''}
+        <div class="goods-grid">${spare.map(([g]) => `<button class="good-tile" data-do="fruitList" data-good="${g}" ${st.items.length >= FRUIT_STAND.slots ? 'disabled' : ''}>${goodIcon(g)}<b>×${Math.min(FRUIT_STAND.stack, barn.free(s, g))}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${fruitPrice(g)}</small></button>`).join('') || `<p class="empty">${t('Pick fruit from your orchard to stock the stand.')}</p>`}</div>`;
+    }
+    else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
     else if (o.kind === 'album') body = renderAlbum(s);
     else if (o.kind === 'today') body = renderToday(s, now);
     else if (o.kind === 'projects') body = renderProjects(s, now);

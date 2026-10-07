@@ -15,6 +15,7 @@ export const BUILDINGS = {
   // Farm
   bed:        { name: 'Crop bed', cat: 'farm', size: [1, 1], area: 'farm', level: 1, cost: n => BEDS.cost(n + 1), tills: true },
   // Fruit trees (goods.mjs FRUITS): planted once, picked again and again. Pretty too, so they count as charm.
+  cherry_tree:{ name: 'Cherry tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 70, fruit: 'cherry', charm: 2, max: 12, model: 'cute_cherry' },
   apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 2, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
   peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
   // Paths and fences (fence and gate sit on cell edges)
@@ -24,10 +25,12 @@ export const BUILDINGS = {
   // Animals
   coop:       { name: 'Coop', cat: 'animals', size: [2, 2], area: 'farm', level: 2, cost: 40, door: true, animals: 'hen', project: 'mill_coop', max: 2, model: 'coop' },
   cow_barn:   { name: 'Cow barn', cat: 'animals', size: [3, 2], area: 'farm', level: 6, cost: 0, door: true, animals: 'cow', after: 'school', max: 1, model: 'cow_shelter' },
+  kennel:     { name: "Biscuit's kennel", cat: 'animals', size: [1, 1], area: 'any', level: 5, cost: 90, pet: true, max: 1, model: 'kennel', charm: 2 },
   // Production
   feed_mill:  { name: 'Feed mill', cat: 'production', size: [2, 2], area: 'farm', level: 2, cost: 30, door: true, produces: true, project: 'mill_coop', max: 1, model: 'feed_mill', charm: -1 },
   bakery:     { name: 'Bakery', cat: 'production', size: [3, 2], area: 'farm', level: 3, cost: 150, door: true, produces: true, after: 'mill_coop', max: 1, model: 'bakery', charm: -1 },
   stall:      { name: 'Roadside stall', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, stall: true, max: 1, model: 'market-stall' },
+  fruit_stand:{ name: 'Fruit stand', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, fruitStand: true, max: 1, model: 'fruit_stand', charm: 1 },
   // The market square: the village's old market, where the delivery truck sells (core/market.mjs)
   market:     { name: 'Market square', cat: 'projects', size: [5, 3], area: 'village', level: 1, cost: 60, door: true, market: true, max: 1, model: 'market' },
   // The fish pond: cast a line, reel in a fish; fishing villagers pay a little to sit by it (core/fishing.mjs)
@@ -51,6 +54,7 @@ export const BUILDINGS = {
   // The streak garden (today.mjs): one flower for every day you visit, planted by itself by the farmhouse. Not in the catalogue.
   garden_flower: { name: 'Garden flower', cat: 'garden', size: [1, 1], area: 'any', level: 1, cost: 0, garden: true, model: 'flowers' },
   // Village projects (placed through the build order, DESIGN 11)
+  clinic:     { name: 'Clinic', cat: 'projects', size: [4, 3], area: 'village', level: 6, cost: 600, door: true, project: 'clinic', max: 1, model: 'hospital', charm: 4 },
   school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 6, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
 };
 export const COTTAGE_LEVELS = [{ name: 'Basic' }, { name: 'Cozy' }, { name: 'Deluxe' }];

@@ -17,6 +17,8 @@ export function nextTask(s, now) {
   const at = id => centre(s.placed[id]);
   const ripeBed = of((id, p) => p.kind === 'bed' && s.beds[id]?.doneAt <= now)[0];
   if (ripeBed) return { key: 'Harvest the ripe crops', at: at(ripeBed), icon: 'tool:harvest', do: ['harvest', { ids: of((id, p) => p.kind === 'bed' && s.beds[id]?.doneAt <= now) }] };
+  const fruitStand = of((id, p, d) => d.fruitStand && (s.fruitStand?.coins ?? 0) > 0)[0];
+  if (fruitStand) return { key: 'Collect fruit stand takings', at: at(fruitStand), icon: 'fruit_stand', do: ['fruitCollect', {}] };
   const ripeTree = of((id, p, d) => d.fruit && treeState(s, id, now)?.state === 'ripe')[0];
   if (ripeTree) return { key: 'Pick the ripe fruit', at: at(ripeTree), icon: 'apple', do: ['pick', {}] };
   const eggs = of((id, p, d) => d.animals && (s.animals[id] ?? []).some(a => animalState(a, now) === 'ready'))[0];

@@ -80,3 +80,15 @@ body:has(.modal.strict) :is(.hud, .guide, .pointer, .bubbles, .radial) { opacity
 .bubble b { display: block; color: var(--edge-dark); font-weight: 1000; font-size: 12px; line-height: 1.1; }   /* the speaker's name on its own line */
 .bubble::after { content: ''; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -10px; margin-left: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: var(--edge); }
 body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }
+
+/* Orchard roadmap, including large-text phone layouts. */
+.journey-goal { padding: 14px; border: 2px solid #70482f; border-radius: 16px; background: #f5edc8; }
+.journey-goal h3 { margin: 6px 0; } .journey-goal p { margin: 8px 0 0; }
+.journey-goal progress { width: 100%; accent-color: #4f9b50; margin-top: 8px; }
+.journey-milestones { list-style: none; padding: 0; } .journey-milestones li { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.journey-milestones .done { color: #367541; }
+.journey-unlock { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #c8b58e; }
+.journey-unlock > div { flex: 1; min-width: 0; } .journey-unlock small { display: block; margin-top: 4px; }
+.journey-unlock .tile-icon { width: 44px; height: 44px; flex: 0 0 44px; }
+.journey > .btn { margin-top: 14px; } .clinic-staff { text-align: center; }
+.hud .village-name { max-width: min(310px, 78vw); white-space: normal; text-align: left; }

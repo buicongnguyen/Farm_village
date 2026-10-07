@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { toon } from '../kit/toon.mjs';
 import { CELL } from '../content/world.mjs';
 
-export const CHUNKS = { near: 8, mid: 16, far: 32, static: 16 };
+export const CHUNKS = { near: 8, mid: 16, far: 64, static: 16, staticFar: 64 };
 const LEVELS = ['near', 'mid', 'far'];
 const white = g => { g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 3).fill(1), 3)); return g; };
 export const STANDINS = {
@@ -156,7 +156,8 @@ export class Batches {
   keysFor(item) {
     const m = this.models.get(item.model), cx = item.x / CELL, cz = item.z / CELL;
     const key = (level, size, what) => `${level}|${Math.floor(cx / size)},${Math.floor(cz / size)}|${what}`;
-    if (m.kind === 'static') return [key('static', CHUNKS.static, item.model)];
+    // Buildings keep their authored shape; wider batches cut duplicate draws at valley zoom.
+    if (m.kind === 'static') return [key('static', CHUNKS.static, item.model), key('staticFar', CHUNKS.staticFar, item.model)];
     return [key('near', CHUNKS.near, item.model), key('mid', CHUNKS.mid, item.model), key('far', CHUNKS.far, m.kind)];
   }
   /** Place or move an item: { model, x, z (metres), rot, scale, y, roll }. A changed model or scale eases in. */
@@ -218,7 +219,7 @@ export class Batches {
     for (const [k, mesh] of this.meshes) mesh.visible = this.visibleFor(k);
     this.shadows.small.mesh.visible = level < 2;
   }
-  visibleFor(key) { const lvl = key.slice(0, key.indexOf('|')); return lvl === 'static' || lvl === LEVELS[this.level]; }
+  visibleFor(key) { const lvl = key.slice(0, key.indexOf('|')); return lvl === 'static' ? this.level < 2 : lvl === 'staticFar' ? this.level === 2 : lvl === LEVELS[this.level]; }
   /** The instance matrix of an item in a batch of `level`. */
   compose(it, level, out = m4) {
     const m = this.models.get(it.model), far = level === 'far', a = this.anims.get(it.id);

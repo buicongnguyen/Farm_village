@@ -110,3 +110,13 @@ Update it at the end of every work session: change the status, add a line to the
    (`?dense` plants every farm cell, `?nolod` turns stand-ins off, `?nochunk` uses one batch for the whole map).
 4. Measure the prototype again: `npm run proto:measure` (with the server running).
 5. Economy model: `npm run pace -- steady 70`.
+
+## Codex handoff — v0.4 (2026-10-08)
+
+Started from Claude's clean `576ab26` on branch `codex/v0.4-orchard`. The orchard, roadmap, fruit stand, Biscuit's kennel, clinic and chapter 5 are implemented. Save version 5 resets only the former chapter 5 teaser for older saves. The clinic's civic-row doorstep is connected and the project ghost preserves the ruin's footprint and rotation.
+
+The rendering stress check includes a fully ripe farm, twelve cherry trees, the stand, kennel, clinic and four households, sampling both sides of the detail boundaries. Middle detail begins at 40 m, distant detail at 90 m; static buildings retain their geometry but batch more widely at distant zoom. Every profile can complete the v0.4 orchard; school pace stays casual day 5, steady day 3, keen day 2.
+
+Publication remains a PR branch pushed over Git SSH. Review the PR and play its preview before merging to main, which triggers the existing GitHub Pages production workflow. Future v0.5+ work remains unstarted. Check Codex's commits before resuming edits.
+
+Validation: 125/125 unit tests; npm run sim; build:test; every browser suite (including the repaired review suite); 28/28 main browser checks. New orchard stress checks sample 11 zooms on phone and PC, including detail boundaries.

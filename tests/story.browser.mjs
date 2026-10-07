@@ -41,7 +41,7 @@ for (const lang of ['en', 'vi']) {
     const { ctx, page } = await open(lang);
     for (let n = 1; n <= 5; n++) {
       if (n > 1) await page.evaluate(n => { const s = farm.state(); ({ 2: s => { s.projects.step = 3; s.animals.story_hens = [{ kind: 'hen', doneAt: null }, { kind: 'hen', doneAt: null }]; },
-        3: s => { s.homes.story_home = { level: 0, family: 'tran', arrivesAt: 0, rentFrom: 0, arrived: true }; }, 4: s => { s.counts.school = 1; }, 5: () => {} })[n](s);
+        3: s => { s.homes.story_home = { level: 0, family: 'tran', arrivesAt: 0, rentFrom: 0, arrived: true }; }, 4: s => { s.counts.school = 1; }, 5: s => { s.placed.story_clinic = { kind: 'clinic', x: 62, z: 106, rot: 2 }; s.counts.clinic = 1; for (const [i, family] of ['okafor', 'lindqvist', 'reyes'].entries()) s.homes[`story_family${i}`] = { level: 0, family, arrivesAt: 0, rentFrom: 0, arrived: true }; } })[n](s);
         farm.game.emit({ ok: true, events: [{ type: 'loaded' }] }, 'test'); }, n);
       await page.waitForSelector('.modal .chapter', { timeout: 5000 });
       const head = await page.textContent('.modal .chapter small');

@@ -96,10 +96,10 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
   assert.deepEqual(arc.map(a => a.visit), [1, 2, 3]); assert.match(arc[2].text, /Ada taught me to bake/);
 });
 
-test('chapters: one opening card, three chapter ends with an Ada beat, then the chapter 5 teaser', () => {
+test('chapters: one opening card, three chapter ends with an Ada beat, then the clinic chapter ending', () => {
   assert.deepEqual(CHAPTERS.map(c => c.id), [1, 2, 3, 4, 5]);
   assert.ok(CHAPTERS.every(c => c.ada && c.panels.length <= 3 && c.text.length <= 340), 'a card is too long for a phone');
-  assert.ok(CHAPTERS.at(-1).teaser && !CHAPTERS.slice(0, -1).some(c => c.teaser));
+  assert.ok(!CHAPTERS.some(c => c.teaser));
   assert.match(CHAPTERS[0].text, /The key is under the seed tin\. Bring Hollowbrook home\./);
   assert.ok(!JSON.stringify(CHAPTERS).includes('by the brook'), 'the cottage is on Brook Lane');
   assert.ok(CHAPTERS[0].when(game()) && !CHAPTERS[1].when(game()));
@@ -117,7 +117,7 @@ const YOU_BAN = ['của bạn', 'cho bạn', 'bạn có', 'bạn ơi', 'bạn đ
 const NEVER = {
   ada: ['tôi', ...YOU_BAN, 'của em', 'cho em'], ellis: ['tôi', ...YOU_BAN], june: ['tôi', ...YOU_BAN], pip: ['tôi', 'cháu', 'tớ'],
   minh: ['tôi', ...YOU_BAN], lan: ['tôi', ...YOU_BAN], grace: ['tôi', ...YOU_BAN], sam: ['tôi', ...YOU_BAN], marisol: ['tôi', ...YOU_BAN],
-  tomas: ['tôi', ...YOU_BAN], cora: ['tôi', ...YOU_BAN], olaf: ['tôi', ...YOU_BAN], gus: ['tôi', ...YOU_BAN],
+  hazel: ['tôi', ...YOU_BAN], tomas: ['tôi', ...YOU_BAN], cora: ['tôi', ...YOU_BAN], olaf: ['tôi', ...YOU_BAN], gus: ['tôi', ...YOU_BAN],
   mai: ['tôi', ...YOU_BAN, 'cháu'], elin: ['tôi', ...YOU_BAN, 'cháu'], bo: ['tôi', ...YOU_BAN], zara: ['tôi', ...YOU_BAN], pia: ['tôi', ...YOU_BAN],
 };
 const unquoted = s => s.replace(/"[^"]*"|“[^”]*”/g, ' ').replace(/bạn ấy/g, ' ');   // "bạn ấy": he or she

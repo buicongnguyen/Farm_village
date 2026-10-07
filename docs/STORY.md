@@ -47,7 +47,7 @@ wrong forms per speaker (for example *tôi* or *bạn* used as "you"). The narra
 | **Cora** | Teacher. She arrives with the school. | Bright and dry ("the staff is me") | **cô – cháu**; calls her pupils *các em* |
 | **Mai** | Neighbour, Lotus Farm | Cheerful, ducks, tea | **chị – em** |
 | **Gus** | Neighbour, Old Mill Farm | Grumpy-sweet. "Hmph." Secretly soft. | **bác – cháu** |
-| **Dr Hazel** | Retired doctor on the coast (chapter 5) | Not yet on stage: only quoted | – |
+| **Dr Hazel** | Doctor, home from the coast when the clinic opens (chapter 5) | Quiet, practical, remembers the village | **bà – cháu** |
 
 Place names: Hollowbrook is **Thung Suối** everywhere, including titles and posters. Brook Lane is **ngõ Suối**. The
 feed mill is the **cối xay cám**, and chicken and cow feed are **cám gà** and **cám bò**.
@@ -70,8 +70,7 @@ feed mill is the **cối xay cám**, and chicken and cow feed are **cám gà** a
 
 ## 4. Chapters
 
-Cards are data in `CHAPTERS`. Card 1 opens the game. Cards 2–4 close their chapter with Ada's line (`ada`). Card 5 is
-the teaser for the next version. Each card can have up to three panels (`panels`, `public/assets/story/chN-M.webp`, made
+Cards are data in `CHAPTERS`. Card 1 opens the game. Cards 2–4 close their chapter with Ada's line (`ada`). Card 5 closes the clinic chapter in v0.4. Each card can have up to three panels (`panels`, `public/assets/story/chN-M.webp`, made
 by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 
 | # | Title | Shown when | Beat |
@@ -83,7 +82,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | – | *The Okafors are coming* (beat) | The second cottage is built | Ada remembers Sam on his red bicycle. |
 | – | *Welcome bread* (beat) | The five loaves for the Okafors are delivered | Lan's ribbons; "bread on the doorstep". |
 | 4 | A bell for the children | The school opens (end of v0.1) | Cora's bell. Marisol's letter about the clinic. Ada: Ellis carried the bell. |
-| 5 | Someone to care for us (teaser) | After card 4 | Marisol's list, Dr Hazel's reply and the burned festival poster. |
+| 5 | Someone to care for us | The clinic is built and four families have arrived | Hazel returns, Grace has a vet room, Ada plants cherries; Hazel remembers Gus's burned hands. |
 
 **Chapters 5–9 (the plan for later versions):** (chapters 10–20 and how each chapter opens a stage of the game are in `JOURNEY.md`)
 

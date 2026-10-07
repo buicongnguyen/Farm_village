@@ -28,7 +28,7 @@ import { load, autosave, save, pack, unpack, erase } from './kit/save.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
-import { BUILDINGS } from './content/buildings.mjs';
+import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
 
@@ -67,7 +67,14 @@ const hud = new Hud(app, game, {
 build = new BuildView(app, { game, world, ghost, hud });
 panels = new Panels(app, game, hud, {
   // the projects panel's "Build" opens build mode with the ghost on the ruin it replaces
-  onBuild: kind => { const r = RUINS.find(x => x.kind === kind); if (r) flyTo((r.x + 2) * CELL, (r.z + 2) * CELL, Math.min(world.cam.span, 60)); build.start(kind, r && { x: r.x + 2, z: r.z + 1, point: { x: (r.x + 2.5) * CELL, z: (r.z + 1.5) * CELL } }); },
+  onBuild: kind => {
+    const r = RUINS.find(x => x.kind === kind);
+    if (!r) { build.start(kind); return; }
+    flyTo((r.x + 2) * CELL, (r.z + 2) * CELL, Math.min(world.cam.span, 60));
+    const [w,d] = footprint(kind, r.rot), x = r.x + Math.floor((w-1)/2), z = r.z + Math.floor((d-1)/2);
+    build.start(kind, { x, z, point: { x: (x+.5)*CELL, z: (z+.5)*CELL } });
+    build.rot = r.rot; build.refreshGhost();
+  },
   // "show the way": go to where a missing good is made, or open the catalogue on that building
   onShowWay: at => {
     if (at === 'pond') { flyTo((POND_DOCK.x - 2) * CELL, POND_DOCK.z * CELL); panels.show('pond'); return; }

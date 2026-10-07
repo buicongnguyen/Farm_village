@@ -7,3 +7,4 @@ export * as people from './people.mjs';
 export * as story from './story.mjs';
 export * as hearts from './hearts.mjs';
 export * as letters from './letters.mjs';
+export * as journey from './journey.mjs';

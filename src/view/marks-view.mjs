@@ -50,6 +50,7 @@ export class Marks {
       else if (def.produces) ready = readyCount(s, id, now) > 0;
       else if (def.pond) ready = (s.fishing?.coins ?? 0) > 0 || (!!s.fishing?.line && s.fishing.line.doneAt <= now);
       else if (def.market) ready = (s.truck?.coins ?? 0) > 0;
+      else if (def.fruitStand) ready = (s.fruitStand?.coins ?? 0) > 0;
       else if (def.stall) ready = (s.stall?.coins ?? 0) > 0;
       if (ready) coin.push([x, high, z]);
     }

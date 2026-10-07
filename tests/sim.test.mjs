@@ -65,3 +65,13 @@ test('restored village: wear never stops a player, and repairs stay cheap (a few
   const s = restored.steady.s;
   for (const [id, c] of Object.entries(s.cond)) assert.ok(c.level < 3 || id.startsWith('road_'), `${id} is broken after two weeks`);
 });
+
+// v0.4 must give every profile a complete orchard without changing the school targets above.
+test('orchard and clinic: every profile can finish v0.4 within two weeks', () => {
+  for (const set of [runs, restored]) for (const [p,r] of Object.entries(set)) {
+    assert.ok(r.steps.clinic && r.steps.clinic <= 14, p + ' never reopened the clinic');
+    assert.ok(r.s.album.fruit.cherry >= 9, p + ' did not pick the orchard goal');
+    assert.equal(r.s.counts.fruit_stand, 1, p + ' cannot place the fruit stand');
+    assert.equal(r.s.counts.kennel, 1, p + ' cannot give Biscuit a home');
+  }
+});

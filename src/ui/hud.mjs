@@ -6,6 +6,7 @@
 import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
+import { journeyOf } from '../core/journey.mjs';
 import { nextTask } from '../core/next.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { questsOf, ready as questReady } from '../core/quests.mjs';
@@ -57,7 +58,7 @@ export class Hud {
       const st = e.target.closest('[data-status]')?.dataset.status;
       if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
-      if (act === 'village') { this.onPanel?.('projects'); return; }
+      if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
@@ -75,7 +76,10 @@ export class Hud {
     q('.ring').style.strokeDasharray = `${Math.round(p.ratio * 100)} 100`;
     if (s.level !== this.level) { this.level = s.level; this.pulse(q('[data-hud="level"]')); }
     this.rollCoins(s.coins);
-    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${Math.min(s.projects.step, STEPS.length)}/${STEPS.length}`;   // how far the village is restored; a tap opens the projects
+    const journey = journeyOf(s);
+    q('[data-hud="village"]').setAttribute('aria-label', t('Roadmap'));
+    q('[data-hud="village"]').title = t(journey.stage.goal);
+    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${t(journey.stage.name)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;   // how far the village is restored; a tap opens the projects
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
@@ -176,6 +180,8 @@ export class Hud {
   /** The status stack at the top left: the goal, the order board, rent, the truck and the pond, each a tap away. */
   refreshStatus() {
     const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
+    const journey = journeyOf(s);
+    rows.push({ act: 'roadmap', ic: glyph('projects', 'g'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
     const step = currentStep(s);
     if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: t(s.mode === 'restore' && step.restore ? step.restore.split('.')[0] : step.name) });
     const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });

@@ -6,6 +6,7 @@
 // follows Pip. AI neighbours walk in from their signpost, say something about the farm, and leave. At night everyone
 // goes home. Tap a person to hear their line.
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
+import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 const { JUNE_TIPS } = PEOPLE_DATA;
@@ -83,6 +84,8 @@ export class PeopleView {
     }
     const school = Object.entries(s.placed).find(([, p]) => p.kind === 'school');
     if (school) { const p = school[1]; out.push({ id: 'cora', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    const clinic = Object.entries(s.placed).find(([, p]) => p.kind === 'clinic');
+    if (clinic) { const p = clinic[1]; out.push({ id: 'hazel', body: 'hana', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     return out;
   }
   sync() {
@@ -220,6 +223,8 @@ export class PeopleView {
   turnTo(w, want, dt, rate = 8) { const turn = ((want - w.rot) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; w.rot += Math.max(-dt * rate, Math.min(dt * rate, turn)); }
   liveVillager(w, dt, night) {
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
+    // At dusk, leave the unfinished errand and walk straight home.
+    if (night && !w.visitor && !w.goingHome) { w.goingHome = true; w.route = this.route(this.cellOf(w), w.home); w.todo = null; w.carry = false; w.act = 'home'; }
     const speed = (w.kid ? 1.55 : 1.45) * (night ? 1.5 : 1);   // hurrying home after dark
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
     if (w.visitor) {
@@ -313,7 +318,40 @@ export class PeopleView {
     if ((w.wait -= dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
     const [x, z] = this.familySpot(w.id); w.target = [(x + 0.2 + Math.random() * 0.6) * CELL, (z + 0.2 + Math.random() * 0.6) * CELL];
   }
+  /** A kennel gives Biscuit a route across free ground, keeping him outside fences and buildings. */
+  dogRoute(from, to) {
+    const key = (x, z) => z * N + x;
+    const free = (x, z) => this.canStand((x + 0.5) * CELL, (z + 0.5) * CELL) ||
+      (x >= VILLAGE.x0 && x <= VILLAGE.x1 && z >= VILLAGE.z0 && z <= VILLAGE.z1 && !occupant(this.s, x, z));
+    const queue = [from], prev = new Map([[key(...from), -1]]);
+    for (let i = 0; i < queue.length; i++) {
+      const [x, z] = queue[i]; if (x === to[0] && z === to[1]) break;
+      for (const [nx, nz] of [[x+1,z],[x-1,z],[x,z+1],[x,z-1]]) {
+        const k = key(nx,nz); if (prev.has(k) || !free(nx,nz) || this.crossesFence((x+.5)*CELL,(z+.5)*CELL,(nx+.5)*CELL,(nz+.5)*CELL)) continue;
+        prev.set(k,key(x,z)); queue.push([nx,nz]);
+      }
+    }
+    if (!prev.has(key(...to))) return [];
+    const out = []; for (let k = key(...to); k !== -1; k = prev.get(k)) out.push([k % N, Math.floor(k / N)]);
+    return out.reverse();
+  }
   liveDog(w, dt, night) {
+    const kennel = kennelOf(this.s);
+    if (kennel) {
+      const critters = this.world.critters, calm = document.body.classList.contains('reduced-motion');
+      const crow = !night && !calm && critters?.crows.find(c => c.state === 'ground');
+      const home = [(kennel.x + 0.5) * CELL, (kennel.z + 1.5) * CELL];
+      const target = crow ? [crow.sub.x, crow.sub.z] : home;
+      const dx = target[0] - w.x, dz = target[1] - w.z, d = Math.hypot(dx, dz);
+      w.indoors = false; w.duty = crow ? 'chase' : d > 0.6 ? 'return' : 'watch';
+      if (d > (crow ? 2 : 0.6) && !calm) {
+        if (w.dogTarget !== target.join(',')) { w.route = this.dogRoute(this.cellOf(w), target.map(v => Math.floor(v / CELL))); w.dogTarget = target.join(','); }
+        if (this.follow(w, dt, crow ? 4.2 : 2.2)) { if (crow) this.walking(w, 4.2, 'Run'); return; }
+      }
+      if (crow && d <= 3) { critters.flyOff(crow); this.once(w, 'Bark', 1.4); w.dogTarget = null; }
+      w.clip = night ? 'Sleep' : crow && d <= 3 ? 'Bark' : 'Sit'; w.speed = 1; return;
+    }
+    w.duty = 'follow'; w.dogTarget = null;
     const pip = this.walkers.get('pip');
     if (night || !pip || pip.indoors) {   // asleep on the farmhouse porch
       const px = (FARMHOUSE.x + 3.4) * CELL, pz = (FARMHOUSE.z + 0.9) * CELL;
