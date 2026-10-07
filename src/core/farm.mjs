@@ -14,6 +14,7 @@ export const plantPrice = (s, crop) => CROPS[crop].free || barn.stock(s, crop) >
 export const actions = {
   /** Plant one bed, or many: { ids: [...] | id, crop }. */
   plant(ctx, { id, ids = [id], crop }) {
+    if (!Array.isArray(ids)) ids = [];
     const { s, now } = ctx, c = CROPS[crop];
     if (!c) return ctx.fail('Unknown crop');
     if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level, crop, lock: 'level' });
@@ -35,6 +36,7 @@ export const actions = {
   },
   /** Harvest ready beds: { ids: [...] | id }. Stops when the barn is full. */
   harvest(ctx, { id, ids = [id] }) {
+    if (!Array.isArray(ids)) ids = [];
     const { s, now } = ctx; let done = 0, full = false;
     for (const bid of ids) {
       const b = s.beds[bid]; if (!b || b.doneAt > now) continue;

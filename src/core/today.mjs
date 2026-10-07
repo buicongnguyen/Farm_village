@@ -9,7 +9,7 @@ import { gardenCells } from './reserved.mjs';
 import { ripeTrees } from './trees.mjs';
 import { occupant, touch } from './grid.mjs';
 import { hash } from './rng.mjs';
-import { BEATS } from '../content/story.mjs';
+import { BEATS, CHAPTERS } from '../content/story.mjs';
 
 export const GIFTS = [
   { coins: 50 }, { goods: { wheat: 10 } }, { stored: { flowers: 2 } }, { goods: { chicken_feed: 6 } },
@@ -17,7 +17,7 @@ export const GIFTS = [
 ];
 export function tickToday(ctx) {
   const { s, now } = ctx, key = dayKey(now);
-  if (s.today.day === key) return;
+  if (s.today.day && key <= s.today.day) return;   // the same day, or a clock moved back: a day is only ever added (YYYY-MM-DD sorts)
   const first = !s.today.day;
   s.today.day = key; s.today.giftDay = first ? 0 : (s.today.giftDay + 1) % GIFTS.length; s.today.claimed = false; s.today.seen = false;
   s.today.days = (s.today.days ?? 0) + 1;
@@ -47,7 +47,10 @@ export function board(s, now) {
 }
 export const actions = {
   /** Tutorial progress: { step } moves to that step; { skip: true } ends the tutorial. */
-  tutorial(ctx, { step, skip }) { const st = ctx.s.story; st.tutorial = skip ? 99 : Math.max(st.tutorial ?? 0, step); return { tutorial: st.tutorial }; },
+  tutorial(ctx, { step, skip }) {
+    if (skip !== true && !(Number.isInteger(step) && step >= 0)) return ctx.fail('Unknown action');
+    const st = ctx.s.story; st.tutorial = skip === true ? 99 : Math.max(st.tutorial ?? 0, step); return { tutorial: st.tutorial };
+  },
   /** Change a setting: { key, value } (DESIGN 17). */
   setting(ctx, { key, value }) {
     const ok = { daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
@@ -57,7 +60,10 @@ export const actions = {
     ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
   },
   /** A chapter card was shown. */
-  chapterSeen(ctx, { id }) { const st = ctx.s.story; st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter }; },
+  chapterSeen(ctx, { id }) {
+    if (!CHAPTERS.some(c => c.id === id)) return ctx.fail('Unknown story moment');
+    const st = ctx.s.story; st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter };
+  },
   /** A story beat (content/story.mjs BEATS) was shown: { id }. Each beat plays once; s.story.beats lists the seen ids. */
   beatSeen(ctx, { id }) {
     if (!BEATS.some(b => b.id === id)) return ctx.fail('Unknown story moment');

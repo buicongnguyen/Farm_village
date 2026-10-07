@@ -441,12 +441,78 @@ test('neighbour comments fill {count} and {family} from the land; one neighbourV
     assert.notEqual(commentFor(s, 'mai', 3).text, 'Second visit line');
     delete mai.arc;
   } finally { mai.comments = keep; }
-  const visits = s.neighbours.mai.visits, r = tick(s, visits[visits.length - 1] + 1);
+  const visits = s.neighbours.mai.visits, before = s.neighbours.mai.total, r = tick(s, visits[visits.length - 1] + 1);
   const mine = events(r, 'neighbourVisit').filter(e => e.id === 'mai');
-  assert.equal(mine.length, visits.length, 'each visit once');
+  assert.ok(mine.length <= 1, 'a late login acts out one visit, not every one that was missed');
+  assert.equal(s.neighbours.mai.visited, visits.length, 'every planned visit is accounted for');
   assert.equal(events(tick(s, visits[visits.length - 1] + 2), 'neighbourVisit').filter(e => e.id === 'mai').length, 0, 'and never again');
   assert.ok(mine.every(e => typeof e.comment === 'string' && e.params));
-  assert.equal(s.neighbours.mai.total, visits.length);
+  assert.equal(s.neighbours.mai.total, before + mine.length);
+});
+
+test('saves: a played game survives pack and unpack; a file with markup, or not a save at all, is refused', () => {
+  const s = game(); tutorial(s); tick(s, T0 + 3 * HOUR);
+  const back = unpack(pack(s)); assert.equal(back.coins, s.coins); assert.equal(Object.keys(back.placed).length, Object.keys(s.placed).length);
+  assert.equal(back.cells.length, s.cells.length);
+  const evil = JSON.parse(pack(s)); evil.orders.cards[0].line = '<img src=x onerror=alert(1)>';
+  assert.throws(() => unpack(JSON.stringify(evil)), /not a Farm Village save/);
+  const evilKey = JSON.parse(pack(s)); evilKey.stall.items = [{ good: 'x" onmouseover="alert(1)', n: 1 }];
+  assert.throws(() => unpack(JSON.stringify(evilKey)), /not a Farm Village save/);
+  for (const bad of ['[]', '5', 'null', '{}', '{"version":1}']) assert.throws(() => unpack(bad), undefined, bad);
+});
+
+// ── Review fixes: refusals leave no trace, bad input is refused, the clock cannot pay twice ──
+test('a refused action leaves no trace, even on a building that has never been used', () => {
+  const s = game(); tutorial(s); setLevel(s, 5); s.coins = 9000;
+  layPath(s, spine(47).filter(([x]) => x > 39));
+  const mill = must(s, 'place', { kind: 'feed_mill', x: 32, z: 64, rot: 2 }).id, coop = must(s, 'place', { kind: 'coop', x: 35, z: 64, rot: 2 }).id;
+  s.barn.items = {};
+  for (const [a, p] of [['produce', { building: mill, recipe: 'chicken_feed' }], ['buyAnimal', { home: coop }]]) {
+    const before = JSON.stringify(s), r = act(s, a, p, T0);
+    assert.equal(r.ok, false, a); assert.equal(JSON.stringify(s), before, `${a} changed the state although it was refused`);
+  }
+});
+test('malformed input is refused, never stored or thrown', () => {
+  const s = game(); const before = JSON.stringify(s);
+  for (const [a, p] of [['tutorial', {}], ['tutorial', { step: 'x' }], ['tutorial', { step: -1 }], ['chapterSeen', {}], ['chapterSeen', { id: 999 }],
+    ['harvest', { ids: 5 }], ['plant', { ids: {}, crop: 'wheat' }], ['pick', { ids: 7 }], ['clear', { cells: null }], ['clear', { cells: [[1]] }], ['clear', { x: '34', z: '59' }],
+    ['place', { kind: 'bed', x: '34', z: 60 }], ['place', { kind: 'bed', x: 34, z: 60, rot: 9 }], ['move', { id: 'p1', x: 1.5, z: 2 }], ['placeEdge', { kind: 'fence', x: 34, z: 60, side: 'q' }]]) {
+    assert.doesNotThrow(() => act(s, a, p, T0), `${a} ${JSON.stringify(p)}`);
+    assert.equal(act(s, a, p, T0).ok, false, `${a} ${JSON.stringify(p)} should be refused`);
+  }
+  assert.equal(JSON.stringify(s), before); assert.ok(Number.isFinite(s.story.tutorial) && Number.isFinite(s.story.chapter));
+});
+test('a clock moved back and forward pays nothing twice: the day, the gift, the cart, the wishes and the visits', () => {
+  const s = village(); schoolOpen(T0);
+  const d1 = new Date(2026, 9, 9, 10).getTime(); tick(s, d1);
+  const days = s.today.days, wishes = JSON.stringify(s.wishes), visits = JSON.stringify(s.neighbours);
+  act(s, 'claimGift', {}, d1);
+  tick(s, d1 - 26 * HOUR); tick(s, d1);
+  assert.equal(s.today.days, days, 'no extra game day'); assert.equal(s.today.claimed, true, 'the gift stays claimed');
+  assert.equal(JSON.stringify(s.wishes), wishes); assert.equal(JSON.stringify(s.neighbours), visits, 'the plans of the day stay');
+  // the cart: send one, move the clock back a day: no second cart
+  const cart = s.cart; if (cart) { cart.crates.forEach(c => { c.filled = true; c.by = 'you'; }); must(s, 'sendCart', {}, d1); const n = s.cart.n; tick(s, d1 - 24 * HOUR); assert.equal(s.cart.n, n, 'no new cart from a clock moved back'); }
+});
+test('waits that are not stored as lengths shrink when the clock goes back (orders, the stall, a family on its way)', () => {
+  const s = village(); must(s, 'discardOrder', { id: s.orders.cards.find(c => !c.story).id }, T0);
+  s.orders.pending = [T0 + 6 * HOUR];
+  tick(s, T0 - 5 * HOUR);
+  assert.ok(s.orders.pending.every(at => at <= T0 - 5 * HOUR + ORDERS.discardMs), 'an order wait is never longer than its full length');
+});
+test('catching up after a long time away brings at most one visit from each neighbour', () => {
+  const s = game(); const late = new Date(2026, 9, 7, 22, 30).getTime();
+  const ev = tick(s, late).events.filter(e => e.type === 'neighbourVisit');
+  assert.ok(ev.length <= 2, `${ev.length} visits at once`); assert.equal(new Set(ev.map(e => e.id)).size, ev.length, 'one per neighbour');
+});
+test('rent and charm follow the placement rule: a door on the road is connected, a cut-off path is not', async () => {
+  const { needsOf } = await import('../src/core/homes.mjs');
+  const s = village(); const id = Object.keys(s.homes)[0];
+  assert.deepEqual(needsOf(s, id), [], 'a connected door has no unmet need');
+  const p = s.placed[id], door = grid.doorCell(p.kind, p.x, p.z, p.rot);
+  // lift the path tile in front of the door: the door no longer reaches the road, so the family has an unmet need
+  assert.equal(act(s, 'clear', { x: door[0], z: door[1] }, T0).ok, true);
+  assert.equal(grid.reachesRoad(s, door[0], door[1]), false);
+  assert.deepEqual(needsOf(s, id), ['path']);
 });
 
 test('parcels: buyableParcels lists the land next to the farm; buyParcel emits parcelBought', () => {

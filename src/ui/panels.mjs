@@ -27,6 +27,8 @@ const TITLES = { settings: 'Settings', album: 'Family album', today: 'Today', pr
 const HEAD_ICONS = { settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
+/** Panels with nothing to count down. */
+const STILL = new Set(['settings', 'album', 'friends', 'gift', 'mail']);
 export class Panels {
   constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onTest, onPhoto } = {}) {
     Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onTest, onPhoto });
@@ -34,14 +36,18 @@ export class Panels {
     root.appendChild(this.el);
     this.el.addEventListener('click', e => this.click(e));
     this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
-    game.on(() => { if (this.open) this.render(); });
-    setInterval(() => { if (this.open && !document.hidden) this.render(); }, 1000);   // timers count down
+    game.on(() => { if (this.open && !this.holding()) this.render(); });
+    // timers count down: only the panels that show a countdown redraw on the clock (a redraw replaces every control, which
+    // would cut off a slider being dragged in Settings)
+    setInterval(() => { if (this.open && !document.hidden && !STILL.has(this.open.kind) && !this.holding()) this.render(); }, 1000);
   }
   show(kind, arg) {
     const fresh = this.open?.kind !== kind || this.open?.arg !== arg;
     this.open = { kind, arg }; this.el.hidden = false; this.el.dataset.kind = kind; this.render();
     if (fresh) { sfx('page'); this.el.scrollTop = 0; this.el.classList.remove('pop'); void this.el.offsetWidth; this.el.classList.add('pop'); }
   }
+  /** Is a control being held (a slider mid-drag)? Redrawing now would drop it. */
+  holding() { return !!this.el.querySelector('input:active'); }
   close() { this.open = null; this.el.hidden = true; this.lift(); }
   /** Keep the HUD buttons above the sheet while it is open. */
   lift() { document.body.classList.toggle('panel-open', !!this.open); document.body.style.setProperty('--sheet-h', `${this.open ? this.el.offsetHeight : 0}px`); }

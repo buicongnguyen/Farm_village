@@ -42,7 +42,8 @@ const PROFILE_KEY = 'farm-village:profile';
 const profile = (() => { try { return Math.min(3, Math.max(1, +(localStorage.getItem(PROFILE_KEY) ?? 1))); } catch { return 1; } })();
 // test builds can run the clock ahead (kept for the tab, so a reload sees the same time)
 const clockOffset = TEST_MODE ? +(sessionStorage.getItem('fv-clock-offset') ?? 0) : 0;
-const game = new Game(params.has('new') ? null : load(profile), () => Date.now() + clockOffset);
+// ?new starts a fresh farm (test builds only: in the public game a stray link must never replace a saved farm)
+const game = new Game(TEST_MODE && params.has('new') ? null : load(profile), () => Date.now() + clockOffset);
 const world = new WorldView(app);
 const land = new LandView(world, game);
 const ghost = new Ghost(world);

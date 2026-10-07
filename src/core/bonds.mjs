@@ -87,6 +87,7 @@ function wishFor(s, home, members, day) {
 /** Today's wishes: a new set each game day; a household that moves in during the day gets its wish at once. */
 export function refreshWishes(ctx) {
   const { s, now } = ctx, day = dayKey(now), w = (s.wishes ??= { day: '', list: [] });
+  if (w.day > day) return;                      // a clock moved back: today's wishes stay as they are
   if (w.day !== day) { w.day = day; w.list = []; }
   const byHome = new Map();
   for (const r of residents(s, now)) { if (!byHome.has(r.home)) byHome.set(r.home, []); byHome.get(r.home).push(r); }

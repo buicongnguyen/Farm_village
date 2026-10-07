@@ -13,6 +13,8 @@ export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
   return (typeof def.cost === 'function' ? def.cost(n) : def.cost) + projectCost(s, kind);
 };
+/** A cell address is two whole numbers (a string such as "5" would add as text: "5" + 1 is "51"). */
+const spot = (x, z) => Number.isInteger(x) && Number.isInteger(z);
 const setCell = (s, x, z, type) => { s.cells[z * N + x] = CELL_TYPES[type]; grid.touch(s); };
 const count = (s, kind, d) => { s.counts[kind] = Math.max(0, (s.counts[kind] ?? 0) + d); };
 /** The undo stack (DESIGN 4.4): the last 10 build actions, refunded on undo, cleared when build mode ends. */
@@ -44,6 +46,7 @@ export const actions = {
   place(ctx, { kind, x, z, rot = 0 }) {
     const { s, now } = ctx, def = BUILDINGS[kind];
     if (!def || def.edge) return ctx.fail('Unknown item');
+    if (!spot(x, z) || ![0, 1, 2, 3].includes(rot)) return ctx.fail('Outside your land');
     const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlace(s, kind, x, z, rot); if (!can.ok) return ctx.fail(can.reason, can.params);
     const fromStore = (s.stored?.[kind] ?? 0) > 0, price = fromStore ? 0 : priceOf(s, kind);
@@ -69,6 +72,7 @@ export const actions = {
   move(ctx, { id, x, z, rot }) {
     const { s } = ctx, p = s.placed[id]; if (!p) return ctx.fail('Nothing to move');
     rot ??= p.rot;
+    if (!spot(x, z) || ![0, 1, 2, 3].includes(rot)) return ctx.fail('Outside your land');
     const can = grid.canPlace(s, p.kind, x, z, rot, { ignore: id }); if (!can.ok) return ctx.fail(can.reason, can.params);
     if (BUILDINGS[p.kind].tills) { setCell(s, p.x, p.z, 'grass'); setCell(s, x, z, 'tilled'); }
     Object.assign(p, { x, z, rot }); grid.touch(s);
@@ -123,6 +127,7 @@ export const actions = {
   },
   /** Clear weeds or a rock: { x, z } or { cells: [[x, z], ...] }. Also lifts a path back to grass. */
   clear(ctx, { x, z, cells = [[x, z]] }) {
+    cells = Array.isArray(cells) ? cells.filter(c => Array.isArray(c) && spot(c[0], c[1])) : [];
     const { s } = ctx; let cleared = 0, spent = 0, lifted = 0;
     for (const [cx, cz] of cells) {
       const type = grid.cellType(s, cx, cz), land = grid.landOf(s, cx, cz);
@@ -142,6 +147,7 @@ export const actions = {
   placeEdge(ctx, { kind, x, z, side }) {
     const { s } = ctx;
     if (!BUILDINGS[kind]?.edge) return ctx.fail('Unknown item');
+    if (!spot(x, z) || (side !== 'n' && side !== 'w')) return ctx.fail('Outside your land');
     const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlaceEdge(s, kind, x, z, side); if (!can.ok) return ctx.fail(can.reason, can.params);
     const price = priceOf(s, kind); if (s.coins < price) return ctx.fail('Not enough coins');

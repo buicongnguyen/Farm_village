@@ -20,9 +20,10 @@ export const actions = {
     if (!p || !BUILDINGS[p.kind].produces) return ctx.fail('This building makes nothing');
     if (!r || r.at !== p.kind) return ctx.fail('Not made here');
     if (!recipeOpen(s, recipe)) return ctx.fail('Reach level {level} first', { level: r.level, recipe, lock: 'level' });
-    const q = queueOf(s, building);
+    const q = s.production[building] ?? { slots: SLOTS.start, queue: [] };   // not stored until the recipe is accepted
     if (q.queue.length >= q.slots) return ctx.fail('The queue is full');
     if (!barn.take(s, r.needs)) return ctx.fail('Missing ingredients');
+    s.production[building] = q;
     const start = Math.max(now, q.queue.length ? q.queue[q.queue.length - 1].doneAt : now);
     q.queue.push({ recipe, doneAt: start + r.timeMs });
     ctx.emit('queued', { building, recipe });
@@ -48,10 +49,10 @@ export const actions = {
   buySlot(ctx, { building }) {
     const { s } = ctx;
     if (!s.placed[building] || !BUILDINGS[s.placed[building].kind].produces) return ctx.fail('This building makes nothing');
-    const q = queueOf(s, building), cost = SLOTS.cost[q.slots];
+    const q = s.production[building] ?? { slots: SLOTS.start, queue: [] }, cost = SLOTS.cost[q.slots];
     if (q.slots >= SLOTS.max || cost == null) return ctx.fail('No more slots');
     if (s.coins < cost) return ctx.fail('Not enough coins');
-    s.coins -= cost; q.slots++;
+    s.coins -= cost; q.slots++; s.production[building] = q;
     ctx.emit('slotBought', { building, slots: q.slots });
     return { slots: q.slots };
   },

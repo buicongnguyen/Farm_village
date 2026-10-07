@@ -40,7 +40,8 @@ export function makeCart(s, n) {
 export function tickCart(ctx) {
   const { s, now } = ctx;
   if (!cartOpen(s, now)) return;
-  if (s.cart && (!s.cart.sent || s.cart.sentDay === dayKey(now))) return;
+  // a sent cart is replaced the next game day; a clock moved back does not bring another one at once
+  if (s.cart && (!s.cart.sent || (s.cart.sentDay ?? '') >= dayKey(now))) return;
   s.cart = makeCart(s, (s.cart?.n ?? 0) + 1);
   ctx.emit('cartArrived', { n: s.cart.n });
 }

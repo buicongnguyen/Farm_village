@@ -23,7 +23,7 @@ export const actions = {
   /** Pick ripe fruit: { id } or { ids: [...] } (every ripe tree when neither is given). Stops when the barn is full. */
   pick(ctx, { id, ids = id ? [id] : null } = {}) {
     const { s, now } = ctx; let picked = 0, full = false, xp = 0;
-    for (const tid of ids ?? ripeTrees(s, now)) {
+    for (const tid of ids == null ? ripeTrees(s, now) : Array.isArray(ids) ? ids : []) {
       const t = s.trees?.[tid], f = fruitOf(s, tid); if (!t || !f || t.doneAt > now) continue;
       if (barn.space(s) < f.yield) { full = true; break; }
       const good = fruitId(s, tid);

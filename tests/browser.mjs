@@ -154,6 +154,13 @@ await check('first session: a truly modal chapter card, then the camera flies to
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
+await check('settings: a slider keeps its place while the clock redraws the panels', async () => {
+  const { ctx, page } = await open('phone');
+  await page.click('[data-act="settings"]');
+  const same = await page.evaluate(async () => { const el = document.querySelector('[data-range="sound"]'); el.focus(); await new Promise(r => setTimeout(r, 2300)); return document.querySelector('[data-range="sound"]') === el; });
+  expect(same, 'the sound slider was replaced by a redraw');
+  await ctx.close();
+});
 await check('settings: text size, language and day and night from the settings panel', async () => {
   const { ctx, page } = await open('pc', '?new');
   await page.click('[data-act="settings"]');

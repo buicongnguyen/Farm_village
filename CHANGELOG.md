@@ -1,5 +1,23 @@
 # Changelog
 
+## Review fixes (2026-10-07)
+
+A code and logic review of the whole game, each problem reproduced with a script before it was fixed.
+
+- **Walking:** people and animals drawn without a skeleton (everyone at the default zoom) now swing their legs: a six-pose
+  walk cycle is baked from each rig and chosen by the ground the walker covers, so feet keep time with the body.
+- **Rules:** a refused action no longer leaves anything behind (a refused recipe or purchase used to create an empty
+  production queue or animal list); `tutorial` and `chapterSeen` refuse bad input instead of storing NaN or marking
+  every chapter reached; malformed lists and cell addresses are refused instead of throwing.
+- **Clock:** moving the device clock back and forward no longer earns extra game days, the daily gift, wishes, weekly carts
+  or neighbour visits; waits that are not stored as lengths shrink when the clock goes back.
+- **Neighbours:** opening the game late no longer brings every missed visit at once (one visit per neighbour, so a story
+  arc is not used up in one login).
+- **Rent:** a family's "needs a path" rule now matches the placement rule (a door on the road counts; a cut-off path does not).
+- **Saves:** an imported file with markup characters, or that is not a save, is refused; `?new` only works in test builds,
+  so a stray link cannot replace a saved farm.
+- **Interface:** the panels no longer redraw every second when they have no countdown, so a slider in Settings can be dragged.
+
 ## 0.2.0 — The AAA pass (2026-10-07, branch aaa-integrate, not yet published)
 
 Hollowbrook raised toward a Hay Day-level look and feel: vivid warm colour, a living world, a cast that walks and

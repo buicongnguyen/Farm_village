@@ -5,8 +5,15 @@ import { upgradeV1 } from '../core/upgrade.mjs';
 
 const KEY = profile => `farm-village:save:${profile}`;
 export function pack(s) { return JSON.stringify({ ...s, cells: s.cells.join('') }); }
+/**
+ * A save holds ids, numbers and times, never markup. Menus build their HTML from save values (card ids, stall goods,
+ * wish kinds), so a file with < > " or ` in a key or a text value is refused: an imported save cannot inject markup.
+ * (Story text, which has quotes and the tutorial's <b>, is content, not save data.)
+ */
+const MARKUP = /[<>"`]/;
 export function unpack(text) {
-  const s = JSON.parse(text);
+  const s = JSON.parse(text, (k, v) => { if (MARKUP.test(k) || (typeof v === 'string' && MARKUP.test(v))) throw new Error('not a Farm Village save'); return v; });
+  if (!s || typeof s !== 'object' || Array.isArray(s) || typeof s.placed !== 'object' || !Array.isArray(s.cells) && typeof s.cells !== 'string') throw new Error('not a Farm Village save');
   if (typeof s.cells === 'string') s.cells = Array.from(s.cells, Number);
   const from = s.version ?? 1, m = migrate(s);
   return from < 2 ? upgradeV1(m) : m;

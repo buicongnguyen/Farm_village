@@ -65,9 +65,13 @@ export function tickNeighbours(ctx) {
   const { s, now } = ctx;
   for (const { id } of LIST) {
     let n = s.neighbours[id];
-    if (!n || n.day !== dayKey(now)) n = s.neighbours[id] = { friendship: n?.friendship ?? 0, total: n?.total ?? 0, ...planDay(s, id, now) };
-    while (n.visited < n.visits.length && n.visits[n.visited] <= now) {
-      n.visited++; n.total = (n.total ?? 0) + 1;
+    // a new plan each game day, never for an earlier one (a clock moved back must not bring the day's visits again)
+    if (!n || n.day < dayKey(now)) n = s.neighbours[id] = { friendship: n?.friendship ?? 0, total: n?.total ?? 0, ...planDay(s, id, now) };
+    // Visits come at their planned times. A player who opens the game later has missed some: only the latest one is acted
+    // out (it counts for the story's visit arcs), the earlier ones are skipped, so a login never brings a crowd at once.
+    const due = []; while (n.visited < n.visits.length && n.visits[n.visited] <= now) due.push(n.visits[n.visited++]);
+    if (due.length) {
+      n.missed = (n.missed ?? 0) + due.length - 1; n.total = (n.total ?? 0) + 1;
       // help: the beds that will take longest grow 30 minutes faster (never past now)
       const growing = Object.entries(s.beds).filter(([, b]) => b.doneAt > now).sort((a, b) => b[1].doneAt - a[1].doneAt).slice(0, N.helpBeds);
       for (const [, b] of growing) b.doneAt = Math.max(now, b.doneAt - N.helpMs);

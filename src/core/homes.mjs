@@ -3,7 +3,7 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import { FAMILIES } from '../content/people.mjs';
 import { RENT, FAMILY_ARRIVAL_MS, HOUR } from '../content/economy.mjs';
 import { isBrook } from '../content/world.mjs';
-import { cellsOf, doorCell, cellType } from './grid.mjs';
+import { cellsOf, doorCell, cellType, reachesRoad } from './grid.mjs';
 
 const CHARM_RADIUS = 3;
 /** A cottage's charm (DESIGN 12): decorations within 3 cells, a path at the door, the brook; production and pens cost a little. */
@@ -23,7 +23,7 @@ export function charmOf(s, id) {
   }
   for (let z = z0; z <= z1 && !brook; z++) for (let x = x0; x <= x1; x++) if (isBrook(x, z)) { brook = true; break; }
   if (brook) charm += 3;
-  const door = doorCell(p.kind, p.x, p.z, p.rot); if (door && cellType(s, door[0], door[1]) === 'path') charm += 2;
+  const door = doorCell(p.kind, p.x, p.z, p.rot); if (door && cellType(s, door[0], door[1]) === 'path' && reachesRoad(s, door[0], door[1])) charm += 2;
   return Math.max(0, charm);
 }
 /** Which cottages a charm item at (x, z) would help, and by how much (the build-mode charm preview, DESIGN 12). */
@@ -46,10 +46,11 @@ export function arriveNext(ctx, id) {
   s.homes[id] = { level: 0, family: fam?.id ?? null, arrivesAt: now + FAMILY_ARRIVAL_MS, rentFrom: now + FAMILY_ARRIVAL_MS };
   if (fam) ctx.emit('familyComing', { id, family: fam.id, at: now + FAMILY_ARRIVAL_MS });
 }
-/** Families with unmet needs pay a quarter less (DESIGN 10, step 6). v0.1 needs: a path at the door. */
+/** Families with unmet needs pay a quarter less (DESIGN 10, step 6). v0.1 needs: a way from the door to the road, the same
+ * rule as placing the cottage (a door right on the road counts; a path cut off from the road does not). */
 export function needsOf(s, id) {
   const p = s.placed[id], door = p && doorCell(p.kind, p.x, p.z, p.rot);
-  return door && cellType(s, door[0], door[1]) !== 'path' ? ['path'] : [];
+  return door && !reachesRoad(s, door[0], door[1]) ? ['path'] : [];
 }
 export function rentPerHour(s, id) {
   const h = s.homes[id]; if (!h?.family) return 0;
