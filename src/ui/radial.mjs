@@ -123,7 +123,7 @@ export class Radial {
       if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(p.kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
-      info = pen.closed || s.mode === 'restore' ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
+      info = true ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       info = `${iconHtml('sale_sign', '', 'mini')} ${t('Land for sale')} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;

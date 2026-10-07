@@ -1,5 +1,6 @@
 // The barn: every good in one store with a capacity (DESIGN 13), and the goods held for the next project (DESIGN 11).
 import { BARN } from '../content/economy.mjs';
+import { GOODS } from '../content/goods.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { stepReady } from './projects.mjs';
 
@@ -23,6 +24,12 @@ export function take(s, needs, honourHold = true) {
   return true;
 }
 /** Add up to n of a good; returns how many fitted. */
+/** Store what fits; what does not is sold on the spot at the base price (a full barn never traps the player). Returns the coins made. */
+export function addOrSell(s, id, n) {
+  const fit = add(s, id, n), rest = n - fit, coins = rest * (GOODS[id]?.value ?? 0);
+  if (coins > 0) { s.coins += coins; s.stats.coinsEarned += coins; }
+  return coins;
+}
 export function add(s, id, n) {
   const fit = Math.min(n, space(s)); if (fit > 0) s.barn.items[id] = stock(s, id) + fit;
   return fit;

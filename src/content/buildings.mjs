@@ -51,7 +51,7 @@ export const BUILDINGS = {
   // The streak garden (today.mjs): one flower for every day you visit, planted by itself by the farmhouse. Not in the catalogue.
   garden_flower: { name: 'Garden flower', cat: 'garden', size: [1, 1], area: 'any', level: 1, cost: 0, garden: true, model: 'flowers' },
   // Village projects (placed through the build order, DESIGN 11)
-  school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 5, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
+  school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 6, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
 };
 export const COTTAGE_LEVELS = [{ name: 'Basic' }, { name: 'Cozy' }, { name: 'Deluxe' }];
 /** Footprint size after rotation (0–3). */

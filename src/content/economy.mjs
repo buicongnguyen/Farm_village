@@ -8,7 +8,7 @@ export const START_RESTORE = { coins: 500, barnCap: 50, stock: { wheat: 12, brea
 // Repairs (D2, D6, D7): a broken building (only at the start) is out of order until repaired: coins and a short wait.
 // Wear (D3) is very gentle: it grows only while the game is open, never stops anything and costs a few percent of rent and charm.
 export const REPAIR = {
-  broken: { share: 0.6, min: 25, ms: 90_000, xp: 10 },     // coins = max(min, share × the thing's price); the wait is `ms`
+  broken: { share: 0.6, min: 25, ms: 30_000, xp: 10 },     // coins = max(min, share × the thing's price); the wait is `ms`
   worn: { share: 0.08, min: 5 },                           // wear level 1; level 2 costs half as much again
   road: 40, house: 400, helpMs: 45_000,
 };
@@ -18,7 +18,7 @@ export const HOUSE = { levels: 3, upgradeCost: [0, 300, 1100], level: [1, 4, 7],
 // Demolishing gives back this share of the price and leaves a rebuild credit (the same thing again costs half).
 export const DEMOLISH = { refund: 0.4, rebuild: 0.5 };
 export const LEVELS = {
-  xpFor: L => Math.round(10 * (L - 1) ** 2.6),       // total XP needed to reach level L
+  xpFor: L => L <= 2 ? (L - 1) * 8 : Math.round(7 * (L - 1) ** 2.6 * L),       // total XP needed to reach level L
   max: 60,
 };
 export const XP = { harvest: 1, collect: 2, produce: value => Math.ceil(value / 4), order: 0.3, build: 5 };
@@ -32,21 +32,22 @@ export const ORDERS = {
 export const BEDS = {
   free: 6, max: 30,
   allowance: level => Math.min(30, 6 + 3 * level),
-  cost: n => n <= 6 ? 0 : Math.round(10 * 1.15 ** (n - 6)),   // the nth bed
+  cost: n => n <= 6 ? 0 : Math.round(5 + 0.5 * (n - 7)),   // the nth bed: a few coins, rising very slowly (v0.3c)
 };
 export const CLEAR = { weeds: 2, rock: 10 };
-export const BARN = { start: 50, step: 25, upgradeCost: k => 100 * 2 ** k };
+export const BARN = { start: 50, step: 25, upgradeCost: k => 60 * 2 ** k };
 export const SLOTS = { start: 2, max: 6, cost: [0, 0, 60, 200, 600, 1500] };   // cost of the nth slot (index = slot count before buying)
 export const RENT = {
-  perHour: [3, 6, 10], upgradeCost: [0, 400, 1500], capHours: 8,
+  perHour: [12, 24, 40], upgradeCost: [0, 400, 1500], capHours: 8,   // v0.3c: passive income worth having now that everything is quick
+  tipMs: [3 * MIN, 6 * MIN], tipCoins: [4, 12],   // a happy family leaves a tip every few minutes
   charmBonus: charm => Math.min(0.4, charm * 0.02), unmetNeed: 0.25,
 };
 export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.4 ** (n - 6)), maxV01: 2, level: 4 };
 export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1 };
 /** The delivery truck (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip. */
-export const TRUCK = { tripMs: 90_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 400, 1500], level: [1, 3, 6] };
+export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 400, 1500], level: [1, 3, 6] };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
-export const FISH = { waitMs: 90_000, baitMs: 50_000, feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
+export const FISH = { waitMs: 25_000, baitMs: 12_000, feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
 export const DAILY_RESET_HOUR = 4;
 export const FAMILY_ARRIVAL_MS = 2 * MIN;

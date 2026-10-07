@@ -7,6 +7,8 @@ import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { nextTask } from '../core/next.mjs';
+import { rentWaiting } from '../core/homes.mjs';
+import { shortTime } from '../core/clock.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
 import { thingName } from './repair-ui.mjs';
@@ -32,7 +34,8 @@ export class Hud {
       <div class="hud-top"><div class="hud-stats"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
         <div class="pill coins" data-hud="coins">${iconHtml('ui:coin', '', 'pill-icon')}<b></b></div></div>
         <div class="village-name" data-hud="village"></div>
-        <div class="hud-corner"><button class="round small rim-blue" data-act="album">${glyph('album', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div></div>
+        <div class="hud-status" data-hud="status"></div></div>
+      <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
         <button class="round rim-blue" data-act="today">${glyph('today', 'g')}<i class="badge dot"></i></button>
         <button class="round rim-teal" data-act="projects">${glyph('projects', 'g')}<i class="badge dot"></i></button>
@@ -42,13 +45,14 @@ export class Hud {
       <button class="next-chip" data-act="next" hidden></button>
       <div class="toasts" aria-live="polite"></div>
       <div class="hud-tools">
-        <button class="round rim-grey" data-act="turn">${glyph('rotate', 'g')}</button>
         <button class="round rim-grey lang" data-act="lang" hidden></button>
         <button class="round rim-red" data-act="barn">${iconHtml('ui:barn', '', 'btn-icon')}<i class="badge cap"></i></button>
         <button class="round rim-orange" data-act="orders">${iconHtml('ui:orders', '', 'btn-icon')}<i class="badge"></i></button>
         <button class="round big" data-act="build">${iconHtml('tool:build', '', 'btn-icon')}</button>
       </div>`;
     this.el.addEventListener('click', e => {
+      const st = e.target.closest('[data-status]')?.dataset.status;
+      if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
@@ -59,7 +63,7 @@ export class Hud {
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.refuse(r.reason, r.params); for (const e of r.events ?? []) this.event(e); });
     onLanguageChange(() => this.update());
-    this.update(); setInterval(() => this.refreshNext(), 2000);
+    this.update(); setInterval(() => { this.refreshNext(); this.refreshStatus(); }, 1000);
   }
   update() {
     const s = this.game.s, p = progress(s), q = sel => this.el.querySelector(sel);
@@ -71,7 +75,8 @@ export class Hud {
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
-    for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`).setAttribute('aria-label', t(text));
+    for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`)?.setAttribute('aria-label', t(text));
+    this.refreshStatus();
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
@@ -110,6 +115,8 @@ export class Hud {
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects' });
+    if (e.type === 'familyTip') this.toast(t('A family left a tip: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:coin' });
+    if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn' });
     if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn' });
     if (e.type === 'cartArrived') this.toast(t('The weekly cart is at the gate'), 'info', { icon: 'cart' });
     if (e.type === 'crateFilled' && e.by && e.by !== 'you') this.toast(t('{name} filled a crate on the cart', { name: t(NAMES[e.by] ?? e.by) }), 'good', { icon: 'crate' });
@@ -153,6 +160,19 @@ export class Hud {
     return el;
   }
   setMode(mode) { this.el.dataset.mode = mode; }
+  /** The status stack at the top left: the goal, the order board, rent, the truck and the pond, each a tap away. */
+  refreshStatus() {
+    const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
+    const step = currentStep(s);
+    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: t(s.mode === 'restore' && step.restore ? step.restore.split('.')[0] : step.name) });
+    const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
+    const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });
+    const tr = s.truck; if (tr?.away) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t('Truck')}: ${shortTime(Math.max(0, tr.backAt - now))}` });
+    else if (tr?.coins) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t('Truck')}: +${num(tr.coins)}`, hot: true });
+    const line = s.fishing?.line; if (line) rows.push({ act: 'pond', ic: iconHtml('perch', '', 'mini'), text: line.doneAt <= now ? t('A fish is biting!') : `${t('Fishing')}: ${shortTime(line.doneAt - now)}`, hot: line.doneAt <= now });
+    const html = rows.map(r => `<button class="status-row${r.hot ? ' hot' : ''}" data-status="${r.act}">${r.ic}<span>${r.text}</span></button>`).join('');
+    if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
+  }
   /** The chip with the one most useful thing to do now; a tap goes there. */
   refreshNext() {
     const chip = this.el.querySelector('[data-act="next"]'), n = nextTask(this.game.s, this.game.now), s = this.game.s;

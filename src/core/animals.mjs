@@ -22,7 +22,6 @@ export const actions = {
     if (s.level < a.level) return ctx.fail('Reach level {level} first', { level: a.level, animal: kind, lock: 'level' });
     const list = s.animals[home] ?? [];   // not stored until the animal is bought
     if (list.length >= a.perHome) return ctx.fail('This home is full');
-    if (s.mode !== 'restore' && !penOf(s, home).closed) return ctx.fail(penOf(s, home).reason ?? 'The fence has a gap');
     const price = animalPrice(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; list.push({ kind, doneAt: null }); s.animals[home] = list;
@@ -44,14 +43,15 @@ export const actions = {
   },
   /** Collect ready produce: { home } or every home. */
   collect(ctx, { home } = {}) {
-    const { s, now } = ctx; let got = 0, full = false;
+    const { s, now } = ctx; let got = 0, sold = 0;
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
       if (an.doneAt == null || an.doneAt > now) continue;
-      if (!barn.add(s, ANIMALS[an.kind].gives, 1)) { full = true; break; }
+      sold += barn.addOrSell(s, ANIMALS[an.kind].gives, 1);
       an.doneAt = null; got++;
       ctx.emit('collected', { home: id, good: ANIMALS[an.kind].gives });
     }
-    if (!got) return ctx.fail(full ? 'The barn is full' : 'Nothing is ready yet');
+    if (!got) return ctx.fail('Nothing is ready yet');
+    if (sold) ctx.emit('barnSold', { coins: sold });
     gainXp(ctx, XP.collect * got);
     return { collected: got };
   },

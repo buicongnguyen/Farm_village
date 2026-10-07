@@ -5,6 +5,7 @@ import { RENT, FAMILY_ARRIVAL_MS, HOUR, WEAR } from '../content/economy.mjs';
 import { isBrook } from '../content/world.mjs';
 import { cellsOf, doorCell, cellType, reachesRoad } from './grid.mjs';
 import { levelOf } from './working.mjs';
+import { rng, hash } from './rng.mjs';
 
 const CHARM_RADIUS = 3;
 /** A cottage's charm (DESIGN 12): decorations within 3 cells, a path at the door, the brook; production and pens cost a little. */
@@ -94,4 +95,14 @@ export const actions = {
 export function tickHomes(ctx) {
   const { s, now } = ctx;
   for (const [id, h] of Object.entries(s.homes)) if (h.family && h.arrivesAt <= now && !h.arrived) { h.arrived = true; ctx.emit('familyArrived', { id, family: h.family }); }
+  // a happy family now and then leaves a thank-you tip on the spot: passive income you did not have to collect (v0.3c)
+  for (const [id, h] of Object.entries(s.homes)) {
+    if (!h.family || h.arrivesAt > now || levelOf(s, id) >= 3) continue;
+    if (!h.tipAt) { h.tipAt = now + RENT.tipMs[0]; continue; }
+    if (h.tipAt > now) continue;
+    if (now - h.tipAt > WEAR.tickCapMs) { h.tipAt = now + RENT.tipMs[0]; continue; }   // a tip only comes while the game is open, never as back pay
+    const coins = RENT.tipCoins[0] + Math.floor(rng(hash(id, h.tipAt))() * (RENT.tipCoins[1] - RENT.tipCoins[0] + 1));
+    s.coins += coins; s.stats.coinsEarned += coins; h.tipAt = now + RENT.tipMs[0] + Math.floor(rng(hash(id, now))() * (RENT.tipMs[1] - RENT.tipMs[0]));
+    ctx.emit('familyTip', { id, family: h.family, coins });
+  }
 }

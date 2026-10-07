@@ -12,6 +12,7 @@ const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['ti
 export function renderSettings(s, profile) {
   const st = s.settings;
   return `<div class="settings">
+    <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${choice('lang', 'en', getLanguage(), 'English')}${choice('lang', 'vi', getLanguage(), 'Tiếng Việt')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
     <div class="set-row"><b>${t('Music')}</b><input type="range" min="0" max="100" value="${Math.round(st.music * 100)}" data-range="music" aria-label="${t('Music')}"></div>

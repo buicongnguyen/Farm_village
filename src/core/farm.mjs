@@ -37,17 +37,16 @@ export const actions = {
   /** Harvest ready beds: { ids: [...] | id }. Stops when the barn is full. */
   harvest(ctx, { id, ids = [id] }) {
     if (!Array.isArray(ids)) ids = [];
-    const { s, now } = ctx; let done = 0, full = false;
+    const { s, now } = ctx; let done = 0, sold = 0;
     for (const bid of ids) {
       const b = s.beds[bid]; if (!b || b.doneAt > now) continue;
-      if (barn.space(s) < 2) { full = true; break; }
-      barn.add(s, b.crop, 2); delete s.beds[bid]; done++;
+      sold += barn.addOrSell(s, b.crop, 2); delete s.beds[bid]; done++;
       ctx.emit('harvested', { id: bid, crop: b.crop, count: 2 });
     }
-    if (!done) return ctx.fail(full ? 'The barn is full' : 'Nothing is ready yet');
+    if (!done) return ctx.fail('Nothing is ready yet');
     s.stats.harvested += done * 2; gainXp(ctx, XP.harvest * done * 2);
     s.story.firstWheat = false;   // the tutorial's quick wheat lasts until the first harvest, however it was planted
-    if (full) ctx.emit('barnFull', {});
+    if (sold) ctx.emit('barnSold', { coins: sold });
     return { harvested: done };
   },
 };

@@ -241,7 +241,7 @@ const villageSetup = page => page.evaluate(() => {
   for (let z = 56; z <= 71; z++) for (let x = 32; x <= 47; x++) g.do('clear', { x, z });
   for (let x = 30; x <= 47; x++) g.do('place', { kind: 'path', x, z: 63 });
   for (let i = 0; i < 6; i++) g.do('place', { kind: 'bed', x: 33 + i, z: 58 });
-  g.s.level = 5; g.s.xp = 400;
+  g.s.level = 6; g.s.xp = 3000;
   g.do('place', { kind: 'feed_mill', x: 32, z: 64, rot: 2 }); g.do('place', { kind: 'coop', x: 35, z: 64, rot: 2 });
   for (const x of [34, 38]) g.do('place', { kind: 'path', x, z: 92 });
   g.do('place', { kind: 'cottage', x: 33, z: 93, rot: 2 }); g.s.barn.items.bread = 5; g.do('projectDeliver');
@@ -255,7 +255,7 @@ await check('village: families walk, the projects panel builds the school on its
   await page.waitForTimeout(1500);
   const walkers = await page.evaluate(() => farm.people ? [...farm.people.walkers.keys()] : []);
   expect(walkers.includes('minh') && walkers.includes('zara'), `walkers: ${walkers}`);
-  await page.evaluate(() => { farm.game.s.barn.items.bread = 10; farm.game.s.barn.items.corn_bread = 4; document.querySelectorAll('.modal').forEach(m => m.remove()); });
+  await page.evaluate(() => { farm.game.s.barn.items.bread = 24; farm.game.s.barn.items.corn_bread = 10; document.querySelectorAll('.modal').forEach(m => m.remove()); });
   await page.click('[data-act="projects"]');
   await page.click('[data-do="projectDeliver"]');
   await page.click('[data-do="buildProject"]');

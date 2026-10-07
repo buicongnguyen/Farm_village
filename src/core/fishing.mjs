@@ -38,8 +38,8 @@ export const actions = {
     const { s, now } = ctx, f = fishingOf(s); if (!f.line) return ctx.fail('Cast a line first');
     if (f.line.doneAt > now) return ctx.fail('Nothing is biting yet');
     const fish = pick(f.line.seed, f.line.bait);
-    if (barn.space(s) < 1) return ctx.fail('The barn is full');
-    barn.add(s, fish, 1); f.line = null; f.caught++; s.stats.fished = (s.stats.fished ?? 0) + 1;
+    const sold = barn.addOrSell(s, fish, 1); if (sold) ctx.emit('barnSold', { coins: sold });
+    f.line = null; f.caught++; s.stats.fished = (s.stats.fished ?? 0) + 1;
     ctx.emit('fishCaught', { fish });
     return { fish };
   },

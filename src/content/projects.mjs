@@ -17,7 +17,7 @@ export const STEPS = [
   { id: 'cottage2', name: 'A second cottage', text: 'Another family wants to move in. They ask for bread for their first week.',
     restore: 'Another family wants to move in. They ask for bread for their first week, then repair the second cottage.', needs: { level: 4 }, deliver: { bread: 5 }, builds: ['cottage'], allow: { cottage: 2 }, done: s => working(s, 'cottage') >= 2 },
   { id: 'school', name: 'The school', text: 'Two families with children ask for the old school to reopen.',
-    needs: { level: 5, kidsFamilies: 2 }, deliver: { bread: 10, corn_bread: 4 }, cost: 700, builds: ['school'], done: s => s.counts.school >= 1 },
+    needs: { level: 6, kidsFamilies: 2 }, deliver: { bread: 24, corn_bread: 10 }, cost: 4000, builds: ['school'], done: s => s.counts.school >= 1 },
   { id: 'cottages34', name: 'Cottages three and four', text: 'The school brings new families. Build two more cottages.',
     restore: 'The school brings new families. Repair the last cottage and build one more.', needs: {}, builds: ['cottage'], allow: { cottage: 4 }, done: s => working(s, 'cottage') >= 4 },
 ];

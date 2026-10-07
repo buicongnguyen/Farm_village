@@ -22,18 +22,17 @@ export const ripeTrees = (s, now) => Object.keys(s.trees ?? {}).filter(id => s.p
 export const actions = {
   /** Pick ripe fruit: { id } or { ids: [...] } (every ripe tree when neither is given). Stops when the barn is full. */
   pick(ctx, { id, ids = id ? [id] : null } = {}) {
-    const { s, now } = ctx; let picked = 0, full = false, xp = 0;
+    const { s, now } = ctx; let picked = 0, sold = 0, xp = 0;
     for (const tid of ids == null ? ripeTrees(s, now) : Array.isArray(ids) ? ids : []) {
       const t = s.trees?.[tid], f = fruitOf(s, tid); if (!t || !f || t.doneAt > now) continue;
-      if (barn.space(s) < f.yield) { full = true; break; }
       const good = fruitId(s, tid);
-      barn.add(s, good, f.yield); t.doneAt = now + f.regrowMs; delete t.first; picked++; xp += XP.harvest * f.yield;
+      sold += barn.addOrSell(s, good, f.yield); t.doneAt = now + f.regrowMs; delete t.first; picked++; xp += XP.harvest * f.yield;
       s.stats.picked = (s.stats.picked ?? 0) + f.yield;
       ctx.emit('picked', { id: tid, good, count: f.yield });
     }
-    if (!picked) return ctx.fail(full ? 'The barn is full' : 'Nothing is ready yet');
+    if (!picked) return ctx.fail('Nothing is ready yet');
     gainXp(ctx, xp);
-    if (full) ctx.emit('barnFull', {});
+    if (sold) ctx.emit('barnSold', { coins: sold });
     return { picked };
   },
 };

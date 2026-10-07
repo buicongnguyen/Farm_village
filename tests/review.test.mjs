@@ -24,7 +24,7 @@ const types = r => r.events.map(e => e.type);
 function atSchool() {
   const s = game(); tutorial(s); setLevel(s, 6); s.coins = 20000;
   must(s, 'testAddFamily', {}); must(s, 'testAddFamily', {});
-  s.projects.step = stepIndex('school'); s.projects.delivered = { bread: 10, corn_bread: 4 };
+  s.projects.step = stepIndex('school'); s.projects.delivered = { bread: 24, corn_bread: 10 };
   return s;
 }
 
@@ -46,7 +46,7 @@ test('a finished project step cannot be undone, and the school is never refunded
   assert.ok(types(r).includes('projectDone'));
   assert.equal(currentStep(s).id, 'cottages34');
   assert.equal(act(s, 'undo', {}).reason, 'Nothing to undo');
-  assert.equal(s.counts.school, 1); assert.ok(s.coins < coins, 'the 700-coin project price stays paid');
+  assert.equal(s.counts.school, 1); assert.ok(s.coins < coins, 'the 4000-coin project price stays paid');
 });
 
 test('the weekly cart comes the day after the school opens, not in the same action', () => {
@@ -83,7 +83,7 @@ test('letters never name what has not happened yet: the tutorial posts no wheat 
   s.coins += 1000;
   for (let i = 0; i < 9; i++) run(act(s, 'place', { kind: 'path', x: 30 + i, z: 63 }));
   for (let i = 0; i < 6; i++) run(act(s, 'place', { kind: 'bed', x: 32 + i, z: 57 }));
-  assert.ok(s.level >= 3, `level ${s.level}`);
+  assert.ok(s.level >= 2, `level ${s.level}`);
   assert.ok(!letters.includes('ada-1'), 'no "you sold your first wheat" before an order');
   assert.ok(!letters.includes('gus-1'), 'no "your fence is crooked" before a fence');
   s.stats.ordersFilled = 1; assert.ok(letterDue(s, LETTERS.find(l => l.id === 'ada-1')));

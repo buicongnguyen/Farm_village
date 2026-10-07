@@ -6,6 +6,8 @@ import { treeState } from './trees.mjs';
 import { readyCount } from './production.mjs';
 import { isBroken, isRepairing, isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
+import { rentWaiting } from './homes.mjs';
+import { MAILBOX } from '../content/world.mjs';
 
 const centre = p => { const [w, d] = footprint(p.kind, p.rot); return { x: Math.floor(p.x + w / 2), z: Math.floor(p.z + d / 2) }; };
 export function nextTask(s, now) {
@@ -19,6 +21,7 @@ export function nextTask(s, now) {
   if (eggs) return { key: 'Collect the eggs and milk', at: at(eggs), icon: 'egg' };
   const goods = of((id, p, d) => d.produces && isWorking(s, id) && readyCount(s, id, now) > 0)[0];
   if (goods) return { key: 'Collect the finished goods', at: at(goods), icon: 'bread' };
+  if (rentWaiting(s, now) >= 10) return { key: 'Collect the rent from the mailbox', at: { x: MAILBOX.x, z: MAILBOX.z }, icon: 'ui:coin' };
   const pond = of((id, p, d) => d.pond && s.fishing?.line && s.fishing.line.doneAt <= now)[0];
   if (pond) return { key: 'Reel in the fish', at: at(pond), icon: 'perch' };
   const truck = of((id, p, d) => d.market && (s.truck?.coins ?? 0) > 0)[0];

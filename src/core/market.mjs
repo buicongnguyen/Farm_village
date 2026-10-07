@@ -49,6 +49,14 @@ export const actions = {
     ctx.emit('coins', { coins });
     return { coins };
   },
+  /** Sell goods from the barn at the base price, any time: { good, n } (n = all when omitted). */
+  sellGood(ctx, { good, n }) {
+    const { s } = ctx; if (!GOODS[good]) return ctx.fail('Unknown good');
+    const have = barn.free(s, good); n = n == null ? have : Math.floor(Number(n)); if (!(n >= 1) || n > have) return ctx.fail('Missing goods');
+    barn.take(s, { [good]: n }); const coins = n * GOODS[good].value; s.coins += coins; s.stats.coinsEarned += coins;
+    ctx.emit('coins', { coins });
+    return { coins };
+  },
   upgradeTruck(ctx) {
     const { s } = ctx, t = truckOf(s), next = t.level + 1;
     if (next > TRUCK.capacity.length) return ctx.fail('Already the biggest truck');

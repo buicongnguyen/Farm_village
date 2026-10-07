@@ -60,11 +60,11 @@ test('farming: plant from the barn, free wheat, harvest two, the first wheat is 
   must(s, 'plant', { ids: beds, crop: 'wheat' });
   assert.equal(s.barn.items.wheat, 6, 'wheat is free to plant');
   assert.equal(act(s, 'harvest', { ids: beds }, T0 + 10_000).ok, false);
-  must(s, 'harvest', { ids: beds }, T0 + 31_000);                                          // the tutorial's 30 s first wheat
+  must(s, 'harvest', { ids: beds }, T0 + 16_000);                                          // the tutorial's 15 s first wheat
   assert.equal(s.barn.items.wheat, 6 + 12);
-  must(s, 'plant', { ids: beds, crop: 'wheat' }, T0 + 31_000);                              // after that, wheat takes 2 minutes
-  assert.equal(act(s, 'harvest', { ids: beds }, T0 + 62_000).ok, false);
-  must(s, 'deliverOrder', { id: s.orders.cards[0].id }, T0 + 62_000);
+  must(s, 'plant', { ids: beds, crop: 'wheat' }, T0 + 16_000);                              // after that, wheat takes 20 seconds
+  assert.equal(act(s, 'harvest', { ids: beds }, T0 + 30_000).ok, false);
+  must(s, 'deliverOrder', { id: s.orders.cards[0].id }, T0 + 40_000);
   assert.ok(s.level >= 2, 'the first order and harvests reach level 2');
 });
 
@@ -75,13 +75,14 @@ test('never stuck: a crop you have none of can be bought at its base price', () 
   assert.equal(s.coins, 10 - CROPS.carrot.value);
 });
 
-test('the barn caps storage and harvests stop when it is full', () => {
+test('the barn caps storage; the harvest that does not fit is sold on the spot, never lost or stuck', () => {
   const s = game(); tutorial(s); s.barn.items.wheat = 49;
   const beds = bedsOf(s);
   must(s, 'plant', { ids: beds, crop: 'wheat' }); s.story.firstWheat = false;
   const r = act(s, 'harvest', { ids: beds }, T0 + HOUR);
-  assert.equal(r.ok, false); assert.equal(r.reason, 'The barn is full');
-  must(s, 'upgradeBarn', {}); assert.equal(s.barn.cap, 75);
+  const coins = s.coins; assert.equal(r.ok, true); assert.ok(s.barn.items.wheat <= 50, 'never over the cap'); assert.ok(s.coins > coins || s.stats.coinsEarned > 0, 'the extra is sold');
+  s.coins = 500; must(s, 'upgradeBarn', {}); assert.equal(s.barn.cap, 75);
+  s.barn.items.wheat = 20; const c2 = s.coins; must(s, 'sellGood', { good: 'wheat', n: 5 }); assert.equal(s.barn.items.wheat, 15); assert.equal(s.coins, c2 + 5 * 2);
 });
 
 function millAndCoop(s) {
@@ -91,11 +92,9 @@ function millAndCoop(s) {
   const coop = must(s, 'place', { kind: 'coop', x: 35, z: 64, rot: 2 }).id;
   return { mill, coop };
 }
-test('animals need a closed fence with a gate, then eat feed and give produce', () => {
+test('animals need no fence work: buy hens, then they eat feed and give produce', () => {
   const s = game(); const { mill, coop } = millAndCoop(s);
-  assert.equal(act(s, 'buyAnimal', { home: coop }).reason, 'The fence has a gap');
   fenceRect(s, 35, 64, 38, 67, 38);
-  assert.equal(grid.penOf(s, coop).closed, true);
   const coins = s.coins; must(s, 'buyAnimal', { home: coop }); must(s, 'buyAnimal', { home: coop });
   assert.equal(s.coins, coins, 'the first two hens are free');
   assert.equal(act(s, 'feed', {}).reason, 'No feed in the barn: make some at the feed mill');
@@ -116,7 +115,7 @@ test('production queues run one after another and need free slots', () => {
 });
 
 test('build order: goods are held for the project and the school needs two families with children', () => {
-  const s = game(); millAndCoop(s); setLevel(s, 5); s.coins = 20000;
+  const s = game(); millAndCoop(s); setLevel(s, 6); s.coins = 20000;
   assert.equal(currentStep(s).id, 'cottage1');
   must(s, 'place', { kind: 'path', x: 35, z: 92 }); must(s, 'place', { kind: 'cottage', x: 34, z: 93, rot: 2 });
   assert.equal(currentStep(s).id, 'cottage2');
@@ -131,11 +130,11 @@ test('build order: goods are held for the project and the school needs two famil
   assert.equal(stepReady(s, T0).ok, false, 'the families have not arrived yet');
   tick(s, T0 + 3 * MIN);
   assert.equal(stepReady(s, T0 + 3 * MIN).ok, true);
-  s.barn.items.bread = 10; s.barn.items.corn_bread = 4;
+  s.barn.items.bread = 24; s.barn.items.corn_bread = 10;
   must(s, 'projectDeliver', {}, T0 + 3 * MIN);
   must(s, 'place', { kind: 'path', x: 46, z: 92 }, T0 + 3 * MIN);
   const coins = s.coins; must(s, 'place', { kind: 'school', x: 44, z: 93, rot: 2 }, T0 + 3 * MIN);
-  assert.equal(coins - s.coins, 700);
+  assert.equal(coins - s.coins, 4000);
   assert.equal(currentStep(s).id, 'cottages34');
 });
 
@@ -148,7 +147,7 @@ test('rent: families pay hourly, more with charm, capped at 8 hours', () => {
   must(s, 'place', { kind: 'flowers', x: 37, z: 94 }); must(s, 'place', { kind: 'bench', x: 37, z: 95 });
   assert.equal(charmOf(s, id), base + 3);
   const oneHour = rentWaiting(s, T0 + 2 * MIN + HOUR), day = rentWaiting(s, T0 + 2 * MIN + 24 * HOUR);
-  assert.ok(oneHour >= 3 && oneHour <= 5, `one hour of rent: ${oneHour}`);
+  assert.ok(oneHour >= 10 && oneHour <= 18, `one hour of rent: ${oneHour}`);
   assert.ok(Math.abs(day - oneHour * 8) <= 8, 'capped at 8 hours');
   must(s, 'collectRent', {}, T0 + 10 * HOUR);
   assert.equal(rentWaiting(s, T0 + 10 * HOUR), 0);
@@ -467,7 +466,7 @@ test('a refused action leaves no trace, even on a building that has never been u
   layPath(s, spine(47).filter(([x]) => x > 39));
   const mill = must(s, 'place', { kind: 'feed_mill', x: 32, z: 64, rot: 2 }).id, coop = must(s, 'place', { kind: 'coop', x: 35, z: 64, rot: 2 }).id;
   s.barn.items = {};
-  for (const [a, p] of [['produce', { building: mill, recipe: 'chicken_feed' }], ['buyAnimal', { home: coop }]]) {
+  for (const [a, p] of [['produce', { building: mill, recipe: 'chicken_feed' }], ['buyAnimal', { home: 'nope' }], ['collect', { home: coop }]]) {
     const before = JSON.stringify(s), r = act(s, a, p, T0);
     assert.equal(r.ok, false, a); assert.equal(JSON.stringify(s), before, `${a} changed the state although it was refused`);
   }

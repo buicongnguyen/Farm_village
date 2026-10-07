@@ -70,6 +70,8 @@ export class Panels {
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
+    else if (d.do === 'album') this.show('album');
+    else if (d.do === 'sellGood') g.do('sellGood', { good: d.good, n: d.all ? undefined : 1 });
     else if (d.do === 'castLine') g.do('castLine', { bait: d.bait === '1' });
     else if (d.do === 'reelIn') g.do('reelIn');
     else if (d.do === 'collectFees') g.do('collectFees');
@@ -121,7 +123,7 @@ export class Panels {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
         <button class="btn orange" data-do="upgradeBarn">${glyph('up', 'g')} ${t('Upgrade (+{step})', { step: BARN.step })} · ${coinMark()} ${num(BARN.upgradeCost(s.barn.upgrades))}</button></div>
-        <div class="goods-grid">${items.map(([g, n]) => `<div class="good-tile">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></div>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
+        <div class="goods-grid">${items.map(([g, n]) => `<button class="good-tile" data-do="sellGood" data-good="${g}" ${barn.free(s, g) ? '' : 'disabled'}>${goodIcon(g)}<b>${num(n)}</b><small>${t('Sell')} · ${coinMark()} ${GOODS[g].value}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></button>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
     } else if (o.kind === 'production') {
       const p = s.placed[o.arg]; if (!p) { this.close(); return; }
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
@@ -162,10 +164,11 @@ export class Panels {
   }
   card(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);
-    return `<div class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div></div>
-      <p class="line">${c.line ? t(c.line) : ''}</p><div class="needs">${goodsLine(s, c.need)}</div>
-      <div class="reward">${coinMark()} <b>${num(c.coins)}</b> ${xpMark()} <b>${num(c.xp)}</b></div>
-      <div class="order-buttons"><button class="btn primary" data-do="deliver" data-id="${c.id}" ${can ? '' : 'disabled'}>${t('Deliver')}</button>${c.story ? '' : `<button class="btn ghost icon-only" data-do="discard" data-id="${c.id}" aria-label="${t('Discard')}">${glyph('trash', 'g')}</button>`}</div></div>`;
+    return `<div class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div>
+      <div class="reward">${coinMark()} <b>${num(c.coins)}</b> ${xpMark()} <b>${num(c.xp)}</b></div></div>
+      <p class="line">${c.line ? t(c.line) : ''}</p>
+      <div class="order-row"><div class="needs">${goodsLine(s, c.need)}</div>
+      <div class="order-buttons"><button class="btn primary small-btn" data-do="deliver" data-id="${c.id}" ${can ? '' : 'disabled'}>${t('Sell')}</button>${c.story ? '' : `<button class="btn ghost icon-only" data-do="discard" data-id="${c.id}" aria-label="${t('Discard')}">${glyph('trash', 'g')}</button>`}</div></div></div>`;
   }
 }
 /** How many orders can be filled right now (for the HUD badge). */
