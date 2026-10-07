@@ -104,7 +104,7 @@ export class GameCamera {
   /** Pointer, wheel and key controls on an element. Taps (little movement) are passed to onTap(clientX, clientY). */
   attach(el, { onTap } = {}) {
     // dragHook (optional): { start(x, y) → true to take the drag (e.g. sweeping across beds), move(x, y), end() }
-    const pointers = new Map(); let pinch = 0, moved = 0, hooked = false, track = [];
+    const pointers = new Map(); let pinch = 0, moved = 0, hooked = false, hookMoved = 0, track = [];
     const reduced = () => globalThis.document?.body?.classList.contains('reduced-motion');
     // A touch tap is followed by the browser's compatibility click at the same spot, after onTap has already opened a menu
     // or panel under the finger: that click would press whatever sprang up there (plant the dearest crop, harvest, buy).
@@ -115,11 +115,11 @@ export class GameCamera {
     el.addEventListener('pointerdown', e => {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; el.setPointerCapture?.(e.pointerId);
       this.stop(); this.dragging = true; track = [];
-      hooked = pointers.size === 1 && !!this.dragHook?.start(e.clientX, e.clientY);
+      hooked = pointers.size === 1 && !!this.dragHook?.start(e.clientX, e.clientY); hookMoved = 0;
     });
     el.addEventListener('pointermove', e => {
       const p = pointers.get(e.pointerId); if (!p) return;
-      if (hooked) { this.dragHook.move(e.clientX, e.clientY); p.x = e.clientX; p.y = e.clientY; return; }
+      if (hooked) { hookMoved += Math.abs(e.clientX - p.x) + Math.abs(e.clientY - p.y); if (hookMoved > 6) this.dragHook.move(e.clientX, e.clientY); p.x = e.clientX; p.y = e.clientY; return; }
       const dx = e.clientX - p.x, dy = e.clientY - p.y; moved += Math.abs(dx) + Math.abs(dy);
       if (pointers.size === 1 && moved > 6) {
         const [gx, gz] = this.pixelsToGround(dx, dy);
@@ -130,7 +130,9 @@ export class GameCamera {
       if (pointers.size === 2) { const [a, b] = [...pointers.values()], dist = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) { this.span *= pinch / dist; this.soft = true; this.update(); } pinch = dist; track = []; }
     });
     const up = e => {
-      if (hooked) { hooked = false; pointers.delete(e.pointerId); this.dragging = false; this.dragHook.end(); return; }
+      // a hooked press that never moved is a plain tap (it opens the menu); one that moved was a sweep
+      if (hooked && hookMoved > 6) { hooked = false; pointers.delete(e.pointerId); this.dragging = false; this.dragHook.end(); return; }
+      if (hooked) { hooked = false; this.dragHook.end(); }
       const tap = pointers.size === 1 && moved <= 6; pointers.delete(e.pointerId); pinch = 0;
       if (tap && e.type === 'pointerup') { if (e.pointerType !== 'mouse') ghostUntil = performance.now() + 700; onTap?.(e.clientX, e.clientY); }
       if (pointers.size) return;

@@ -6,6 +6,7 @@
 import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
+import { nextTask } from '../core/next.mjs';
 import { thingName } from './repair-ui.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { used as barnUsed } from '../core/barn.mjs';
@@ -22,8 +23,8 @@ export const tParams = params => params && Object.fromEntries(Object.entries(par
 const TOGGLED = ['orders', 'projects', 'today', 'friends'];   // the tutorial reveals these; build and barn are there from the start
 
 export class Hud {
-  constructor(root, game, { onBuild, onTurn, onPanel } = {}) {
-    Object.assign(this, { game, onBuild, onTurn, onPanel, coins: game.s.coins, shown: game.s.coins, barnUsed: barnUsed(game.s), level: game.s.level });
+  constructor(root, game, { onBuild, onTurn, onPanel, onNext } = {}) {
+    Object.assign(this, { game, onBuild, onTurn, onPanel, onNext, coins: game.s.coins, shown: game.s.coins, barnUsed: barnUsed(game.s), level: game.s.level });
     this.el = document.createElement('div'); this.el.className = 'hud';
     this.el.innerHTML = `
       <div class="hud-top"><div class="hud-stats"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
@@ -36,16 +37,18 @@ export class Hud {
         <button class="round rim-pink" data-act="friends">${iconHtml('ui:heart', '', 'btn-icon')}</button>
         <button class="round rim-red" data-act="mail" hidden>${glyph('mail', 'g')}<i class="badge"></i></button>
       </div>
+      <button class="next-chip" data-act="next" hidden></button>
       <div class="toasts" aria-live="polite"></div>
       <div class="hud-tools">
         <button class="round rim-grey" data-act="turn">${glyph('rotate', 'g')}</button>
-        <button class="round rim-grey lang" data-act="lang"></button>
+        <button class="round rim-grey lang" data-act="lang" hidden></button>
         <button class="round rim-red" data-act="barn">${iconHtml('ui:barn', '', 'btn-icon')}<i class="badge cap"></i></button>
         <button class="round rim-orange" data-act="orders">${iconHtml('ui:orders', '', 'btn-icon')}<i class="badge"></i></button>
         <button class="round big" data-act="build">${iconHtml('tool:build', '', 'btn-icon')}</button>
       </div>`;
     this.el.addEventListener('click', e => {
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
+      if (act === 'next') { const n = this.nextTask; if (n) { if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
@@ -54,7 +57,7 @@ export class Hud {
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.refuse(r.reason, r.params); for (const e of r.events ?? []) this.event(e); });
     onLanguageChange(() => this.update());
-    this.update();
+    this.update(); setInterval(() => this.refreshNext(), 2000);
   }
   update() {
     const s = this.game.s, p = progress(s), q = sel => this.el.querySelector(sel);
@@ -67,6 +70,7 @@ export class Hud {
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
     for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`).setAttribute('aria-label', t(text));
+    this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
     q('[data-act="today"] .badge').hidden = !!s.today.claimed && !cartHere(s);
@@ -146,6 +150,14 @@ export class Hud {
     return el;
   }
   setMode(mode) { this.el.dataset.mode = mode; }
+  /** The chip with the one most useful thing to do now; a tap goes there. */
+  refreshNext() {
+    const chip = this.el.querySelector('[data-act="next"]'), n = nextTask(this.game.s, this.game.now), s = this.game.s;
+    chip.hidden = !n || s.story?.tutorial < 3 && s.mode === 'restore' || document.body.classList.contains('panel-open');
+    if (!n) return; this.nextTask = n;
+    const ic = ['wrench', 'today'].includes(n.icon) ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key)}`;
+    if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
+  }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */
   show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act); } }
 }

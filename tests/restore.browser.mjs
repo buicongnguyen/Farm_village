@@ -95,7 +95,7 @@ await check('build mode: the Demolish tool takes a cottage down for part of its 
   expect(await page.evaluate(() => farm.state().coins) > coins, 'no refund'); expect(await page.evaluate(() => farm.state().rebuild.cottage) === 1, 'no rebuild credit');
   await ctx.close();
 });
-await check('first session in the restored village: harvest, deliver the first order, repair the mill and coop, mend the fence (phone)', async () => {
+await check('first session in the restored village: harvest, deliver the first order, repair the mill and coop, then hens (phone)', async () => {
   const { ctx, page, errors } = await open('phone', { intro: true });
   const step = () => page.evaluate(() => farm.state().story.tutorial);
   expect(await page.isVisible('.chapter'), 'no chapter card'); await page.click('.chapter [data-close]');
@@ -115,11 +115,42 @@ await check('first session in the restored village: harvest, deliver the first o
   await page.waitForFunction(() => farm.state().projects.step > 2, null, { timeout: 8000 });
   expect(await step() === 3, `step after the repairs: ${await step()}`);
   expect(await page.isVisible('[data-act="orders"]'), 'the order board button should be there by now');
-  await page.evaluate(() => { const g = farm.game; g.do('placeEdge', { kind: 'fence', x: 36, z: 68, side: 'n' }); g.do('placeEdge', { kind: 'fence', x: 35, z: 66, side: 'w' }); });
-  expect(await step() === 4, `step after the fence: ${await step()}`);
   expect(/hens/i.test(await page.textContent('.guide')), 'the guide does not ask for the hens');
   expect(!errors.length, errors.join(' | '));
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('markers: a red ! over broken things, a gold coin over ripe crops; the crop can be changed after choosing one', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { for (const b of Object.values(farm.game.s.beds)) b.doneAt = farm.game.now + 60_000; });
+  const m0 = await page.evaluate(() => { const c = farm.marks.collect(); return { alert: c.alert.length, coin: c.coin.length }; });
+  expect(m0.alert >= 6 && m0.coin === 0, `at the start: ${JSON.stringify(m0)}`);
+  await page.evaluate(() => farm.setClockOffset(70_000)); await page.waitForTimeout(1500);
+  const m1 = await page.evaluate(() => ({ coin: farm.marks.collect().coin.length, shown: farm.marks.coin.userData.n }));
+  expect(m1.coin >= 6 && m1.shown >= 6, `ripe beds: ${JSON.stringify(m1)}`);
+  // two empty beds: choose a crop on one, then tap the other: the menu opens again, so another crop can be chosen
+  const beds = await page.evaluate(() => { const s = farm.game.s; const ids = Object.keys(s.beds).slice(0, 2); for (const id of ids) delete s.beds[id]; return ids.map(id => [s.placed[id].x, s.placed[id].z]); });
+  await tap(page, ...beds[0]); expect(await page.isVisible('.radial-btn[data-act="plant"]'), 'no seed menu on the first bed');
+  await page.click('.radial-btn[data-act="plant"]');
+  await tap(page, ...beds[1]); expect(await page.isVisible('.radial-btn[data-act="plant"]'), 'after choosing a crop the next bed shows no menu: the crop cannot be changed');
+  expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('people: you are on the farm and walk to what you tap; a villager with an order opens the board when tapped', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
+  const before = await page.evaluate(() => { const w = farm.people.walkers.get('you'); return [w.x, w.z]; });
+  const mill = await idOf(page, 'feed_mill'), [cx, cz] = await cellOf(page, mill);
+  await tap(page, cx, cz);
+  await page.waitForTimeout(2500);
+  const after = await page.evaluate(() => { const w = farm.people.walkers.get('you'); return [w.x, w.z, !!w.goal]; });
+  expect(Math.hypot(after[0] - before[0], after[1] - before[1]) > 3, `you did not walk: ${before} -> ${after}`);
+  // a villager who posted an order: tapping them opens the order board
+  const opened = await page.evaluate(() => { const g = farm.game, ppl = farm.people; g.s.orders.cards = [{ id: 'x1', from: 'ada', need: { wheat: 1 }, coins: 5, xp: 1, line: 'hi' }]; const w = ppl.walkers.get('ada'); w.indoors = false; ppl.onOrder = c => { window.__asked = c.id; }; ppl.talk(w); return window.__asked; });
+  expect(opened === 'x1', 'tapping the order giver did not ask for the order');
+  expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
 await check('the market truck: repair the market and street, load wheat in the panel, send it, watch it drive off and come back with coins', async () => {

@@ -16,8 +16,8 @@ export const RESTORE = {
   ],
   // path cells: the spine through the farm and the doors of the village cottages
   paths: [...Array.from({ length: 18 }, (_, i) => [30 + i, 63]), [34, 92], [38, 92], [46, 92], [77, 92]],
-  // the coop's yard (x 35–38, z 64–67, gate on the north edge at x 38): two pieces are missing, so the coop cannot hold hens yet
-  fenceRect: { x0: 35, z0: 64, x1: 38, z1: 67, gateX: 38, missing: ['36,68,n', '35,66,w'] },
+  // the coop's yard (x 35–38, z 64–67, gate on the north edge at x 38): whole: the hens' yard needs no mending
+  fenceRect: { x0: 35, z0: 64, x1: 38, z1: 67, gateX: 38, missing: [] },
   // road stretches that start damaged
   roads: { road_south: 'broken', road_north: 'broken' },
   farmhouse: 'worn',

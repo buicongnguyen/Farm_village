@@ -9,6 +9,7 @@ import { Game } from './game.mjs';
 import { newGame } from './core/state.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
+import { Marks } from './view/marks-view.mjs';
 import { dressWorld } from './view/dress.mjs';
 import { Daylight } from './view/daylight.mjs';
 import { Ghost } from './view/ghost.mjs';
@@ -50,6 +51,7 @@ const clock = () => Date.now() + clockOffset, emptyStart = TEST_MODE && params.h
 const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : load(profile), clock);
 const world = new WorldView(app);
 const land = new LandView(world, game);
+const marks = new Marks(world, game, land);
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;
 // the camera eases to places the interface points at (the guide, "show the way", notifications)
@@ -57,6 +59,7 @@ const flyTo = (x, z, span) => (world.cam.flyTo ? world.cam.flyTo(x, z, span) : w
 const hud = new Hud(app, game, {
   onBuild: () => { panels.close(); radial.hide(); build.toggle(); },
   onTurn: () => world.cam.turn(1),
+  onNext: n => { flyTo((n.at.x + 0.5) * CELL, (n.at.z + 0.5) * CELL, Math.min(world.cam.span, 44)); },
   onPanel: kind => { if (build.open) build.close(); radial.hide(); panels.toggle(kind); },
 });
 build = new BuildView(app, { game, world, ghost, hud });
@@ -130,7 +133,7 @@ await land.load();
 const [{ LifeView }, { PeopleView }, { Critters }, { Juice }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
-radial.life = life; radial.people = people; hud.people = people;
+radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
 new Juice(world, game, app);
 new CartView(world, game);
 new Critters(world, game);
@@ -147,7 +150,7 @@ if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); 
 
 if (TEST_MODE) {
   const { installTestHook } = await import('./kit/test-hook.mjs');
-  installTestHook({ world, game, land, build, hud, panels, radial, people, juice: world.juice });
+  installTestHook({ world, game, land, marks, build, hud, panels, radial, people, juice: world.juice });
 }
 /** The Settings panel's Test section (test builds only). */
 function testAction(what) {

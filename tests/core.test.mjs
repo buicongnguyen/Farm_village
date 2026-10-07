@@ -364,9 +364,9 @@ test('the cart never comes before the school is open, and its stand is kept free
 });
 
 test('fruit trees: placed once, fruit after a while, then regrow every few hours', () => {
-  const s = game(); tutorial(s); setLevel(s, 3);
+  const s = game(); tutorial(s); setLevel(s, 1);
   assert.equal(act(s, 'place', { kind: 'apple_tree', x: 40, z: 66 }).reason, 'Reach level {level} first');
-  setLevel(s, 4);
+  setLevel(s, 2);
   const id = must(s, 'place', { kind: 'apple_tree', x: 40, z: 66 }).id, f = FRUITS.apple;
   assert.equal(treeState(s, id, T0).state, 'growing');
   assert.equal(act(s, 'pick', { id }, T0 + f.firstMs - 1).reason, 'Nothing is ready yet');
@@ -398,7 +398,7 @@ test('levelUp.unlocks matches the content level fields', () => {
     assert.deepEqual([...u.buildings].sort(), at(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden));
     assert.equal(u.list.length, u.crops.length + u.fruits.length + u.recipes.length + u.animals.length + u.buildings.length);
   }
-  assert.ok(unlocksAt(4).buildings.includes('apple_tree') && unlocksAt(6).buildings.includes('peach_tree'));
+  assert.ok(unlocksAt(2).buildings.includes('apple_tree') && unlocksAt(4).buildings.includes('peach_tree'));
   assert.equal(unlocksAt(3).orderSlots, ORDERS.slots(3)); assert.equal(unlocksAt(4).orderSlots, 0);
   const s = game(); tutorial(s); setLevel(s, 1); s.xp = xpFor(2) - 1;
   const r = must(s, 'place', { kind: 'flowers', x: 40, z: 66 }), up = events(r, 'levelUp')[0];

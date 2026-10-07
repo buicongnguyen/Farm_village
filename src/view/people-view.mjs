@@ -24,7 +24,7 @@ const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flat
 // Names for the family, in case the story's people list does not have them yet.
 /** Template params for t(): string values (the {family} name) are translated first. */
 const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
-const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit' };
+const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit', you: 'You' };
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 // Clothes: warm, vivid colours (sRGB). Named people wear their own; everyone else draws from the palette by name.
@@ -32,7 +32,7 @@ const TOPS = ['#e8553f', '#f2a93b', '#3d8fd6', '#5bb85c', '#c7559e', '#f07f3c', 
 const BOTTOMS = ['#2f4f8a', '#5a3a2a', '#3a6b4a', '#4a4a5c', '#8a4a2a', '#24324f'];
 const HAIR = ['#2a1a12', '#5a3218', '#a8642c', '#1a1a22', '#7a3b1c', '#d9a548'];
 const OUTFITS = {
-  june: { top: '#ff6f4f', bottom: '#2f5aa8', hair: '#8a3a1c' }, pip: { top: '#ffc83d', bottom: '#3f8f4a', hair: '#5a3218' },
+  you: { top: '#e63946', bottom: '#2f5aa8', hair: '#2a1a12' }, june: { top: '#ff6f4f', bottom: '#2f5aa8', hair: '#8a3a1c' }, pip: { top: '#ffc83d', bottom: '#3f8f4a', hair: '#5a3218' },
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
@@ -73,7 +73,7 @@ export class PeopleView {
   /** Who should be around: Ada, the family, residents of arrived families, and Cora once the school is open. */
   residents() {
     const s = this.s, now = this.game.now, home = [FARMHOUSE.x + 5, FARMHOUSE.z];
-    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }];
+    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: 'man', home, family: true, player: true }];
     for (const [hid, h] of Object.entries(s.homes)) {
       if (!h.family || h.arrivesAt > now) continue;
       const p = s.placed[hid], door = p && doorCell(p.kind, p.x, p.z, p.rot), fam = FAMILIES.find(f => f.id === h.family);
@@ -144,6 +144,8 @@ export class PeopleView {
     if (site && !w.kid && r < 0.22) return [this.route(here, site), { act: 'hammer', time: 10 + Math.random() * 10, face: site }];
     const bench = Object.values(s.placed).filter(p => p.kind === 'bench');
     if (bench.length && r < 0.4) { const b = bench[Math.floor(Math.random() * bench.length)]; return [this.route(here, [b.x, b.z]), { act: 'sit', time: 8 + Math.random() * 8, bench: b }]; }
+    const homes = Object.values(s.placed).filter(p => p.kind === 'cottage' && s.homes?.[Object.keys(s.placed).find(k => s.placed[k] === p)]?.family && doorCell(p.kind, p.x, p.z, p.rot));
+    if (homes.length > 1 && r < 0.55) { const p = homes[Math.floor(Math.random() * homes.length)], d = doorCell(p.kind, p.x, p.z, p.rot); if (d[0] !== w.home?.[0] || d[1] !== w.home?.[1]) return [this.route(here, d), { act: 'visit', time: 5 + Math.random() * 5, face: [p.x + 1, p.z + 1] }]; }   // call on a neighbour
     if (r < 0.6 && w.home) return [this.route(here, w.home), { act: !w.kid && Math.random() < 0.6 ? 'sweep' : 'idle', time: 6 + Math.random() * 6 }];
     const spots = [[ORDER_BOARD.x, ORDER_BOARD.z], [FARMHOUSE.x + 6, FARMHOUSE.z + 1]];
     const school = Object.values(s.placed).find(p => p.kind === 'school'); if (school) spots.push(doorCell(school.kind, school.x, school.z, school.rot));
@@ -192,6 +194,7 @@ export class PeopleView {
     const night = isNight(this.s, this.game.now);
     for (const w of this.walkers.values()) {
       if (w.pet) this.liveDog(w, dt, night);
+      else if (w.player) this.livePlayer(w, dt, night);
       else if (w.family) this.liveFamily(w, dt, night);
       else this.liveVillager(w, dt, night);
       const sub = w.subject; sub.x = w.x; sub.z = w.z; sub.rot = w.rot; sub.clip = w.clip; sub.speed = w.speed ?? 1; sub.hidden = !!w.indoors;
@@ -238,7 +241,7 @@ export class PeopleView {
     const todo = w.todo; w.todo = null; if (!todo) return;
     if (todo.carryHome && w.home) { w.carry = true; w.route = this.route(this.cellOf(w), w.home); w.todo = { act: 'sweep', time: 4 }; return; }
     w.wait = todo.time;
-    const clip = { knead: 'Knead', sweep: 'Sweep', hammer: 'Hammer', sit: 'Sit', play: 'Jump', idle: 'Idle' }[todo.act] ?? 'Idle';
+    const clip = { knead: 'Knead', sweep: 'Sweep', hammer: 'Hammer', sit: 'Sit', play: 'Jump', visit: 'Talk', idle: 'Idle' }[todo.act] ?? 'Idle';
     w.clipFor = clip;
     if (todo.face) w.faceTo = Math.atan2((todo.face[0] + 0.5) * CELL - w.x, (todo.face[1] + 0.5) * CELL - w.z);
     if (todo.bench) { const b = todo.bench; w.x = (b.x + 0.5) * CELL; w.z = (b.z + 0.5) * CELL; w.faceTo = (b.rot ?? 0) * Math.PI / 2; }
@@ -257,6 +260,25 @@ export class PeopleView {
       this.once(a, 'Wave', 1.1);
       return;
     }
+  }
+  // ── You: the main character walks to whatever you tap and does the chore there (the rules act at once; this is the show) ──
+  playerGo(cell) { const w = this.walkers.get('you'); if (!w || w.indoors) return; w.goal = [(cell.x + 0.5) * CELL, (cell.z + 0.5) * CELL]; w.stay = 6; }
+  livePlayer(w, dt, night) {
+    if (night) { w.indoors = true; w.goal = null; return; }
+    if (w.indoors) { w.indoors = false; const [x, z] = this.familySpot('you'); w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
+    if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
+    if (w.goal) {
+      const dx = w.goal[0] - w.x, dz = w.goal[1] - w.z, d = Math.hypot(dx, dz), speed = 2.6;
+      if (d < 1.3) { w.goal = null; w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6; return; }
+      this.turnTo(w, Math.atan2(dx, dz), dt, 10);
+      const step = Math.min(d - 1.2, speed * dt), nx = w.x + Math.sin(w.rot) * step, nz = w.z + Math.cos(w.rot) * step;
+      if (this.canStand(nx, nz) && !this.crossesFence(w.x, w.z, nx, nz)) { w.x = nx; w.z = nz; w.blocked = 0; this.walking(w, speed, 'Run'); return; }
+      if ((w.blocked = (w.blocked ?? 0) + dt) > 0.5) { w.blocked = 0; const gx = w.goal[0] - Math.sin(w.rot) * 1.6, gz = w.goal[1] - Math.cos(w.rot) * 1.6; if (this.canStand(gx, gz)) { w.x = gx; w.z = gz; } w.goal = null; }   // no way round: step over
+      w.clip = 'Idle'; return;
+    }
+    if ((w.wait = (w.wait ?? 0) - dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
+    w.clipFor = null; w.clip = 'Idle'; w.speed = 1;
+    if ((w.stay = (w.stay ?? 0) - dt) < 0 && Math.hypot(w.x - (FARMHOUSE.x + 4.5) * CELL, w.z - FARMHOUSE.z * CELL) > 6 * CELL) { const [x, z] = this.familySpot('you'); w.goal = [(x + 0.5) * CELL, (z + 0.5) * CELL]; w.stay = 20; }   // drift back home
   }
   // ── The family ──
   liveFamily(w, dt, night) {
@@ -362,6 +384,10 @@ export class PeopleView {
   talk(w) {
     const who = PEOPLE[w.person ?? w.id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
+    if (w.player) { this.say(w, t(['A good day for farm work!', 'The farm looks better every day.', 'What shall we do next?'][Math.floor(Math.random() * 3)])); this.once(w, 'Wave', 1.2); return; }
+    // somebody with an order for you says so and opens the order board
+    const card = this.s.orders.cards.find(c => c.from === (w.person ?? w.id));
+    if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
     if (who) this.say(w, t(w.comment ?? who.line));
     else if (w.id === 'june') this.juneTip();
     else if (w.id === 'pip') this.say(w, t('Can we get a pony one day? Or a goat? A goat would be fine.'));

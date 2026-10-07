@@ -158,3 +158,13 @@ body.build-open .guide { bottom: calc(var(--build-h, 216px) + 10px); }
 @media (orientation: landscape) and (max-height: 500px) {
   .levelup .row { position: static; width: auto; margin: 0; padding: 0; background: none; }
 }
+[data-act="lang"] { display: none !important; }   /* the language lives in Settings; the button stays in the DOM for tests */
+/* the next-task chip: the one most useful thing to do now */
+.next-chip { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); transform: translateX(-50%); z-index: 6; max-width: 76vw; display: flex; align-items: center; gap: 6px;
+  font: 800 13px/1.2 'Nunito', sans-serif; color: #5a3410; background: #fff4cf; border: 3px solid #ffb92e; border-radius: 999px; padding: 6px 12px; box-shadow: 0 3px 0 #b8741a, 0 6px 12px #0003; cursor: pointer; animation: chip-bob 2.4s ease-in-out infinite; }
+.next-chip[hidden] { display: none; }
+.next-chip .mini, .next-chip .g { width: 22px; height: 22px; flex: none; }
+body.panel-open .next-chip, body.build-open .next-chip { display: none; }
+@keyframes chip-bob { 50% { transform: translateX(-50%) translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .next-chip { animation: none; } }
+.next-chip { white-space: nowrap; } .next-chip b { margin-right: 2px; }

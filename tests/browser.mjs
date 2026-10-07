@@ -48,7 +48,7 @@ await check('stays within the phone budgets at every zoom', async () => {
 });
 await check('Vietnamese switch changes the HUD', async () => {
   const { ctx, page } = await open('pc');
-  await page.click('[data-act="lang"]');
+  await page.evaluate(() => document.querySelector('[data-act="lang"]').click());
   await page.click('[data-act="build"]');
   const tab = await page.textContent('.sheet .tab');
   expect(tab.includes('Nông trại'), `first tab is "${tab}"`);
@@ -420,7 +420,7 @@ const overflow = (page, sel) => page.evaluate(sel => {
 }, sel);
 await check('Vietnamese: every panel fits a 390 px phone with no text sticking out', async () => {
   const { ctx, page } = await open('phone', '?new');
-  await page.click('[data-act="lang"]'); await page.waitForFunction(() => document.documentElement.lang === 'vi');
+  await page.evaluate(() => document.querySelector('[data-act="lang"]').click()); await page.waitForFunction(() => document.documentElement.lang === 'vi');
   await uiSetup(page);
   await page.evaluate(() => { const g = farm.game; for (const x of [34, 38]) g.do('place', { kind: 'path', x, z: 92 }); g.do('place', { kind: 'cottage', x: 33, z: 93, rot: 2 }); g.do('testFinishTimers');
     g.do('testUnlockAll'); g.s.firsts['project:school'] = Date.now() - 3 * 864e5; g.tick(); farm.closeCards(); });

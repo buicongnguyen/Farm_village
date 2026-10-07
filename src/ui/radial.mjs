@@ -36,8 +36,8 @@ export class Radial {
     this.el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) { sfx('click'); this.choose(b.dataset); } });
     // drag across beds while a sweep is armed: the camera hands the drag to us instead of panning
     world.cam.dragHook = {
-      start: (x, y) => { const id = this.bedAt(x, y); if (!this.isArmed() || !id || !this.applies(id)) return false; this.hide(); this.swept = new Set(); this.follow(x, y); this.sweepBed(id); return true; },
-      move: (x, y) => { this.follow(x, y); const id = this.bedAt(x, y); if (id) this.sweepBed(id); },
+      start: (x, y) => { const id = this.bedAt(x, y); if (!this.isArmed() || !id || !this.applies(id)) return false; this.swept = new Set(); this.from = id; return true; },
+      move: (x, y) => { if (this.from) { this.hide(); this.follow(x, y); this.sweepBed(this.from); this.from = null; } this.follow(x, y); const id = this.bedAt(x, y); if (id) this.sweepBed(id); },
       end: () => { this.armedUntil = performance.now() + 6000; this.tool.hidden = true; },
     };
   }
@@ -90,7 +90,9 @@ export class Radial {
     const s = this.s, now = this.game.now;
     let id = occupant(s, cell.x, cell.z);
     const animal = !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
-    if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
+    if (id) this.people?.playerGo?.(cell);   // you walk over to what you tapped
+    // a plain tap on an empty bed always opens the seed menu, so the crop can be changed; only a drag (or a harvest sweep) uses the armed tool
+    if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
     const who = !id && this.people?.pick(x, y); if (who) { this.hide(); this.people.talk(who); return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '', land = null;
@@ -120,7 +122,7 @@ export class Radial {
       if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(p.kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
-      info = pen.closed ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
+      info = pen.closed || s.mode === 'restore' ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       info = `${iconHtml('sale_sign', '', 'mini')} ${t('Land for sale')} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;

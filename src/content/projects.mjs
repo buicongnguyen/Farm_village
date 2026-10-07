@@ -11,7 +11,7 @@ export const STEPS = [
   { id: 'plot', name: 'Farm plot', text: 'Place six crop beds.',
     needs: {}, builds: ['bed'], done: s => s.counts.bed >= 6 },
   { id: 'mill_coop', name: 'Feed mill and coop', text: 'Build a feed mill and a coop with a fence and a gate.',
-    restore: 'Repair the old feed mill and the coop, and mend the gaps in the coop fence.', needs: { level: 2 }, builds: ['feed_mill', 'coop', 'fence', 'gate'], done: s => working(s, 'feed_mill') >= 1 && working(s, 'coop') >= 1 },
+    restore: 'Repair the old feed mill and the coop, so the hens have a home.', needs: { level: 2 }, builds: ['feed_mill', 'coop', 'fence', 'gate'], done: s => working(s, 'feed_mill') >= 1 && working(s, 'coop') >= 1 },
   { id: 'cottage1', name: 'The first cottage', text: 'Build a rental cottage in the village. A family is waiting to move in.',
     restore: 'Repair a run-down cottage in the village. A family is waiting to move in.', needs: { level: 3 }, builds: ['cottage'], allow: { cottage: 1 }, done: s => working(s, 'cottage') >= 1 },
   { id: 'cottage2', name: 'A second cottage', text: 'Another family wants to move in. They ask for bread for their first week.',

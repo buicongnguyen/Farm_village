@@ -15,8 +15,8 @@ export const BUILDINGS = {
   // Farm
   bed:        { name: 'Crop bed', cat: 'farm', size: [1, 1], area: 'farm', level: 1, cost: n => BEDS.cost(n + 1), tills: true },
   // Fruit trees (goods.mjs FRUITS): planted once, picked again and again. Pretty too, so they count as charm.
-  apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
-  peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 6, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
+  apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 2, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
+  peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
   // Paths and fences (fence and gate sit on cell edges)
   path:       { name: 'Path', cat: 'paths', size: [1, 1], area: 'any', level: 1, cost: 1, cell: 'path', charm: 0 },
   fence:      { name: 'Fence', cat: 'paths', edge: true, area: 'any', level: 2, cost: 3, model: 'pen_fence' },

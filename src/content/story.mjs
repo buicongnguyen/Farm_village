@@ -74,8 +74,6 @@ export const RESTORE_TUTORIAL = [
     done: s => s.stats.ordersFilled > 0 },
   { id: 'mill', text: 'Our old feed mill and coop are in a sorry state. <b>Tap</b> the feed mill and <b>repair</b> it, then the coop. Ellis built that coop from an old boat.', hud: ['barn', 'orders', 'projects'], point: 'mill',
     done: s => s.projects.step > 2 },
-  { id: 'fence', text: 'The coop yard has two gaps in its fence. <b>Open</b> build mode and <b>place</b> the missing fence pieces, so the hens stay home.', hud: ['build', 'barn', 'orders', 'projects'], point: 'fence',
-    done: s => RESTORE.fenceRect.missing.every(k => s.fences[k]) },
   { id: 'hens', text: '<b>Tap</b> the coop for your first hens. Mai from Lotus Farm next door is giving you two!', hud: ['build', 'orders', 'barn', 'projects'], point: 'coop',
     done: s => Object.values(s.animals).some(list => list.length > 0) },
   { id: 'feed', text: 'Hens eat chicken feed. <b>Make</b> some at the feed mill, then <b>tap</b> the coop to feed them. Pip will want to help.', hud: ['build', 'orders', 'barn', 'projects'], point: 'mill',

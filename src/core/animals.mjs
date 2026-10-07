@@ -22,7 +22,7 @@ export const actions = {
     if (s.level < a.level) return ctx.fail('Reach level {level} first', { level: a.level, animal: kind, lock: 'level' });
     const list = s.animals[home] ?? [];   // not stored until the animal is bought
     if (list.length >= a.perHome) return ctx.fail('This home is full');
-    if (!penOf(s, home).closed) return ctx.fail(penOf(s, home).reason ?? 'The fence has a gap');
+    if (s.mode !== 'restore' && !penOf(s, home).closed) return ctx.fail(penOf(s, home).reason ?? 'The fence has a gap');
     const price = animalPrice(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; list.push({ kind, doneAt: null }); s.animals[home] = list;

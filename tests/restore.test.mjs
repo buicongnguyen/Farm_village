@@ -28,7 +28,7 @@ test('a new game opens on the village as it stands: things are there, many run d
   assert.equal(currentStep(s).id, 'mill_coop'); assert.equal(s.story.tutorial, 0);
   // every door reaches the road, so nothing is cut off before the player has done anything
   for (const id of Object.keys(s.placed)) { const p = s.placed[id], door = grid.doorCell(p.kind, p.x, p.z, p.rot); if (door) assert.ok(grid.reachesRoad(s, ...door), `${p.kind} door cut off`); }
-  assert.equal(grid.penOf(s, idOf(s, 'coop')).closed, false, 'the coop yard has a gap to mend');
+  assert.equal(grid.penOf(s, idOf(s, 'coop')).closed, true, 'the coop yard is whole');
 });
 
 test('broken things do not work: no recipes, no animals, no families, no orders for what cannot be made', () => {
@@ -53,13 +53,11 @@ test('repair: coins and a short wait, then it works; the project steps follow th
   assert.equal(act(s, 'repair', { id: mill }, t).reason, 'Nothing to repair');
 });
 
-test('the coop takes hens only after its fence is mended and it is repaired', () => {
+test('the coop takes hens once it is repaired (no fence work in the restored village)', () => {
   const s = fresh(); s.coins = 1000; const coop = idOf(s, 'coop');
+  assert.equal(act(s, 'buyAnimal', { home: coop }, T0 + 1000).ok, false, 'broken');
   must(s, 'repair', { id: coop }); tick(s, T0 + REPAIR.broken.ms + 1000);
-  const t = T0 + 3 * MIN;
-  assert.equal(act(s, 'buyAnimal', { home: coop }, t).reason, 'The fence has a gap');
-  must(s, 'placeEdge', { kind: 'fence', x: 36, z: 68, side: 'n' }, t); must(s, 'placeEdge', { kind: 'fence', x: 35, z: 66, side: 'w' }, t);
-  assert.equal(grid.penOf(s, coop).closed, true); must(s, 'buyAnimal', { home: coop }, t);
+  must(s, 'buyAnimal', { home: coop }, T0 + 3 * MIN);
 });
 
 test('a repaired cottage welcomes the next family; the second cottage waits for its bread', () => {
@@ -170,4 +168,13 @@ test('the market truck: needs a repaired market and street; load, send, come bac
   must(s, 'loadTruck', { good: 'wheat', n: 99 }, t + TRUCK.tripMs + 3); assert.equal(s.truck.load[0].n, TRUCK.capacity[0]);
   assert.equal(act(s, 'sendTruck', {}, t + TRUCK.tripMs + 4).ok, true);
   assert.equal(act(s, 'upgradeTruck', {}, t + TRUCK.tripMs + 5).ok, true); assert.equal(s.truck.level, 2);
+});
+
+test('the next-task chip names the most useful thing: ripe things first, then orders, repairs, empty beds', async () => {
+  const { nextTask } = await import('../src/core/next.mjs');
+  const s = fresh(); s.coins = 500;
+  assert.ok(['Harvest the ripe crops', 'Deliver an order', 'Repair a broken building'].includes(nextTask(s, T0).key), nextTask(s, T0).key);
+  for (const b of Object.values(s.beds)) b.doneAt = T0 + 1e6;
+  const bedId = idOf(s, 'bed'); s.beds[bedId].doneAt = T0 - 1;
+  assert.equal(nextTask(s, T0).key, 'Harvest the ripe crops'); assert.deepEqual(nextTask(s, T0).at, { x: s.placed[bedId].x, z: s.placed[bedId].z });
 });
