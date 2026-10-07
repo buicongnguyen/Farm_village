@@ -22,7 +22,7 @@ vec2 drift(vec2 base, float t){ vec2 p = base + vec2(${WIND.x.toFixed(2)}, ${WIN
 function cloudShadows(count, bases) {
   const g = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   g.setAttribute('iCloud', new THREE.InstancedBufferAttribute(bases, 4));   // base x, z, size, seed
-  const uniforms = { uTime: { value: 0 }, uOpacity: { value: 0.17 }, uShift: { value: new THREE.Vector2(-SUN.x / SUN.y * CLOUD_Y, -SUN.z / SUN.y * CLOUD_Y) } };
+  const uniforms = { uTime: { value: 0 }, uOpacity: { value: 0.2 }, uShift: { value: new THREE.Vector2(-SUN.x / SUN.y * CLOUD_Y, -SUN.z / SUN.y * CLOUD_Y) } };
   const material = new THREE.ShaderMaterial({
     uniforms, transparent: true, depthWrite: false,
     vertexShader: /* glsl */`
@@ -133,7 +133,7 @@ void main(){
   // flap for a while, then glide with wings up a little
   float beat = sin(t * iBird.w * uCalm + iBird.z * 3.0), glide = smoothstep(0.2, 0.6, sin(t * 0.45 + iBird.z));
   float flap = mix(beat, 0.25, glide);
-  vec3 p = position * 1.5;
+  vec3 p = position * 0.95;
   p.y += flap * 0.55 * abs(aWing) * abs(p.x) * 0.9;
   vec3 up = cross(fwd, right);
   vec3 w = c + right * p.x + up * p.y + fwd * p.z;
@@ -244,7 +244,7 @@ export class Sky {
     this.night = k;
     this.lights.uniforms.uNight.value = k; this.lights.points.visible = k > 0.02;
     this.puffs.uniforms.uNight.value = k;
-    this.shadows.uniforms.uOpacity.value = 0.17 * (1 - k); this.shadows.mesh.visible = k < 0.98;
+    this.shadows.uniforms.uOpacity.value = 0.2 * (1 - k); this.shadows.mesh.visible = k < 0.98;
     this.flutter.mesh.visible = k < 0.5;
   }
   frame(dt, now) {
@@ -253,7 +253,7 @@ export class Sky {
     for (const u of [this.shadows.uniforms, this.puffs.uniforms]) u.uTime.value = this.time;
     for (const u of [this.birds.uniforms, this.flutter.uniforms, this.lights.uniforms]) { u.uTime.value = t; if (u.uCalm) u.uCalm.value = calm; }
     // the puffs fade in as the camera zooms out (they would cover the farm when working close)
-    const span = this.world.cam.span, fade = Math.min(1, Math.max(0, (span - 70) / 90)) * 0.92 * (1 - this.night * 0.8);
+    const span = this.world.cam.span, fade = Math.min(1, Math.max(0, (span - 115) / 35)) * (1 - this.night * 0.8);
     this.puffs.uniforms.uOpacity.value = fade; this.puffs.mesh.visible = fade > 0.01;
     // birds: a new pass every 30–60 s, through the middle of the view, by day
     const b = this.birds.uniforms;
@@ -266,7 +266,7 @@ export class Sky {
   }
   startBirds(t) {
     const cam = this.world.cam, a = rand() * Math.PI * 2, d = new THREE.Vector2(Math.cos(a), Math.sin(a)), b = this.birds.uniforms;
-    b.uStart.value.set(cam.x - d.x * 120 + (rand() - 0.5) * 20, 13 + rand() * 6, cam.z - d.y * 120 + (rand() - 0.5) * 20);
+    b.uStart.value.set(cam.x - d.x * 120 + (rand() - 0.5) * 20, 18 + rand() * 6, cam.z - d.y * 120 + (rand() - 0.5) * 20);
     b.uDir.value.copy(d); b.uT0.value = t; b.uSpeed.value = 8 + rand() * 4;
   }
   /** Pick the anchors nearest the camera: flowers in the wilds, ripe or growing crops, decorative flowers placed by the player. */
@@ -274,11 +274,12 @@ export class Sky {
     const cam = this.world.cam, list = [], s = this.game.s;
     const consider = (x, z, y) => { const d = (x - cam.x) ** 2 + (z - cam.z) ** 2; if (d < 70 * 70) list.push([d, x, y, z]); };
     for (const f of this.world.wilds?.flowers ?? []) consider(f.x, f.z, 0.35);
+    for (const f of this.world.locked?.flowers ?? []) consider(f.x, f.z, 0.35);
     for (const [id, p] of Object.entries(s.placed)) if (p.kind === 'flowers' || (p.kind === 'bed' && s.beds[id])) consider((p.x + 0.5) * CELL, (p.z + 0.5) * CELL, 0.6);
     list.sort((a, b) => a[0] - b[0]);
     const arr = this.flutter.anchors.array, n = arr.length / 4;
     for (let i = 0; i < n; i++) {
-      const pick = list[Math.floor(i * 1.7) % Math.max(1, list.length)];
+      const near = Math.min(list.length, 260), pick = list[Math.floor(((i * 0.618034) % 1) * near)];   // spread over the nearest anchors
       if (pick && list.length) arr.set([pick[1] + (i % 3 - 1) * 0.4, pick[2], pick[3] + ((i >> 2) % 3 - 1) * 0.4, 1], i * 4); else arr.set([0, -50, 0, 0], i * 4);
     }
     this.flutter.anchors.needsUpdate = true;

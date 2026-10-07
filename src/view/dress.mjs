@@ -180,7 +180,7 @@ class LockedLand {
     for (const id of this.ids) b.remove(id); this.ids = [];
     if (this.mesh) { world.scene.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh = null; }
     seed = 515;
-    const B = new Builder(), sign = [], all = [];
+    const B = new Builder(), sign = [], all = []; this.flowers = [];
     for (let px = 0; px < W.FARM.parcels; px++) for (let pz = 0; pz < W.FARM.parcels; pz++) all.push(`${px},${pz}`);
     const at = (px, pz) => all.includes(`${px},${pz}`) ? `${px},${pz}` : null;
     for (const id of all) {
@@ -194,7 +194,7 @@ class LockedLand {
         if (q < 0.028 * wood) this.put(`lock-tree:${x},${z}`, { model: rand() < 0.5 ? 'tree_round' : 'tree_pine', x: cx, z: cz, rot: rand() * 6, scale: 0.38 + rand() * 0.3 });
         else if (q < 0.028 * wood + 0.07) this.put(`lock-bush:${x},${z}`, { model: 'bush', x: cx + (rand() - 0.5), z: cz + (rand() - 0.5), rot: rand() * 6, scale: 0.75 + rand() * 0.55 });
         else if (q < 0.028 * wood + 0.095) this.put(`lock-rock:${x},${z}`, { model: 'rock', x: cx, z: cz, rot: rand() * 6, scale: 0.6 + rand() * 0.5 });
-        else if (q < 0.028 * wood + 0.14) flower({ x: cx, z: cz, c: pick(FLOWER_COLORS), s: 1 }, B);
+        else if (q < 0.028 * wood + 0.14) { const f = { x: cx, z: cz, c: pick(FLOWER_COLORS), s: 1 }; flower(f, B); this.flowers.push(f); }
       }
       // a low fence on every edge shared with owned land, and a sign at its middle if it can be bought now
       const sides = [[0, -1, 'n'], [0, 1, 's'], [-1, 0, 'w'], [1, 0, 'e']];
