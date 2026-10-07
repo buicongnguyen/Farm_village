@@ -17,7 +17,7 @@ export const actions = {
     const { s } = ctx, p = s.placed[home], kind = p && BUILDINGS[p.kind].animals;
     if (!kind) return ctx.fail('Animals need their own home');
     const a = ANIMALS[kind];
-    if (s.level < a.level) return ctx.fail('Reach level {level} first', { level: a.level });
+    if (s.level < a.level) return ctx.fail('Reach level {level} first', { level: a.level, animal: kind, lock: 'level' });
     const list = (s.animals[home] ??= []);
     if (list.length >= a.perHome) return ctx.fail('This home is full');
     if (!penOf(s, home).closed) return ctx.fail(penOf(s, home).reason ?? 'The fence has a gap');

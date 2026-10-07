@@ -1,7 +1,7 @@
 // The build order (DESIGN 11): requirements, goods delivery, and moving on when a step is done.
 import { STEPS } from '../content/projects.mjs';
 import { FAMILIES } from '../content/people.mjs';
-import { RECIPES } from '../content/goods.mjs';
+import { RECIPES, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { XP } from '../content/economy.mjs';
 import * as barn from './barn.mjs';
@@ -31,13 +31,14 @@ export function allowance(s, kind) {
 /** Can this kind be placed at all right now (ignoring the spot)? { ok, reason, params } */
 export function mayBuild(s, kind) {
   const def = BUILDINGS[kind];
-  if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name } };
-  if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name } };
-  if ((s.counts[kind] ?? 0) >= allowance(s, kind)) return { ok: false, reason: 'You have built all you can of this for now' };
+  if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
+  if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
+  if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name, project: def.after, kind, lock: 'project' } };
+  if ((s.counts[kind] ?? 0) >= allowance(s, kind)) return { ok: false, reason: 'You have built all you can of this for now', params: { kind, lock: 'max' } };
   // a step's building waits until its goods are delivered
   const step = currentStep(s);
   if (step?.builds.includes(kind) && step.deliver && !deliveredAll(s, step) && (kind !== 'cottage' || (s.counts.cottage ?? 0) >= (STEPS[s.projects.step - 1]?.allow?.cottage ?? 0)))
-    return { ok: false, reason: 'Deliver the goods for "{name}" first', params: { name: step.name } };
+    return { ok: false, reason: 'Deliver the goods for "{name}" first', params: { name: step.name, project: step.id, kind, lock: 'goods' } };
   return { ok: true };
 }
 /** The extra project price for a building (the step's `cost`), on top of the catalogue price. */
@@ -54,6 +55,7 @@ export function advance(ctx) {
 export function madeAt(good) {
   if (RECIPES[good]) return RECIPES[good].at;
   if (good === 'egg') return 'coop'; if (good === 'milk') return 'cow_barn';
+  if (FRUITS[good]) return FRUITS[good].tree;
   return 'farm';
 }
 

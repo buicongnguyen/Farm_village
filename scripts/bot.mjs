@@ -2,15 +2,17 @@
 // tick(), like the interface does, with a fixed v0.1 layout for the start parcel and the village:
 //   start parcel x 32–47, z 56–71; a path spine along z = 63 from the road;
 //   beds north of the spine; feed mill, coop (fenced), bakery and cow barn (fenced) south of it;
-//   cottages along the village road at z = 93, doors onto paths at z = 92; the school beside them.
+//   cottages along the village road at z = 93, doors onto paths at z = 92; the school beside them;
+//   once the school is open: apple and peach trees in the home lot by the road (x 30–31, z 52–59), and the weekly cart.
 import { act, tick } from '../src/core/act.mjs';
 import * as grid from '../src/core/grid.mjs';
 import * as barn from '../src/core/barn.mjs';
-import { currentStep, stepReady, mayBuild, deliveredAll } from '../src/core/projects.mjs';
+import { currentStep, stepReady, mayBuild, deliveredAll, completed } from '../src/core/projects.mjs';
+import { cartHere, cratesLeft } from '../src/core/cart.mjs';
 import { priceOf } from '../src/core/build.mjs';
 import { animalCount, animalPrice } from '../src/core/animals.mjs';
 import { queueOf } from '../src/core/production.mjs';
-import { CROPS, RECIPES, ANIMALS, GOODS } from '../src/content/goods.mjs';
+import { CROPS, RECIPES, ANIMALS, GOODS, FRUITS } from '../src/content/goods.mjs';
 import { BEDS, SLOTS, RENT, BARN } from '../src/content/economy.mjs';
 
 const SPINE = 63;
@@ -21,14 +23,18 @@ const LAYOUT = {
   school: { x: 50, z: 93, rot: 2, path: [52, 92] },
 };
 const cottageSpot = i => ({ x: 33 + 4 * i, z: 93, rot: 2, path: [34 + 4 * i, 92] });
+const treeCells = [];
+for (let z = 52; z <= 59; z++) for (const x of [31, 30]) treeCells.push([x, z]);
+const TREES = { apple_tree: 4, peach_tree: 2 };          // how many of each the bot plants
 const bedCells = [];
 for (let z = 57; z <= 62; z++) for (let x = 32; x <= 47; x++) bedCells.push([x, z]);
 for (let x = 32; x <= 47; x++) bedCells.push([x, 56]);
 
 export class Bot {
-  constructor(s) { this.s = s; this.log = []; this.leaving = 0; }
+  /** options: { cart, trees } turn the bot's use of the weekly cart and fruit trees off (pace comparisons). */
+  constructor(s, { cart = true, trees = true } = {}) { this.s = s; this.log = []; this.levels = {}; this.leaving = 0; this.opts = { cart, trees }; }
   do(action, payload, now) { const r = act(this.s, action, payload, now); if (r.ok) for (const e of r.events) this.onEvent(e, now); return r; }
-  onEvent(e, now) { if (e.type === 'projectDone') this.log.push({ now, step: e.id }); }
+  onEvent(e, now) { if (e.type === 'projectDone') this.log.push({ now, step: e.id }); if (e.type === 'levelUp') this.levels[e.level] ??= now; }
   tick(now) { for (const e of tick(this.s, now).events) this.onEvent(e, now); }
   /** One look at the game: everything a player does in a minute or two. gapMs is how long until the next look. */
   play(now, gapMs) {
@@ -36,6 +42,8 @@ export class Bot {
     this.tick(now);
     this.collect(now);
     this.orders(now);
+    if (this.opts.cart) this.cart(now);
+    this.unstick(now);
     this.project(now);
     this.spend(now);
     this.produce(now);
@@ -48,13 +56,34 @@ export class Bot {
   collect(now) {
     const s = this.s;
     // products and produce first (worth more), then orders make room, then the crops that fit
-    for (const a of ['collectProducts', 'collect', 'collectRent', 'stallCollect']) this.do(a, {}, now);
+    for (const a of ['collectProducts', 'collect', 'collectRent', 'stallCollect', 'pick']) this.do(a, {}, now);
     if (!s.today.claimed) this.do('claimGift', {}, now);
     this.orders(now);
     const ready = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now);
     if (ready.length) { const r = this.do('harvest', { ids: ready }, now); if (!r.ok || Object.keys(s.beds).some(id => s.beds[id].doneAt <= now)) this.barnFull = true; }
   }
   orders(now) { for (const c of [...this.s.orders.cards]) if (barn.hasAll(this.s, c.need)) this.do('deliverOrder', { id: c.id }, now); }
+  /**
+   * A full barn with no order that can be filled is a dead end (the v0.1 bot sat in one for days): like a player, put the
+   * biggest pile on the stall, or discard the order that is furthest from done. (After the school only, so the v0.1 pace
+   * targets up to the school are measured exactly as before.)
+   */
+  unstick(now) {
+    const s = this.s; if (!completed(s, 'school') || barn.space(s) >= 4 || s.orders.cards.some(c => barn.hasAll(s, c.need))) return;
+    const pile = Object.entries(s.barn.items).sort((a, b) => b[1] - a[1])[0];
+    if (pile && s.counts.stall > 0 && this.do('stallList', { good: pile[0], n: Math.min(10, pile[1]) }, now).ok) return;
+    const missing = c => Object.entries(c.need).reduce((a, [g, n]) => a + Math.max(0, n - barn.free(s, g)) * GOODS[g].value, 0);
+    const worst = s.orders.cards.filter(c => !c.story).sort((a, b) => missing(b) - missing(a))[0];
+    if (worst) this.do('discardOrder', { id: worst.id }, now);
+  }
+  /** The weekly cart: fill a crate when its goods are not wanted by an open order, send it when every crate is full. */
+  cart(now) {
+    const s = this.s; if (!cartHere(s)) return;
+    const forOrders = {}; for (const c of s.orders.cards) for (const [g, n] of Object.entries(c.need)) forOrders[g] = (forOrders[g] ?? 0) + n;
+    // orders come first, except for the last two crates (a cart that waits forever helps nobody)
+    s.cart.crates.forEach((c, i) => { if (!c.filled && barn.free(s, c.good) >= c.n + (cratesLeft(s) <= 2 ? 0 : forOrders[c.good] ?? 0)) this.do('fillCrate', { crate: i }, now); });
+    if (!cratesLeft(s)) this.do('sendCart', {}, now);
+  }
   /** Pave from (x, z) back to the road along the cheapest straight route used by this layout. */
   pave(cells, now) { for (const [x, z] of cells) if (grid.cellType(this.s, x, z) !== 'path' && grid.cellType(this.s, x, z) !== 'road') { this.clearCells([[x, z]], now); this.do('place', { kind: 'path', x, z }, now); } }
   clearCells(cells, now) { const dirty = cells.filter(([x, z]) => ['weeds', 'rock'].includes(grid.cellType(this.s, x, z))); if (dirty.length) this.do('clear', { cells: dirty }, now); }
@@ -111,6 +140,10 @@ export class Bot {
       if (this.reserve(now)) return;   // saving for the project: no cottage upgrades or decorations
       const home = Object.keys(s.homes).find(id => s.homes[id].family && s.homes[id].level < 2 && free >= RENT.upgradeCost[s.homes[id].level + 1]);
       if (home && this.do('upgradeHome', { id: home }, now).ok) continue;
+      // fruit trees once the school is open (a player saving for the school buys none)
+      const tree = this.opts.trees && completed(s, 'school') && Object.keys(TREES).find(k => (s.counts[k] ?? 0) < TREES[k] && mayBuild(s, k).ok && s.level >= FRUITS[k.replace('_tree', '')].level && free >= priceOf(s, k) + 100);
+      const cell = tree && treeCells.find(([x, z]) => grid.canPlace(s, tree, x, z).ok);
+      if (cell && this.do('place', { kind: tree, x: cell[0], z: cell[1] }, now).ok) continue;
       return;
     }
   }
@@ -119,6 +152,7 @@ export class Bot {
     const s = this.s, w = { wheat: 12, carrot: 6, corn: 8, chicken_feed: animalCount(s, 'hen'), cow_feed: animalCount(s, 'cow') };
     for (const c of s.orders.cards) for (const [g, n] of Object.entries(c.need)) w[g] = (w[g] ?? 0) + n;
     const step = currentStep(s); if (step?.deliver) for (const [g, n] of Object.entries(step.deliver)) w[g] = (w[g] ?? 0) + n - (s.projects.delivered[g] ?? 0);
+    if (cartHere(s)) for (const c of s.cart.crates) if (!c.filled) w[c.good] = (w[c.good] ?? 0) + c.n;
     for (const [k, r] of Object.entries(RECIPES)) { const short = Math.max(0, (w[k] ?? 0) - barn.stock(s, k)); if (short) for (const [i, n] of Object.entries(r.needs)) w[i] = (w[i] ?? 0) + Math.ceil(short / r.makes) * n; }
     return w;
   }
