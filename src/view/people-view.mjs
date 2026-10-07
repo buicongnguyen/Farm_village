@@ -16,6 +16,7 @@ import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { t } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
+import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS } = PEOPLE_DATA;
 const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel']), GIRLS = new Set(['zara', 'pia']);
@@ -152,6 +153,7 @@ export class PeopleView {
     const spots = [[ORDER_BOARD.x, ORDER_BOARD.z], [FARMHOUSE.x + 6, FARMHOUSE.z + 1]];
     const school = Object.values(s.placed).find(p => p.kind === 'school'); if (school) spots.push(doorCell(school.kind, school.x, school.z, school.rot));
     for (const p of Object.values(s.placed)) if (p.kind === 'cottage' && Math.random() < 0.3) spots.push(doorCell(p.kind, p.x, p.z, p.rot));
+    for (const r of RUINS) if (Math.random() < 0.25) spots.push([r.x + 2, r.z - 1]);   // a stroll down the civic row
     return [this.route(here, spots[Math.floor(Math.random() * spots.length)]), { act: w.kid && Math.random() < 0.3 ? 'play' : 'idle', time: 3 + Math.random() * 6 }];
   }
   // ── The family walks freely on the home ground and the farm (not through buildings, pens, fences or water). ──
@@ -395,6 +397,13 @@ export class PeopleView {
     this.bubbles.appendChild(el); w.bubble = el; w.bubbleUntil = performance.now() + ms;
     this.placeBubbles();
   }
+  /** A line from the chatter pools for this time of day and age, dealt like cards: none repeats until most of its pool is used. */
+  chatter(w) {
+    const part = partOfDay(new Date(this.game.now).getHours()), age = w.kid || w.id === 'pip' || GIRLS.has(w.id) ? 'kid' : 'grown', pool = CHATTER[part][age], key = `${part}|${age}`;
+    const used = (this.bags ??= new Map()).get(key) ?? new Set(); if (used.size >= Math.ceil(pool.length * 0.75)) used.clear();
+    const left = pool.filter(l => !used.has(l)), line = left[Math.floor(Math.random() * left.length)]; used.add(line); this.bags.set(key, used);
+    return line;
+  }
   talk(w) {
     const who = PEOPLE[w.person ?? w.id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
@@ -402,9 +411,10 @@ export class PeopleView {
     // somebody with an order for you says so and opens the order board
     const card = this.s.orders.cards.find(c => c.from === (w.person ?? w.id));
     if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
-    if (who) this.say(w, t(w.comment ?? who.line));
-    else if (w.id === 'june') this.juneTip();
-    else if (w.id === 'pip') this.say(w, t('Can we get a pony one day? Or a goat? A goat would be fine.'));
+    // their own line the first time, then the day's chatter, so people rarely repeat themselves
+    if (who) { this.say(w, t(w.comment ?? (w.heard ? this.chatter(w) : who.line))); w.heard = true; w.comment = null; }
+    else if (w.id === 'june') { if (Math.random() < 0.4) this.juneTip(); else this.say(w, t(this.chatter(w))); }
+    else if (w.id === 'pip') { this.say(w, t(w.heard ? this.chatter(w) : 'Can we get a pony one day? Or a goat? A goat would be fine.')); w.heard = true; }
     // face the camera and wave
     w.faceTo = this.world.cam.yaw; w.rot = this.world.cam.yaw; this.once(w, who && w.visitor ? 'Talk' : 'Wave', 1.3);
   }

@@ -36,6 +36,8 @@ MIT) is a build tool only, not a dependency of the game.
 ## Added in v0.3b
 `farm-kit.glb` gained `truck` and `pond` (our own Blender pieces, `art/blender/build_farm_kit.py`). Icons `perch`, `carp`, `catfish`, `goldfish` are copied from Willowmere (`3d_farmer_fish_sell/public/assets/icons/fish/fish_perch|carp|catfish|golden.webp`); `round_tree`, `pine_tree` are rendered from Willowmere's `scenery.glb` (`tree_round`, `tree_pine`); `market`, `pond`, `truck` icons from our own kit.
 
+`fish.glb` is Willowmere's fish kit (`3d_farmer_fish_sell/public/assets/models/fish.glb`, itself from Zoo Garden), packed with `art/blender/pack.mjs`; the ponds draw perch, carp, catfish and golden carp from it.
+
 ## Tools in `art/blender/`
 
 | Script | What it does |

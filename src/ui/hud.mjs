@@ -22,6 +22,7 @@ import { cartHere } from '../core/cart.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
+import { RUIN_NAMES } from '../content/world.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
 /** Translate a message's string parameters too (a family's name, a good), then the message. */
@@ -118,6 +119,7 @@ export class Hud {
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects' });
+    if (e.type === 'ruinTidied') this.toast(t('{name} is tidied up. The village looks loved.', { name: t(RUIN_NAMES[e.kind]) }), 'good', { icon: 'ui:heart' });
     if (e.type === 'helperDid') this.toast(t(e.who === 'june' ? 'June brought in {count} crops and sowed them again' : 'Pip fetched {count} eggs and milk', { count: e.count }), 'good', { icon: e.who === 'june' ? 'wheat' : 'egg' });
     if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
     if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });

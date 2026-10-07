@@ -156,7 +156,8 @@ await check('people: you are on the farm and walk to what you tap; a villager wi
 await check('the village pond: fish pictures swim in it; tap it, cast a line, reel in a fish; a coin marks the bite; tap a person then the pond and they go fishing', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.waitForTimeout(2500);
-  expect(await page.evaluate(() => farm.pondFish.meshes.reduce((a, m) => a + m.mesh.count, 0)) >= 7, 'no fish swim in the village pond');
+  await page.waitForFunction(() => farm.pondFish.count >= 7, null, { timeout: 15000 }).catch(() => {});
+  expect(await page.evaluate(() => farm.pondFish.count) >= 7, 'no fish swim in the village pond');
   await tap(page, 15, 42);   // the village pond by the farmhouse await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
   await page.evaluate(() => document.querySelector('[data-do="castLine"]').click());
   expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
@@ -210,6 +211,20 @@ await check('the Next chip does the chore in one tap: ripe crops are harvested; 
   await tap(page, ...bed); expect(await page.isVisible('.radial-btn[data-act="plantAll"]'), 'no All button');
   await page.click('.radial-btn[data-act="plantAll"]');
   expect(await page.evaluate(() => Object.keys(farm.game.s.beds).length) >= 6, 'All did not sow every empty bed');
+  expect(!errors.length, errors.join(' | '));
+  await ctx.close();
+});
+await check('the civic row: tap the old clinic for its name and a tidy-up; people say different things when tapped again', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.evaluate(() => { farm.game.s.coins = 500; });
+  await tap(page, 63, 107);
+  expect(await page.isVisible('.radial-btn[data-act="tidyRuin"]'), 'no tidy-up on the old clinic');
+  expect(/clinic|trạm xá/i.test(await page.textContent('.radial')), 'no name on the old clinic');
+  await page.click('.radial-btn[data-act="tidyRuin"]');
+  expect(await page.evaluate(() => !!farm.game.s.village.tidied?.clinic), 'not tidied');
+  await page.waitForFunction(() => farm.people?.walkers.has('ada'), null, { timeout: 15000 });
+  const lines = await page.evaluate(() => { const p = farm.people, w = p.walkers.get('ada'), out = []; p.onOrder = null; for (let i = 0; i < 6; i++) { p.talk(w); out.push(w.bubble?.textContent ?? ''); } return out; });
+  expect(new Set(lines).size >= 5, `Ada repeats herself: ${lines.join(' / ')}`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });

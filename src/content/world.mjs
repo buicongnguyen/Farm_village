@@ -35,6 +35,11 @@ export const RUINS = [
   { kind: 'police', model: 'police', x: 73, z: 106, rot: 2, width: 6 },
   { kind: 'company', model: 'company', x: 83, z: 106, rot: 2, width: 8 },
 ];
+/** What each old building on the civic row is called, and what its tidy-up costs and gives (core/ruins.mjs). */
+export const RUIN_NAMES = { school: 'The old school', clinic: 'The old clinic', police: 'The old police station', company: 'The old company office' };
+export const TIDY = { coins: 40, xp: 15 };
+/** The ruin whose footprint holds this cell, if any. */
+export const ruinAt = (x, z) => RUINS.find(r => { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; return x >= r.x && x < r.x + w && z >= r.z && z < r.z + d; }) ?? null;
 export const MAILBOX = { x: 27, z: 60 };
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 
