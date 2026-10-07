@@ -80,10 +80,10 @@ function mergeRig(def, gltf) {
   return { template: root, mesh: keep, geo, tint };
 }
 
-/** Pose a copy of the rig on a clip frame and bake it into a static geometry (root space, unscaled). */
-function bakePose(rig, clipName) {
+/** Pose a copy of the rig on a clip at time t (seconds) and bake it into a static geometry (root space, unscaled). */
+function bakePose(rig, clipName, t = 0) {
   const copy = cloneSkinned(rig.template), mixer = new THREE.AnimationMixer(copy), clip = rig.clips.get(clipName);
-  if (clip) { mixer.clipAction(clip).play(); mixer.update(0.0001); }
+  if (clip) { mixer.clipAction(clip).play(); mixer.update(Math.max(t, 0.0001)); }
   copy.updateMatrixWorld(true);
   let sm = null; copy.traverse(o => { if (o.isSkinnedMesh) sm = o; });
   const src = sm.geometry, n = src.attributes.position.count, pos = new Float32Array(n * 3), nor = new Float32Array(n * 3);
@@ -135,6 +135,26 @@ function lighter(geo, cells) {
   return g;
 }
 const tris = g => (g.index ? g.index.count : g.attributes.position.count) / 3;
+/**
+ * The walk cycle for everyone who is not drawn skinned (most people, most of the time: only the nearest few get a
+ * skeleton). GAIT_FRAMES poses are baked from the rig's Walk (or Hop) clip, evenly through one cycle; the crowd draws a
+ * walker with the pose its distance walked calls for, so legs and arms swing, feet land where the body is and nobody
+ * glides in a frozen pose. `stride` is the ground one cycle covers (the speed the clip is authored for x its length).
+ * Baked in idle time after the rig loads; until then walkers use the resting pose.
+ */
+export const GAIT_FRAMES = 6;
+async function bakeGait(rig) {
+  const name = ['Walk', 'Hop'].find(n => rig.clips.has(n)); if (!name) return;
+  const dur = rig.clips.get(name).duration, frames = [];
+  if (!(dur > 0.05)) return;
+  for (let i = 0; i < GAIT_FRAMES; i++) {
+    await idle();
+    const g = bakePose(rig, name, dur * i / GAIT_FRAMES);
+    g.scale(rig.k, rig.k, rig.k); g.translate(0, rig.lift, 0); g.computeBoundingBox(); g.computeBoundingSphere();
+    frames.push({ near: rig.tris > 3200 ? lighter(g, 40) : g, mid: lighter(g, 24) });   // a little finer than the resting mid: legs must stay legs
+  }
+  rig.gait = { frames, name, stride: Math.max(0.2, rig.def.walk * dur) };
+}
 // Props held in the right hand during a clip (Starline's grip_R contract: Euler XYZ on the prop root, at the grip).
 const PROPS = { Sweep: ['broom', [0.603, -0.457, 3.086]], Hammer: ['hammer', [0, 0, 0]], Carry: ['basket', [-0.19, -0.39, 2.21]] };
 PROPS.CarryWalk = PROPS.Carry;
@@ -202,6 +222,7 @@ export function loadRig(name) {
     }
     rig.clipFor = want => { for (const c2 of FALLBACK[want] ?? [want, 'Idle']) if (rig.clips.has(c2)) return c2; return [...rig.clips.keys()][0]; };
     loaded.set(name, rig);
+    bakeGait(rig).catch(e => console.warn(`[cast] ${name} walk cycle: ${e.message}`));   // in idle time: walkers use it once it is ready
     return rig;
   })());
   return rigs.get(name);
@@ -267,7 +288,7 @@ export class Cast {
     const t0 = performance.now();
     for (const a of this.actors) if (a.subject) this.drive(a, dt);
     this.mixerMs = this.mixerMs * 0.9 + (performance.now() - t0) * 0.1;
-    this.drawCrowds();
+    this.drawCrowds(dt);
   }
   /** Who gets an actor: the nearest subjects to the camera centre, within the radius, the count and the triangle budget. */
   select() {
@@ -339,34 +360,55 @@ export class Cast {
     a.mixer.update(dt);
     s.pose?.(a.bones, this.time);
   }
-  /** Everyone without an actor, as instances of their rig's baked pose at the camera's level of detail. */
-  drawCrowds() {
+  /**
+   * Which walk frame a crowd member shows, or -1 for the resting pose. The cycle advances by the ground the subject really
+   * covers (stride per cycle), so the legs keep time with the feet whatever speed the view gives it; a subject that has
+   * stopped, or is still (its clip is a task, not a walk), rests.
+   */
+  gaitFrame(s, rig, dt) {
+    const g = rig.gait, px = s._px ?? s.x, pz = s._pz ?? s.z, dist = Math.hypot(s.x - px, s.z - pz);
+    s._px = s.x; s._pz = s.z;
+    if (!g || dt <= 0) return -1;
+    if (dist > 4) { s._mv = 0; return -1; }                       // a jump (teleport, first frame), not a step
+    if (dist > dt * 0.12) s._mv = this.time + 0.18;                  // moving: keeps walking through a one-frame hitch
+    if (!(this.time < (s._mv ?? 0))) return -1;
+    s._ph = ((s._ph ?? Math.random()) + dist / g.stride) % 1;
+    return Math.min(GAIT_FRAMES - 1, Math.floor(s._ph * GAIT_FRAMES));
+  }
+  /** Everyone without an actor, as instances of their rig's baked pose (resting or a walk frame) at the camera's level of detail. */
+  drawCrowds(dt = 0) {
     const lod = this.world.cam.lod, count = new Map(), cam = this.world.cam.camera;
     frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
     for (const s of this.subjects) {
+      const rig = rigReady(s.rig);
+      // keep every subject's gait running even when it is not drawn this frame, so its phase never jumps on return
+      const f = rig && !s.actor && lod < 2 ? this.gaitFrame(s, rig, dt) : (s._px = s.x, s._pz = s.z, -1);
       if (s.actor || s.hidden || s.skinnedOnly || (lod === 2 && s.farHide)) continue;
       if (!frustum.intersectsSphere(sphere.set(v3.set(s.x, (s.y ?? 0) + 1, s.z), 3))) continue;   // off screen: no triangles
 
-      const rig = rigReady(s.rig); if (!rig) continue;
-      const c = this.crowd(rig, lod, (count.get(rig) ?? 0) + 1); if (!c) continue;
-      const i = count.get(rig) ?? 0; count.set(rig, i + 1);
-      const k = (s.scale ?? 1) * (lod === 2 ? rig.standin : 1);
+      if (!rig) continue;
+      const key = `${rig.name}|${lod}|${f}`, c = this.crowd(rig, lod, f, (count.get(key) ?? 0) + 1); if (!c) continue;
+      const i = count.get(key) ?? 0; count.set(key, i + 1);
+      const k = (s.scale ?? 1) * (lod === 2 ? rig.standin : 1), bob = f >= 0 ? 0 : (s.bob ?? 0);   // a walk frame has its own bounce: no added hover
       eu.set((s.pitch ?? 0) + (s.tilt ?? 0), s.rot ?? 0, 0);
-      c.mesh.setMatrixAt(i, m4.compose(v3.set(s.x, (s.y ?? 0) + (s.lift ?? 0) + (s.bob ?? 0), s.z), qt.setFromEuler(eu), s3.set(k, k, k)));
+      c.mesh.setMatrixAt(i, m4.compose(v3.set(s.x, (s.y ?? 0) + (s.lift ?? 0) + bob, s.z), qt.setFromEuler(eu), s3.set(k, k, k)));
       if (c.tints) for (const [slot, attr] of c.tints) { const col = s.tint?.[slot] ?? rig.tint[slot]; tc.set(col); attr.setXYZ(i, tc.r, tc.g, tc.b); }
     }
     for (const [key, c] of this.crowds) {
-      const n = c.lod === lod ? count.get(c.rig) ?? 0 : 0;
+      const n = c.lod === lod ? count.get(key) ?? 0 : 0;
       c.mesh.count = n; c.mesh.visible = n > 0;
       if (n) { c.mesh.instanceMatrix.needsUpdate = true; if (c.tints) for (const [, attr] of c.tints) attr.needsUpdate = true; }
     }
   }
-  crowd(rig, lod, need) {
-    const key = `${rig.name}|${lod}`, old = this.crowds.get(key);
+  /** The instanced batch for a rig at a level of detail and walk frame (-1: the resting pose); null when that look has no batch. */
+  crowd(rig, lod, f, need) {
+    const key = `${rig.name}|${lod}|${f}`, old = this.crowds.get(key);
     if (old && old.cap >= need) return old;
     if (lod === 2 && rig.def.tint) return null;
+    if (f >= 0 && !rig.gait?.frames[f]) return null;
     const cap = Math.max(8, Math.ceil(need * 1.5)), tinted = !!rig.def.tint && lod < 2;
-    const geo = lod === 0 ? rig.near : lod === 1 ? rig.mid : STANDINS.animal;
+    const pose = f >= 0 ? rig.gait.frames[f] : null;
+    const geo = lod === 0 ? (pose?.near ?? rig.near) : lod === 1 ? (pose?.mid ?? rig.mid) : STANDINS.animal;
     const mat = tinted ? (crowdTint ??= castMaterial(true)) : toon();
     if (old) { this.world.scene.remove(old.mesh); old.mesh.dispose(); }
     const g = tinted ? geo.clone() : geo, mesh = new THREE.InstancedMesh(g, mat, cap);
@@ -375,7 +417,7 @@ export class Cast {
     if (tinted) tints = ['hair', 'top', 'bottom'].map(slot => { const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3).fill(1), 3); g.setAttribute(`i${slot[0].toUpperCase()}${slot.slice(1)}`, a); return [slot, a]; });
     if (lod === 2) for (let i = 0; i < cap; i++) mesh.setColorAt(i, rig.color);
     this.world.scene.add(mesh);
-    const c = { rig, lod, cap, mesh, tints }; this.crowds.set(key, c);
+    const c = { rig, lod, f, cap, mesh, tints }; this.crowds.set(key, c);
     return c;
   }
   /** For tests and the budget check. */

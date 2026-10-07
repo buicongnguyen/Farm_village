@@ -106,6 +106,28 @@ await check('June and Pip are by the farmhouse after the tutorial, and Pip speak
   await ctx.close();
 });
 
+await check('walkers swing their legs at normal zoom, and a still walker stands (phone, default span 70)', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.evaluate(() => { const g = farm.game; g.s.level = 6; for (const x of [34, 38]) g.do('place', { kind: 'path', x, z: 92 }); g.do('testAddFamily'); g.do('testAddFamily'); document.querySelectorAll('.modal').forEach(m => m.remove()); });
+  await until(page, () => farm.world.cast.stats().rigs.includes('woman'), null, 30000);
+  // wait for the walk cycles to be baked (idle time after the rigs load)
+  await until(page, () => ['man', 'woman', 'kid'].every(n => { const c = [...farm.world.cast.crowds.values()].find(x => x.rig.name === n); return !c || c.rig.gait; }) && [...farm.world.cast.crowds.values()].some(c => c.rig.gait), null, 30000);
+  const seen = await page.evaluate(async () => {
+    farm.view(70);                                   // the default zoom: nobody is drawn skinned at this level of detail
+    const frames = new Set(), still = [];
+    for (let i = 0; i < 60; i++) {
+      for (const w of farm.people.walkers.values()) { const sub = w.subject; if (!sub || w.indoors || sub.actor) continue; if (sub._mv > farm.world.cast.time) frames.add(`${w.id}:${Math.floor((sub._ph ?? 0) * 6)}`); else if (!w.route?.length && w.clip === 'Idle') still.push(w.id); }
+      await new Promise(r => setTimeout(r, 120));
+    }
+    const perWalker = {}; for (const f of frames) { const [id] = f.split(':'); perWalker[id] = (perWalker[id] ?? 0) + 1; }
+    return { perWalker, lod: farm.world.cam.lod };
+  });
+  expect(seen.lod === 1, `expected the middle level of detail, got ${seen.lod}`);
+  const best = Math.max(0, ...Object.values(seen.perWalker));
+  expect(best >= 4, `no walker went through four or more walk frames: ${JSON.stringify(seen.perWalker)}`);
+  expect(!errors.length, errors.join(' | '));
+  await ctx.close();
+});
 await check('June gives a tip when the player seems stuck', async () => {
   const { ctx, page } = await open('pc');
   await page.evaluate(() => { farm.people.idleTipMs = 1500; });
