@@ -71,6 +71,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | Release candidate 0.1.0: production build smoke test (phone and PC, no test hooks), CHANGELOG, README how-to-run | a67d1ea |
 | 2026-10-07 | Published: repository created, pushed over SSH, Pages enabled; CI failed once (tests depended on the time zone: GitHub runs UTC) and the tests now pin Asia/Seoul; live site checked on phone and PC with no errors or missing files | 7e9282f |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
+| 2026-10-07 | AAA integration (branch aaa-integrate): the six packages merged; their cross-package hooks applied (crop stages, sails, window glows from anchors, charm milestones, For-sale signs from the rules, plaza kept clear, story beats, nature scatter, meshopt rigs, pond ducks once); npm test 74/74; first load 986 → 849 KB (cast, juice, sky life and Vietnamese lines in their own chunks); every browser suite green; story panels rendered; ui-package hooks listed for the next stage | 94efa53 |
 
 ## How to resume
 
