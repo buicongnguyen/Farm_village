@@ -48,6 +48,21 @@ a big company, earning wisely and keeping the valley beautiful.
    budgets (120 draws, 300k triangles) stay safe.
 4. **Do not copy.** The ladder and themes are common patterns; the art, names, numbers and story are our own.
 
+### Where v0.3 stands against other farm games
+
+The gaps this plan closes (from the evaluation of 2026-10-07):
+
+| Area | Hay Day, Township and others | Farm Village at v0.3 | Closed in stage |
+|---|---|---|---|
+| Animal ladder | Hens → cows → pigs → sheep → goats, each with its own feed and product | Hens at the start, cows after the school; goat, goose and sheep models exist but cannot be bought; no horse | 3, 4, 6 |
+| Production chains | Many machines (dairy, sugar mill, loom…), each opening new orders | Feed mill and bakery only | 3, 4 |
+| Land | Cleared piece by piece with tools you earn | Land can be bought, but nothing says why | 3, 4 |
+| Big orders | Truck and boat with large multi-item orders | Order board, market truck, weekly cart | 6 (contracts) |
+| Help with chores | Workers and family members take tasks | June and Pip help a little | 6 (hiring) |
+| Pets | Dog and cat houses, pets for fun | Biscuit and a sleeping cat, no purpose | 2, 3 |
+| Long goals | Town, events, seasons | One story, goals, a weekly goal, the festival | 5–8 |
+| Seeing what is next | An unlock list per level | A level-up card only | 2 (roadmap panel) |
+
 ---
 
 ## 2. The journey: eight stages
