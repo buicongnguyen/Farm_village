@@ -7,7 +7,7 @@ import { GOODS } from '../content/goods.mjs';
 import { iconHtml } from './icon.mjs';
 import { sfx } from '../kit/sound.mjs';
 
-const CORNER = { '[data-act="barn"]': () => ({ x: innerWidth - 64, y: innerHeight - 52 }), '[data-hud="coins"]': () => ({ x: 110, y: 36 }) };
+const CORNER = { '[data-act="barn"]': () => ({ x: innerWidth - 64, y: innerHeight - 52 }), '[data-hud="coins"]': () => ({ x: 110, y: 36 }), '[data-hud="level"]': () => ({ x: 36, y: 36 }) };
 const COIN = '🪙';
 export class Fx {
   constructor(root, { game, world }) {
@@ -43,6 +43,9 @@ export class Fx {
       delay += 90;
     }
     if (coins > 0) this.coins(coins, this.tapPoint());
+    // experience: a couple of stars follow the goods up to the level ring
+    const first = goods.values().next().value;
+    if (first) for (let i = 0; i < Math.min(3, goods.size + 1); i++) this.fly('xp', '⭐', first.from, '[data-hud="level"]', { delay: 160 + i * 90, spread: 0.5 });
   }
   add(map, good, from, count) {
     if (!good || !from) return;

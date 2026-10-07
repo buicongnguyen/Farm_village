@@ -203,6 +203,10 @@ export class Juice {
     }
     for (let i = 0; i < Math.round(3 * amount * busy); i++) this.ground.spawn({ x: cx + rand(-0.4, 0.4), y: 0.1, z: cz + rand(-0.4, 0.4), vx: rand(-0.6, 0.6), vy: rand(0.4, 0.9), vz: rand(-0.6, 0.6), drag: 2, life: 0.6, size: 0.7, size1: 1.4, shape: SHAPE.dot, color: '#e2c79a', alpha: 0.6 });
     if (amount >= 1) this.particles.spawn({ x: cx, y: 1.1, z: cz, vy: 1.6, drag: 2, life: 0.55, size: 0.6, size1: 1.3, shape: SHAPE.star, color: GOLD, spin: 4 });
+    for (let i = 0; i < Math.round(3 * amount * busy); i++) {        // a few white glints
+      const a = rand(0, Math.PI * 2);
+      this.particles.spawn({ x: cx + Math.cos(a) * 0.5, y: rand(0.8, 1.4), z: cz + Math.sin(a) * 0.5, vx: Math.cos(a) * 1.2, vy: rand(1, 2), vz: Math.sin(a) * 1.2, drag: 3, life: rand(0.35, 0.55), size: rand(0.35, 0.5), size1: 0.05, shape: SHAPE.star, color: '#ffffff', spin: rand(-6, 6) });
+    }
   }
   placed(e) {
     const def = BUILDINGS[e.kind]; if (!def || def.cell) return;
