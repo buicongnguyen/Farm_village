@@ -21,6 +21,9 @@ vertex colours with baked ambient occlusion, no textures, one skin per model.
 | villager-woman.glb | villager-woman.glb | ba18c83177d1 | the same ten | women, June |
 | villager-kid.glb | villager-kid.glb | b9db608124b9 | the same ten | children, Pip |
 | hana.glb | hana.glb | 7d324b72ff1b | Cheer, Idle, Knead, Talk, Walk, Wave | Ada (grey hair and headscarf, lavender dress) |
+| broom.glb | broom.glb | 83c1abce0cbc | (static prop, copied as is) | held while sweeping |
+| hammer.glb | hammer.glb | dcac16969690 | (static prop, copied as is) | held while hammering at a project |
+| basket.glb | basket.glb | 909b4618d733 | (static prop, copied as is) | carried home after an order |
 
 ## Changes made for Farm Village
 
@@ -34,6 +37,9 @@ directly; geometry, skins and materials are untouched):
 
 At run time (`src/view/skinned.mjs`) each model's primitives are merged into one skinned geometry whose vertex colour is
 the material colour times the baked occlusion, so an animated actor is one draw call with the shared toon material.
-Clothes (hair, top, bottom) are baked white and recoloured per person by a tint. The same model posed on its first Idle
+Clothes (hair, top, bottom) are baked white and recoloured per person by a tint. The broom, hammer and basket are
+bound rigidly to the `grip_R` bone inside extra copies of each villager geometry (Starline's grip transforms), and an actor
+swaps to the copy its clip needs, so a held prop costs no extra draw call. A walking carry clip joins Walk's legs to
+Carry's arms. The same model posed on its first Idle
 frame is baked into a static geometry for the instanced crowds, with two lighter copies made by vertex clustering for the
 middle and far views. Heights on our map are 1.3–1.4 times life size next to the buildings, as in Hay Day.

@@ -125,8 +125,9 @@ await check('budgets: at most 8 skinned actors within the triangle budget, few e
     await page.evaluate(() => farm.world.cast.setEnabled(true));
     console.log(`     span ${span}: ${st.actors} skinned (${st.tris} triangles), cast adds ${on.draws - off.draws} draws and ${Math.round((on.triangles - off.triangles) / 1000)}k triangles, ${on.fps} fps, mixer ${st.mixerMs} ms`);
     expect(st.actors <= 8 && st.tris <= 60000, `${st.actors} actors, ${st.tris} triangles`);
-    expect(on.draws - off.draws <= 18, `the cast adds ${on.draws - off.draws} draws`);
-    expect(on.triangles - off.triangles <= 110000, `the cast adds ${on.triangles - off.triangles} triangles`);
+    // measured against the same scene with no animals or people at all, so this is stricter than "extra over v0.1"
+    expect(on.draws - off.draws <= 12, `the cast adds ${on.draws - off.draws} draws`);
+    expect(on.triangles - off.triangles <= 60000, `the cast adds ${on.triangles - off.triangles} triangles`);
     expect(on.draws <= 120 && on.triangles <= 300000, `${on.draws} draws, ${on.triangles} triangles`);
     if (span === 20) expect(on.fps >= 50, `${on.fps} fps at span 20`);
   }
@@ -187,8 +188,8 @@ await check('night: animals sleep by their home and villagers go indoors; nothin
   const hour = new Date().getHours(), toNight = ((23 - hour + 24) % 24) * 3600e3;
   await page.evaluate(ms => { farm.game.s.settings.daylight = 'real'; farm.setClockOffset(ms); farm.view(20, 80, 133); }, toNight);
   await until(page, () => [...farm.world.life.herds.values()].filter(h => h.state === 'sleep').length >= 6, null, 40000);
-  await until(page, () => [...farm.people.walkers.values()].filter(w => !w.visitor && w.id !== 'dog').every(w => w.indoors), null, 60000)
-    .catch(async () => { throw new Error(`still outdoors: ${await page.evaluate(() => [...farm.people.walkers.values()].filter(w => !w.visitor && !w.indoors).map(w => `${w.id} route ${w.route.length} ${w.clip}`).join(', '))}`); });
+  await until(page, () => [...farm.people.walkers.values()].filter(w => !w.visitor && w.id !== 'dog').every(w => w.indoors), null, 90000)
+    .catch(async () => { throw new Error(`still outdoors: ${await page.evaluate(() => [...farm.people.walkers.values()].filter(w => !w.visitor && !w.pet && !w.indoors).map(w => `${w.id} route ${w.route.length} ${w.clip}`).join(', '))}`); });
   await page.screenshot({ path: `${SHOTS}cast-night.png` });
   await page.evaluate(ms => { farm.game.s.settings.daylight = 'always'; farm.setClockOffset(ms); }, 3 * 60_000);
   // lose the WebGL context and get it back

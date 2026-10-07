@@ -37,7 +37,7 @@ const SLOTS = [['hair', /hair/i], ['top', /shirt|dress|headscarf/i], ['bottom', 
 const FALLBACK = {
   Walk: ['Walk', 'Hop', 'Swim', 'Idle'], Run: ['Run', 'Walk'], Graze: ['Graze', 'Snuffle', 'Idle'], Peck: ['Idle'],
   Sleep: ['Sleep', 'Sit', 'Idle'], Sit: ['Sit', 'Sleep', 'Idle'], Call: ['Moo', 'Oink', 'Bleat', 'Bark', 'Flap', 'Hop', 'Wave', 'Idle'],
-  Wave: ['Wave', 'Talk', 'Idle'], Talk: ['Talk', 'Idle'], Cheer: ['Cheer', 'Wave', 'Jump', 'Idle'], Carry: ['Carry', 'Walk'],
+  Wave: ['Wave', 'Talk', 'Idle'], Talk: ['Talk', 'Idle'], Cheer: ['Cheer', 'Wave', 'Jump', 'Idle'], Carry: ['Carry', 'Walk'], CarryWalk: ['CarryWalk', 'Walk'],
   Hammer: ['Hammer', 'Interact', 'Idle'], Sweep: ['Sweep', 'Idle'], Knead: ['Knead', 'Interact', 'Idle'], Fly: ['Fly', 'Flap', 'Idle'],
   Swim: ['Swim', 'Idle'], Wag: ['Wag', 'Idle'], Bark: ['Bark', 'Idle'], Flap: ['Flap', 'Idle'], Hop: ['Hop', 'Idle'], Idle: ['Idle'],
 };
@@ -134,6 +134,43 @@ function lighter(geo, cells) {
   return g;
 }
 const tris = g => (g.index ? g.index.count : g.attributes.position.count) / 3;
+// Props held in the right hand during a clip (Starline's grip_R contract: Euler XYZ on the prop root, at the grip).
+const PROPS = { Sweep: ['broom', [0.603, -0.457, 3.086]], Hammer: ['hammer', [0, 0, 0]], Carry: ['basket', [-0.19, -0.39, 2.21]] };
+PROPS.CarryWalk = PROPS.Carry;
+const props = new Map();
+/** A prop baked in its root's space (origin at the grip), with its material colours times its baked occlusion. */
+function loadProp(file) {
+  if (!props.has(file)) props.set(file, loader.loadAsync(`${RIG_BASE}${file}.glb`).then(g => {
+    const root = g.scene.children[0]; root.updateMatrixWorld(true); const inv = root.matrixWorld.clone().invert(), parts = [];
+    root.traverse(o => {
+      if (!o.isMesh) return;
+      const src = o.geometry, n = src.attributes.position.count, geo = new THREE.BufferGeometry(), ao = src.attributes.color, c = o.material.color;
+      geo.setAttribute('position', src.attributes.position.clone()); geo.setAttribute('normal', src.attributes.normal.clone());
+      const col = new Float32Array(n * 3); for (let i = 0; i < n; i++) { const a = ao ? [ao.getX(i), ao.getY(i), ao.getZ(i)] : [1, 1, 1]; col.set([c.r * a[0], c.g * a[1], c.b * a[2]], i * 3); }
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); if (src.index) geo.setIndex(Array.from(src.index.array));
+      geo.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); parts.push(geo);
+    });
+    return mergeGeometries(parts, false);
+  }));
+  return props.get(file);
+}
+/** The rig's skinned geometry with a prop bound rigidly to the grip bone, so holding it costs no extra draw call. */
+async function withProp(rig, [file, euler]) {
+  const skel = rig.mesh.skeleton, bone = skel.bones.findIndex(b => b.name === 'grip_R'); if (bone < 0) return null;
+  const prop = (await loadProp(file)).clone(), n = prop.attributes.position.count;
+  // bind space = inverse(bindMatrix) · bone's bind-pose world matrix · the prop's grip transform
+  prop.applyMatrix4(new THREE.Matrix4().copy(rig.mesh.bindMatrixInverse).multiply(skel.boneInverses[bone].clone().invert()).multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(...euler, 'XYZ'))));
+  prop.setAttribute('aSlot', new THREE.BufferAttribute(new Float32Array(n), 1));
+  const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4); for (let i = 0; i < n; i++) { si[i * 4] = bone; sw[i * 4] = 1; }
+  prop.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); prop.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+  return mergeGeometries([rig.geo, prop], false);
+}
+/** Walking with something in both hands: the legs of Walk and the arms of Carry, as one clip. */
+function carryWalk(rig) {
+  const walk = rig.clips.get('Walk'), carry = rig.clips.get('Carry'); if (!walk || !carry) return;
+  const arm = t => /^(upperarm|forearm|hand|grip)/.test(t.name);
+  rig.clips.set('CarryWalk', new THREE.AnimationClip('CarryWalk', walk.duration, [...walk.tracks.filter(t => !arm(t)), ...carry.tracks.filter(arm)]));
+}
 const idle = () => new Promise(r => (globalThis.requestIdleCallback ?? (f => setTimeout(f, 16)))(() => r(), { timeout: 400 }));
 
 /** Load a rig once: merged skinned template, clips, baked crowd geometries and its scale on our map. */
@@ -149,7 +186,7 @@ export function loadRig(name) {
     pose.scale(rig.k, rig.k, rig.k); pose.translate(0, rig.lift, 0); pose.computeBoundingBox(); pose.computeBoundingSphere();
     rig.tris = tris(rig.geo);
     ms.push(performance.now() - t0); await idle(); t0 = performance.now();
-    rig.near = rig.tris > 3200 ? lighter(pose, 48) : pose;
+    rig.near = rig.tris > 3200 ? lighter(pose, 40) : pose;
     ms.push(performance.now() - t0); await idle(); t0 = performance.now();
     rig.mid = lighter(pose, 16);
     ms.push(performance.now() - t0); rig.ms = ms.map(Math.round);   // main-thread work per step (the longest is what a player could feel)
@@ -157,6 +194,10 @@ export function loadRig(name) {
     for (let i = 0; i < col.length; i += 9) { c.r += col[i]; c.g += col[i + 1]; c.b += col[i + 2]; n++; }
     rig.color = c.multiplyScalar(1 / Math.max(1, n));
     const size = pose.boundingBox.getSize(new THREE.Vector3()); rig.standin = Math.max(size.x, size.z) / 1.1;
+    if (def.tint) {   // people: the walking carry, and the broom, hammer and basket their clips hold
+      carryWalk(rig); rig.variants = {};
+      for (const [clip, prop] of Object.entries(PROPS)) if (rig.clips.has(clip)) rig.variants[clip] = await withProp(rig, prop).catch(() => null);
+    }
     rig.clipFor = want => { for (const c2 of FALLBACK[want] ?? [want, 'Idle']) if (rig.clips.has(c2)) return c2; return [...rig.clips.keys()][0]; };
     loaded.set(name, rig);
     return rig;
@@ -190,6 +231,7 @@ uniform vec3 uHair; uniform vec3 uTop; uniform vec3 uBottom;
 }
 let crowdTint = null;
 
+const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), sphere = new THREE.Sphere();
 const m4 = new THREE.Matrix4(), qt = new THREE.Quaternion(), eu = new THREE.Euler(0, 0, 0, 'YXZ'), v3 = new THREE.Vector3(), s3 = new THREE.Vector3();
 
 /**
@@ -277,7 +319,7 @@ export class Cast {
       a.onceSeen = s.once; const name = rig.clipFor(s.once.clip), act = this.action(a, name);
       act.reset().setLoop(THREE.LoopOnce, 1); act.clampWhenFinished = true; act.timeScale = 1; act.play();
       if (a.current && a.current !== act) a.current.crossFadeTo(act, 0.15, false);
-      a.once = { action: act }; a.current = act; a.clip = null;
+      a.once = { action: act }; a.onceClip = name; a.current = act; a.clip = null;
     }
     if (!a.once) {
       const name = rig.clipFor(s.clip ?? 'Idle');
@@ -290,14 +332,18 @@ export class Cast {
       }
       if (a.current) a.current.timeScale = s.speed ?? 1;
     }
+    const held = a.rig.variants?.[a.once ? a.onceClip : a.clip] ?? a.rig.geo; if (a.mesh.geometry !== held) a.mesh.geometry = held;
     a.mixer.update(dt);
     s.pose?.(a.bones, this.time);
   }
   /** Everyone without an actor, as instances of their rig's baked pose at the camera's level of detail. */
   drawCrowds() {
-    const lod = this.world.cam.lod, count = new Map();
+    const lod = this.world.cam.lod, count = new Map(), cam = this.world.cam.camera;
+    frustum.setFromProjectionMatrix(pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
     for (const s of this.subjects) {
       if (s.actor || s.hidden || s.skinnedOnly || (lod === 2 && s.farHide)) continue;
+      if (!frustum.intersectsSphere(sphere.set(v3.set(s.x, (s.y ?? 0) + 1, s.z), 3))) continue;   // off screen: no triangles
+
       const rig = rigReady(s.rig); if (!rig) continue;
       const c = this.crowd(rig, lod, (count.get(rig) ?? 0) + 1); if (!c) continue;
       const i = count.get(rig) ?? 0; count.set(rig, i + 1);

@@ -210,15 +210,15 @@ export class PeopleView {
     if (!w.route.length) return false;
     const [cx, cz] = w.route[0], tx = (cx + 0.5) * CELL, tz = (cz + 0.5) * CELL, dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), step = speed * dt;
     if (d <= step) { w.x = tx; w.z = tz; w.route.shift(); } else { w.x += dx / d * step; w.z += dz / d * step; this.turnTo(w, Math.atan2(dx, dz), dt); }
-    this.walking(w, speed, w.carry ? 'Carry' : 'Walk');
+    this.walking(w, speed, w.carry ? 'CarryWalk' : 'Walk');
     if (!w.route.length) w.carry = false;
     return true;
   }
-  walking(w, speed, clip = 'Walk') { const r = RIGS[w.body]; w.clip = clip; w.speed = clip === 'Run' ? speed / (r.run ?? r.walk * 2.6) : clip === 'Walk' ? Math.max(0.4, speed / r.walk) : 1; }
+  walking(w, speed, clip = 'Walk') { const r = RIGS[w.body]; w.clip = clip; w.speed = clip === 'Run' ? speed / (r.run ?? r.walk * 2.6) : clip === 'Walk' || clip === 'CarryWalk' ? Math.max(0.4, speed / r.walk) : 1; }
   turnTo(w, want, dt, rate = 8) { const turn = ((want - w.rot) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; w.rot += Math.max(-dt * rate, Math.min(dt * rate, turn)); }
   liveVillager(w, dt, night) {
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
-    const speed = w.kid ? 1.55 : 1.45;
+    const speed = (w.kid ? 1.55 : 1.45) * (night ? 1.5 : 1);   // hurrying home after dark
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
     if (w.visitor) {
       if ((w.wait -= dt) > 0) { this.doing(w, w.stage === 'talking' ? 'Talk' : 'Idle', dt); return; }
