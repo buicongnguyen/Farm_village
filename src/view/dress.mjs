@@ -261,10 +261,19 @@ async function dressVillage(world, game) {
     if (k % 2) items.push([`verge-lamp${k}`, { model: 'deco_lamp', x: (x + 0.5) * CELL, z: 89.4 * CELL, rot: 0 }]);
     else items.push([`verge-tree${k}`, { model: k % 4 ? 'tree_round' : 'tree_blossom', x: (x + 0.5) * CELL, z: 88.7 * CELL, rot: x, scale: 0.85 }]);
   }
+  // stakes and string marking the first cottage plots along the village road (they go when something is built there)
+  if (!world.batches.has('plot_stakes')) {
+    const box = new THREE.BoxGeometry(1, 1, 1), w = 3 * CELL - 0.3, parts = [];
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { parts.push(part(box, '#b07a45', sx * w / 2, 0.35, sz * w / 2, 0, 0.1, 0.7, 0.1), part(box, '#fff4dc', sx * w / 2, 0.73, sz * w / 2, 0, 0.12, 0.08, 0.12)); }
+    for (const [x, z, horiz] of [[0, -w / 2, 1], [0, w / 2, 1], [-w / 2, 0, 0], [w / 2, 0, 0]]) parts.push(part(box, '#f2e6cc', x, 0.55, z, 0, horiz ? w : 0.025, 0.025, horiz ? 0.025 : w));
+    parts.push(part(box, '#e8463c', -w / 2, 0.66, -w / 2 + 0.25, 0, 0.03, 0.18, 0.4));   // a little red flag
+    const geo = merge(parts); world.batches.register('plot_stakes', { geo, kind: 'static', color: averageColor(geo) });
+  }
+  for (let i = 0; i < 6; i++) items.push([`plot-stakes${i}`, { model: 'plot_stakes', x: (33 + 4 * i + 1.5) * CELL, z: (93 + 1.5) * CELL, rot: 0, cells: [[33 + 4 * i, 93], [35 + 4 * i, 95], [34 + 4 * i, 94]] }]);
   // lamps along the north–south road by the homestead
   for (const z of [56, 70, 84]) items.push([`road-lamp${z}`, { model: 'deco_lamp', x: 30.6 * CELL, z: z * CELL, rot: 0 }]);
   const cellsOf = it => [Math.floor(it.x / CELL), Math.floor(it.z / CELL)];
-  const show = () => { for (const [id, it] of items) { const [x, z] = cellsOf(it); if (W.inVillage(x, z) && occupant(game.s, x, z)) world.batches.remove(id); else world.batches.set(id, it); } };
+  const show = () => { for (const [id, it] of items) { const cells = it.cells ?? [cellsOf(it)]; if (cells.some(([x, z]) => W.inVillage(x, z) && occupant(game.s, x, z))) world.batches.remove(id); else world.batches.set(id, it); } };
   show();
   game.on(r => { if (r.events?.some(e => e.type === 'placed' || e.type === 'moved' || e.type === 'stored' || e.type === 'loaded')) show(); });
   world.lamps = items.filter(([, it]) => it.model === 'deco_lamp').map(([id, it]) => ({ id, x: it.x, z: it.z, y: 2.35 }));

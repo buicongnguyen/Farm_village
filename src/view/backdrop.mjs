@@ -10,6 +10,8 @@ import * as THREE from 'three';
 import { toonRamp } from '../kit/toon.mjs';
 import { N, CELL, ROADS, SKIRT, brookCurve } from '../content/world.mjs';
 import { noise, grassTone, MID_TONE } from './ground.mjs';
+import { NEIGHBOURS } from '../content/people.mjs';
+import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
 
 export const MAP = N * CELL;   // 256 m
@@ -98,10 +100,10 @@ export function heightAt(x, z) {
 
 /** Neighbour farms at the four road exits (metres): where the silhouettes stand and the trees keep clear. */
 const FARMS = [
-  { x: 84, z: -44, rot: 0, flag: '#ff5a5f' },        // north: the twins
-  { x: 84, z: MAP + 44, rot: Math.PI, flag: '#ffd23f' }, // south: Mai
-  { x: -44, z: 206, rot: Math.PI / 2, flag: '#8f6bff' }, // west: Gus
-  { x: MAP + 44, z: 206, rot: -Math.PI / 2, flag: '#3fb8ff' }, // east: Priya
+  { id: 'twins', x: 84, z: -44, rot: 0, flag: '#ff5a5f' },
+  { id: 'mai', x: 84, z: MAP + 44, rot: Math.PI, flag: '#ffd23f' },
+  { id: 'gus', x: -44, z: 206, rot: Math.PI / 2, flag: '#8f6bff' },
+  { id: 'priya', x: MAP + 44, z: 206, rot: -Math.PI / 2, flag: '#3fb8ff' },
 ];
 const nearFarm = (x, z, pad = 0) => FARMS.some(f => Math.abs(x - f.x) < 26 + pad && Math.abs(z - f.z) < 22 + pad);
 
@@ -160,8 +162,9 @@ export class Backdrop {
     this.world = world;
     this.material = hazeToon();
     this.group = new THREE.Group(); this.group.name = 'backdrop';
-    this.group.add(this.buildSkirt(), this.buildFarPlane(), this.buildFarms(), ...this.buildTrees());
+    this.group.add(this.buildSkirt(), this.buildFarPlane(), this.buildFarms(), ...this.buildTrees(), ...this.buildNames());
     world.scene.add(this.group);
+    onLanguageChange(() => this.paintNames());
   }
   setHaze(color) { HAZE.value.copy(color); }
   /** The skirt: a grid around the map (fine near the edge, coarse far out), with heights, grass tones and haze. */
@@ -174,7 +177,7 @@ export class Backdrop {
     const forest = new THREE.Color('#3f8a36'), ridge = new THREE.Color('#5c9a52'), grass = new THREE.Color(GROUND_COLORS.grass);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const x = coords[i], z = coords[j], d = outside(x, z), k = (j * n + i) * 3;
-      const y = d > 0 ? heightAt(x, z) : -0.4;
+      const y = d > 0 ? heightAt(x, z) : 0;
       pos[k] = x; pos[k + 1] = y; pos[k + 2] = z;
       // colour: the lawn's tones near the edge, deeper greens on the hills, the road and the brook bank where they run out
       grassTone(x / CELL, z / CELL, t); c.copy(grass).add(t.sub(MID_TONE));
@@ -230,6 +233,36 @@ export class Backdrop {
     }
     this.treeCount = count;
     return [...blocks].map(([key, B]) => { const mesh = new THREE.Mesh(B.build(), this.material); mesh.name = `band-${key}`; return mesh; });
+  }
+  /** Each neighbour's farm name on a pennant-coloured banner by the road, in the player's language. */
+  buildNames() {
+    this.names = [];
+    for (const f of FARMS) {
+      const who = NEIGHBOURS.find(n => n.id === f.id); if (!who?.farm) continue;
+      const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+      const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, fog: false, transparent: true }));
+      const side = new THREE.Vector3(-21, 0, 13).applyAxisAngle(new THREE.Vector3(0, 1, 0), f.rot);
+      sprite.position.set(f.x + side.x, 10.5, f.z + side.z); sprite.scale.set(16, 4, 1); sprite.name = `farm-name-${f.id}`;
+      this.names.push({ sprite, canvas, tex, who, flag: f.flag });
+    }
+    this.paintNames();
+    return this.names.map(n => n.sprite);
+  }
+  paintNames() {
+    for (const n of this.names ?? []) {
+      const g = n.canvas.getContext('2d'); if (!g) continue;
+      const W = n.canvas.width, H = n.canvas.height;
+      g.clearRect(0, 0, W, H);
+      g.fillStyle = 'rgba(60,36,20,0.28)'; g.beginPath(); g.roundRect(10, 16, W - 20, H - 24, 34); g.fill();
+      g.fillStyle = '#fff6e4'; g.beginPath(); g.roundRect(6, 8, W - 20, H - 24, 34); g.fill();
+      g.fillStyle = n.flag; g.beginPath(); g.roundRect(6, 8, 30, H - 24, [34, 0, 0, 34]); g.fill();
+      g.fillStyle = '#5a3a22'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      let size = 54; const label = t(n.who.farm);
+      do { g.font = `800 ${size}px Nunito, system-ui, sans-serif`; size -= 2; } while (g.measureText(label).width > W - 90 && size > 20);
+      g.fillText(label, W / 2 + 12, H / 2 - 4);
+      n.tex.needsUpdate = true;
+    }
   }
   /** Neighbour farms in silhouette at the road exits: barn, silo, field strips, a fence line and a pennant. */
   buildFarms() {

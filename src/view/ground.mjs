@@ -33,6 +33,8 @@ export function grassTone(x, z, out = tone) {
   const warm = noise(x * 0.045 + 31.7, z * 0.045 + 8.2);
   if (t < 0.5) out.copy(TONES[2]).lerp(TONES[1], Math.min(1, t * 2.1)); else out.copy(TONES[1]).lerp(TONES[0], Math.min(1, (t - 0.5) * 1.9));
   out.r += (warm - 0.5) * 0.09; out.b -= (warm - 0.5) * 0.03;
+  // a soft mottle at the scale of a cell or two, so close-up grass is not one flat sheet
+  const m = (noise(x * 0.63 + 5.5, z * 0.63 - 3.1) - 0.5) * 0.1; out.r *= 1 + m * 0.8; out.g *= 1 + m; out.b *= 1 + m * 0.6;
   return out;
 }
 export const MID_TONE = TONES[1];
