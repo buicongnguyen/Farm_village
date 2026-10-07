@@ -402,3 +402,141 @@ def render(path):
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
     return path
+
+
+# ------------------------------------------------- vertex-colour kit pieces (Farm Village AAA pass)
+# The game bakes every root into one geometry with vertex colours (src/view/models.mjs). Pieces made with vc_join()
+# already carry their colours in a COLOR_0 attribute with a single white material, so a root is one primitive in the
+# GLB (smaller files, faster loads) and Blender previews show the same colours.
+def _base_color(m):
+    if m is None or not m.use_nodes:
+        return (1, 1, 1)
+    b = next((n for n in m.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None)
+    if b is None:
+        return (1, 1, 1)
+    c = b.inputs['Base Color'].default_value
+    return (c[0], c[1], c[2])
+
+
+def vc_material():
+    m = bpy.data.materials.get('VC')
+    if m:
+        return m
+    m = bpy.data.materials.new('VC')
+    m.use_nodes = True
+    nt = m.node_tree
+    b = next(n for n in nt.nodes if n.type == 'BSDF_PRINCIPLED')
+    b.inputs['Roughness'].default_value = 0.6
+    a = nt.nodes.new('ShaderNodeVertexColor')
+    a.layer_name = 'Color'
+    nt.links.new(a.outputs['Color'], b.inputs['Base Color'])
+    return m
+
+
+def to_vertex_colors(obj, tint=None):
+    """Paint each face with its material's base colour (linear), then give the mesh the single VC material."""
+    me = obj.data
+    cols = [_base_color(s.material) for s in obj.material_slots] or [(1, 1, 1)]
+    attr = me.color_attributes.get('Color') or me.color_attributes.new('Color', 'FLOAT_COLOR', 'CORNER')
+    for poly in me.polygons:
+        c = cols[min(poly.material_index, len(cols) - 1)]
+        if tint:
+            c = tint(c, poly)
+        for li in poly.loop_indices:
+            attr.data[li].color = (c[0], c[1], c[2], 1.0)
+    me.color_attributes.active_color = attr
+    me.materials.clear()
+    me.materials.append(vc_material())
+    return obj
+
+
+def vc_join(parts, name, tint=None):
+    o = join(parts, name)
+    return to_vertex_colors(o, tint)
+
+
+def leaf(name, base, angle, length, width, material, lift=0.25, droop=0.1, thick=0.03, tilt=0.0):
+    """A small diamond leaf with a raised mid-rib, seen from both sides (8 triangles).
+    base: (x, y, z); angle: direction on the plan; lift: how high the leaf's middle rises; droop: tip drops below it."""
+    bm = bmesh.new()
+    ca, sa = math.cos(angle), math.sin(angle)
+    def at(d, side, h):
+        return bm.verts.new((base[0] + ca * d - sa * side, base[1] + sa * d + ca * side, base[2] + h))
+    b = at(0, 0, 0)
+    t = at(length, 0, lift - droop)
+    l = at(length * .45, width / 2, lift * .8 + tilt)
+    r = at(length * .45, -width / 2, lift * .8 - tilt)
+    u = at(length * .5, 0, lift + thick)
+    d = at(length * .5, 0, lift - thick)
+    for f in ((b, l, u), (l, t, u), (t, r, u), (r, b, u), (b, d, l), (l, d, t), (t, d, r), (r, d, b)):
+        bm.faces.new(f)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _mesh_object(name, bm, material)
+
+
+def spindle(name, r, h, loc, material, sides=4, mid=(0.3, 0.7), lean=(0, 0), twist=0.0):
+    """A faceted grain ear, pod or berry: point, two rings, point (sides * 4 triangles)."""
+    bm = bmesh.new()
+    x, y, z = loc
+    def ring(f, rr):
+        return [bm.verts.new((x + lean[0] * f * h + rr * math.cos(i * math.tau / sides + twist),
+                              y + lean[1] * f * h + rr * math.sin(i * math.tau / sides + twist), z + f * h))
+                for i in range(sides)]
+    bot = bm.verts.new((x, y, z))
+    r1, r2 = ring(mid[0], r), ring(mid[1], r * .85)
+    top = bm.verts.new((x + lean[0] * h, y + lean[1] * h, z + h))
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((bot, r1[j], r1[i]))
+        bm.faces.new((r1[i], r1[j], r2[j], r2[i]))
+        bm.faces.new((r2[i], r2[j], top))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    o = _mesh_object(name, bm, material)
+    for p in o.data.polygons:
+        p.use_smooth = False
+    return o
+
+
+def stalk(name, a, b, r, material, sides=3, rt=None):
+    """A thin open prism from point a to point b (sides * 2 triangles, no caps)."""
+    bm = bmesh.new()
+    A, B = Vector(a), Vector(b)
+    axis = (B - A).normalized()
+    ref = Vector((1, 0, 0)) if abs(axis.x) < .9 else Vector((0, 1, 0))
+    u = axis.cross(ref).normalized()
+    v = axis.cross(u)
+    rt = r * .6 if rt is None else rt
+    lo = [bm.verts.new(A + (u * math.cos(i * math.tau / sides) + v * math.sin(i * math.tau / sides)) * r) for i in range(sides)]
+    hi = [bm.verts.new(B + (u * math.cos(i * math.tau / sides) + v * math.sin(i * math.tau / sides)) * rt) for i in range(sides)]
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((lo[i], lo[j], hi[j], hi[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _mesh_object(name, bm, material)
+
+
+def export_vc(objects, path):
+    """Export joined vertex-colour pieces (and any empties parented to them) as one GLB with COLOR_0."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in objects:
+        obj.select_set(True)
+        for c in obj.children_recursive:
+            c.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_yup=True,
+                              export_apply=True, export_materials='EXPORT', export_extras=False,
+                              export_cameras=False, export_lights=False, export_animations=False,
+                              export_texcoords=False, export_normals=True, export_vertex_color='ACTIVE',
+                              export_all_vertex_colors=False)
+    return os.path.getsize(path)
+
+
+def add_anchor(root, label, loc):
+    """An empty named '<root>.<label>' parented to a joined root at origin; the game reads them as ANCHORS."""
+    e = bpy.data.objects.new(f'{root.name}.{label}', None)
+    e.empty_display_size = .2
+    bpy.context.scene.collection.objects.link(e)
+    e.location = loc
+    e.parent = root
+    return e

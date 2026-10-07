@@ -1,0 +1,160 @@
+{
+ "out": "public/assets/models/farm.glb",
+ "pieces": [
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "chicken",
+   "name": "chicken"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "chick",
+   "name": "chick"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "cow",
+   "name": "cow"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "calf",
+   "name": "calf"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "duck",
+   "name": "duck"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "duckling",
+   "name": "duckling"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "pig",
+   "name": "pig"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "piglet",
+   "name": "piglet"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "dog",
+   "name": "dog"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "pen_fence",
+   "name": "pen_fence"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "pen_gate",
+   "name": "pen_gate"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "feed_trough",
+   "name": "feed_trough"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "water_trough",
+   "name": "water_trough"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "coop",
+   "name": "coop"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "hay_bale",
+   "name": "hay_bale"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "chicken_shelter",
+   "name": "chicken_shelter"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "duck_shelter",
+   "name": "duck_shelter"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "cow_shelter",
+   "name": "cow_shelter"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "pig_shelter",
+   "name": "pig_shelter"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "dog_shelter",
+   "name": "dog_shelter"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "egg",
+   "name": "egg"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "milk",
+   "name": "milk"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "egg_basket",
+   "name": "egg_basket"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "duck_egg",
+   "name": "duck_egg"
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+   "root": "truffle",
+   "name": "truffle"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "goat",
+   "name": "goat"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "kid",
+   "name": "kid"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "goose",
+   "name": "goose"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "gosling",
+   "name": "gosling"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "goat_shelter",
+   "name": "goat_shelter"
+  },
+  {
+   "src": "cute_game/public/assets/models/farm.glb",
+   "root": "goose_shelter",
+   "name": "goose_shelter"
+  }
+ ]
+}
