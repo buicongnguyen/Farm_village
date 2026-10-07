@@ -10,7 +10,7 @@ export const FAMILIES = [
       orders: ['For the street supper on Friday.', 'Bo grew three centimetres this month. He eats like a horse.', 'Testing a recipe from my mother\'s notebook.',
         'A welcome basket for whoever moves in next.', 'I cook when I am happy. I am very happy.'] },
     { id: 'bo', name: 'Bo', role: 'Schoolboy', line: 'Is the school really going to open again? I want a desk by the window!', likes: ['carrot'], kid: true,
-      orders: ['Mum said I could order something! This one!', 'It is for a frog party. Captain is the guest.', 'For my lunchbox. Zara says hers is better.',
+      orders: ['Mum said I could order something! This one!', 'It is for a frog party. Captain is the guest.', 'For my lunchbox. Pip says mine is the best one.',
         'I need it for school. It is important. Really!'] },
   ] },
   { id: 'okafor', name: 'The Okafor family', kids: true, people: [
