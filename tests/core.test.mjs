@@ -502,7 +502,8 @@ test('an old v0.1 save migrates: new fields get defaults, earned hearts stay, a 
   for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known']) delete old[k];
   delete old.today.days; for (const k of ['picked', 'gifts', 'carts']) delete old.stats[k];
   const m = unpack(JSON.stringify(old));
-  assert.equal(m.version, SAVE_VERSION); assert.deepEqual(m.trees, {}); assert.deepEqual(m.mail, []); assert.equal(m.cart, null);
+  assert.equal(m.version, SAVE_VERSION); assert.deepEqual(m.trees, {}); assert.equal(m.cart, null);
+  assert.ok(m.mail.filter(x => !x.read).length <= 2, 'letters already due are filed, the newest two left unread');
   assert.deepEqual(m.village, { milestones: [], decor: [] }); assert.equal(m.today.days, 0); assert.equal(m.stats.picked, 0);
   assert.equal(m.people.lan.hearts, 6.25); assert.deepEqual(m.people.lan.scenes, []);
   tick(m, T0 + 4 * MIN); m.barn.items.bread = 3;

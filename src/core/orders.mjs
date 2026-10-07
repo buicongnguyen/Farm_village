@@ -82,6 +82,7 @@ export const actions = {
     if (i < 0) return ctx.fail('That order is gone');
     if (s.orders.cards[i].story) return ctx.fail('This one is part of the story');
     s.orders.cards.splice(i, 1); (s.orders.pending ??= []).push(now + ORDERS.discardMs);
+    ctx.emit('orderDiscarded', { id });
     return {};
   },
 };

@@ -4,7 +4,7 @@ import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CHAPTERS, BEATS, TUTORIAL, VILLAGE_NAME } from '../src/content/story.mjs';
-import { FAMILIES, VILLAGERS, NEIGHBOURS, REMARK_FACTS, FIRST_ORDER } from '../src/content/people.mjs';
+import { FAMILIES, VILLAGERS, NEIGHBOURS, REMARK_FACTS, FIRST_ORDER, JUNE_TIPS } from '../src/content/people.mjs';
 import { HEART_SCENES, WISHES, ARRIVALS } from '../src/content/hearts.mjs';
 import { LETTERS } from '../src/content/letters.mjs';
 import { BUILDINGS } from '../src/content/buildings.mjs';
@@ -40,8 +40,10 @@ test('every person who can post an order has 4–6 lines in their own voice', ()
   assert.equal(FIRST_ORDER.from, 'ada');
 });
 
-test('heart scenes at 3, 6 and 9 for every resident, with a real reward', () => {
-  for (const p of residents) {
+// everyone who can gain hearts: residents, order posters (orders.mjs adds hearts to the poster) and gift takers
+const heartPeople = [...residents, ...VILLAGERS.filter(v => !v.noOrders || !v.noGifts && !v.family), ...NEIGHBOURS];
+test('heart scenes at 3, 6 and 9 for everyone who can earn hearts, with a real reward', () => {
+  for (const p of heartPeople) {
     const sc = HEART_SCENES[p.id]; assert.ok(sc, `${p.id} has no heart scenes`);
     assert.deepEqual(Object.keys(sc).map(Number), [3, 6, 9]);
     for (const [at, { lines, reward }] of Object.entries(sc)) {
@@ -52,7 +54,7 @@ test('heart scenes at 3, 6 and 9 for every resident, with a real reward', () => 
       else assert.ok(reward.coins > 0, `${p.id} ${at}: no reward`);
     }
   }
-  assert.deepEqual(Object.keys(HEART_SCENES).filter(id => !residents.some(p => p.id === id)), []);
+  assert.deepEqual(Object.keys(HEART_SCENES).filter(id => !heartPeople.some(p => p.id === id)), []);
 });
 
 test('wishes ask for decorations near home, and every family has three arrival lines from its own people', () => {
@@ -69,8 +71,9 @@ test('wishes ask for decorations near home, and every family has three arrival l
 test('letters have unique ids and reachable triggers', () => {
   assert.equal(new Set(LETTERS.map(l => l.id)).size, LETTERS.length);
   for (const l of LETTERS) {
+    for (const w of [l.when, l.also].filter(Boolean)) assert.ok(['chapter', 'hearts', 'level', 'stat', 'count'].includes(w.type), `${l.id}: ${w.type}`);
     const { type, value } = l.when;
-    assert.ok(['chapter', 'hearts', 'level'].includes(type), `${l.id}: ${type}`);
+    if (type === 'count') assert.ok(BUILDINGS[l.when.key], `${l.id}: no building ${l.when.key}`);
     if (type === 'chapter') assert.ok(CHAPTERS.some(c => c.id === value && !c.teaser), `${l.id}: chapter ${value}`);
     if (type === 'hearts') { assert.ok(value >= 1 && value <= 10); assert.ok(residents.some(p => p.id === l.from), `${l.id}: hearts letters come from residents`); }
     if (type === 'level') assert.ok(value >= 2 && value <= 10);
@@ -112,7 +115,7 @@ const has = (s, w) => { const ws = words(s), parts = w.split(' '); return ws.som
 // forms are listed: "bạn" is also "friend", "con" a classifier and "mình" "our", so those are checked as address phrases.
 const YOU_BAN = ['của bạn', 'cho bạn', 'bạn có', 'bạn ơi', 'bạn đã'];
 const NEVER = {
-  ada: ['tôi', ...YOU_BAN, 'của em', 'cho em'], ellis: ['tôi', ...YOU_BAN], june: ['tôi', ...YOU_BAN], pip: ['tôi', 'cháu'],
+  ada: ['tôi', ...YOU_BAN, 'của em', 'cho em'], ellis: ['tôi', ...YOU_BAN], june: ['tôi', ...YOU_BAN], pip: ['tôi', 'cháu', 'tớ'],
   minh: ['tôi', ...YOU_BAN], lan: ['tôi', ...YOU_BAN], grace: ['tôi', ...YOU_BAN], sam: ['tôi', ...YOU_BAN], marisol: ['tôi', ...YOU_BAN],
   tomas: ['tôi', ...YOU_BAN], cora: ['tôi', ...YOU_BAN], olaf: ['tôi', ...YOU_BAN], gus: ['tôi', ...YOU_BAN],
   mai: ['tôi', ...YOU_BAN, 'cháu'], elin: ['tôi', ...YOU_BAN, 'cháu'], bo: ['tôi', ...YOU_BAN], zara: ['tôi', ...YOU_BAN], pia: ['tôi', ...YOU_BAN],
@@ -121,11 +124,12 @@ const unquoted = s => s.replace(/"[^"]*"|“[^”]*”/g, ' ').replace(/bạn �
 const linesBy = () => {
   const out = Object.fromEntries(Object.keys(NEVER).map(id => [id, []]));
   for (const p of Object.values(PEOPLE)) { const l = out[p.id]; if (!l) continue;
-    l.push(p.line, ...(p.orders ?? []), ...(p.tips ?? []), ...(p.tip ? [p.tip] : []), ...(p.idle ?? []), ...(p.arc ?? []).map(a => a.text), ...(p.remarks ?? []).map(r => r.text),
+    l.push(p.line, ...(p.orders ?? []), ...(p.tips ?? []), ...(p.tip ? [p.tip] : []), ...(p.idle ?? []), ...(p.arc ?? []).map(a => a.text), ...(p.remarks ?? []).map(r => r.text), ...(p.comments ?? []),
       ...Object.values(p.says ?? {}).flatMap(e => [e.first, ...e.lines].filter(Boolean))); }
   for (const l of spoken) out[l.who]?.push(l.text);
   for (const l of LETTERS) out[l.from]?.push(l.text);
   for (const [id, list] of Object.entries(WISHES)) out[id].push(...list.map(w => w.text));
+  out.june.push(...Object.values(JUNE_TIPS));
   out.ada.push(FIRST_ORDER.line, ...CHAPTERS.map(c => c.ada), ...TUTORIAL.map(st => st.text));
   return out;
 };

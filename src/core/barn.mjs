@@ -16,7 +16,7 @@ export function held(s) {
 }
 /** What can be used for orders and recipes without touching held goods. */
 export const free = (s, id, honourHold = true) => Math.max(0, stock(s, id) - (honourHold ? held(s)[id] ?? 0 : 0));
-export const hasAll = (s, needs, honourHold = true) => Object.entries(needs).every(([id, n]) => free(s, id, honourHold) >= n);
+export const hasAll = (s, needs, honourHold = true) => Object.entries(needs).every(([id, n]) => Number.isFinite(n) && n > 0 && free(s, id, honourHold) >= n);
 export function take(s, needs, honourHold = true) {
   if (!hasAll(s, needs, honourHold)) return false;
   for (const [id, n] of Object.entries(needs)) { s.barn.items[id] -= n; if (!s.barn.items[id]) delete s.barn.items[id]; }

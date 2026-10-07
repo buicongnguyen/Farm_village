@@ -69,6 +69,8 @@ export const actions = {
   claimGift(ctx) {
     const { s } = ctx; if (s.today.claimed) return ctx.fail('Come back tomorrow for a new gift');
     const g = GIFTS[s.today.giftDay];
+    // the gift waits (it is not lost) while the barn has no room for all of it
+    if (Object.values(g.goods ?? {}).reduce((a, b) => a + b, 0) > barn.space(s)) return ctx.fail('The barn is full');
     if (g.coins) s.coins += g.coins;
     for (const [id, n] of Object.entries(g.goods ?? {})) barn.add(s, id, n);
     for (const [kind, n] of Object.entries(g.stored ?? {})) s.stored[kind] = (s.stored[kind] ?? 0) + n;

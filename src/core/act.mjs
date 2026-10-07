@@ -36,10 +36,12 @@ export function act(s, action, payload = {}, now = Date.now()) {
   if (!handler) return { ok: false, reason: 'Unknown action', events: [] };
   // Every handler checks everything before it changes anything, so a refused action leaves no trace
   // (tests/act.test.mjs checks this for every action).
-  const ctx = context(s, now);
+  const ctx = context(s, now), step = s.projects.step;
   const out = handler(ctx, payload ?? {}) ?? {};
   if (out.ok === false) return { ...out, events: [] };
   advance(ctx); tickCart(ctx); afterAction(ctx);
+  // a finished project step cannot be undone: undoing its building would refund the price and keep the step done
+  if (s.projects.step !== step) s.undo = [];
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { ok: true, ...out, events: ctx.events };

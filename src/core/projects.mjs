@@ -48,6 +48,7 @@ export function advance(ctx) {
   const { s } = ctx;
   while (currentStep(s) && currentStep(s).done(s)) {
     const step = currentStep(s); s.projects.step++; s.projects.delivered = {};
+    (s.firsts ??= {})[`project:${step.id}`] ??= ctx.now;   // stamped here, so the cart (the day after the school) sees it in the same action
     gainXp(ctx, XP.build * 4); ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });
   }
 }

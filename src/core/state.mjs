@@ -73,6 +73,7 @@ export function withDefaults(s) {
   for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes']) if (s[k] === undefined) s[k] = fresh[k];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.stats = { ...fresh.stats, ...s.stats };
+  s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };
   s.village.milestones ??= []; s.village.decor ??= [];
   for (const b of Object.values(s.people)) b.scenes ??= [];

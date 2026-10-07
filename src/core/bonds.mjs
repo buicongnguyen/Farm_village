@@ -119,12 +119,17 @@ export function chapterReached(s) {
   for (const ch of CHAPTERS) { try { if (ch.id > c && ch.when?.(s)) c = ch.id; } catch { /* a chapter test that needs more state */ } }
   return c;
 }
-export function letterDue(s, letter, chapter = null) {
-  const w = letter.when ?? {};
+const statOf = (s, key) => key.split('.').reduce((o, k) => o?.[k], s.stats) ?? 0;
+function whenDue(s, w, from, chapter) {
   if (w.type === 'level') return s.level >= w.value;
   if (w.type === 'chapter') return (chapter ?? chapterReached(s)) >= w.value;
-  if (w.type === 'hearts') return heartsOf(s, w.person ?? letter.from) >= w.value;
+  if (w.type === 'hearts') return heartsOf(s, w.person ?? from) >= w.value;
+  if (w.type === 'stat') return statOf(s, w.key) >= w.value;
+  if (w.type === 'count') return (s.counts?.[w.key] ?? 0) >= w.value;
   return false;
+}
+export function letterDue(s, letter, chapter = null) {
+  return whenDue(s, letter.when ?? {}, letter.from, chapter) && (!letter.also || whenDue(s, letter.also, letter.from, chapter));
 }
 /** Post every letter that is due and not sent yet (newest first in s.mail). */
 export function postLetters(ctx) {
@@ -159,11 +164,12 @@ export function afterAction(ctx) {
   if (events.some(e => CHARM_EVENTS.has(e.type))) checkCharm(ctx);
   postLetters(ctx);
 }
+const charmChecked = new WeakSet();
 export function tickBonds(ctx) {
   const events = [...ctx.events];
   refreshWishes(ctx);
-  // charm also once a day, so a save from before the milestones catches up
-  if (events.some(e => CHARM_EVENTS.has(e.type) || e.type === 'newDay' || e.type === 'loaded')) checkCharm(ctx);
+  // charm also once a day, and on the first tick of every state (a save from before the milestones catches up on load)
+  if (!charmChecked.has(ctx.s) || events.some(e => CHARM_EVENTS.has(e.type) || e.type === 'newDay')) { charmChecked.add(ctx.s); checkCharm(ctx); }
   postLetters(ctx);
 }
 
@@ -177,6 +183,7 @@ export const actions = {
     if (!barn.take(s, { [good]: 1 })) return ctx.fail('Missing goods');
     const liked = (p.likes ?? []).includes(good);
     bondOf(s, person).giftDay = dayKey(now); s.stats.gifts = (s.stats.gifts ?? 0) + 1;
+    if (liked) (s.stats.liked ??= {})[person] = (s.stats.liked[person] ?? 0) + 1;   // a letter may thank them for it
     ctx.emit('gifted', { person, good, liked });
     addHearts(ctx, person, liked ? BONDS.giftLiked : BONDS.gift, 'gift');
     return { liked };

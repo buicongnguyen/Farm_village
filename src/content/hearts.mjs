@@ -2,7 +2,7 @@
 // them; the bonds panels (ui package) show them in the chapter-card layout.
 //
 // HEART_SCENES[personId][3 | 6 | 9] = { lines: [{ who, text } × 3], reward: { decor: kind } | { coins: n } }
-//   Every resident family member has all three. `who` is a person id from people.mjs. The player never speaks.
+//   Every resident family member, and every villager or neighbour who earns hearts (Ada, Cora, Mai, Gus), has all three. `who` is a person id from people.mjs. The player never speaks.
 // WISHES[personId] = [{ text, need: { kind, near: 'home' } }]
 //   A small, visible wish: a decoration of that kind placed near the person's cottage grants it.
 // ARRIVALS[familyId] = [{ who, text } × 3]: what the family says on the day they move in.
@@ -167,6 +167,64 @@ export const HEART_SCENES = {
       ['pia', 'I can count to a thousand now! Do you want to hear?'],
       ['marisol', 'Please say no. We will be here until dinner.'],
       ['pia', 'Okay. Then here is a tree. It is one tree. That is easy to count.']),
+  },
+  // ── Villagers and neighbours who post orders (they earn hearts too) ──
+  // Ada's scenes carry the Ellis thread; Gus's carry the lost Harvest Festival.
+  ada: {
+    3: scene({ decor: 'flowerpot' },
+      ['ada', 'I found Ellis\'s old hat in the shed. It still smells of pipe smoke and brook water.'],
+      ['pip', 'Can I wear it? I will be careful. Mostly.'],
+      ['ada', 'It fits you better than it ever fitted him. Here, a flowerpot for the porch. He made it.']),
+    6: scene({ decor: 'bench' },
+      ['ada', 'Ellis wrote. He says the fish are thin and the brook runs low. He does not say when he is coming home.'],
+      ['june', 'He will come, Ada. He always does.'],
+      ['ada', 'I know, dear. I set his place at the table anyway. Sit with me a while.']),
+    9: scene({ decor: 'street_lamp' },
+      ['ada', 'When you came, the house was dark and the weeds were up to the windows.'],
+      ['ada', 'Now look. Lights on Brook Lane, bread in the oven, children on the hill.'],
+      ['ada', 'Ellis kept a lamp for the day Hollowbrook came home. I think that day is today.']),
+  },
+  cora: {
+    3: scene({ decor: 'flowers' },
+      ['cora', 'Bo asked me today why the sky is blue. Then why the brook is brown. Then why Gus is grumpy.'],
+      ['bo', 'She did not know the last one!'],
+      ['cora', 'Nobody does, Bo. Some flowers for your gate, from the class garden.']),
+    6: scene({ decor: 'bench' },
+      ['cora', 'I found the old school register in a cupboard. Ada is in it. So is Ellis, and so is Gus.'],
+      ['cora', 'Gus was marked late every single day. Every one.'],
+      ['cora', 'I have framed the page. A bench for your farm, so the late ones have somewhere to rest.']),
+    9: scene({ decor: 'fountain' },
+      ['cora', 'The class wrote a play about Hollowbrook. Pip is the brook. Zara is the mill. Bo is a very loud hen.'],
+      ['zara', 'I wrote most of it. Bo wrote the clucking.'],
+      ['cora', 'You are in it too, as the farmer who brought the village home. A fountain, from all of us.']),
+  },
+  mai: {
+    3: scene({ decor: 'hay_bale' },
+      ['mai', 'My ducks have walked all the way to your brook again. I think they like your farm better.'],
+      ['mai', 'Traitors, all of them. Well, I cannot blame them.'],
+      ['mai', 'Here is a hay bale from Lotus Farm. The hens can argue over it.']),
+    6: scene({ decor: 'bush' },
+      ['mai', 'My grandmother and Ada traded eggs for jam across that fence. Every Sunday for thirty years.'],
+      ['ada', 'Her plum jam was terrible. I never told her.'],
+      ['mai', 'She knew! She said your eggs were small. A bush from my garden, to keep the Sundays going.']),
+    9: scene({ decor: 'scarecrow' },
+      ['mai', 'I am entering my ducks in the Harvest Festival, if it ever comes back. They will need a rival.'],
+      ['pip', 'We will enter Cloud and Drizzle! They can do tricks. One trick.'],
+      ['mai', 'Then it is war. A friendly war. Take this scarecrow. It only scares my ducks a little.']),
+  },
+  gus: {
+    3: scene({ decor: 'picket' },
+      ['gus', 'Hmph. Brought you some fence posts. Yours lean.'],
+      ['gus', 'Do not look at me like that. I had spare ones. That is all.'],
+      ['ada', 'Gus, carrying fence posts for a neighbour. Ellis will never believe it.']),
+    6: scene({ decor: 'bench' },
+      ['gus', 'Found an old poster in my barn. The last Harvest Festival. I won the bread prize that year.'],
+      ['gus', 'Ada came second. She has never forgiven me.'],
+      ['ada', 'He used my oven, dear. My oven. Sit down, Gus, before you fall over from pride.']),
+    9: scene({ decor: 'tree' },
+      ['gus', 'The festival stopped the year the mill closed. Somebody should start it again.'],
+      ['gus', 'Not me. I am too old. You, maybe. With Ada. I would bring bread.'],
+      ['ada', 'Did you hear that? Gus wants a festival. Write it down before he takes it back.']),
   },
 };
 

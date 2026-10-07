@@ -83,7 +83,7 @@ export const actions = {
   trade(ctx, { id, accept }) {
     const { s } = ctx, n = s.neighbours[id], t = n?.trade;
     if (!t || t.state !== 'open') return ctx.fail('No trade today');
-    if (!accept) { t.state = 'declined'; return { declined: true }; }
+    if (!accept) { t.state = 'declined'; ctx.emit('tradeDeclined', { id }); return { declined: true }; }
     if (!barn.hasAll(s, t.wants)) return ctx.fail('Missing goods');
     const incoming = Object.values(t.gives)[0] - Object.values(t.wants)[0];
     if (incoming > barn.space(s)) return ctx.fail('The barn is full');

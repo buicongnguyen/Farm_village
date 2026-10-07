@@ -48,14 +48,14 @@ export const BEATS = [
     { who: 'ada', text: 'That is the first wheat this farm has sold in eleven years. Keep going, dear.' },
     { who: 'pip', text: 'Can we have bread for dinner? With jam?' },
   ] },
-  // cottage 2 is built: the Okafors are on their way
-  { id: 'okafors-coming', chapter: 3, when: s => (s.counts.cottage ?? 0) >= 2, lines: [
-    { who: 'ada', text: 'The second family is Sam Okafor\'s! He delivered our post on a red bicycle when he was a boy.' },
+  // the Trans have moved in and the second cottage is the next project: the Okafors are the family that asks for it
+  { id: 'okafors-coming', chapter: 3, when: s => s.projects.step >= step('cottage2') && arrivedFamilies(s) >= 1, lines: [
+    { who: 'ada', text: 'The next family is Sam Okafor\'s! He delivered our post on a red bicycle when he was a boy.' },
     { who: 'ada', text: 'He has a vet for a wife now, and a daughter who reads everything.' },
     { who: 'pip', text: 'A girl? Does she like frogs? Bo has a frog.' },
   ] },
-  // the five loaves for the Okafors' first week are delivered
-  { id: 'welcome-bread', chapter: 3, when: s => s.projects.step > step('cottage2') || (s.projects.step === step('cottage2') && (s.projects.delivered?.bread ?? 0) >= 5), lines: [
+  // the five loaves for the Okafors' first week are delivered (always after Ada has said who they are)
+  { id: 'welcome-bread', chapter: 3, when: s => !!s.story.beats?.includes('okafors-coming') && (s.projects.step > step('cottage2') || (s.projects.step === step('cottage2') && (s.projects.delivered?.bread ?? 0) >= 5)), lines: [
     { who: 'lan', text: 'Five loaves for the Okafors! I tied a ribbon round each one.' },
     { who: 'ada', text: 'That is how Hollowbrook used to welcome people. Bread on the doorstep.' },
     { who: 'pip', text: 'I ate the end of one. Just the end.' },

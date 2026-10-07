@@ -32,7 +32,7 @@ export const actions = {
   collectProducts(ctx, { building } = {}) {
     const { s, now } = ctx; let got = 0, full = false;
     for (const id of building ? [building] : Object.keys(s.production)) {
-      const q = queueOf(s, id);
+      const q = s.production[id]; if (!q) continue;   // read only: a refusal leaves no trace
       while (q.queue.length && q.queue[0].doneAt <= now) {
         const rid = q.queue[0].recipe, r = RECIPES[rid];
         if (barn.space(s) < r.makes) { full = true; break; }
@@ -46,11 +46,13 @@ export const actions = {
   },
   /** Buy one more queue slot: { building }. */
   buySlot(ctx, { building }) {
-    const { s } = ctx, q = queueOf(s, building), cost = SLOTS.cost[q.slots];
+    const { s } = ctx;
     if (!s.placed[building] || !BUILDINGS[s.placed[building].kind].produces) return ctx.fail('This building makes nothing');
+    const q = queueOf(s, building), cost = SLOTS.cost[q.slots];
     if (q.slots >= SLOTS.max || cost == null) return ctx.fail('No more slots');
     if (s.coins < cost) return ctx.fail('Not enough coins');
     s.coins -= cost; q.slots++;
+    ctx.emit('slotBought', { building, slots: q.slots });
     return { slots: q.slots };
   },
 };

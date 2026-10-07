@@ -44,6 +44,7 @@ test('the weekly cart and fruit trees keep every level within ±10 % and never s
     for (const [l, h] of Object.entries(without.levels)) if (r.levels[l] != null) assert.ok(near(r.levels[l], h), `${p} level ${l}: ${r.levels[l]} h with, ${h} h without`);
     assert.ok(Object.keys(r.levels).length >= Object.keys(without.levels).length - 1, `${p} reached fewer levels`);
   }
-  assert.ok(runs.steady.s.stats.carts >= 3, `steady sent ${runs.steady.s.stats.carts} carts in two weeks`);
+  // the first cart comes the day after the school opens (ECONOMY 3.1), so a steady fortnight sends two or more
+  assert.ok(runs.steady.s.stats.carts >= 2, `steady sent ${runs.steady.s.stats.carts} carts in two weeks`);
   assert.ok(runs.steady.s.stats.picked > 0, 'steady picked no fruit');
 });

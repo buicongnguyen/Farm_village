@@ -25,7 +25,7 @@ export const FAMILIES = [
         'Mum says I can have a treat when I finish chapter nine. I finished it.', 'For Bo. He lost our race, so I am being nice.'] },
   ] },
   { id: 'lindqvist', name: 'The Lindqvist family', kids: false, people: [
-    { id: 'elin', name: 'Elin', role: 'Painter', line: 'Your fields look like a quilt from the hill. I might paint them.', likes: ['flowers'],
+    { id: 'elin', name: 'Elin', role: 'Painter', line: 'Your fields look like a quilt from the hill. I might paint them.', likes: ['peach'],
       orders: ['A still-life study. I will eat the model afterwards.', 'Painting all day makes me forget to eat.', 'For a picnic on the hill at sunset.',
         'Food for the painters\' club. Two members so far.'] },
     { id: 'olaf', name: 'Olaf', role: 'Retired sailor', line: 'The brook is no sea, but it sings just as sweetly.', likes: ['corn'],
@@ -132,3 +132,13 @@ export const ORDER_LINES = [
 ];
 /** The tutorial's first order (DESIGN 15). */
 export const FIRST_ORDER = { from: 'ada', need: { wheat: 6 }, coins: 20, xp: 8, line: 'My first loaf in years! Six wheat, please.' };
+
+// June's tips when something needs doing now (view/people-view.mjs picks the key); she says them as mình to the player.
+export const JUNE_TIPS = {
+  harvest: 'Your crops are ready. Tap a bed and drag across the others to harvest them all.',
+  plant: 'Empty beds earn nothing. Tap one, choose a crop, and drag across the rest.',
+  collect: 'The animals have something for you. Tap their home to collect it.',
+  feed: 'The animals are hungry. Make feed at the feed mill, then tap their home.',
+  orders: 'Check the order board. Someone may want what is already in the barn.',
+  project: 'Open the projects to see what the village needs next.',
+};

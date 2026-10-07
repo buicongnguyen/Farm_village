@@ -8,6 +8,7 @@
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
+const { JUNE_TIPS } = PEOPLE_DATA;
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CROPS, ANIMALS } from '../content/goods.mjs';
@@ -46,14 +47,6 @@ const PIP_LINES = {
   orderFilled: ['Ada says a thank you is the best payment. Coins are nice too.'],
   levelUp: ['Level up! Does that mean I get a bigger room?'],
   projectDone: ['Hooray! Everyone come and look!'],
-};
-const JUNE_TIPS = {
-  harvest: 'Your crops are ready. Tap a bed and drag across the others to harvest them all.',
-  plant: 'Empty beds earn nothing. Tap one, choose a crop, and drag across the rest.',
-  collect: 'The animals have something for you. Tap their home to collect it.',
-  feed: 'The animals are hungry. Make feed at the feed mill, then tap their home.',
-  orders: 'Check the order board. Someone may want what is already in the barn.',
-  project: 'Open the projects to see what the village needs next.',
 };
 const one = list => Array.isArray(list) ? list[Math.floor(Math.random() * list.length)] : list ?? null;
 const villager = id => VILLAGERS.find(p => p.id === id);

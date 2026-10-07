@@ -3,15 +3,18 @@
 //   { type: 'chapter', value: n }  when chapter card n has been seen (s.story.chapter >= n)
 //   { type: 'hearts',  value: n }  when the sender (`from`) has n hearts or more
 //   { type: 'level',   value: n }  when the farm reaches level n
+//   { type: 'stat',    key, value } when s.stats[key] >= value (a dotted key reads deeper: 'liked.sam')
+//   { type: 'count',   key, value } when s.counts[key] >= value (how many of a kind are built)
+// `also` is a second test of the same shape that must pass too. Every letter only names what has really happened by then.
 // Ellis is away upriver all through v0.1: his letters are the only way the player meets him (and set up fishing in v0.2).
 export const LETTERS = [
   { id: 'ellis-1', from: 'ellis', when: { type: 'chapter', value: 1 },
     text: 'Sorry I was not at the gate. Gone fishing upriver. Back when the fish say so. Mind Ada\'s knees and the hens\' feelings. -E' },
-  { id: 'ada-1', from: 'ada', when: { type: 'level', value: 2 },
+  { id: 'ada-1', from: 'ada', when: { type: 'stat', key: 'ordersFilled', value: 1 },
     text: 'You sold your first wheat today. I watched from the window and cried into the teapot. Silly old thing. Love, Ada' },
   { id: 'mai-1', from: 'mai', when: { type: 'chapter', value: 2 },
     text: 'Welcome to the valley! Those two hens were Pancake and Biscuit, but I hear Pip renamed them. Quite right. Come to Lotus Farm for tea! Love, Mai' },
-  { id: 'gus-1', from: 'gus', when: { type: 'level', value: 3 },
+  { id: 'gus-1', from: 'gus', when: { type: 'count', key: 'fence', value: 1 }, also: { type: 'stat', key: 'harvested', value: 1 },
     text: 'To the new farmer. Your fence is crooked. Your wheat is fine. Do not let it go to your head. -Gus' },
   { id: 'ellis-2', from: 'ellis', when: { type: 'chapter', value: 3 },
     text: 'The fish upriver are thin this year, and the brook runs lower than it should. Someone has been busy at the old sluice. I am looking into it. Tell Ada I am eating properly. -E' },
@@ -19,7 +22,7 @@ export const LETTERS = [
     text: 'I sat on the porch tonight and listened to children laughing on Brook Lane. Ellis would say I have gone soft. He would be right. Love, Ada' },
   { id: 'lan-1', from: 'lan', when: { type: 'hearts', value: 3 },
     text: 'My welcome bread, for your recipe box: three wheat, a pinch of salt, and a neighbour to share it with. -Lan' },
-  { id: 'sam-1', from: 'sam', when: { type: 'hearts', value: 3 },
+  { id: 'sam-1', from: 'sam', when: { type: 'hearts', value: 3 }, also: { type: 'stat', key: 'liked.sam', value: 1 },
     text: 'Hand-delivered by me, to you, from me. Thank you for the pumpkins. The long way home smells of pie now. -Sam' },
   { id: 'zara-1', from: 'zara', when: { type: 'hearts', value: 3 },
     text: 'Dear farmer, I am writing you a letter because I can. I can do joined-up writing too. Look: Zara. -Zara, age 8' },

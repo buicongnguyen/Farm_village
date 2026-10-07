@@ -5,7 +5,7 @@ import { N, FARM, PARCEL } from '../content/world.mjs';
 import { CELL_TYPES, overgrow } from './state.mjs';
 import * as grid from './grid.mjs';
 import { mayBuild, projectCost, advance } from './projects.mjs';
-import { gainXp } from './levels.mjs';
+import { gainXp, xpFor } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
 import { plantTree } from './trees.mjs';
 
@@ -18,6 +18,8 @@ const count = (s, kind, d) => { s.counts[kind] = Math.max(0, (s.counts[kind] ?? 
 /** The undo stack (DESIGN 4.4): the last 10 build actions, refunded on undo, cleared when build mode ends. */
 const UNDO_MAX = 10;
 const remember = (s, entry) => { (s.undo ??= []).push(entry); if (s.undo.length > UNDO_MAX) s.undo.shift(); };
+const staleUndo = (s, e) => e.type === 'cell' ? grid.cellType(s, e.x, e.z) !== e.kind
+  : e.type === 'edge' ? s.fences[grid.edgeKey(e.x, e.z, e.side)] !== e.kind : !s.placed[e.id];
 /** Everything in the state that belongs to a placed item (crops, animals, queue, family) moves or goes with it. */
 const CONTENTS = ['beds', 'animals', 'production', 'homes', 'trees'];
 
@@ -49,13 +51,16 @@ export const actions = {
     s.coins -= price; if (fromStore) s.stored[kind]--;
     if (def.cell) { setCell(s, x, z, def.cell); if (kind === 'path') s.stats.paths++; count(s, kind, 1); remember(s, { type: 'cell', kind, x, z, price }); ctx.emit('cellChanged', { x, z }); advance(ctx); return { price }; }
     const id = `p${s.nextId++}`;
-    remember(s, { type: 'place', kind, id, price, fromStore });
     s.placed[id] = { kind, x, z, rot };
     if (def.tills) setCell(s, x, z, 'tilled');
     count(s, kind, 1); grid.touch(s);
     if (def.home) arriveNext(ctx, id);
     if (def.fruit) plantTree(s, id, now);
-    if (def.cost || def.project) gainXp(ctx, XP.build);
+    // Build XP once per new high-water count of a kind: placing what was undone or stored again pays nothing,
+    // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.
+    const built = (s.stats.built ??= {}); let xp = 0;
+    if ((def.cost || def.project) && s.counts[kind] > (built[kind] ?? 0)) { built[kind] = s.counts[kind]; xp = XP.build; gainXp(ctx, xp); }
+    remember(s, { type: 'place', kind, id, price, fromStore, xp });
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
     return { id, price };
@@ -72,23 +77,27 @@ export const actions = {
   },
   /** Undo the last build action and give its price back. */
   undo(ctx) {
-    const { s } = ctx, e = s.undo?.[s.undo.length - 1];
-    if (!e) return ctx.fail('Nothing to undo');
+    const { s } = ctx, list = s.undo ?? [];
+    // entries whose thing is gone already (lifted, removed, stored) are skipped; if nothing valid is left, nothing changes
+    let top = list.length - 1; while (top >= 0 && staleUndo(s, list[top])) top--;
+    if (top < 0) return ctx.fail('Nothing to undo');
+    list.length = top + 1;
+    const e = list[top];
     if (e.type === 'cell') {
-      if (grid.cellType(s, e.x, e.z) !== e.kind) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
       if (grid.occupant(s, e.x, e.z)) return ctx.fail('Something stands on it now');
       setCell(s, e.x, e.z, 'grass'); count(s, e.kind, -1); if (e.kind === 'path') s.stats.paths = Math.max(0, s.stats.paths - 1);
       ctx.emit('cellChanged', { x: e.x, z: e.z });
     } else if (e.type === 'edge') {
-      const key = grid.edgeKey(e.x, e.z, e.side); if (s.fences[key] !== e.kind) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
+      const key = grid.edgeKey(e.x, e.z, e.side);
       delete s.fences[key]; count(s, e.kind, -1); ctx.emit('fenceChanged', { x: e.x, z: e.z, side: e.side, kind: null });
     } else {
-      const p = s.placed[e.id]; if (!p) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
+      const p = s.placed[e.id];
       if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
       for (const k of CONTENTS) delete s[k]?.[e.id];
       delete s.placed[e.id]; count(s, p.kind, -1); grid.touch(s);
       if (e.fromStore) s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
+      if (e.xp) { s.xp = Math.max(xpFor(s.level), s.xp - e.xp); s.stats.built[p.kind] = Math.max(0, (s.stats.built?.[p.kind] ?? 1) - 1); }   // levels never go down
       ctx.emit('stored', { id: e.id, kind: p.kind });
     }
     s.undo.pop(); s.coins += e.price;
@@ -149,6 +158,7 @@ export const actions = {
   },
   /** Buy a parcel next to land you own: { parcel: "px,pz" }. */
   buyParcel(ctx, { parcel }) {
+    if (typeof parcel !== 'string') return ctx.fail('Unknown land');
     const { s } = ctx, [px, pz] = parcel.split(',').map(Number);
     if (!(px >= 0 && pz >= 0 && px < FARM.parcels && pz < FARM.parcels)) return ctx.fail('Unknown land');
     if (s.parcels.includes(parcel)) return ctx.fail('You own this land already');
