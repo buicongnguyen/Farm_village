@@ -104,7 +104,7 @@ then P7. Each package is committed when its tests pass.
 
 | Date | What happened | Commit |
 |---|---|---|
-| 2026-10-07 | The user played v0.1 and asked for a pre-built, restore-style start, gentle decay, a market with transport, starting money, a neater phone UI, a household of three with helping children, and neighbours who sometimes fix things. Plan written. | (this commit) |
+| 2026-10-07 | The user played v0.1 and asked for a pre-built, restore-style start, gentle decay, a market with transport, starting money, a neater phone UI, a household of three with helping children, and neighbours who sometimes fix things. Plan written. | 3c97708 |
 | 2026-10-07 | The user asked to reuse the reference game's people shapes and item art: added to P4 (varied people) and the icon list. P1/P2 rules started (start layout data, road ring, repair/wear numbers). | 3206747 |
-| 2026-10-07 | P1, P2 and most of P5 built: the restored village, repair/wear/demolish/farmhouse, the restore first session (Ada harvest → order → repair mill and coop → fence → hens → feed → repair a cottage), pace on the restored start (school day 8 / 3 / 2 for casual / steady / keen). 109 unit tests, 6 new browser checks, all suites green. | (this commit) |
+| 2026-10-07 | P1, P2 and most of P5 built: the restored village, repair/wear/demolish/farmhouse, the restore first session (Ada harvest → order → repair mill and coop → fence → hens → feed → repair a cottage), pace on the restored start (school day 8 / 3 / 2 for casual / steady / keen). 109 unit tests, 6 new browser checks, all suites green. | 3c97708 |
 | 2026-10-07 | Before this plan: the AAA pass (v0.2: art, world, juice, cast, story, play and ui packages) was merged and deployed. | a57b43d |
