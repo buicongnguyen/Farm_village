@@ -11,16 +11,16 @@ import * as W from '../content/world.mjs';
 // Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
 // value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
 export const GROUND_COLORS = {
-  grass: '#5fbf3a', meadow: '#79cf48', wildMeadow: '#62b83c', path: '#e2b56b', road: '#d9a55e', tilled: '#7a4a2a',
-  water: '#2f86c4', bank: '#d8bf86', plaza: '#cfae7c', weeds: '#6cb83e', rock: '#5fbf3a',
+  grass: '#74d043', meadow: '#8ee052', wildMeadow: '#6cc63e', path: '#f0c070', road: '#e6ab62', tilled: '#7a4a2a',
+  water: '#2f86c4', bank: '#d8bf86', plaza: '#cfae7c', weeds: '#7ac545', rock: '#74d043',
 };
 const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza]);
 const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.8, [GROUND_COLORS.road]: 0.82, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86 };
 
 /** Fixed scenery models, by kit: [name in kit, our name, size, kind]. */
 const SCENERY = [
-  ['scenery', 'tree_round', 'tree_round', { height: 5 }, 'tree'], ['scenery', 'tree_pine', 'tree_pine', { height: 6 }, 'tree'],
-  ['scenery', 'tree_blossom', 'tree_blossom', { height: 4.5 }, 'tree'], ['scenery', 'bush', 'bush', { width: 1.6 }, 'crop'],
+  ['farm-kit', 'cute_round', 'tree_round', { height: 5 }, 'tree'], ['farm-kit', 'cute_pine', 'tree_pine', { height: 6 }, 'tree'],
+  ['farm-kit', 'cute_blossom', 'tree_blossom', { height: 4.8 }, 'tree'], ['scenery', 'bush', 'bush', { width: 1.6 }, 'crop'],
   ['scenery', 'flowers', 'flowers', { width: 1.2 }, 'crop'], ['scenery', 'rock', 'rock', { width: 1.4 }, 'crop'],
   ['scenery', 'tuft', 'tuft', { width: 0.8 }, 'crop'],
   ['rural-lite', W.FARMHOUSE.model, 'farmhouse', { width: W.FARMHOUSE.width }, 'static'], ['rural-lite', W.BARN.model, 'barn', { width: W.BARN.width }, 'static'],
@@ -45,7 +45,7 @@ export class WorldView {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     this.renderer.setSize(innerWidth, innerHeight);
     container.appendChild(this.renderer.domElement);
-    this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#9fd3f0');
+    this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#a9ddf4');
     // haze at extreme zoom-out only (the camera sits 300 m from its target); daylight retints it with the sky
     this.scene.fog = new THREE.Fog('#bfe3f2', 345, 720);
     this.lights = addLights(this.scene);

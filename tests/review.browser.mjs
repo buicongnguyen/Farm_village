@@ -10,7 +10,8 @@ const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isM
 const results = [];
 async function open(device = PHONE, { intro = false, query = '?new', before } = {}) {   // ?new in a test build: the empty field (a fresh public game opens on the restored village)
   const ctx = await browser.newContext(device), page = await ctx.newPage(), errors = [];
-  page.on('pageerror', e => errors.push(e.message));
+  page.on('pageerror', e => errors.push(e.message + ' @ ' + (e.stack || '').split('
+').slice(1, 4).join(' | ')));
   page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   if (before) await before(page, ctx);
   await page.goto(URL_ + query);

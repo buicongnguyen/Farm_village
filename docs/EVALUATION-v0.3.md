@@ -35,3 +35,27 @@ The fence rule is gone (hens just need their coop repaired), a full barn sells t
 
 ## Update (v0.3d)
 Built from the list above: goals and favours, the weekly goal and daily hurry, Ellis's trail and festival, fish and fruit albums, player customisation (name, figure, shirt) and a migration for old saves. Still open: playtesting the pace with real sessions.
+
+## Fun, feel and stress (v0.3e)
+Judged by thinking through a 10-minute session, not by a live playtest.
+
+**What feels good now:** quick crops and goods, coins over ripe things, one "Next" chip, goals that pay, a barn that never traps you, gentle wear, no loss while away.
+
+**Where repeated work still tires:**
+1. Every bed is its own tap: harvest, then sow, six to thirty times per round. This is the biggest source of repetition.
+2. Hens need feeding and collecting every 45 s, and each building has its own queue to refill.
+3. Orders refresh every minute, so the board keeps nagging; a stale card is a small stress.
+4. With 20 s crops the best play is to stay glued to the screen; stepping away feels like waste.
+5. Waiting is invisible: there is no "everything is busy, relax" state, so the player never gets to rest or admire the farm.
+
+**Done in this round**
+- **June and Pip lend a hand** (from level 3, while the game is open): every two minutes June brings in up to four ripe beds and sows the same crop again, and Pip fetches up to three eggs or milk. Nothing happens while you are away.
+- **"All" button** in the seed menu: wheat into every empty bed with one tap (harvest-all already existed).
+- Cute round trees in bright warm greens, a warmer ground and light.
+
+**Next, in order of value**
+1. **Plant-all with any crop** and a "repeat last crop" button on the harvest menu.
+2. **Feed and collect for the whole coop in one tap** and a three-slot "keep making this" repeat on the mill and bakery.
+3. **Calm state:** when everything is busy, show a soft "All busy. Enjoy the view" banner and let the camera drift gently.
+4. **Orders:** let a card wait without the board refilling past three.
+5. **Longer premium crops as the evening choice:** a few 5-minute crops that reward leaving and coming back.

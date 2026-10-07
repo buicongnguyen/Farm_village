@@ -16,6 +16,7 @@ import { actions as market, tickTruck } from './market.mjs';
 import { actions as fishing, tickFishing } from './fishing.mjs';
 import { actions as quests, tickQuests } from './quests.mjs';
 import { addNewPlaces } from './places.mjs';
+import { tickHelpers } from './helpers.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
@@ -56,7 +57,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { events: ctx.events };
@@ -84,6 +85,7 @@ function guardClock(s, now) {
   // waits that are not stored as a duration: never longer than their full length after a clock moved back
   if (s.orders?.pending) s.orders.pending = s.orders.pending.map(at => Math.min(at, now + ORDERS.discardMs));
   if (s.fishing?.line) s.fishing.line.doneAt = Math.min(s.fishing.line.doneAt, now + FISH.waitMs);
+  if (s.helpAt) s.helpAt = Math.min(s.helpAt, now + 2 * 60_000);
   if (s.truck?.away) s.truck.backAt = Math.min(s.truck.backAt, now + TRUCK.tripMs);
   for (const h of Object.values(s.homes)) if (h.tipAt) h.tipAt = Math.min(h.tipAt, now + RENT.tipMs[1]);
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);

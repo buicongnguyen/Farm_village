@@ -116,6 +116,7 @@ export class Hud {
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects' });
+    if (e.type === 'helperDid') this.toast(t(e.who === 'june' ? 'June brought in {count} crops and sowed them again' : 'Pip fetched {count} eggs and milk', { count: e.count }), 'good', { icon: e.who === 'june' ? 'wheat' : 'egg' });
     if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
     if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
     if (e.type === 'festival') this.toast(t('The Hollowbrook festival! {coins} coins and a warm night', { coins: num(e.coins) }), 'good', { icon: 'ui:heart' });

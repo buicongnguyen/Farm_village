@@ -32,7 +32,7 @@ for n, c in {
         'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
         # crops
         'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wheatg': '#F0A020', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
-        'leaf': '#4FBF3A', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
+        'leaf': '#4FBF3A', 'leafw': '#8EE04A', 'leafwl': '#B9F25E', 'leafwd': '#52BE3A', 'blossom': '#FFB6D4', 'blossomd': '#FF8CBD', 'blossoml': '#FFD6E6', 'fruitred': '#FF3B3B', 'fruitpeach': '#FF9A72', 'pinew': '#3DB35A', 'pinewl': '#6BD86C', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
         'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
@@ -547,6 +547,31 @@ def pond():
     for x, y in [(2.9, -1.3), (3.9, -1.3), (2.9, 1.3), (3.9, 1.3)]: p.append(cl('post', .08, .55, x, y, 0, 'wooddd', verts=6))
     return p
 piece('pond', pond())
+
+# =================================================================== cute trees (v0.3e): fat bubbly canopies, short trunks, bright warm greens
+CANOPY = [(0, 0, 3.0, 1.5, 0), (1.15, .3, 2.7, 1.1, 1), (-1.1, .4, 2.65, 1.1, 2), (.2, -1.1, 2.7, 1.1, 3), (.1, .1, 3.9, 1.0, 4)]
+def cute(name, base, light, dark, fruit=None, nfruit=7):
+    p = [cl('trunk', .4, 2.4, 0, 0, 0, 'wood', verts=8, rt=.28), cl('root', .58, .25, 0, 0, 0, 'woodd', verts=8, rt=.4)]
+    for i, (x, y, z, r, k) in enumerate(CANOPY):
+        p.append(ball('puff', r, x, y, z, [base, light, dark, base, light][k % 5] if i else base, sub=2, sc=(1, 1, .92)))
+    if fruit:
+        for i in range(nfruit):
+            a = i / nfruit * math.tau + .4; r = 1.55 + .25 * (i % 2); z = 2.4 + .8 * ((i * 3) % 4) / 3
+            p.append(ball('fruit', .2, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
+    return p
+piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
+piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred'))
+piece('cute_apple_bare', cute('ab', 'leafw', 'leafwl', 'leafwd'))
+piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach'))
+piece('cute_peach_bare', cute('pb', 'leafwl', 'leafw', 'leafwd'))
+piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
+def cute_pine():
+    p = [cl('trunk', .34, 1.2, 0, 0, 0, 'wood', verts=8, rt=.26)]
+    for i, (r, z, mt) in enumerate([(1.7, 1.0, 'pinew'), (1.35, 2.2, 'pinewl'), (.95, 3.3, 'pinew'), (.55, 4.2, 'pinewl')]):
+        p.append(cl('tier', r, 1.35, 0, 0, z, mt, verts=12, rt=r * .28, bev=.3))
+    p.append(ball('tip', .32, 0, 0, 5.5, 'pinewl', sub=1))
+    return p
+piece('cute_pine', cute_pine())
 def board():
     p = [bx('postl', .12, .12, 1.9, -.75, 0, 0, 'woodd'), bx('postr', .12, .12, 1.9, .75, 0, 0, 'woodd'),
          bx('board', 1.5, .08, .95, 0, .02, .8, 'cork', bev=.02), bx('frame', 1.62, .06, 1.05, 0, -.02, .75, 'wood', bev=.02),

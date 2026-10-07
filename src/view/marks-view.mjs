@@ -57,8 +57,11 @@ export class Marks {
     return { coin, alert };
   }
   frame(dt, now) {
+    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = false; return; }   // (the lighting checks measure the world alone)
     this.acc += dt; if (this.acc > 0.4 || !this.list.coin.length && !this.list.alert.length && this.acc > 0.1) { this.acc = 0; this.list = this.collect(); }
     const t = document.body.classList.contains('reduced-motion') ? 0 : performance.now() / 1000;
+    const dim = 1 - 0.5 * (this.world.daylight?.nightness ?? 0);   // markers soften at night
+    for (const pts of [this.coin, this.alert, this.glint]) pts.material.color.setScalar(dim);
     for (const [key, pts] of [['coin', this.coin], ['alert', this.alert]]) {
       const list = this.list[key], arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { const [x, y, z] = list[i]; arr[i * 3] = x; arr[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); arr[i * 3 + 2] = z; }

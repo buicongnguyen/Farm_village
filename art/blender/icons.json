@@ -164,8 +164,12 @@
  },
  {
   "id": "tree",
-  "src": "raw:nature",
-  "root": "tree_sakura"
+  "src": "raw:farm-kit",
+  "root": "cute_blossom",
+  "view": [
+   -30,
+   16
+  ]
  },
  {
   "id": "bench",
@@ -227,13 +231,21 @@
  },
  {
   "id": "apple_tree",
-  "src": "raw:nature",
-  "root": "tree_apple"
+  "src": "raw:farm-kit",
+  "root": "cute_apple",
+  "view": [
+   -30,
+   16
+  ]
  },
  {
   "id": "peach_tree",
-  "src": "raw:nature",
-  "root": "tree_peach"
+  "src": "raw:farm-kit",
+  "root": "cute_peach",
+  "view": [
+   -30,
+   16
+  ]
  },
  {
   "id": "bunting",
@@ -691,20 +703,20 @@
  },
  {
   "id": "round_tree",
-  "src": "3d_farmer_fish_sell/public/assets/models/scenery.glb",
-  "root": "tree_round",
+  "src": "raw:farm-kit",
+  "root": "cute_round",
   "view": [
    -30,
-   20
+   16
   ]
  },
  {
   "id": "pine_tree",
-  "src": "3d_farmer_fish_sell/public/assets/models/scenery.glb",
-  "root": "tree_pine",
+  "src": "raw:farm-kit",
+  "root": "cute_pine",
   "view": [
    -30,
-   20
+   16
   ]
  }
 ]

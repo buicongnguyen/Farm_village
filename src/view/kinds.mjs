@@ -15,10 +15,10 @@ export const KIND_MODELS = {
   truck:     { kit: 'farm-kit', node: 'truck', authored: true, lod: 'static' },
   school:    { kit: 'town', node: 'school', width: 9.6, lod: 'static', late: true },
   flowers:   { kit: 'nature', node: 'flowers_a', width: 1.5, lod: 'crop', late: true },
-  round_tree: { kit: 'scenery', node: 'tree_round', width: 3.2, lod: 'tree' },
-  pine_tree: { kit: 'scenery', node: 'tree_pine', width: 2.8, lod: 'tree' },
+  round_tree: { kit: 'farm-kit', node: 'cute_round', width: 3.4, lod: 'tree' },
+  pine_tree: { kit: 'farm-kit', node: 'cute_pine', width: 3.0, lod: 'tree' },
   bush:      { kit: 'nature', node: 'bush_a', width: 1.6, lod: 'crop', late: true },
-  tree:      { kit: 'nature', node: 'tree_sakura', width: 3.6, lod: 'tree', late: true },
+  tree:      { kit: 'farm-kit', node: 'cute_blossom', width: 3.8, lod: 'tree' },
   bench:     { kit: 'farm-kit', node: 'bench', authored: true, lod: 'static' },
   lamp:      { kit: 'farm-kit', node: 'lamp', authored: true, lod: 'static' },
   fence:     { kit: 'farm-kit', node: 'picket_straight', authored: true, lod: 'static' },
@@ -46,10 +46,10 @@ export const KIND_MODELS = {
   hay_bale:     { kit: 'props', node: 'haybale', width: 1.5, lod: 'static', late: true },
   flowerpot:    { kit: 'props', node: 'flowerpot', width: 1.1, lod: 'static', late: true },
   street_lamp:  { kit: 'props', node: 'street_lamp', height: 3, lod: 'static', late: true },
-  apple_tree:   { kit: 'nature', node: 'tree_apple', width: 3.4, lod: 'tree', late: true },
-  'apple_tree:bare': { kit: 'nature', node: 'tree_apple_bare', width: 3.4, lod: 'tree', late: true },
-  peach_tree:   { kit: 'nature', node: 'tree_peach', width: 3.4, lod: 'tree', late: true },
-  'peach_tree:bare': { kit: 'nature', node: 'tree_peach_bare', width: 3.4, lod: 'tree', late: true },
+  apple_tree:   { kit: 'farm-kit', node: 'cute_apple', width: 3.6, lod: 'tree' },
+  'apple_tree:bare': { kit: 'farm-kit', node: 'cute_apple_bare', width: 3.6, lod: 'tree' },
+  peach_tree:   { kit: 'farm-kit', node: 'cute_peach', width: 3.6, lod: 'tree' },
+  'peach_tree:bare': { kit: 'farm-kit', node: 'cute_peach_bare', width: 3.6, lod: 'tree' },
   // dressing drawn by land-view (not placeable)
   scaffold:     { kit: 'decor', node: 'scaffold', authored: true, lod: 'static', late: true },
   window_box:   { kit: 'decor', node: 'window_box', authored: true, lod: 'static', late: true },
@@ -63,7 +63,7 @@ export const KIND_MODELS = {
 export const EARLY = {
   flowers: { kit: 'scenery', node: 'flowers', width: 1.4, lod: 'crop' },
   bush:    { kit: 'scenery', node: 'bush', width: 1.7, lod: 'crop' },
-  tree:    { kit: 'scenery', node: 'tree_blossom', height: 4.5, lod: 'tree' },
+  tree:    { kit: 'farm-kit', node: 'cute_blossom', height: 4.5, lod: 'tree' },
   garden_flower: { kit: 'scenery', node: 'flowers', width: 1.2, lod: 'crop' },
 };
 

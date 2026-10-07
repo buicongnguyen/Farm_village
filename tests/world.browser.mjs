@@ -102,7 +102,7 @@ await check('brook: the water ribbon, its banks and props, and the bridge where 
 
 await check('night at 23:00 is applied at once: very dark blue sky, black-blue water, lit windows and lamps, readable ground', async () => {
   const { ctx, page } = await open('pc');
-  await page.evaluate(() => farm.view(60, 60, 120)); await settle(page, 600);
+  await page.evaluate(() => { farm.marks.hidden = true; const d = new Date(); farm.setClockOffset(((12 - d.getHours() + 24) % 24) * 3600e3 - d.getMinutes() * 60e3); farm.view(60, 60, 120); }); await settle(page, 3600);   // noon by the game clock, whatever the real time; the light follows at its next refresh
   const day = await readCanvas(page);
   await page.evaluate(NIGHT);
   // one frame later the night must be there (not after the next 3-second refresh)
