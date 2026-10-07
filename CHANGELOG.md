@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — Restore Hollowbrook (in progress)
+
+- **A village that is already there:** a new game opens on Hollowbrook as it stands: sown beds, a feed mill, coop, bakery and three cottages
+  run down, a ring road with damaged stretches, a worn farmhouse, 500 coins. Nothing to build before the fun starts.
+- **Repair instead of build:** tap a broken thing and repair it (coins and a short wait, with scaffolding). A repaired cottage welcomes the next
+  family. Roads and the farmhouse can be repaired too; the farmhouse can be upgraded for more barn room.
+- **Gentle wear:** buildings tire very slowly while you play (never while you are away), never stop working, and cost a few percent of rent;
+  one tap mends them. Neighbours sometimes mend something for you.
+- **Demolish and rebuild:** a Demolish tool gives part of the price back and leaves a half-price rebuild.
+- **A new first session:** Ada guides you through harvest, the first order, the repairs, the coop's fence, the hens and the first cottage.
+
 ## Review fixes (2026-10-07)
 
 A code and logic review of the whole game, each problem reproduced with a script before it was fixed.

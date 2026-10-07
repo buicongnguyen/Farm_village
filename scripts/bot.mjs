@@ -14,6 +14,7 @@ import { animalCount, animalPrice } from '../src/core/animals.mjs';
 import { queueOf } from '../src/core/production.mjs';
 import { CROPS, RECIPES, ANIMALS, GOODS, FRUITS } from '../src/content/goods.mjs';
 import { BEDS, SLOTS, RENT, BARN } from '../src/content/economy.mjs';
+import { RESTORE } from '../src/content/start.mjs';
 
 const SPINE = 63;
 const LAYOUT = {
@@ -22,7 +23,8 @@ const LAYOUT = {
   stall: { x: 30, z: 65, rot: 2, path: [31, 64] },
   school: { x: 50, z: 93, rot: 2, path: [52, 92] },
 };
-const cottageSpot = i => ({ x: 33 + 4 * i, z: 93, rot: 2, path: [34 + 4 * i, 92] });
+// cottages 1–3 stand in the restored village (content/start.mjs); a new one goes past the school's plot
+const cottageSpot = (i, restore = false) => { const x = restore && i >= 3 ? 57 + 4 * (i - 3) : 33 + 4 * i; return { x, z: 93, rot: 2, path: [x + 1, 92] }; };
 const treeCells = [];
 for (let z = 52; z <= 59; z++) for (const x of [31, 30]) treeCells.push([x, z]);
 const TREES = { apple_tree: 4, peach_tree: 2 };          // how many of each the bot plants
@@ -104,13 +106,21 @@ export class Bot {
   }
   project(now) {
     const s = this.s, step = currentStep(s); if (!step) return;
+    if (s.mode === 'restore') this.repairs(now);
     if (step.id === 'clear') { this.clearCells([[34, 59], [35, 60], [34, 61]], now); this.pave(this.spineTo(32), now); return; }
     if (step.id === 'plot') { for (let i = 0; i < 6; i++) this.do('place', { kind: 'bed', x: 32 + i, z: 57 }, now); return; }
     if (step.deliver && stepReady(s, now).ok && !deliveredAll(s, step)) this.do('projectDeliver', {}, now);
     for (const kind of step.builds) {
       if (kind === 'path' || kind === 'bed' || kind === 'fence' || kind === 'gate' || !mayBuild(s, kind).ok) continue;
-      this.placeBuilding(kind, kind === 'cottage' ? cottageSpot(s.counts.cottage ?? 0) : LAYOUT[kind], now);
+      this.placeBuilding(kind, kind === 'cottage' ? cottageSpot(s.counts.cottage ?? 0, s.mode === 'restore') : LAYOUT[kind], now);
     }
+  }
+  /** The restored village: repair what the build order allows, in order, and mend the gaps in the coop's fence. */
+  repairs(now) {
+    const s = this.s, ids = kind => Object.keys(s.placed).filter(id => s.placed[id].kind === kind);
+    for (const kind of ['feed_mill', 'coop', 'bakery', 'cottage']) for (const id of ids(kind)) this.do('repair', { id }, now);
+    for (const key of RESTORE.fenceRect.missing) { const [x, z, side] = key.split(','); this.do('placeEdge', { kind: 'fence', x: +x, z: +z, side }, now); }
+    for (const id of Object.keys(s.cond)) if (s.cond[id].level >= 1 && s.cond[id].level < 3 && s.coins > 400) this.do('repair', { id }, now);   // wear: one tap, a few coins
   }
   /** Coins kept for the next project once it is in reach (a sensible player saves for it). */
   reserve(now) {

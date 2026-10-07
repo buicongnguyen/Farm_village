@@ -23,8 +23,8 @@ export function applyRestore(s, now) {
   for (let z = f.z0; z <= f.z1; z++) { put(f.x0, z, 'w'); put(f.x1 + 1, z, 'w'); }
   for (const [id, level] of Object.entries(RESTORE.roads)) if (ROAD_SEGMENTS.some(r => r.id === id)) s.cond[id] = { level: level === 'broken' ? 3 : 1, ms: 0 };
   if (RESTORE.farmhouse === 'worn') s.cond.house = { level: 1, ms: WEAR.ms[0] };
-  // the first two build steps (clear the land, the farm plot) are already behind the player; the guide starts at planting
+  // the first two build steps (clear the land, the farm plot) are already behind the player; the guide starts at the harvest
   s.projects.step = 2; s.firsts['project:clear'] = now; s.firsts['project:plot'] = now;
-  s.stats.cleared = 3; s.stats.built = { ...s.counts }; s.story.tutorial = 3;
+  s.stats.cleared = 3; s.stats.built = { ...s.counts }; s.story.tutorial = 0;   // the restored village has its own first session (content/story.mjs RESTORE_TUTORIAL)
   return s;
 }

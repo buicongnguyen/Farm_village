@@ -4,6 +4,8 @@
 // `panels` are up to three illustrations in public/assets/story/ (the card falls back to text while one is missing).
 // Tutorial steps run in order; Ada speaks each one. Action verbs are bold (<b>), which the guide card renders as HTML.
 import { STEPS } from './projects.mjs';
+import { RESTORE } from './start.mjs';
+import { workingCount } from '../core/working.mjs';
 
 /** The village's name, for the HUD and the chapter 1 card. */
 export const VILLAGE_NAME = 'Hollowbrook';
@@ -64,6 +66,27 @@ export const BEATS = [
 
 // HUD buttons: build, orders, barn, projects, today, settings (turn and language are always there)
 const ALL = ['build', 'orders', 'barn', 'projects', 'today'];
+/** The first session in the restored village (PLAN-v0.3): things are there, the work is to bring them back. */
+export const RESTORE_TUTORIAL = [
+  { id: 'harvest', text: 'Welcome back to the farm, dear. Ellis sowed this wheat the week before he went upriver, and it has waited for you. When it turns golden, <b>tap</b> a bed and <b>harvest</b>.', hud: ['barn'], point: 'bed',
+    done: s => s.stats.harvested > 0 },
+  { id: 'order', text: 'I have an order for you. <b>Open</b> the order board and <b>deliver</b> my six wheat. My oven has been cold too long.', hud: ['barn', 'orders'], point: 'orders',
+    done: s => s.stats.ordersFilled > 0 },
+  { id: 'mill', text: 'Our old feed mill and coop are in a sorry state. <b>Tap</b> the feed mill and <b>repair</b> it, then the coop. Ellis built that coop from an old boat.', hud: ['barn', 'orders', 'projects'], point: 'mill',
+    done: s => s.projects.step > 2 },
+  { id: 'fence', text: 'The coop yard has two gaps in its fence. <b>Open</b> build mode and <b>place</b> the missing fence pieces, so the hens stay home.', hud: ['build', 'barn', 'orders', 'projects'], point: 'fence',
+    done: s => RESTORE.fenceRect.missing.every(k => s.fences[k]) },
+  { id: 'hens', text: '<b>Tap</b> the coop for your first hens. Mai from Lotus Farm next door is giving you two!', hud: ['build', 'orders', 'barn', 'projects'], point: 'coop',
+    done: s => Object.values(s.animals).some(list => list.length > 0) },
+  { id: 'feed', text: 'Hens eat chicken feed. <b>Make</b> some at the feed mill, then <b>tap</b> the coop to feed them. Pip will want to help.', hud: ['build', 'orders', 'barn', 'projects'], point: 'mill',
+    done: s => Object.values(s.animals).flat().some(a => a.doneAt != null) || (s.barn.items.egg ?? 0) > 0 },
+  { id: 'cottage', text: 'A family is looking for a home. <b>Tap</b> a run-down cottage in the village and <b>repair</b> it. Hollowbrook has waited a long time for this.', hud: ALL, point: 'cottage',
+    done: s => workingCount(s, 'cottage') > 0 },
+  { id: 'free', text: 'You are doing wonderfully, dear. The <b>Today</b> board shows what is ready each day. Hollowbrook is yours to bring back now.', hud: ALL, point: 'today',
+    done: () => false, last: true },
+];
+/** The tutorial for this game: the restored village has its own. */
+export const tutorialOf = s => (s?.mode === 'restore' ? RESTORE_TUTORIAL : TUTORIAL);
 export const TUTORIAL = [
   { id: 'clear', text: 'First, a patch by the house. <b>Tap</b> the weeds, then <b>tap</b> the broom. Ellis hated weeds more than foxes.', hud: [], point: 'weeds',
     done: s => s.stats.cleared >= 3 },

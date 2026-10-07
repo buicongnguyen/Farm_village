@@ -24,7 +24,7 @@ test('a new game opens on the village as it stands: things are there, many run d
   for (const k of ['feed_mill', 'coop', 'bakery']) assert.equal(levelOf(s, idOf(s, k)), 3, `${k} starts broken`);
   assert.equal(s.counts.cottage, 3); for (const id of Object.keys(s.homes)) { assert.equal(levelOf(s, id), 3); assert.equal(s.homes[id].family, null); }
   assert.equal(levelOf(s, 'road_south'), 3); assert.equal(levelOf(s, 'house'), 1, 'the farmhouse is a little worn');
-  assert.equal(currentStep(s).id, 'mill_coop'); assert.equal(s.story.tutorial, 3);
+  assert.equal(currentStep(s).id, 'mill_coop'); assert.equal(s.story.tutorial, 0);
   // every door reaches the road, so nothing is cut off before the player has done anything
   for (const id of Object.keys(s.placed)) { const p = s.placed[id], door = grid.doorCell(p.kind, p.x, p.z, p.rot); if (door) assert.ok(grid.reachesRoad(s, ...door), `${p.kind} door cut off`); }
   assert.equal(grid.penOf(s, idOf(s, 'coop')).closed, false, 'the coop yard has a gap to mend');

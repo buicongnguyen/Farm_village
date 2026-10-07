@@ -5,7 +5,9 @@
 // Chapter cards show up to three story panels (public/assets/story/, crossfading; a missing picture just drops out),
 // Ada's line and, for chapter 1, the village's name. Story beats (content/story.mjs BEATS) play once each, between cards.
 import { t } from '../kit/i18n.mjs';
-import { CHAPTERS, TUTORIAL, BEATS, VILLAGE_NAME } from '../content/story.mjs';
+import { CHAPTERS, tutorialOf, BEATS, VILLAGE_NAME } from '../content/story.mjs';
+import { RESTORE } from '../content/start.mjs';
+import { levelOf } from '../core/working.mjs';
 import { CELL, START_PARCEL, parcelOrigin } from '../content/world.mjs';
 import { TUTORIAL_WEEDS } from '../core/state.mjs';
 import { cellType } from '../core/grid.mjs';
@@ -37,7 +39,7 @@ export class Guide {
   }
   get s() { return this.game.s; }
   get index() { return this.s.story.tutorial ?? 0; }
-  get step() { return TUTORIAL[this.index] ?? null; }
+  get step() { return tutorialOf(this.s)[this.index] ?? null; }
   /** The guide waits while a story card is open, before the first chapter has been read, and while the camera flies. */
   get waiting() { return modalOpen() || (this.s.story.chapter ?? 0) < 1 || this.flying; }
   update() {
@@ -97,7 +99,9 @@ export class Guide {
   }
   /** After Begin: fly to the weeds, then the hand and Ada. */
   async begin() {
-    const o = parcelOrigin(START_PARCEL), w = TUTORIAL_WEEDS[0], cam = this.world.cam;
+    const o = parcelOrigin(START_PARCEL), cam = this.world.cam;
+    // the first scene: the weeds to clear, or in the restored village the row of sown beds
+    const w = this.s.mode === 'restore' ? [RESTORE.placed[0].x - o.x + 2, RESTORE.placed[0].z - o.z] : TUTORIAL_WEEDS[0];
     this.flying = true; this.update();
     const x = (o.x + w[0] + 0.5) * CELL, z = (o.z + w[1] + 0.5) * CELL;
     try { if (cam.flyTo) await cam.flyTo(x, z, Math.min(cam.span, 32), 1100); else cam.lookAt(x, z, Math.min(cam.span, 32)); } catch { /* the camera was taken over */ }
@@ -109,11 +113,13 @@ export class Guide {
     const o = parcelOrigin(START_PARCEL);
     if (step.point === 'weeds') { const w = TUTORIAL_WEEDS.map(([dx, dz]) => [o.x + dx, o.z + dz]).find(([x, z]) => cellType(s, x, z) === 'weeds'); return w && { cell: w }; }
     // in build mode, first the tab and the card to press, then the spot on the map
-    if ((step.point === 'path' || step.point === 'beds') && document.body.classList.contains('build-open')) {
-      const kind = step.point === 'path' ? 'path' : 'bed', cat = step.point === 'path' ? 'paths' : 'farm';
+    if (['path', 'beds', 'fence'].includes(step.point) && document.body.classList.contains('build-open')) {
+      const kind = { path: 'path', beds: 'bed', fence: 'fence' }[step.point], cat = step.point === 'beds' ? 'farm' : 'paths';
       if (!document.querySelector(`.sheet.build .card.on[data-kind="${kind}"]`))
         return { el: document.querySelector(`.sheet.build .card[data-kind="${kind}"]`) ? `.sheet.build .card[data-kind="${kind}"]` : `.sheet.build .tab[data-cat="${cat}"]` };
     }
+    if (step.point === 'fence') { const k = RESTORE.fenceRect.missing.find(key => !s.fences[key]); return k ? { cell: k.split(',').slice(0, 2).map(Number) } : null; }
+    if (step.point === 'cottage') { const id = Object.keys(s.placed).find(k => s.placed[k].kind === 'cottage' && levelOf(s, k) > 0); return id ? { cell: [s.placed[id].x + 1, s.placed[id].z + 1] } : null; }
     if (step.point === 'path') return { cell: [31, o.z + 4] };
     if (step.point === 'beds') return { cell: [o.x + 2, o.z + 1] };
     if (step.point === 'bed') { const id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); return id && { cell: [s.placed[id].x, s.placed[id].z] }; }

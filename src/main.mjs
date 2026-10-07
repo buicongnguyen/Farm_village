@@ -27,6 +27,7 @@ import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL } from './content/world.mjs';
 import { BUILDINGS } from './content/buildings.mjs';
+import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
@@ -65,8 +66,8 @@ panels = new Panels(app, game, hud, {
   // "show the way": go to where a missing good is made, or open the catalogue on that building
   onShowWay: at => {
     if (at === 'farm') { const o = parcelOrigin(START_PARCEL); flyTo((o.x + 6) * CELL, (o.z + 4) * CELL); hud.toast(t('Plant it in your beds'), 'info', { icon: 'bed' }); return; }
-    const id = Object.keys(game.s.placed).find(k => game.s.placed[k].kind === at);
-    if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces) panels.show('production', id); }
+    const ids = Object.keys(game.s.placed).filter(k => game.s.placed[k].kind === at), id = ids.find(k => levelOf(game.s, k) >= 3) ?? ids[0];   // the run-down one first
+    if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces && levelOf(game.s, id) < 3) panels.show('production', id); }
     else { build.cat = BUILDINGS[at].cat; build.start(at); }
   },
   onSave: (what, arg) => {

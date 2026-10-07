@@ -9,6 +9,7 @@ import { BUILDINGS, COTTAGE_LEVELS } from '../content/buildings.mjs';
 import { RENT, CHARM_MILESTONES } from '../content/economy.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild, madeAt } from '../core/projects.mjs';
 import { charmOf, rentPerHour, rentWaiting, needsOf } from '../core/homes.mjs';
+import { levelOf, isRepairing } from '../core/working.mjs';
 import { board } from '../core/today.mjs';
 import { cartHere, cratesLeft } from '../core/cart.mjs';
 import { unread } from '../core/bonds.mjs';
@@ -76,10 +77,12 @@ export function renderProjects(s, now) {
     return `<div class="need-row"><span class="good ${given >= n ? 'ok' : have >= left ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${given}/${n}</span><small>${t(GOODS[g].name)} · ${t('{count} in the barn', { count: have })}</small>${way}</div>`;
   }).join('');
   const kind = step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
-  return `<div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(step.text)}</p>
+  // in the restored village the work is repairing what stands: the button takes you to the run-down thing
+  const run = s.mode === 'restore' ? step.builds.find(k => Object.keys(s.placed).some(id => s.placed[id].kind === k && levelOf(s, id) >= 3 && !isRepairing(s, id))) : null, runMay = run && mayBuild(s, run, { repair: true });
+  return `<div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     ${goods ? `<div class="needs-list">${goods}</div>${ready.ok && !deliveredAll(s, step) ? `<button class="btn primary wide" data-do="projectDeliver">${t('Deliver goods')}</button>` : ''}` : ''}
-    ${kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, may.params)}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
+    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, runMay.params)}</p>` : ''}` : kind && s.mode !== 'restore' ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, may.params)}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
   </div><ul class="steps">${list}</ul>`;
 }
 

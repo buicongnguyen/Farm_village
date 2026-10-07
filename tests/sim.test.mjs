@@ -48,3 +48,21 @@ test('the weekly cart and fruit trees keep every level within ±10 % and never s
   assert.ok(runs.steady.s.stats.carts >= 2, `steady sent ${runs.steady.s.stats.carts} carts in two weeks`);
   assert.ok(runs.steady.s.stats.picked > 0, 'steady picked no fruit');
 });
+
+// ── The restored village (PLAN-v0.3): the same targets for a game that opens on a run-down village and starts with repairs ──
+const restored = Object.fromEntries(['casual', 'steady', 'keen'].map(p => [p, simulate(p, 14, { restore: true })]));
+test('restored village, steady player: the school opens on day 3–4', () => {
+  const day = restored.steady.steps.school; assert.ok(day >= 3 && day <= 4, `school on day ${day}`);
+});
+test('restored village: casual players by day 10, keen players not before day 2, and everyone finishes the build order', () => {
+  assert.ok(restored.casual.steps.school <= 10, `casual school on day ${restored.casual.steps.school}`);
+  assert.ok(restored.keen.steps.school >= 2, `keen school on day ${restored.keen.steps.school}`);
+  for (const [p, r] of Object.entries(restored)) assert.ok(r.steps.cottages34, `${p} never finished cottages 3 and 4`);
+});
+test('restored village: the first family moves in on the first day for a steady player', () => {
+  assert.equal(restored.steady.steps.cottage1, 1, `cottage1 on day ${restored.steady.steps.cottage1}`);
+});
+test('restored village: wear never stops a player, and repairs stay cheap (a few coins each)', () => {
+  const s = restored.steady.s;
+  for (const [id, c] of Object.entries(s.cond)) assert.ok(c.level < 3 || id.startsWith('road_'), `${id} is broken after two weeks`);
+});

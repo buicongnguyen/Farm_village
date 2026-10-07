@@ -94,6 +94,19 @@ in the fortnight instead of four, and `tests/sim.test.mjs` now asks for two or m
 2. **A cart of eggs could wait forever.** Eggs are slow, and orders want them too. A cart now holds at most one crate of
    animal produce, and a visiting neighbour fills the crate the player is furthest from filling.
 
+### 1.2 The restored village (v0.3)
+
+A new game opens on the run-down village with 500 coins, 12 wheat and 2 bread. The simulation plays it with `npm run sim -- steady 14 --restore`
+(`tests/sim.test.mjs` guards it): repairs replace building, so the first family moves in on day 1 and the school is on day 3 for a steady
+player. Repair prices: a broken feed mill or coop 25, a bakery or cottage 90, a road stretch 40; worn things 5–18 coins. Wear costs 5 % of rent
+and 1 charm per level and counts only play time (a tick never counts more than 2 minutes).
+
+| Profile | First cottage | School | Cottages 3–4 |
+|---|---|---|---|
+| Casual | day 1–4 | day 8 | day 9 |
+| **Steady** | day 1 | **day 3** | day 4 |
+| Keen | day 1 | day 2 | day 2 |
+
 ## 2. Items
 
 Value is the base price: what the roadside stall pays and what order rewards are built from.

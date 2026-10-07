@@ -16,8 +16,8 @@ export const START = new Date(2026, 9, 7, 0, 0, 0).getTime();
  * Run a profile for some days. Returns { steps: { id: day }, levels: { level: hours since the first visit }, daily: [...], s }.
  * cart / trees: false keeps the bot away from the weekly cart and fruit trees (to measure what they change).
  */
-export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false, cart = true, trees = true } = {}) {
-  const visits = PROFILES[profile], s = newGame(START + visits[0][0] * 3_600_000, seed), bot = new Bot(s, { cart, trees }), daily = [];
+export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false, cart = true, trees = true, restore = false } = {}) {
+  const visits = PROFILES[profile], s = newGame(START + visits[0][0] * 3_600_000, seed, { restore }), bot = new Bot(s, { cart, trees }), daily = [];
   tick(s, s.createdAt);
   for (let d = 0; d < days; d++) {
     visits.forEach(([h, len], i) => {
@@ -34,7 +34,7 @@ export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = f
 }
 if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || process.argv[1]?.endsWith('sim.mjs')) {
   const profile = process.argv[2] ?? 'steady', days = +(process.argv[3] ?? 14);
-  const t0 = performance.now(), { steps, daily, levels, s } = simulate(profile, days, { trace: process.argv.includes('--trace') });
+  const t0 = performance.now(), { steps, daily, levels, s } = simulate(profile, days, { trace: process.argv.includes('--trace'), restore: process.argv.includes('--restore') });
   console.log(`profile ${profile}, ${days} days (${((performance.now() - t0) / 1000).toFixed(1)} s):`);
   for (const [id, day] of Object.entries(steps)) console.log(`  day ${String(day).padEnd(3)} ${id}`);
   const last = daily[daily.length - 1];

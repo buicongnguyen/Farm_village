@@ -92,18 +92,19 @@ then P7. Each package is committed when its tests pass.
 
 | Package | Status |
 |---|---|
-| P1 Starting world | not started |
-| P2 Condition and repair | not started |
-| P3 Market and transport | not started |
-| P4 Household and helpers | not started |
-| P5 Money, pace, first session | not started |
-| P6 Phone UI | not started |
-| P7 Tests, docs, release | not started |
+| P1 Starting world | **done** (restored village as data, ring road, damaged roads, worn farmhouse; old saves keep what they built and do not get the new pieces) |
+| P2 Condition and repair | **done** (repair, gentle wear, demolish and rebuild credit, farmhouse upgrade, neighbours mend things; broken things look run down, scaffolding while a repair runs) |
+| P3 Market and transport | not started (the delivery truck and market square) |
+| P4 Household and helpers | not started (chores for June and Pip; varied people from the reference game) |
+| P5 Money, pace, first session | **done** (500 coins and starter goods, the restore first session with Ada, pace tests on the restored start). Still to do: the free daily "hurry" |
+| P6 Phone UI | not started (grid catalogue, compact panels) |
+| P7 Tests, docs, release | rules and browser tests written alongside each package; CHANGELOG 0.3.0 at the end |
 
 ## 6. Log
 
 | Date | What happened | Commit |
 |---|---|---|
 | 2026-10-07 | The user played v0.1 and asked for a pre-built, restore-style start, gentle decay, a market with transport, starting money, a neater phone UI, a household of three with helping children, and neighbours who sometimes fix things. Plan written. | (this commit) |
-| 2026-10-07 | The user asked to reuse the reference game's people shapes and item art: added to P4 (varied people) and the icon list. P1/P2 rules started (start layout data, road ring, repair/wear numbers). | (next commit) |
+| 2026-10-07 | The user asked to reuse the reference game's people shapes and item art: added to P4 (varied people) and the icon list. P1/P2 rules started (start layout data, road ring, repair/wear numbers). | 3206747 |
+| 2026-10-07 | P1, P2 and most of P5 built: the restored village, repair/wear/demolish/farmhouse, the restore first session (Ada harvest → order → repair mill and coop → fence → hens → feed → repair a cottage), pace on the restored start (school day 8 / 3 / 2 for casual / steady / keen). 109 unit tests, 6 new browser checks, all suites green. | (this commit) |
 | 2026-10-07 | Before this plan: the AAA pass (v0.2: art, world, juice, cast, story, play and ui packages) was merged and deployed. | a57b43d |

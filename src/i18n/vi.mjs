@@ -445,6 +445,18 @@ export const VI = {
   'This one is part of the story': 'Đơn này thuộc câu chuyện', 'No trade today': 'Hôm nay không có trao đổi',
   'Come back tomorrow for a new gift': 'Mai quay lại nhận quà mới nhé', 'Build a roadside stall first': 'Hãy xây sạp ven đường trước',
   'The stall is full': 'Sạp đã đầy', 'Nothing sold yet': 'Chưa bán được gì',
+  // ── v0.3: the first session in the restored village ──
+  'Welcome back to the farm, dear. Ellis sowed this wheat the week before he went upriver, and it has waited for you. When it turns golden, <b>tap</b> a bed and <b>harvest</b>.': 'Chào mừng cháu về lại nông trại. Ông Ellis gieo lúa mì này từ tuần trước khi ông đi ngược sông, và nó đã đợi cháu. Khi lúa vàng, <b>chạm</b> vào luống và <b>thu hoạch</b> nhé.',
+  'Our old feed mill and coop are in a sorry state. <b>Tap</b> the feed mill and <b>repair</b> it, then the coop. Ellis built that coop from an old boat.': 'Cối xay cám và chuồng gà cũ của nhà mình xuống cấp quá. <b>Chạm</b> vào cối xay cám và <b>sửa</b> nó, rồi sửa chuồng gà. Ông Ellis đóng chuồng đó từ một chiếc thuyền cũ.',
+  'The coop yard has two gaps in its fence. <b>Open</b> build mode and <b>place</b> the missing fence pieces, so the hens stay home.': 'Hàng rào sân chuồng gà còn hai chỗ hở. <b>Mở</b> chế độ xây dựng và <b>đặt</b> các đoạn rào còn thiếu để gà không chạy mất.',
+  '<b>Tap</b> the coop for your first hens. Mai from Lotus Farm next door is giving you two!': '<b>Chạm</b> vào chuồng gà để nhận những con gà đầu tiên. Mai ở Trang trại Hoa Sen bên cạnh tặng cháu hai con!',
+  'A family is looking for a home. <b>Tap</b> a run-down cottage in the village and <b>repair</b> it. Hollowbrook has waited a long time for this.': 'Có một gia đình đang tìm nhà. <b>Chạm</b> vào một ngôi nhà xuống cấp trong làng và <b>sửa</b> nó. Thung Suối đã chờ ngày này lâu lắm rồi.',
+  'You are doing wonderfully, dear. The <b>Today</b> board shows what is ready each day. Hollowbrook is yours to bring back now.': 'Cháu làm tốt lắm. Bảng <b>Hôm nay</b> cho biết mỗi ngày có gì sẵn sàng. Giờ Thung Suối là của cháu, hãy làm nó sống lại!',
+  'Repair the old feed mill and the coop, and mend the gaps in the coop fence.': 'Sửa cối xay cám và chuồng gà cũ, rồi vá chỗ hở của hàng rào chuồng gà.',
+  'Repair a run-down cottage in the village. A family is waiting to move in.': 'Sửa một ngôi nhà xuống cấp trong làng. Có một gia đình đang chờ dọn đến.',
+  'Another family wants to move in. They ask for bread for their first week, then repair the second cottage.': 'Một gia đình nữa muốn dọn đến. Họ xin bánh mì cho tuần đầu, rồi hãy sửa ngôi nhà thứ hai.',
+  'The school brings new families. Repair the last cottage and build one more.': 'Ngôi trường mang thêm gia đình mới. Hãy sửa ngôi nhà cuối cùng và xây thêm một ngôi nữa.',
+  'Repair: {name}': 'Sửa: {name}',
   // ── v0.3: repairs, wear, demolishing, roads ──
   'Worn': 'Sờn cũ', 'Shabby': 'Xuống cấp', 'Broken': 'Hỏng', 'Fine': 'Tốt', 'Being repaired': 'Đang sửa', 'Open': 'Mở', 'Farmhouse': 'Nhà chính', 'Demolish': 'Phá bỏ',
   'Repair started: {name}': 'Bắt đầu sửa: {name}', 'Repaired: {name}': 'Đã sửa xong: {name}', '{name} mended the {thing}!': '{name} đã sửa giúp {thing}!',

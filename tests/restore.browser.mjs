@@ -9,13 +9,14 @@ const DEVICES = {
   pc: { viewport: { width: 1280, height: 800 } },
 };
 const results = [];
-async function open(device = 'phone') {
+async function open(device = 'phone', { intro = false } = {}) {
   const ctx = await browser.newContext(DEVICES[device]), page = await ctx.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) errors.push(m.text()); });
   await page.goto(`${URL_}?new&restore`);
   await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
-  await page.evaluate(() => { farm.skipIntro(); farm.game.s.settings.daylight = 'always'; });
+  if (!intro) await page.evaluate(() => farm.skipIntro());
+  await page.evaluate(() => { farm.game.s.settings.daylight = 'always'; });
   await page.waitForFunction(() => farm.world.batches.has('feed_mill'), null, { timeout: 30000 });
   return { ctx, page, errors };
 }
@@ -28,6 +29,7 @@ const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 /** Bring a cell into the part of the screen no menu covers, then click it. */
 const tap = async (page, x, z) => {
   // walkers wander over the spot and a tap on a person talks to them: send them indoors so the tap reaches the thing
+  for (let i = 0; i < 6; i++) { if (!(await page.isVisible('.modal [data-close]'))) break; await page.click('.modal [data-close]'); await page.waitForTimeout(150); }   // story cards the player would close
   const p = await page.evaluate(([x, z]) => { farm.people?.walkers.forEach(w => { w.indoors = true; }); farm.focusVisible(x, z); return farm.cellToScreen(x, z); }, [x, z]);
   await page.waitForTimeout(40); await page.mouse.click(p.x, p.y); await page.waitForTimeout(120);
 };
@@ -91,6 +93,33 @@ await check('build mode: the Demolish tool takes a cottage down for part of its 
   await tap(page, cx, cz);
   expect(await page.evaluate(id => !farm.state().placed[id], cot), 'the cottage is still there');
   expect(await page.evaluate(() => farm.state().coins) > coins, 'no refund'); expect(await page.evaluate(() => farm.state().rebuild.cottage) === 1, 'no rebuild credit');
+  await ctx.close();
+});
+await check('first session in the restored village: harvest, deliver the first order, repair the mill and coop, mend the fence (phone)', async () => {
+  const { ctx, page, errors } = await open('phone', { intro: true });
+  const step = () => page.evaluate(() => farm.state().story.tutorial);
+  expect(await page.isVisible('.chapter'), 'no chapter card'); await page.click('.chapter [data-close]');
+  await page.waitForFunction(() => !document.querySelector('.guide').hidden, null, { timeout: 15000 });
+  expect(/harvest/i.test(await page.textContent('.guide')), 'the guide does not ask for the harvest');
+  expect(!(await page.isVisible('[data-act="orders"]')), 'the order board button should wait for the order step');
+  await page.evaluate(() => farm.setClockOffset(40_000));                          // the sown wheat is ripe
+  const bed = await page.evaluate(() => { const s = farm.state(); const id = Object.keys(s.beds)[0]; return [s.placed[id].x, s.placed[id].z]; });
+  await tap(page, ...bed); await page.click('.radial-btn[data-act="harvestAll"], .radial-btn[data-act="harvest"]');
+  await page.waitForFunction(() => farm.state().stats.harvested > 0, null, { timeout: 5000 });
+  expect(await step() === 1, `step after the harvest: ${await step()}`);
+  await page.click('[data-act="orders"]'); await page.click('.order.can [data-do="deliver"]');
+  expect(await step() === 2, `step after the order: ${await step()}`);
+  await page.evaluate(() => document.querySelector('.panel [data-do="close"]')?.click());
+  for (const kind of ['feed_mill', 'coop']) { const id = await idOf(page, kind), [cx, cz] = await cellOf(page, id); await tap(page, cx, cz); await page.click('.radial-btn[data-act="repair"]'); }
+  await page.evaluate(() => farm.setClockOffset(40_000 + 100_000));
+  await page.waitForFunction(() => farm.state().projects.step > 2, null, { timeout: 8000 });
+  expect(await step() === 3, `step after the repairs: ${await step()}`);
+  expect(await page.isVisible('[data-act="orders"]'), 'the order board button should be there by now');
+  await page.evaluate(() => { const g = farm.game; g.do('placeEdge', { kind: 'fence', x: 36, z: 68, side: 'n' }); g.do('placeEdge', { kind: 'fence', x: 35, z: 66, side: 'w' }); });
+  expect(await step() === 4, `step after the fence: ${await step()}`);
+  expect(/hens/i.test(await page.textContent('.guide')), 'the guide does not ask for the hens');
+  expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
   await ctx.close();
 });
 await check('the restored village holds the phone budgets at every zoom', async () => {

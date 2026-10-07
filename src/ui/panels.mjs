@@ -72,6 +72,7 @@ export class Panels {
     else if (d.do === 'projects' || d.do === 'cart' || d.do === 'mail' || d.do === 'friends') this.show(d.do);
     else if (d.do === 'projectDeliver') g.do('projectDeliver');
     else if (d.do === 'buildProject') { this.close(); this.onBuild?.(d.kind); }
+    else if (d.do === 'goRepair') { this.close(); this.onShowWay?.(d.kind); }
     else if (d.do === 'showWay') { this.close(); this.onShowWay?.(d.at); }
     else if (d.do === 'collectRent') g.do('collectRent');
     else if (d.do === 'upgradeHome') g.do('upgradeHome', { id: d.id });
