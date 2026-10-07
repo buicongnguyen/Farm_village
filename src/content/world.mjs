@@ -36,3 +36,24 @@ export const isBrook = (x, z) => Math.abs(z - brookZ(x)) <= BROOK_HALF;
 export const inVillage = (x, z) => x >= VILLAGE.x0 && x <= VILLAGE.x1 && z >= VILLAGE.z0 && z <= VILLAGE.z1;
 export const inFarm = (x, z) => parcelOf(x, z) !== null;
 export const nearHome = (x, z) => x >= 14 && x <= 31 && z >= 52 && z <= 80;
+
+// ── Scenery positions (world package): drawn by the view only; the rules never read these ──
+/** The brook's smooth centre line in cells (z, fractional); brookZ() is the same curve rounded to whole cells. */
+export const brookCurve = x => 12 + Math.sin(x / 9) * 3;
+/** The plank bridge where the north–south road crosses the brook (cells). */
+export const BRIDGE = { x0: 28, x1: 29, z: brookZ(28.5) };
+/** Stepping stones across the brook just north of the farm (cell x; z follows the brook). */
+export const STEPPING_STONES = { x: 47 };
+/** The duck pond in the woods west of the road, north of the farmhouse (cells, inclusive), and its little dock. */
+export const POND = { x0: 12, z0: 40, x1: 17, z1: 44 };
+export const POND_DOCK = { x: 18, z: 42, rot: Math.PI / 2 };
+export const isPond = (x, z) => x >= POND.x0 && x <= POND.x1 && z >= POND.z0 && z <= POND.z1;
+/** The village plaza (cells, inclusive): cobbles round the old well, between the cottage row and the ruins. */
+export const PLAZA = { x0: 38, z0: 98, x1: 43, z1: 103 };
+export const WELL = { x: 41, z: 101 };
+/** The arch over the farm entrance, between the road and the start parcel. */
+export const FARM_GATE = { x: 30.5, z: 64, rot: Math.PI / 2 };
+/** The windmill by the farmhouse (cells). */
+export const WINDMILL = { x: 17, z: 54, rot: 0.4 };
+/** The land drawn around the map so its edge never shows (metres beyond the edge): low hills, then a far haze. */
+export const SKIRT = 72;
