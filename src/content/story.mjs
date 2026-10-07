@@ -36,7 +36,7 @@ export const CHAPTERS = [
   { id: 5, title: 'Someone to care for us', subtitle: 'Coming in the next chapter of Hollowbrook.', icon: '🩺', teaser: true,
     text: 'Marisol has every family\'s name on her list, and a letter from Dr Hazel, who retired to the coast: “Show me a village worth coming home to.” In the dusty clinic, an old poster for the last Harvest Festival hangs on the wall, one corner burned black.',
     ada: 'Hazel! She stitched Ellis\'s hand the summer of the fishing hook. Oh, we need her back.',
-    panels: panels(5, ['The old clinic, shutters closed.', 'Marisol and her list.', 'The burned festival poster.']),
+    panels: panels(5, ['The old clinic, shutters closed.', 'Marisol and her list.', 'Where the festival stage once stood.']),
     when: s => (s.story.chapter ?? 0) >= 4 },
 ];
 

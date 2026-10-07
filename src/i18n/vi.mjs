@@ -62,7 +62,7 @@ export const VI = {
   'Someone to care for us': 'Người chăm lo cho làng', 'Coming in the next chapter of Hollowbrook.': 'Chương tiếp theo của Thung Suối sắp ra mắt.',
   "Marisol has every family's name on her list, and a letter from Dr Hazel, who retired to the coast: “Show me a village worth coming home to.” In the dusty clinic, an old poster for the last Harvest Festival hangs on the wall, one corner burned black.": 'Danh sách của Marisol đã có tên mọi gia đình, kèm lá thư của bác sĩ Hazel, người đã về hưu ở miền biển: “Hãy cho tôi thấy một ngôi làng đáng để trở về.” Trong trạm xá phủ bụi, tấm áp phích Lễ hội Mùa màng cuối cùng vẫn treo trên tường, một góc cháy đen.',
   "Hazel! She stitched Ellis's hand the summer of the fishing hook. Oh, we need her back.": 'Hazel! Cái mùa hè ông Ellis bị lưỡi câu móc vào tay, chính cô ấy khâu cho ông. Ôi, làng mình cần cô ấy về lắm.',
-  'The old clinic, shutters closed.': 'Trạm xá cũ, cửa chớp đóng kín.', 'Marisol and her list.': 'Marisol và bản danh sách.', 'The burned festival poster.': 'Tấm áp phích lễ hội bị cháy.',
+  'The old clinic, shutters closed.': 'Trạm xá cũ, cửa chớp đóng kín.', 'Marisol and her list.': 'Marisol và bản danh sách.', 'Where the festival stage once stood.': 'Nơi sân khấu lễ hội từng đứng.',
   'Flour on my hands again! Ellis would laugh to see me.': 'Tay bà lại dính bột rồi! Ông Ellis mà thấy chắc cười lắm.',
   'That is the first wheat this farm has sold in eleven years. Keep going, dear.': 'Đó là mẻ lúa mì đầu tiên trang trại bán được sau mười một năm. Cứ thế mà làm nhé cháu.',
   'Can we have bread for dinner? With jam?': 'Tối nay nhà mình ăn bánh mì nhé? Có cả mứt nữa nha?',
