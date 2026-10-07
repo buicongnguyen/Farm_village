@@ -10,9 +10,9 @@ Update it at the end of every work session: change the status, add a line to the
   - fixes;
   - the release checklist;
   - the first deploy.
-- **Waiting for the user:**
-  1. Hosting (public repository, or private source with a public play repository) before the first push and deploy.
-  2. Playtesters (3–5 people) for M6.
+- **Live:** https://buicongnguyen.github.io/Farm_village/ (public repository github.com/buicongnguyen/Farm_village,
+  pushed over SSH; every push to `main` runs the tests and deploys GitHub Pages, like Willowmere).
+- **Waiting for the user:** playtest feedback (3–5 first-time players) for M6.
 - **What works now** (`npm run dev`, then http://127.0.0.1:5240/; add `?new` for a fresh farm):
   - **The full v0.1 game:** farm, animals, production, orders, the village with families and the school, people and
     neighbours, the Today board.
@@ -35,11 +35,11 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | Working answers: no energy bar, phone first, fresh repository using Willowmere's kit, "Farm Village" working name, village called Hollowbrook | DESIGN (top), GAME-CONCEPT section 7 |
 | 2026-10-07 | **One renderer: 3D (Three.js) shown like 2.5D** (fixed tilted orthographic camera, pan, zoom, 90° turns). No separate 2D mode | DESIGN 3.2, TECH-PLAN 6, GAME-CONCEPT 7 |
 | 2026-10-07 | **Large map:** 128 × 128 cells; the farm is 4 × 4 parcels of 16 × 16 cells (2,000–3,000 crops), with fields, helpers and tools. v0.1 stays small (30 beds); the large farm opens in v0.2 | DESIGN 3.1 and 5.1, ECONOMY 8, ROADMAP |
+| 2026-10-07 | **Hosting:** public repository buicongnguyen/Farm_village, SSH push, Pages deployed by the workflow on push to main (same as Willowmere) | README, PROGRESS |
 | 2026-10-07 | **Drawing rules:** baked vertex-coloured models, chunked instancing, three levels of detail with chunk sizes 8 / 16 / 32 | TECH-PLAN 6, prototypes/big-farm |
 
 ## Open questions
 
-- Hosting: a public repository, or a private source repository that deploys to a public play repository (decide at M0).
 - Final game name.
 
 ## Plan documents
@@ -69,9 +69,12 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | M4: village ruins, projects panel (requirements, deliver, "show the way", Build on the ruin), cottage panel (family, charm, rent, furnish), welcome cards, mailbox, people walking on paths (residents, Cora), neighbour visits with speech bubbles, Today board (gift, waiting, trades, news), charm preview; 16 browser checks pass | e79c364 |
 | 2026-10-07 | M5: chapter cards and Ada's tutorial with HUD buttons unlocking step by step, pointer markers, I know how / skip; confetti; synthesised sounds and music; day and night from the real clock; settings (language, volumes, daylight, text size, motion, graphics with a frame-rate guard, three saves, export/import, start over); album of chapters and first times; one modal queue; first-frame models 5.3 → 1.5 MB; 30 tests, 19 browser checks | bb85ed8 |
 | 2026-10-07 | Release candidate 0.1.0: production build smoke test (phone and PC, no test hooks), CHANGELOG, README how-to-run | a67d1ea |
+| 2026-10-07 | Published: repository created, pushed over SSH, Pages enabled; CI failed once (tests depended on the time zone: GitHub runs UTC) and the tests now pin Asia/Seoul; live site checked on phone and PC with no errors or missing files | 7e9282f |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume
+
+0. Deploy: commit and `git push` (SSH remote `origin`); the Pages workflow tests and publishes. Watch with `gh run list -R buicongnguyen/Farm_village`.
 
 1. Read this file, then `docs/GAME-CONCEPT.md`.
 2. `node_modules` is a junction to Willowmere's (`..\3d_farmer_fish_sell\node_modules`). If it is missing, recreate it with

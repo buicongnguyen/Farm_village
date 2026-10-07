@@ -1,7 +1,7 @@
 # Farm Village
 
 The next game after Willowmere: a cozy, single-player farm and village game in the browser, where you lead your family
-and grow your village. Version 0.1.0 (release candidate) is built; see CHANGELOG.md.
+and grow your village. Version 0.1.0 (release candidate) is built; see CHANGELOG.md. **Play it: https://buicongnguyen.github.io/Farm_village/**
 
 ## Play and develop
 
