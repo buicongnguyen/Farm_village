@@ -28,6 +28,8 @@ export const BUILDINGS = {
   feed_mill:  { name: 'Feed mill', cat: 'production', size: [2, 2], area: 'farm', level: 2, cost: 30, door: true, produces: true, project: 'mill_coop', max: 1, model: 'feed_mill', charm: -1 },
   bakery:     { name: 'Bakery', cat: 'production', size: [3, 2], area: 'farm', level: 3, cost: 150, door: true, produces: true, after: 'mill_coop', max: 1, model: 'bakery', charm: -1 },
   stall:      { name: 'Roadside stall', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, stall: true, max: 1, model: 'market-stall' },
+  // The market square: the village's old market, where the delivery truck sells (core/market.mjs)
+  market:     { name: 'Market square', cat: 'projects', size: [5, 3], area: 'village', level: 1, cost: 60, door: true, market: true, max: 1, model: 'market' },
   // Homes
   cottage:    { name: 'Rental cottage', cat: 'homes', size: [3, 3], area: 'village', level: 3, cost: n => COTTAGE_COSTS[n] ?? 10000, door: true, home: true, project: 'cottage1', model: 'house', charm: 0 },
   // Charm (DESIGN 12)

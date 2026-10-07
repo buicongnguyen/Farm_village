@@ -2,6 +2,8 @@
 
 ## 0.3.0 — Restore Hollowbrook (in progress)
 
+- **The market square and the delivery truck:** the old market stands run down by the village street. Repair it and the street, then load spare goods onto the little red truck, send it to town (about a minute and a half) and collect more coins than the goods are worth. Bigger trucks carry more.
+
 - **A village that is already there:** a new game opens on Hollowbrook as it stands: sown beds, a feed mill, coop, bakery and three cottages
   run down, a ring road with damaged stretches, a worn farmhouse, 500 coins. Nothing to build before the fun starts.
 - **Repair instead of build:** tap a broken thing and repair it (coins and a short wait, with scaffolding). A repaired cottage welcomes the next

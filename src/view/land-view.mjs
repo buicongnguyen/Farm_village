@@ -13,10 +13,11 @@ import { loadKit, loadKitLater, bake, fit, tiers } from './models.mjs';
 import { toon } from '../kit/toon.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
 import { levelOf, isRepairing } from '../core/working.mjs';
+import { TRUCK } from '../content/economy.mjs';
 import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
 const FENCES = new Set(['fence', 'gate']);
 const PEN_EARTH = '#c9a46a';
 
@@ -316,13 +317,29 @@ export class LandView {
   }
   frame(dt) {
     if (!this.ready) return;
-    this.flushRims();
+    this.flushRims(); this.driveTruck();
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
       this.clock = 0;
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
+  }
+  /** The delivery truck: parked by the market, or driving west along the village street and back while a trip runs. */
+  driveTruck() {
+    const b = this.world.batches, s = this.s, tr = s.truck, id = Object.keys(s.placed).find(k => s.placed[k].kind === 'market');
+    if (!id || !tr || !b.has('truck') || levelOf(s, id) >= 3) { b.remove('truck'); return; }
+    const p = s.placed[id], c = this.centre('market', p.x, p.z, p.rot), z = 91 * CELL, homeX = c.x + 4.4 * CELL;
+    let x = homeX, rot = -Math.PI / 2, show = true;
+    if (tr.away) {
+      const k = Math.max(0, Math.min(1, 1 - (tr.backAt - this.game.now) / TRUCK.tripMs)), reach = homeX - 2 * CELL;
+      if (k < 0.2) x = homeX - reach * (k / 0.2);                // drives off west
+      else if (k > 0.8) { x = homeX - reach * (1 - (k - 0.8) / 0.2); rot = Math.PI / 2; }   // comes home from the west
+      else show = false;                                          // out in town
+    }
+    if (!show) { b.remove('truck'); return; }
+    const cur = b.items.get('truck');
+    if (!cur || cur.x !== x || cur.rot !== rot) b.set('truck', { model: 'truck', x, z: tr.away ? z : z - 0.4 * CELL, rot });
   }
   sync() {
     if (!this.ready || !this.s) return;

@@ -105,7 +105,7 @@ await check('first session in the restored village: harvest, deliver the first o
   await page.evaluate(() => farm.setClockOffset(40_000));                          // the sown wheat is ripe
   const bed = await page.evaluate(() => { const s = farm.state(); const id = Object.keys(s.beds)[0]; return [s.placed[id].x, s.placed[id].z]; });
   await tap(page, ...bed); await page.click('.radial-btn[data-act="harvestAll"], .radial-btn[data-act="harvest"]');
-  await page.waitForFunction(() => farm.state().stats.harvested > 0, null, { timeout: 5000 });
+  await page.waitForFunction(() => farm.state().stats.harvested > 0, null, { state: 'attached', timeout: 5000 });
   expect(await step() === 1, `step after the harvest: ${await step()}`);
   await page.click('[data-act="orders"]'); await page.click('.order.can [data-do="deliver"]');
   expect(await step() === 2, `step after the order: ${await step()}`);
@@ -119,6 +119,26 @@ await check('first session in the restored village: harvest, deliver the first o
   expect(await step() === 4, `step after the fence: ${await step()}`);
   expect(/hens/i.test(await page.textContent('.guide')), 'the guide does not ask for the hens');
   expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
+await check('the market truck: repair the market and street, load wheat in the panel, send it, watch it drive off and come back with coins', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.evaluate(() => { const g = farm.game; g.s.coins = 3000; g.s.barn.items.wheat = 40; for (const id of ['road_south', ...Object.keys(g.s.placed).filter(i => g.s.placed[i].kind === 'market')]) g.do('repair', { id }); farm.setClockOffset(100_000); });
+  await page.waitForFunction(() => farm.state().cond.road_south == null && farm.world.batches.items.has('truck'), null, { timeout: 15000 });
+  await page.waitForTimeout(2500);   // the level-up card the repairs earned closes any open sheet: let it come first
+  await page.evaluate(() => { farm.panels.show('market'); });
+  await page.waitForSelector('.good-tile[data-do="loadTruck"][data-good="wheat"]', { state: 'attached', timeout: 5000 }).catch(async e => { throw new Error('no wheat tile: ' + await page.evaluate(() => (document.querySelector('.panel .goods-grid')?.innerHTML ?? 'no grid').slice(0, 300) + ' | modal: ' + (document.querySelector('.modal')?.innerText ?? '-'))); });
+  await page.evaluate(() => document.querySelector('.good-tile[data-do="loadTruck"][data-good="wheat"]').click());
+  await page.waitForSelector('[data-do="sendTruck"]', { state: 'attached', timeout: 5000 }).catch(async () => { throw new Error('no send button: ' + errors.join(' | ') + await page.evaluate(() => JSON.stringify(farm.state().truck) + (document.querySelector('.panel')?.innerText ?? ''))); });
+  expect(await page.evaluate(() => farm.state().truck.load.length) === 1, 'nothing loaded');
+  await page.evaluate(() => document.querySelector('[data-do="sendTruck"]').click());
+  expect(await page.evaluate(() => farm.state().truck.away), 'the truck did not leave');
+  await page.evaluate(() => farm.setClockOffset(100_000 + 20_000)); await page.waitForTimeout(1200);
+  const mid = await page.evaluate(() => farm.world.batches.items.get('truck')?.x ?? null);
+  await page.evaluate(() => farm.setClockOffset(100_000 + 100_000));
+  await page.waitForFunction(() => farm.state().truck.coins > 0 && farm.world.batches.items.has('truck'), null, { timeout: 8000 });
+  expect(!errors.length, errors.join(' | ')); expect(typeof mid === 'number' || mid === null, 'odd truck position');
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
   await ctx.close();
 });

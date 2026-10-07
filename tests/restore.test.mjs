@@ -8,7 +8,8 @@ import * as grid from '../src/core/grid.mjs';
 import { currentStep } from '../src/core/projects.mjs';
 import { repairCost, levelOf, isWorking, worstWorn } from '../src/core/condition.mjs';
 import { rentPerHour } from '../src/core/homes.mjs';
-import { REPAIR, WEAR, HOUR, START_RESTORE, HOUSE, DEMOLISH } from '../src/content/economy.mjs';
+import { GOODS } from '../src/content/goods.mjs';
+import { REPAIR, WEAR, HOUR, START_RESTORE, HOUSE, DEMOLISH, TRUCK } from '../src/content/economy.mjs';
 import { T0, MIN } from './helpers.mjs';
 
 const fresh = () => { const s = newGame(T0, 4242, { restore: true }); tick(s, T0); return s; };
@@ -151,4 +152,22 @@ test('v2 saves migrate to the current version without gaining a restored village
   const m = migrate(JSON.parse(JSON.stringify(old)));
   assert.equal(m.version, SAVE_VERSION); assert.deepEqual(m.cond, {}); assert.deepEqual(m.repairing, {}); assert.deepEqual(m.rebuild, {});
   assert.equal(m.mode ?? null, null); assert.equal(Object.keys(m.placed).length, 0);
+});
+
+test('the market truck: needs a repaired market and street; load, send, come back with a bonus; bigger trucks carry more', () => {
+  const s = fresh(); s.coins = 5000; s.level = 6; s.barn.items.wheat = 100;
+  const market = idOf(s, 'market'); assert.equal(levelOf(s, market), 3, 'the market starts broken');
+  assert.equal(act(s, 'loadTruck', { good: 'wheat', n: 5 }, T0).ok, false);
+  must(s, 'repair', { id: market }); tick(s, T0 + REPAIR.broken.ms + 1000);
+  assert.equal(act(s, 'loadTruck', { good: 'wheat', n: 5 }, T0 + 100_000).ok, false, 'the street is still broken');
+  must(s, 'repair', { id: 'road_south' }, T0 + 100_000); let t = T0 + 100_000 + REPAIR.broken.ms + 1000; tick(s, t);
+  const before = s.barn.items.wheat; must(s, 'loadTruck', { good: 'wheat', n: 5 }, t);
+  assert.equal(s.barn.items.wheat, before - 5); assert.equal(act(s, 'sendTruck', {}, t + 1).ok, true);
+  assert.equal(act(s, 'loadTruck', { good: 'wheat', n: 1 }, t + 2).ok, false, 'away');
+  tick(s, t + 10_000); assert.equal(s.truck.away, true);
+  tick(s, t + TRUCK.tripMs + 1); assert.equal(s.truck.away, false); assert.ok(s.truck.coins >= 5 * GOODS.wheat.value);
+  const coins = s.coins; must(s, 'collectTruck', {}, t + TRUCK.tripMs + 2); assert.ok(s.coins > coins); assert.equal(s.truck.coins, 0);
+  must(s, 'loadTruck', { good: 'wheat', n: 99 }, t + TRUCK.tripMs + 3); assert.equal(s.truck.load[0].n, TRUCK.capacity[0]);
+  assert.equal(act(s, 'sendTruck', {}, t + TRUCK.tripMs + 4).ok, true);
+  assert.equal(act(s, 'upgradeTruck', {}, t + TRUCK.tripMs + 5).ok, true); assert.equal(s.truck.level, 2);
 });

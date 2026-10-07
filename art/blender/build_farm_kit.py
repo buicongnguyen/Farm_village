@@ -509,6 +509,27 @@ piece('lamp', [cl('foot', .22, .18, 0, 0, 0, 'charcoal', verts=8, rt=.15), cl('p
                bx('arm', .1, .1, .1, 0, 0, 2.15, 'iron'), cl('cap', .26, .14, 0, 0, 2.48, 'charcoal', verts=6, rt=.08),
                cl('glass', .18, .3, 0, 0, 2.18, 'lampglow', verts=6)])
 anchors['lamp'] = {'light': [(0, 0, 2.33)]}
+
+# =================================================================== the delivery truck (PLAN-v0.3 P3): a little red pickup, front toward +y
+def truck():
+    p = [bx('chassis', 1.5, 4.0, .34, 0, 0, .36, 'charcoal', bev=.04),
+         bx('cab', 1.55, 1.45, 1.0, 0, 1.2, .62, 'red', bev=.07), bx('cabroof', 1.6, 1.3, .12, 0, 1.15, 1.58, 'redd', bev=.04),
+         bx('hood', 1.5, .9, .5, 0, 1.95, .62, 'red', bev=.06),
+         bx('windshield', 1.3, .08, .55, 0, 1.58, 1.0, 'glass', bev=.02), bx('sidewinl', .06, .8, .5, -.79, 1.2, 1.0, 'glass', bev=.01), bx('sidewinr', .06, .8, .5, .79, 1.2, 1.0, 'glass', bev=.01),
+         bx('grille', 1.0, .08, .3, 0, 2.42, .72, 'iron', bev=.02), bx('bumper', 1.6, .18, .16, 0, 2.45, .42, 'iron', bev=.03),
+         bx('lampl', .22, .08, .16, -.55, 2.44, .9, 'sun', bev=.02), bx('lampr', .22, .08, .16, .55, 2.44, .9, 'sun', bev=.02),
+         bx('bedfloor', 1.6, 2.2, .1, 0, -1.0, .62, 'woodd', bev=.02),
+         bx('sidel', .1, 2.2, .45, -.78, -1.0, .72, 'wood', bev=.02), bx('sider', .1, 2.2, .45, .78, -1.0, .72, 'wood', bev=.02),
+         bx('tail', 1.6, .1, .45, 0, -2.1, .72, 'wood', bev=.02), bx('front', 1.6, .1, .55, 0, -.05, .72, 'wood', bev=.02)]
+    for x, y, c in [(-.45, -1.2, 'hay'), (.4, -1.5, 'sack'), (-.1, -.55, 'hayd')]:
+        p.append(bx('crate', .62, .62, .5, x, y, .72, c, bev=.04))
+    p.append(ball('sackball', .26, .45, -.65, 1.05, 'sackd', sc=(1, 1, 1.1)))
+    for x, y in [(-.86, 1.45), (.86, 1.45), (-.86, -1.35), (.86, -1.35)]:
+        p.append(cl('tyre', .42, .3, x, y, .42, 'charcoal', verts=12, rot=(0, math.pi / 2, 0)))
+        p.append(cl('hub', .2, .34, x, y, .42, 'iron', verts=8, rot=(0, math.pi / 2, 0)))
+    return p
+piece('truck', truck())
+anchors['truck'] = {'light': [(-.55, 2.44, .98), (.55, 2.44, .98)]}
 def board():
     p = [bx('postl', .12, .12, 1.9, -.75, 0, 0, 'woodd'), bx('postr', .12, .12, 1.9, .75, 0, 0, 'woodd'),
          bx('board', 1.5, .08, .95, 0, .02, .8, 'cork', bev=.02), bx('frame', 1.62, .06, 1.05, 0, -.02, .75, 'wood', bev=.02),

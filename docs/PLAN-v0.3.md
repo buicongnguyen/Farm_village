@@ -94,7 +94,7 @@ then P7. Each package is committed when its tests pass.
 |---|---|
 | P1 Starting world | **done** (restored village as data, ring road, damaged roads, worn farmhouse; old saves keep what they built and do not get the new pieces) |
 | P2 Condition and repair | **done** (repair, gentle wear, demolish and rebuild credit, farmhouse upgrade, neighbours mend things; broken things look run down, scaffolding while a repair runs) |
-| P3 Market and transport | not started (the delivery truck and market square) |
+| P3 Market and transport | done: market square (broken at start, repair it) and a delivery truck (load goods, 90 s trip, pays x1.2, three sizes), needs the village street mended; truck drives west on the street and back |
 | P4 Household and helpers | not started (chores for June and Pip; varied people from the reference game) |
 | P5 Money, pace, first session | **done** (500 coins and starter goods, the restore first session with Ada, pace tests on the restored start). Still to do: the free daily "hurry" |
 | P6 Phone UI | not started (grid catalogue, compact panels) |
@@ -108,3 +108,4 @@ then P7. Each package is committed when its tests pass.
 | 2026-10-07 | The user asked to reuse the reference game's people shapes and item art: added to P4 (varied people) and the icon list. P1/P2 rules started (start layout data, road ring, repair/wear numbers). | 3206747 |
 | 2026-10-07 | P1, P2 and most of P5 built: the restored village, repair/wear/demolish/farmhouse, the restore first session (Ada harvest → order → repair mill and coop → fence → hens → feed → repair a cottage), pace on the restored start (school day 8 / 3 / 2 for casual / steady / keen). 109 unit tests, 6 new browser checks, all suites green. | 3c97708 |
 | 2026-10-07 | Before this plan: the AAA pass (v0.2: art, world, juice, cast, story, play and ui packages) was merged and deployed. | a57b43d |
+| 2026-10-07 | P3 built: core/market.mjs (loadTruck, sendTruck, collectTruck, upgradeTruck), market square building + panel, truck piece in the farm kit, truck driving in land-view, vi strings, rules and browser tests. | - |

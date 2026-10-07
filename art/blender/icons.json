@@ -662,5 +662,13 @@
     "x": 0.55
    }
   ]
+ },
+ {
+  "id": "market",
+  "src": "3d_farmer_fish_sell/public/assets/models/market-stall.glb",
+  "view": [
+   -30,
+   22
+  ]
  }
 ]

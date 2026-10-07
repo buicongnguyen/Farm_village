@@ -5,11 +5,12 @@ import { t, num } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { BARN, SLOTS } from '../content/economy.mjs';
+import { BARN, SLOTS, TRUCK } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
 import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
+import { truckOf, loadUnits, loadValue, capacity, blocked as blockedWhy } from '../core/market.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderFriends, renderGift, renderMail, heartBar, showLetter, PEOPLE, nameOf } from './bonds-panels.mjs';
@@ -23,7 +24,7 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
   return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
-  stall: 'Roadside stall', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
+  stall: 'Roadside stall', market: 'Market square', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
 const HEAD_ICONS = { settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
@@ -66,6 +67,10 @@ export class Panels {
     else if (d.do === 'buySlot') g.do('buySlot', { building: this.open.arg });
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
+    else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
+    else if (d.do === 'sendTruck') g.do('sendTruck');
+    else if (d.do === 'collectTruck') g.do('collectTruck');
+    else if (d.do === 'upgradeTruck') g.do('upgradeTruck');
     else if (d.do === 'claimGift') g.do('claimGift');
     else if (d.do === 'trade') g.do('trade', { id: d.id, accept: true });
     else if (d.do === 'decline') g.do('trade', { id: d.id, accept: false });
@@ -123,6 +128,15 @@ export class Panels {
         return `<div class="slot ${left <= 0 ? 'ready' : ''}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : shortTime(left)}</small></div>`; }).join('');
       body = `<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
         ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}<div class="recipes">${recipes}</div>`;
+    } else if (o.kind === 'market') {
+      const tr = truckOf(s), why = blockedWhy(s), spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0), next = tr.level < TRUCK.capacity.length;
+      const status = tr.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, tr.backAt - now))}` : why ? t(why) : `${t('Load')}: ${num(loadUnits(tr))}/${num(capacity(tr))} · ${coinMark()} ${num(Math.round(loadValue(tr) * TRUCK.pay))}`;
+      body = `<p class="hint">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p><p class="hint"><b>${status}</b></p>
+        <div class="queue">${tr.load.map(i => `<div class="slot">${goodIcon(i.good)}<small>×${i.n}</small></div>`).join('')}</div>
+        ${tr.coins ? `<button class="btn primary wide" data-do="collectTruck">${t('Collect {coins} coins', { coins: num(tr.coins) })}</button>` : ''}
+        ${!tr.away && !why && tr.load.length ? `<button class="btn orange wide" data-do="sendTruck">${t('Send the truck')}</button>` : ''}
+        ${next ? `<button class="btn ghost wide" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}>${glyph('up', 'g')} ${t('Bigger truck')} · ${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</button>` : ''}
+        ${!tr.away && !why ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}`;
     } else if (o.kind === 'stall') {
       const st = s.stall, spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0);
       body = `<p class="hint">${t('Passers-by buy one thing every few minutes, at its base price.')}</p>

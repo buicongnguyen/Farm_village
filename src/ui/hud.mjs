@@ -97,6 +97,7 @@ export class Hud {
   pulse(el, cls = 'pulse') { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   event(e) {
     if (e.type === 'repairStarted') this.toast(t('Repair started: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'info', { icon: 'wrench' });
+    if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });
     if (e.type === 'neighbourRepair') this.toast(t('{name} mended the {thing}!', { name: t(NAMES[e.id] ?? e.id), thing: thingName(this.game.s, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') }), 'good', { icon: 'wrench' });
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });

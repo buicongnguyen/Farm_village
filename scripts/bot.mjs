@@ -119,6 +119,7 @@ export class Bot {
   repairs(now) {
     const s = this.s, ids = kind => Object.keys(s.placed).filter(id => s.placed[id].kind === kind);
     for (const kind of ['feed_mill', 'coop', 'bakery', 'cottage']) for (const id of ids(kind)) this.do('repair', { id }, now);
+    if (s.coins > 600) for (const id of [...ids('market'), 'road_south']) this.do('repair', { id }, now);   // the market and the street once there is spare money
     for (const key of RESTORE.fenceRect.missing) { const [x, z, side] = key.split(','); this.do('placeEdge', { kind: 'fence', x: +x, z: +z, side }, now); }
     for (const id of Object.keys(s.cond)) if (s.cond[id].level >= 1 && s.cond[id].level < 3 && s.coins > 400) this.do('repair', { id }, now);   // wear: one tap, a few coins
   }

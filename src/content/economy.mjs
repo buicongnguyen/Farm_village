@@ -43,6 +43,8 @@ export const RENT = {
 };
 export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.4 ** (n - 6)), maxV01: 2, level: 4 };
 export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1 };
+/** The delivery truck (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip. */
+export const TRUCK = { tripMs: 90_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 400, 1500], level: [1, 3, 6] };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
 export const DAILY_RESET_HOUR = 4;
 export const FAMILY_ARRIVAL_MS = 2 * MIN;

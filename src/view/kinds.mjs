@@ -10,6 +10,8 @@ export const KIND_MODELS = {
   feed_mill_sails: { kit: 'farm-kit', node: 'feed_mill_sails', authored: true, lod: 'static', ao: 0 },
   bakery:    { kit: 'farm-kit', node: 'bakery', authored: true, lod: 'static' },
   stall:     { kit: 'market-stall', node: 'market-stall', width: 3.8, lod: 'static' },
+  market:    { kit: 'market-stall', node: 'market-stall', width: 5.4, lod: 'static' },
+  truck:     { kit: 'farm-kit', node: 'truck', authored: true, lod: 'static' },
   school:    { kit: 'town', node: 'school', width: 9.6, lod: 'static', late: true },
   flowers:   { kit: 'nature', node: 'flowers_a', width: 1.5, lod: 'crop', late: true },
   bush:      { kit: 'nature', node: 'bush_a', width: 1.6, lod: 'crop', late: true },
