@@ -5,7 +5,8 @@
 //   birds     a flock of 5–8 that crosses the view every 30–60 s, flapping and gliding
 //   flutter   up to 40 butterflies and bees looping round flowers and crops near the camera (by day)
 //   night     fireflies over the pond, the brook and the woods, and stars twinkling in the far haze
-// setNight(k) (0 day .. 1 night) comes from daylight.mjs; reduced motion slows everything to a calm drift.
+// setNight(k) (0 day .. 1 night) comes from daylight.mjs; reduced motion slows the clouds to a calm drift and rests the
+// birds and butterflies.
 import * as THREE from 'three';
 import { CELL, POND } from '../content/world.mjs';
 import { MAP } from './backdrop.mjs';
@@ -259,7 +260,9 @@ export class Sky {
     const b = this.birds.uniforms;
     this.nextBirds -= dt;
     if (this.nextBirds <= 0 && this.night < 0.5) { this.startBirds(t); this.nextBirds = 30 + rand() * 30; }
-    this.birds.mesh.visible = t - b.uT0.value < 260 / b.uSpeed.value && this.night < 0.5;
+    this.birds.mesh.visible = t - b.uT0.value < 260 / b.uSpeed.value && this.night < 0.5 && calm === 1;
+    // reduced motion: the birds and butterflies rest (out of sight); only the clouds drift, slowly
+    this.flutter.mesh.visible = this.night < 0.5 && calm === 1;
     // butterflies: re-anchor near the camera now and then
     this.anchorClock += dt;
     if (this.anchorClock > 2.5) { this.anchorClock = 0; this.reanchor(); }

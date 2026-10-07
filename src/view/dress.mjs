@@ -3,19 +3,21 @@
 //   - the wilds, planned from a seeded density map: groves of overlapping trees edged with undergrowth, clearings with
 //     flower drifts in vivid colours, swaying tufts, rocks and mushrooms (trees, bushes and rocks go through the shared
 //     batches with their levels of detail; the small things are merged into a few vertex-coloured meshes);
-//   - locked farm parcels: tall grass, saplings, rocks, a low fence on the edge and a For-sale sign, cleared on purchase;
+//   - locked farm parcels: tall grass, saplings, rocks, a low fence on the edge and a For-sale sign where buyableParcels()
+//     offers the land (none once the farm is at its v0.1 size), cleared on purchase;
 //   - the homestead's picket fence and hedge, the arch over the farm entrance, the windmill's turning rotor;
-//   - the village before it is rebuilt: a cobbled plaza round the old well, benches, lamp posts and shade trees;
+//   - the village before it is rebuilt: a cobbled plaza round the old well, benches, lamp posts and shade trees, and
+//     the charm milestones as they are reached (s.village.decor): bunting over the square, banners, a welcome sign;
 //   - sky life (sky.mjs) and the light at night (daylight.mjs).
 // It draws; it never changes the rules state.
 import * as THREE from 'three';
 import * as W from '../content/world.mjs';
 import { occupant } from '../core/grid.mjs';
+import { buyableParcels } from '../core/build.mjs';
 import { Backdrop, WIND, merge, part, decorMaterial, template, Builder } from './backdrop.mjs';
 import { Brook, brookCentre, POND_SHAPE } from './brook.mjs';
 import { noise } from './ground.mjs';
 import { loadKit, bake, fit, averageColor } from './models.mjs';
-import { Sky } from './sky.mjs';
 
 const { N, CELL } = W;
 let seed = 7; const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -176,7 +178,7 @@ class LockedLand {
   }
   put(id, item) { this.world.batches.set(id, item); this.ids.push(id); }
   sync() {
-    const { world, game } = this, b = world.batches, owned = new Set(game.s.parcels);
+    const { world, game } = this, b = world.batches, owned = new Set(game.s.parcels), onOffer = new Set(buyableParcels(game.s).map(p => p.parcel));
     for (const id of this.ids) b.remove(id); this.ids = [];
     if (this.mesh) { world.scene.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh = null; }
     seed = 515;
@@ -198,10 +200,8 @@ class LockedLand {
       }
       // a low fence on every edge shared with owned land, and a sign at its middle if it can be bought now
       const sides = [[0, -1, 'n'], [0, 1, 's'], [-1, 0, 'w'], [1, 0, 'e']];
-      let buyable = false;
       for (const [dx, dz, side] of sides) {
         const nb = at(px + dx, pz + dz); if (!nb || !owned.has(nb)) continue;
-        buyable = true;
         const horiz = side === 'n' || side === 's', line = side === 'n' ? o.z : side === 's' ? o.z + W.PARCEL : side === 'w' ? o.x : o.x + W.PARCEL;
         for (let k = 0; k < W.PARCEL; k++) {
           if (k === 7 || k === 8) continue;   // a gap in the middle, where the sign stands
@@ -209,8 +209,9 @@ class LockedLand {
           b.set(sid, horiz ? { model: 'picket', x: along * CELL, z: line * CELL, rot: 0, scale: 0.8 } : { model: 'picket', x: line * CELL, z: along * CELL, rot: Math.PI / 2, scale: 0.8 });
           this.ids.push(sid);
         }
+        if (!onOffer.has(id) || sign.some(sg => sg.parcel === id)) continue;   // one sign per parcel on offer
         const mid = (horiz ? o.x : o.z) + 8, inward = side === 'n' || side === 'w' ? 0.9 : -0.9;
-        sign.push(horiz ? { x: mid * CELL, z: line * CELL + inward, rot: 0 } : { x: line * CELL + inward, z: mid * CELL, rot: Math.PI / 2 });
+        sign.push(horiz ? { parcel: id, x: mid * CELL, z: line * CELL + inward, rot: 0 } : { parcel: id, x: line * CELL + inward, z: mid * CELL, rot: Math.PI / 2 });
       }
     }
     for (const s of sign) B.addGeometry(merge(forSale(s)));
@@ -278,6 +279,39 @@ async function dressVillage(world, game) {
   game.on(r => { if (r.events?.some(e => e.type === 'placed' || e.type === 'moved' || e.type === 'stored' || e.type === 'loaded')) show(); });
   world.lamps = items.filter(([, it]) => it.model === 'deco_lamp').map(([id, it]) => ({ id, x: it.x, z: it.z, y: 2.35 }));
   world.onLampsChanged?.();
+  await dressMilestones(world, game);
+}
+
+/** Village charm milestones (play package: s.village.decor, the 'charmMilestone' event): bunting strung over the square
+ *  at 8 charm, banners at its road corners at 20, a welcome sign where the road reaches the village at 40. */
+const MILESTONE_ITEMS = (() => {
+  const P = W.PLAZA, out = { bunting: [], banner: [], welcome_sign: [] };
+  for (let k = 0; k < 3; k++) for (const [z, n] of [[P.z0 + 0.15, 'n'], [P.z1 + 0.85, 's']]) out.bunting.push([`charm-bunting-${n}${k}`, { model: 'village_bunting', x: (P.x0 + 1 + 2 * k) * CELL, z: z * CELL, rot: 0 }]);
+  out.banner.push(['charm-banner-w', { model: 'village_banner', x: (P.x0 - 0.35) * CELL, z: (P.z0 + 0.3) * CELL, rot: 0 }]);
+  out.banner.push(['charm-banner-e', { model: 'village_banner', x: (P.x1 + 1.35) * CELL, z: (P.z0 + 0.3) * CELL, rot: Math.PI }]);
+  out.welcome_sign.push(['charm-welcome', { model: 'welcome_sign', x: (W.VILLAGE.x0 + 0.5) * CELL, z: (W.VILLAGE.z0 + 0.4) * CELL, rot: -Math.PI / 4 }]);
+  return out;
+})();
+async function dressMilestones(world, game) {
+  const b = world.batches;
+  const [decor, props] = await Promise.all([loadKit('decor'), loadKit('props')]);
+  const reg = (name, root, size) => { if (b.has(name) || !root) return; const geo = fit(bake(root), size); b.register(name, { geo, kind: 'static', color: averageColor(geo) }); };
+  reg('village_bunting', decor.bunting, { scale: 1 }); reg('village_banner', decor.banner, { scale: 1 }); reg('welcome_sign', props.signpost, { height: 2.6 });
+  const cellOf = it => [Math.floor(it.x / CELL), Math.floor(it.z / CELL)];
+  const show = (fresh = []) => {
+    const have = new Set(game.s.village?.decor ?? []);
+    for (const [decorId, list] of Object.entries(MILESTONE_ITEMS)) for (const [id, it] of list) {
+      const [x, z] = cellOf(it), want = have.has(decorId) && b.has(it.model) && !occupant(game.s, x, z);
+      if (!want) { b.remove(id); continue; }
+      const isNew = !b.items.has(id); b.set(id, it);
+      if (isNew && fresh.includes(decorId)) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 });   // a milestone just reached pops in
+    }
+  };
+  show();
+  game.on(r => {
+    const ev = r.events ?? [], fresh = ev.filter(e => e.type === 'charmMilestone').map(e => e.decor);
+    if (fresh.length || ev.some(e => ['placed', 'moved', 'stored', 'loaded'].includes(e.type))) show(fresh);
+  });
 }
 
 /** The windmill's rotor, turning on its own (one draw). */
@@ -299,7 +333,6 @@ export async function dressWorld(world, game) {
   world.wilds = planWilds();
   placeTrees(world, world.wilds);
   dressHomestead(world);
-  world.sky = new Sky(world, game);
   world.onFrame((dt, now) => { WIND.time.value = (now / 1000) % 10000; WIND.amp.value = document.body.classList.contains('reduced-motion') ? 0 : 1; });
   world.ground.markAll();
   // far zoom: the small merged things are sub-pixel there, so they are hidden (saves their triangles)
@@ -314,6 +347,8 @@ export async function dressWorld(world, game) {
     await step(() => { world.brook = new Brook(world); });
     await step(() => { world.wildDecor = placeDecor(world, world.wilds); });
     await step(() => { world.locked = new LockedLand(world, game); });
+    // sky life (cloud shadows, birds, butterflies) is its own chunk: not needed for the first scene
+    const { Sky } = await import('./sky.mjs'); world.sky = new Sky(world, game);
     world.daylight?.apply(); fit(world.cam);
   })();
   // after that: the village's heavier models and the windmill's rotor

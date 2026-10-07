@@ -150,7 +150,8 @@ await check('locked land: buying a parcel clears its overgrowth, fence and sign'
   });
   expect(r.ok, `buy failed: ${r.reason}`);
   expect(r.before.here > 5 && r.after.here === 0, JSON.stringify(r));
-  expect(r.after.signs >= r.before.signs, `signs ${r.before.signs} → ${r.after.signs}`);
+  // signs follow buyableParcels(): the farm's v0.1 size is two parcels, so once one is bought none is on offer
+  expect(r.before.signs >= 2 && r.after.signs === 0, `signs ${r.before.signs} → ${r.after.signs}`);
   await ctx.close();
 });
 

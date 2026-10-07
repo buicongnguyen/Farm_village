@@ -29,7 +29,7 @@ const clamp01 = k => Math.min(1, Math.max(0, k));
 const easeOut = k => 1 - (1 - k) * (1 - k), easeInOut = k => k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
 const easeBack = k => { const c = 1.9; return 1 + (c + 1) * (k - 1) ** 3 + c * (k - 1) ** 2; };
 const MAX_ANIMS = 500;           // a whole-farm reload changes thousands of crops at once: past this they just snap
-const NO_SHADOW = /^(sparkle|produce:|fence|gate|tuft|weeds$|pop:)/;
+const NO_SHADOW = /^(sparkle|produce:|fence|gate|tuft|weeds$|pop:|village_bunting|bunting|plot_stakes)/;   // flags on strings and plot stakes cast no blob
 
 /** Scale multipliers [xz, y] of an animation at time `now`, and whether it has finished. */
 function animScale(a, now) {
@@ -131,6 +131,14 @@ export class Batches {
     const size = geo.boundingBox.getSize(new THREE.Vector3());
     const sway = (kind === 'crop' || kind === 'tree') && !/rock/.test(name);
     this.models.set(name, { geo, mid, kind, color, sway, standinScale: kind === 'tree' ? size.y / 2.6 : Math.max(size.x, size.z) / 1.1, shadow: this.shadowSpec(name, kind, size) });
+  }
+  /** Replace a registered model's geometry (a better kit arrived after the first scene): its batches are rebuilt with the
+   *  new look on the next flush, and its items' contact shadows follow the new size. */
+  swap(name, spec) {
+    if (!this.models.has(name)) return this.register(name, spec);
+    this.register(name, spec);
+    for (const [key, mesh] of this.meshes) if (key.endsWith(`|${name}`)) { this.scene.remove(mesh); mesh.dispose(); this.meshes.delete(key); this.dirty.add(key); }
+    for (const [id, it] of this.items) if (it.model === name) this.shadowFor(id, it);
   }
   /** How the blob under a model looks: layer, shape (0 round, 1 rounded box), size and darkness. */
   shadowSpec(name, kind, size) {

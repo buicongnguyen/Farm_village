@@ -275,6 +275,7 @@ export class LandView {
     for (const e of events) {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') this.drawPlaced(e.id);
+      else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);

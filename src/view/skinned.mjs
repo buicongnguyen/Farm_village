@@ -6,6 +6,7 @@
 // flickers between the two, and draws the rest as instances. Rigged models load lazily, after the first frames.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { toon, toonRamp } from '../kit/toon.mjs';
@@ -42,7 +43,7 @@ const FALLBACK = {
   Swim: ['Swim', 'Idle'], Wag: ['Wag', 'Idle'], Bark: ['Bark', 'Idle'], Flap: ['Flap', 'Idle'], Hop: ['Hop', 'Idle'], Idle: ['Idle'],
 };
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);   // rigs may be meshopt-packed (art/blender/pack.mjs) like the kits
 const rigs = new Map();          // name → Promise<Rig>
 const loaded = new Map();        // name → Rig, once ready
 
@@ -194,6 +195,7 @@ export function loadRig(name) {
     for (let i = 0; i < col.length; i += 9) { c.r += col[i]; c.g += col[i + 1]; c.b += col[i + 2]; n++; }
     rig.color = c.multiplyScalar(1 / Math.max(1, n));
     const size = pose.boundingBox.getSize(new THREE.Vector3()); rig.standin = Math.max(size.x, size.z) / 1.1;
+    rig.blob = Math.max(size.x, size.z) * 0.5 + 0.15;   // contact-shadow radius (juice.mjs MovingShadows), metres
     if (def.tint) {   // people: the walking carry, and the broom, hammer and basket their clips hold
       carryWalk(rig); rig.variants = {};
       for (const [clip, prop] of Object.entries(PROPS)) if (rig.clips.has(clip)) rig.variants[clip] = await withProp(rig, prop).catch(() => null);
@@ -294,6 +296,7 @@ export class Cast {
       const bones = {}; root.traverse(o => { if (o.isBone) bones[o.name] = o; });
       a = { rig, root, mesh, uniforms, bones, mixer: new THREE.AnimationMixer(root), actions: new Map(), clip: null, current: null, once: null };
       a.mixer.addEventListener('finished', e => { if (a.once && e.action === a.once.action) a.once = null; });
+      root.userData.blob = rig.blob;   // juice draws a soft contact shadow under every pooled actor
       this.actors.push(a); this.world.scene.add(root);
     }
     a.subject = s; s.actor = a; a.root.visible = true; a.clip = null; a.once = null; a.current = null;
@@ -367,7 +370,7 @@ export class Cast {
     const mat = tinted ? (crowdTint ??= castMaterial(true)) : toon();
     if (old) { this.world.scene.remove(old.mesh); old.mesh.dispose(); }
     const g = tinted ? geo.clone() : geo, mesh = new THREE.InstancedMesh(g, mat, cap);
-    mesh.count = 0; mesh.frustumCulled = false; mesh.userData.cast = key;
+    mesh.count = 0; mesh.frustumCulled = false; mesh.userData.cast = key; mesh.userData.blobInst = rig.blob;   // a contact shadow per instance
     let tints = null;
     if (tinted) tints = ['hair', 'top', 'bottom'].map(slot => { const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3).fill(1), 3); g.setAttribute(`i${slot[0].toUpperCase()}${slot.slice(1)}`, a); return [slot, a]; });
     if (lod === 2) for (let i = 0; i < cap; i++) mesh.setColorAt(i, rig.color);

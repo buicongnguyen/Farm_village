@@ -21,6 +21,8 @@ const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
+/** Template params for t(): string values (the {family} name) are translated first. */
+const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit' };
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -103,11 +105,11 @@ export class PeopleView {
   }
   drop(w) { w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
   /** A neighbour walks in from their signpost to the order board and says something about the farm. */
-  visit(id, comment) {
+  visit(id, comment, params) {
     const sign = NEIGHBOUR_SIGNS.find(n => n.id === id); if (!sign) return;
     const start = this.nearestWalkable(sign.x, sign.z); if (!start) return;
     const old = this.walkers.get(`visit:${id}`); if (old) this.drop(old);
-    const w = this.add({ id: `visit:${id}`, person: id, visitor: true, body: id === 'gus' ? 'man' : 'woman', x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL, comment, stage: 'coming', home: start });
+    const w = this.add({ id: `visit:${id}`, person: id, visitor: true, body: id === 'gus' ? 'man' : 'woman', x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL, comment, params, stage: 'coming', home: start });
     w.route = this.route([start[0], start[1]], [ORDER_BOARD.x, ORDER_BOARD.z]); w.wait = 0;
   }
   nearestWalkable(x, z) {
@@ -222,7 +224,7 @@ export class PeopleView {
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
     if (w.visitor) {
       if ((w.wait -= dt) > 0) { this.doing(w, w.stage === 'talking' ? 'Talk' : 'Idle', dt); return; }
-      if (w.stage === 'coming') { w.stage = 'talking'; w.wait = 5; this.say(w, t(w.comment)); this.once(w, 'Wave', 1.2); return; }
+      if (w.stage === 'coming') { w.stage = 'talking'; w.wait = 5; this.say(w, t(w.comment, tParams(w.params))); this.once(w, 'Wave', 1.2); return; }
       if (w.stage === 'talking') { w.stage = 'leaving'; w.route = this.route(this.cellOf(w), w.home); return; }
       this.drop(w); return;
     }
@@ -306,7 +308,7 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
-    if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment); return; }
+    if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);
     if (e.type === 'familyArrived') setTimeout(() => { for (const w of this.walkers.values()) if (FAMILIES.find(f => f.id === e.family)?.people.some(p => p.id === w.id)) this.once(w, 'Wave', 1.5); }, 1500);
     if (e.type === 'orderFilled') { const w = this.walkers.get(e.from); if (w && !w.family && !w.indoors) { w.route = this.route(this.cellOf(w), [ORDER_BOARD.x, ORDER_BOARD.z]); w.todo = { act: 'idle', time: 1, carryHome: true }; w.wait = 0; } }

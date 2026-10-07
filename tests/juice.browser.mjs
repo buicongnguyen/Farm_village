@@ -47,6 +47,15 @@ const farmSetup = (page, { ripe = true, animals = true } = {}) => page.evaluate(
 }, { ripe, animals });
 // Render now and copy the canvas (exact timing, unlike a page screenshot).
 const grab = page => page.evaluate(() => { const w = farm.world; w.renderer.render(w.scene, w.cam.camera); return w.renderer.domElement.toDataURL('image/png'); });
+// The same with the living cast (people, animals, critters: skinned.mjs) and their moving blobs left out of the frame, for checks that are
+// about the scenery's own motion (the cast walks about on its own, also with reduced motion).
+const grabScenery = page => page.evaluate(() => {
+  const w = farm.world, hidden = [], blobs = w.juice?.moving?.layer?.mesh;   // and the soft blobs that follow them
+  w.scene.traverse(o => { if (o.visible && (o.userData.cast || o.userData.blob || o === blobs)) { o.visible = false; hidden.push(o); } });
+  w.renderer.render(w.scene, w.cam.camera); const url = w.renderer.domElement.toDataURL('image/png');
+  for (const o of hidden) o.visible = true;
+  return url;
+});
 // Share of pixels that differ between two frames (computed in the page).
 const diff = (page, a, b) => page.evaluate(async ([a, b]) => {
   const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
@@ -61,13 +70,13 @@ await check('sway: crops and tree crowns move between frames 300 ms apart; reduc
   await farmSetup(page, { animals: false });
   await page.evaluate(() => { farm.game.do('setting', { key: 'daylight', value: 'always' }); farm.focus(40, 58, 20); });
   await page.waitForTimeout(1200);
-  const a = await grab(page); await page.waitForTimeout(300); const b = await grab(page);
+  const a = await grabScenery(page); await page.waitForTimeout(300); const b = await grabScenery(page);
   save('juice-sway-a', a); save('juice-sway-b', b);
   const moving = await diff(page, a, b);
   expect(moving > 0.004, `only ${(moving * 100).toFixed(2)}% of pixels changed`);
   await page.evaluate(() => farm.game.do('setting', { key: 'reducedMotion', value: true }));
   await page.waitForTimeout(1500);
-  const c = await grab(page); await page.waitForTimeout(300); const d = await grab(page);
+  const c = await grabScenery(page); await page.waitForTimeout(300); const d = await grabScenery(page);
   save('juice-sway-quiet-a', c); save('juice-sway-quiet-b', d);
   const still = await diff(page, c, d);
   console.log(`     sway: ${(moving * 100).toFixed(2)}% of pixels moved; reduced motion: ${(still * 100).toFixed(3)}%`);
@@ -134,16 +143,21 @@ await check('contact shadows under buildings, trees, crops and every hen (pc)', 
   const { ctx, page, errors } = await open('pc');
   await farmSetup(page);
   await page.evaluate(() => { farm.game.do('setting', { key: 'daylight', value: 'always' }); farm.focus(38, 61, 24); });
+  // the hens are cast subjects (skinned.mjs): their rig loads after the first scene; juice rescans once a second
+  await page.waitForFunction(() => farm.world.cast?.stats().rigs.includes('hen'), null, { timeout: 20000 });
   await page.waitForTimeout(1500);
   const s = await page.evaluate(() => {
-    const b = farm.world.batches, placed = farm.state().placed, ids = Object.keys(placed);
+    const b = farm.world.batches, placed = farm.state().placed, ids = Object.keys(placed), cast = farm.world.cast;
     const has = id => b.shadows.big.slots.has(id) || b.shadows.small.slots.has(id);
+    const hens = [...farm.world.life.herds.values()].map(a => a.subject).filter(sub => sub.rig === 'hen');
+    const shaded = sub => sub.actor ? sub.actor.root.userData.blob > 0 : [...cast.crowds.values()].some(c => c.rig.name === 'hen' && c.mesh.count > 0 && c.mesh.userData.blobInst > 0);
     return { buildings: ids.filter(id => ['feed_mill', 'coop', 'tree', 'bush'].includes(placed[id].kind)).every(has), crops: Object.keys(farm.state().beds).every(id => has(`crop:${id}`)),
-      farmhouse: has('farmhouse'), barn: has('barn'), hens: farm.world.juice.moving.layer.mesh.count, herd: Object.values(farm.state().animals).flat().length };
+      farmhouse: has('farmhouse'), barn: has('barn'), blobs: farm.world.juice.moving.layer.mesh.count, shaded: hens.filter(shaded).length, herd: Object.values(farm.state().animals).flat().length };
   });
   save('juice-shadow', await grab(page));
   expect(s.buildings && s.crops && s.farmhouse && s.barn, JSON.stringify(s));
-  expect(s.hens === s.herd && s.herd === 3, `${s.hens} animal shadows for ${s.herd} animals`);
+  // every hen has a blob (the layer also holds the family and critters walking nearby)
+  expect(s.shaded === s.herd && s.herd === 3 && s.blobs >= s.herd, `${s.shaded} shaded hens (${s.blobs} moving blobs) for ${s.herd} animals`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
@@ -212,12 +226,13 @@ await check('ghost: follows the pointer on a spring and pulses (pc)', async () =
     farm.build.hover({ x: 47, z: 68 }); await wait(30);
     const early = gh.at.x, goal = gh.goal.x;
     await wait(700);
-    const o1 = gh.tileMat.opacity; await wait(180); const o2 = gh.tileMat.opacity;
-    return { start, early, goal, end: gh.at.x, breathing: Math.abs(o1 - o2) > 0.005 };
+    // sample the breathing across most of one period (about 1.6 s), so a sample pair near a crest or trough cannot hide it
+    const seen = []; for (let i = 0; i < 6; i++) { seen.push(gh.tileMat.opacity); await wait(180); }
+    return { start, early, goal, end: gh.at.x, seen: seen.map(o => +o.toFixed(3)), ok: gh.ok, breathing: Math.max(...seen) - Math.min(...seen) > 0.02 };
   });
   expect(r.early > r.start && r.early < r.goal, `the ghost jumped: ${JSON.stringify(r)}`);
   expect(Math.abs(r.end - r.goal) < 0.05, `the ghost did not arrive: ${JSON.stringify(r)}`);
-  expect(r.breathing, 'the ghost does not pulse');
+  expect(r.breathing, `the ghost does not pulse: ${JSON.stringify(r)}`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });

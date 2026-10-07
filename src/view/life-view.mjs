@@ -10,17 +10,16 @@ import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { penOf, cellsOf } from '../core/grid.mjs';
 import { toon } from '../kit/toon.mjs';
 import { sfx } from '../kit/sound.mjs';
-import * as KINDS from './kinds.mjs';
+import { cropLook } from './kinds.mjs';   // the art kit's growth stages (sprout, leafy middle, ripe)
 import { castOf, RIGS } from './skinned.mjs';
 
-/** A crop's look for its progress: [model, scale]. The art package's cropLook (real stage models) wins when present. */
+/** The v0.1 crop look ([model, scale]): only a fallback while a stage model is not registered yet. */
 export function cropStage(crop, progress) {
   if (progress < 0.25) return ['crop:sprout', 0.7];
   if (progress < 0.6) return [`crop:${crop}`, 0.55];
   if (progress < 1) return [`crop:${crop}`, 0.8];
   return [`crop:${crop}`, 1];
 }
-const cropLook = KINDS.cropLook ?? cropStage;
 /** Is it night on the player's clock (and not "always daytime" in Settings)? */
 export function isNight(s, now) {
   if (s.settings?.daylight === 'always') return false;
@@ -75,7 +74,7 @@ export class LifeView {
         let [model, scale] = cropLook(bed.crop, progress); if (!b.has(model)) [model, scale] = cropStage(bed.crop, progress);
         const look = `${model}|${scale}`;
         if (this.shown.get(key) !== look) {
-          b.set(key, { model, x: (p.x + 0.5) * CELL, z: (p.z + 0.5) * CELL, rot: ((p.x * 7 + p.z * 13) % 12) * 0.52, scale });
+          b.set(key, { model, x: (p.x + 0.5) * CELL, z: (p.z + 0.5) * CELL, rot: ((p.x * 7 + p.z * 13) % 4) * Math.PI / 2, scale });   // quarter turns: plant rows stay on the bed furrows
           this.shown.set(key, look);
         }
         continue;

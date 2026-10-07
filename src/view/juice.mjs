@@ -32,7 +32,8 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 const quietNow = () => document.body.classList.contains('reduced-motion');
 /** Anchors published by the art package (kinds.mjs ANCHORS[model] = { chimney: [x, y, z], sails: [x, y, z], ... }), if any. */
 const anchorsOf = name => (Reflect.get(KINDS, 'ANCHORS') ?? {})[name] ?? null;
-const vec = a => a == null ? null : Array.isArray(a) ? a : [a.x, a.y, a.z];
+// an anchor is [x, y, z], {x, y, z}, or (as art/blender/anchors.mjs writes them) a list of points: the first one counts
+const vec = a => a == null ? null : Array.isArray(a) ? (Array.isArray(a[0]) || (a[0] && typeof a[0] === 'object') ? vec(a[0]) : a) : [a.x, a.y, a.z];
 const FIXED = [['farmhouse', FARMHOUSE, 5], ['barn', BARN, 4.5], ['order_board', ORDER_BOARD, 1.2], ['mailbox', MAILBOX, 1]];
 
 export class Juice {
@@ -341,6 +342,7 @@ class MovingShadows {
     this.found = [];
     this.world.scene.traverse(o => {
       if (o.userData.blob) this.found.push({ o, r: o.userData.blob });
+      else if (o.isInstancedMesh && o.userData.blobInst) this.found.push({ o, r: o.userData.blobInst, inst: true });   // the cast's crowds
       else if (o.isInstancedMesh && !o.userData.batch && radius.has(o.geometry)) this.found.push({ o, r: radius.get(o.geometry), inst: true });
     });
   }

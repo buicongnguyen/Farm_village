@@ -3,7 +3,6 @@
 // along the brook and the pond. They are cast subjects drawn only as animated actors near the camera centre (the cast
 // lets at most a few critters animate at once), so they cost nothing when the view is elsewhere.
 import { CELL, N, FARMHOUSE, brookZ, isBrook, isRoad } from '../content/world.mjs';
-import * as WORLD from '../content/world.mjs';
 import { occupant } from '../core/grid.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { castOf, RIGS } from './skinned.mjs';
@@ -35,15 +34,14 @@ export class Critters {
     }
     // ducks on the brook (and on the pond, when the world has one)
     for (const x of [36, 44, 52]) this.others.push({ sub: this.add('duck', (x + 0.5) * CELL, (brookZ(x) + 0.5) * CELL, { clip: 'Swim', y: -0.12 }), kind: 'duck', water: 'brook', dir: Math.random() < 0.5 ? 1 : -1, x0: (x - 6) * CELL, x1: (x + 6) * CELL });
-    const P = WORLD.POND;
-    if (P) for (let i = 0; i < 2; i++) this.others.push({ sub: this.add('duck', (P.x0 + 1 + i * 2.5) * CELL, ((P.z0 + P.z1) / 2 + 0.5) * CELL, { clip: 'Swim', y: -0.08 }), kind: 'duck', water: 'pond', angle: rand(0, 6.28), cx: ((P.x0 + P.x1 + 1) / 2) * CELL, cz: ((P.z0 + P.z1 + 1) / 2) * CELL, rx: (P.x1 - P.x0 - 0.6) * CELL / 2, rz: (P.z1 - P.z0 - 0.6) * CELL / 2 });
+    // the pond's own ducks are brook.mjs's 'pond-ducks' (world package): no second set here
   }
   frame(dt) {
     this.time += dt;
-    const night = isNight(this.s, this.game.now);
-    if ((this.nextCrow -= dt) <= 0) { this.nextCrow = rand(18, 40); if (!night) this.crowArrives(); }
+    const night = isNight(this.s, this.game.now), calm = document.body.classList.contains('reduced-motion');
+    if ((this.nextCrow -= dt) <= 0) { this.nextCrow = rand(18, 40); if (!night && !calm) this.crowArrives(); }
     for (const c of [...this.crows]) this.liveCrow(c, dt);
-    for (const o of this.others) this.liveOther(o, dt, night);
+    for (const o of this.others) this.liveOther(o, dt, night, calm);
   }
   /** Crop beds no scarecrow watches over: [x, z] cells. */
   openFields() {
@@ -84,7 +82,7 @@ export class Critters {
     const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
     return cx >= 0 && cz >= 0 && cx < N && cz < N && !isBrook(cx, cz) && !isRoad(cx, cz) && !occupant(this.s, cx, cz);
   }
-  liveOther(o, dt, night) {
+  liveOther(o, dt, night, calm = false) {
     const sub = o.sub;
     if (o.kind === 'duck') {
       sub.clip = 'Swim'; sub.speed = 0.8;
@@ -97,8 +95,8 @@ export class Critters {
     if (this.time > o.until) {
       // the cat dozes by day and prowls a little at night; rabbits nibble and hop about
       const r = Math.random();
-      if (o.kind === 'cat') o.state = night ? (r < 0.6 ? 'walk' : 'sit') : r < 0.65 ? 'sleep' : r < 0.85 ? 'sit' : 'walk';
-      else o.state = r < 0.45 ? 'hop' : 'idle';
+      if (o.kind === 'cat') o.state = calm ? 'sleep' : night ? (r < 0.6 ? 'walk' : 'sit') : r < 0.65 ? 'sleep' : r < 0.85 ? 'sit' : 'walk';
+      else o.state = r < 0.45 && !calm ? 'hop' : 'idle';   // reduced motion: rabbits sit and nibble
       o.until = this.time + (o.state === 'sleep' ? rand(20, 50) : o.state === 'hop' ? rand(0.6, 1.4) : rand(3, 8));
       if (o.state === 'walk' || o.state === 'hop') {
         const a = rand(0, 6.28), d = rand(0.8, o.radius), tx = o.home[0] + Math.sin(a) * d, tz = o.home[1] + Math.cos(a) * d;

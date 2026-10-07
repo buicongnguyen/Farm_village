@@ -5,7 +5,7 @@ import { addLights } from '../kit/toon.mjs';
 import { GameCamera } from './camera.mjs';
 import { Ground } from './ground.mjs';
 import { Batches } from './batches.mjs';
-import { loadKit, bake, fit, simplify, averageColor } from './models.mjs';
+import { loadKit, loadKitLater, bake, fit, simplify, averageColor } from './models.mjs';
 import * as W from '../content/world.mjs';
 
 // Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
@@ -27,6 +27,16 @@ const SCENERY = [
   ['rural-lite', 'mailbox', 'mailbox', { height: 1.3 }, 'static'], ['rural-lite', 'windmill', 'windmill', { height: 9 }, 'static'],
   ['scenery', 'mushroom', 'mushroom', { width: 0.45 }, 'crop'], ['scenery', 'fence', 'picket', { width: 2 }, 'static'],
   ['scenery', 'gate', 'farm_gate', { width: 4.2 }, 'static'],
+];
+
+/** The art kit's nature.glb takes over the scenery's bushes, rocks, flowers and tufts once the first scene is up (a swap
+ *  in place: same names, so the wilds, the locked land and the player's charm items all follow), using its authored _mid
+ *  levels as the near look of the scatter. The wild trees stay on scenery.glb: nature's trees are 3.5k triangles (too
+ *  heavy for hundreds of scattered trees) and their 344-triangle _mid levels look faceted beside the full trees players
+ *  place, while the scenery's round trees and cones read as one style at every zoom. */
+const NATURE = [
+  ['bush_a_mid', 'bush', { width: 1.6 }, 'crop'], ['rock_a_mid', 'rock', { width: 1.4 }, 'crop'],
+  ['flowers_a_mid', 'flowers', { width: 1.2 }, 'crop'], ['grass_tuft', 'tuft', { width: 0.8 }, 'crop'],
 ];
 
 export class WorldView {
@@ -77,6 +87,13 @@ export class WorldView {
     this.batches.set('mailbox', { model: 'mailbox', ...at(27, 60), rot: Math.PI / 2 });
     this.batches.set('windmill', { model: 'windmill', ...at(W.WINDMILL.x, W.WINDMILL.z), rot: W.WINDMILL.rot });
     // the woods, groves, drifts and the rest of the dressing come from dress.mjs (dressWorld), right after this
+    this.natureLater = loadKitLater('nature', 400).then(kit => {
+      for (const [src, name, size, kind] of NATURE) {
+        if (!kit[src]) continue;
+        const geo = fit(bake(kit[src]), size);
+        this.batches.swap(name, { geo, mid: simplify(geo, 0.5), kind, color: averageColor(geo) });
+      }
+    }).catch(e => console.warn('nature kit', e.message));
   }
   /** The cell under a screen point, or null. */
   cellAt(clientX, clientY) {
