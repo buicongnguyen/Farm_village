@@ -26,7 +26,8 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
     neighbours: {},                         // id → { friendship, day, visits: [ms], visited: 0, trade: {...} | null }
     stall: { items: [], nextSaleAt: 0 },
     today: { day: '', giftDay: 0, seen: true, away: null },
-    story: { chapter: 1, tutorial: 0, firstWheat: true },
+    story: { chapter: 0, tutorial: 0, firstWheat: true },
+    firsts: {},                             // album: when each first happened
     stats: { cleared: 0, paths: 0, harvested: 0, produced: 0, ordersFilled: 0, orderCoins: 0, coinsEarned: 0 },
     counts: {},                             // kind → how many are placed (kept in step by place/store)
     stored: {},                             // kind → how many are in the storage shed (placing them again is free)

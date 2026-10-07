@@ -35,6 +35,37 @@ export const VI = {
   '{family} moved in!': '{family} đã dọn đến!', 'Welcome!': 'Chào mừng!', 'Plant it in your beds': 'Hãy trồng nó trên luống của bạn',
   'The school is open!': 'Trường đã mở cửa!', '+{charm} charm for {count} cottages': '+{charm} duyên dáng cho {count} ngôi nhà',
 
+  // ── Story and tutorial ──
+  'A key and a seed tin': 'Chiếc chìa khóa và hộp hạt giống', 'Every story starts with coming home.': 'Câu chuyện nào cũng bắt đầu bằng việc trở về nhà.',
+  'Your grandparents Ada and Ellis kept a farm beside a quiet brook. The village around it has emptied over the years. You arrive with June and Pip to take over the farm, and Ada asks one thing: bring the village back to life.': 'Ông bà Ada và Ellis có một trang trại bên con suối yên bình. Ngôi làng quanh đó đã vắng dần theo năm tháng. Bạn cùng June và Pip về tiếp quản trang trại, và bà Ada chỉ mong một điều: hãy làm ngôi làng sống lại.',
+  'Something takes root': 'Mầm xanh bén rễ', 'A small harvest. A big beginning.': 'Mùa thu hoạch nhỏ. Khởi đầu lớn.',
+  "The first loaves in years come out of Ada's oven, and the hens settle into their new coop. Pip names every one of them. The farm is waking up.": 'Những ổ bánh đầu tiên sau bao năm ra lò của bà Ada, và đàn gà đã quen chuồng mới. Pip đặt tên cho từng con. Trang trại đang thức dậy.',
+  'A light in the window': 'Ánh đèn bên cửa sổ', 'The first family comes home to Hollowbrook.': 'Gia đình đầu tiên về Hollowbrook.',
+  'For the first time in years, a window in the village glows after dark. The Trans have moved into the cottage by the brook, and Bo is already asking about the old school.': 'Lần đầu tiên sau nhiều năm, một ô cửa trong làng sáng đèn khi trời tối. Gia đình Trần đã dọn vào ngôi nhà bên suối, và Bơ đã hỏi về ngôi trường cũ.',
+  'A bell for the children': 'Tiếng chuông cho bọn trẻ', 'The school opens its doors again.': 'Ngôi trường mở cửa trở lại.',
+  'Cora rings the old bell, and Bo and Zara race each other to the door. Hollowbrook has children again, and a village with children has a future.': 'Cô Cora rung chiếc chuông cũ, Bơ và Zara chạy đua tới cửa. Hollowbrook lại có trẻ con, và một ngôi làng có trẻ con là một ngôi làng có tương lai.',
+  'Chapter {n}': 'Chương {n}', 'Begin': 'Bắt đầu', 'Continue': 'Tiếp tục', 'Got it': 'Đã hiểu', 'I know how': 'Tôi biết rồi', 'Skip tutorial': 'Bỏ qua hướng dẫn',
+  "Let's clear a patch by the house. Tap the weeds, then the broom.": 'Hãy dọn một khoảnh đất cạnh nhà. Chạm vào cỏ dại, rồi chạm cây chổi.',
+  'A farm needs a path to the road. Open build mode and lay three path tiles to the road.': 'Trang trại cần lối ra đường. Mở chế độ xây dựng và lát ba ô lối đi ra đường.',
+  'Now six crop beds on the cleared ground. They are free.': 'Giờ hãy đặt sáu luống trồng trên đất đã dọn. Chúng miễn phí.',
+  'Tap a bed and choose wheat, then drag across the others to plant them all.': 'Chạm vào một luống và chọn lúa mì, rồi kéo qua các luống khác để trồng hết.',
+  'Your first wheat grows fast. When it is golden, tap a bed and harvest.': 'Lúa mì đầu tiên lớn rất nhanh. Khi lúa vàng, chạm vào luống và thu hoạch.',
+  'I have an order for you. Open the order board and deliver my six wheat.': 'Bà có một đơn hàng cho cháu. Mở bảng đơn hàng và giao sáu bó lúa mì cho bà nhé.',
+  'Our first project: a feed mill and a coop. Open the projects and follow the steps.': 'Công trình đầu tiên: máy xay thức ăn và chuồng gà. Mở mục công trình và làm theo từng bước.',
+  'Put a fence with a gate around the coop, then tap the coop for your first hens. Mai is giving you two!': 'Dựng hàng rào có cổng quanh chuồng gà, rồi chạm vào chuồng để nhận gà. Mai tặng bạn hai con!',
+  'Hens eat chicken feed. Make some at the feed mill, then tap the coop to feed them.': 'Gà ăn thức ăn cho gà. Hãy làm ở máy xay thức ăn, rồi chạm vào chuồng để cho gà ăn.',
+  'A family is looking for a home. Build the first cottage in the village, with a path to its door.': 'Có một gia đình đang tìm nhà. Hãy xây ngôi nhà đầu tiên trong làng, có lối đi tới cửa.',
+  'You are doing wonderfully. The Today board shows what is ready each day. The village is yours to grow!': 'Cháu làm tốt lắm. Bảng Hôm nay cho biết mỗi ngày có gì sẵn sàng. Ngôi làng là của cháu, hãy làm nó lớn lên!',
+
+  // ── Settings and album ──
+  'Settings': 'Cài đặt', 'Sound': 'Âm thanh', 'Music': 'Nhạc', 'Day and night': 'Ngày và đêm', 'Follow my clock': 'Theo giờ của tôi', 'Always daytime': 'Luôn ban ngày',
+  'Text size': 'Cỡ chữ', 'Motion': 'Chuyển động', 'Normal': 'Bình thường', 'Reduced': 'Giảm bớt', 'Graphics': 'Đồ họa', 'Automatic': 'Tự động', 'Light': 'Nhẹ', 'Sharp': 'Sắc nét',
+  'Saves': 'Bản lưu', 'Farm {n}': 'Trang trại {n}', 'Export save': 'Xuất bản lưu', 'Import save': 'Nhập bản lưu', 'Start over': 'Bắt đầu lại',
+  'That file is not a Farm Village save': 'Tệp này không phải bản lưu Làng Nông Trại', 'Start a new farm in this save? The current farm will be lost.': 'Bắt đầu trang trại mới ở bản lưu này? Trang trại hiện tại sẽ mất.',
+  'Unknown setting': 'Cài đặt không rõ', 'Family album': 'Album gia đình', 'Chapters': 'Các chương', 'First times': 'Những lần đầu tiên',
+  'First harvest': 'Lần thu hoạch đầu tiên', 'First order filled': 'Đơn hàng đầu tiên', 'First thing made': 'Sản phẩm đầu tiên', 'First egg': 'Quả trứng đầu tiên',
+  'First family moved in': 'Gia đình đầu tiên dọn đến', 'First trade with a neighbour': 'Lần đầu trao đổi với hàng xóm', 'Your first harvest is waiting.': 'Mùa thu hoạch đầu tiên đang chờ bạn.',
+
   // ── Goods ──
   'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô',
   'Hen': 'Gà mái', 'Cow': 'Bò sữa', 'Egg': 'Trứng', 'Milk': 'Sữa',

@@ -5,18 +5,26 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
-- **Phase:** building v0.1. **M0–M4 are done** (locally; no GitHub remote yet). **Next: M5**, the first session and
-  polish: the tutorial script with a gated HUD, story cards, celebrations, sound and music, settings (language, saves,
-  accessibility), the art pass (cottage dressing, building animation), and a phone performance pass.
-- **Waiting for the user:** hosting (public repository, or private source with a public play repository) before the
-  first push and deploy.
+- **Phase:** building v0.1. **M0–M5 are done** (locally; no GitHub remote yet). **Next: M6**, the v0.1 release:
+  - a playtest with 3–5 first-time players;
+  - fixes;
+  - the release checklist;
+  - the first deploy.
+- **Waiting for the user:**
+  1. Hosting (public repository, or private source with a public play repository) before the first push and deploy.
+  2. Playtesters (3–5 people) for M6.
 - **What works now** (`npm run dev`, then http://127.0.0.1:5240/; add `?new` for a fresh farm):
-  - **The whole v0.1 loop:** farm, animals, production, orders, barn, stall.
-  - **The village:** cottages with families who move in (with a welcome card) and pay rent; charm; the projects panel
-    with "show the way"; ruins replaced by the school.
-  - **People:** residents and Cora walking on paths; Mai and Gus visiting with a comment about your farm.
-  - **The Today board:** daily gift, trades and village news.
-  - **Saving and languages:** saves; English and Vietnamese.
+  - **The full v0.1 game:** farm, animals, production, orders, the village with families and the school, people and
+    neighbours, the Today board.
+  - **The first session:** chapter cards and Ada's guide.
+  - **Settings:** language, sound and music, day and night, text size, motion, graphics, three save slots,
+    export/import.
+  - **The album** of chapters and first times.
+- **Art still to make** (the M5 art items moved to the v0.2 art pass):
+  - working animations for the feed mill and bakery;
+  - cozy and deluxe cottage dressing;
+  - the building scaffold animation;
+  - `*_mid` models from Blender (the loader simplifies at runtime for now).
 
 ## Decisions so far
 
@@ -59,6 +67,7 @@ Update it at the end of every work session: change the status, add a line to the
 | 2026-10-07 | M2: land view from the rules state (cells, weeds, rocks, placed things, fences), build mode (catalogue, ghost, rotate/place/move/store/clear, fences on the nearest edge, undo), HUD with level and coins; 30 tests and 10 browser checks pass | b80badb |
 | 2026-10-07 | M3: farm-kit models from Blender (wheat, feed mill, bakery, bench, lamp, order board); crops in growth stages, animals wandering in their fences, produce and sparkles; tap menu with sweep; order board, barn, production and stall panels; flying icons; autosave with backup and time-away catch-up; budget check on a fully planted 64 × 64 farm (≤ 69 draws, ≤ 143k triangles); quick tutorial wheat now lasts until the first harvest | 2857418 |
 | 2026-10-07 | M4: village ruins, projects panel (requirements, deliver, "show the way", Build on the ruin), cottage panel (family, charm, rent, furnish), welcome cards, mailbox, people walking on paths (residents, Cora), neighbour visits with speech bubbles, Today board (gift, waiting, trades, news), charm preview; 16 browser checks pass | e79c364 |
+| 2026-10-07 | M5: chapter cards and Ada's tutorial with HUD buttons unlocking step by step, pointer markers, I know how / skip; confetti; synthesised sounds and music; day and night from the real clock; settings (language, volumes, daylight, text size, motion, graphics with a frame-rate guard, three saves, export/import, start over); album of chapters and first times; one modal queue; first-frame models 5.3 → 1.5 MB; 30 tests, 19 browser checks | (M5 commit) |
 | 2026-10-07 | Big-farm prototype built and measured: per-level chunks (8/16/32) and three levels of detail keep phone budgets; plan updated (large map, fields, helpers, camera rule, rendering rules); PROGRESS.md added | 3af4e0d |
 
 ## How to resume

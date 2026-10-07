@@ -27,6 +27,18 @@ export function board(s, now) {
   return { day: s.today.day, gift: GIFTS[s.today.giftDay], claimed: !!s.today.claimed, waiting: waiting(s, now), next: step && { id: step.id, ready: stepReady(s, now) } };
 }
 export const actions = {
+  /** Tutorial progress: { step } moves to that step; { skip: true } ends the tutorial. */
+  tutorial(ctx, { step, skip }) { const st = ctx.s.story; st.tutorial = skip ? 99 : Math.max(st.tutorial ?? 0, step); return { tutorial: st.tutorial }; },
+  /** Change a setting: { key, value } (DESIGN 17). */
+  setting(ctx, { key, value }) {
+    const ok = { daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
+    if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
+    const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
+    if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');
+    ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
+  },
+  /** A chapter card was shown. */
+  chapterSeen(ctx, { id }) { const st = ctx.s.story; st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter }; },
   /** The Today board was seen today (it opens by itself only once a day). */
   seeToday(ctx) { ctx.s.today.seen = true; return {}; },
   claimGift(ctx) {

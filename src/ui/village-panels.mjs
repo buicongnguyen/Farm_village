@@ -12,6 +12,7 @@ import { board } from '../core/today.mjs';
 import * as barn from '../core/barn.mjs';
 import { FACES, goodIcon } from './panels.mjs';
 import { ICONS } from './build-view.mjs';
+import { showModal } from './modal.mjs';
 
 const giftText = g => g.coins ? `🪙 ${num(g.coins)}` : g.goods ? Object.entries(g.goods).map(([id, n]) => `${goodIcon(id)} ×${n}`).join(' ') : Object.entries(g.stored).map(([k, n]) => `${ICONS[k] ?? '🎁'} ${t(BUILDINGS[k].name)} ×${n}`).join(' ');
 const NEWS = {
@@ -76,15 +77,10 @@ export function renderCottage(s, id, now) {
   </div>`;
 }
 
-/** The welcome card when a family moves in (DESIGN 10, step 3). Cards wait their turn if several families arrive. */
-const waiting = [];
+/** The welcome card when a family moves in (DESIGN 10, step 3). Cards wait their turn (modal.mjs). */
 export function showWelcome(root, familyId) {
   const fam = FAMILIES.find(f => f.id === familyId); if (!fam) return;
-  if (root.querySelector('.modal')) { waiting.push(familyId); return; }
-  const el = document.createElement('div'); el.className = 'modal';
-  el.innerHTML = `<div class="card-modal"><h2>🏡 ${t('{family} moved in!', { family: t(fam.name) })}</h2>
+  showModal(`<h2>🏡 ${t('{family} moved in!', { family: t(fam.name) })}</h2>
     ${fam.people.map(p => `<div class="person-line"><span class="face">${FACES[p.id] ?? '🙂'}</span><div><b>${t(p.name)}</b> · <small>${t(p.role)}</small><p>“${t(p.line)}”</p></div></div>`).join('')}
-    <button class="btn primary" data-close>${t('Welcome!')}</button></div>`;
-  el.addEventListener('click', e => { if (e.target === el || e.target.closest('[data-close]')) { el.remove(); if (waiting.length) showWelcome(root, waiting.shift()); } });
-  root.appendChild(el);
+    <button class="btn primary" data-close>${t('Welcome!')}</button>`);
 }

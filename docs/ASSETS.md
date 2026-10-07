@@ -8,7 +8,10 @@ the npm packages in `package.json` and the Nunito font (SIL Open Font License, `
 | File | Source | Notes |
 |---|---|---|
 | `crops.glb`, `scenery.glb`, `farm.glb`, `town.glb` | Willowmere (`3d_farmer_fish_sell`, working copy at 6390128) `public/assets/models/` | Copied unchanged. Willowmere took the crop, scenery and farm kits from Zoo Garden (`cute_game`), and made `town.glb` with its own Blender generator (`art/blender/build_town.py`) |
-| `rural.glb`, `market-stall.glb`, `well.glb`, `animal-produce.glb` | Willowmere at 11df8e9 | Copied unchanged |
+| `rural-lite.glb` | Willowmere's `rural.glb` (at 11df8e9) | Only `home_t1`, `barn`, `mailbox`, `windmill`, `windmill_rotor`, kept by `art/blender/extract_kit.py` (2.5 MB → 0.5 MB) |
+| `market-stall.glb`, `well.glb`, `animal-produce.glb` | Willowmere at 11df8e9 | Copied unchanged |
+| `hero-tall.glb`, `hero-girl-tall.glb`, `hero-tiny.glb`, `hero-girl-tiny.glb` | Willowmere `public/assets/models/` (from Zoo Garden) | Copied unchanged; villagers and neighbours |
+| `farm-kit.glb` | New: `art/blender/build_farm_kit.py` with Willowmere's `style.py` | Wheat, feed mill, bakery, bench, lamp, order board |
 | `nunito.woff2` | Willowmere `public/assets/` | Font, with its license |
 
 All models are vertex-coloured kit pieces with no textures. The game bakes each root node into one geometry

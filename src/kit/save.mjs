@@ -31,6 +31,6 @@ export function autosave(game, profile = 1) {
   game.on(r => { if (r.ok && (r.events?.length || r.events === undefined)) { clearTimeout(timer); timer = setTimeout(now, 1000); } });
   document.addEventListener('visibilitychange', () => { if (document.hidden) now(); });
   addEventListener('pagehide', now);
-  window.__fvSave = now;
+  window.__fvSave = now;     // the stale-file guard saves before it reloads
   return now;
 }

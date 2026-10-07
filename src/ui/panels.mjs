@@ -10,6 +10,8 @@ import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
+import { renderSettings, renderAlbum } from './settings-panels.mjs';
+import { setLanguage } from '../kit/i18n.mjs';
 
 const PEOPLE = Object.fromEntries(allPeople().map(p => [p.id, p]));
 export const FACES = { ada: '👵', cora: '👩‍🏫', minh: '👨‍🔧', lan: '👩‍🍳', bo: '👦', grace: '👩‍⚕️', sam: '📮', zara: '👧', elin: '🎨', olaf: '⚓', marisol: '👩‍⚕️', tomas: '🔧', pia: '👧', mai: '🌸', gus: '🧔' };
@@ -20,11 +22,12 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
 }).join('');
 
 export class Panels {
-  constructor(root, game, hud, { onBuild, onShowWay } = {}) {
-    Object.assign(this, { game, hud, open: null, onBuild, onShowWay });
+  constructor(root, game, hud, { onBuild, onShowWay, onSave } = {}) {
+    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave });
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
     this.el.addEventListener('click', e => this.click(e));
+    this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
     game.on(() => { if (this.open) this.render(); });
     setInterval(() => { if (this.open && !document.hidden) this.render(); }, 1000);   // timers count down
   }
@@ -54,12 +57,16 @@ export class Panels {
     else if (d.do === 'showWay') { this.close(); this.onShowWay?.(d.at); }
     else if (d.do === 'collectRent') g.do('collectRent');
     else if (d.do === 'upgradeHome') g.do('upgradeHome', { id: d.id });
+    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
+    else if (d.do === 'export' || d.do === 'newGame' || d.do === 'profile') this.onSave?.(d.do, d.n);
   }
   render() {
     const s = this.game.s, o = this.open; if (!o) return;
     queueMicrotask(() => this.lift());
     const head = title => `<div class="panel-head"><h2>${title}</h2><button class="round small" data-do="close" aria-label="${t('Close')}">✕</button></div>`;
-    if (o.kind === 'today') this.el.innerHTML = head(t('Today')) + renderToday(s, this.game.now);
+    if (o.kind === 'settings') this.el.innerHTML = head(t('Settings')) + renderSettings(s, this.profile ?? 1);
+    else if (o.kind === 'album') this.el.innerHTML = head(t('Family album')) + renderAlbum(s);
+    else if (o.kind === 'today') this.el.innerHTML = head(t('Today')) + renderToday(s, this.game.now);
     else if (o.kind === 'projects') this.el.innerHTML = head(t('Village projects')) + renderProjects(s, this.game.now);
     else if (o.kind === 'cottage') this.el.innerHTML = head(t('Rental cottage')) + renderCottage(s, o.arg, this.game.now);
     else if (o.kind === 'orders') this.el.innerHTML = head(t('Order board')) + `<div class="order-list">${s.orders.cards.map(c => this.card(c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;

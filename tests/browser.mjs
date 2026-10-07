@@ -11,12 +11,13 @@ const DEVICES = {
   pc: { viewport: { width: 1280, height: 800 } },
 };
 const results = [];
-async function open(device = 'pc', query = '') {
+async function open(device = 'pc', query = '', { intro = false } = {}) {
   const ctx = await browser.newContext(DEVICES[device]), page = await ctx.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' && !/favicon/.test(m.text())) errors.push(m.text()); });
   await page.goto(URL_ + query);
   await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  if (!intro) await page.evaluate(() => farm.skipIntro());
   return { ctx, page, errors };
 }
 async function check(name, f) {
@@ -107,6 +108,47 @@ await check('build mode: fences go on the edge nearest the tap', async () => {
   await tapCell(page, 40, 66, 0.5, 0.1);
   const fences = await page.evaluate(() => Object.keys(farm.state().fences));
   expect(fences.includes('40,66,n'), `fences: ${fences}`);
+  await ctx.close();
+});
+
+await check('loading: the farm is on screen within 3.5 s on a simulated 4G phone (TECH-PLAN 6)', async () => {
+  const ctx = await browser.newContext(DEVICES.phone), page = await ctx.newPage(), cdp = await ctx.newCDPSession(page);
+  await cdp.send('Network.enable'); await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 70, downloadThroughput: 9e6 / 8, uploadThroughput: 4e6 / 8 });
+  const t0 = Date.now(); await page.goto(URL_ + '?new'); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  const ms = Date.now() - t0; console.log(`     first scene after ${ms} ms on 9 Mbit/s with 70 ms latency`);
+  expect(ms < 3500, `${ms} ms`);
+  await ctx.close();
+});
+// ── M5: the first session ──
+await check('first session: the chapter card, then Ada guides the first steps (phone)', async () => {
+  const { ctx, page, errors } = await open('phone', '?new', { intro: true });
+  expect(await page.isVisible('.chapter'), 'no chapter card');
+  expect(!(await page.isVisible('[data-act="build"]')), 'the build button should wait for the tutorial');
+  await page.click('.chapter [data-close]');
+  expect(await page.isVisible('.guide'), 'no guide card');
+  // clear the three tutorial weeds through the tap menu
+  for (const [x, z] of [[34, 59], [35, 60], [34, 61]]) { await tapCell(page, x, z); await page.click('.radial-btn[data-act="clear"]'); }
+  const step = await page.evaluate(() => farm.state().story.tutorial);
+  expect(step === 1, `tutorial step ${step}`);
+  expect(await page.isVisible('[data-act="build"]'), 'the build button should appear for the path step');
+  await page.click('[data-g="next"]');
+  expect(await page.evaluate(() => farm.state().story.tutorial) === 2, 'I know how did not skip a step');
+  await page.click('[data-g="skip"]');
+  expect(!(await page.isVisible('.guide')), 'the guide should be gone');
+  expect(!errors.length, errors.join(' | '));
+  await ctx.close();
+});
+await check('settings: text size, language and day and night from the settings panel', async () => {
+  const { ctx, page } = await open('pc', '?new');
+  await page.click('[data-act="settings"]');
+  await page.click('[data-key="textSize"][data-value="1.3"]');
+  expect(await page.evaluate(() => document.body.dataset.text) === '1.3', 'text size not applied');
+  await page.click('[data-key="daylight"][data-value="always"]');
+  expect(await page.evaluate(() => farm.state().settings.daylight) === 'always', 'daylight not saved');
+  await page.click('[data-key="lang"][data-value="vi"]');
+  expect((await page.textContent('.panel-head h2')).includes('Cài đặt'), 'language not switched');
+  await page.click('[data-key="lang"][data-value="en"]');
   await ctx.close();
 });
 

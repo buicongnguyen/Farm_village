@@ -15,7 +15,7 @@ export class Hud {
     this.el.innerHTML = `
       <div class="hud-top"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
         <div class="pill coins" data-hud="coins">🪙 <b></b></div></div>
-      <div class="hud-right"><button class="round" data-act="today">📅<i class="badge dot"></i></button><button class="round" data-act="projects">🏛<i class="badge dot"></i></button></div>
+      <div class="hud-right"><button class="round" data-act="today">📅<i class="badge dot"></i></button><button class="round" data-act="projects">🏛<i class="badge dot"></i></button><button class="round" data-act="album">📖</button><button class="round" data-act="settings">⚙</button></div>
       <div class="toasts" aria-live="polite"></div>
       <div class="hud-tools">
         <button class="round" data-act="turn">⟳</button>
@@ -29,7 +29,7 @@ export class Hud {
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi');
       if (act === 'build') onBuild?.();
-      if (act === 'orders' || act === 'barn' || act === 'today' || act === 'projects') onPanel?.(act);
+      if (['orders', 'barn', 'today', 'projects', 'album', 'settings'].includes(act)) onPanel?.(act);
     });
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.toast(t(r.reason, r.params), 'warn'); for (const e of r.events ?? []) this.event(e); });
@@ -50,6 +50,8 @@ export class Hud {
     const can = fillable(s), badge = this.el.querySelector('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
     this.el.querySelector('[data-act="today"]').setAttribute('aria-label', t('Today'));
+    this.el.querySelector('[data-act="album"]').setAttribute('aria-label', t('Family album'));
+    this.el.querySelector('[data-act="settings"]').setAttribute('aria-label', t('Settings'));
     this.el.querySelector('[data-act="projects"]').setAttribute('aria-label', t('Village projects'));
     this.el.querySelector('[data-act="today"] .badge').hidden = !!s.today.claimed;
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
@@ -70,4 +72,6 @@ export class Hud {
     setTimeout(() => el.classList.add('gone'), 2200); setTimeout(() => el.remove(), 2700);
   }
   setMode(mode) { this.el.dataset.mode = mode; }
+  /** Show only these HUD buttons (the tutorial unlocks them one by one); turn, language and settings always show. */
+  show(list) { for (const act of ['build', 'orders', 'barn', 'projects', 'today']) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act); } }
 }

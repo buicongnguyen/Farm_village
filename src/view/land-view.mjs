@@ -12,24 +12,33 @@ export class LandView {
     Object.assign(this, { world, game, ready: false, pos: new Map() });
     world.cellLook = (x, z) => this.look(x, z);
   }
+  /** Models arrive in two waves: the farm first (the first frame), the village's town buildings after it (TECH-PLAN 6). */
   async load() {
-    const kits = {};
-    for (const spec of Object.values(KIND_MODELS)) kits[spec.kit] ??= await loadKit(spec.kit);
-    for (const [name, spec] of Object.entries(KIND_MODELS)) {
-      if (this.world.batches.has(name)) continue;
-      const geo = fit(bake(kits[spec.kit][spec.node]), spec.width ? { width: spec.width } : { height: spec.height });
-      this.world.batches.register(name, { geo, mid: spec.lod === 'static' ? geo : simplify(geo), kind: spec.lod, color: averageColor(geo) });
-    }
-    this.geometries = name => this.world.batches.models.get(name)?.geo;
+    const first = Object.entries(KIND_MODELS).filter(([, spec]) => spec.kit !== 'town');
+    await this.register(first);
+    this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
+    this.ready = true; this.sync();
+    this.later = this.loadTown();
+  }
+  async loadTown() {
+    await this.register(Object.entries(KIND_MODELS).filter(([, spec]) => spec.kit === 'town'));
     // ruins: the town buildings in faded, dusty colours (DESIGN 11)
-    const town = kits.town ?? await loadKit('town');
+    const town = await loadKit('town');
     for (const r of RUINS) {
       const geo = fit(bake(town[r.model]), { width: r.width }), c = geo.attributes.color;
       for (let i = 0; i < c.count; i++) { const g = (c.getX(i) + c.getY(i) + c.getZ(i)) / 3; c.setXYZ(i, g * 0.55 + c.getX(i) * 0.2 + 0.08, g * 0.55 + c.getY(i) * 0.2 + 0.07, g * 0.55 + c.getZ(i) * 0.2 + 0.05); }
       this.world.batches.register(`ruin:${r.kind}`, { geo, kind: 'static' });
     }
-    this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
-    this.ready = true; this.sync();
+    this.sync();
+  }
+  async register(specs) {
+    const kits = {};
+    for (const [, spec] of specs) kits[spec.kit] ??= loadKit(spec.kit);
+    for (const [name, spec] of specs) {
+      if (this.world.batches.has(name)) continue;
+      const kit = await kits[spec.kit], geo = fit(bake(kit[spec.node]), spec.width ? { width: spec.width } : { height: spec.height });
+      this.world.batches.register(name, { geo, mid: spec.lod === 'static' ? geo : simplify(geo), kind: spec.lod, color: averageColor(geo) });
+    }
   }
   get s() { return this.game.s; }
   look(x, z) {
@@ -48,6 +57,7 @@ export class LandView {
     if (old) { this.world.ground.markDirty(old.x, old.z); this.pos.delete(id); }
     if (!p) { b.remove(id); return; }
     this.pos.set(id, { x: p.x, z: p.z }); this.world.ground.markDirty(p.x, p.z);
+    if (p.kind !== 'bed' && !b.has(modelFor(p.kind, id))) return;      // its model is still loading; sync() draws it later
     if (p.kind === 'bed') { b.remove(id); return; }                     // beds are tilled ground; crops are drawn by crops-view (M3)
     const c = this.centre(p.kind, p.x, p.z, p.rot);
     b.set(id, { model: modelFor(p.kind, id), x: c.x, z: c.z, rot: p.rot * Math.PI / 2 });
@@ -69,6 +79,7 @@ export class LandView {
   drawRuins() {
     for (const r of RUINS) {
       const id = `ruin:${r.kind}`, built = (this.s.counts[r.kind] ?? 0) > 0;
+      if (!this.world.batches.has(id)) continue;
       if (built) this.world.batches.remove(id);
       else { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; this.world.batches.set(id, { model: id, x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 }); }
     }

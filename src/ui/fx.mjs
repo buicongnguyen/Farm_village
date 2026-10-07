@@ -18,6 +18,17 @@ export class Fx {
     else if (e.type === 'collected') this.fly(GOODS[e.good]?.icon, this.screenOf(e.home), '[data-act="barn"]');
     else if (e.type === 'produced') this.fly(GOODS[e.good]?.icon, this.screenOf(e.building), '[data-act="barn"]');
     else if (e.type === 'orderFilled' || e.type === 'rent') this.fly('🪙', { x: innerWidth / 2, y: innerHeight / 2 }, '[data-hud="coins"]');
+    else if (e.type === 'levelUp' || e.type === 'projectDone' || e.type === 'familyArrived') this.confetti(e.type === 'levelUp' ? 26 : 40);
+  }
+  /** A burst of confetti from the top of the screen (DESIGN 16: celebrations). */
+  confetti(n = 30) {
+    const colours = ['#ff5c8a', '#ffc83a', '#5fae3e', '#35b6f2', '#9b6bff', '#ff8a2a'];
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement('i'); el.className = 'confetti';
+      el.style.left = `${10 + Math.random() * 80}vw`; el.style.background = colours[i % colours.length];
+      el.style.setProperty('--dx', `${(Math.random() - 0.5) * 200}px`); el.style.setProperty('--rot', `${Math.random() * 720 - 360}deg`); el.style.animationDelay = `${Math.random() * 0.25}s`;
+      this.root.appendChild(el); setTimeout(() => el.remove(), 1800);
+    }
   }
   fly(icon, from, toSelector) {
     const to = document.querySelector(toSelector)?.getBoundingClientRect(); if (!icon || !from || !to) return;

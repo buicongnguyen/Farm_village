@@ -17,8 +17,8 @@ const SCENERY = [
   ['scenery', 'tree_blossom', 'tree_blossom', { height: 4.5 }, 'tree'], ['scenery', 'bush', 'bush', { width: 1.6 }, 'crop'],
   ['scenery', 'flowers', 'flowers', { width: 1.2 }, 'crop'], ['scenery', 'rock', 'rock', { width: 1.4 }, 'crop'],
   ['scenery', 'tuft', 'tuft', { width: 0.8 }, 'crop'],
-  ['rural', W.FARMHOUSE.model, 'farmhouse', { width: W.FARMHOUSE.width }, 'static'], ['rural', W.BARN.model, 'barn', { width: W.BARN.width }, 'static'],
-  ['rural', 'mailbox', 'mailbox', { height: 1.3 }, 'static'], ['rural', 'windmill', 'windmill', { height: 9 }, 'static'],
+  ['rural-lite', W.FARMHOUSE.model, 'farmhouse', { width: W.FARMHOUSE.width }, 'static'], ['rural-lite', W.BARN.model, 'barn', { width: W.BARN.width }, 'static'],
+  ['rural-lite', 'mailbox', 'mailbox', { height: 1.3 }, 'static'], ['rural-lite', 'windmill', 'windmill', { height: 9 }, 'static'],
 ];
 
 export class WorldView {
@@ -75,6 +75,20 @@ export class WorldView {
     this.raycaster.setFromCamera(ndc, this.cam.camera);
     return this.ground.pick(this.raycaster);
   }
+  /** Graphics quality (Settings): low draws fewer pixels; auto starts sharp and steps down if frames run slow. */
+  setQuality(q) {
+    this.quality = q; this.maxRatio = q === 'low' ? 1 : Math.min(devicePixelRatio, 2); this.ratio = this.maxRatio;
+    this.renderer.setPixelRatio(this.ratio); this.renderer.setSize(innerWidth, innerHeight);
+  }
+  govern(dt) {
+    if (this.quality !== 'auto' || navigator.webdriver) return;
+    const g = (this.gov ??= { t: 0, frames: 0, slow: 0, fast: 0 }); g.t += dt; g.frames++;
+    if (g.t < 1) return;
+    const fps = g.frames / g.t; g.t = 0; g.frames = 0;
+    if (fps < 34 && this.ratio > 1) { if (++g.slow >= 3) { g.slow = 0; this.ratio = Math.max(1, this.ratio - 0.35); this.renderer.setPixelRatio(this.ratio); this.renderer.setSize(innerWidth, innerHeight); } }
+    else if (fps > 56 && this.ratio < this.maxRatio) { if (++g.fast >= 10) { g.fast = 0; this.ratio = Math.min(this.maxRatio, this.ratio + 0.25); this.renderer.setPixelRatio(this.ratio); this.renderer.setSize(innerWidth, innerHeight); } }
+    else { g.slow = 0; g.fast = 0; }
+  }
   onFrame(f) { this.frameListeners.add(f); return () => this.frameListeners.delete(f); }
   start() {
     let last = performance.now();
@@ -82,6 +96,7 @@ export class WorldView {
       const dt = Math.min(0.1, (now - last) / 1000); last = now;
       if (!document.hidden) {
         for (const f of this.frameListeners) f(dt, now);
+        this.govern(dt);
         this.ground.flush(); this.batches.flush();
         this.renderer.render(this.scene, this.cam.camera);
       }

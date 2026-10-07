@@ -132,14 +132,14 @@ comments match what is on screen.
 ## M5 — First session and polish (1 week)
 
 **Tasks**
-- [ ] The tutorial script from `DESIGN.md` section 15, with the gated HUD and "I know how" skips.
-- [ ] Story cards for chapters 1–4, and celebrations for orders, level-ups, chapters and the school opening.
-- [ ] Sounds for every action, and music for day, night and the celebrations (kit music engine).
-- [ ] The Vietnamese catalogue complete (coverage check green); text fits on phones in both languages.
-- [ ] Accessibility: text size, colour-blind safe markers, reduced motion, one-thumb reach in portrait.
-- [ ] Performance pass on a mid-range phone: draw calls, triangles, load time against the budgets.
-- [ ] Settings: language, volume, always daytime, quality.
-- [ ] The album: chapters and first times.
+- [x] The tutorial script from `DESIGN.md` section 15, with the gated HUD and "I know how" skips.
+- [x] Story cards for chapters 1–4, and celebrations for orders, level-ups, chapters and the school opening.
+- [x] Sounds for every action, and music for day, night and the celebrations (kit music engine).
+- [x] The Vietnamese catalogue complete (coverage check green); text fits on phones in both languages.
+- [x] Accessibility: text size, colour-blind safe markers, reduced motion, one-thumb reach in portrait.
+- [x] Performance pass: first-frame models cut from 5.3 MB to 1.5 MB (`rural-lite.glb`, town buildings after the first frame); first scene in 3.2 s on simulated 4G with uncompressed files (Pages compresses them); draws and triangles within budget at every zoom.
+- [x] Settings: language, volume, always daytime, quality.
+- [x] The album: chapters and first times.
 
 **Done when:**
 - A first-time player reaches the first cottage in about 12 minutes without help.
