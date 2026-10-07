@@ -61,6 +61,32 @@ A casual player takes about 10 weeks for everything, which is fine: nothing is l
 3. **An unfinished fence blocks everything.** If coins run out halfway through a fence, no hens can move in, there are
    no eggs and no corn bread, and the school stalls. The coop must say "The fence has a gap" and show where it is (M2/M3).
 
+### 1.2 The AAA pass: hearts, the weekly cart and fruit trees (2026-10-07)
+
+The new content is placed so that it does not move the v0.1 pace:
+- **The weekly cart** starts the day after the school opens, so it can never shortcut the school or the cottages after it.
+- **Fruit trees** open at level 4 and 6. Apples and apple pie only appear on orders once a tree of that kind is planted,
+  so the order generator, and the pace before the school, are unchanged for a player who plants none.
+- **Heart scene rewards** default to decorations (a flowerpot, a bench, a fountain), not coins.
+- **Order lines** in each poster's own voice use the same two random draws per card as before.
+
+`tests/sim.test.mjs` now pins the hours to each level up to 10 from the v0.1 report (±10 %), and runs every profile with
+and without the cart and the trees (every level within ±10 %, the school on the same day). Measured on the real rules:
+
+| Profile | School | Cottages 3–4 | Level 10 (hours from the first visit) | Carts in 2 weeks | Fruit picked |
+|---|---|---|---|---|---|
+| Casual | day 7 | day 9 | 168 (v0.1: 168) | 2 | 84 |
+| Steady | day 4 | day 5 | 96 (v0.1: 96) | 4 | 354 |
+| Keen | day 3 | day 4 | 51 (v0.1: 51) | 5 | 789 |
+
+**What the simulation found:**
+1. **The v0.1 bot could sit in a dead end for days.** With the barn full of wheat and no order it could fill, the keen
+   player filled no order from day 5 to day 10. A real player would sell at the stall or discard a card, and the bot now
+   does so too (after the school only, so the v0.1 targets are measured exactly as before). This is why levels past 14
+   now come sooner for the keen player than in the v0.1 report.
+2. **A cart of eggs could wait forever.** Eggs are slow, and orders want them too. A cart now holds at most one crate of
+   animal produce, and a visiting neighbour fills the crate the player is furthest from filling.
+
 ## 2. Items
 
 Value is the base price: what the roadside stall pays and what order rewards are built from.
@@ -79,6 +105,15 @@ Value is the base price: what the roadside stall pays and what order rewards are
 
 **Harvest XP:** 1 per crop.
 
+### 2.1b Fruit trees (placed once in build mode, picked again and again)
+
+| Tree | Cost | Level | Fruit | Value | First fruit | Then every | Yield |
+|---|---|---|---|---|---|---|---|
+| Apple tree | 120 | 4 | Apple | 9 | 30 min | 3 h | 3 |
+| Peach tree | 240 | 6 | Peach | 15 | 1 h | 5 h | 3 |
+
+A tree counts **+2 charm** like a blossom tree, so it can stand by a cottage. Up to 12 of each. **Pick XP:** 1 per fruit.
+
 ### 2.2 Animals
 
 | Animal | Price | Eats | Gives | Every | Value | Level | Max (per building) |
@@ -96,12 +131,14 @@ Value is the base price: what the roadside stall pays and what order rewards are
 | Cow feed | Feed mill | 2 corn, 1 wheat | 3 | 10 min | 8 | 6 |
 | Bread | Bakery | 3 wheat | 1 | 5 min | 12 | 3 |
 | Corn bread | Bakery | 2 corn, 2 eggs | 1 | 30 min | 55 | 4 |
+| Apple pie | Bakery | 3 apples, 2 wheat, 1 egg | 1 | 40 min | 70 | 5 |
 | Carrot cake | Bakery | 3 carrots, 2 eggs, 1 milk | 1 | 45 min | 110 | 7 |
 
 **Production XP:** value ÷ 4, rounded up.
 
 **Margin check:** every recipe pays more than its inputs.
-- **Crop recipes:** bread 12 against inputs worth 6; corn bread 55 against 38; carrot cake 110 against 66.
+- **Crop recipes:** bread 12 against inputs worth 6; corn bread 55 against 38; apple pie 70 against 43; carrot cake 110
+  against 66.
 - **Feeds** add a small margin so they never feel like a loss: 9 against 6, and 24 against 16.
 
 ## 3. Orders
@@ -116,6 +153,35 @@ Value is the base price: what the roadside stall pays and what order rewards are
 - **Mix:** the generator prefers goods the player has made recently, and puts one stretch card (a newer product) on
   the board at a time.
 - **Roadside stall** (level 4): it sells at 1.0 × value, one item every 3–5 minutes, up to 4 items listed.
+- **Order lines** come from the poster's own `orders` lines when the story gives them. Villagers marked `noOrders`
+  (your own family) never post orders.
+
+### 3.1 The weekly cart (`src/core/cart.mjs`)
+
+- **When:** the first cart arrives at the farm gate the day after the school opens. After it is sent, the next one
+  arrives the next game day.
+- **Crates:** 6, seeded from the save and the cart number. Each holds one good from what the player can make, worth about
+  **0.45 × order size** (no more than a quarter of the barn), with at most one crate of eggs or milk.
+- **No timer:** the cart waits as long as it takes. Nothing expires and nothing is lost.
+- **Reward:** coins = **1.4 × value of all crates**, XP = **0.25 × value**, plus a decoration into storage (hay bale,
+  scarecrow, flowerpot, picket fence, street lamp, fountain, in turn).
+- **Neighbours help:** a visiting neighbour fills the crate the player is furthest from filling, one a day and at most 2
+  per cart, never the last one.
+
+### 3.2 Hearts, gifts, wishes and letters (`src/core/bonds.mjs`)
+
+| Source | Hearts |
+|---|---|
+| An order filled for that person | +0.25 |
+| A gift (one a day per person) | +0.25, or **+1** for something they like |
+| Their household's wish granted | +2 (and 5 XP) |
+
+- Hearts run from 0 to 10 and never go down. **Heart scenes** play once at 3, 6 and 9 hearts, with the story's reward or a
+  decoration (flowerpot, bench, fountain).
+- **Wishes:** one a day for each household that has moved in, for a decoration they can build now. Placing it within 3
+  cells of their cottage grants it.
+- **Letters** arrive on chapter, level and heart thresholds. A letter can carry a small gift, given when it is first read.
+- Heart scenes from orders alone: about 1 a day for a steady player in the first two weeks (16 in the simulation).
 
 ## 4. Costs
 
@@ -140,6 +206,28 @@ Value is the base price: what the roadside stall pays and what order rewards are
 | 3rd / 4th / 5th / 6th production slot (per building) | 60 / 200 / 600 / 1,500 | – |
 | Barn upgrade (+25 storage, from 50) | 100, 200, 400, 800… (doubling) | – |
 | Roadside stall | 80 | 4 |
+
+### 4.2b Decorations (charm, DESIGN 12)
+
+| Decoration | Cost | Level | Charm | Size |
+|---|---|---|---|---|
+| Flower bed | 5 | 1 | +1 | 1 × 1 |
+| Flowerpot | 8 | 1 | +1 | 1 × 1 |
+| Bush | 8 | 2 | +1 | 1 × 1 |
+| Hay bale | 10 | 2 | +1 | 1 × 1 |
+| Picket fence | 6 | 2 | +1 | 1 × 1 |
+| Scarecrow | 20 | 3 | +1 | 1 × 1 |
+| Blossom tree | 25 | 3 | +2 | 1 × 1 |
+| Bench | 30 | 3 | +2 | 1 × 1 |
+| Lamp | 40 | 4 | +2 | 1 × 1 |
+| Fountain | 300 | 5 | +4 | 2 × 2 |
+| Street lamp | 90 | 6 | +3 | 1 × 1 |
+
+**Village charm** is the sum of every cottage's charm. At **8, 20 and 40** it puts up bunting, a village banner and a
+bigger welcome sign, for good (`CHARM_MILESTONES`).
+
+**The streak garden:** every game day you visit plants one flower in a 12 × 4 garden north of the farmhouse
+(x 15–26, z 53–56). The flowers can't be moved, stored or lost; missing a day only means no flower that day.
 
 ### 4.3 Build steps (village projects)
 
@@ -188,9 +276,9 @@ ask for variety rather than a pile of one item. Re-run the model when that chang
 | 1 | Wheat, beds, paths |
 | 2 | Carrot, feed mill, coop, hens, chicken feed |
 | 3 | Corn, bakery, bread, cottage 1, 4th order slot |
-| 4 | Corn bread, cottage 2, roadside stall |
-| 5 | Pumpkin, the school project, 5th order slot |
-| 6 | Cow barn, cows, cow feed |
+| 4 | Corn bread, cottage 2, roadside stall, apple tree, lamp |
+| 5 | Pumpkin, apple pie, fountain, the school project, 5th order slot |
+| 6 | Cow barn, cows, cow feed, peach tree, street lamp |
 | 7 | Carrot cake, 6th order slot |
 | 8 | Clinic project (v0.2 content follows) |
 
@@ -202,12 +290,15 @@ ask for variety rather than a pile of one item. Re-run the model when that chang
   - charm decorations, which the model does not buy at all;
   - deluxe furniture sets;
   - v0.2 production buildings;
-  - festival entries and prizes (v0.3);
-  - the weekly cart.
+  - festival entries and prizes (v0.3).
+  The weekly cart (section 3.1) now pays out rather than absorbing coins; it is a reason to keep producing.
 - **Late build steps all ask for carrot cake**, the only high-value v0.1 product. v0.2's dairy, sugar mill and loom
   must spread them out.
-- **Neighbour help** (speed-ups from visits) and the daily gift are not in the model. They will make every profile a
-  little faster.
+- **Neighbour help** (speed-ups from visits) and the daily gift are in the real simulation but not in the paper model.
+- **Gifts and wishes** are not used by the bot, so its hearts come from orders alone; heart scene rewards are decorations,
+  which the bot does not place, so they do not change its pace.
+- **A strawberry crop** (level 4) was planned for this pass but left out: any new level-4 good changes the order
+  generator before the school, which moves the pinned v0.1 pace.
 - **The model buys like a sensible player** who saves for the next project. A real player will waste some coins on
   decorations, so expect real pace to be a little slower than the model.
 
