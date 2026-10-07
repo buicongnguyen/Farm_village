@@ -23,4 +23,6 @@ export const VI_PLAY = {
   'Fill every crate first': 'Hãy xếp đầy mọi thùng trước',
   'Every family has a home': 'Gia đình nào cũng đã có nhà',
   'No room for another cottage': 'Không còn chỗ cho nhà nữa',
+  'Unknown story moment': 'Không có khoảnh khắc truyện này',
+  'Keep the village square clear': 'Hãy để quảng trường làng thông thoáng',
 };

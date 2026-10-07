@@ -9,6 +9,7 @@ import { gardenCells } from './reserved.mjs';
 import { ripeTrees } from './trees.mjs';
 import { occupant, touch } from './grid.mjs';
 import { hash } from './rng.mjs';
+import { BEATS } from '../content/story.mjs';
 
 export const GIFTS = [
   { coins: 50 }, { goods: { wheat: 10 } }, { stored: { flowers: 2 } }, { goods: { chicken_feed: 6 } },
@@ -57,6 +58,12 @@ export const actions = {
   },
   /** A chapter card was shown. */
   chapterSeen(ctx, { id }) { const st = ctx.s.story; st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter }; },
+  /** A story beat (content/story.mjs BEATS) was shown: { id }. Each beat plays once; s.story.beats lists the seen ids. */
+  beatSeen(ctx, { id }) {
+    if (!BEATS.some(b => b.id === id)) return ctx.fail('Unknown story moment');
+    const st = ctx.s.story, seen = (st.beats ??= []); if (!seen.includes(id)) seen.push(id);
+    return { beats: [...seen] };
+  },
   /** The Today board was seen today (it opens by itself only once a day). */
   seeToday(ctx) { ctx.s.today.seen = true; return {}; },
   claimGift(ctx) {

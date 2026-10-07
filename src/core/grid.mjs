@@ -1,5 +1,5 @@
 // The land grid and placement rules (DESIGN 4). Pure: reads the state, never changes it.
-import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN } from '../content/world.mjs';
+import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL_TYPES } from './state.mjs';
 import { reservedReason } from './reserved.mjs';
@@ -89,6 +89,8 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
     if (def.area === 'village' && land !== 'village') return { ok: false, reason: 'Only in the village' };
     if (inFixed(cx, cz)) return { ok: false, reason: 'Overlaps something' };
     const kept = reservedReason(cx, cz); if (kept) return { ok: false, reason: kept };
+    // the village square stays open round the old well (paths may cross it)
+    if (kind !== 'path' && cx >= PLAZA.x0 && cx <= PLAZA.x1 && cz >= PLAZA.z0 && cz <= PLAZA.z1) return { ok: false, reason: 'Keep the village square clear' };
     const who = occupant(s, cx, cz); if (who && who !== ignore) return { ok: false, reason: 'Overlaps something' };
     if (type === 'weeds' || type === 'rock') return { ok: false, reason: 'Clear the weeds and rocks first' };
     if (type === 'path' && kind !== 'path') return { ok: false, reason: 'Overlaps a path' };

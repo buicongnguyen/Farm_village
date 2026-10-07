@@ -519,3 +519,17 @@ test('test-mode helpers: unlock everything, finish every timer, move a family in
   const before = Object.keys(s.homes).length, f = must(s, 'testAddFamily', {});
   assert.equal(Object.keys(s.homes).length, before + 1); assert.equal(s.homes[f.id].arrived, true);
 });
+
+test('the village square stays clear round the well: no building on the plaza, but a path may cross it', () => {
+  const s = village();
+  assert.equal(grid.canPlace(s, 'bench', 40, 99).reason, 'Keep the village square clear');
+  assert.equal(grid.canPlace(s, 'cottage', 37, 97).reason, 'Keep the village square clear', 'a footprint that reaches into the square');
+  assert.notEqual(grid.canPlace(s, 'path', 40, 99).reason, 'Keep the village square clear');
+});
+
+test('story beats are marked seen once each; an unknown beat is refused', () => {
+  const s = game();
+  assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
+  assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
+  assert.equal(act(s, 'beatSeen', { id: 'nope' }).reason, 'Unknown story moment');
+});
