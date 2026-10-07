@@ -10,6 +10,8 @@ import * as barn from '../core/barn.mjs';
 import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
+import { fishingOf } from '../core/fishing.mjs';
+import { FISH_TABLE } from '../content/goods.mjs';
 import { truckOf, loadUnits, loadValue, capacity, blocked as blockedWhy } from '../core/market.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
@@ -24,7 +26,7 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
   return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
-  stall: 'Roadside stall', market: 'Market square', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
+  stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', cart: 'The weekly cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
 const HEAD_ICONS = { settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
@@ -68,6 +70,9 @@ export class Panels {
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
+    else if (d.do === 'castLine') g.do('castLine', { bait: d.bait === '1' });
+    else if (d.do === 'reelIn') g.do('reelIn');
+    else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');
     else if (d.do === 'collectTruck') g.do('collectTruck');
     else if (d.do === 'upgradeTruck') g.do('upgradeTruck');
@@ -128,6 +133,15 @@ export class Panels {
         return `<div class="slot ${left <= 0 ? 'ready' : ''}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : shortTime(left)}</small></div>`; }).join('');
       body = `<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
         ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}<div class="recipes">${recipes}</div>`;
+    } else if (o.kind === 'pond') {
+      const f = fishingOf(s), line = f.line, left = line ? Math.max(0, line.doneAt - now) : 0, bait = barn.free(s, 'chicken_feed') > 0, fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0);
+      const status = !line ? t('No line in the water') : left > 0 ? `${t('Waiting for a bite')} · ${shortTime(left)}` : t('A fish is biting!');
+      body = `<p class="hint">${t('Cast a line and wait. Fishing villagers sit here and leave a little money.')}</p><p class="hint"><b>${status}</b></p>
+        ${line && left <= 0 ? `<button class="btn primary wide" data-do="reelIn">${glyph('plus', 'g')} ${t('Reel in')}</button>` : ''}
+        ${!line ? `<button class="btn orange wide" data-do="castLine">${t('Cast a line')}</button><button class="btn ghost wide" data-do="castLine" data-bait="1" ${bait ? '' : 'disabled'}>${iconHtml('chicken_feed', '', 'mini')} ${t('Cast with bait')} (${t('chicken feed')})</button>` : ''}
+        ${f.coins ? `<button class="btn primary wide" data-do="collectFees">${t('Collect {coins} coins', { coins: num(f.coins) })}</button>` : ''}
+        <div class="goods-grid">${fish.map(x => `<div class="good-tile">${goodIcon(x.id)}<b>${num(s.barn.items[x.id])}</b><small>${t(x.name)} · ${coinMark()} ${x.value}</small></div>`).join('')}</div>
+        <p class="hint">${t('Sell fish with the market truck, or keep them for friends.')} (${num(f.caught)} ${t('caught')})</p>`;
     } else if (o.kind === 'market') {
       const tr = truckOf(s), why = blockedWhy(s), spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0), next = tr.level < TRUCK.capacity.length;
       const status = tr.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, tr.backAt - now))}` : why ? t(why) : `${t('Load')}: ${num(loadUnits(tr))}/${num(capacity(tr))} · ${coinMark()} ${num(Math.round(loadValue(tr) * TRUCK.pay))}`;

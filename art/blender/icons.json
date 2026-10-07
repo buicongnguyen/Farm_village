@@ -670,5 +670,41 @@
    -30,
    22
   ]
+ },
+ {
+  "id": "pond",
+  "src": "raw:farm-kit",
+  "root": "pond",
+  "view": [
+   -30,
+   38
+  ]
+ },
+ {
+  "id": "truck",
+  "src": "raw:farm-kit",
+  "root": "truck",
+  "view": [
+   -40,
+   22
+  ]
+ },
+ {
+  "id": "round_tree",
+  "src": "3d_farmer_fish_sell/public/assets/models/scenery.glb",
+  "root": "tree_round",
+  "view": [
+   -30,
+   20
+  ]
+ },
+ {
+  "id": "pine_tree",
+  "src": "3d_farmer_fish_sell/public/assets/models/scenery.glb",
+  "root": "tree_pine",
+  "view": [
+   -30,
+   20
+  ]
  }
 ]

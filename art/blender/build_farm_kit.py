@@ -530,6 +530,23 @@ def truck():
     return p
 piece('truck', truck())
 anchors['truck'] = {'light': [(-.55, 2.44, .98), (.55, 2.44, .98)]}
+
+# =================================================================== the fish pond (v0.3b): a stone-ringed pond with reeds and a little plank dock, 4 x 3 cells (8 x 6 m)
+def pond():
+    p = [cl('bank', 3.5, .16, 0, 0, 0, 'stoned', verts=22, rt=3.5), cl('bank2', 2.4, .16, -.2, 1.5, 0, 'stoned', verts=18), cl('bank3', 2.3, .16, .5, -1.5, 0, 'stoned', verts=18),
+         cl('water', 3.3, .12, 0, 0, .12, 'water', verts=22), cl('water2', 2.2, .12, -.2, 1.5, .12, 'water', verts=18), cl('water3', 2.1, .12, .5, -1.5, .12, 'water', verts=18)]
+    for i in range(14):
+        a = i / 14 * math.tau; r = 3.5 + .2 * math.sin(i * 2.3)
+        p.append(ball('rock', .3 + .08 * (i % 3), math.cos(a) * r, math.sin(a) * (r * .82), .22, 'stone' if i % 2 else 'stonel', sc=(1, 1, .7)))
+    for x, y in [(-3.0, 1.6), (-2.7, 1.9), (3.1, -1.2), (2.8, -1.5), (-2.2, -2.2)]:
+        for k in range(3):
+            p.append(cl('reed', .05, 1.2 + .25 * k, x + .16 * k, y - .1 * k, 0, 'leaf', verts=5))
+            p.append(cl('cattail', .08, .3, x + .16 * k, y - .1 * k, 1.1 + .25 * k, 'wooddd', verts=6))
+    p.append(bx('dock', 1.1, 2.8, .14, 3.4, 0, .34, 'wood', bev=.02))
+    for i in range(6): p.append(bx('plank', 1.1, .06, .02, 3.4, -1.2 + i * .48, .5, 'woodd', bev=.01))
+    for x, y in [(2.9, -1.3), (3.9, -1.3), (2.9, 1.3), (3.9, 1.3)]: p.append(cl('post', .08, .55, x, y, 0, 'wooddd', verts=6))
+    return p
+piece('pond', pond())
 def board():
     p = [bx('postl', .12, .12, 1.9, -.75, 0, 0, 'woodd'), bx('postr', .12, .12, 1.9, .75, 0, 0, 'woodd'),
          bx('board', 1.5, .08, .95, 0, .02, .8, 'cork', bev=.02), bx('frame', 1.62, .06, 1.05, 0, -.02, .75, 'wood', bev=.02),

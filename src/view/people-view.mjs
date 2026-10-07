@@ -25,6 +25,7 @@ const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flat
 /** Template params for t(): string values (the {family} name) are translated first. */
 const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit', you: 'You' };
+const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo']);   // villagers who like to fish
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 // Clothes: warm, vivid colours (sRGB). Named people wear their own; everyone else draws from the palette by name.
@@ -140,6 +141,8 @@ export class PeopleView {
       return [this.route(here, r < 0.5 ? [ORDER_BOARD.x, ORDER_BOARD.z] : w.home), { act: r < 0.3 ? 'sweep' : 'idle', time: 5 + Math.random() * 6 }];
     }
     if (w.work && r < 0.6) return [this.route(here, w.home), { act: 'idle', time: 6 + Math.random() * 6 }];
+    const pond = Object.values(s.placed).find(p => p.kind === 'pond');
+    if (pond && !w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [pond.x + 4, pond.z + 2]), { act: 'fish', time: 18 + Math.random() * 12, face: [pond.x + 1, pond.z + 2] }];   // fishing folk sit by the pond
     const site = this.site();
     if (site && !w.kid && r < 0.22) return [this.route(here, site), { act: 'hammer', time: 10 + Math.random() * 10, face: site }];
     const bench = Object.values(s.placed).filter(p => p.kind === 'bench');
@@ -241,7 +244,7 @@ export class PeopleView {
     const todo = w.todo; w.todo = null; if (!todo) return;
     if (todo.carryHome && w.home) { w.carry = true; w.route = this.route(this.cellOf(w), w.home); w.todo = { act: 'sweep', time: 4 }; return; }
     w.wait = todo.time;
-    const clip = { knead: 'Knead', sweep: 'Sweep', hammer: 'Hammer', sit: 'Sit', play: 'Jump', visit: 'Talk', idle: 'Idle' }[todo.act] ?? 'Idle';
+    const clip = { knead: 'Knead', sweep: 'Sweep', hammer: 'Hammer', sit: 'Sit', play: 'Jump', visit: 'Talk', fish: 'Sit', idle: 'Idle' }[todo.act] ?? 'Idle';
     w.clipFor = clip;
     if (todo.face) w.faceTo = Math.atan2((todo.face[0] + 0.5) * CELL - w.x, (todo.face[1] + 0.5) * CELL - w.z);
     if (todo.bench) { const b = todo.bench; w.x = (b.x + 0.5) * CELL; w.z = (b.z + 0.5) * CELL; w.faceTo = (b.rot ?? 0) * Math.PI / 2; }

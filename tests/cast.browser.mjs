@@ -148,7 +148,8 @@ await check('budgets: at most 8 skinned actors within the triangle budget, few e
     console.log(`     span ${span}: ${st.actors} skinned (${st.tris} triangles), cast adds ${on.draws - off.draws} draws and ${Math.round((on.triangles - off.triangles) / 1000)}k triangles, ${on.fps} fps, mixer ${st.mixerMs} ms`);
     expect(st.actors <= 8 && st.tris <= 60000, `${st.actors} actors, ${st.tris} triangles`);
     // measured against the same scene with no animals or people at all, so this is stricter than "extra over v0.1"
-    expect(on.draws - off.draws <= 12, `the cast adds ${on.draws - off.draws} draws`);
+    expect(on.draws - off.draws <= 14,   // 12 until v0.3b added you (the player's own man rig)
+       `the cast adds ${on.draws - off.draws} draws`);
     expect(on.triangles - off.triangles <= 60000, `the cast adds ${on.triangles - off.triangles} triangles`);
     expect(on.draws <= 120 && on.triangles <= 300000, `${on.draws} draws, ${on.triangles} triangles`);
     if (span === 20) expect(on.fps >= 50, `${on.fps} fps at span 20`);

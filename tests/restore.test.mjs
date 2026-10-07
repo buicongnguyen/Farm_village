@@ -9,7 +9,7 @@ import { currentStep } from '../src/core/projects.mjs';
 import { repairCost, levelOf, isWorking, worstWorn } from '../src/core/condition.mjs';
 import { rentPerHour } from '../src/core/homes.mjs';
 import { GOODS } from '../src/content/goods.mjs';
-import { REPAIR, WEAR, HOUR, START_RESTORE, HOUSE, DEMOLISH, TRUCK } from '../src/content/economy.mjs';
+import { REPAIR, WEAR, HOUR, START_RESTORE, HOUSE, DEMOLISH, TRUCK, FISH } from '../src/content/economy.mjs';
 import { T0, MIN } from './helpers.mjs';
 
 const fresh = () => { const s = newGame(T0, 4242, { restore: true }); tick(s, T0); return s; };
@@ -177,4 +177,18 @@ test('the next-task chip names the most useful thing: ripe things first, then or
   for (const b of Object.values(s.beds)) b.doneAt = T0 + 1e6;
   const bedId = idOf(s, 'bed'); s.beds[bedId].doneAt = T0 - 1;
   assert.equal(nextTask(s, T0).key, 'Harvest the ripe crops'); assert.deepEqual(nextTask(s, T0).at, { x: s.placed[bedId].x, z: s.placed[bedId].z });
+});
+
+test('the fish pond: there at the start; cast, wait, reel in a fish that sells; bait is quicker; fishing villagers leave fees', () => {
+  const s = fresh(); assert.equal(s.counts.pond, 1); assert.equal(isWorking(s, idOf(s, 'pond')), true);
+  const t0 = T0 + 1000;
+  must(s, 'castLine', {}, t0); assert.equal(act(s, 'castLine', {}, t0 + 1).reason, 'The line is already in the water');
+  assert.equal(act(s, 'reelIn', {}, t0 + 1000).reason, 'Nothing is biting yet');
+  const r = must(s, 'reelIn', {}, t0 + FISH.waitMs + 1); assert.ok(GOODS[r.fish] && GOODS[r.fish].kind === 'fish'); assert.equal(s.barn.items[r.fish], 1);
+  s.barn.items.chicken_feed = 2; must(s, 'castLine', { bait: true }, t0 + FISH.waitMs + 2); assert.equal(s.barn.items.chicken_feed, 1);
+  assert.ok(s.fishing.line.doneAt - (t0 + FISH.waitMs + 2) === FISH.baitMs);
+  // a family that has moved in leaves a fee
+  const home = Object.keys(s.homes)[0]; s.homes[home].family = 'tran'; s.homes[home].arrivesAt = T0; s.homes[home].arrived = true;
+  tick(s, t0 + 2000); tick(s, t0 + 2000 + FISH.feeMs + 1000); assert.ok(s.fishing.coins > 0);
+  const c = s.coins; must(s, 'collectFees', {}, t0 + 3000 + FISH.feeMs); assert.ok(s.coins > c);
 });

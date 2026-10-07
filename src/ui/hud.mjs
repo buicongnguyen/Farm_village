@@ -7,6 +7,8 @@ import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { nextTask } from '../core/next.mjs';
+import { FISH_TABLE } from '../content/goods.mjs';
+const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
 import { thingName } from './repair-ui.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { used as barnUsed } from '../core/barn.mjs';
@@ -101,6 +103,7 @@ export class Hud {
   pulse(el, cls = 'pulse') { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   event(e) {
     if (e.type === 'repairStarted') this.toast(t('Repair started: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'info', { icon: 'wrench' });
+    if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish });
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });
     if (e.type === 'neighbourRepair') this.toast(t('{name} mended the {thing}!', { name: t(NAMES[e.id] ?? e.id), thing: thingName(this.game.s, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') }), 'good', { icon: 'wrench' });

@@ -41,6 +41,7 @@ export class Marks {
       else if (def.fruit) ready = treeState(s, id, now)?.state === 'ripe';
       else if (def.animals) ready = (s.animals[id] ?? []).some(a => animalState(a, now) === 'ready');
       else if (def.produces) ready = readyCount(s, id, now) > 0;
+      else if (def.pond) ready = (s.fishing?.coins ?? 0) > 0 || (!!s.fishing?.line && s.fishing.line.doneAt <= now);
       else if (def.market) ready = (s.truck?.coins ?? 0) > 0;
       else if (def.stall) ready = (s.stall?.coins ?? 0) > 0;
       if (ready) coin.push([x, high, z]);
@@ -49,7 +50,7 @@ export class Marks {
   }
   frame(dt, now) {
     this.acc += dt; if (this.acc > 0.4 || !this.list.coin.length && !this.list.alert.length && this.acc > 0.1) { this.acc = 0; this.list = this.collect(); }
-    const t = performance.now() / 1000;
+    const t = document.body.classList.contains('reduced-motion') ? 0 : performance.now() / 1000;
     for (const [key, pts] of [['coin', this.coin], ['alert', this.alert]]) {
       const list = this.list[key], arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { const [x, y, z] = list[i]; arr[i * 3] = x; arr[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); arr[i * 3 + 2] = z; }

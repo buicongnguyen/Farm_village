@@ -27,6 +27,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     people: {},                             // person id → { hearts (0–10), scenes: [3, 6, 9 seen], giftDay }
     neighbours: {},                         // id → { friendship, day, visits: [ms], visited: 0, trade: {...} | null }
     stall: { items: [], nextSaleAt: 0 },
+    fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
     truck: { level: 1, away: false, backAt: 0, load: [], coins: 0 },   // the delivery truck (market.mjs)
     today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
     trees: {},                              // fruit tree id → { doneAt, first? }
@@ -80,7 +81,7 @@ export function migrate(save) {
 /** Fill every field a newer game expects with its default, keeping what the save has. */
 export function withDefaults(s) {
   const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
-  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck']) if (s[k] === undefined) s[k] = fresh[k];
+  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing']) if (s[k] === undefined) s[k] = fresh[k];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid

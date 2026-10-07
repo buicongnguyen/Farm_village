@@ -30,10 +30,14 @@ export const BUILDINGS = {
   stall:      { name: 'Roadside stall', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, stall: true, max: 1, model: 'market-stall' },
   // The market square: the village's old market, where the delivery truck sells (core/market.mjs)
   market:     { name: 'Market square', cat: 'projects', size: [5, 3], area: 'village', level: 1, cost: 60, door: true, market: true, max: 1, model: 'market' },
+  // The fish pond: cast a line, reel in a fish; fishing villagers pay a little to sit by it (core/fishing.mjs)
+  pond:       { name: 'Fish pond', cat: 'production', size: [4, 4], area: 'any', level: 2, cost: 120, pond: true, max: 2, model: 'pond', charm: 2 },
   // Homes
   cottage:    { name: 'Rental cottage', cat: 'homes', size: [3, 3], area: 'village', level: 3, cost: n => COTTAGE_COSTS[n] ?? 10000, door: true, home: true, project: 'cottage1', model: 'house', charm: 0 },
   // Charm (DESIGN 12)
   flowers:    { name: 'Flower bed', cat: 'charm', size: [1, 1], area: 'any', level: 1, cost: 5, charm: 1, model: 'flowers' },
+  round_tree: { name: 'Round tree', cat: 'charm', size: [1, 1], area: 'any', level: 1, cost: 15, charm: 2, model: 'tree_round' },
+  pine_tree:  { name: 'Pine tree', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 20, charm: 2, model: 'tree_pine' },
   bush:       { name: 'Bush', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 8, charm: 1, model: 'bush' },
   tree:       { name: 'Blossom tree', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 25, charm: 2, model: 'tree_blossom' },
   bench:      { name: 'Bench', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 30, charm: 2, model: 'bench' },

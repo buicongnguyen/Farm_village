@@ -13,6 +13,7 @@ import { actions as neighbours, tickNeighbours } from './neighbours.mjs';
 import { actions as today, tickToday } from './today.mjs';
 import { actions as stall, tickStall } from './stall.mjs';
 import { actions as market, tickTruck } from './market.mjs';
+import { actions as fishing, tickFishing } from './fishing.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
@@ -21,9 +22,9 @@ import { actions as testmode } from './testmode.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { ORDERS, STALL, TRUCK, FAMILY_ARRIVAL_MS, REPAIR } from '../content/economy.mjs';
+import { ORDERS, STALL, TRUCK, FISH, FAMILY_ARRIVAL_MS, REPAIR } from '../content/economy.mjs';
 
-export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market,
+export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing,
   ...trees, ...bonds, ...cart, ...condition, ...testmode };
 
 function context(s, now) {
@@ -53,7 +54,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickTruck(ctx); advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickTruck(ctx); tickFishing(ctx); advance(ctx); tickCart(ctx); tickBonds(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { events: ctx.events };
@@ -80,6 +81,7 @@ function guardClock(s, now) {
   if (s.wearAt) s.wearAt = Math.min(s.wearAt, now);
   // waits that are not stored as a duration: never longer than their full length after a clock moved back
   if (s.orders?.pending) s.orders.pending = s.orders.pending.map(at => Math.min(at, now + ORDERS.discardMs));
+  if (s.fishing?.line) s.fishing.line.doneAt = Math.min(s.fishing.line.doneAt, now + FISH.waitMs);
   if (s.truck?.away) s.truck.backAt = Math.min(s.truck.backAt, now + TRUCK.tripMs);
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);
   for (const h of Object.values(s.homes)) if (h.family && !h.arrived && h.arrivesAt > now + FAMILY_ARRIVAL_MS) { h.arrivesAt = now + FAMILY_ARRIVAL_MS; h.rentFrom = Math.min(h.rentFrom, h.arrivesAt); }

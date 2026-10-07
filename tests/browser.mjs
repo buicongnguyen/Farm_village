@@ -96,10 +96,10 @@ await check('build mode: move and store (pc)', async () => {
   const { ctx, page } = await open('pc');
   await prep(page);
   await page.evaluate(() => { farm.game.do('place', { kind: 'flowers', x: 40, z: 58 }); farm.build.tool('move'); });
-  await tapCell(page, 40, 58); await tapCell(page, 42, 59);
+  await tapCell(page, 40, 58); await tapCell(page, 46, 61);
   const moved = await page.evaluate(() => Object.values(farm.state().placed).find(p => p.kind === 'flowers'));
-  expect(moved.x === 42 && moved.z === 59, `flowers at ${moved.x},${moved.z}`);
-  await page.evaluate(() => farm.build.tool('store')); await tapCell(page, 42, 59);
+  expect(moved.x === 46 && moved.z === 61, `flowers at ${moved.x},${moved.z}`);
+  await page.evaluate(() => farm.build.tool('store')); await tapCell(page, 46, 61);
   expect(await page.evaluate(() => farm.state().stored.flowers === 1 && !farm.state().counts.flowers), 'flowers not stored');
   await ctx.close();
 });

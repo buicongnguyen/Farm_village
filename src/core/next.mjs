@@ -19,6 +19,8 @@ export function nextTask(s, now) {
   if (eggs) return { key: 'Collect the eggs and milk', at: at(eggs), icon: 'egg' };
   const goods = of((id, p, d) => d.produces && isWorking(s, id) && readyCount(s, id, now) > 0)[0];
   if (goods) return { key: 'Collect the finished goods', at: at(goods), icon: 'bread' };
+  const pond = of((id, p, d) => d.pond && s.fishing?.line && s.fishing.line.doneAt <= now)[0];
+  if (pond) return { key: 'Reel in the fish', at: at(pond), icon: 'perch' };
   const truck = of((id, p, d) => d.market && (s.truck?.coins ?? 0) > 0)[0];
   if (truck) return { key: "Collect the truck's coins", at: at(truck), icon: 'market' };
   if (s.orders.cards.some(c => barn.hasAll(s, c.need))) return { key: 'Deliver an order', at: null, icon: 'ui:orders', panel: 'orders' };

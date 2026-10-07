@@ -70,7 +70,7 @@ export class Radial {
     const s = this.s, now = this.game.now, lv = levelOf(s, id), name = thingName(s, id) ?? '';
     if (isRepairing(s, id)) { const left = Math.max(0, s.repairing[id].doneAt - now); return { buttons: [], info: `${name} · ${condLabel(s, id)} · ${shortTime(left)}${bar(1 - left / REPAIR.broken.ms)}` }; }
     const cost = repairCost(s, id), buttons = [{ act: 'repair', id, icon: iconHtml('wrench', '', 'ic'), label: `${coinMark()}${num(cost)}`, disabled: s.coins < cost }];
-    if (lv < 3 && (def?.produces || def?.stall || def?.market || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.stall || def.market ? 'stall' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
+    if (lv < 3 && (def?.produces || def?.stall || def?.market || def?.pond || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.stall || def.market ? 'stall' : def.pond ? 'pond' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
     return { buttons, info: `${name} · ${condLabel(s, id)}` };
   }
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
@@ -114,6 +114,7 @@ export class Radial {
     else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
+    else if (def?.pond) { this.hide(); this.panels.show('pond'); return; }
     else if (def?.home) { this.hide(); this.panels.show('cottage', id); return; }
     else if (p?.kind === 'school') info = t('The school is open!');
     else if (def?.animals) {

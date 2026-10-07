@@ -168,3 +168,4 @@ body.panel-open .next-chip, body.build-open .next-chip { display: none; }
 @keyframes chip-bob { 50% { transform: translateX(-50%) translateY(-3px); } }
 @media (prefers-reduced-motion: reduce) { .next-chip { animation: none; } }
 .next-chip { white-space: nowrap; } .next-chip b { margin-right: 2px; }
+body.reduced-motion .next-chip { animation: none; }

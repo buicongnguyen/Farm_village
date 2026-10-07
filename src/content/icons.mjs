@@ -3,8 +3,8 @@
 // (clear, harvest, move, store, build), HUD symbols as 'ui:<name>' (coin, xp, heart, barn, orders), people as
 // 'person:<id>' and families as 'family:<id>'. Use iconUrl(id) for a lookup that tolerates unknown ids.
 const BASE = './assets/icons/';
-const GOODS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'egg', 'milk', 'chicken_feed', 'cow_feed', 'bread', 'corn_bread', 'carrot_cake', 'apple', 'peach', 'apple_pie'];
-const BUILDINGS = ['bed', 'path', 'fence', 'gate', 'coop', 'cow_barn', 'feed_mill', 'bakery', 'stall', 'market', 'cottage', 'flowers', 'bush', 'tree', 'bench', 'lamp', 'school', 'fountain', 'picket', 'garden_flower', 'scarecrow', 'hay_bale', 'flowerpot', 'street_lamp', 'apple_tree', 'peach_tree', 'bunting', 'banner', 'sale_sign'];
+const GOODS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'egg', 'milk', 'chicken_feed', 'cow_feed', 'bread', 'corn_bread', 'carrot_cake', 'apple', 'peach', 'apple_pie', 'perch', 'carp', 'catfish', 'goldfish'];
+const BUILDINGS = ['bed', 'path', 'fence', 'gate', 'coop', 'cow_barn', 'feed_mill', 'bakery', 'stall', 'market', 'pond', 'truck', 'round_tree', 'pine_tree', 'cottage', 'flowers', 'bush', 'tree', 'bench', 'lamp', 'school', 'fountain', 'picket', 'garden_flower', 'scarecrow', 'hay_bale', 'flowerpot', 'street_lamp', 'apple_tree', 'peach_tree', 'bunting', 'banner', 'sale_sign'];
 const TOOLS = ['tool:clear', 'tool:harvest', 'tool:move', 'tool:store', 'tool:build'];
 const UI = ['ui:coin', 'ui:xp', 'ui:heart', 'ui:barn', 'ui:orders'];
 const PEOPLE = ['person:ada', 'person:cora', 'person:pip', 'person:minh', 'person:lan', 'person:bo', 'person:grace', 'person:sam', 'person:zara', 'person:elin', 'person:olaf', 'person:marisol', 'person:tomas', 'person:pia', 'person:june', 'person:mai', 'person:gus'];

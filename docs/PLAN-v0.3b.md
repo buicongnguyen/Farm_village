@@ -14,10 +14,10 @@ a language button outside Settings, and a crop menu that cannot be changed after
 | 5 | No sign that something is ripe or broken | Real UX gap | Floating bobbing coin over ripe crops, fruit, eggs and milk, finished goods, truck takings; red "!" over broken buildings (view/marks-view.mjs) | done |
 | 6 | Not enough indices / next task | Fair | "Next:" chip with the one most useful thing; a tap flies there (core/next.mjs). Red dots on HUD buttons existed for orders, Today, projects | done |
 | 7 | Broken things need a button to fix | Already there (tap the thing → Repair) but invisible | The red "!" and the Next chip lead to it | done |
-| 8 | A main character | Missing | The player walks the farm: shown at the farmhouse, walks to the thing you tap, does the chore | planned |
-| 9 | Everybody clickable, asks for something | Partly (talk bubbles) | A tap on a person gives a small errand or chat, rewards hearts/coins | planned |
-| 10 | Fish pond, fishing for money (even "hacking" money) | Missing | Borrow Willowmere's pond/fish art and rules; villagers who fish sell their catch | planned |
-| 11 | Trees: copy patterns from the reference game | Art | Add Willowmere tree variants | planned |
-| 12 | People walk from home to other houses | Check life-view walkers | Walkers visit other cottages | planned |
+| 8 | A main character | Missing | The player walks the farm: shown at the farmhouse, walks to the thing you tap, does the chore | done: you (a red-shirted man rig) stand by the farmhouse and walk to whatever you tap, then sweep, hammer or wave |
+| 9 | Everybody clickable, asks for something | Partly (talk bubbles) | A tap on a person gives a small errand or chat, rewards hearts/coins | done: tapping a villager who posted an order says so and opens the order board; others chat |
+| 10 | Fish pond, fishing for money (even "hacking" money) | Missing | Pond building (new Blender piece), Willowmere fish icons and cast/wait/reel rules; a pond at the start; fishing villagers sit there and leave fees; fish sell by the market truck | done |
+| 11 | Trees: copy patterns from the reference game | Art | Round tree and pine tree from Willowmere's scenery kit as charm items | done |
+| 12 | People walk from home to other houses | Check life-view walkers | Villagers call on other families' cottages and talk | done |
 
 Order: 1–7 done first (they are bugs and guidance); then 8, 9, 12 (people), then 10 and 11 (pond, trees).

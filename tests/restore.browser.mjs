@@ -153,6 +153,22 @@ await check('people: you are on the farm and walk to what you tap; a villager wi
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
+await check('the fish pond: tap it, cast a line, reel in a fish; a coin marks the bite', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.waitForTimeout(2500);
+  const pond = await idOf(page, 'pond'); expect(!!pond, 'no pond at the start');
+  const [cx, cz] = await cellOf(page, pond);
+  await tap(page, cx, cz); await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
+  await page.evaluate(() => document.querySelector('[data-do="castLine"]').click());
+  expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
+  await page.evaluate(() => farm.setClockOffset(100_000)); await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => farm.marks.collect().coin.length) > 0, 'no coin marker over the biting pond');
+  await page.evaluate(() => document.querySelector('[data-do="reelIn"]').click());
+  expect(await page.evaluate(() => farm.state().fishing.caught) === 1, 'no fish was reeled in');
+  expect(!errors.length, errors.join(' | '));
+  await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
+  await ctx.close();
+});
 await check('the market truck: repair the market and street, load wheat in the panel, send it, watch it drive off and come back with coins', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.evaluate(() => { const g = farm.game; g.s.coins = 3000; g.s.barn.items.wheat = 40; for (const id of ['road_south', ...Object.keys(g.s.placed).filter(i => g.s.placed[i].kind === 'market')]) g.do('repair', { id }); farm.setClockOffset(100_000); });

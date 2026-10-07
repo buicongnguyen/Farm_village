@@ -109,7 +109,7 @@ canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !
 addEventListener('pointerdown', unlockAudio, { capture: true });
 
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', truckBack: 'coin', truckSent: 'click', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');

@@ -2,6 +2,8 @@
 
 ## 0.3.0 — Restore Hollowbrook (in progress)
 
+- **Playtest round 2 (docs/PLAN-v0.3b.md):** floating gold coins over ripe crops, fruit, eggs, goods, takings and bites, and red "!" over broken buildings; a "Next:" chip with the one most useful thing to do; you are on the farm as the main character and walk to what you tap; a villager with an order for you opens the order board when tapped; villagers call on each other's cottages and fishing folk sit by the pond; a fish pond at the start (cast a line, wait, reel in perch, carp, catfish or a golden carp; sell by truck; fishing villagers leave fees); round and pine trees; apple and peach trees come sooner and ripen faster; the hens need no fence in the restored village; the crop menu can be changed after choosing one (a press that does not move is a tap); the language button lives in Settings only.
+
 - **The market square and the delivery truck:** the old market stands run down by the village street. Repair it and the street, then load spare goods onto the little red truck, send it to town (about a minute and a half) and collect more coins than the goods are worth. Bigger trucks carry more.
 
 - **A village that is already there:** a new game opens on Hollowbrook as it stands: sown beds, a feed mill, coop, bakery and three cottages
