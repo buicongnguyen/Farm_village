@@ -1,3 +1,9 @@
+import { VI_ART } from './vi-art.mjs';
+import { VI_WORLD } from './vi-world.mjs';
+import { VI_JUICE } from './vi-juice.mjs';
+import { VI_CAST } from './vi-cast.mjs';
+import { VI_PLAY } from './vi-play.mjs';
+import { VI_UI } from './vi-ui.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
@@ -156,3 +162,5 @@ export const VI = {
   'The stall is full': 'Sạp đã đầy', 'Nothing sold yet': 'Chưa bán được gì',
   'Nothing to undo': 'Không có gì để hoàn tác', 'Something stands on it now': 'Đã có vật đặt lên trên', 'It is in use now: move it instead': 'Đang được dùng: hãy di chuyển thay vì hoàn tác',
 };
+// Lines from the work packages
+Object.assign(VI, VI_ART, VI_WORLD, VI_JUICE, VI_CAST, VI_PLAY, VI_UI);

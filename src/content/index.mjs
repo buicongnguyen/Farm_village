@@ -5,3 +5,5 @@ export * as buildings from './buildings.mjs';
 export * as projects from './projects.mjs';
 export * as people from './people.mjs';
 export * as story from './story.mjs';
+export * as hearts from './hearts.mjs';
+export * as letters from './letters.mjs';

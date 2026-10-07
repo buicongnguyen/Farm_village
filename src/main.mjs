@@ -10,6 +10,9 @@ import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { LifeView } from './view/life-view.mjs';
 import { PeopleView } from './view/people-view.mjs';
+import { dressWorld } from './view/dress.mjs';
+import { Juice } from './view/juice.mjs';
+import { Critters } from './view/critters.mjs';
 import { Daylight } from './view/daylight.mjs';
 import { Ghost } from './view/ghost.mjs';
 import { Hud } from './ui/hud.mjs';
@@ -100,8 +103,12 @@ function applySettings() {
 
 world.start();
 await world.loadScenery();
+await dressWorld(world, game);
 await land.load();
-new LifeView(world, game);
+const life = new LifeView(world, game);
+radial.life = life;
+new Juice(world, game, app);
+new Critters(world, game);
 new Daylight(world, game);
 game.start();
 applySettings();
