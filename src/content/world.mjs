@@ -17,6 +17,9 @@ export const ROAD_SEGMENTS = [
   { id: 'road_south', name: 'Village street', x0: 0, x1: N - 1, z0: 90, z1: 91 },
   { id: 'road_east', name: 'The east road', x0: 100, x1: 101, z0: 20, z1: 89 },
   { id: 'road_north', name: 'The north lane', x0: 30, x1: 99, z0: 20, z1: 21 },
+  // the civic lane: from the village street down to the old school, clinic, police station and company row
+  { id: 'road_civic', name: 'School lane', x0: 55, x1: 56, z0: 92, z1: 102 },
+  { id: 'road_civic_row', name: 'Civic row', x0: 48, x1: 92, z0: 103, z1: 104 },
 ];
 export const ROADS = ROAD_SEGMENTS;
 export const roadSegmentAt = (x, z) => ROAD_SEGMENTS.find(r => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1) ?? null;
