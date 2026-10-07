@@ -42,12 +42,20 @@ export class LevelUp {
   show(level, list, slots) {
     const tiles = list.map(u => `<div class="unlock-tile" data-type="${u.type}">${iconOf(u)}<b>${nameOf(u)}</b><small>${t(TYPE[u.type] ?? 'New')}</small></div>`);
     if (slots) tiles.push(`<div class="unlock-tile" data-type="slots">${iconHtml('ui:orders', '', 'tile-icon')}<b>${t('{count} order slots', { count: slots })}</b><small>${t('More orders')}</small></div>`);
+    // two levels at once can open a dozen things: six tiles fit a phone, the rest fold behind a "+N" tile (tap to see them)
+    const SHOWN = 6;
+    if (tiles.length > SHOWN) {
+      const extra = tiles.length - (SHOWN - 1);
+      for (let i = SHOWN - 1; i < tiles.length; i++) tiles[i] = tiles[i].replace('class="unlock-tile"', 'class="unlock-tile extra" hidden');
+      tiles.splice(SHOWN - 1, 0, `<button class="unlock-tile more" data-more>${glyph('plus', 'tile-icon')}<b>${t('+{count} more', { count: extra })}</b><small>${t('Tap to see them all')}</small></button>`);
+    }
     const show = list.find(u => u.type === 'building') ?? list.find(u => u.type === 'recipe') ?? list.find(u => u.type === 'crop');
     showModal(`<div class="levelup"><div class="burst"><i class="rays"></i><div class="level-badge">${glyph('star', 'star')}<b>${level}</b></div></div>
       <h2>${t('Level {level}!', { level })}</h2><p class="sub">${tiles.length ? t('New on your farm') : t('Your farm grows. Keep going!')}</p>
       ${tiles.length ? `<div class="unlock-tiles">${tiles.join('')}</div>` : ''}
       <div class="row">${show ? `<button class="btn orange" data-close data-show="${show.type}:${show.id}">${t('Show me')}</button>` : ''}<button class="btn primary big" data-close>${t('Continue')}</button></div></div>`,
     { modal: true, cls: 'levelup-modal', onOpen: el => {
+      el.querySelector('[data-more]')?.addEventListener('click', e => { e.currentTarget.remove(); el.querySelectorAll('.unlock-tile.extra').forEach(x => { x.hidden = false; }); });
       el.querySelector('[data-show]')?.addEventListener('click', e => { const [type, id] = e.currentTarget.dataset.show.split(':'); setTimeout(() => this.onShow?.({ type, id }), 0); });
     } });
   }

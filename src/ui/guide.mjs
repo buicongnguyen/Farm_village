@@ -22,7 +22,9 @@ export class Guide {
     this.el = document.createElement('div'); this.el.className = 'guide'; this.el.hidden = true; root.appendChild(this.el);
     this.mark = document.createElement('div'); this.mark.className = 'pointer'; this.mark.hidden = true; this.mark.innerHTML = `<i class="ring"></i>${glyph('hand', 'hand')}`; root.appendChild(this.mark);
     this.el.addEventListener('click', e => {
-      const b = e.target.closest('[data-g]'); if (!b) return;
+      const b = e.target.closest('[data-g]');
+      // folded above the build sheet on a phone: a tap opens the card, a tap outside its buttons folds it again
+      if (!b) { if (document.body.classList.contains('build-open')) this.el.classList.toggle('expanded'); return; }
       sfx('click');
       if (b.dataset.g === 'skip') this.game.do('tutorial', { skip: true });
       if (b.dataset.g === 'next') this.game.do('tutorial', { step: this.index + 1 });
@@ -51,7 +53,7 @@ export class Guide {
     if (!step || this.waiting) { this.el.hidden = true; this.mark.hidden = true; return; }
     const key = `${this.index}|${t(step.text)}`;
     if (this.el.hidden || this.key !== key) {
-      this.key = key;
+      this.key = key; this.el.classList.remove('expanded');
       this.el.innerHTML = `${faceHtml('ada', 'face')}<div class="say"><b>${t('Ada')}</b><p>${t(step.text)}</p>
         <div class="guide-buttons">${step.last ? `<button class="btn primary" data-g="skip">${t('Got it')}</button>` : `<button class="btn" data-g="next">${t('I know how')}</button><button class="btn ghost" data-g="skip">${t('Skip tutorial')}</button>`}</div></div>`;
       if (this.el.hidden) { this.el.hidden = false; this.el.classList.remove('enter'); void this.el.offsetWidth; this.el.classList.add('enter'); }
@@ -106,6 +108,12 @@ export class Guide {
     const step = this.step, s = this.s; if (!step) return null;
     const o = parcelOrigin(START_PARCEL);
     if (step.point === 'weeds') { const w = TUTORIAL_WEEDS.map(([dx, dz]) => [o.x + dx, o.z + dz]).find(([x, z]) => cellType(s, x, z) === 'weeds'); return w && { cell: w }; }
+    // in build mode, first the tab and the card to press, then the spot on the map
+    if ((step.point === 'path' || step.point === 'beds') && document.body.classList.contains('build-open')) {
+      const kind = step.point === 'path' ? 'path' : 'bed', cat = step.point === 'path' ? 'paths' : 'farm';
+      if (!document.querySelector(`.sheet.build .card.on[data-kind="${kind}"]`))
+        return { el: document.querySelector(`.sheet.build .card[data-kind="${kind}"]`) ? `.sheet.build .card[data-kind="${kind}"]` : `.sheet.build .tab[data-cat="${cat}"]` };
+    }
     if (step.point === 'path') return { cell: [31, o.z + 4] };
     if (step.point === 'beds') return { cell: [o.x + 2, o.z + 1] };
     if (step.point === 'bed') { const id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); return id && { cell: [s.placed[id].x, s.placed[id].z] }; }
@@ -115,7 +123,7 @@ export class Guide {
   placeMarker() {
     const tg = !this.waiting && !this.el.hidden && this.target(); if (!tg) { this.mark.hidden = true; return; }
     let x, y;
-    if (tg.button) { const r = document.querySelector(`[data-act="${tg.button}"]`)?.getBoundingClientRect(); if (!r || !r.width) { this.mark.hidden = true; return; } x = r.left + r.width / 2; y = r.top + r.height / 2; }
+    if (tg.button || tg.el) { const r = document.querySelector(tg.el ?? `[data-act="${tg.button}"]`)?.getBoundingClientRect(); if (!r || !r.width) { this.mark.hidden = true; return; } x = r.left + r.width / 2; y = r.top + r.height / 2; }
     else { const v = new this.world.cam.camera.position.constructor((tg.cell[0] + 0.5) * CELL, 0.3, (tg.cell[1] + 0.5) * CELL).project(this.world.cam.camera); x = (v.x + 1) / 2 * innerWidth; y = (1 - v.y) / 2 * innerHeight; }
     this.mark.hidden = false; this.mark.style.transform = `translate(${x}px, ${y}px)`;
   }

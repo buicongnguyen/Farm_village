@@ -16,7 +16,10 @@ const kits = new Map();
 export const MODEL_BASE = './assets/models/'; // relative to the page (dist/index.html)
 /** Load a GLB kit once: { name → Object3D } of its root nodes. */
 export function loadKit(file) {
-  if (!kits.has(file)) kits.set(file, loader.loadAsync(`${MODEL_BASE}${file}.glb`).then(g => Object.fromEntries(g.scene.children.map(c => [c.name, c]))));
+  // one retry after a second, so a single network blip never costs a reload; a second failure is forgotten so a later call can try again
+  const get = () => loader.loadAsync(`${MODEL_BASE}${file}.glb`);
+  if (!kits.has(file)) kits.set(file, get().catch(() => new Promise(r => setTimeout(r, 1000)).then(get))
+    .then(g => Object.fromEntries(g.scene.children.map(c => [c.name, c])), e => { kits.delete(file); throw e; }));
   return kits.get(file);
 }
 /** Load a kit once the page is idle after the first frame (TECH-PLAN 6, loading order). */

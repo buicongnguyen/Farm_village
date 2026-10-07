@@ -42,4 +42,7 @@ export const VI_UI = {
   'Test': 'Kiểm thử', 'Only in test builds.': 'Chỉ có trong bản kiểm thử.', 'Unlock everything': 'Mở khóa tất cả', '+10,000 coins': '+10.000 xu',
   'Finish every timer': 'Hoàn tất mọi bộ đếm giờ', 'Move a family in': 'Đón một gia đình đến', 'Next tutorial step': 'Bước hướng dẫn tiếp theo',
   'Clock +1 hour': 'Đồng hồ +1 giờ', 'Clock +1 day': 'Đồng hồ +1 ngày', 'The clock moved forward': 'Đồng hồ đã chạy nhanh lên',
+  // the fixer pass: folded level-up tiles, a failed Vietnamese download
+  '+{count} more': '+{count} thứ nữa', 'Tap to see them all': 'Chạm để xem hết',
+  'Could not load Vietnamese. Check your connection.': 'Không tải được tiếng Việt. Hãy kiểm tra kết nối mạng.',
 };

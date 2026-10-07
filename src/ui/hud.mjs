@@ -45,7 +45,7 @@ export class Hud {
     this.el.addEventListener('click', e => {
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
       if (act === 'turn') onTurn?.();
-      if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi');
+      if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
       if (['orders', 'barn', 'today', 'projects', 'album', 'settings', 'friends', 'mail'].includes(act)) onPanel?.(act);
     });

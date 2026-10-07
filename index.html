@@ -35,6 +35,18 @@
   window.addEventListener('unhandledrejection', function (e) { if (M.test(String(e.reason && e.reason.message || e.reason))) window.__fvFresh(); });
 })();
 </script>
-<script type="module">import('./assets/game.js').catch(function () { window.__fvFresh(); });</script>
+<script>
+// The game could not start (a file failed twice): say so in both languages (the Vietnamese lines may not be loaded yet)
+// and offer a reload, instead of leaving the splash up for ever.
+window.__fvBootError = function () {
+  var b = document.getElementById('boot'); if (!b || b.querySelector('.boot-error')) return;
+  var vi = /^vi/.test((function () { try { return localStorage.getItem('farm-village.language') || ''; } catch (e) { return ''; } })() || navigator.language || '');
+  var d = document.createElement('div'); d.className = 'boot-error';
+  d.innerHTML = '<p>' + (vi ? 'Không tải được trò chơi. Hãy kiểm tra kết nối mạng.' : 'The farm could not load. Check your connection.') + '</p><button type="button">' + (vi ? 'Thử lại' : 'Try again') + '</button>';
+  d.querySelector('button').onclick = function () { location.reload(); };
+  var l = b.querySelector('.loading'); if (l) l.replaceWith(d); else b.appendChild(d);
+};
+</script>
+<script type="module">import('./assets/game.js').catch(function (e) { console.error(e); if (!window.__fvFresh()) window.__fvBootError(); });</script>
 </body>
 </html>

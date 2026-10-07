@@ -106,6 +106,12 @@ export class GameCamera {
     // dragHook (optional): { start(x, y) → true to take the drag (e.g. sweeping across beds), move(x, y), end() }
     const pointers = new Map(); let pinch = 0, moved = 0, hooked = false, track = [];
     const reduced = () => globalThis.document?.body?.classList.contains('reduced-motion');
+    // A touch tap is followed by the browser's compatibility click at the same spot, after onTap has already opened a menu
+    // or panel under the finger: that click would press whatever sprang up there (plant the dearest crop, harvest, buy).
+    // Swallow the one click that follows a recognised touch tap; the next real press (its own pointerdown) is never touched.
+    let ghostUntil = 0;
+    globalThis.document?.addEventListener('pointerdown', () => { ghostUntil = 0; }, true);
+    globalThis.document?.addEventListener('click', e => { if (performance.now() < ghostUntil) { ghostUntil = 0; e.preventDefault(); e.stopPropagation(); } }, true);
     el.addEventListener('pointerdown', e => {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); moved = 0; el.setPointerCapture?.(e.pointerId);
       this.stop(); this.dragging = true; track = [];
@@ -125,7 +131,8 @@ export class GameCamera {
     });
     const up = e => {
       if (hooked) { hooked = false; pointers.delete(e.pointerId); this.dragging = false; this.dragHook.end(); return; }
-      const tap = pointers.size === 1 && moved <= 6; pointers.delete(e.pointerId); pinch = 0; if (tap && e.type === 'pointerup') onTap?.(e.clientX, e.clientY);
+      const tap = pointers.size === 1 && moved <= 6; pointers.delete(e.pointerId); pinch = 0;
+      if (tap && e.type === 'pointerup') { if (e.pointerType !== 'mouse') ghostUntil = performance.now() + 700; onTap?.(e.clientX, e.clientY); }
       if (pointers.size) return;
       this.dragging = false;
       // fling: the speed of the last ~90 ms of the drag carries on and slows down

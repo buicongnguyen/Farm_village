@@ -4,7 +4,15 @@
 // The Vietnamese lines (about 85 KB) are their own chunk: loaded at boot for a Vietnamese reader (languageReady), and on
 // the first switch to Vietnamese for everyone else. Until they are in, t() gives the English.
 let VI = null, viLoading = null;
-export const loadVietnamese = () => (viLoading ??= import('../i18n/vi.mjs').then(m => { VI = m.VI; }));
+// A failed download is not cached: the next call tries again. The browser remembers a module URL that failed, so the
+// retry asks for the same chunk with a fresh query (Chrome names the URL in the error; elsewhere it simply tries again).
+let viRetry = null;
+export const loadVietnamese = () => (viLoading ??= (viRetry ? import(viRetry) : import('../i18n/vi.mjs')).then(m => { VI = m.VI; }, e => {
+  viLoading = null;
+  const url = String(e?.message ?? '').match(/https?:\/\/\S+?\.js/)?.[0];
+  if (url) viRetry = `${url}?retry=${Date.now().toString(36)}`;
+  throw e;
+}));
 
 const KEY = 'farm-village.language';
 const listeners = new Set();

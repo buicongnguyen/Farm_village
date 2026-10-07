@@ -77,7 +77,7 @@ export class Panels {
     else if (d.do === 'wishBuild') { this.close(); this.onBuildKind?.(d.kind); }
     else if (d.do === 'test') this.onTest?.(d.test);
     else if (d.do === 'photo') { this.close(); this.onPhoto?.(); }
-    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => this.render()); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
+    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => this.render(), () => this.hud?.toast(t('Could not load Vietnamese. Check your connection.'), 'warn')); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
     else if (d.do === 'export' || d.do === 'newGame' || d.do === 'profile') this.onSave?.(d.do, d.n);
   }
   /** The sheet's header: the panel's icon on a ribbon, its title and a close button (and Back for the gift picker). */

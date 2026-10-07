@@ -10,7 +10,7 @@
 .guide .say p b { color: #c25f0a; }
 .guide-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 .guide-buttons .btn { min-height: 40px; padding: 6px 12px; font-size: 14px; }
-body.panel-open .guide, .hud[data-mode="build"] ~ .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }
+body.panel-open .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }   /* build mode: body.build-open below */
 @media (max-width: 600px) { .guide { max-width: calc(100vw - 20px); bottom: calc(max(10px, env(safe-area-inset-bottom)) + 84px); } .guide .face { width: 58px; height: 58px; } }
 .pointer { position: fixed; left: 0; top: 0; z-index: 5; width: 0; height: 0; pointer-events: none; }
 .pointer .ring { position: absolute; left: -30px; top: -30px; width: 60px; height: 60px; border-radius: 50%; border: 5px solid var(--sun); box-shadow: 0 0 0 3px #fff9, 0 0 14px #ffd23f; animation: pulse 1.2s ease-out infinite; }
@@ -52,6 +52,10 @@ body.panel-open .guide, .hud[data-mode="build"] ~ .guide { bottom: calc(var(--sh
 .tile-icon { width: 58px; height: 58px; object-fit: contain; }
 .unlock-tile b { font-size: 14px; font-weight: 1000; line-height: 1.15; } .unlock-tile small { font-size: 11px; color: #b3672e; font-weight: 1000; line-height: 1.1; }
 .levelup .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+/* the buttons always show: the row sticks to the bottom of the card while the tiles scroll under it */
+.levelup .row { position: sticky; bottom: -18px; z-index: 1; width: calc(100% + 36px); margin: 0 -18px -18px; padding: 10px 18px 14px; background: linear-gradient(#fff8ea00, var(--panel-bg) 30%); }
+.unlock-tile.more { font: inherit; color: var(--ink); cursor: pointer; background: linear-gradient(#fff3c4, #ffe08a); border-color: #e0b546; }
+.unlock-tile[hidden] { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes badge-in { from { transform: scale(.2) rotate(-40deg); } }
 @keyframes tile-in { from { transform: scale(.4); opacity: 0; } }
@@ -78,7 +82,7 @@ body.panel-open .guide, .hud[data-mode="build"] ~ .guide { bottom: calc(var(--sh
 
 @media (min-width: 900px) and (min-height: 600px) {
   .sheet { left: calc(50% - min(400px, 46vw)); right: calc(50% - min(400px, 46vw)); border-radius: 26px 26px 0 0; }
-  .place-bar { bottom: calc(min(46vh, 196px) + 14px); }
+  .place-bar { bottom: calc(var(--build-h, min(46vh, 196px)) + 14px); }
   .friends, .letters { grid-template-columns: 1fr 1fr; }
 }
 /* photo mode */
@@ -129,4 +133,28 @@ body.night .village-name { box-shadow: 0 3px 0 #1d1006, 0 0 12px #ffd23f55; }
   .levelup .row { grid-column: 2; }
   .levelup .burst { width: 130px; height: 120px; margin: 0; } .levelup .level-badge { width: 100px; height: 100px; } .levelup h2 { font-size: 26px; }
   .unlock-tile { padding: 5px 3px; } .tile-icon { width: 40px; height: 40px; } .unlock-tile b { font-size: 12px; }
+}
+
+/* Build mode: the guide sits above the build sheet (body.build-open, --build-h from build-view.mjs), never over its cards.
+   On a portrait phone it folds to a chip (Ada's face and the first words of the step) above the place bar; a tap opens it. */
+body.build-open .guide { bottom: calc(var(--build-h, 216px) + 10px); }
+.guide .say p .more-hint { display: none; }
+@media (max-width: 600px) {
+  body.build-open .guide { bottom: calc(var(--build-h, 216px) + 74px); max-width: calc(100vw - 92px); }
+  body.build-open .guide:not(.expanded) { cursor: pointer; }
+  body.build-open .guide:not(.expanded) .face { width: 46px; height: 46px; border-width: 3px; }
+  body.build-open .guide:not(.expanded) .say { padding: 5px 10px 6px; border-width: 3px; }
+  body.build-open .guide:not(.expanded) .say > b, body.build-open .guide:not(.expanded) .guide-buttons { display: none; }
+  body.build-open .guide:not(.expanded) .say p { margin: 0; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* the category tabs get a row of their own under the tools, with a fading edge while more are hidden */
+  .build-top { flex-wrap: wrap; row-gap: 0; }
+  .build-top .tools { margin-left: auto; padding-bottom: 2px; }
+  .build-top .tabs { order: 2; flex: 1 0 100%; }
+  /* the round HUD buttons step aside while the sheet is open (it has its own close button), so the place bar has the row */
+  .hud[data-mode="build"] .hud-tools { display: none; }
+  .place-bar { max-width: calc(100vw - 24px); }
+}
+.sheet .tabs.more { -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent); mask-image: linear-gradient(90deg, #000 80%, transparent); }
+@media (orientation: landscape) and (max-height: 500px) {
+  .levelup .row { position: static; width: auto; margin: 0; padding: 0; background: none; }
 }

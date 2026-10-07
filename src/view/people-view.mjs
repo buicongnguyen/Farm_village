@@ -355,7 +355,7 @@ export class PeopleView {
   say(w, text, ms = 5000) {
     w.bubble?.remove();
     const el = document.createElement('div'); el.className = 'bubble';
-    const b = document.createElement('b'); b.textContent = this.nameOf(w); el.append(b, ` ${text}`);
+    const b = document.createElement('b'); b.textContent = this.nameOf(w); el.append(b, text);
     this.bubbles.appendChild(el); w.bubble = el; w.bubbleUntil = performance.now() + ms;
     this.placeBubbles();
   }
@@ -370,12 +370,20 @@ export class PeopleView {
   }
   placeBubbles() {
     const now = performance.now();
+    // Ada's guide card is drawn over the bubbles' layer: a bubble that would sit behind it rises above its top edge
+    const guide = document.querySelector('.guide:not([hidden])')?.getBoundingClientRect();
     for (const w of this.walkers.values()) {
       if (!w.bubble) continue;
       if (now > w.bubbleUntil) { w.bubble.remove(); w.bubble = null; continue; }
       const p = this.screenOf(w, RIGS[w.body].height + 0.3), m = 70;
-      // a bubble whose speaker is off screen stays at the screen edge, so the line is never lost
-      const x = Math.min(innerWidth - m, Math.max(m, p.x)), y = Math.min(innerHeight - 60, Math.max(m + 40, p.y));
+      // clamp by the bubble's real width, so it never runs off either edge; the tail still points at the speaker.
+      // A bubble whose speaker is off screen stays at the screen edge, so the line is never lost.
+      const hw = (w.bubble.offsetWidth || 160) / 2 + 8, hh = w.bubble.offsetHeight || 40;
+      const x = Math.min(innerWidth - hw, Math.max(hw, p.x));
+      let y = Math.min(innerHeight - 60, Math.max(m + 40, p.y));
+      if (guide && guide.width && x + hw > guide.left && x - hw < guide.right && y > guide.top - 6 && y - hh < guide.bottom) y = Math.max(hh + 50, guide.top - 12);
+      const tail = Math.max(-hw + 22, Math.min(hw - 22, p.x - x));
+      w.bubble.style.setProperty('--tail', `${tail.toFixed(0)}px`);
       w.bubble.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
     }
   }

@@ -3,6 +3,7 @@
 // show the ghost first and are placed with the tick button (or a second tap on the same spot). Every card shows the art
 // kit's rendered icon; locked ones show a padlock with the level or project that opens them.
 import { t, num } from '../kit/i18n.mjs';
+import { TUTORIAL } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL } from '../content/world.mjs';
 import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
@@ -28,9 +29,22 @@ export class BuildView {
     game.on(() => { if (this.open) { this.render(); this.refreshGhost(); } });
   }
   toggle() { this.open ? this.close() : this.show(); }
-  show() { if (!this.open) sfx('page'); this.open = true; this.el.hidden = false; this.hud.setMode('build'); this.render(); }
+  show() {
+    if (!this.open) {
+      sfx('page');
+      // the tutorial's path step opens on the paths tab, its beds step on the farm tab
+      const step = TUTORIAL[this.game.s.story.tutorial ?? 0]?.id;
+      if (step === 'path') this.cat = 'paths'; else if (step === 'beds') this.cat = 'farm';
+    }
+    this.open = true; this.el.hidden = false; this.hud.setMode('build'); this.render(); this.lift();
+  }
+  /** body.build-open and --build-h (the sheet's real height) let the guide, the HUD buttons and the place bar sit above it. */
+  lift() {
+    document.body.classList.toggle('build-open', this.open);
+    document.body.style.setProperty('--build-h', `${this.open ? this.el.offsetHeight : 0}px`);
+  }
   close() {
-    this.open = false; this.el.hidden = true; this.bar.hidden = true; this.cancel(); this.hud.setMode('');
+    this.open = false; this.el.hidden = true; this.bar.hidden = true; this.cancel(); this.hud.setMode(''); this.lift();
     this.game.do('endBuild');
   }
   click(e) {
@@ -60,6 +74,9 @@ export class BuildView {
     const tabs = this.el.querySelector('.tabs'), on = tabs.querySelector('.tab.on');
     if (scroll != null) tabs.scrollLeft = scroll;
     if (on && (on.offsetLeft < tabs.scrollLeft || on.offsetLeft + on.offsetWidth > tabs.scrollLeft + tabs.clientWidth)) tabs.scrollLeft = on.offsetLeft - 8;
+    const fade = () => tabs.classList.toggle('more', tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 4);   // the edge fades while more tabs hide
+    fade(); tabs.addEventListener('scroll', fade, { passive: true });
+    if (this.open) this.lift();
   }
   select(kind) {
     const s = this.game.s, d = BUILDINGS[kind], may = mayBuild(s, kind);
