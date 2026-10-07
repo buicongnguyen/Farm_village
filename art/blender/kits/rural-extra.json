@@ -1,0 +1,65 @@
+{
+ "out": "public/assets/models/rural-extra.glb",
+ "pieces": [
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "silo",
+   "name": "silo",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "home_t0",
+   "name": "home_t0",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "home_t2",
+   "name": "home_t2",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "home_t3",
+   "name": "home_t3",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "picket_fence",
+   "name": "picket_fence",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "rail_fence",
+   "name": "rail_fence",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "hay_round",
+   "name": "hay_round",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "tractor",
+   "name": "tractor",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "pond_dock",
+   "name": "pond_dock",
+   "boost": 1.05
+  },
+  {
+   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+   "root": "stump",
+   "name": "stump",
+   "boost": 1.05
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{"out": "public/assets/models/props.glb", "pieces": [
+ {"src": "3D_game_scene/public/models/scarecrow.glb", "name": "scarecrow", "boost": 1.15, "mid": 0.4},
+ {"src": "3D_game_scene/public/models/haybale.glb", "name": "haybale", "boost": 1.1, "mid": 0.35},
+ {"src": "3D_game_scene/public/models/sacks.glb", "name": "sacks", "boost": 1.1, "mid": 0.35},
+ {"src": "3D_game_scene/public/models/crate.glb", "name": "crate", "boost": 1.1, "mid": 0.35},
+ {"src": "3D_game_scene/public/models/barrel.glb", "name": "barrel", "boost": 1.1, "mid": 0.35},
+ {"src": "3D_game_scene/public/models/cart.glb", "name": "cart", "boost": 1.1, "mid": 0.35},
+ {"src": "3D_game_scene/public/models/signpost.glb", "name": "signpost", "boost": 1.1, "mid": 0.4},
+ {"src": "3D_game_scene/public/models/postbox.glb", "name": "postbox", "boost": 1.1, "mid": 0.4},
+ {"src": "3D_game_scene/public/models/street-lamp.glb", "name": "street_lamp", "boost": 1.1, "mid": 0.4},
+ {"src": "3D_game_scene/public/models/flowerpot.glb", "name": "flowerpot", "boost": 1.15, "mid": 0.3},
+ {"src": "3D_game_scene/public/models/laundry-line.glb", "name": "laundry_line", "boost": 1.1},
+ {"src": "3D_game_scene/public/models/beehive-branch.glb", "name": "beehive_branch", "boost": 1.1, "mid": 0.35}
+]}

@@ -11,11 +11,38 @@ the npm packages in `package.json` and the Nunito font (SIL Open Font License, `
 | `rural-lite.glb` | Willowmere's `rural.glb` (at 11df8e9) | Only `home_t1`, `barn`, `mailbox`, `windmill`, `windmill_rotor`, kept by `art/blender/extract_kit.py` (2.5 MB → 0.5 MB) |
 | `market-stall.glb`, `well.glb`, `animal-produce.glb` | Willowmere at 11df8e9 | Copied unchanged |
 | `hero-tall.glb`, `hero-girl-tall.glb`, `hero-tiny.glb`, `hero-girl-tiny.glb` | Willowmere `public/assets/models/` (from Zoo Garden) | Copied unchanged; villagers and neighbours |
-| `farm-kit.glb` | New: `art/blender/build_farm_kit.py` with Willowmere's `style.py` | Wheat, feed mill, bakery, bench, lamp, order board |
+| `farm-kit.glb` | New: `art/blender/build_farm_kit.py` with Willowmere's `style.py` | Crops in three stages (wheat, carrot, corn, pumpkin, strawberry; authored `_mid` levels), feed mill + `feed_mill_sails`, bakery, coop with yard, cow barn, picket fence set, bench, lamp, order board, bed rim; anchor empties (AAA pass) |
+| `decor.glb` | New: `art/blender/build_farm_kit.py` (AAA pass) | Plank bridge, fountain, bunting, banner, For-sale sign, scaffold, window box, door lantern, flowerpots, doormat, path stones, obstacle bush / stump / log |
+| `props.glb` | Starline (`3D_game_scene`, at 42424c7) `public/models/*.glb`, made by its `art/blender/build_props.py` | Scarecrow, haybale, sacks, crate, barrel, cart, signpost, postbox, street lamp, flowerpot, laundry line, beehive branch; joined into vertex-colour roots by `art/blender/extract_kit.py` (`art/blender/kits/props.json`), colours boosted 1.1–1.15, decimated `_mid` levels |
+| `nature.glb` | Starline at 42424c7 `public/models/*.glb`, made by its `art/blender/build_nature.py` | Lily pads, reeds, stepping stones, rocks, flowers, hydrangea, bushes, grass tuft, broadleaf, maple, sakura, chestnut and peach trees (Starline `-lod` copies as `_mid`); `tree_peach_bare` (fruit node dropped), `tree_apple` / `tree_apple_bare` (peach recoloured red, leaves deeper green); colours boosted (`art/blender/kits/nature.json`) |
+| `rural-extra.glb` | Willowmere `public/assets/models/rural.glb` (working copy at 6390128) | Silo, home_t0 / t2 / t3, picket and rail fence, round hay bale, tractor, pond dock, stump; vertex-colour roots (`art/blender/kits/rural-extra.json`) |
+| `farm.glb` (AAA pass) | Willowmere `farm.glb` roots unchanged, plus Zoo Garden (`cute_game`, at 96f8748) `public/assets/models/farm.glb` goat, kid, goose, gosling, goat_shelter, goose_shelter | Rebuilt as vertex-colour roots by `art/blender/extract_kit.py` (`art/blender/kits/farm.json`) |
 | `nunito.woff2` | Willowmere `public/assets/` | Font, with its license |
 
 All models are vertex-coloured kit pieces with no textures. The game bakes each root node into one geometry
 (`src/view/models.mjs`).
+
+Every top-level GLB is compressed with gltfpack (meshopt, 8-bit normals and colours, float positions, named nodes kept)
+by `art/blender/pack.mjs`; the decoder ships with three.js and is set in `models.mjs`. The first-wave kits went from
+473 KB to about 280 KB gzipped, and the first scene on simulated 4G from 3.2 s to 2.2 s. gltfpack (npm `gltfpack`,
+MIT) is a build tool only, not a dependency of the game.
+
+## Icons (`public/assets/icons/`)
+
+| Files | Source | Notes |
+|---|---|---|
+| 73 WebP icons, 256 px | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
+
+## Tools in `art/blender/`
+
+| Script | What it does |
+|---|---|
+| `build_farm_kit.py` | farm-kit.glb, decor.glb and `anchors-farm-kit.json` |
+| `extract_kit.py` | kits from other GLBs as vertex-colour roots (spec files in `kits/`), or the legacy keep-these-roots mode |
+| `anchors.mjs` | writes `ANCHORS` into `src/view/kinds.mjs` (farm-kit anchors, plus window points of the cottages and the farmhouse found from their glass faces) |
+| `pack.mjs` | meshopt compression with gltfpack |
+| `build_items.py`, `render_icons.py`, `icon_post.py` | icons |
+| `sheet.mjs` | in-engine contact sheets (the game's bake, toon material and camera) for reviewing kits |
 
 ## Code adapted from Willowmere
 

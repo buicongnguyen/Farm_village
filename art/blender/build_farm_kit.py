@@ -1,101 +1,493 @@
-"""Farm Village farm kit: the models Willowmere's kits do not have (TECH-PLAN 5).
+"""Farm Village farm kit: crops in three growth stages, the production buildings, bed rims, the picket fence set and
+the small charm pieces (TECH-PLAN 5, AAA pass).
 
 Run:  blender --background --factory-startup --python art/blender/build_farm_kit.py
-Writes public/assets/models/farm-kit.glb and prints each piece's triangles and size.
+Writes public/assets/models/farm-kit.glb (first wave: crops, buildings, rims, fences) and decor.glb (loaded after
+the first frame: bridge, fountain, bunting, banner, For-sale sign, scaffold, cottage dressing, obstacles), prints
+each piece's triangles and size, and writes art/blender/anchors-farm-kit.json for art/blender/anchors.mjs.
 
-Pieces: crop_wheat, feed_mill (2 x 2 cells), bakery (3 x 2 cells), bench, lamp, order_board.
-Contract (glTF, Y up, front faces +Z, origin = ground centre, metres, scale 1). Every material is opaque and flat:
-the game bakes them into vertex colours (src/view/models.mjs) so each kind draws in one call per batch.
+Contract (glTF, Y up, front faces +Z, origin = ground centre, metres, scale 1). Every root is one mesh with vertex
+colours (COLOR_0) and the single white material 'VC'. Crops are authored at their real size (a bed is a 2 m cell;
+ripe crops stay inside 1.8 m). Nodes named <piece>_mid are the authored middle level of detail.
+Anchors are empties named <piece>.<label>[.<n>] (chimney, sails, door, window, light).
 """
-import sys, os, math, random
+import sys, os, math, random, json
 sys.path.insert(0, os.path.dirname(__file__))
 from style import *
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'assets', 'models', 'farm-kit.glb')
+OUT_DECOR = os.path.join(ROOT, 'public', 'assets', 'models', 'decor.glb')
+ANCHOR_JSON = os.path.join(os.path.dirname(__file__), 'anchors-farm-kit.json')
 reset_scene()
 C = {}
-for n, c in {'cream': '#FFF1D2', 'white': '#FFFDF6', 'red': '#EF3B3B', 'redd': '#C22F2A', 'roof': '#D8574A', 'roofd': '#A93F35',
-             'wood': '#C77A3A', 'woodl': '#E3A05A', 'woodd': '#8A4B25', 'stone': '#B9C0CC', 'stoned': '#8C95A5', 'iron': '#5B6477',
-             'charcoal': '#3A3D4A', 'straw': '#F2B33D', 'strawl': '#FFD35C', 'strawd': '#D98B1F', 'stalk': '#B9C95A', 'leaf': '#4FBF3A',
-             'sun': '#FFC83A', 'glass': '#7FE3FF', 'sack': '#E9D2A6', 'sackd': '#C9AE7E', 'bread': '#D98B3A', 'breadl': '#F2B460',
-             'cork': '#C98F55', 'paper': '#FFF6D8', 'pink': '#FF9CC8', 'sky': '#35B6F2', 'mint': '#5EDFB0'}.items():
+for n, c in {
+        # buildings
+        'cream': '#FFEBC4', 'plaster': '#FFF4DC', 'white': '#FFFDF6', 'red': '#EF3B3B', 'redd': '#C22F2A', 'roof': '#E8573F',
+        'roofl': '#F57A55', 'roofd': '#B83E2E', 'teal': '#1FB5B0', 'teald': '#14857F', 'barn': '#D9443A', 'barnd': '#A8302A',
+        'wood': '#C77A3A', 'woodl': '#E3A05A', 'woodd': '#8A4B25', 'wooddd': '#6A3A1E', 'stone': '#C3C9D4', 'stonel': '#E1E5EC',
+        'stoned': '#8C95A5', 'brick': '#C9583C', 'brickd': '#9E412C', 'iron': '#5B6477', 'charcoal': '#3A3D4A', 'glass': '#7FE3FF',
+        'glassd': '#3FAFE0', 'sack': '#EBD3A3', 'sackd': '#C9AE7E', 'bread': '#D98B3A', 'breadl': '#F2B460', 'cork': '#C98F55',
+        'paper': '#FFF6D8', 'pink': '#FF7FB5', 'sky': '#35B6F2', 'mint': '#5EDFB0', 'sun': '#FFC83A', 'gold': '#F5B21E',
+        'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
+        # crops
+        'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
+        'leaf': '#4FBF3A', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
+        'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
+        'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
+        'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
+        'rim': '#9C6236', 'riml': '#B87A45',
+        }.items():
     C[n] = mat('FK ' + n, c, .55)
-C['lampglow'] = mat('FK lampglow', '#FFE08A', .4, emit='#FFE08A', emit_strength=2.0)
 
+# Plan helpers: (x, y) on the plan with y toward the FRONT (Blender -Y), z up.
 def bx(name, w, d, h, x, y, z, mt, bev=.03, seg=1, rot=0.):
-    """Box: width w (x), depth d (toward the front), height h; (x, y) on the plan with y toward the front; z = bottom."""
+    """Box: width w (x), depth d (toward the front), height h; z = bottom."""
     return box(name, (w, d, h), (x, -y, z + h / 2), C[mt], bev=bev, seg=seg, rot=(0, 0, rot))
-def cl(name, r, h, x, y, z, mt, verts=10, rt=None, bev=0.):
-    return cyl(name, r, h, (x, -y, z + h / 2), C[mt], verts=verts, bev=bev, seg=1, radius_top=rt)
+def cl(name, r, h, x, y, z, mt, verts=10, rt=None, bev=0., rot=(0, 0, 0)):
+    return cyl(name, r, h, (x, -y, z + h / 2), C[mt], verts=verts, bev=bev, seg=1, radius_top=rt, rot=rot)
 def ball(name, r, x, y, z, mt, sub=1, sc=None):
     return ico(name, r, (x, -y, z), C[mt], subdiv=sub, scale=sc)
-def gable(name, w, d, h, x, y, z, mt, over=.18):
+def lf(base, angle, length, width, mt, lift=.25, droop=.1, tilt=0.):
+    return leaf('leaf', (base[0], -base[1], base[2]), -angle, length, width, C[mt], lift=lift, droop=droop, tilt=tilt)
+def sp(r, h, x, y, z, mt, sides=4, lean=(0, 0), mid=(.3, .7), twist=0.):
+    return spindle('sp', r, h, (x, -y, z), C[mt], sides=sides, lean=(lean[0], -lean[1]), mid=mid, twist=twist)
+def st(a, b, r, mt, sides=3, rt=None):
+    return stalk('st', (a[0], -a[1], a[2]), (b[0], -b[1], b[2]), r, C[mt], sides=sides, rt=rt)
+def gable(name, w, d, h, x, y, z, mt, over=.18, bev=.02):
     """A pitched roof: ridge along x, w wide, d deep, h tall, sitting on z."""
-    hw, hd = w / 2 + over, d / 2 + over
-    return extrude_outline(name, [(-hd, 0), (hd, 0), (0, h)], w + 2 * over, (x, -y, z), C[mt], rot=(0, 0, math.pi / 2), bev=.02)
-
-pieces = []
-def piece(name, parts): pieces.append((name, parts))
-
-# ------------------------------------------------------------------ crop_wheat: a 1.3 m patch of golden stalks
-def wheat():
-    rnd = random.Random(7); p = []
-    for i in range(11):
-        a = i / 11 * math.tau + rnd.uniform(-.2, .2); r = .18 + .38 * ((i * 7) % 5) / 4
-        x, y, h = math.cos(a) * r, math.sin(a) * r, .7 + rnd.uniform(0, .25)
-        p.append(cl('stalk', .025, h, x, y, 0, 'stalk', verts=5))
-        p.append(ball('ear', .07, x, y, h + .1, 'straw' if i % 3 else 'strawl', sub=0, sc=(1, 1, 2.6)))
-    p.append(cl('tuft', .32, .12, 0, 0, 0, 'leaf', verts=8, rt=.12))
+    hd = d / 2 + over
+    return extrude_outline(name, [(-hd, 0), (hd, 0), (0, h)], w + 2 * over, (x, -y, z), C[mt], rot=(0, 0, math.pi / 2), bev=bev)
+def roof_rows(w, d, h, x, y, z, mt, mt2, rows=5, over=.22, thick=.09):
+    """A shingled pitched roof: rows of slabs on both slopes and a round ridge (ridge along x)."""
+    p = []
+    hd = d / 2 + over
+    slope = math.atan2(h, hd)
+    L = math.hypot(h, hd)
+    for side in (-1, 1):
+        for i in range(rows):
+            f = (i + .5) / rows
+            seg = L / rows + .07
+            o = box('shingle', (w + 2 * over - .03 * i, seg, thick), (x, -(y + side * hd * (1 - f)), z + h * f + thick * .45),
+                    C[mt if i % 2 == 0 else mt2], bev=.025, seg=1, rot=(side * slope, 0, 0))
+            p.append(o)
+    p.append(cl('ridge', .09, w + 2 * over + .1, x - (w + 2 * over + .1) / 2, y, z + h + .02, mt2, verts=6, rot=(0, math.pi / 2, 0)))
+    p[-1].location = (x, -y, z + h + .03)
     return p
-piece('crop_wheat', wheat())
 
-# ------------------------------------------------------------------ feed_mill: 2 x 2 cells (about 3.4 m), door at the front
+pieces, decor, anchors = [], [], {}
+def piece(name, parts, into=None, tint=None):
+    (into if into is not None else pieces).append((name, parts, tint))
+
+# =================================================================== crops
+# Each crop: sprout (< 33 % grown), mid (up to 90 %), ripe. lod 0 = near, 1 = the authored _mid level of detail.
+GRID5 = [(-.64 + .32 * i, -.64 + .32 * j) for j in range(5) for i in range(5)]
+
+def wheat(stage, lod=0):
+    """Clumps of stalks on a 4 x 4 grid (3 x 3 for the _mid level): blades, then green ears, then fat golden ears."""
+    rnd = random.Random(11 + lod); p = []
+    grid = [(-.6 + .4 * i, -.6 + .4 * j) for j in range(4) for i in range(4)] if lod == 0 else [(-.56 + .56 * i, -.56 + .56 * j) for j in range(3) for i in range(3)]
+    for k, (gx, gy) in enumerate(grid):
+        x, y = gx + rnd.uniform(-.05, .05), gy + rnd.uniform(-.05, .05)
+        if stage == 'sprout':
+            for i in range(2 if lod == 0 else 1):
+                h = .22 + rnd.uniform(0, .08)
+                p.append(lf((x, y, 0), rnd.uniform(0, math.tau), h * .9, .1, 'sprout' if i % 2 else 'leafl', lift=h, droop=.04))
+            continue
+        ripe = stage == 'ripe'
+        n = (2 if ripe else 1) if lod == 0 else 1
+        for i in range(n):
+            a = k * 1.3 + i * math.tau / n
+            spread = (.1 if n > 1 else .03) + rnd.uniform(0, .06)
+            h = (.82 if ripe else .5) + rnd.uniform(-.08, .1)
+            top = (x + math.cos(a) * spread, y + math.sin(a) * spread, h)
+            p.append(st((x, y, 0), top, .025 if ripe else .022, 'wstalk' if ripe else 'cstalk'))
+            p.append(sp((.085 if ripe else .055) * (1 if lod == 0 else 1.4), .3 if ripe else .18, top[0], top[1], top[2] - .03,
+                        ('wheatl' if (k + i) % 3 == 0 else 'wheat') if ripe else 'wgreenl', sides=3,
+                        lean=(math.cos(a) * .35, math.sin(a) * .35), twist=k + i))
+        if lod == 0:
+            p.append(lf((x, y, .05), k * 2.1, .3, .09, 'wheatd' if ripe else 'leaf', lift=.2, droop=.14))
+    if lod == 0 and stage != 'sprout':
+        # a low skirt of leaves so the patch reads full between the stalks
+        for i in range(6):
+            a = i / 6 * math.tau + .3
+            p.append(lf((math.cos(a) * .25, math.sin(a) * .25, 0), a, .55, .18, 'leafd' if stage == 'mid' else 'wheatd', lift=.12, droop=.06))
+    return p
+
+def carrot(stage, lod=0):
+    rnd = random.Random(21 + lod); p = []
+    grid = [(-.5 + .5 * i, -.5 + .5 * j) for j in range(3) for i in range(3)]
+    if lod: grid = grid[::2]
+    for k, (gx, gy) in enumerate(grid):
+        x, y = gx + rnd.uniform(-.06, .06), gy + rnd.uniform(-.06, .06)
+        if stage == 'sprout':
+            for a in (0, math.pi * .9)[:2 if lod == 0 else 1]:
+                p.append(lf((x, y, 0), a + k, .24, .1, 'sprout' if a else 'leafl', lift=.16, droop=.0))
+            continue
+        ripe = stage == 'ripe'
+        n = 3 if lod == 0 else 2
+        L = .44 if ripe else .32
+        for i in range(n):
+            a = i / n * math.tau + k
+            p.append(lf((x, y, .02), a, L, .14, 'leaf' if i % 2 else 'leafl', lift=L * .9, droop=.08))
+        if ripe:
+            p.append(cone('shoulder', .14, .3, (x, -y, .04), C['carrot'], verts=6 if lod == 0 else 4, rot=(math.pi, 0, 0)))
+    return p
+
+def corn(stage, lod=0):
+    rnd = random.Random(31 + lod); p = []
+    spots = [(-.42, -.42), (.42, -.42), (0, 0), (-.42, .42), (.42, .42)]
+    if lod: spots = [(-.35, -.3), (.35, -.3), (0, .35)]
+    for k, (x, y) in enumerate(spots):
+        x += rnd.uniform(-.05, .05); y += rnd.uniform(-.05, .05)
+        if stage == 'sprout':
+            for i in range(3 if lod == 0 else 2):
+                p.append(lf((x, y, 0), i * 2.1 + k, .3, .11, 'sprout' if i % 2 else 'leafl', lift=.26, droop=.05))
+            continue
+        ripe = stage == 'ripe'
+        h = (1.45 if ripe else .8) + rnd.uniform(-.08, .08)
+        p.append(st((x, y, 0), (x, y, h), .05 if ripe else .04, 'cstalk', sides=5 if lod == 0 else 3, rt=.025))
+        nl = (4 if ripe else 3) if lod == 0 else 2
+        for i in range(nl):
+            z = h * (.2 + .6 * i / max(1, nl - 1)) * .9
+            L = (.55 if ripe else .4) * (1 - .3 * i / nl)
+            p.append(lf((x, y, z), i * 2.4 + k, L, .12, 'leaf' if i % 2 else 'leafl', lift=.18, droop=.28))
+        if ripe:
+            for j, a in enumerate((k * 1.7, k * 1.7 + 3.1)[:2 if lod == 0 else 1]):
+                cx, cy = x + math.cos(a) * .08, y + math.sin(a) * .08
+                p.append(sp(.08, .34, cx, cy, h * .45, 'corn', sides=5 if lod == 0 else 4, lean=(math.cos(a) * .35, math.sin(a) * .35)))
+                if lod == 0: p.append(lf((cx, cy, h * .42), a, .3, .12, 'husk', lift=.26, droop=.0))
+            if lod == 0:
+                for i in range(2):
+                    a = i * 3.1 + k
+                    p.append(st((x, y, h), (x + math.cos(a) * .14, y + math.sin(a) * .14, h + .22), .018, 'tassel'))
+    return p
+
+def pumpkin_body(x, y, r, mt, lod=0, squash=.72):
+    """A ribbed pumpkin: a lathe pushed in along its lobes, with a stem."""
+    seg = 16 if lod == 0 else 8
+    rings = 6 if lod == 0 else 4
+    prof = []
+    for i in range(rings + 1):
+        a = -math.pi / 2 + math.pi * i / rings
+        prof.append((0 if i in (0, rings) else max(1e-4, math.cos(a) * r), (math.sin(a) + 1) * r * squash))
+    o = lathe('pumpkin', prof, (x, -y, 0), C[mt], segments=seg, smooth_angle=70)
+    for v in o.data.vertices:
+        ang = math.atan2(v.co.y, v.co.x)
+        k = .5 + .5 * math.cos(ang * seg / 2)
+        f = 1 - .1 * k
+        v.co.x *= f; v.co.y *= f
+    return [o, cl('stem', .05, .16, x, y, 2 * r * squash - .03, 'stem', verts=5, rt=.035)]
+
+def pumpkin(stage, lod=0):
+    p = []
+    if stage == 'sprout':
+        for (x, y) in ([(-.35, -.3), (.35, -.2), (0, .38)] if lod == 0 else [(0, 0)]):
+            for a in (0, math.pi):
+                p.append(lf((x, y, 0), a + x * 3, .22, .19, 'sprout', lift=.15, droop=-.02))
+            if lod == 0: p.append(lf((x, y, 0), 1.6 + y * 3, .2, .1, 'leaf', lift=.16, droop=.02))
+        return p
+    ripe = stage == 'ripe'
+    nl = 7 if lod == 0 else 4
+    for i in range(nl):
+        a = i / nl * math.tau + .4
+        r0 = .25 if ripe else .12
+        p.append(lf((math.cos(a) * r0, math.sin(a) * r0, 0), a, .55 if ripe else .45, .42, 'leafl' if i % 2 else 'leaf', lift=.24, droop=.16))
+    if ripe:
+        p += pumpkin_body(.05, .02, .42, 'pumpkin', lod)
+        if lod == 0:
+            p += pumpkin_body(-.55, .45, .17, 'pumpkinl', 1)
+            p.append(st((-.1, -.4, .05), (.4, -.6, .08), .025, 'stem'))
+    else:
+        p += pumpkin_body(.1, .05, .17, 'pgreen', 1 if lod else 0)
+        if lod == 0:
+            for (x, y) in ((-.4, -.25), (.35, .45)):
+                p.append(cl('bloom', .09, .1, x, y, .2, 'flower', verts=5, rt=.02))
+    return p
+
+def strawberry(stage, lod=0):
+    rnd = random.Random(51 + lod); p = []
+    spots = [(-.42, -.42), (.42, -.42), (-.42, .42), (.42, .42)] if lod == 0 else [(-.35, 0), (.35, 0)]
+    for k, (x, y) in enumerate(spots):
+        x += rnd.uniform(-.05, .05); y += rnd.uniform(-.05, .05)
+        if stage == 'sprout':
+            for i in range(3 if lod == 0 else 2):
+                p.append(lf((x, y, 0), i * 2.1 + k, .22, .15, 'sprout' if i % 2 else 'leafl', lift=.13, droop=-.01))
+            continue
+        ripe = stage == 'ripe'
+        for i in range(5 if lod == 0 else 3):
+            a = i / 5 * math.tau + k
+            p.append(lf((x, y, 0), a, .34, .2, 'leaf' if i % 2 else 'leafl', lift=.2, droop=.07))
+        if ripe:
+            for j in range(3 if lod == 0 else 2):
+                a = j * 2.1 + k + .5
+                p.append(sp(.08, -.17, x + math.cos(a) * .24, y + math.sin(a) * .24, .3, 'berry' if j else 'berryl', sides=5 if lod == 0 else 4, mid=(.25, .6)))
+        elif lod == 0:
+            p.append(cl('bloom', .07, .05, x + .15, y, .24, 'bloom', verts=5, rt=.05))
+            p.append(cl('eye', .03, .06, x + .15, y, .25, 'flower', verts=4))
+    return p
+
+CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry}
+for crop, gen in CROPS.items():
+    for stage in ('sprout', 'mid', 'ripe'):
+        piece(f'crop_{crop}_{stage}', gen(stage, 0))
+        piece(f'crop_{crop}_{stage}_mid', gen(stage, 1))
+
+# =================================================================== bed rim with furrows (one per crop bed, 2 m cell)
+def bed_rim():
+    p = []
+    o, w, h = .93, .15, .12             # outer half-size, rim width, rim height
+    for (x, y, ww, dd) in ((0, -o + w / 2, 2 * o, w), (0, o - w / 2, 2 * o, w), (-o + w / 2, 0, w, 2 * o - 2 * w), (o - w / 2, 0, w, 2 * o - 2 * w)):
+        p.append(bx('rim', ww, dd, h, x, y, 0, 'rim', bev=0))
+    for i in range(5):
+        p.append(bx('furrow', 2 * o - 2 * w - .04, .13, .06, 0, -.64 + .32 * i, 0, 'soill', bev=0))
+    return p
+piece('bed_rim', bed_rim())
+
+# =================================================================== production buildings
+def timber_wall(w, h, x, y, z, face, frame, posts=3):
+    """Dark timber framing on the outer side of a plastered wall. face: 'front' | 'left' | 'right'."""
+    p = []
+    out = .04
+    for i in range(posts + 1):
+        u = -w / 2 + w * i / posts
+        if face == 'front':
+            p.append(bx('post', .12, .06, h, x + u, y + out, z, frame, bev=.015))
+        else:
+            p.append(bx('post', .06, .12, h, x + (out if face == 'right' else -out), y + u, z, frame, bev=.015))
+    for zz in (z + .02, z + h - .1):
+        if face == 'front':
+            p.append(bx('beam', w + .12, .07, .1, x, y + out, zz, frame, bev=.015))
+        else:
+            p.append(bx('beam', .07, w + .12, .1, x + (out if face == 'right' else -out), y, zz, frame, bev=.015))
+    return p
+
+def window(x, y, z, w, h, face='front', shutters='teal', box=None):
+    """A framed window with a cross and shutters on a front (+y) or side wall. Returns parts and its centre."""
+    p = []
+    if face == 'front':
+        p += [bx('wframe', w + .14, .08, h + .14, x, y + .02, z - .07, 'white', bev=.02), bx('glass', w, .06, h, x, y + .05, z, 'glass', bev=.01),
+              bx('mull', .05, .05, h, x, y + .08, z, 'white', bev=0), bx('mull', w, .05, .05, x, y + .08, z + h / 2 - .025, 'white', bev=0)]
+        if shutters:
+            for s in (-1, 1):
+                p.append(bx('shutter', w * .48, .05, h + .04, x + s * (w / 2 + w * .26 + .05), y + .04, z - .02, shutters, bev=.015))
+        if box:
+            p.append(bx('box', w + .12, .2, .14, x, y + .14, z - .2, 'woodd', bev=.02))
+            for i in range(4):
+                p.append(ball('fl', .07, x - w / 2 + .05 + i * w / 3, y + .16, z - .02, box[i % len(box)], sub=0))
+            p.append(ball('fll', .1, x, y + .16, z - .05, 'leaf', sub=0, sc=(2.2, .8, .6)))
+        return p, (x, y + .09, z + h / 2, 0, 1)
+    side = 1 if face == 'right' else -1
+    p += [bx('wframe', .08, w + .14, h + .14, x + side * .02, y, z - .07, 'white', bev=.02), bx('glass', .06, w, h, x + side * .05, y, z, 'glass', bev=.01),
+          bx('mull', .05, .05, h, x + side * .08, y, z, 'white', bev=0)]
+    return p, (x + side * .09, y, z + h / 2, side, 0)
+
 def feed_mill():
-    p = [bx('base', 2.7, 2.5, .35, 0, 0, 0, 'stone', bev=.05), bx('walls', 2.4, 2.2, 1.7, 0, 0, .35, 'cream', bev=.05),
-         gable('roof', 2.4, 2.2, 1.0, 0, 0, 2.05, 'roof'), bx('door', .75, .1, 1.15, 0, 1.12, .35, 'woodd', bev=.02),
-         bx('doorframe', .95, .08, 1.3, 0, 1.1, .33, 'wood', bev=.02), bx('window', .5, .08, .45, -.85, 1.12, 1.15, 'glass', bev=.02)]
-    # the grain hopper on the side, with its chute
-    p += [cl('hopper', .55, .7, 1.55, -.3, 1.6, 'woodl', verts=8, rt=.75), cl('hopperleg', .12, 1.6, 1.55, -.3, 0, 'woodd', verts=6),
-          bx('chute', .22, .7, .18, 1.35, .2, 1.2, 'wood', rot=.3)]
-    # two grain sacks and a bucket by the door
-    for i, (x, y) in enumerate([(-1.0, 1.45), (-.6, 1.6)]):
-        p += [ball('sack', .3, x, y, .3, 'sack', sc=(1, .9, 1.1)), ball('sacktop', .14, x, y, .64, 'sackd', sub=0)]
-    p.append(cl('bucket', .18, .3, .8, 1.45, 0, 'iron', verts=8, rt=.22))
-    # a little wind vane on the ridge
-    p += [cl('vanepole', .03, .5, 0, 0, 3.0, 'iron', verts=5), bx('vane', .5, .04, .14, .1, 0, 3.4, 'red', bev=0)]
-    return p
-piece('feed_mill', feed_mill())
+    """2 x 2 cells: a two-storey timber mill house with sails on the front gable, a grain hopper and feed sacks."""
+    p, A = [], {'window': []}
+    W, D = 2.3, 2.1
+    p.append(bx('base', W + .3, D + .3, .32, 0, 0, 0, 'stone', bev=.06, seg=2))
+    for i in range(9):
+        p.append(ball('stone', .13, -W / 2 - .05 + i * (W + .1) / 8, D / 2 + .17, .16, 'stonel' if i % 2 else 'stoned', sub=1, sc=(1.3, .5, .9)))
+    p.append(bx('walls', W, D, 2.3, 0, 0, .32, 'plaster', bev=.05, seg=2))
+    p += timber_wall(W, 2.3, 0, D / 2, .32, 'front', 'woodd', posts=4)
+    p += timber_wall(D, 2.3, W / 2, 0, .32, 'right', 'woodd', posts=3)
+    p += timber_wall(D, 2.3, -W / 2, 0, .32, 'left', 'woodd', posts=3)
+    p.append(bx('floorband', W + .12, D + .12, .14, 0, 0, 1.45, 'woodd', bev=.02))
+    hR = 1.35
+    p.append(extrude_outline('gablewall', [(-W / 2, 0), (W / 2, 0), (0, hR)], D, (0, 0, 2.62), C['plaster'], bev=.02))
+    roof = join(roof_rows(D, W, hR, 0, 0, 2.62, 'roof', 'roofd', rows=5, over=.24), 'roof')
+    roof.rotation_euler = (0, 0, math.pi / 2)
+    p.append(roof)
+    p += [bx('doorframe', 1.0, .1, 1.45, 0, D / 2 + .02, .32, 'woodd', bev=.03), bx('door', .82, .1, 1.3, 0, D / 2 + .06, .32, 'wood', bev=.02),
+          bx('brace', .08, .06, 1.35, 0, D / 2 + .12, .33, 'woodd', bev=0, rot=0)]
+    for s in (-1, 1):
+        p.append(bx('plank', .06, .05, 1.28, s * .22, D / 2 + .11, .33, 'woodl', bev=0))
+    A['door'] = [(0, D / 2 + .12, .32)]
+    for x in (-.75, .75):
+        wp, c = window(x, D / 2 + .02, 1.75, .44, .55, 'front', shutters='teal'); p += wp; A['window'].append(c)
+    wp, c = window(-W / 2 - .02, .2, 1.7, .5, .5, 'left'); p += wp; A['window'].append(c)
+    p += [cl('loft', .26, .08, 0, D / 2 + .04, 3.05, 'white', verts=12, rot=(math.pi / 2, 0, 0)),
+          cl('loftg', .2, .1, 0, D / 2 + .06, 3.05, 'glass', verts=12, rot=(math.pi / 2, 0, 0))]
+    A['window'].append((0, D / 2 + .1, 3.05, 0, 1))
+    p.append(cl('axle', .09, .5, 0, D / 2 + .25, 3.3, 'iron', verts=8, rot=(math.pi / 2, 0, 0)))
+    A['sails'] = [(0, D / 2 + .55, 3.3)]
+    hx, hy = W / 2 + .42, -.35
+    p += [cl('hopper', .24, .62, hx, hy, 1.55, 'woodl', verts=8, rt=.44), cl('hoprim', .46, .1, hx, hy, 2.15, 'woodd', verts=8),
+          cl('hopgrain', .41, .06, hx, hy, 2.13, 'hay', verts=8)]
+    for a in range(4):
+        ang = a * math.pi / 2 + math.pi / 4
+        p.append(st((hx + math.cos(ang) * .34, hy + math.sin(ang) * .34, 0), (hx + math.cos(ang) * .2, hy + math.sin(ang) * .2, 1.6), .05, 'woodd', sides=4))
+    p.append(bx('chute', .45, .2, .15, hx - .3, hy, 1.4, 'wood'))
+    for i, (x, y, mt) in enumerate([(-1.0, 1.45, 'sack'), (-.62, 1.52, 'sackd'), (-.82, 1.45, 'sack')]):
+        z = .0 if i < 2 else .42
+        p += [ball('sack', .26, x, y, z + .26, mt, sub=2, sc=(1, .85, 1.05)), cl('tie', .1, .1, x, y, z + .48, 'sackd', verts=6, rt=.06)]
+    p += [cl('barrel', .24, .55, 1.0, 1.4, 0, 'wood', verts=10, bev=.03), cl('hoop', .25, .05, 1.0, 1.4, .12, 'iron', verts=10),
+          cl('hoop', .25, .05, 1.0, 1.4, .4, 'iron', verts=10), cl('grain', .2, .04, 1.0, 1.4, .54, 'hay', verts=10)]
+    p += [bx('chimney', .38, .38, 1.1, -.65, -.65, 2.9, 'brick', bev=.03), bx('chtop', .5, .5, .12, -.65, -.65, 4.0, 'charcoal', bev=.02)]
+    A['chimney'] = [(-.65, -.65, 4.15)]
+    return p, A
 
-# ------------------------------------------------------------------ bakery: 3 x 2 cells (about 5.4 x 3.4 m), door at the front
+def sails():
+    """The feed mill's four sails around the hub at the origin, facing the front (spun about the z axis in three.js)."""
+    hub = cyl('hub', .17, .16, (0, 0, 0), C['woodd'], verts=10, bev=0, rot=(math.pi / 2, 0, 0))
+    cap = cyl('cap', .1, .08, (0, -.11, 0), C['red'], verts=8, bev=0, rot=(math.pi / 2, 0, 0))
+    p = [hub, cap]
+    for i in range(4):   # blades in the vertical x/z plane, facing the front (-Y in Blender)
+        o = [bx('arm', .08, .06, 1.2, 0, .02, .1, 'woodd', bev=.01), bx('sail', .38, .03, .9, .22, .04, .35, 'white' if i % 2 else 'cream', bev=.01)]
+        for k in range(4):
+            o.append(bx('lat', .4, .04, .03, .22, .07, .4 + k * .21, 'wood', bev=0))
+        j = join(o, 'blade'); j.rotation_euler = (0, i * math.pi / 2 + .3, 0); p.append(j)
+    return p
+
 def bakery():
-    p = [bx('base', 4.6, 2.8, .3, 0, 0, 0, 'stone', bev=.05), bx('walls', 4.3, 2.5, 2.0, 0, 0, .3, 'cream', bev=.05),
-         gable('roof', 4.3, 2.5, 1.15, 0, 0, 2.3, 'roofd'), bx('door', .8, .1, 1.3, 0, 1.27, .3, 'woodd', bev=.02),
-         bx('win1', .8, .08, .6, -1.35, 1.27, 1.0, 'glass', bev=.02), bx('win2', .8, .08, .6, 1.35, 1.27, 1.0, 'glass', bev=.02),
-         bx('sill1', .95, .2, .08, -1.35, 1.33, .95, 'wood'), bx('sill2', .95, .2, .08, 1.35, 1.33, .95, 'wood')]
-    # striped awning over the front
-    for i in range(7):
-        p.append(bx('awn', .62, .9, .06, -1.86 + i * .62, 1.6, 1.95, 'red' if i % 2 else 'white', bev=.01, rot=0))
-    p.append(bx('awnfront', 4.34, .08, .22, 0, 2.05, 1.84, 'redd', bev=.01))
-    # chimney with a warm top, and the bread sign
-    p += [bx('chimney', .55, .55, 1.3, 1.4, -.4, 2.7, 'stoned'), bx('chimneytop', .7, .7, .14, 1.4, -.4, 4.0, 'charcoal')]
-    # a hanging bread sign beside the door
-    p += [bx('signarm', .5, .06, .06, .75, 1.45, 1.75, 'iron', bev=0), bx('signboard', .5, .06, .42, .85, 1.5, 1.25, 'woodl'),
-          ball('loaf', .16, .85, 1.56, 1.47, 'bread', sc=(1.6, .6, .8))]
-    # flower boxes under the windows
-    for x in (-1.35, 1.35):
-        p += [bx('box', .9, .22, .18, x, 1.42, .75, 'woodd'), ball('fl', .12, x - .25, 1.42, .98, 'pink', sub=0), ball('fl', .12, x + .2, 1.42, .98, 'sun', sub=0)]
-    return p
-piece('bakery', bakery())
+    """3 x 2 cells: a warm brick-and-plaster bakery with a striped awning, a display window, bread sign and chimney."""
+    p, A = [], {'window': []}
+    W, D = 4.5, 2.6
+    p.append(bx('base', W + .3, D + .3, .3, 0, 0, 0, 'stone', bev=.06, seg=2))
+    p.append(bx('walls', W, D, 2.2, 0, 0, .3, 'plaster', bev=.05, seg=2))
+    p.append(bx('brickband', W + .06, D + .06, .7, 0, 0, .3, 'brick', bev=.03))
+    for x in (-W / 2, W / 2):
+        for k in range(4):
+            p.append(bx('quoin', .2, .2, .22, x, D / 2, 1.05 + k * .36, 'stonel' if k % 2 else 'stone', bev=.02))
+    p += roof_rows(W, D, 1.3, 0, 0, 2.5, 'teal', 'teald', rows=5, over=.22)
+    for s in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.3)], .1, (s * (W / 2 - .05), 0, 2.5), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    p += [bx('doorframe', 1.0, .1, 1.6, -.2, D / 2 + .02, .3, 'woodd', bev=.03), bx('door', .8, .1, 1.45, -.2, D / 2 + .06, .3, 'teal', bev=.02),
+          cl('knob', .04, .05, .05, D / 2 + .13, 1.0, 'gold', verts=6, rot=(math.pi / 2, 0, 0)), bx('doorwin', .44, .05, .38, -.2, D / 2 + .1, 1.25, 'glass', bev=.01)]
+    A['door'] = [(-.2, D / 2 + .12, .3)]
+    p += [bx('dframe', 1.5, .1, 1.05, 1.25, D / 2 + .02, .75, 'white', bev=.03), bx('dglass', 1.32, .07, .88, 1.25, D / 2 + .05, .83, 'glass', bev=.01),
+          bx('dshelf', 1.36, .3, .06, 1.25, D / 2 + .15, .82, 'woodl', bev=.01)]
+    for i in range(4):
+        p.append(ball('loaf', .13, .82 + i * .29, D / 2 + .16, .95, 'bread' if i % 2 else 'breadl', sub=1, sc=(1.4, .8, .7)))
+    A['window'].append((1.25, D / 2 + .1, 1.25, 0, 1))
+    wp, c = window(-1.55, D / 2 + .02, 1.05, .55, .6, 'front', shutters='teal', box=['pink', 'sun', 'violet']); p += wp; A['window'].append(c)
+    for s in (-1, 1):
+        wp, c = window(s * (W / 2 + .02), 0, 1.2, .5, .5, 'right' if s > 0 else 'left'); p += wp; A['window'].append(c)
+    n = 9
+    for i in range(n):
+        x = -.75 + i * .36 + .18
+        p.append(box('awn', (.36, .95, .05), (x, -(D / 2 + .5), 2.0), C['red' if i % 2 else 'white'], bev=.01, seg=1, rot=(-.35, 0, 0)))
+        p.append(cl('scal', .18, .05, x, D / 2 + .97, 1.78, 'red' if i % 2 else 'white', verts=8, rot=(math.pi / 2, 0, 0)))
+    p.append(bx('awnbar', 3.3, .06, .08, .87, D / 2 + .94, 1.8, 'woodd', bev=0))
+    p += [bx('signarm', .06, .6, .06, -1.25, D / 2 + .3, 2.05, 'iron', bev=0), bx('signboard', .06, .55, .42, -1.25, D / 2 + .5, 1.55, 'woodl', bev=.02),
+          ball('signloaf', .17, -1.2, D / 2 + .5, 1.77, 'bread', sub=1, sc=(.5, 1.6, .8))]
+    p += [bx('chimney', .55, .55, 1.6, 1.5, -.5, 2.7, 'brick', bev=.03), bx('chband', .65, .65, .1, 1.5, -.5, 3.9, 'brickd', bev=.02),
+          bx('chtop', .7, .7, .12, 1.5, -.5, 4.3, 'charcoal', bev=.02)]
+    A['chimney'] = [(1.5, -.5, 4.45)]
+    p += [bx('bkbench', .9, .3, .06, -1.6, D / 2 + .45, .38, 'wood', bev=.01), bx('bl', .06, .28, .38, -1.98, D / 2 + .45, 0, 'woodd', bev=0),
+          bx('br', .06, .28, .38, -1.22, D / 2 + .45, 0, 'woodd', bev=0), cl('basket', .2, .16, -1.75, D / 2 + .45, .44, 'woodl', verts=8, rt=.24),
+          ball('bb', .1, -1.8, D / 2 + .45, .62, 'breadl', sub=0, sc=(1.4, .8, .7)), ball('bb', .1, -1.68, D / 2 + .42, .62, 'bread', sub=0, sc=(1.4, .8, .7)),
+          ball('flour', .24, 1.95, D / 2 + .45, .24, 'paper', sub=2, sc=(1, .85, 1.1))]
+    return p, A
 
-# ------------------------------------------------------------------ bench (1.4 m) and lamp (2.3 m)
+def coop():
+    """2 x 2 cells: a red henhouse on legs at the back with a ramp, nest boxes and a fenced yard in front."""
+    p, A = [], {'window': []}
+    HW, HD, z0 = 2.3, 1.45, .45
+    y0 = -.85
+    for x in (-HW / 2 + .15, HW / 2 - .15):
+        for y in (y0 - HD / 2 + .15, y0 + HD / 2 - .15):
+            p.append(bx('leg', .14, .14, z0, x, y, 0, 'woodd', bev=.02))
+    p.append(bx('floor', HW + .1, HD + .1, .1, 0, y0, z0, 'woodd', bev=.02))
+    p.append(bx('walls', HW, HD, 1.15, 0, y0, z0 + .1, 'barn', bev=.04, seg=2))
+    for i in range(7):
+        p.append(bx('board', .05, .04, 1.1, -HW / 2 + .15 + i * (HW - .3) / 6, y0 + HD / 2 + .02, z0 + .12, 'barnd', bev=0))
+    p.append(bx('trim', HW + .08, HD + .08, .08, 0, y0, z0 + 1.2, 'white', bev=.02))
+    for x in (-HW / 2, HW / 2):
+        p.append(bx('corner', .1, HD + .06, 1.15, x, y0, z0 + .1, 'white', bev=.02))
+    p += roof_rows(HW, HD, .75, 0, y0, z0 + 1.25, 'roof', 'roofd', rows=4, over=.2, thick=.08)
+    for s in (-1, 1):
+        p.append(extrude_outline('gend', [(-HD / 2, 0), (HD / 2, 0), (0, .75)], .08, (s * (HW / 2 - .04), -y0, z0 + 1.25), C['barn'], rot=(0, 0, math.pi / 2), bev=.01))
+    p += [bx('hole', .42, .06, .5, 0, y0 + HD / 2 + .03, z0 + .14, 'charcoal', bev=.02), bx('holeframe', .52, .05, .58, 0, y0 + HD / 2 + .02, z0 + .12, 'white', bev=.02)]
+    p.append(box('ramp', (.42, .95, .05), (0, -(y0 + HD / 2 + .42), z0 / 2 + .02), C['woodl'], bev=.01, seg=1, rot=(-.48, 0, 0)))
+    A['door'] = [(0, y0 + HD / 2 + .9, 0)]
+    wp, c = window(.72, y0 + HD / 2 + .02, z0 + .55, .36, .34, 'front', shutters=None); p += wp; A['window'].append(c)
+    p += [bx('nest', .4, 1.0, .5, -HW / 2 - .2, y0, z0 + .2, 'barn', bev=.03), bx('nestlid', .5, 1.1, .06, -HW / 2 - .22, y0, z0 + .72, 'roofd', bev=.02)]
+    for k in range(2):
+        p.append(ball('straw', .14, -HW / 2 - .2, y0 - .25 + k * .5, z0 + .68, 'hay', sub=0, sc=(1.2, 1.2, .4)))
+    def pickets(x0, y0_, x1, y1, n):
+        q = []
+        for i in range(n + 1):
+            t = i / n; x = x0 + (x1 - x0) * t; y = y0_ + (y1 - y0_) * t
+            q.append(bx('pk', .08, .08, .48, x, y, 0, 'white', bev=.015))
+            q.append(cone('pkt', .065, .12, (x, -y, .54), C['white'], verts=4, rot=(0, 0, math.pi / 4)))
+        L = math.hypot(x1 - x0, y1 - y0_); ang = math.atan2(y1 - y0_, x1 - x0)
+        for zz in (.14, .34):
+            q.append(box('rail', (L, .05, .06), ((x0 + x1) / 2, -((y0_ + y1) / 2), zz), C['white'], bev=.01, seg=1, rot=(0, 0, -ang)))
+        return q
+    e = 1.72
+    p += pickets(-e, -.1, -e, e, 5) + pickets(e, -.1, e, e, 5) + pickets(-e, e, -.5, e, 3) + pickets(.5, e, e, e, 3)
+    p += [cl('feeder', .2, .16, -.9, .9, 0, 'iron', verts=8, rt=.24), cl('feedg', .18, .03, -.9, .9, .15, 'hay', verts=8),
+          cl('dish', .24, .08, .95, .75, 0, 'stoned', verts=10, rt=.27), cl('dishw', .21, .02, .95, .75, .07, 'water', verts=10)]
+    for i in range(6):
+        p.append(ball('grain', .05, -.4 + i * .17, .45 + (i % 2) * .2, .01, 'hay', sub=0, sc=(1, 1, .4)))
+    return p, A
+
+def cow_barn():
+    """3 x 2 cells: a red gambrel-roofed barn with white trim, X-braced doors, a hay loft and a trough."""
+    p, A = [], {'window': []}
+    W, D, H = 4.4, 2.9, 1.9
+    p.append(bx('base', W + .24, D + .24, .2, 0, 0, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .2, 'barn', bev=.05, seg=2))
+    for i in range(11):   # vertical boards on the front
+        p.append(bx('board', .05, .04, H - .1, -W / 2 + .2 + i * (W - .4) / 10, D / 2 + .02, .25, 'barnd', bev=0))
+    for x in (-W / 2, W / 2):
+        p.append(bx('corner', .14, D + .08, H, x, 0, .2, 'white', bev=.03))
+    p.append(bx('eave', W + .1, D + .1, .1, 0, 0, H + .15, 'white', bev=.02))
+    # gambrel roof: steep lower slopes and a shallow upper pair, ridge along x
+    z0, hd = H + .25, D / 2 + .25
+    for side in (-1, 1):
+        lo = box('roofl', (W + .5, 1.15, .12), (0, -side * (hd - .38), z0 + .52), C['roofd'], bev=.03, seg=1, rot=(side * 1.05, 0, 0))
+        up = box('roofu', (W + .5, 1.05, .12), (0, -side * .45, z0 + 1.2), C['roof'], bev=.03, seg=1, rot=(side * .42, 0, 0))
+        p += [lo, up]
+    p.append(cl('ridge', .08, W + .6, 0, 0, 0, 'white', verts=6, rot=(0, math.pi / 2, 0)))
+    p[-1].location = (0, 0, z0 + 1.4)
+    gable = [(-hd + .2, 0), (hd - .2, 0), (hd - .62, .95), (0, 1.38), (-hd + .62, .95)]
+    for s_ in (-1, 1):
+        p.append(extrude_outline('gend', gable, .1, (s_ * (W / 2 - .02), 0, z0 - .05), C['barn'], rot=(0, 0, math.pi / 2), bev=.01))
+    # front gable trim and hay loft (the front is +y on the plan; the gable faces the sides, so the loft sits on the long front wall's dormer)
+    p += [bx('dormer', 1.2, .8, 1.0, 0, D / 2 - .1, H + .1, 'barn', bev=.03), bx('dormtrim', 1.3, .85, .08, 0, D / 2 - .1, H + 1.1, 'white', bev=.02),
+          extrude_outline('dormroof', [(-.8, 0), (.8, 0), (0, .55)], 1.0, (0, -(D / 2 - .2), H + 1.15), C['roof'], bev=.02),
+          bx('loft', .7, .06, .62, 0, D / 2 + .3, H + .28, 'wooddd', bev=.02), bx('loftframe', .84, .05, .76, 0, D / 2 + .29, H + .21, 'white', bev=.02)]
+    for k in range(3):
+        p.append(ball('hay', .16, -.18 + k * .18, D / 2 + .36, H + .3 + (k % 2) * .06, 'hay', sub=1, sc=(1.2, .7, .8)))
+    p.append(bx('pulley', .08, .5, .08, 0, D / 2 + .5, H + 1.02, 'woodd', bev=0))
+    # double doors with white X braces
+    for s_ in (-1, 1):
+        x = s_ * .55
+        p += [bx('door', 1.05, .08, 1.5, x, D / 2 + .05, .2, 'barnd', bev=.02), bx('dtrim', 1.1, .06, .1, x, D / 2 + .1, 1.65, 'white', bev=.01),
+              bx('dtrim', 1.1, .06, .1, x, D / 2 + .1, .2, 'white', bev=.01), bx('dtrimv', .1, .06, 1.5, x + s_ * .5, D / 2 + .1, .2, 'white', bev=.01)]
+        for r in (.95, -.95):
+            o = box('brace', (.08, .05, 1.65), (x, -(D / 2 + .11), .95), C['white'], bev=.01, seg=1, rot=(0, r * .58, 0)); p.append(o)
+    A['door'] = [(0, D / 2 + .12, .2)]
+    for x in (-1.65, 1.65):
+        wp, c = window(x, D / 2 + .02, 1.05, .5, .45, 'front', shutters='white'); p += wp; A['window'].append(c)
+    # cupola with a weather vane
+    p += [bx('cup', .5, .5, .45, 1.1, 0, z0 + 1.38, 'white', bev=.03), extrude_outline('cuproof', [(-.36, 0), (.36, 0), (0, .3)], .66, (1.1, 0, z0 + 1.83), C['roof'], bev=.02),
+          cl('vane', .02, .5, 1.1, 0, z0 + 2.1, 'iron', verts=4), bx('arrow', .45, .03, .08, 1.1, 0, z0 + 2.45, 'iron', bev=0)]
+    # trough and a round bale beside it
+    p += [bx('trough', 1.1, .45, .35, -1.45, D / 2 + .55, 0, 'wood', bev=.04), bx('water', 1.0, .36, .04, -1.45, D / 2 + .55, .3, 'water', bev=0),
+          cl('bale', .38, .55, 1.75, D / 2 + .55, .38, 'hay', verts=14, rot=(0, math.pi / 2, 0)), ]
+    p[-1].location = (1.75, -(D / 2 + .55), .38)
+    p.append(cl('baleband', .39, .06, 0, 0, 0, 'twine' if 'twine' in C else 'redd', verts=14, rot=(0, math.pi / 2, 0))); p[-1].location = (1.75, -(D / 2 + .55), .38)
+    return p, A
+
+for name, gen in (('feed_mill', feed_mill), ('bakery', bakery), ('coop', coop), ('cow_barn', cow_barn)):
+    parts, A = gen()
+    piece(name, parts)
+    anchors[name] = A
+piece('feed_mill_sails', sails())
+anchors['feed_mill_sails'] = {'hub': [(0, 0, 0)]}
+
+# =================================================================== charm pieces kept from v0.1 (now vertex-coloured)
 piece('bench', [bx('seat', 1.4, .45, .08, 0, 0, .42, 'wood'), bx('back', 1.4, .08, .4, 0, -.22, .58, 'wood'),
                 bx('legl', .08, .45, .42, -.6, 0, 0, 'iron', bev=.01), bx('legr', .08, .45, .42, .6, 0, 0, 'iron', bev=.01),
                 bx('armr', .08, .45, .2, .66, 0, .5, 'woodd'), bx('arml', .08, .45, .2, -.66, 0, .5, 'woodd')])
 piece('lamp', [cl('foot', .22, .18, 0, 0, 0, 'charcoal', verts=8, rt=.15), cl('pole', .06, 2.0, 0, 0, .18, 'iron', verts=6),
                bx('arm', .1, .1, .1, 0, 0, 2.15, 'iron'), cl('cap', .26, .14, 0, 0, 2.48, 'charcoal', verts=6, rt=.08),
                cl('glass', .18, .3, 0, 0, 2.18, 'lampglow', verts=6)])
-# ------------------------------------------------------------------ order_board: the notice board by the gate
+anchors['lamp'] = {'light': [(0, 0, 2.33)]}
 def board():
     p = [bx('postl', .12, .12, 1.9, -.75, 0, 0, 'woodd'), bx('postr', .12, .12, 1.9, .75, 0, 0, 'woodd'),
          bx('board', 1.5, .08, .95, 0, .02, .8, 'cork', bev=.02), bx('frame', 1.62, .06, 1.05, 0, -.02, .75, 'wood', bev=.02),
@@ -105,10 +497,245 @@ def board():
     return p
 piece('order_board', board())
 
-objs = []
-for name, parts in pieces:
-    o = join(parts, name); objs.append(o)
-    d = o.dimensions
-    print(f'{name}: {triangles(o)} triangles, {d.x:.2f} x {d.z:.2f} x {d.y:.2f} m')
-size = export_glb(objs, OUT)
-print(f'wrote {OUT} ({size} bytes)')
+# =================================================================== chunky white picket fence set (on 2 m cell edges)
+def picket_span(lod=0):
+    """A 2 m span between joints (the posts come from picket_post / _corner / _t at the joints)."""
+    p = []
+    for i in range(5):
+        x = -.72 + i * .36
+        p.append(bx('pk', .14, .07, .62, x, 0, 0, 'white', bev=.03 if lod == 0 else 0, seg=1))
+        p.append(cone('pkt', .11, .16, (x, 0, .7), C['white'], verts=4, rot=(0, 0, math.pi / 4)))
+    for z in (.16, .44):
+        p.append(bx('rail', 2.0, .06, .09, 0, -.06, z, 'white', bev=.02 if lod == 0 else 0, seg=1))
+    return p
+def picket_post(kind='post'):
+    p = [bx('post', .2, .2, .86, 0, 0, 0, 'white', bev=.04, seg=1), bx('cap', .26, .26, .06, 0, 0, .86, 'white', bev=.02, seg=1)]
+    if kind == 'corner':
+        p.append(ball('ball', .1, 0, 0, .98, 'white', sub=1))
+    elif kind == 't':
+        p.append(cone('top', .15, .14, (0, 0, .99), C['white'], verts=4, rot=(0, 0, math.pi / 4)))
+    return p
+def picket_gate():
+    p = [bx('postl', .22, .22, 1.1, -.92, 0, 0, 'white', bev=.04), bx('postr', .22, .22, 1.1, .92, 0, 0, 'white', bev=.04),
+         ball('bl', .12, -.92, 0, 1.2, 'white', sub=1), ball('br', .12, .92, 0, 1.2, 'white', sub=1)]
+    for s in (-1, 1):
+        for i in range(3):
+            p.append(bx('pk', .12, .06, .55 + .06 * i, s * (.2 + (2 - i) * .23), 0, .06, 'white', bev=.02))
+        p += [bx('rail', .78, .05, .08, s * .43, -.05, .2, 'white', bev=.01), bx('rail', .78, .05, .08, s * .43, -.05, .46, 'white', bev=.01),
+              bx('brace', .06, .04, .7, s * .43, -.08, .14, 'white', bev=0)]
+    p.append(cl('latch', .03, .1, 0, .06, .4, 'iron', verts=5))
+    return p
+piece('picket_straight', picket_span())
+piece('picket_straight_mid', picket_span(1))
+piece('picket_post', picket_post())
+piece('picket_corner', picket_post('corner'))
+piece('picket_t', picket_post('t'))
+piece('picket_gate', picket_gate())
+
+# =================================================================== decor.glb: loaded after the first frame
+def plank_bridge():
+    """A 4 m wide plank bridge (span along the plan's y, 6 m) with rails and posts, for the road over the brook."""
+    p = []
+    arch = lambda y: .5 + .18 * math.sin((y + 2.8) / 5.6 * math.pi)
+    for i in range(14):
+        y = -2.6 + i * .4
+        p.append(bx('plank', 4.2, .36, .12, 0, y, arch(y) - .12, 'woodl' if i % 3 else 'wood', bev=.03))
+    for x in (-1.9, 1.9):
+        p.append(bx('beam', .22, 6.0, .22, x, 0, .2, 'woodd', bev=.03))
+        ys = (-2.7, -.9, .9, 2.7)
+        for y in ys:
+            p.append(bx('post', .2, .2, .9, x * 1.06, y, arch(y) - .2, 'woodd', bev=.03))
+            p.append(ball('postcap', .12, x * 1.06, y, arch(y) + .72, 'wood', sub=1))
+        for y0, y1 in zip(ys, ys[1:]):
+            p.append(st((x * 1.06, y0, arch(y0) + .52), (x * 1.06, y1, arch(y1) + .52), .07, 'wood', sides=4, rt=.07))
+    for x in (-2.2, 2.2):
+        for y in (-3.0, 3.0):
+            p.append(ball('stone', .3, x, y, .1, 'stone', sub=1, sc=(1.2, 1, .6)))
+    return p
+piece('plank_bridge', plank_bridge(), decor)
+
+def fountain():
+    p = [lathe('basin', [(0, 0), (1.3, 0), (1.35, .1), (1.3, .5), (1.15, .5), (1.1, .2), (0, .2)], (0, 0, 0), C['stonel'], segments=20, smooth_angle=40),
+         cl('water', 1.12, .06, 0, 0, .34, 'water', verts=20), cl('pillar', .18, 1.0, 0, 0, .3, 'stone', verts=10),
+         lathe('bowl', [(0, 0), (.6, .05), (.7, .2), (.6, .22), (0, .12)], (0, 0, 1.15), C['stonel'], segments=16, smooth_angle=40),
+         cl('water2', .58, .04, 0, 0, 1.33, 'waterl', verts=16), cl('spout', .07, .45, 0, 0, 1.3, 'stone', verts=8, rt=.04),
+         ball('splash', .14, 0, 0, 1.8, 'waterl', sub=1, sc=(1, 1, 1.4))]
+    for i in range(10):
+        a = i / 10 * math.tau
+        p.append(ball('drop', .06, math.cos(a) * .55, math.sin(a) * .55, 1.0 - .1 * (i % 2), 'waterl', sub=0, sc=(.8, .8, 1.6)))
+    for i in range(8):
+        a = i / 8 * math.tau + .2
+        p.append(ball('fl', .12, math.cos(a) * 1.45, math.sin(a) * 1.45, .12, ('pink', 'sun', 'violet', 'red')[i % 4], sub=0))
+        p.append(ball('lf', .16, math.cos(a + .35) * 1.48, math.sin(a + .35) * 1.48, .1, 'leaf', sub=0, sc=(1, 1, .6)))
+    return p
+piece('fountain', fountain(), decor)
+
+def bunting(span=4.0):
+    """Two poles with a sagging string of bright flags between them."""
+    p = []
+    for x in (-span / 2, span / 2):
+        p += [cl('pole', .06, 2.6, x, 0, 0, 'woodd', verts=6), ball('knob', .09, x, 0, 2.65, 'gold', sub=1)]
+    cols = ('red', 'sun', 'sky', 'mint', 'pink', 'violet')
+    n = 11
+    pts = [(-span / 2 + span * i / n, 2.45 - .45 * math.sin(i / n * math.pi)) for i in range(n + 1)]
+    for i in range(n):
+        (x0, z0), (x1, z1) = pts[i], pts[i + 1]
+        p.append(st((x0, 0, z0), (x1, 0, z1), .012, 'charcoal', sides=3, rt=.012))
+        p.append(extrude_outline('flag', [(-.15, 0), (.15, 0), (0, -.34)], .02, ((x0 + x1) / 2, 0, (z0 + z1) / 2), C[cols[i % len(cols)]], bev=0))
+    return p
+piece('bunting', bunting(), decor)
+
+def banner():
+    """A village banner on a tall pole: a red cloth with a golden wheat sheaf."""
+    p = [cl('pole', .07, 3.6, 0, 0, 0, 'woodd', verts=8), ball('finial', .12, 0, 0, 3.66, 'gold', sub=1),
+         bx('bar', 1.2, .06, .06, .55, 0, 3.3, 'woodd', bev=0), bx('cloth', 1.0, .04, 1.4, .58, 0, 1.85, 'red', bev=.01, seg=1),
+         extrude_outline('tail', [(-.5, 0), (.5, 0), (0, -.3)], .04, (.58, 0, 1.85), C['red'], bev=0),
+         bx('border', 1.04, .05, .08, .58, .01, 3.18, 'gold', bev=0)]
+    for k in range(5):
+        p.append(sp(.04, .3, .45 + k * .065, .04, 2.5 - abs(k - 2) * .04, 'wheatl', sides=4, lean=((k - 2) * .25, 0)))
+        p.append(st((.58, .04, 2.2), (.45 + k * .065, .04, 2.5 - abs(k - 2) * .04), .012, 'gold'))
+    p.append(bx('tie', .3, .05, .06, .58, .05, 2.36, 'gold', bev=0))
+    return p
+piece('banner', banner(), decor)
+
+def sale_sign():
+    """A For-sale sign for a locked parcel: a post with a white board, a coin and a red ribbon."""
+    p = [bx('post', .12, .12, 1.5, 0, 0, 0, 'woodd', bev=.02), bx('board', 1.1, .08, .62, 0, .08, .8, 'white', bev=.03),
+         bx('frame', 1.2, .06, .7, 0, .04, .76, 'wood', bev=.02), cl('coin', .19, .05, -.28, .14, 1.11, 'gold', verts=12, rot=(math.pi / 2, 0, 0)),
+         cl('coinin', .13, .06, -.28, .15, 1.11, 'sun', verts=12, rot=(math.pi / 2, 0, 0))]
+    for k in range(3):
+        p.append(bx('line', .4, .03, .06, .18, .13, 1.2 - k * .14, 'charcoal' if k == 0 else 'stoned', bev=0))
+    p.append(bx('ribbon', .5, .04, .1, .3, .13, .86, 'red', bev=0, rot=-.4))
+    p.append(ball('tuft', .2, .15, -.1, .05, 'leaf', sub=1, sc=(1.4, 1, .6)))
+    return p
+piece('sale_sign', sale_sign(), decor)
+
+def scaffold(w=4.0, d=3.0, h=3.2):
+    """Wooden scaffolding with decks, a ladder, stacked timber and a crate of tools for a building project."""
+    p = []
+    for x in (-w / 2, 0, w / 2):
+        for y in (-d / 2, d / 2):
+            p.append(bx('pole', .1, .1, h, x, y, 0, 'woodl', bev=.01))
+    for z in (1.1, 2.2):
+        for y in (-d / 2, d / 2):
+            p.append(bx('ledger', w + .2, .08, .08, 0, y, z, 'wood', bev=0))
+            p.append(bx('deck', w, .5, .06, 0, y + (.25 if y > 0 else -.25), z + .08, 'woodl' if z < 2 else 'wood', bev=.01))
+        for x in (-w / 2, w / 2):
+            p.append(bx('side', .08, d + .2, .08, x, 0, z, 'wood', bev=0))
+    for x in (-w / 4, w / 4):
+        p.append(st((x - w / 4, d / 2 + .06, .1), (x + w / 4, d / 2 + .06, 1.1), .04, 'wood', sides=4, rt=.04))
+    for s in (-.2, .2):
+        p.append(st((1.2 + s, d / 2 + .8, 0), (1.2 + s, d / 2 + .1, 2.3), .04, 'woodd', sides=4, rt=.04))
+    for k in range(6):
+        t = (k + .5) / 6
+        p.append(bx('rung', .44, .05, .05, 1.2, d / 2 + .8 - .7 * t, 2.3 * t, 'woodd', bev=0))
+    for k in range(3):
+        for j in range(3 - k):
+            p.append(bx('timber', 1.6, .2, .2, -1.0, d / 2 + .9 + (j - (2 - k) / 2) * .22, k * .2, 'woodl' if (j + k) % 2 else 'wood', bev=.02))
+    p += [bx('crate', .6, .5, .45, .2, d / 2 + .9, 0, 'wood', bev=.03), bx('crateband', .62, .52, .06, .2, d / 2 + .9, .3, 'woodd', bev=0),
+          bx('hammerh', .22, .08, .08, .15, d / 2 + .9, .5, 'iron', bev=0), cl('bucket', .16, .28, .7, d / 2 + .8, 0, 'iron', verts=8, rt=.19)]
+    p += [cl('flagpole', .03, .7, w / 2, -d / 2, h, 'woodd', verts=5),
+          extrude_outline('flag', [(0, 0), (.4, -.1), (0, -.25)], .02, (w / 2, d / 2, h + .68), C['red'], bev=0)]
+    return p
+piece('scaffold', scaffold(), decor)
+
+# cottage dressing (placed by land-view at a cottage's door and windows, by furnish level)
+def window_box():
+    p = [bx('box', .9, .24, .2, 0, 0, 0, 'woodd', bev=.03), bx('soil', .84, .2, .04, 0, 0, .18, 'soil', bev=0)]
+    for i in range(5):
+        x = -.34 + i * .17
+        p.append(ball('fl', .08, x, .02, .3 + (i % 2) * .04, ('pink', 'sun', 'red', 'violet', 'white')[i], sub=1))
+        p.append(ball('lf', .09, x + .08, -.02, .22, 'leaf', sub=0, sc=(1.2, 1, .7)))
+    return p
+piece('window_box', window_box(), decor)
+piece('door_lantern', [bx('bracket', .06, .3, .06, 0, .15, .5, 'iron', bev=0), cl('cap', .14, .1, 0, .3, .5, 'charcoal', verts=6, rt=.04),
+                       cl('glass', .1, .22, 0, .3, .28, 'lampglow', verts=6), cl('base', .12, .05, 0, .3, .24, 'charcoal', verts=6)], decor)
+anchors['door_lantern'] = {'light': [(0, .3, .39)]}
+def flowerpots():
+    p = []
+    for x, c in ((-.25, 'pink'), (.25, 'sun')):
+        p += [cl('pot', .16, .28, x, 0, 0, 'brick', verts=10, rt=.2), cl('potrim', .21, .05, x, 0, .26, 'brickd', verts=10)]
+        p.append(ball('bush', .2, x, 0, .42, 'leaf', sub=1, sc=(1, 1, .9)))
+        for k in range(4):
+            a = k * 1.6 + x
+            p.append(ball('fl', .07, x + math.cos(a) * .13, math.sin(a) * .13, .55, c, sub=0))
+    return p
+piece('flowerpots', flowerpots(), decor)
+piece('doormat', [bx('mat', .8, .5, .03, 0, 0, 0, 'red', bev=.01), bx('stripe', .7, .08, .035, 0, 0, 0, 'cream', bev=0)], decor)
+piece('path_stones', [ball('st', .2, x + (i - 1) * .03, 0, .04, 'stonel' if i % 2 else 'stone', sub=1, sc=(1.5, .9, .5))
+                      for i, x in enumerate((-.62, 0, .62))], decor)
+
+# obstacles on unowned land (larger than the v0.1 weeds and rocks)
+def obstacle_bush():
+    p = [blob('b', r, (x, -y, r * .8), C['leafd' if i % 2 else 'leaf'], scale=(1, 1, .85), subdiv=1, wobble=.12, seed=i)
+         for i, (x, y, r) in enumerate([(0, 0, .6), (.45, .2, .45), (-.4, .25, .42), (.1, -.4, .4), (-.25, -.25, .38)])]
+    for i in range(5):
+        a = i * 1.3
+        p.append(ball('berry', .06, math.cos(a) * .55, math.sin(a) * .5, .6 + (i % 2) * .25, 'berry', sub=0))
+    return p
+piece('obstacle_bush', obstacle_bush(), decor)
+def obstacle_stump():
+    p = [cl('stump', .45, .5, 0, 0, 0, 'woodd', verts=12, rt=.4, bev=.03), cl('ring', .4, .04, 0, 0, .5, 'woodl', verts=12),
+         cl('core', .22, .045, 0, 0, .5, 'wood', verts=10)]
+    for i in range(4):
+        a = i * math.pi / 2 + .4
+        p.append(st((math.cos(a) * .3, math.sin(a) * .3, .15), (math.cos(a) * .75, math.sin(a) * .75, 0), .12, 'woodd', sides=5, rt=.05))
+    p += [cl('mush', .05, .14, .38, .25, 0, 'cream', verts=5), ball('cap', .1, .38, .25, .16, 'red', sub=1, sc=(1, 1, .55))]
+    return p
+piece('obstacle_stump', obstacle_stump(), decor)
+def obstacle_log():
+    p = [cl('log', .3, 1.7, 0, 0, .3 - .85, 'woodd', verts=10, rot=(0, math.pi / 2, 0), bev=.03)]
+    p[0].location = (0, 0, .3)
+    for s in (-1, 1):
+        e1 = cl('end', .27, .04, 0, 0, 0, 'woodl', verts=10, rot=(0, math.pi / 2, 0)); e1.location = (s * .86, 0, .3)
+        e2 = cl('endc', .14, .045, 0, 0, 0, 'wood', verts=8, rot=(0, math.pi / 2, 0)); e2.location = (s * .87, 0, .3)
+        p += [e1, e2]
+    p += [ball('moss', .2, -.3, 0, .55, 'leaf', sub=1, sc=(1.8, 1, .4)), ball('moss', .15, .4, .05, .55, 'leafl', sub=1, sc=(1.4, 1, .4))]
+    for x in (-.5, .55):
+        p.append(ball('fern', .22, x, .4, .1, 'leaf', sub=0, sc=(1.2, 1, .7)))
+    return p
+piece('obstacle_log', obstacle_log(), decor)
+
+# =================================================================== export
+def build(group):
+    objs = []
+    for name, parts, tint in group:
+        o = vc_join(parts, name, tint); objs.append(o)
+        d = o.dimensions
+        print(f'{name}: {triangles(o)} triangles, {d.x:.2f} x {d.z:.2f} x {d.y:.2f} m')
+    return objs
+
+def anchor_out(o, A):
+    """Add the anchor empties to a joined root; return them in three.js coordinates (x, y up, z front). Farm-kit
+    pieces keep their authored origin in the game (KIND_MODELS authored: true), so these need no correction."""
+    res = {}
+    for label, pts in A.items():
+        res[label] = []
+        for i, pt in enumerate(pts):
+            x, y, z = pt[:3]
+            add_anchor(o, f'{label}.{i}' if len(pts) > 1 else label, (x, -y, z))
+            res[label].append([round(x, 3), round(z, 3), round(y, 3)] + [round(v, 3) for v in pt[3:]])
+    return res
+
+def packed(objs, path):
+    """Export to a temporary GLB, then compress it into the game's folder with art/blender/pack.mjs (gltfpack)."""
+    import tempfile, subprocess
+    raw = os.path.join(tempfile.gettempdir(), 'fv-raw-' + os.path.basename(path))
+    export_vc(objs, raw)
+    r = subprocess.run(['node', os.path.join(os.path.dirname(__file__), 'pack.mjs'), raw, path], capture_output=True, text=True)
+    print(r.stdout.strip(), r.stderr.strip())
+    return os.path.getsize(path)
+
+out = {}
+objs = build(pieces)
+for o in objs:
+    if o.name in anchors:
+        out[o.name] = anchor_out(o, anchors[o.name])
+print(f'wrote {OUT} ({packed(objs, OUT)} bytes)')
+dobjs = build(decor)
+for o in dobjs:
+    if o.name in anchors:
+        out[o.name] = anchor_out(o, anchors[o.name])
+print(f'wrote {OUT_DECOR} ({packed(dobjs, OUT_DECOR)} bytes)')
+json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
+print('anchors', ANCHOR_JSON)

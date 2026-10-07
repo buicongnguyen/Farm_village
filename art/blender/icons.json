@@ -1,0 +1,661 @@
+[
+ {
+  "id": "wheat",
+  "src": "raw:items",
+  "root": "item_wheat"
+ },
+ {
+  "id": "carrot",
+  "src": "raw:items",
+  "root": "item_carrot"
+ },
+ {
+  "id": "corn",
+  "src": "raw:items",
+  "root": "item_corn"
+ },
+ {
+  "id": "pumpkin",
+  "src": "raw:items",
+  "root": "item_pumpkin"
+ },
+ {
+  "id": "strawberry",
+  "src": "raw:items",
+  "root": "item_strawberry"
+ },
+ {
+  "id": "egg",
+  "src": "raw:items",
+  "root": "item_egg"
+ },
+ {
+  "id": "milk",
+  "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
+  "root": "milk",
+  "view": [
+   -25,
+   18
+  ]
+ },
+ {
+  "id": "chicken_feed",
+  "src": "raw:items",
+  "root": "chicken_feed"
+ },
+ {
+  "id": "cow_feed",
+  "src": "raw:items",
+  "root": "cow_feed"
+ },
+ {
+  "id": "bread",
+  "src": "raw:items",
+  "root": "bread"
+ },
+ {
+  "id": "corn_bread",
+  "src": "raw:items",
+  "root": "corn_bread"
+ },
+ {
+  "id": "carrot_cake",
+  "src": "raw:items",
+  "root": "carrot_cake",
+  "view": [
+   -30,
+   34
+  ]
+ },
+ {
+  "id": "apple",
+  "src": "raw:items",
+  "root": "item_apple"
+ },
+ {
+  "id": "peach",
+  "src": "raw:items",
+  "root": "item_peach"
+ },
+ {
+  "id": "apple_pie",
+  "src": "raw:items",
+  "root": "apple_pie",
+  "view": [
+   -30,
+   40
+  ]
+ },
+ {
+  "id": "bed",
+  "src": "raw:farm-kit",
+  "group": [
+   {
+    "src": "raw:farm-kit",
+    "root": "bed_rim"
+   },
+   {
+    "src": "raw:farm-kit",
+    "root": "crop_carrot_ripe"
+   }
+  ],
+  "view": [
+   -35,
+   40
+  ]
+ },
+ {
+  "id": "path",
+  "src": "raw:decor",
+  "root": "path_stones",
+  "view": [
+   -35,
+   45
+  ]
+ },
+ {
+  "id": "fence",
+  "src": "raw:farm-kit",
+  "root": "picket_straight"
+ },
+ {
+  "id": "gate",
+  "src": "raw:farm-kit",
+  "root": "picket_gate"
+ },
+ {
+  "id": "coop",
+  "src": "raw:farm-kit",
+  "root": "coop"
+ },
+ {
+  "id": "cow_barn",
+  "src": "raw:farm-kit",
+  "root": "cow_barn"
+ },
+ {
+  "id": "feed_mill",
+  "src": "raw:farm-kit",
+  "root": "feed_mill"
+ },
+ {
+  "id": "bakery",
+  "src": "raw:farm-kit",
+  "root": "bakery"
+ },
+ {
+  "id": "stall",
+  "src": "3d_farmer_fish_sell/public/assets/models/market-stall.glb"
+ },
+ {
+  "id": "cottage",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "house_gable"
+ },
+ {
+  "id": "flowers",
+  "src": "raw:nature",
+  "root": "flowers_a"
+ },
+ {
+  "id": "bush",
+  "src": "raw:nature",
+  "root": "bush_a"
+ },
+ {
+  "id": "tree",
+  "src": "raw:nature",
+  "root": "tree_sakura"
+ },
+ {
+  "id": "bench",
+  "src": "raw:farm-kit",
+  "root": "bench"
+ },
+ {
+  "id": "lamp",
+  "src": "raw:farm-kit",
+  "root": "lamp"
+ },
+ {
+  "id": "school",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "school"
+ },
+ {
+  "id": "fountain",
+  "src": "raw:decor",
+  "root": "fountain"
+ },
+ {
+  "id": "picket_fence",
+  "src": "raw:farm-kit",
+  "root": "picket_straight"
+ },
+ {
+  "id": "scarecrow",
+  "src": "raw:props",
+  "root": "scarecrow",
+  "view": [
+   -20,
+   14
+  ]
+ },
+ {
+  "id": "hay_bale",
+  "src": "raw:props",
+  "root": "haybale"
+ },
+ {
+  "id": "flowerpot",
+  "src": "raw:props",
+  "root": "flowerpot"
+ },
+ {
+  "id": "street_lamp",
+  "src": "raw:props",
+  "root": "street_lamp",
+  "view": [
+   -25,
+   14
+  ]
+ },
+ {
+  "id": "apple_tree",
+  "src": "raw:nature",
+  "root": "tree_apple"
+ },
+ {
+  "id": "peach_tree",
+  "src": "raw:nature",
+  "root": "tree_peach"
+ },
+ {
+  "id": "bunting",
+  "src": "raw:decor",
+  "root": "bunting",
+  "view": [
+   -20,
+   14
+  ]
+ },
+ {
+  "id": "banner",
+  "src": "raw:decor",
+  "root": "banner",
+  "view": [
+   -20,
+   14
+  ]
+ },
+ {
+  "id": "sale_sign",
+  "src": "raw:decor",
+  "root": "sale_sign",
+  "view": [
+   -20,
+   14
+  ]
+ },
+ {
+  "id": "tool:clear",
+  "src": "raw:items",
+  "root": "shovel",
+  "view": [
+   -20,
+   15
+  ]
+ },
+ {
+  "id": "tool:harvest",
+  "src": "raw:items",
+  "root": "sickle",
+  "view": [
+   0,
+   10
+  ]
+ },
+ {
+  "id": "tool:move",
+  "src": "raw:items",
+  "root": "glove",
+  "view": [
+   -15,
+   15
+  ]
+ },
+ {
+  "id": "tool:store",
+  "src": "raw:props",
+  "root": "crate"
+ },
+ {
+  "id": "tool:build",
+  "src": "3D_game_scene/public/models/hammer.glb",
+  "view": [
+   -30,
+   24
+  ]
+ },
+ {
+  "id": "ui:coin",
+  "src": "raw:items",
+  "root": "coin",
+  "view": [
+   -20,
+   10
+  ]
+ },
+ {
+  "id": "ui:xp",
+  "src": "raw:items",
+  "root": "xp",
+  "view": [
+   -15,
+   12
+  ]
+ },
+ {
+  "id": "ui:heart",
+  "src": "raw:items",
+  "root": "heart",
+  "view": [
+   -15,
+   12
+  ]
+ },
+ {
+  "id": "ui:barn",
+  "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
+  "root": "barn"
+ },
+ {
+  "id": "ui:orders",
+  "src": "raw:farm-kit",
+  "root": "order_board",
+  "view": [
+   -20,
+   12
+  ]
+ },
+ {
+  "id": "person:ada",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F2C4A0",
+   "Villager hair": "#E9E6E1",
+   "Villager shirt": "#9A5FC0",
+   "Villager trousers": "#6B4C8A"
+  }
+ },
+ {
+  "id": "person:cora",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#3A2A20",
+   "Villager shirt": "#2E9E8F",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:pip",
+  "src": "3D_game_scene/public/models/villager-kid.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F2C4A0",
+   "Villager hair": "#7A3E1E",
+   "Villager shirt": "#FF8A2A",
+   "Villager trousers": "#3B6FB6"
+  }
+ },
+ {
+  "id": "person:minh",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#3B82C4",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:lan",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#E8573F",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:bo",
+  "src": "3D_game_scene/public/models/villager-kid.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#5EC24A",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:grace",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#7A4A32",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#1FB5B0",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:sam",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#7A4A32",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#2B4C9B",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:zara",
+  "src": "3D_game_scene/public/models/villager-kid.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#7A4A32",
+   "Villager hair": "#1E1A18",
+   "Villager shirt": "#B05FD6",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:elin",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F6D3BB",
+   "Villager hair": "#F2D27A",
+   "Villager shirt": "#7FC8F0",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:olaf",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F6D3BB",
+   "Villager hair": "#E8E4DC",
+   "Villager shirt": "#2B4C9B",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:marisol",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#C98B62",
+   "Villager hair": "#4A2A1A",
+   "Villager shirt": "#FF5C8A",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:tomas",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#C98B62",
+   "Villager hair": "#2A1A12",
+   "Villager shirt": "#E8573F",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:pia",
+  "src": "3D_game_scene/public/models/villager-kid.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#C98B62",
+   "Villager hair": "#4A2A1A",
+   "Villager shirt": "#FFD23F",
+   "Villager trousers": "#4A5A7A"
+  }
+ },
+ {
+  "id": "person:june",
+  "src": "3D_game_scene/public/models/hana.glb",
+  "portrait": true,
+  "recolor": {
+   "Dress": "#3FA7D6",
+   "Apron": "#FFF4DC",
+   "Headscarf": "#FFC83A"
+  }
+ },
+ {
+  "id": "person:mai",
+  "src": "3D_game_scene/public/models/mika.glb",
+  "portrait": true,
+  "recolor": {
+   "Raincoat": "#FF7FB5",
+   "Scarf": "#FFD23F"
+  }
+ },
+ {
+  "id": "person:gus",
+  "src": "3D_game_scene/public/models/genzo.glb",
+  "portrait": true
+ },
+ {
+  "id": "family:tran",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "crop": 0.5,
+  "group": [
+   {
+    "src": "3D_game_scene/public/models/villager-man.glb",
+    "recolor": {
+     "Skin": "#E8B98F",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#3B82C4",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": -0.55
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-woman.glb",
+    "recolor": {
+     "Skin": "#E8B98F",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#E8573F",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.0
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-kid.glb",
+    "recolor": {
+     "Skin": "#E8B98F",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#5EC24A",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.55
+   }
+  ]
+ },
+ {
+  "id": "family:okafor",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "crop": 0.5,
+  "group": [
+   {
+    "src": "3D_game_scene/public/models/villager-woman.glb",
+    "recolor": {
+     "Skin": "#7A4A32",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#1FB5B0",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": -0.55
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-man.glb",
+    "recolor": {
+     "Skin": "#7A4A32",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#2B4C9B",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.0
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-kid.glb",
+    "recolor": {
+     "Skin": "#7A4A32",
+     "Villager hair": "#1E1A18",
+     "Villager shirt": "#B05FD6",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.55
+   }
+  ]
+ },
+ {
+  "id": "family:lindqvist",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "crop": 0.5,
+  "group": [
+   {
+    "src": "3D_game_scene/public/models/villager-woman.glb",
+    "recolor": {
+     "Skin": "#F6D3BB",
+     "Villager hair": "#F2D27A",
+     "Villager shirt": "#7FC8F0",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": -0.55
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-man.glb",
+    "recolor": {
+     "Skin": "#F6D3BB",
+     "Villager hair": "#E8E4DC",
+     "Villager shirt": "#2B4C9B",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.55
+   }
+  ]
+ },
+ {
+  "id": "family:reyes",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "crop": 0.5,
+  "group": [
+   {
+    "src": "3D_game_scene/public/models/villager-woman.glb",
+    "recolor": {
+     "Skin": "#C98B62",
+     "Villager hair": "#4A2A1A",
+     "Villager shirt": "#FF5C8A",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": -0.55
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-man.glb",
+    "recolor": {
+     "Skin": "#C98B62",
+     "Villager hair": "#2A1A12",
+     "Villager shirt": "#E8573F",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.0
+   },
+   {
+    "src": "3D_game_scene/public/models/villager-kid.glb",
+    "recolor": {
+     "Skin": "#C98B62",
+     "Villager hair": "#4A2A1A",
+     "Villager shirt": "#FFD23F",
+     "Villager trousers": "#4A5A7A"
+    },
+    "x": 0.55
+   }
+  ]
+ }
+]

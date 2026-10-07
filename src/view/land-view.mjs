@@ -1,43 +1,71 @@
-// Draws the rules state on the map: cell colours, weeds and rocks, everything placed, fences on edges.
-// sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
+// Draws the rules state on the map: cell colours, weeds and rocks, everything placed, fences on edges, and the
+// dressing that follows from it (AAA pass): raised bed rims with furrows under the crops (one instanced mesh per
+// 16 × 16 cells), fence posts joined at corners and T joints, edge stones along paths, window boxes, flowerpots and a
+// lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
+// mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
+import * as THREE from 'three';
 import { N, CELL, ORDER_BOARD, RUINS } from '../content/world.mjs';
 import { footprint } from '../content/buildings.mjs';
-import { cellType } from '../core/grid.mjs';
-import { KIND_MODELS, modelFor } from './kinds.mjs';
-import { loadKit, bake, fit, simplify, averageColor } from './models.mjs';
+import { STEPS } from '../content/projects.mjs';
+import { cellType, occupant } from '../core/grid.mjs';
+import { KIND_MODELS, EARLY, modelFor, sizeOf, anchorPoints, ANCHORS } from './kinds.mjs';
+import { loadKit, loadKitLater, bake, fit, tiers } from './models.mjs';
+import { toon } from '../kit/toon.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
+
+const RIM_CHUNK = 16;
+const OWN = /^(p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:)/;   // batch ids land-view owns (removed by sync)
+const FENCES = new Set(['fence', 'gate']);
 
 export class LandView {
   constructor(world, game) {
-    Object.assign(this, { world, game, ready: false, pos: new Map() });
+    Object.assign(this, { world, game, ready: false, pos: new Map(), beds: new Map(), rims: new Map(), rimDirty: new Set(), dressed: new Map(), clock: 0 });
     world.cellLook = (x, z) => this.look(x, z);
+    world.onFrame?.(dt => this.frame(dt));
   }
-  /** Models arrive in two waves: the farm first (the first frame), the village's town buildings after it (TECH-PLAN 6). */
+  /** Models arrive in two waves: the farm first (the first frame), then town buildings, nature, props and decor. */
   async load() {
-    const first = Object.entries(KIND_MODELS).filter(([, spec]) => spec.kit !== 'town');
-    await this.register(first);
+    const entries = Object.entries(KIND_MODELS);
+    await this.register(entries.filter(([, spec]) => !spec.late));
+    await this.register(Object.entries(EARLY).map(([k, spec]) => [`${k}~`, spec]));
+    this.makeRims();
     this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
     this.ready = true; this.sync();
-    this.later = this.loadTown();
+    this.later = this.loadLater(entries.filter(([, spec]) => spec.late));
   }
-  async loadTown() {
-    await this.register(Object.entries(KIND_MODELS).filter(([, spec]) => spec.kit === 'town'));
-    // ruins: the town buildings in faded, dusty colours (DESIGN 11)
+  async loadLater(entries) {
+    // the town first (ruins and cottages are part of the story), then everything else, one kit at a time
+    const byKit = new Map();
+    for (const [name, spec] of entries) (byKit.get(spec.kit) ?? byKit.set(spec.kit, []).get(spec.kit)).push([name, spec]);
+    const order = ['town', ...[...byKit.keys()].filter(k => k !== 'town')];
+    for (const kit of order) {
+      if (!byKit.has(kit)) continue;
+      try {
+        await loadKitLater(kit);
+        await this.register(byKit.get(kit));
+        if (kit === 'town') await this.makeRuins();
+      } catch (e) { console.warn(`kit ${kit}: ${e.message}`); }
+      this.sync();
+    }
+  }
+  /** Ruins: the town buildings in faded, dusty colours (DESIGN 11). */
+  async makeRuins() {
     const town = await loadKit('town');
     for (const r of RUINS) {
       const geo = fit(bake(town[r.model]), { width: r.width }), c = geo.attributes.color;
       for (let i = 0; i < c.count; i++) { const g = (c.getX(i) + c.getY(i) + c.getZ(i)) / 3; c.setXYZ(i, g * 0.55 + c.getX(i) * 0.2 + 0.08, g * 0.55 + c.getY(i) * 0.2 + 0.07, g * 0.55 + c.getZ(i) * 0.2 + 0.05); }
       this.world.batches.register(`ruin:${r.kind}`, { geo, kind: 'static' });
     }
-    this.sync();
   }
   async register(specs) {
     const kits = {};
     for (const [, spec] of specs) kits[spec.kit] ??= loadKit(spec.kit);
     for (const [name, spec] of specs) {
       if (this.world.batches.has(name)) continue;
-      const kit = await kits[spec.kit], geo = fit(bake(kit[spec.node]), spec.width ? { width: spec.width } : { height: spec.height });
-      this.world.batches.register(name, { geo, mid: spec.lod === 'static' ? geo : simplify(geo), kind: spec.lod, color: averageColor(geo) });
+      const kit = await kits[spec.kit];
+      if (!kit[spec.node]) { console.warn(`model ${spec.node} is missing from ${spec.kit}.glb`); continue; }
+      const t = tiers(kit, spec.node, sizeOf(spec), spec.lod, { ao: spec.ao ?? 1, center: !spec.authored });
+      this.world.batches.register(name, { geo: t.geo, mid: t.mid, far: t.far, kind: spec.lod, color: t.color });
     }
   }
   get s() { return this.game.s; }
@@ -47,20 +75,48 @@ export class LandView {
     const t = cellType(s, x, z);
     if (t === 'path') return { color: GROUND_COLORS.path };
     if (t === 'tilled') return { color: GROUND_COLORS.tilled, jitter: 0.02 };
-    if (t === 'weeds' || t === 'rock') return { color: '#86c062' };
+    if (t === 'weeds' || t === 'rock') return { color: GROUND_COLORS.weeds ?? '#86c062' };
     return fixed;
+  }
+  /** The registered model that draws a kind now: its own, its first-frame stand-in, or null while it loads. */
+  model(kind, id) {
+    let name = modelFor(kind, id);
+    if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = `${name}:bare`;
+    const b = this.world.batches;
+    return b.has(name) ? name : b.has(`${name}~`) ? `${name}~` : null;
+  }
+  /** Fruit trees show fruit when their harvest is ready (whatever shape the play package's state takes). */
+  fruitReady(id) {
+    const s = this.s, now = this.game.now, st = s.trees?.[id] ?? s.fruitTrees?.[id] ?? s.orchard?.[id] ?? s.fruit?.[id] ?? s.production?.[id];
+    if (!st) return true;
+    if (typeof st.ready === 'boolean') return st.ready;
+    const at = st.doneAt ?? st.readyAt ?? st.queue?.[0]?.doneAt;
+    return at == null ? true : at <= now;
   }
   /** World position of a placed item's centre. */
   centre(kind, x, z, rot) { const [w, d] = footprint(kind, rot); return { x: (x + w / 2) * CELL, z: (z + d / 2) * CELL }; }
   drawPlaced(id) {
     const p = this.s.placed[id], b = this.world.batches, old = this.pos.get(id);
     if (old) { this.world.ground.markDirty(old.x, old.z); this.pos.delete(id); }
+    b.remove(`sails:${id}`); this.undress(id);
+    if (this.beds.has(id)) { this.rimDirty.add(this.beds.get(id).chunk); this.beds.delete(id); }
     if (!p) { b.remove(id); return; }
     this.pos.set(id, { x: p.x, z: p.z }); this.world.ground.markDirty(p.x, p.z);
-    if (p.kind !== 'bed' && !b.has(modelFor(p.kind, id))) return;      // its model is still loading; sync() draws it later
-    if (p.kind === 'bed') { b.remove(id); return; }                     // beds are tilled ground; crops are drawn by crops-view (M3)
-    const c = this.centre(p.kind, p.x, p.z, p.rot);
-    b.set(id, { model: modelFor(p.kind, id), x: c.x, z: c.z, rot: p.rot * Math.PI / 2 });
+    if (p.kind === 'bed') {                                             // beds are tilled ground with a rim; life-view draws the crops
+      b.remove(id);
+      const chunk = `${Math.floor(p.x / RIM_CHUNK)},${Math.floor(p.z / RIM_CHUNK)}`;
+      this.beds.set(id, { x: p.x, z: p.z, chunk }); this.rimDirty.add(chunk);
+      return;
+    }
+    const model = this.model(p.kind, id);
+    if (!model) return;                                                 // its model is still loading; sync() draws it later
+    const c = this.centre(p.kind, p.x, p.z, p.rot), item = { model, x: c.x, z: c.z, rot: p.rot * Math.PI / 2 };
+    b.set(id, item);
+    if (p.kind === 'feed_mill' && b.has('feed_mill_sails')) {
+      const [at] = anchorPoints('feed_mill', 'sails', item), hub = ANCHORS.feed_mill_sails?.hub?.[0] ?? [0, 0, 0];
+      if (at) b.set(`sails:${id}`, { model: 'feed_mill_sails', x: at.x, z: at.z, y: at.y - hub[1], rot: item.rot });
+    }
+    if (p.kind === 'cottage') this.dressCottage(id, item);
   }
   drawCell(x, z) {
     const t = cellType(this.s, x, z), b = this.world.batches, id = `c${x},${z}`;
@@ -68,29 +124,149 @@ export class LandView {
     else if (t === 'rock') b.set(id, { model: 'rock', x: (x + 0.5) * CELL, z: (z + 0.5) * CELL, rot: (x * 5 + z) % 6 });
     else b.remove(id);
     this.world.ground.markDirty(x, z);
+    this.drawStones(x, z);
   }
   drawEdge(key) {
     const [x, z, side] = key.split(','), kind = this.s.fences[key], b = this.world.batches, id = `e${key}`;
-    if (!kind) { b.remove(id); return; }
-    const X = +x * CELL, Z = +z * CELL;
-    b.set(id, side === 'n' ? { model: kind, x: X + CELL / 2, z: Z, rot: 0 } : { model: kind, x: X, z: Z + CELL / 2, rot: Math.PI / 2 });
+    if (!kind) b.remove(id);
+    else {
+      const X = +x * CELL, Z = +z * CELL, model = b.has(kind) ? kind : null;
+      if (model) b.set(id, side === 'n' ? { model, x: X + CELL / 2, z: Z, rot: 0 } : { model, x: X, z: Z + CELL / 2, rot: Math.PI / 2 });
+    }
+    // the posts at both ends of this edge
+    if (side === 'n') { this.drawJoint(+x, +z); this.drawJoint(+x + 1, +z); } else { this.drawJoint(+x, +z); this.drawJoint(+x, +z + 1); }
   }
-  /** A ruin stays until its building stands somewhere in the village. */
+  /** A post where fence edges meet at grid point (vx, vz): an end or straight post, a corner, or a T / cross joint. */
+  drawJoint(vx, vz) {
+    const f = this.s.fences, b = this.world.batches, id = `j${vx},${vz}`;
+    const e = [f[`${vx},${vz},n`], f[`${vx - 1},${vz},n`], f[`${vx},${vz},w`], f[`${vx},${vz - 1},w`]];   // east, west, south, north
+    const fences = e.map(k => k === 'fence'), n = fences.filter(Boolean).length;
+    if (!n) { b.remove(id); return; }
+    const straight = n === 2 && ((fences[0] && fences[1]) || (fences[2] && fences[3]));
+    const model = n >= 3 ? 'fence:t' : n === 2 && !straight ? 'fence:corner' : 'fence:post';
+    if (b.has(model)) b.set(id, { model, x: vx * CELL, z: vz * CELL, rot: 0 });
+  }
+  /** Edge stones on the sides of a path cell that touch grass (and the neighbours' sides that touch this cell). */
+  drawStones(x, z) {
+    const b = this.world.batches;
+    if (!b.has('path_stones')) return;
+    for (const [cx, cz] of [[x, z], [x + 1, z], [x - 1, z], [x, z + 1], [x, z - 1]]) {
+      if (cx < 0 || cz < 0 || cx >= N || cz >= N) continue;
+      const path = cellType(this.s, cx, cz) === 'path';
+      for (const [dx, dz, side] of [[0, -1, 'n'], [0, 1, 's'], [-1, 0, 'w'], [1, 0, 'e']]) {
+        const id = `s${cx},${cz},${side}`, ox = cx + dx, oz = cz + dz;
+        const t = cellType(this.s, ox, oz);
+        const grass = path && (t === 'grass' || t === 'weeds') && !occupant(this.s, ox, oz);
+        if (!grass) { b.remove(id); continue; }
+        const X = (cx + 0.5 + dx * 0.47) * CELL, Z = (cz + 0.5 + dz * 0.47) * CELL;
+        b.set(id, { model: 'path_stones', x: X, z: Z, rot: dx ? Math.PI / 2 : 0, scale: 0.9 + ((cx * 3 + cz * 5) % 3) * 0.06 });
+      }
+    }
+  }
+  /** A ruin stays until its building stands somewhere in the village; scaffolding marks the project being worked on. */
   drawRuins() {
+    const s = this.s, b = this.world.batches, step = STEPS[s.projects?.step];
     for (const r of RUINS) {
-      const id = `ruin:${r.kind}`, built = (this.s.counts[r.kind] ?? 0) > 0;
-      if (!this.world.batches.has(id)) continue;
-      if (built) this.world.batches.remove(id);
-      else { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; this.world.batches.set(id, { model: id, x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 }); }
+      const id = `ruin:${r.kind}`, built = (s.counts[r.kind] ?? 0) > 0, [w, d] = r.kind === 'school' ? [5, 4] : [4, 3];
+      const at = { x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 };
+      if (b.has(id)) { if (built) b.remove(id); else b.set(id, { model: id, ...at }); }
+      const working = !built && step?.builds?.includes(r.kind) && b.has('scaffold');
+      // against the ruin's front wall, a little off centre
+      const ox = -1.6, oz = d * CELL / 2 - 0.6, c = Math.cos(at.rot), sn = Math.sin(at.rot);
+      if (working) b.set(`scaffold:${r.kind}`, { model: 'scaffold', x: at.x + ox * c + oz * sn, z: at.z - ox * sn + oz * c, rot: at.rot, scale: 1.1 });
+      else b.remove(`scaffold:${r.kind}`);
+    }
+  }
+  /** Cottage dressing by furnish level: a doormat, then window boxes and flowerpots, then a door lantern. */
+  dressCottage(id, item) {
+    const b = this.world.batches, level = this.s.homes?.[id]?.level ?? 0, model = item.model, ids = [];
+    if (!b.has('window_box')) return;
+    const geo = b.models.get(model)?.geo, front = geo ? geo.boundingBox.max.z : 2.8;
+    const put = (key, m, x, y, z, extra = {}) => {
+      const c = Math.cos(item.rot), s = Math.sin(item.rot), did = `dress:${id}:${key}`;
+      b.set(did, { model: m, x: item.x + x * c + z * s, z: item.z - x * s + z * c, y, rot: item.rot, ...extra }); ids.push(did);
+    };
+    put('mat', 'doormat', 0, 0.02, front + 0.35);
+    if (level >= 1) {
+      const wins = (ANCHORS[model]?.window ?? []).filter(w => (w[4] ?? 0) > 0.7 && w[1] < 2.6).slice(0, 3);
+      wins.forEach((w, i) => put(`box${i}`, 'window_box', w[0], Math.max(0.3, w[1] - 0.55), w[2] + 0.12));
+      put('pots', 'flowerpots', 1.6, 0, front + 0.45);
+    }
+    if (level >= 2) put('lantern', 'door_lantern', 0.75, 1.75, front - 0.1);
+    this.dressed.set(id, ids);
+  }
+  undress(id) { for (const did of this.dressed.get(id) ?? []) this.world.batches.remove(did); this.dressed.delete(id); }
+
+  // ── Bed rims: one InstancedMesh per 32 × 32 cells and level of detail (near: rims and furrows; middle: a flat frame) ──
+  makeRims() {
+    // near: a raised frame (top, outer and inner walls) and five furrow ridges, 44 triangles; middle: the flat frame
+    const near = [], mid = [], col = [], colMid = [], rim = new THREE.Color('#a8683a'), rimTop = new THREE.Color('#bd7c47'), inner = new THREE.Color('#6e4126'), ridge = new THREE.Color('#a06a3e'), ridgeLit = new THREE.Color('#b47a48');
+    const quad = (arr, c, cs, a, b2, c2, d) => { arr.push(...a, ...b2, ...c2, ...a, ...c2, ...d); for (let k = 0; k < 6; k++) cs.push(c.r, c.g, c.b); };
+    const o = 0.93, i = 0.78, h = 0.12, ring = [[-o, -o], [o, -o], [o, o], [-o, o]], inn = [[-i, -i], [i, -i], [i, i], [-i, i]];
+    for (let k = 0; k < 4; k++) {
+      const a = ring[k], b2 = ring[(k + 1) % 4], c = inn[(k + 1) % 4], d = inn[k];
+      quad(near, rimTop, col, [a[0], h, a[1]], [d[0], h, d[1]], [c[0], h, c[1]], [b2[0], h, b2[1]]);
+      quad(mid, rimTop, colMid, [a[0], 0.06, a[1]], [d[0], 0.06, d[1]], [c[0], 0.06, c[1]], [b2[0], 0.06, b2[1]]);
+      quad(near, rim, col, [a[0], 0, a[1]], [a[0], h, a[1]], [b2[0], h, b2[1]], [b2[0], 0, b2[1]]);
+      quad(near, inner, col, [d[0], h, d[1]], [d[0], 0, d[1]], [c[0], 0, c[1]], [c[0], h, c[1]]);
+    }
+    for (let k = 0; k < 5; k++) {
+      const z = -0.64 + 0.32 * k, w = 0.11, y = 0.075;
+      quad(near, ridgeLit, col, [-i, 0, z + w], [i, 0, z + w], [i, y, z], [-i, y, z]);
+      quad(near, ridge, col, [-i, y, z], [i, y, z], [i, 0, z - w], [-i, 0, z - w]);
+    }
+    const geo = (pos, cs) => {
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(cs, 3)); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); return g;
+    };
+    this.rimGeo = geo(near, col); this.rimMid = geo(mid, colMid);   // counter-clockwise: tops face up, walls face out (in, for the inner walls)
+    this.world.cam?.onChange?.(() => this.rimLevels());
+  }
+  rimLevels() {
+    const lod = this.world.cam.lod;
+    for (const r of this.rims.values()) r.visible = lod === 0;
+    if (this.rimAll) this.rimAll.visible = lod === 1;
+  }
+  /** Near rims per 16 × 16 cells (tight culling); the flat middle-level frames of every bed in one draw. */
+  flushRims() {
+    if (!this.rimGeo || !this.rimDirty.size) return;
+    const scene = this.world.scene, m4 = new THREE.Matrix4(), mat = toon();
+    const fill = (mesh, list) => { list.forEach((bd, i) => mesh.setMatrixAt(i, m4.makeTranslation((bd.x + 0.5) * CELL, 0.005, (bd.z + 0.5) * CELL))); mesh.count = list.length; mesh.instanceMatrix.needsUpdate = true; mesh.computeBoundingSphere(); };
+    const make = (geo, cap, tag) => { const m = new THREE.InstancedMesh(geo, mat, cap); m.userData.batch = tag; scene.add(m); return m; };
+    for (const chunk of this.rimDirty) {
+      const list = [...this.beds.values()].filter(bd => bd.chunk === chunk);
+      let r = this.rims.get(chunk);
+      if (r && r.instanceMatrix.count < list.length) { scene.remove(r); r.dispose(); this.rims.delete(chunk); r = null; }
+      if (!r && list.length) { r = make(this.rimGeo, Math.min(RIM_CHUNK * RIM_CHUNK, Math.ceil(list.length * 1.3) + 16), `rims|${chunk}|near`); this.rims.set(chunk, r); }
+      if (r) fill(r, list);
+    }
+    const all = [...this.beds.values()];
+    if (this.rimAll && this.rimAll.instanceMatrix.count < all.length) { scene.remove(this.rimAll); this.rimAll.dispose(); this.rimAll = null; }
+    if (!this.rimAll && all.length) this.rimAll = make(this.rimMid, Math.ceil(all.length * 1.3) + 64, 'rims|all|mid');
+    if (this.rimAll) fill(this.rimAll, all);
+    this.rimDirty.clear();
+    this.rimLevels();
+  }
+  frame(dt) {
+    if (!this.ready) return;
+    this.flushRims();
+    // fruit trees change their look when their harvest comes ready
+    this.clock += dt;
+    if (this.clock > 1) {
+      this.clock = 0;
+      for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
   sync() {
     if (!this.ready || !this.s) return;
     const b = this.world.batches;
-    for (const id of [...b.items.keys()]) if (/^(p\d|c\d|e\d)/.test(id)) b.remove(id);
+    for (const id of [...b.items.keys()]) if (OWN.test(id)) b.remove(id);
+    for (const bd of this.beds.values()) this.rimDirty.add(bd.chunk);
+    this.beds.clear(); this.dressed.clear(); this.pos.clear();
     for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) { const t = this.s.cells[z * N + x]; if (t === 1 || t === 2) this.drawCell(x, z); }
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
+    if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
     this.drawRuins();
     this.world.ground.markAll();
   }
@@ -99,8 +275,9 @@ export class LandView {
     for (const e of events) {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') this.drawPlaced(e.id);
-      else if (e.type === 'projectDone') this.drawRuins();
+      else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
+      else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
       else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }
   }
