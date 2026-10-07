@@ -1,4 +1,5 @@
 // The pace targets (ECONOMY.md section 1) on the real rules. Fails the build when a balance change breaks them.
+import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { simulate } from '../scripts/sim.mjs';

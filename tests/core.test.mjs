@@ -1,4 +1,5 @@
 // The rules core (src/core/): every module through the real act() and tick().
+import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { act, tick, ACTIONS } from '../src/core/act.mjs';
@@ -42,7 +43,7 @@ test('refused actions leave the state untouched', () => {
   const s = game(); const before = JSON.stringify(s);
   for (const [action, payload] of [['plant', { id: 'nope', crop: 'wheat' }], ['harvest', { id: 'nope' }], ['place', { kind: 'cottage', x: 40, z: 95 }],
     ['clear', { x: 0, z: 0 }], ['deliverOrder', { id: 'no-such-order' }], ['feed', {}], ['collect', {}], ['produce', { building: 'x', recipe: 'bread' }],
-    ['buyParcel', { parcel: '1,2' }], ['upgradeBarn', {}], ['projectDeliver', {}], ['collectRent', {}], ['trade', { id: 'mai', accept: true }], ['stallCollect', {}]]) {
+    ['buyParcel', { parcel: '1,2' }], ['upgradeBarn', {}], ['projectDeliver', {}], ['collectRent', {}], ['trade', { id: 'nobody', accept: true }], ['stallCollect', {}]]) {
     const r = act(s, action, payload, T0);
     assert.equal(r.ok, false, `${action} should be refused`);
   }

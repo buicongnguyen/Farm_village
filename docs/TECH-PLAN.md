@@ -79,7 +79,7 @@ Farm_village/
 
 ## 3. What is copied from Willowmere
 
-From `C:\Users\n\source\repos\3d_farmer_fish_sell` (copy, don't link; note the source commit in `docs/ASSETS.md`).
+From Willowmere (`../3d_farmer_fish_sell`, github.com/buicongnguyen/3d_farmer_fish_sell) (copy, don't link; note the source commit in `docs/ASSETS.md`).
 
 ### 3.1 Code
 

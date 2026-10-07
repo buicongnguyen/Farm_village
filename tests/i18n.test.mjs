@@ -1,5 +1,6 @@
 // Every player-visible string has a Vietnamese line (the coverage rule from Willowmere).
 // Strings are found two ways: t('…') / t("…") literals in src/, and the text fields of the content data (TEXT_FIELDS).
+import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';

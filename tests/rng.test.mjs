@@ -1,3 +1,4 @@
+import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { rng, draw, hash } from '../src/core/rng.mjs';
