@@ -212,3 +212,13 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 .hud-stats .pill.coins { transform: scale(.9); transform-origin: left center; }
 .village-name { font-size: 12px; padding: 4px 10px 5px; }
 .hud-tools .round { width: 50px; height: 50px; } .hud-tools .round.big { width: 58px; height: 58px; }
+/* short (landscape) screens: keep the map clear (v0.3e) */
+@media (max-height: 520px) {
+  .hud-status { max-width: 200px; gap: 3px; }
+  .status-row { font-size: 11px; padding: 2px 8px 2px 4px; }
+  .status-row[data-status="projects"] { display: none; }
+  .status-row .mini, .status-row .g { width: 16px; height: 16px; }
+  .next-chip { left: 12px; transform: none; bottom: 10px; font-size: 11.5px; padding: 4px 10px; max-width: 44vw; animation: none; }
+  .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 42px); }
+  .hud-right .round { width: 40px; height: 40px; }
+}
