@@ -10,7 +10,8 @@ const serve = process.argv.includes('--serve'), testMode = process.argv.includes
 const PORT = +(process.env.PORT ?? 5240);
 await rm('dist', { recursive: true, force: true });
 await mkdir('dist/assets', { recursive: true });
-await cp('public', 'dist', { recursive: true });
+// public/ minus generator sources (public/assets/sfx/src holds make_sfx.py, not something the game loads)
+await cp('public', 'dist', { recursive: true, filter: src => !/[\\/]assets[\\/]sfx[\\/]src([\\/]|$)/.test(src) });
 await copyFile('index.html', 'dist/index.html');
 const options = {
   entryPoints: { game: 'src/main.mjs' }, bundle: true, outdir: 'dist/assets', splitting: true, chunkNames: 'chunk-[hash]',

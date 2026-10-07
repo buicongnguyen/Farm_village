@@ -2,3 +2,5 @@
 *.glb binary
 *.woff2 binary
 *.png binary
+*.m4a binary
+*.webp binary
