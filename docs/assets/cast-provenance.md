@@ -27,7 +27,7 @@ vertex colours with baked ambient occlusion, no textures, one skin per model.
 
 ## Changes made for Farm Village
 
-The files were slimmed for the web with a small Node script (it reads and rewrites the GLB JSON and binary chunk
+The files were slimmed for the web with `scripts/pack-rigs.mjs` (it reads and rewrites the GLB JSON and binary chunk
 directly; geometry, skins and materials are untouched):
 
 - Clips the game never plays were dropped: Kick, Throw, Bow, Run and Interact from the three villagers, Bow from Hana.
