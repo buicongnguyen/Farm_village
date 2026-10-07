@@ -1,7 +1,7 @@
 /* Village: the Today board, projects, cottages and their families, friends and gifts, the mailbox, the story cards
    (modal), and speech bubbles. On a narrow phone the village buttons run down the right edge. */
 .badge.dot { min-width: 14px; width: 14px; height: 14px; padding: 0; top: -2px; right: -2px; }
-@media (max-width: 560px) and (orientation: portrait) { .hud-right { flex-direction: column; } body.panel-open .hud-right, body.panel-open .hud-corner { display: none; } .toasts { width: calc(100vw - 150px); left: calc(50% - 20px); } }
+@media (max-width: 560px) and (orientation: portrait) { .hud-right { flex-direction: column; } body.panel-open .hud-right, body.panel-open .hud-corner { display: none; } .toasts { width: calc(100vw - 96px); left: calc(50% - 24px); top: max(186px, calc(env(safe-area-inset-top) + 176px)); } }
 .today { display: grid; gap: 8px; }
 .today h3, .project h3, .album h3, .settings h3 { margin: 8px 4px 0; font-size: 16px; font-weight: 1000; color: var(--edge-dark); }
 .today ul, .steps { margin: 0; padding: 0 2px; list-style: none; display: grid; gap: 5px; }
@@ -34,7 +34,7 @@
 .person { display: grid; justify-items: center; gap: 2px; background: linear-gradient(#fff, #fff7e6); border: 3px solid var(--line); border-radius: 16px; padding: 8px 6px; box-shadow: 0 3px 0 #d3a868; text-align: center; }
 .person .face { width: 54px; height: 54px; }
 .person b { font-weight: 1000; } .person small { color: var(--ink-2); font-size: 12px; }
-.person .btn { margin-top: 4px; }
+.person .btn { margin-top: 4px; white-space: nowrap; padding: 5px 8px; gap: 4px; } .person .btn .g { width: 18px; height: 18px; }
 .cottage .row, .settings .row { display: flex; gap: 8px; flex-wrap: wrap; }
 .hint.warn { color: #9a3b12; font-weight: 900; }
 .wish { display: flex; align-items: center; gap: 8px; background: linear-gradient(#f2fbff, #dff1ff); border: 3px solid #7fb9e6; border-radius: 16px; padding: 8px; box-shadow: 0 3px 0 #4f86b3; }

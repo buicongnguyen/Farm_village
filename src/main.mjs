@@ -36,7 +36,7 @@ const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 // the title splash (index.html #boot) stays up until the first card is ready, then fades into it
 const splash = document.getElementById('boot');
-app.innerHTML = ''; if (splash) { splash.setAttribute('aria-hidden', 'true'); document.body.appendChild(splash); }
+app.innerHTML = ''; if (splash) { splash.setAttribute('aria-hidden', 'true'); document.body.insertBefore(splash, app); }
 initModals(app);
 const PROFILE_KEY = 'farm-village:profile';
 const profile = (() => { try { return Math.min(3, Math.max(1, +(localStorage.getItem(PROFILE_KEY) ?? 1))); } catch { return 1; } })();
