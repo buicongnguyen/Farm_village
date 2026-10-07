@@ -227,7 +227,7 @@ A tree counts **+2 charm** like a blossom tree, so it can stand by a cottage. Up
 bigger welcome sign, for good (`CHARM_MILESTONES`).
 
 **The streak garden:** every game day you visit plants one flower in a 12 × 4 garden north of the farmhouse
-(x 15–26, z 53–56). The flowers can't be moved, stored or lost; missing a day only means no flower that day.
+(x 14–25, z 53–56; the cart stands at x 26–27, z 55–56). The flowers can't be moved, stored or lost; missing a day only means no flower that day.
 
 ### 4.3 Build steps (village projects)
 

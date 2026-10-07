@@ -119,18 +119,20 @@ export function chapterReached(s) {
   for (const ch of CHAPTERS) { try { if (ch.id > c && ch.when?.(s)) c = ch.id; } catch { /* a chapter test that needs more state */ } }
   return c;
 }
-export function letterDue(s, letter) {
+export function letterDue(s, letter, chapter = null) {
   const w = letter.when ?? {};
   if (w.type === 'level') return s.level >= w.value;
-  if (w.type === 'chapter') return chapterReached(s) >= w.value;
+  if (w.type === 'chapter') return (chapter ?? chapterReached(s)) >= w.value;
   if (w.type === 'hearts') return heartsOf(s, w.person ?? letter.from) >= w.value;
   return false;
 }
 /** Post every letter that is due and not sent yet (newest first in s.mail). */
 export function postLetters(ctx) {
-  const { s, now } = ctx, mail = (s.mail ??= []);
-  for (const letter of data().letters) {
-    if (!letter?.id || mail.some(m => m.id === letter.id) || !letterDue(s, letter)) continue;
+  const { s, now } = ctx, mail = (s.mail ??= []), letters = data().letters; if (!letters.length) return;
+  const sent = new Set(mail.map(m => m.id)), chapter = chapterReached(s);
+  for (const letter of letters) {
+    if (!letter?.id || sent.has(letter.id) || !letterDue(s, letter, chapter)) continue;
+    sent.add(letter.id);
     mail.unshift({ id: letter.id, from: letter.from, at: now, read: false });
     ctx.emit('letter', { id: letter.id, from: letter.from });
   }
@@ -160,7 +162,8 @@ export function afterAction(ctx) {
 export function tickBonds(ctx) {
   const events = [...ctx.events];
   refreshWishes(ctx);
-  if (events.some(e => CHARM_EVENTS.has(e.type)) || !ctx.s.village) checkCharm(ctx);
+  // charm also once a day, so a save from before the milestones catches up
+  if (events.some(e => CHARM_EVENTS.has(e.type) || e.type === 'newDay' || e.type === 'loaded')) checkCharm(ctx);
   postLetters(ctx);
 }
 
