@@ -8,7 +8,10 @@ import { join } from 'node:path';
 import { VI } from '../src/i18n/vi.mjs';
 import * as content from '../src/content/index.mjs';
 
-const TEXT_FIELDS = new Set(['name', 'title', 'subtitle', 'line', 'lines', 'text', 'story', 'label', 'hint', 'role', 'wish', 'comment', 'comments', 'needText', 'farm', 'ORDER_LINES']);
+// `orders`: each person's order lines; `ada`: Ada's line on a chapter card; `caption`: story panels; `tip`/`tips`: June;
+// `first`/`idle`: Pip's speech bubbles; VILLAGE_NAME: the village's name on the HUD.
+const TEXT_FIELDS = new Set(['name', 'title', 'subtitle', 'line', 'lines', 'text', 'story', 'label', 'hint', 'role', 'wish', 'comment', 'comments', 'needText', 'farm', 'ORDER_LINES',
+  'orders', 'ada', 'caption', 'tip', 'tips', 'first', 'idle', 'VILLAGE_NAME']);
 async function files(dir) {
   const out = [];
   for (const e of await readdir(dir, { withFileTypes: true })) {

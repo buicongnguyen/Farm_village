@@ -20,11 +20,15 @@ first versions. The numbers are in `ECONOMY.md`, the code plan in `TECH-PLAN.md`
 
 ## 1. Setting and story
 
-**Premise.** Your grandparents Ada and Ellis kept a farm beside a quiet brook. The village around it has emptied over
-the years: the school closed, the shop moved away and the houses fell empty. You arrive with your partner June and your
-child Pip to take over the farm. Ada asks one thing: *"Bring the village back to life."*
+**Premise.** Hollowbrook was a busy mill village. When the mill closed, the young families followed the work to the
+city: the school closed, the shop moved away and the houses fell empty. Your grandmother Ada stayed, while your
+grandfather Ellis spends his days fishing upriver. Ada's letter says: *"The key is under the seed tin. Bring Hollowbrook
+home."* You arrive with your partner June and your child Pip to take over the farm. Two mysteries run under the
+chapters: why the mill really closed, and how the festival stage burned. The full cast, voices, Vietnamese pronouns and
+the chapter 1–9 outline are in `STORY.md`.
 
-**The arc** (each chapter is a short three-panel story card and a small celebration when it ends):
+**The arc** (each chapter is a short three-panel story card and a small celebration when it ends, with a line from Ada;
+v0.1 also shows a teaser card for chapter 5):
 
 | Chapter | Title | Story beat | Ends when |
 |---|---|---|---|
@@ -32,7 +36,7 @@ child Pip to take over the farm. Ada asks one thing: *"Bring the village back to
 | 2 | Something takes root | The farm starts working: hens, feed and the first loaves. | Feed mill and coop built |
 | 3 | A light in the window | The first family, the Trans, rents the cottage by the brook. | First family moves in |
 | 4 | A bell for the children | Two families with children ask for the school to reopen. | School opens (v0.1 ends here) |
-| 5 | Someone to care for us | Four households: Hazel the nurse wants to reopen the clinic. | Clinic opens |
+| 5 | Someone to care for us | Four households: Marisol the nurse campaigns for the clinic and recruits Dr Hazel. | Clinic opens |
 | 6 | Market day | Six households: the market square and its shops come back. | Market square opens |
 | 7 | Safe streets | Eight households: Pearl reopens the police post. | Police post opens |
 | 8 | Work for everyone | Ten households: the old company office brings bigger orders. | Company office opens |
@@ -263,27 +267,37 @@ Neighbours can help fill crates.
 
 ### 9.1 Your family
 - **You:** pick a body and look at the start (Willowmere's hero bodies and looks).
+Your family never posts orders.
 - **June** (partner): tends the house. She gives a tip when you are stuck and runs the café later.
-- **Pip** (child): follows you around, waves at animals and asks questions. From v0.3, "help Pip with homework" is one
-  short, optional quiz a day that earns hearts and an album page and shapes Pip's interests. It never earns coins.
-- **Ada and Ellis** (grandparents): Ada is the guide of the first chapters. Ellis teaches fishing (v0.2).
+- **Pip** (child): follows you around, waves at animals, names every hen and comments on firsts (first harvest, first
+  hen, first family) in speech bubbles. From v0.3, "help Pip with homework" is one short, optional quiz a day that earns
+  hearts and an album page and shapes Pip's interests. It never earns coins.
+- **Ada and Ellis** (grandparents): Ada is the guide of the first chapters and speaks the tutorial. Ellis is away
+  fishing upriver all through v0.1. He appears only in letters, which also hint at the mill mystery, and he comes home
+  to teach fishing in v0.2.
 
 ### 9.2 Villagers (they live in your village)
 - Each family that rents a cottage brings 2–4 named people with a role, a line, likes and dislikes.
-- **Civic villagers** come back when their building opens: Cora the teacher (school), Hazel the nurse (clinic),
+- **Civic villagers** come back when their building opens: Cora the teacher (school), Dr Hazel (clinic, recruited by
+  Marisol),
   Hugo the baker (market), Pearl the officer (police), Bea the office manager (company).
 - Villagers walk set daily routes between home, work and the square (Willowmere's `villagers.mjs` timetables).
 - **Hearts (0–10)** rise when you fill their orders, give gifts they like, and grant their wishes.
   - At 3, 6 and 9 hearts a short heart scene plays (three lines and a picture), with a reward: a recipe, a decoration
-    or a cottage furniture set.
+    or coins (cottage furniture sets later). Every resident has all three (`content/hearts.mjs`).
+- **Order lines:** everyone who posts orders has 4–6 lines in their own voice, so a child never sounds like an adult.
 - **Wishes:** once a day one villager wishes for something small and visible, such as a bench by the brook or flowers by
   their door. Granting it gives a big heart boost, and the change stays in the village.
-- **Letters:** villagers post short letters in your mailbox to say thanks, share a recipe or tell a story.
+- **Letters:** villagers post short letters in your mailbox to say thanks, share a recipe or tell a story. They arrive
+  at chapter, heart and level thresholds (`content/letters.mjs`).
+- **Arrivals:** each family says three lines on the day it moves in.
 
-**v0.1 cast** (first two families plus the teacher):
-- **The Tran family:** Minh (carpenter), Lan (cook) and their son Bo (7). Cottage 1.
-- **The Okafor family:** Grace (vet), Sam (postman) and their daughter Zara (8). Cottage 2.
+**v0.1 cast** (four families plus the teacher; voices in `STORY.md`):
+- **The Tran family:** Minh (carpenter), Lan (cook) and their son Bo (7). Cottage 1, on Brook Lane.
+- **The Okafor family:** Grace (vet), Sam (postman, who grew up here) and their daughter Zara (8). Cottage 2.
 - **Cora:** the teacher. She arrives with the school.
+- **The Lindqvists** (Elin, painter; Olaf, retired sailor) and **the Reyes family** (Marisol, nurse; Tomas, mechanic;
+  Pia, 5) fill cottages 3 and 4 after the school.
 
 ### 9.3 AI neighbours (instead of online players)
 Four neighbouring farms with their own families, personalities and specialities. They are scripted, run in the browser
@@ -297,8 +311,9 @@ and are never rude.
 | **The Nguyen twins** (Brookside) | Competitive, playful | Fish, racing | v0.3 |
 
 **What they do:**
-- **Visit:** 1–2 visits a day. A neighbour walks around your village and comments on what they see ("Your flowers by
-  the bakery are lovely!", written from the real layout). They **help**: each visit speeds up 3 crops or 1 production
+- **Visit:** 1–2 visits a day. A neighbour walks around your village and comments on what they see ("{count} hens!
+  You will have eggs all spring", filled in from the real state). Gus's first three visits tell a short arc: he admits
+  that Ada taught him to bake. They **help**: each visit speeds up 3 crops or 1 production
   slot by 30 minutes.
 - **Post orders:** some order cards come from them, at slightly better pay.
 - **Trade:** once a day, an offer to swap goods ("I'll give 4 eggs for 6 wheat"). Accept or decline, with no
