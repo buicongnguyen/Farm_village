@@ -151,7 +151,10 @@ comments match what is on screen.
 - [ ] A playtest with 3–5 first-time players (phone and PC). Write down where they hesitate and what they say. Ask
   whether they would come back tomorrow.
 - [ ] Fix the top issues and re-run the simulation.
-- [ ] Release checklist:
+- [ ] (waiting for the user) A playtest with 3–5 first-time players.
+- [x] Release checklist, local part: all tests green (30 rules tests, 19 browser checks), production build checked on
+  phone and PC with no test hooks, `CHANGELOG.md`, version 0.1.0.
+- [ ] Release checklist, remaining:
   - all tests green;
   - the browser suites pass on Chromium and WebKit;
   - screenshots reviewed;

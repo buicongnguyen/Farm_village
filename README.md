@@ -1,7 +1,22 @@
 # Farm Village
 
 The next game after Willowmere: a cozy, single-player farm and village game in the browser, where you lead your family
-and grow your village. This repository starts with the plan; the code comes next.
+and grow your village. Version 0.1.0 (release candidate) is built; see CHANGELOG.md.
+
+## Play and develop
+
+```
+npm install
+npm run dev            # http://127.0.0.1:5240/  (test-mode build; add ?new for a fresh farm)
+npm test               # rules, translation coverage and the pace targets (economy simulation)
+npm run build:test && node scripts/serve-dist.mjs 5241 && npm run test:browser   # browser checks (phone, landscape, PC)
+npm run build          # the public build in dist/ (no test hooks)
+npm run sim -- steady 14   # when each build step opens for a steady player
+```
+
+Where things are: the rules in `src/core/` (pure, tested), the data in `src/content/`, the 3D view in `src/view/`, the
+menus in `src/ui/`, Vietnamese in `src/i18n/vi.mjs`, new models in `art/blender/`. Progress and next steps:
+[PROGRESS.md](PROGRESS.md). Changes: [CHANGELOG.md](CHANGELOG.md).
 
 ## The plan
 
