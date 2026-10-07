@@ -27,7 +27,9 @@ export function installTestHook(parts) {
     },
     state: () => parts.game?.s,
     /** Close the story cards and end the tutorial (for checks that are not about the first session). */
-    skipIntro() { parts.game.do('tutorial', { skip: true }); for (let i = 0; i < 8; i++) document.querySelector('.modal [data-close]')?.click(); },
+    skipIntro() { parts.game.do('tutorial', { skip: true }); this.closeCards(); },
+    /** Close every story, level-up and letter card on screen (with its last button: Continue, never "Show me"). */
+    closeCards() { for (let i = 0; i < 12; i++) { const b = [...document.querySelectorAll('.modal [data-close]')].pop(); if (!b) break; b.click(); } },
     /** Run the game clock ahead by ms (kept for this tab across reloads). */
     setClockOffset(ms) { sessionStorage.setItem('fv-clock-offset', String(ms)); parts.game.clock = () => Date.now() + ms; parts.game.tick(); },
     /** The budget test (TECH-PLAN 6): own all 16 parcels and fill them with 4 × 4 fields of crops at mixed stages. */

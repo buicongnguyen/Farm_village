@@ -1,29 +1,40 @@
 // Tap something on the farm (outside build mode) and its actions appear around the finger (DESIGN 16): plant, harvest,
-// feed, collect, buy, clear. Choosing plant or harvest arms a "sweep": drag across other beds, or tap them, to do the same.
+// feed, collect, buy, clear, pick fruit, buy land. Choosing plant or harvest arms a "sweep": drag across other beds, or
+// tap them, to do the same; the seed bag or the sickle follows the finger and each bed pops (world.juice).
+// The menu springs open. A tap on an animal in its pen opens its home's menu (life.animalAt). A For-sale parcel shows
+// its price and level with a gold outline of the land; the weekly cart and the mailbox open their panels.
+import * as THREE from 'three';
 import { t, num } from '../kit/i18n.mjs';
-import { CROPS, ANIMALS } from '../content/goods.mjs';
+import { sfx } from '../kit/sound.mjs';
+import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX } from '../content/world.mjs';
-import { rentWaiting } from '../core/homes.mjs';
+import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf } from '../content/world.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
 import { plantPrice } from '../core/farm.mjs';
 import { animalPrice, animalState } from '../core/animals.mjs';
+import { treeState } from '../core/trees.mjs';
+import { buyableParcels } from '../core/build.mjs';
+import { cartHere, CART_SPOT } from '../core/cart.mjs';
 import * as barn from '../core/barn.mjs';
 import { shortTime } from '../core/clock.mjs';
+import { iconHtml, coinMark, glyph } from './icon.mjs';
 
 const near = (cell, spot, r) => Math.abs(cell.x - spot.x) <= r && Math.abs(cell.z - spot.z) <= r;
+const nearCart = cell => cell.x >= CART_SPOT.x - 1 && cell.x <= CART_SPOT.x + CART_SPOT.w && cell.z >= CART_SPOT.z - 1 && cell.z <= CART_SPOT.z + CART_SPOT.d;
+const bar = k => `<i class="progress"><i style="width:${Math.round(Math.max(0, Math.min(1, k)) * 100)}%"></i></i>`;
 export class Radial {
   constructor(root, { game, world, panels, hud, people }) {
     Object.assign(this, { game, world, panels, hud, people, armed: null, armedUntil: 0, swept: new Set() });
     this.el = document.createElement('div'); this.el.className = 'radial'; this.el.hidden = true;
     root.appendChild(this.el);
-    this.el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) this.choose(b.dataset); });
+    this.tool = document.createElement('div'); this.tool.className = 'sweep-tool'; this.tool.hidden = true; root.appendChild(this.tool);
+    this.el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) { sfx('click'); this.choose(b.dataset); } });
     // drag across beds while a sweep is armed: the camera hands the drag to us instead of panning
     world.cam.dragHook = {
-      start: (x, y) => { const id = this.bedAt(x, y); if (!this.isArmed() || !id || !this.applies(id)) return false; this.hide(); this.swept = new Set(); this.sweepBed(id); return true; },
-      move: (x, y) => { const id = this.bedAt(x, y); if (id) this.sweepBed(id); },
-      end: () => { this.armedUntil = performance.now() + 6000; },
+      start: (x, y) => { const id = this.bedAt(x, y); if (!this.isArmed() || !id || !this.applies(id)) return false; this.hide(); this.swept = new Set(); this.follow(x, y); this.sweepBed(id); return true; },
+      move: (x, y) => { this.follow(x, y); const id = this.bedAt(x, y); if (id) this.sweepBed(id); },
+      end: () => { this.armedUntil = performance.now() + 6000; this.tool.hidden = true; },
     };
   }
   get s() { return this.game.s; }
@@ -33,66 +44,111 @@ export class Radial {
     const b = this.s.beds[id], now = this.game.now;
     return this.armed?.action === 'plant' ? !b : this.armed?.action === 'harvest' ? !!b && b.doneAt <= now : false;
   }
+  /** The seed bag (with the crop) or the sickle under the finger while sweeping. */
+  follow(x, y) {
+    if (!this.armed) return;
+    const html = this.armed.action === 'plant' ? `${glyph('bag', 'bag')}${iconHtml(this.armed.crop, '', 'seed')}` : iconHtml('tool:harvest', '', 'sickle');
+    if (this.tool.dataset.html !== html) { this.tool.innerHTML = html; this.tool.dataset.html = html; }
+    this.tool.hidden = false; this.tool.style.transform = `translate(${x}px, ${y}px)`;
+  }
   sweepBed(id) {
     if (this.swept.has(id) || !this.applies(id)) return;
     this.swept.add(id);
     const r = this.armed.action === 'plant' ? this.game.do('plant', { id, crop: this.armed.crop }) : this.game.do('harvest', { id });
-    if (!r.ok) this.armed = null;
+    if (!r.ok) { this.armed = null; this.tool.hidden = true; }
+    else { const p = this.s.placed[id]; if (p) this.world.juice?.pop?.({ x: p.x, z: p.z }); }
     this.armedUntil = performance.now() + 6000;
   }
-  hide() { this.el.hidden = true; this.target = null; }
+  hide() { this.el.hidden = true; this.target = null; this.outline(null); }
   /** A tap on the map outside build mode. */
   tap(cell, x, y) {
     if (!cell) { this.hide(); return; }
-    const s = this.s, id = occupant(s, cell.x, cell.z), now = this.game.now;
+    const s = this.s, now = this.game.now;
+    let id = occupant(s, cell.x, cell.z);
+    const animal = !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
     if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
     const who = !id && this.people?.pick(x, y); if (who) { this.hide(); this.people.talk(who); return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
-    let buttons = [], info = '';
+    let buttons = [], info = '', land = null;
     if (p?.kind === 'bed') {
       const b = s.beds[id];
       if (!b) buttons = Object.entries(CROPS).filter(([, c]) => c.level <= s.level).map(([c, def]) => {
         const price = plantPrice(s, c), have = barn.stock(s, c);
-        return { act: 'plant', crop: c, icon: def.icon, label: def.free ? t('Free') : have ? `×${have}` : `🪙 ${price}` };
+        return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
-      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: '🧺', label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: '🌾', label: t('All ({count})', { count: all }) }] : [])]; }
-      else info = `${CROPS[b.crop].icon} ${shortTime(b.doneAt - now)}`;
-    } else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
+      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml(b.crop), label: t('All ({count})', { count: all }) }] : [])]; }
+      else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${bar(1 - (b.doneAt - now) / full)}`; }
+    } else if (def?.fruit) {
+      const st = treeState(s, id, now), f = FRUITS[def.fruit];
+      if (st?.state === 'ripe') buttons = [{ act: 'pick', icon: iconHtml(def.fruit), label: t('Pick ({count})', { count: f?.yield ?? 1 }) }];
+      else if (st) info = `${iconHtml(def.fruit, '', 'mini')} ${t(def.name)} · ${shortTime(st.leftMs)}${bar(st.progress)}`;
+      else info = t(def.name);
+    } else if (def?.garden) info = `${iconHtml('garden_flower', '', 'mini')} ${t('Streak garden: day {count}', { count: s.today.days ?? 1 })}`;
+    else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.home) { this.hide(); this.panels.show('cottage', id); return; }
     else if (p?.kind === 'school') info = t('The school is open!');
     else if (def?.animals) {
       const list = s.animals[id] ?? [], kind = def.animals, a = ANIMALS[kind], pen = penOf(s, id);
       const hungry = list.filter(x => animalState(x, now) === 'hungry').length, ready = list.filter(x => animalState(x, now) === 'ready').length;
-      if (ready) buttons.push({ act: 'collect', icon: '🧺', label: t('Collect ({count})', { count: ready }) });
-      if (hungry) buttons.push({ act: 'feed', icon: a.eats === 'chicken_feed' ? '🌰' : '🫘', label: t('Feed ({count})', { count: hungry }) });
-      if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: kind === 'hen' ? '🐔' : '🐄', label: animalPrice(s, kind) ? `🪙 ${num(animalPrice(s, kind))}` : t('Free') });
+      if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
+      if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
+      if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(p.kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
       info = pen.closed ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
-    } else if (!id && ['weeds', 'rock'].includes(cellType(s, cell.x, cell.z))) buttons = [{ act: 'clear', icon: '🧹', label: `🪙 ${CLEAR[cellType(s, cell.x, cell.z)]}` }];
-    else if (!id && near(cell, MAILBOX, 1)) { const rent = rentWaiting(s, now); if (rent) buttons = [{ act: 'collectRent', icon: '📬', label: `🪙 ${num(rent)}` }]; else info = t('The mailbox is empty'); }
-    else if (!id && near(cell, ORDER_BOARD, 1)) { this.hide(); this.panels.show('orders'); return; }
-    else if (!id && near(cell, BARN, 4)) { this.hide(); this.panels.show('barn'); return; }
-    else if (!id && near(cell, FARMHOUSE, 4)) info = t('Your farmhouse');
+    } else if (p) info = t(def?.name ?? '');
+    else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
+      info = `${iconHtml('sale_sign', '', 'mini')} ${t('Land for sale')} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;
+      buttons = [{ act: 'buyParcel', parcel: land.parcel, icon: iconHtml('sale_sign'), label: t('Buy'), disabled: !land.ok }];
+    }
+    else if (['weeds', 'rock'].includes(cellType(s, cell.x, cell.z))) buttons = [{ act: 'clear', icon: iconHtml('tool:clear'), label: `${coinMark()}${CLEAR[cellType(s, cell.x, cell.z)]}` }];
+    else if (cartHere(s) && nearCart(cell)) { this.hide(); this.panels.show('cart'); return; }
+    else if (near(cell, MAILBOX, 1)) { this.hide(); this.panels.show('mail'); return; }
+    else if (near(cell, ORDER_BOARD, 1)) { this.hide(); this.panels.show('orders'); return; }
+    else if (near(cell, BARN, 4)) { this.hide(); this.panels.show('barn'); return; }
+    else if (near(cell, FARMHOUSE, 4)) info = t('Your farmhouse');
     if (!buttons.length && !info) { this.hide(); return; }
-    this.target = { id, cell };
-    const r = Math.max(62, 28 + buttons.length * 9);
+    this.target = { id, cell, land };
+    this.outline(land);
+    const r = Math.max(64, 30 + buttons.length * 9);
     this.el.innerHTML = (info ? `<div class="radial-info">${info}</div>` : '') + buttons.map((b, i) => {
       const a = -Math.PI / 2 + (i - (buttons.length - 1) / 2) * 0.9, bx = Math.cos(a) * r, by = Math.sin(a) * r;
-      return `<button class="radial-btn" style="transform:translate(${bx}px,${by}px)" data-act="${b.act}"${b.crop ? ` data-crop="${b.crop}"` : ''}><span>${b.icon}</span><small>${b.label}</small></button>`;
+      return `<button class="radial-btn" style="--x:${bx.toFixed(1)}px;--y:${by.toFixed(1)}px;--i:${i}" data-act="${b.act}"${b.crop ? ` data-crop="${b.crop}"` : ''}${b.parcel ? ` data-parcel="${b.parcel}"` : ''}${b.disabled ? ' disabled' : ''}>${b.icon}<small>${b.label}</small></button>`;
     }).join('');
-    const margin = r + 40;
+    const margin = r + 44;
     this.el.style.left = `${Math.min(innerWidth - margin, Math.max(margin, x))}px`; this.el.style.top = `${Math.min(innerHeight - margin, Math.max(margin + 20, y))}px`;
-    this.el.hidden = false;
+    this.el.hidden = false; this.el.classList.remove('open'); void this.el.offsetWidth; this.el.classList.add('open');
+    sfx('pop');
+  }
+  /** A gold outline over a parcel on offer (null hides it). */
+  outline(land) {
+    if (!land) { if (this.frame) this.frame.visible = false; return; }
+    if (!this.frame) {
+      // a flat frame: four strips round the parcel's edge (eight corners, eight triangles)
+      const size = PARCEL * CELL, w = 0.9, o = [[0, 0], [size, 0], [size, size], [0, size]], i = [[w, w], [size - w, w], [size - w, size - w], [w, size - w]];
+      const pos = [...o, ...i].flatMap(([x, z]) => [x, 0, z]), idx = [];
+      for (let k = 0; k < 4; k++) { const n = (k + 1) % 4; idx.push(k, 4 + k, n, n, 4 + k, 4 + n); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
+      const ring = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: 0.95, depthWrite: false, side: THREE.DoubleSide }));
+      const fill = new THREE.Mesh(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2).translate(size / 2, 0, size / 2), new THREE.MeshBasicMaterial({ color: '#fff3b0', transparent: true, opacity: 0.3, depthWrite: false }));
+      this.frame = new THREE.Group(); this.frame.add(fill, ring); this.frame.name = 'parcel-outline'; this.frame.renderOrder = 5;
+      this.world.scene.add(this.frame);
+      this.world.onFrame?.((dt, now) => { if (this.frame.visible) ring.material.opacity = 0.7 + 0.3 * Math.sin(now / 180); });
+    }
+    this.frame.position.set(land.x * CELL, 0.12, land.z * CELL); this.frame.visible = true;
   }
   choose(d) {
-    const g = this.game, { id, cell } = this.target ?? {}; this.hide();
-    if (d.act === 'plant') { this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info'); }
+    const g = this.game, { id, cell, land } = this.target ?? {}; this.hide();
+    if (d.act === 'plant') { this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'harvestAll') g.do('harvest', { ids: Object.keys(g.s.beds).filter(k => g.s.beds[k].doneAt <= g.now) });
     else if (d.act === 'collect') g.do('collect', { home: id });
     else if (d.act === 'feed') g.do('feed', { home: id });
     else if (d.act === 'buyAnimal') g.do('buyAnimal', { home: id });
     else if (d.act === 'clear') g.do('clear', { x: cell.x, z: cell.z });
-    else if (d.act === 'collectRent') g.do('collectRent');
+    else if (d.act === 'pick') g.do('pick', { id });
+    else if (d.act === 'buyParcel') {
+      const r = g.do('buyParcel', { parcel: d.parcel });
+      if (r.ok && land) { this.fx?.confetti?.(40); this.world.cam.flyTo?.((land.x + PARCEL / 2) * CELL, (land.z + PARCEL / 2) * CELL, Math.max(this.world.cam.span, 60), 1000); }
+    }
   }
 }
