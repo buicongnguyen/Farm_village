@@ -1,17 +1,40 @@
-/* Farm Village look: warm, vivid, glossy round buttons (after Willowmere's hud-reference.css and Zoo Garden). */
+/* Farm Village look (AAA pass): warm cream panels with a thick brown outline and a bevelled drop edge, chunky bright
+   buttons (green to go, orange for the second choice), and HUD discs with coloured rims. Bright on the saturated grass by
+   day, solid enough to read at night. Mario Kart 8 colour, not pastel. */
 @font-face { font-family: 'Nunito'; src: url('../public/assets/nunito.woff2') format('woff2'); font-weight: 200 1000; font-display: swap; }
 :root {
-  --ink: #3b2a1a; --paper: #fff8ec; --paper-2: #ffeccc; --leaf: #5fae3e; --leaf-dark: #3f8a28; --sun: #ffc93c; --berry: #e2546b; --sky: #7cc4e8;
-  --shadow: 0 3px 0 #0002, 0 6px 14px #0002; --radius: 18px; --tap: 48px;
+  --ink: #4a2a12; --ink-2: #7a5634; --paper: #fff6df; --paper-2: #ffe7b8; --paper-3: #fffbf1;
+  --edge: #8a5a2b; --edge-dark: #5e3a18; --line: #e6c591;
+  --leaf: #4fc12c; --leaf-hi: #9df06a; --leaf-dark: #2b7d16; --sun: #ffc93c; --gold: #f2b21c; --gold-dark: #b47a06;
+  --orange: #ff9426; --orange-hi: #ffcd5e; --orange-dark: #c25f0a; --berry: #ef3f5c; --sky: #2f95ea; --sky-dark: #1b64a8;
+  --shadow: 0 4px 0 #0000002e, 0 8px 16px #00000026; --radius: 20px; --tap: 52px;
+  --panel-bg: linear-gradient(#fffbf0, #fff0d4);
+  --panel-shadow: 0 6px 0 var(--edge-dark), 0 14px 28px #0000004d, inset 0 2px 0 #fff;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #9fd3f0; color: var(--ink); font: 600 15px/1.3 'Nunito', 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #8fd45a; color: var(--ink); font: 700 15px/1.3 'Nunito', 'Segoe UI', sans-serif; touch-action: none; user-select: none; }
 #app, canvas { display: block; position: fixed; inset: 0; }
-#boot { display: grid; place-items: center; height: 100%; font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 #0003; }
+button { font-family: inherit; }
 .hud { position: fixed; inset: 0; pointer-events: none; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
 .hud > * { pointer-events: auto; }
-.hud-title { position: absolute; left: 12px; top: max(10px, env(safe-area-inset-top)); background: var(--paper); border-radius: var(--radius); padding: 8px 14px; font-weight: 900; box-shadow: var(--shadow); }
-.hud-tools { position: absolute; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); display: flex; gap: 8px; }
-button.round { width: var(--tap); height: var(--tap); border-radius: 50%; border: 0; background: linear-gradient(#fff, var(--paper-2)); color: var(--ink); font: 900 18px 'Nunito', sans-serif; box-shadow: var(--shadow); cursor: pointer; }
-button.round:active { transform: translateY(2px); box-shadow: 0 1px 0 #0002; }
+.hud-tools { position: absolute; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); display: flex; gap: 8px; align-items: flex-end; }
+button.round { width: var(--tap); height: var(--tap); border-radius: 50%; border: 4px solid var(--edge); background: radial-gradient(circle at 50% 30%, #fff 0 30%, var(--paper) 60%, var(--paper-2)); color: var(--ink); font: 1000 17px 'Nunito', sans-serif;
+  box-shadow: 0 4px 0 var(--edge-dark), 0 7px 12px #0000003a; cursor: pointer; display: grid; place-items: center; padding: 0; position: relative; transition: transform .08s; }
+button.round:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--edge-dark), 0 3px 6px #0003; }
+button.round[hidden] { display: none; }
+
+/* The title splash (index.html #boot): sky, hills and the logo, until the first card is up; then it fades. */
+#boot { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; align-content: center; gap: 18px; pointer-events: none; transition: opacity .6s ease;
+  background: radial-gradient(120% 60% at 30% 108%, #5cc43a 0 38%, transparent 38.5%), radial-gradient(110% 55% at 85% 112%, #3fa82a 0 40%, transparent 40.5%),
+    radial-gradient(60px 60px at 82% 18%, #fff7c2 0 40%, #ffd34a 41% 62%, transparent 64%), linear-gradient(#2f9be8 0%, #7fd0ff 52%, #ffe7a3 78%); }
+#boot.gone { opacity: 0; }
+#boot .logo { display: grid; justify-items: center; gap: 2px; transform: rotate(-3deg); animation: logo-in .7s cubic-bezier(.3, 1.6, .5, 1) both; }
+#boot .logo b { font: 1000 clamp(40px, 13vw, 76px)/1 'Nunito', sans-serif; color: #fff; letter-spacing: .01em; -webkit-text-stroke: 8px var(--edge-dark); paint-order: stroke fill;
+  text-shadow: 0 6px 0 var(--edge-dark), 0 10px 18px #0005; }
+#boot .logo b + b { font-size: clamp(30px, 10vw, 58px); color: #ffd23f; }
+#boot .loading { display: flex; gap: 8px; }
+#boot .loading i { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 3px solid var(--edge-dark); animation: dot 1s ease-in-out infinite; }
+#boot .loading i:nth-child(2) { animation-delay: .15s; } #boot .loading i:nth-child(3) { animation-delay: .3s; }
+@keyframes logo-in { from { transform: rotate(-3deg) scale(.4); opacity: 0; } }
+@keyframes dot { 50% { transform: translateY(-8px); background: #ffd23f; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
