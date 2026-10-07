@@ -53,6 +53,7 @@ export const VI = {
   'Gus sent me a note: a key under the bell. That old fool. Open the sluice and the fish come home. I will come down for the festival. -E': 'Ông Gus gửi cho ông mẩu giấy: có chìa khóa dưới chiếc chuông. Cái lão già ngốc ấy. Mở cửa cống ra là cá sẽ về. Ông sẽ xuống dự lễ hội. -E',
   'Back at the gate at last. Pip says the whole village sang. I missed it by an hour, which is how I know it was good. Dinner is on me. Bring the hens. -E': 'Cuối cùng ông cũng về tới cổng. Pip kể cả làng đã hát. Ông lỡ mất một tiếng, nên ông biết là vui lắm. Bữa tối ông mời. Nhớ mang lũ gà theo. -E',
   'June brought in {count} crops and sowed them again': 'June đã thu {count} cây trồng và gieo lại', 'Pip fetched {count} eggs and milk': 'Pip đã lấy {count} trứng và sữa', 'All': 'Tất cả',
+  'All busy: enjoy the view': 'Mọi thứ đang bận: ngắm cảnh nhé', 'Everything is busy. Take a breath.': 'Mọi thứ đang bận. Hít một hơi thật sâu nhé.',
   'Send the truck': 'Cho xe tải đi', 'Bigger truck': 'Xe tải lớn hơn', 'The truck is back with {coins} coins': 'Xe tải về rồi, mang theo {coins} xu',
   'Passers-by buy one thing every few minutes, at its base price.': 'Người qua đường cứ vài phút mua một món, theo giá gốc.',
   'Drag across more beds to plant them': 'Kéo qua các luống khác để trồng tiếp', 'Your farmhouse': 'Nhà của bạn',

@@ -137,7 +137,7 @@ export class Radial {
     else if (near(cell, ORDER_BOARD, 1)) { this.hide(); this.panels.show('orders'); return; }
     else if (near(cell, BARN, 4)) { this.hide(); this.panels.show('barn'); return; }
     else if (near(cell, FARMHOUSE, 4)) ({ buttons, info } = this.houseMenu());
-    if (p?.kind === 'bed' && !opts.open && levelOf(s, id) === 0 && !s.beds[id] && Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]).length > 1) buttons.push({ act: 'plantAll', crop: 'wheat', icon: glyph('plus', 'ic'), label: t('All') });   // one tap: wheat in every empty bed
+    if (p?.kind === 'bed' && !opts.open && levelOf(s, id) === 0 && !s.beds[id] && Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]).length > 1) buttons.push({ act: 'plantAll', crop: this.lastCrop ?? 'wheat', icon: iconHtml(this.lastCrop ?? 'wheat', '', 'ic'), label: t('All') });   // one tap: wheat in every empty bed
     if (p && id && hurryLeft(s) > 0 && hurryable(s, id, now)) buttons.push({ act: 'hurry', icon: glyph('clock', 'ic'), label: t('Hurry') });   // the free daily hurry
     if (!buttons.length && !info) { this.hide(); return; }
     this.target = { id, cell, land };
@@ -171,7 +171,7 @@ export class Radial {
   }
   choose(d) {
     const g = this.game, { id, cell, land } = this.target ?? {}; this.hide();
-    if (d.act === 'plant') { this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
+    if (d.act === 'plant') { this.lastCrop = d.crop; this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'plantAll') g.do('plant', { ids: Object.keys(g.s.placed).filter(k => g.s.placed[k].kind === 'bed' && !g.s.beds[k]), crop: d.crop });
     else if (d.act === 'hurry') { if (g.do('hurry', { id }).ok) this.world.juice?.pop?.({ x: g.s.placed[id].x, z: g.s.placed[id].z }); }

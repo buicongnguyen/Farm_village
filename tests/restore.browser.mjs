@@ -191,6 +191,22 @@ await check('goals, hurry, albums and the player look: the status row opens thre
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
+await check('the Next chip does the chore in one tap: ripe crops are harvested; "All" sows the empty beds with the last crop', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => { farm.closeCards(); for (const b of Object.values(farm.game.s.beds)) b.doneAt = farm.game.now - 1; });
+  await page.waitForSelector('[data-act="next"]:not([hidden])', { timeout: 8000 });
+  await page.waitForFunction(() => /harvest/i.test(document.querySelector('[data-act="next"]')?.innerText ?? ''), null, { timeout: 8000 });
+  await page.evaluate(() => document.querySelector('[data-act="next"]').click());
+  expect(await page.evaluate(() => Object.keys(farm.game.s.beds).length) === 0, 'the chip did not harvest every ripe bed');
+  const bed = await page.evaluate(() => { const s = farm.game.s, id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); return [s.placed[id].x, s.placed[id].z]; });
+  await page.waitForTimeout(1200); await page.evaluate(() => farm.closeCards());   // the level-up card the harvest earned
+  await tap(page, ...bed); expect(await page.isVisible('.radial-btn[data-act="plantAll"]'), 'no All button');
+  await page.click('.radial-btn[data-act="plantAll"]');
+  expect(await page.evaluate(() => Object.keys(farm.game.s.beds).length) >= 6, 'All did not sow every empty bed');
+  expect(!errors.length, errors.join(' | '));
+  await ctx.close();
+});
 await check('the market truck: repair the market and street, load wheat in the panel, send it, watch it drive off and come back with coins', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.evaluate(() => { const g = farm.game; g.s.coins = 3000; g.s.barn.items.wheat = 40; for (const id of ['road_south', ...Object.keys(g.s.placed).filter(i => g.s.placed[i].kind === 'market')]) g.do('repair', { id }); farm.setClockOffset(100_000); });

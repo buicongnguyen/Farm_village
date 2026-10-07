@@ -55,7 +55,7 @@ export class Hud {
       const st = e.target.closest('[data-status]')?.dataset.status;
       if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
-      if (act === 'next') { const n = this.nextTask; if (n) { if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
+      if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
