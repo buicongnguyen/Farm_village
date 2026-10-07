@@ -253,8 +253,9 @@ export class Sky {
     this.time = (this.time ?? 0) + dt * calm;
     for (const u of [this.shadows.uniforms, this.puffs.uniforms]) u.uTime.value = this.time;
     for (const u of [this.birds.uniforms, this.flutter.uniforms, this.lights.uniforms]) { u.uTime.value = t; if (u.uCalm) u.uCalm.value = calm; }
-    // the puffs fade in as the camera zooms out (they would cover the farm when working close)
-    const span = this.world.cam.span, fade = Math.min(1, Math.max(0, (span - 115) / 35)) * (1 - this.night * 0.8);
+    // the puffs fade in as the camera zooms out (they would cover the farm when working close), and even in the far view
+    // stay a veil the farm shows through (review: an opaque puff hid a quarter of a full farm at span 220)
+    const span = this.world.cam.span, fade = Math.min(1, Math.max(0, (span - 120) / 60)) * 0.42 * (1 - this.night * 0.85);
     this.puffs.uniforms.uOpacity.value = fade; this.puffs.mesh.visible = fade > 0.01;
     // birds: a new pass every 30–60 s, through the middle of the view, by day
     const b = this.birds.uniforms;

@@ -21,8 +21,22 @@ export function tickSway(dt, quiet = false) {
   s.value += ((quiet ? 0 : 1) - s.value) * Math.min(1, dt * 6);
   if (quiet && s.value < 0.01) s.value = 0;
 }
+/** Moonlight (review: the 23:00 night read as dim green): at night every toon surface is graded toward a cool blue by
+ *  its brightness, so the land goes moonlit navy while lamp pools, windows and bulbs (their own materials) stay warm.
+ *  view/daylight.mjs sets uMoon (0 by day, 1 in the dark hours). */
+export const NIGHT = { uMoon: { value: 0 } };
+const MOON_GRADE = `#include <dithering_fragment>
+  {
+    float lum = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11));
+    gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(lum) * vec3(0.42, 0.62, 1.25), uMoon * 0.75);
+  }`;
+function addNight(shader) {
+  shader.uniforms.uMoon = NIGHT.uMoon;
+  shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uMoon;').replace('#include <dithering_fragment>', MOON_GRADE);
+}
 function addSway(material) {
   material.onBeforeCompile = shader => {
+    addNight(shader);
     Object.assign(shader.uniforms, SWAY);
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nuniform float uTime, uStrength;\nuniform vec2 uWind;')
@@ -47,7 +61,7 @@ function addSway(material) {
   transformed.y -= abs(sway) * bend * 0.12 * uStrength;
 }`);
   };
-  material.customProgramCacheKey = () => 'fv-sway-1';
+  material.customProgramCacheKey = () => 'fv-sway-2';
   return material;
 }
 const shared = new Map();
@@ -56,6 +70,7 @@ export function toon({ color = '#ffffff', vertexColors = true, transparent = fal
   const key = `${color}|${vertexColors}|${transparent}|${opacity}|${sway}`;
   if (!shared.has(key)) {
     const m = new THREE.MeshToonMaterial({ color, vertexColors, gradientMap: toonRamp(), transparent, opacity });
+    if (!sway) { m.onBeforeCompile = addNight; m.customProgramCacheKey = () => 'fv-toon-night-1'; }
     shared.set(key, sway ? addSway(m) : m);
   }
   return shared.get(key);

@@ -5,21 +5,22 @@
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
 import { N, CELL, ORDER_BOARD, RUINS } from '../content/world.mjs';
-import { footprint } from '../content/buildings.mjs';
+import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
-import { cellType, occupant } from '../core/grid.mjs';
+import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
 import { KIND_MODELS, EARLY, modelFor, sizeOf, anchorPoints, ANCHORS } from './kinds.mjs';
 import { loadKit, loadKitLater, bake, fit, tiers } from './models.mjs';
 import { toon } from '../kit/toon.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
 const FENCES = new Set(['fence', 'gate']);
+const PEN_EARTH = '#c9a46a';
 
 export class LandView {
   constructor(world, game) {
-    Object.assign(this, { world, game, ready: false, pos: new Map(), beds: new Map(), rims: new Map(), rimDirty: new Set(), dressed: new Map(), clock: 0 });
+    Object.assign(this, { world, game, ready: false, pos: new Map(), beds: new Map(), rims: new Map(), rimDirty: new Set(), dressed: new Map(), clock: 0, pens: new Map() });
     world.cellLook = (x, z) => this.look(x, z);
     world.onFrame?.(dt => this.frame(dt));
   }
@@ -76,7 +77,33 @@ export class LandView {
     if (t === 'path') return { color: GROUND_COLORS.path };
     if (t === 'tilled') return { color: GROUND_COLORS.tilled, jitter: 0.02 };
     if (t === 'weeds' || t === 'rock') return { color: GROUND_COLORS.weeds ?? '#86c062' };
+    // inside an animal pen the grass is trodden to warm earth in patches (review: 'flat empty grass')
+    if (t === 'grass' && this.pens.get(z * N + x)?.worn) return { color: PEN_EARTH, jitter: 0.05 };
     return fixed;
+  }
+  /** Animal pens: which grass cells lie inside a closed pen (for the trodden earth), and a hay pile in each pen. */
+  refreshPens() {
+    const s = this.s, b = this.world.batches, next = new Map(), hay = new Map();
+    for (const [id, p] of Object.entries(s.placed)) {
+      if (!BUILDINGS[p.kind]?.animals) continue;
+      const pen = penOf(s, id); if (!pen.closed) continue;
+      const own = new Set(cellsOf(p.kind, p.x, p.z, p.rot).map(([x, z]) => z * N + x)), [w, d] = footprint(p.kind, p.rot);
+      let best = null, far = -Infinity;
+      for (const k of pen.keys) {
+        if (own.has(k)) continue;
+        const x = k % N, z = (k - x) / N, dist = Math.hypot(x + 0.5 - (p.x + w / 2), z + 0.5 - (p.z + d / 2));
+        // the ground is trodden bare round the home
+        const edge = dist - Math.max(w, d) / 2, worn = edge < 1.6;
+        next.set(k, { id, worn });
+        const fit = -Math.abs(edge - 1.8);                  // the hay pile sits a couple of cells from the home, in view
+        if (fit > far && cellType(s, x, z) === 'grass' && !occupant(s, x, z)) { far = fit; best = [x, z]; }
+      }
+      if (best) hay.set(id, best);
+    }
+    for (const k of new Set([...this.pens.keys(), ...next.keys()])) if (this.pens.get(k)?.worn !== next.get(k)?.worn) this.world.ground.markDirty(k % N, Math.floor(k / N));
+    this.pens = next;
+    for (const id of [...b.items.keys()]) if (id.startsWith('pen:') && !hay.has(id.slice(4))) b.remove(id);
+    if (b.has('hay_bale')) for (const [id, [x, z]] of hay) b.set(`pen:${id}`, { model: 'hay_bale', x: (x + 0.5) * CELL, z: (z + 0.5) * CELL, rot: (x * 7 + z) % 4 * 0.6, scale: 0.75 });
   }
   /** The registered model that draws a kind now: its own, its first-frame stand-in, or null while it loads. */
   model(kind, id) {
@@ -187,6 +214,16 @@ export class LandView {
       b.set(did, { model: m, x: item.x + x * c + z * s, z: item.z - x * s + z * c, y, rot: item.rot, ...extra }); ids.push(did);
     };
     put('mat', 'doormat', 0, 0.02, front + 0.35);
+    // The default camera looks at a village cottage's back and one side (they face the lane to the north), so those walls
+    // get life from the start (review: 'a blank cream wall with one window'): a flower box under every ground-floor
+    // window on the back and sides, and a bush and a patch of flowers at the back corners.
+    const box = geo?.boundingBox, back = box ? box.min.z : -2.6, sideX = box ? box.max.x : 2.6;
+    (ANCHORS[model]?.window ?? []).filter(w => (w[4] ?? 0) < 0.7 && w[1] < 2.6).slice(0, 4).forEach((w, i) => {
+      const nx = w[3] ?? 0, nz = w[4] ?? 0;
+      put(`back${i}`, 'window_box', w[0] + nx * 0.12, Math.max(0.3, w[1] - 0.55), w[2] + nz * 0.12, { rot: item.rot + Math.atan2(nx, nz) });
+    });
+    if (b.has('bush')) { put('bushL', 'bush', -sideX + 0.5, 0, back - 0.45, { scale: 0.5 }); put('bushR', 'bush', sideX - 0.3, 0, back - 0.4, { scale: 0.42 }); }
+    if (b.has('flowers')) put('flowersB', 'flowers', sideX - 1.3, 0, back - 0.45, { scale: 0.7 });
     if (level >= 1) {
       const wins = (ANCHORS[model]?.window ?? []).filter(w => (w[4] ?? 0) > 0.7 && w[1] < 2.6).slice(0, 3);
       wins.forEach((w, i) => put(`box${i}`, 'window_box', w[0], Math.max(0.3, w[1] - 0.55), w[2] + 0.12));
@@ -269,6 +306,7 @@ export class LandView {
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
     this.drawRuins();
+    this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
   apply(events) {
@@ -282,5 +320,6 @@ export class LandView {
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
       else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }
+    if (events.some(e => e.type === 'fenceChanged' || e.type === 'placed' || e.type === 'moved' || e.type === 'stored' || e.type === 'cellChanged')) this.refreshPens();
   }
 }

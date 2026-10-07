@@ -136,7 +136,7 @@ export function penOf(s, homeId, limit = 900) {
       if (seen.size > limit) return { closed: false, reason: 'The fence has a gap' };
     }
   }
-  return gate ? { closed: true, cells: seen.size } : { closed: false, reason: 'The fence needs a gate' };
+  return gate ? { closed: true, cells: seen.size, keys: seen } : { closed: false, reason: 'The fence needs a gate' };
 }
 function gateKeyBetween(x, z, nx, nz) {
   if (nz === z - 1) return edgeKey(x, z, 'n'); if (nz === z + 1) return edgeKey(x, nz, 'n');

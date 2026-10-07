@@ -469,6 +469,24 @@ def cow_barn():
     # cupola with a weather vane
     p += [bx('cup', .5, .5, .45, 1.1, 0, z0 + 1.38, 'white', bev=.03), extrude_outline('cuproof', [(-.36, 0), (.36, 0), (0, .3)], .66, (1.1, 0, z0 + 1.83), C['roof'], bev=.02),
           cl('vane', .02, .5, 1.1, 0, z0 + 2.1, 'iron', verts=4), bx('arrow', .45, .03, .08, 1.1, 0, z0 + 2.45, 'iron', bev=0)]
+    # the back and the gable ends are seen from the default camera too (review: 'a red box with white stripes'): boards,
+    # a stable door with a white X, shuttered windows and a hay-loft hatch on the back, a window in each gable wall
+    by = -D / 2
+    for i in range(11):
+        p.append(bx('bboard', .05, .04, H - .1, -W / 2 + .2 + i * (W - .4) / 10, by - .02, .25, 'barnd', bev=0))
+    p += [bx('bdoor', .9, .08, 1.35, .9, by - .05, .2, 'barnd', bev=.02), bx('bdtrim', 1.0, .06, .1, .9, by - .1, 1.55, 'white', bev=.01),
+          bx('bdtrimv', .1, .06, 1.35, .45, by - .1, .2, 'white', bev=.01), bx('bdtrimv', .1, .06, 1.35, 1.35, by - .1, .2, 'white', bev=.01)]
+    for r in (.95, -.95):
+        p.append(box('bbrace', (.08, .05, 1.45), (.9, -(by - .11), .9), C['white'], bev=.01, seg=1, rot=(0, r * .6, 0)))
+    for x in (-1.5, -.45):
+        p += [bx('bwframe', .64, .08, .59, x, by - .02, .98, 'white', bev=.02), bx('bglass', .5, .06, .45, x, by - .05, 1.05, 'glass', bev=.01),
+              bx('bmull', .05, .05, .45, x, by - .08, 1.05, 'white', bev=0)]
+        for s_ in (-1, 1):
+            p.append(bx('bshutter', .24, .05, .49, x + s_ * .42, by - .04, 1.03, 'white', bev=.015))
+        A['window'].append((x, by - .09, 1.28, 0, -1))
+    p += [bx('bloft', .8, .06, .6, 0, by - .03, H + .45, 'wooddd', bev=.02), bx('bloftframe', .94, .05, .74, 0, by - .02, H + .38, 'white', bev=.02)]
+    for s_, face in ((-1, 'left'), (1, 'right')):
+        wp, c = window(s_ * (W / 2 + .07), 0, 1.0, .55, .5, face); p += wp; A['window'].append(c)
     # trough and a round bale beside it
     p += [bx('trough', 1.1, .45, .35, -1.45, D / 2 + .55, 0, 'wood', bev=.04), bx('water', 1.0, .36, .04, -1.45, D / 2 + .55, .3, 'water', bev=0),
           cl('bale', .38, .55, 1.75, D / 2 + .55, .38, 'hay', verts=14, rot=(0, math.pi / 2, 0)), ]

@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { CELL, FARMHOUSE } from '../content/world.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import * as KINDS from './kinds.mjs';
+import { NIGHT } from '../kit/toon.mjs';
 
 const KEYS = [   // hour → sky, hemisphere (sky, ground, intensity), sun or moon (colour, intensity)
   [0, '#0b1530', '#4f6ad8', '#26306a', 1.1, '#9fb2ff', 0.8],
@@ -106,6 +107,7 @@ export class Daylight {
     w.backdrop?.setHaze(L.haze);
     w.brook?.setNight(L.nightness);
     w.sky?.setNight(L.nightness);
+    NIGHT.uMoon.value = L.nightness;
     const k = Math.max(0, (L.nightness - 0.15) / 0.85);
     this.bulbs.uniforms.uK.value = k * 1.1; this.pools.uniforms.uK.value = k * 0.55;
     this.bulbs.mesh.visible = this.pools.mesh.visible = k > 0.01;
