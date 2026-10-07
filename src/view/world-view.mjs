@@ -6,10 +6,16 @@ import { GameCamera } from './camera.mjs';
 import { Ground } from './ground.mjs';
 import { Batches } from './batches.mjs';
 import { loadKit, bake, fit, simplify, averageColor } from './models.mjs';
-import { rng } from '../core/rng.mjs';
 import * as W from '../content/world.mjs';
 
-export const GROUND_COLORS = { grass: '#8cc96b', meadow: '#9dcf73', path: '#e3c99a', road: '#d9bf8e', tilled: '#9a6a44', water: '#4aa6d8', weeds: '#7cb85a', rock: '#8cc96b' };
+// Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
+// value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
+export const GROUND_COLORS = {
+  grass: '#5fbf3a', meadow: '#79cf48', wildMeadow: '#62b83c', path: '#e2b56b', road: '#d9a55e', tilled: '#7a4a2a',
+  water: '#2f86c4', bank: '#d8bf86', plaza: '#cfae7c', weeds: '#6cb83e', rock: '#5fbf3a',
+};
+const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza]);
+const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.8, [GROUND_COLORS.road]: 0.82, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86 };
 
 /** Fixed scenery models, by kit: [name in kit, our name, size, kind]. */
 const SCENERY = [
@@ -19,6 +25,8 @@ const SCENERY = [
   ['scenery', 'tuft', 'tuft', { width: 0.8 }, 'crop'],
   ['rural-lite', W.FARMHOUSE.model, 'farmhouse', { width: W.FARMHOUSE.width }, 'static'], ['rural-lite', W.BARN.model, 'barn', { width: W.BARN.width }, 'static'],
   ['rural-lite', 'mailbox', 'mailbox', { height: 1.3 }, 'static'], ['rural-lite', 'windmill', 'windmill', { height: 9 }, 'static'],
+  ['scenery', 'mushroom', 'mushroom', { width: 0.45 }, 'crop'], ['scenery', 'fence', 'picket', { width: 2 }, 'static'],
+  ['scenery', 'gate', 'farm_gate', { width: 4.2 }, 'static'],
 ];
 
 export class WorldView {
@@ -28,10 +36,12 @@ export class WorldView {
     this.renderer.setSize(innerWidth, innerHeight);
     container.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#9fd3f0');
+    // haze at extreme zoom-out only (the camera sits 300 m from its target); daylight retints it with the sky
+    this.scene.fog = new THREE.Fog('#bfe3f2', 345, 720);
     this.lights = addLights(this.scene);
     this.cam = new GameCamera({ x: (W.START_PARCEL ? W.parcelOrigin(W.START_PARCEL).x + 4 : 64) * W.CELL, z: (W.parcelOrigin(W.START_PARCEL).z + 8) * W.CELL, span: 70, bounds: { x0: 0, z0: 0, x1: W.N * W.CELL, z1: W.N * W.CELL } });
     this.cellLook = cellLook ?? ((x, z) => this.fixedLook(x, z));
-    this.ground = new Ground(this.scene, (x, z) => this.cellLook(x, z));
+    this.ground = new Ground(this.scene, (x, z) => this.groundLook(x, z));
     this.batches = new Batches(this.scene);
     this.cam.onChange(c => this.batches.setLevel(c.lod));
     this.raycaster = new THREE.Raycaster();
@@ -40,10 +50,19 @@ export class WorldView {
   }
   /** The look of fixed ground (roads, brook, meadow); the game layers the player's cells on top. */
   fixedLook(x, z) {
-    if (W.isBrook(x, z)) return { color: GROUND_COLORS.water, y: -0.15, jitter: 0.01 };
+    if (W.isBrook(x, z)) return { color: GROUND_COLORS.bank };   // the water itself is the brook mesh
     if (W.isRoad(x, z)) return { color: GROUND_COLORS.road };
-    if (W.inFarm(x, z)) return { color: GROUND_COLORS.meadow };
-    return { color: GROUND_COLORS.grass };
+    if (W.inFarm(x, z)) return { color: !this.owned || this.owned(W.parcelOf(x, z)) ? GROUND_COLORS.meadow : GROUND_COLORS.wildMeadow };
+    if (x >= W.PLAZA.x0 && x <= W.PLAZA.x1 && z >= W.PLAZA.z0 && z <= W.PLAZA.z1) return { color: GROUND_COLORS.plaza, grain: 0.16 };
+    return { color: GROUND_COLORS.grass, wild: !W.inVillage(x, z) && !W.nearHome(x, z) };
+  }
+  /** What the ground draws for a cell: the game's look, sorted into soft (noise-blended grass) and hard surfaces. */
+  groundLook(x, z) {
+    const look = this.cellLook(x, z);
+    if (look.color === '#86c062') { look.color = GROUND_COLORS.meadow; look.edge = 0.94; }   // weeds and rocks: the meadow under them
+    if (HARD.has(look.color)) { look.soft = false; look.edge ??= EDGE[look.color]; }
+    if (look.y && look.color !== GROUND_COLORS.water) look.y = 0;
+    return look;
   }
   async loadScenery() {
     const kits = {};
@@ -56,18 +75,8 @@ export class WorldView {
     this.batches.set('farmhouse', { model: 'farmhouse', ...at(W.FARMHOUSE.x, W.FARMHOUSE.z), rot: Math.PI / 2 });
     this.batches.set('barn', { model: 'barn', ...at(W.BARN.x, W.BARN.z), rot: Math.PI / 2 });
     this.batches.set('mailbox', { model: 'mailbox', ...at(27, 60), rot: Math.PI / 2 });
-    this.batches.set('windmill', { model: 'windmill', ...at(17, 54), rot: 0.4 });
-    this.scatterWilds();
-  }
-  /** Woods, bushes, flowers and rocks outside the farm, village, roads and brook (seeded, the same in every game). */
-  scatterWilds() {
-    const r = rng(20261007); let n = 0;
-    for (let i = 0; i < 12000 && n < 2600; i++) {
-      const x = r.int(W.N), z = r.int(W.N);
-      if (W.isRoad(x, z) || W.isBrook(x, z) || W.inFarm(x, z) || W.inVillage(x, z) || W.nearHome(x, z) || Math.abs(z - W.brookZ(x)) < 3) continue;
-      const roll = r(), model = roll < 0.32 ? r.pick(['tree_pine', 'tree_round', 'tree_round']) : roll < 0.45 ? 'bush' : roll < 0.62 ? 'flowers' : roll < 0.7 ? 'rock' : 'tuft';
-      this.batches.set(`wild${n++}`, { model, x: (x + 0.2 + r() * 0.6) * W.CELL, z: (z + 0.2 + r() * 0.6) * W.CELL, rot: r() * 6.28, scale: 0.8 + r() * 0.4 });
-    }
+    this.batches.set('windmill', { model: 'windmill', ...at(W.WINDMILL.x, W.WINDMILL.z), rot: W.WINDMILL.rot });
+    // the woods, groves, drifts and the rest of the dressing come from dress.mjs (dressWorld), right after this
   }
   /** The cell under a screen point, or null. */
   cellAt(clientX, clientY) {
