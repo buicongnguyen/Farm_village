@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — AAA interface (branch aaa-integrate)
+
+- **Look:** warm cream panels with thick brown outlines and bevelled edges, chunky green and orange buttons, HUD discs
+  with coloured rims, rendered icons everywhere (no emoji), a title splash.
+- **First minute:** a chapter card with story pictures and Ada's words; after Begin the camera flies to the weeds and a
+  hand shows where to tap. Short story moments play between chapters.
+- **Rewards:** a level-up card with everything that opened, a coin counter that rolls up, a bouncing barn badge.
+- **Friends:** hearts on orders and in cottages, a gift a day, today's wishes, letters in the mailbox, heart scenes and
+  a welcome card with each family's portrait.
+- **New things to do:** the weekly cart at the farm gate, fruit picking, buying land at its For-sale sign, photo mode.
+- **Calmer messages:** at most two toasts, no repeats, locked items merged into one.
+
 ## 0.1.0 — release candidate (2026-10-07, not yet published)
 
 The first playable version: from an overgrown farm to a village with a school.
