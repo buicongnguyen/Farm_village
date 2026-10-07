@@ -27,7 +27,7 @@ import { actions as testmode } from './testmode.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR } from '../content/economy.mjs';
+import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
 export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode };
@@ -41,7 +41,7 @@ function context(s, now) {
   };
 }
 export function act(s, action, payload = {}, now = Date.now()) {
-  const handler = ACTIONS[action];
+  const handler = typeof action === 'string' && Object.hasOwn(ACTIONS, action) ? ACTIONS[action] : null;
   if (!handler) return { ok: false, reason: 'Unknown action', events: [] };
   // Every handler checks everything before it changes anything, so a refused action leaves no trace
   // (tests/act.test.mjs checks this for every action).
@@ -90,7 +90,7 @@ function guardClock(s, now) {
   if (s.helpAt) s.helpAt = Math.min(s.helpAt, now + 2 * 60_000);
   if (s.truck?.away) s.truck.backAt = Math.min(s.truck.backAt, now + TRUCK.tripMs);
   for (const h of Object.values(s.homes)) if (h.tipAt) h.tipAt = Math.min(h.tipAt, now + RENT.tipMs[1]);
-  if (s.fruitStand?.nextSaleAt) s.fruitStand.nextSaleAt = Math.min(s.fruitStand.nextSaleAt, now + 30_000);
+  if (s.fruitStand?.nextSaleAt) s.fruitStand.nextSaleAt = Math.min(s.fruitStand.nextSaleAt, now + FRUIT_STAND.everyMs);
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);
   for (const h of Object.values(s.homes)) if (h.family && !h.arrived && h.arrivesAt > now + FAMILY_ARRIVAL_MS) { h.arrivesAt = now + FAMILY_ARRIVAL_MS; h.rentFrom = Math.min(h.rentFrom, h.arrivesAt); }
   for (const [id, tr] of Object.entries(s.trees ?? {})) { const f = FRUITS[BUILDINGS[s.placed[id]?.kind]?.fruit]; if (f) tr.doneAt = clampDone(tr.doneAt, now, tr.first ? f.firstMs : f.regrowMs); }

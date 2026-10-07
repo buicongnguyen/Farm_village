@@ -10,6 +10,10 @@
 - **Saves:** v0.3 farms keep their money and buildings; an already-seen chapter 5 teaser becomes chapter 4 so the real clinic ending can play. The fruit stand has separate stock and takings.
 - **Art and phones:** original Blender cherry tree, paired cherries, fruit stand and kennel; rendered icons and Hazel's portrait. Middle detail begins at span 40, distant detail at 90; wider distant batches keep the complete orchard and clinic inside 120 draws and 300k triangles, including detail boundaries.
 
+- **Review fixes:** stored or demolished fruit stands settle only sales from time they were open; corrupt or partial saved stacks are normalized and cannot sell indefinitely. Cosmetic repairs preserve the sales clock, and stored or rebuilt trees use the full regrowth wait. Pet homes never wear out, and old kennel wear is cleared on load.
+- **Build rules:** refused undo leaves its entire stack intact; undo cannot retain a new level while refunding its cost, or refund a harvested tree or used stand. Malformed land addresses and inherited object keys are refused before any changes.
+- **Progress and story:** Homecoming stays current until the mill, coop and first-family goals are met. Future story moments cannot be acknowledged early; chapters queue in order, including when the first family arrives before the hens. Closing a chapter cannot open overlapping cards.
+- **Biscuit and checks:** the dog replans when buildings or fences block his route and resumes after an obstruction is cleared. The simulation now sells spare fruit at the stand while preserving goods needed for projects and orders.
 
 ## 0.3.0 — Restore Hollowbrook (in progress)
 

@@ -20,6 +20,7 @@ import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS } = PEOPLE_DATA;
+const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
 const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
@@ -67,6 +68,7 @@ export class PeopleView {
     this.bubbles = document.createElement('div'); this.bubbles.className = 'bubbles'; root.appendChild(this.bubbles);
     world.onFrame((dt, now) => this.frame(dt, now));
     game.on((r, action) => {
+      if (action === 'load' || r.events?.some(e => PEN_CHANGES.has(e.type))) this.pens = null;
       if (action && action !== 'tick' && action !== 'test' && action !== 'load') this.lastAction = performance.now();
       for (const e of r.events ?? []) this.react(e);
     });
@@ -318,11 +320,24 @@ export class PeopleView {
     if ((w.wait -= dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
     const [x, z] = this.familySpot(w.id); w.target = [(x + 0.2 + Math.random() * 0.6) * CELL, (z + 0.2 + Math.random() * 0.6) * CELL];
   }
+  dogCanStand(x, z) {
+    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+    return this.canStand(x, z) || (cx >= VILLAGE.x0 && cx <= VILLAGE.x1 && cz >= VILLAGE.z0 && cz <= VILLAGE.z1 && !occupant(this.s, cx, cz) && !this.penCells().has(`${cx},${cz}`));
+  }
+  /** Rest outside the kennel's front, or another free neighbouring cell if the garden blocks it. */
+  dogRestSpot(kennel) {
+    const offsets = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,-1],[-1,1]];
+    for (let [dx, dz] of offsets) {
+      for (let i = 0; i < (kennel.rot ?? 0); i++) [dx, dz] = [dz, -dx];
+      const spot = [(kennel.x + dx + 0.5) * CELL, (kennel.z + dz + 0.5) * CELL];
+      if (this.dogCanStand(...spot) && !this.crossesFence((kennel.x + 0.5) * CELL, (kennel.z + 0.5) * CELL, ...spot)) return spot;
+    }
+    return null;
+  }
   /** A kennel gives Biscuit a route across free ground, keeping him outside fences and buildings. */
   dogRoute(from, to) {
     const key = (x, z) => z * N + x;
-    const free = (x, z) => this.canStand((x + 0.5) * CELL, (z + 0.5) * CELL) ||
-      (x >= VILLAGE.x0 && x <= VILLAGE.x1 && z >= VILLAGE.z0 && z <= VILLAGE.z1 && !occupant(this.s, x, z));
+    const free = (x, z) => this.dogCanStand((x + 0.5) * CELL, (z + 0.5) * CELL);
     const queue = [from], prev = new Map([[key(...from), -1]]);
     for (let i = 0; i < queue.length; i++) {
       const [x, z] = queue[i]; if (x === to[0] && z === to[1]) break;
@@ -340,13 +355,26 @@ export class PeopleView {
     if (kennel) {
       const critters = this.world.critters, calm = document.body.classList.contains('reduced-motion');
       const crow = !night && !calm && critters?.crows.find(c => c.state === 'ground');
-      const home = [(kennel.x + 0.5) * CELL, (kennel.z + 1.5) * CELL];
-      const target = crow ? [crow.sub.x, crow.sub.z] : home;
+      const home = this.dogRestSpot(kennel), target = crow ? [crow.sub.x, crow.sub.z] : home;
+      w.indoors = false;
+      if (!target) { w.route = []; w.dogTarget = null; w.duty = 'watch'; w.clip = night ? 'Sleep' : 'Sit'; w.speed = 1; return; }
       const dx = target[0] - w.x, dz = target[1] - w.z, d = Math.hypot(dx, dz);
-      w.indoors = false; w.duty = crow ? 'chase' : d > 0.6 ? 'return' : 'watch';
+      w.duty = crow ? 'chase' : d > 0.6 ? 'return' : 'watch';
       if (d > (crow ? 2 : 0.6) && !calm) {
-        if (w.dogTarget !== target.join(',')) { w.route = this.dogRoute(this.cellOf(w), target.map(v => Math.floor(v / CELL))); w.dogTarget = target.join(','); }
-        if (this.follow(w, dt, crow ? 4.2 : 2.2)) { if (crow) this.walking(w, 4.2, 'Run'); return; }
+        const clearStep = () => {
+          if (!w.route.length) return false;
+          const [cx, cz] = w.route[0], x = (cx + 0.5) * CELL, z = (cz + 0.5) * CELL;
+          return this.dogCanStand(x, z) && !this.crossesFence(w.x, w.z, x, z);
+        };
+        // A garden can change during a chase. Replan before crossing a newly placed obstacle,
+        // and retry an unreachable target at most once a second so clearing a path wakes him up.
+        const blocked = w.route.length && !clearStep();
+        if (w.dogTarget !== target.join(',') || blocked || (!w.route.length && this.time >= (w.dogPlanAt ?? 0))) {
+          w.route = this.dogRoute(this.cellOf(w), target.map(v => Math.floor(v / CELL)));
+          w.dogTarget = target.join(','); w.dogPlanAt = this.time + 1;
+        }
+        if (clearStep() && this.follow(w, dt, crow ? 4.2 : 2.2)) { if (crow) this.walking(w, 4.2, 'Run'); return; }
+        w.route = [];
       }
       if (crow && d <= 3) { critters.flyOff(crow); this.once(w, 'Bark', 1.4); w.dogTarget = null; }
       w.clip = night ? 'Sleep' : crow && d <= 3 ? 'Bark' : 'Sit'; w.speed = 1; return;

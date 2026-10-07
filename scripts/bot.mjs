@@ -15,6 +15,7 @@ import { queueOf } from '../src/core/production.mjs';
 import { CROPS, RECIPES, ANIMALS, GOODS, FRUITS } from '../src/content/goods.mjs';
 import { BEDS, SLOTS, RENT, BARN } from '../src/content/economy.mjs';
 import { RESTORE } from '../src/content/start.mjs';
+import { footprint } from '../src/content/buildings.mjs';
 
 const SPINE = 63;
 const LAYOUT = {
@@ -53,6 +54,7 @@ export class Bot {
     this.do('feed', {}, now);
     this.plant(now, gapMs);
     this.trades(now);
+    this.fruitStand(now);
     this.stall(now);
     return s;
   }
@@ -94,8 +96,8 @@ export class Bot {
   spineTo(x1) { return Array.from({ length: x1 - 29 }, (_, i) => [30 + i, SPINE]); }
   placeBuilding(kind, spot, now) {
     const s = this.s, need = priceOf(s, kind) + 20; if (s.coins < need) return false;
-    const [w, d] = kind === 'cottage' ? [3, 3] : kind === 'school' ? [5, 4] : kind === 'stall' ? [2, 1] : kind === 'feed_mill' || kind === 'coop' ? [2, 2] : [3, 2];
-    this.clearCells(this.rect(spot.x, spot.z, spot.x + (spot.rot % 2 ? d : w) - 1, spot.z + (spot.rot % 2 ? w : d) - 1), now);
+    const [w, d] = footprint(kind, spot.rot);
+    this.clearCells(this.rect(spot.x, spot.z, spot.x + w - 1, spot.z + d - 1), now);
     if (spot.path) this.pave([spot.path], now); else this.pave(this.spineTo(Math.min(47, spot.x + w)), now);
     const r = this.do('place', { kind, x: spot.x, z: spot.z, rot: spot.rot }, now);
     if (r.ok && spot.pen) this.fence(spot.pen, now);
@@ -208,6 +210,15 @@ export class Bot {
   }
   trades(now) {
     for (const [id, n] of Object.entries(this.s.neighbours)) if (n.trade?.state === 'open') { const r = this.do('trade', { id, accept: true }, now); if (!r.ok) this.do('trade', { id, accept: false }, now); }
+  }
+  /** Sell surplus fruit at its premium, keeping project, order and cart goods in the barn. */
+  fruitStand(now) {
+    const s = this.s; if (!(s.counts.fruit_stand > 0)) return;
+    const w = this.wants();
+    for (const good of Object.keys(FRUITS)) {
+      const extra = barn.free(s, good) - (w[good] ?? 0);
+      if (extra > 0) this.do('fruitList', { good, n: Math.min(10, extra) }, now);
+    }
   }
   stall(now) {
     const s = this.s; if (!(s.counts.stall > 0) || barn.used(s) < s.barn.cap * 0.85) return;

@@ -7,6 +7,7 @@ import { VI_UI } from './vi-ui.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  'Earn a little more XP before undoing this build': 'Kiếm thêm một chút kinh nghiệm rồi hãy hoàn tác công trình này',
   // ── Interface ──
   'Farm Village': 'Làng Nông Trại',
   'Turn the view': 'Xoay góc nhìn',
@@ -112,7 +113,7 @@ export const VI = {
   'Send the truck': 'Cho xe tải đi', 'Bigger truck': 'Xe tải lớn hơn', 'The truck is back with {coins} coins': 'Xe tải về rồi, mang theo {coins} xu',
   'Passers-by buy one thing every few minutes, at its base price.': 'Người qua đường cứ vài phút mua một món, theo giá gốc.',
   'Drag across more beds to plant them': 'Kéo qua các luống khác để trồng tiếp', 'Your farmhouse': 'Nhà của bạn',
-  'Today': 'Hôm nay', "Today's gift": 'Quà hôm nay', 'Claim': 'Nhận', 'Claimed': 'Đã nhận', 'While you were away': 'Trong lúc bạn vắng nhà',
+  'Today': 'Hôm nay', "Today's gift": 'Quà hôm nay', 'Claimed': 'Đã nhận', 'While you were away': 'Trong lúc bạn vắng nhà',
   '{count} crops ready': '{count} cây đã chín', '{count} animal goods ready': '{count} sản phẩm vật nuôi sẵn sàng', '{count} products ready': '{count} sản phẩm đã xong',
   '{coins} coins of rent in the mailbox': '{coins} xu tiền thuê trong hộp thư', 'Next project': 'Công trình tiếp theo', 'Ready to start': 'Sẵn sàng bắt đầu',
   'Not open yet': 'Chưa mở', 'Trades': 'Trao đổi', 'Accept': 'Đồng ý', 'No thanks': 'Không, cảm ơn', 'Village news': 'Tin làng',

@@ -42,7 +42,12 @@ for(const lang of ['en','vi']) await check('roadmap: goal and exactly three unlo
  await page.click('[data-act="village"]');await page.waitForSelector('.sheet[data-kind="roadmap"]');
  expect(await page.locator('.journey-unlock').count()===3,'not three unlocks');expect(await fits(page,'.sheet.panel'),'roadmap overflow');
  await page.evaluate(()=>{farm.game.do('testUnlockAll');farm.closeCards();});
- expect(await page.getAttribute('.journey','data-stage')==='orchard','orchard goal missing');
+ expect(await page.getAttribute('.journey','data-stage')==='homecoming','levels skipped the Homecoming deeds');
+ await page.evaluate(()=>{
+ const g=farm.game;for(const kind of ['feed_mill','coop']){const id=Object.keys(g.s.placed).find(id=>g.s.placed[id].kind===kind);const r=g.do('repair',{id});if(!r.ok)throw Error(r.reason);}
+ farm.setClockOffset(31000);const r=g.do('testAddFamily');if(!r.ok)throw Error(r.reason);farm.closeCards();
+ });
+ expect(await page.getAttribute('.journey','data-stage')==='orchard','orchard goal missing after Homecoming deeds');
  await page.waitForTimeout(450);await page.screenshot({path:join(shots,'roadmap-'+lang+'.png')});expect(!errors.length,errors.join(' | '));await ctx.close();
 });
 await check('cherry tree: tap Pick, fruit enters the barn, then the bare tree regrows',async()=>{
@@ -65,6 +70,53 @@ await check('fruit stand: stock it through the panel, sell while away, collect o
  expect(await page.evaluate(()=>farm.state().stats.fruitSold===6&&farm.state().counts.fruit_stand===1),'stand did not persist');
  expect(!errors.length,errors.join(' | '));await ctx.close();
 });
+await check('fruit timers preserve cosmetic repairs, pause stored stands and prevent tree cooldown shortcuts',async()=>{
+ const {ctx,page,errors}=await open();const ids=await prepare(page);
+ await page.evaluate(ids=>{
+  const g=farm.game,base=g.now,ok=(a,p)=>{const r=g.do(a,p);if(!r.ok)throw Error(a+': '+r.reason);return r;};
+  g.clock=()=>base;g.s.barn.items.cherry=3;ok('fruitList',{good:'cherry',n:3});const due=g.s.fruitStand.nextSaleAt;
+  g.s.cond[ids.stand]={level:1,ms:0};g.clock=()=>base+20000;ok('repair',{id:ids.stand});
+  if(g.s.fruitStand.nextSaleAt!==due)throw Error('cosmetic repair delayed the sale');
+  g.clock=()=>base+30000;g.tick();if(g.s.fruitStand.coins!==9)throw Error('first sale was delayed');
+  g.clock=()=>base+31000;ok('store',{id:ids.stand});g.clock=()=>base+120000;
+  ok('place',{kind:'fruit_stand',x:30,z:65,rot:2});g.tick();
+  if(g.s.fruitStand.coins!==9||g.s.fruitStand.items[0].n!==2)throw Error('stored interval produced back pay');
+  ok('testFinishTimers');ok('pick',{id:ids.cherry});ok('store',{id:ids.cherry});
+  const tree=ok('place',{kind:'cherry_tree',x:40,z:60}).id;
+  if(g.s.trees[tree].doneAt!==base+160000)throw Error('replaced tree got a first-harvest shortcut');
+  g.clock=()=>base+145000;if(g.do('pick',{id:tree}).ok)throw Error('replaced tree ripened early');
+  g.clock=()=>base+160000;ok('pick',{id:tree});farm.closeCards();
+ },ids);
+ expect(!errors.length,errors.join(' | '));await ctx.close();
+});
+await check('a worn fruit stand keeps an illustrated Open action and its stocking panel',async()=>{
+ const {ctx,page,errors}=await open();const {stand}=await prepare(page);
+ await page.evaluate(id=>{farm.game.s.cond[id]={level:1,ms:0};farm.game.emit({ok:true,events:[]},'test');},stand);
+ await tap(page,30,65);
+ expect((await page.getAttribute('.radial-btn[data-act="open"] img','src')).includes('fruit_stand'),'missing fruit stand Open icon');
+ await page.click('.radial-btn[data-act="open"]');await page.waitForSelector('.sheet[data-kind="fruit_stand"]');
+ expect(!errors.length,errors.join(' | '));await ctx.close();
+});
+await check('animal pen caches refresh after equal-count fence changes and moving a home',async()=>{
+ const {ctx,page,errors}=await open();await prepare(page);
+ await page.evaluate(()=>{
+ const g=farm.game,p=farm.people,life=farm.world.life,ok=(a,args)=>{const r=g.do(a,args);if(!r.ok)throw Error(a+': '+r.reason);return r;};
+ const coop=Object.keys(g.s.placed).find(id=>g.s.placed[id].kind==='coop');
+ ok('repair',{id:coop});farm.setClockOffset(31000);ok('buyAnimal',{home:coop});
+ const oldCount=Object.keys(g.s.fences).length;
+ if(!p.penCells().has('38,67')||!life.penArea(coop).some(([x,z])=>x===38&&z===67))throw Error('fixture pen was not closed');
+ ok('removeEdge',{x:37,z:68,side:'n'});ok('placeEdge',{kind:'fence',x:40,z:61,side:'n'});
+ if(Object.keys(g.s.fences).length!==oldCount)throw Error('fixture fence count changed');
+ if(p.penCells().has('38,67')||life.penArea(coop).some(([x,z])=>x===38&&z===67))throw Error('equal-count fence changes kept the old pen');
+ ok('removeEdge',{x:40,z:61,side:'n'});ok('placeEdge',{kind:'fence',x:37,z:68,side:'n'});
+ p.penCells();life.penArea(coop);
+ ok('place',{kind:'path',x:45,z:62});ok('move',{id:coop,x:44,z:60,rot:0});
+ if(!p.penCells().has('44,60')||!life.penArea(coop).some(([x,z])=>x===44&&z===60))throw Error('moving the home kept its old pen');
+ if(p.penCells().has('38,67'))throw Error('the old pen still blocked Biscuit');
+ farm.closeCards();
+ });
+ expect(!errors.length,errors.join(' | '));await ctx.close();
+});
 await check('Biscuit runs to a grounded crow, sends it off and returns to his kennel',async()=>{
  const {ctx,page,errors}=await open();await prepare(page);
  await page.waitForFunction(()=>farm.people.walkers.has('dog'));
@@ -77,6 +129,38 @@ await check('Biscuit runs to a grounded crow, sends it off and returns to his ke
  await page.waitForFunction(()=>farm.world.critters.crows.some(c=>c.state==='out'),null,{timeout:15000});
  await page.waitForFunction(()=>farm.people.walkers.get('dog').duty==='watch',null,{timeout:18000});
  expect(!errors.length,errors.join(' | '));await page.waitForTimeout(450);await page.screenshot({path:join(shots,'biscuit-phone.png')});await ctx.close();
+});
+await check('Biscuit replans around new buildings and fences, retries a cleared route and rests outside a blocked kennel front',async()=>{
+ const {ctx,page,errors}=await open();await prepare(page);
+ await page.waitForFunction(()=>farm.people.walkers.has('dog'));
+ await page.evaluate(()=>{
+ const g=farm.game,p=farm.people,w=p.walkers.get('dog'),ok=(a,args)=>{const r=g.do(a,args);if(!r.ok)throw Error(a+': '+r.reason);return r;};
+ farm.world.critters.crows=[];
+ const reset=()=>{w.x=75;w.z=123;w.route=[];w.dogTarget=null;w.dogPlanAt=0;};
+ const step=()=>{const old=[w.x,w.z];p.time+=.1;p.liveDog(w,.1,false);if(p.crossesFence(...old,w.x,w.z))throw Error('Biscuit crossed a fence');};
+ reset();step();
+ if(!w.route.some(([x,z])=>x===38&&z===61))throw Error('fixture route missed the blocking cell');
+ const tree=ok('place',{kind:'round_tree',x:38,z:61}).id;
+ for(let i=0;i<120;i++){step();if(p.cellOf(w).join(',')==='38,61')throw Error('Biscuit walked through the new tree');}
+ if(w.duty!=='watch')throw Error('Biscuit did not replan around the new tree');
+ ok('store',{id:tree});reset();step();
+ ok('placeEdge',{kind:'fence',x:38,z:61,side:'w'});
+ for(let i=0;i<120;i++)step();
+ if(w.duty!=='watch')throw Error('Biscuit did not replan around the new fence');
+ ok('removeEdge',{x:38,z:61,side:'w'});
+ const edges=[[37,61,'n'],[37,62,'n'],[37,61,'w'],[38,61,'w']];
+ for(const [x,z,side] of edges)ok('placeEdge',{kind:'fence',x,z,side});
+ reset();step();if(w.route.length)throw Error('Biscuit escaped a closed enclosure');
+ ok('removeEdge',{x:38,z:61,side:'w'});
+ for(let i=0;i<120;i++)step();
+ if(w.duty!=='watch')throw Error('Biscuit never retried after the fence was removed');
+ for(const [x,z,side] of edges.slice(0,3))ok('removeEdge',{x,z,side});
+ ok('place',{kind:'round_tree',x:42,z:61});reset();
+ for(let i=0;i<120;i++)step();
+ if(w.duty!=='watch'||p.cellOf(w).join(',')==='42,61')throw Error('Biscuit did not choose a free resting cell');
+ farm.closeCards();
+ });
+ expect(!errors.length,errors.join(' | '));await ctx.close();
 });
 await check('clinic: four families and donations enable the civic-row build, chapter five and Hazel',async()=>{
  const {ctx,page,errors}=await open();await prepare(page);

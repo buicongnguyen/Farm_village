@@ -5,11 +5,16 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { simulate } from './sim.mjs';
 import { act } from '../src/core/act.mjs';
-import { BEATS } from '../src/content/story.mjs';
+import { BEATS, CHAPTERS } from '../src/content/story.mjs';
 import { pack } from '../src/kit/save.mjs';
 const url=process.argv[2];if(!url)throw Error('usage: node scripts/smoke-deploy.mjs URL');
-const s=simulate('steady',5,{restore:true}).s;
-act(s,'tutorial',{skip:true},s.lastSeen);act(s,'chapterSeen',{id:5},s.lastSeen);
+// Use completed days before the review clock, so families and timers are not left in a simulated future.
+const startAt=new Date();startAt.setHours(0,0,0,0);startAt.setDate(startAt.getDate()-7);
+const s=simulate('steady',7,{restore:true,startAt:startAt.getTime()}).s;
+if(s.lastSeen>Date.now())throw Error('review save is in the future');
+act(s,'tutorial',{skip:true},s.lastSeen);
+for(const chapter of CHAPTERS)if(chapter.when(s)){const r=act(s,'chapterSeen',{id:chapter.id},s.lastSeen);if(!r.ok)throw Error('review chapter '+chapter.id+': '+r.reason);}
+if(s.story.chapter!==5)throw Error('review save has not reached the clinic ending');
 for(const b of BEATS)if(b.when(s))act(s,'beatSeen',{id:b.id},s.lastSeen);
 s.settings.daylight='always';
 const shots=join(tmpdir(),'farm-village-v04-live');mkdirSync(shots,{recursive:true});

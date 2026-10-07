@@ -3,6 +3,10 @@ import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { newGame } from '../src/core/state.mjs';
+import { tickCondition, repairCost } from '../src/core/condition.mjs';
+import { xpFor } from '../src/core/levels.mjs';
+import { WEAR } from '../src/content/economy.mjs';
 import { act, tick } from '../src/core/act.mjs';
 import * as grid from '../src/core/grid.mjs';
 import { stepIndex, currentStep } from '../src/core/projects.mjs';
@@ -167,3 +171,72 @@ for (const name of ['v01-steady-day2', 'v01-keen-day21']) {
     assert.equal(s.level, raw.level, 'the level is kept'); assert.equal(s.coins, raw.coins, 'the coins are kept');
   });
 }
+
+function reviewFarm() { const s = newGame(T0, 123); s.cells.fill(0); setLevel(s, 4); s.coins = 10000; return s; }
+function expectRefusalUnchanged(s, action, payload, now = T0) {
+  const before = JSON.stringify(s); const r = act(s, action, payload, now);
+  assert.equal(r.ok, false, `${action} was accepted`); assert.equal(JSON.stringify(s), before, `${action} changed state on refusal`);
+  return r;
+}
+test('undo validates before discarding stale entries, including occupied paths and planted beds', () => {
+  for (const kind of ['bed', 'path']) {
+    const s = reviewFarm();
+    if (kind === 'bed') { const id = must(s, 'place', {kind:'bed',x:40,z:60}).id; must(s,'plant',{id,crop:'wheat'}); }
+    else { must(s, 'place', {kind:'path',x:40,z:60}); }
+    const bench = must(s, 'place', {kind:'bench',x:42,z:60}).id; must(s, 'store', {id:bench});
+    if (kind === 'path') { const moving = must(s,'place',{kind:'bench',x:43,z:60}).id; must(s,'move',{id:moving,x:44,z:60}); must(s,'store',{id:moving}); s.placed.block = {kind:'bench',x:40,z:60,rot:0}; grid.touch(s); }
+    expectRefusalUnchanged(s,'undo',{});
+  }
+});
+test('a level gained from a build cannot be kept together with its full undo refund', () => {
+  const s=reviewFarm(); s.xp=xpFor(5)-1; const coins=s.coins;
+  must(s,'place',{kind:'bench',x:40,z:60}); assert.equal(s.level,5);
+  assert.equal(expectRefusalUnchanged(s,'undo',{}).reason,'Earn a little more XP before undoing this build');
+  assert.ok(s.coins<coins); s.xp+=5; must(s,'undo',{}); assert.equal(s.coins,coins);
+  assert.equal(s.xp,xpFor(5)+4,'only earned XP remains');
+});
+test('a harvested tree and a used fruit stand cannot be refunded with undo', () => {
+  const s=reviewFarm(); const tree=must(s,'place',{kind:'cherry_tree',x:40,z:60}).id;
+  must(s,'pick',{id:tree},T0+25000); expectRefusalUnchanged(s,'undo',{},T0+25000);
+  must(s,'place',{kind:'path',x:30,z:64}); must(s,'place',{kind:'path',x:31,z:64});
+  must(s,'place',{kind:'fruit_stand',x:30,z:65,rot:2}); must(s,'fruitList',{good:'cherry',n:3});
+  expectRefusalUnchanged(s,'undo',{}); tick(s,T0+120000); must(s,'fruitCollect',{},T0+120000); expectRefusalUnchanged(s,'undo',{},T0+120000);
+});
+test('parcel addresses must be canonical: malformed purchases never charge or wipe land', () => {
+  const s=reviewFarm();
+  for (const parcel of ['00,1','0,01','0,1,extra','0.5,1',' 0,1','0,1 ','-0,1']) expectRefusalUnchanged(s,'buyParcel',{parcel});
+  must(s,'buyParcel',{parcel:'0,1'}); assert.ok(s.parcels.includes('0,1')); expectRefusalUnchanged(s,'buyParcel',{parcel:'00,1'});
+});
+test('inherited object keys are refused as action, building and placement ids', () => {
+  const s=reviewFarm();
+  for (const key of ['constructor','__proto__','toString','hasOwnProperty']) {
+    expectRefusalUnchanged(s,key,{}); expectRefusalUnchanged(s,'place',{kind:key,x:40,z:60}); expectRefusalUnchanged(s,'placeEdge',{kind:key,x:40,z:60,side:'n'});
+    for (const action of ['move','store','demolish']) expectRefusalUnchanged(s,action,{id:key,x:40,z:60});
+  }
+});
+test("Biscuit never acquires upkeep during a restored farm's active play", () => {
+  const s=reviewFarm(); setLevel(s,5); s.mode='restore'; const id=must(s,'place',{kind:'kennel',x:40,z:60}).id;
+  s.wearAt=T0; const coins=s.coins, stock=JSON.stringify(s.barn.items), events=[];
+  for (let now=T0+WEAR.tickCapMs; now<=T0+WEAR.ms[1]+WEAR.tickCapMs; now+=WEAR.tickCapMs) tickCondition({s,now,emit:(type,data)=>events.push({type,...data})});
+  assert.equal(s.cond[id],undefined); assert.equal(repairCost(s,id),0); assert.equal(s.coins,coins); assert.equal(JSON.stringify(s.barn.items),stock); assert.ok(!events.some(e=>e.id===id&&e.type==='worn'));
+});
+
+test('cosmetic fruit stand repairs keep sales due on their original clock', () => {
+  const s=reviewFarm(); must(s,'place',{kind:'path',x:30,z:64}); must(s,'place',{kind:'path',x:31,z:64});
+  const id=must(s,'place',{kind:'fruit_stand',x:30,z:65,rot:2}).id; s.barn.items.cherry=3; must(s,'fruitList',{good:'cherry',n:3});
+  const due=s.fruitStand.nextSaleAt; s.cond[id]={level:1,ms:WEAR.ms[0]}; must(s,'repair',{id},T0+20000);
+  assert.equal(s.fruitStand.nextSaleAt,due); tick(s,due); assert.equal(s.fruitStand.coins,9); assert.equal(s.fruitStand.items[0].n,2);
+});
+
+test('stored and rebuilt cherry trees wait for regrowth instead of repeating the first harvest discount', () => {
+  for (const action of ['store','demolish']) {
+    const s=reviewFarm(); const id=must(s,'place',{kind:'cherry_tree',x:40,z:60}).id;
+    must(s,'pick',{id},T0+25000); must(s,action,{id},T0+25000);
+    const next=must(s,'place',{kind:'cherry_tree',x:40,z:60},T0+25000).id;
+    assert.equal(s.trees[next].doneAt,T0+25000+40000); assert.equal(s.trees[next].first,false);
+    expectRefusalUnchanged(s,'pick',{id:next},T0+50000); must(s,'pick',{id:next},T0+65000); assert.equal(s.album.fruit.cherry,6);
+    expectRefusalUnchanged(s,'undo',{},T0+65000);
+  }
+  const s=reviewFarm(); const original=must(s,'place',{kind:'cherry_tree',x:40,z:60}).id; must(s,'store',{id:original});
+  must(s,'place',{kind:'cherry_tree',x:40,z:60}); must(s,'undo',{}); assert.equal(s.stored.cherry_tree,1,'an unused tree taken from storage can still be undone');
+});

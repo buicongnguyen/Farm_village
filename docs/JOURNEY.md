@@ -197,7 +197,7 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 | Stage | Status |
 |---|---|
 | 1. Homecoming | done (v0.3) |
-| 2. The orchard | done (v0.4; PR review) |
+| 2. The orchard | done (v0.4; code and logic review fixes in PR) |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |

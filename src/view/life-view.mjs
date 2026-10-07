@@ -36,6 +36,7 @@ const wayOf = kind => WAYS[kind] ?? WAYS.hen;
 const rigOf = kind => (RIGS[kind] ? kind : ANIMALS[kind]?.home === 'cow_barn' ? 'cow' : 'hen');
 const pick = moves => { let r = Math.random(); for (const [m, p] of moves) if ((r -= p) <= 0) return m; return moves[0][0]; };
 const HOP = 0.42;
+const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
 
 export class LifeView {
   constructor(world, game) {
@@ -54,6 +55,8 @@ export class LifeView {
     this.ring.count = 0; this.ring.visible = false; this.ring.frustumCulled = false; this.ring.renderOrder = 2; world.scene.add(this.ring);
     world.onFrame((dt, now) => this.frame(dt, now));
     this.listenForTaps();
+    // Counts can stay equal while a fence is replaced or an animal home moves.
+    game.on((r, action) => { if (action === 'load' || r.events?.some(e => PEN_CHANGES.has(e.type))) this.pens.clear(); });
   }
   get s() { return this.game.s; }
   frame(dt) {

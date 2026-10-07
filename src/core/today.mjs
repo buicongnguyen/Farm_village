@@ -63,13 +63,16 @@ export const actions = {
   },
   /** A chapter card was shown. */
   chapterSeen(ctx, { id }) {
-    if (!CHAPTERS.some(c => c.id === id)) return ctx.fail('Unknown story moment');
-    const st = ctx.s.story; st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter };
+    const chapter = CHAPTERS.find(c => c.id === id), st = ctx.s.story;
+    const seen = st.chapter ?? 0;
+    if (!chapter || id > seen && (id !== seen + 1 || !chapter.when(ctx.s))) return ctx.fail('Unknown story moment');
+    st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter };
   },
   /** A story beat (content/story.mjs BEATS) was shown: { id }. Each beat plays once; s.story.beats lists the seen ids. */
   beatSeen(ctx, { id }) {
-    if (!BEATS.some(b => b.id === id)) return ctx.fail('Unknown story moment');
-    const st = ctx.s.story, seen = (st.beats ??= []); if (!seen.includes(id)) seen.push(id);
+    const beat = BEATS.find(b => b.id === id), st = ctx.s.story;
+    if (!beat || !st.beats?.includes(id) && !beat.when(ctx.s)) return ctx.fail('Unknown story moment');
+    const seen = (st.beats ??= []); if (!seen.includes(id)) seen.push(id);
     return { beats: [...seen] };
   },
   /** The Today board was seen today (it opens by itself only once a day). */

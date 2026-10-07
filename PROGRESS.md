@@ -120,3 +120,12 @@ The rendering stress check includes a fully ripe farm, twelve cherry trees, the 
 Publication remains a PR branch pushed over Git SSH. Review the PR and play its preview before merging to main, which triggers the existing GitHub Pages production workflow. Future v0.5+ work remains unstarted. Check Codex's commits before resuming edits.
 
 Validation: 125/125 unit tests; npm run sim; build:test; every browser suite (including the repaired review suite); 28/28 main browser checks. New orchard stress checks sample 11 zooms on phone and PC, including detail boundaries.
+
+
+## Codex code and logic review — v0.4 (2026-10-08)
+
+Reviewed progression, story queues, core actions, saves, timer lifecycles, pet navigation and view caches. Fixed stored-stand back pay, corrupt fruit stacks, cosmetic-repair sales delays, tree storage cooldown shortcuts, pet upkeep, build refund/XP loopholes, mutating refused undo, malformed parcel addresses and inherited action/item keys. Homecoming now waits for its deeds; chapter acknowledgements require the next eligible chapter, and modal callbacks cannot open overlapping cards. Biscuit replans around new obstacles, retries cleared routes and uses a free resting spot; animal pen caches refresh on topology changes even when counts stay equal.
+
+The simulation now stocks the fruit stand with surplus fruit and uses actual building footprints. Production smoke saves use past completed simulation days and acknowledge chapters in order. Added rule and browser regressions. Validation: 144/144 unit tests; school pace unchanged; all existing browser suites and 28/28 main checks; final orchard and chapter-order suites retested after the timer fixes. First load remains below 1.1 MB, and the ripe orchard stress stays below 120 draws and 300k triangles across the eleven zoom samples on phone and desktop.
+
+Keep publishing on `codex/v0.4-orchard` through PR #1. Main still awaits the user's playtest and review before merging; future stages are unchanged.

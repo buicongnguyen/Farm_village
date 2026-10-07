@@ -73,5 +73,7 @@ test('orchard and clinic: every profile can finish v0.4 within two weeks', () =>
     assert.ok(r.s.album.fruit.cherry >= 9, p + ' did not pick the orchard goal');
     assert.equal(r.s.counts.fruit_stand, 1, p + ' cannot place the fruit stand');
     assert.equal(r.s.counts.kennel, 1, p + ' cannot give Biscuit a home');
+    assert.ok(r.s.stats.fruitSold > 0, p + ' never sold surplus fruit at the stand');
+    assert.ok(r.s.fruitStand.coins >= 0, p + ' has invalid fruit stand takings');
   }
 });

@@ -594,7 +594,7 @@ test('the village square stays clear round the well: no building on the plaza, b
 });
 
 test('story beats are marked seen once each; an unknown beat is refused', () => {
-  const s = game();
+  const s = game(); must(s, 'deliverOrder', { id: s.orders.cards[0].id });
   assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
   assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
   assert.equal(act(s, 'beatSeen', { id: 'nope' }).reason, 'Unknown story moment');

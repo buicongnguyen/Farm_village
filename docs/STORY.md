@@ -84,7 +84,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | 4 | A bell for the children | The school opens (end of v0.1) | Cora's bell. Marisol's letter about the clinic. Ada: Ellis carried the bell. |
 | 5 | Someone to care for us | The clinic is built and four families have arrived | Hazel returns, Grace has a vet room, Ada plants cherries; Hazel remembers Gus's burned hands. |
 
-**Chapters 5–9 (the plan for later versions):** (chapters 10–20 and how each chapter opens a stage of the game are in `JOURNEY.md`)
+**Chapter 5 is complete in v0.4; chapters 6–9 are planned for later versions.** Chapters 10–20 and how each chapter opens a stage of the game are in `JOURNEY.md`.
 
 | # | Title | Story | The mystery thread |
 |---|---|---|---|

@@ -12,8 +12,9 @@ const tests = {
   clinic: s => workingCount(s, 'clinic') > 0,
 };
 export function journeyOf(s) {
+  const homecoming = STAGES[0].milestones.every(m => tests[m.test](s));
   const orchard = STAGES[1].milestones.every(m => tests[m.test](s));
-  const stage = orchard ? STAGES[2] : s.level >= 4 ? STAGES[1] : STAGES[0];
+  const stage = !homecoming || s.level < 4 ? STAGES[0] : orchard ? STAGES[2] : STAGES[1];
   const milestones = (stage.milestones ?? []).map(m => ({ ...m, done: tests[m.test](s) }));
   const unlocks = JOURNEY_UNLOCKS.filter(u => u.planned || !workingCount(s, u.kind)).slice(0, 3).map(u => ({ ...u, available: !u.planned && s.level >= BUILDINGS[u.kind].level && mayBuild(s, u.kind).ok }));
   return { stage, milestones, done: milestones.filter(m => m.done).length, total: milestones.length, unlocks };

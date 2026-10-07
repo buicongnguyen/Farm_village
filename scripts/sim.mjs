@@ -16,19 +16,19 @@ export const START = new Date(2026, 9, 7, 0, 0, 0).getTime();
  * Run a profile for some days. Returns { steps: { id: day }, levels: { level: hours since the first visit }, daily: [...], s }.
  * cart / trees: false keeps the bot away from the weekly cart and fruit trees (to measure what they change).
  */
-export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false, cart = true, trees = true, restore = false } = {}) {
-  const visits = PROFILES[profile], s = newGame(START + visits[0][0] * 3_600_000, seed, { restore }), bot = new Bot(s, { cart, trees }), daily = [];
+export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false, cart = true, trees = true, restore = false, startAt = START } = {}) {
+  const visits = PROFILES[profile], s = newGame(startAt + visits[0][0] * 3_600_000, seed, { restore }), bot = new Bot(s, { cart, trees }), daily = [];
   tick(s, s.createdAt);
   for (let d = 0; d < days; d++) {
     visits.forEach(([h, len], i) => {
-      const start = START + d * DAY + h * 3_600_000, next = visits[i + 1] ? START + d * DAY + visits[i + 1][0] * 3_600_000 : START + (d + 1) * DAY + visits[0][0] * 3_600_000;
+      const start = startAt + d * DAY + h * 3_600_000, next = visits[i + 1] ? startAt + d * DAY + visits[i + 1][0] * 3_600_000 : startAt + (d + 1) * DAY + visits[0][0] * 3_600_000;
       for (let m = 0; m <= len; m += 2) { const now = start + m * MIN; bot.play(now, m + 2 > len ? next - now : 2 * MIN); }
     });
     const snap = { day: d + 1, level: s.level, coins: s.coins, beds: s.counts.bed ?? 0, step: s.projects.step, cottages: s.counts.cottage ?? 0, orders: s.stats.ordersFilled, orderCoins: s.stats.orderCoins };
     daily.push(snap);
     if (trace) console.log(`  end of day ${snap.day}: level ${snap.level}, ${snap.coins} coins, ${snap.beds} beds, ${snap.cottages} cottages, ${snap.orders} orders (${snap.orderCoins} coins)`);
   }
-  const steps = Object.fromEntries(bot.log.map(({ now, step }) => [step, Math.floor((now - START) / DAY) + 1]));
+  const steps = Object.fromEntries(bot.log.map(({ now, step }) => [step, Math.floor((now - startAt) / DAY) + 1]));
   const levels = Object.fromEntries(Object.entries(bot.levels).map(([l, now]) => [l, +((now - s.createdAt) / 3_600_000).toFixed(2)]));
   return { steps, levels, daily, s };
 }
