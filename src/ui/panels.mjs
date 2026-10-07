@@ -11,6 +11,7 @@ import { recipesAt, queueOf } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { STACK } from '../core/stall.mjs';
 import { fishingOf } from '../core/fishing.mjs';
+import { planFor, STEP_TEXT } from '../core/plan.mjs';
 import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
 import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
@@ -184,6 +185,7 @@ export class Panels {
     return `<div class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div>
       <div class="reward">${coinMark()} <b>${num(c.coins)}</b> ${xpMark()} <b>${num(c.xp)}</b></div></div>
       <p class="line">${c.line ? t(c.line) : ''}</p>
+      ${can ? '' : `<div class="order-plan">${planFor(s, c.need).map(st => `<button class="link plan-step" data-do="showWay" data-at="${st.at}">${goodIcon(st.good)} ${t(STEP_TEXT[st.how], { n: st.n, good: t(GOODS[st.good].name) })} ›</button>`).join('')}</div>`}
       <div class="order-row"><div class="needs">${goodsLine(s, c.need)}</div>
       <div class="order-buttons"><button class="btn primary small-btn" data-do="deliver" data-id="${c.id}" ${can ? '' : 'disabled'}>${t('Sell')}</button>${c.story ? '' : `<button class="btn ghost icon-only" data-do="discard" data-id="${c.id}" aria-label="${t('Discard')}">${glyph('trash', 'g')}</button>`}</div></div></div>`;
   }

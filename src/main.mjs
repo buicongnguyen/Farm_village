@@ -27,7 +27,7 @@ import { LevelUp } from './ui/levelup.mjs';
 import { load, autosave, save, pack, unpack, erase } from './kit/save.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, START_PARCEL, parcelOrigin, CELL } from './content/world.mjs';
+import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
 import { BUILDINGS } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
@@ -70,6 +70,7 @@ panels = new Panels(app, game, hud, {
   onBuild: kind => { const r = RUINS.find(x => x.kind === kind); if (r) flyTo((r.x + 2) * CELL, (r.z + 2) * CELL, Math.min(world.cam.span, 60)); build.start(kind, r && { x: r.x + 2, z: r.z + 1, point: { x: (r.x + 2.5) * CELL, z: (r.z + 1.5) * CELL } }); },
   // "show the way": go to where a missing good is made, or open the catalogue on that building
   onShowWay: at => {
+    if (at === 'pond') { flyTo((POND_DOCK.x - 2) * CELL, POND_DOCK.z * CELL); panels.show('pond'); return; }
     if (at === 'farm') { const o = parcelOrigin(START_PARCEL); flyTo((o.x + 6) * CELL, (o.z + 4) * CELL); hud.toast(t('Plant it in your beds'), 'info', { icon: 'bed' }); return; }
     const ids = Object.keys(game.s.placed).filter(k => game.s.placed[k].kind === at), id = ids.find(k => levelOf(game.s, k) >= 3) ?? ids[0];   // the run-down one first
     if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces && levelOf(game.s, id) < 3) panels.show('production', id); }
@@ -135,6 +136,7 @@ await land.load();
 const [{ LifeView }, { PeopleView }, { Critters }, { Juice }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
+hud.onShowWay = at => panels.onShowWay?.(at);   // the Next chip's "go there"
 radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
 new Juice(world, game, app);
 new CartView(world, game);

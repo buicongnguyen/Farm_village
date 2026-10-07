@@ -7,6 +7,7 @@ import { readyCount } from './production.mjs';
 import { isBroken, isRepairing, isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
 import { questsOf, ready as questReady } from './quests.mjs';
+import { bestOrder, STEP_TEXT } from './plan.mjs';
 import { rentWaiting } from './homes.mjs';
 import { MAILBOX, POND_DOCK } from '../content/world.mjs';
 
@@ -32,6 +33,9 @@ export function nextTask(s, now) {
   if (broken && broken !== 'house' && s.coins >= 30) return { key: 'Repair a broken building', at: at(broken), icon: 'wrench', id: broken };
   const hungry = of((id, p, d) => d.animals && isWorking(s, id) && (s.animals[id] ?? []).some(a => animalState(a, now) === 'hungry'))[0];
   if (hungry) return { key: 'Feed the hungry animals', at: at(hungry), icon: 'chicken_feed' };
+  // the order closest to done: the first thing to do for it
+  const best = bestOrder(s), step = best?.steps[0];
+  if (step && (step.how !== 'plant' || of((id, p) => p.kind === 'bed' && !s.beds[id]).length)) return { key: STEP_TEXT[step.how], params: { n: step.n, good: step.good }, at: null, way: step.at, icon: step.good, order: best.card.id };
   const empty = of((id, p) => p.kind === 'bed' && !s.beds[id])[0];
   if (empty) return { key: 'Plant the empty beds', at: at(empty), icon: 'wheat' };
   return { key: Object.keys(s.beds).length || Object.keys(s.production).length ? 'All busy: enjoy the view' : 'Open the Today board', at: null, icon: 'today', panel: 'today', calm: true };

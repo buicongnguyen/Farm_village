@@ -10,7 +10,7 @@ import { nextTask } from '../core/next.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { questsOf, ready as questReady } from '../core/quests.mjs';
 import { shortTime } from '../core/clock.mjs';
-import { FISH_TABLE } from '../content/goods.mjs';
+import { FISH_TABLE, GOODS } from '../content/goods.mjs';
 const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
 import { thingName } from './repair-ui.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -55,7 +55,7 @@ export class Hud {
       const st = e.target.closest('[data-status]')?.dataset.status;
       if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
-      if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
+      if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
@@ -142,7 +142,11 @@ export class Hud {
   /** A refused action's reason as a toast; refusals that share a lock merge into one. */
   refuse(reason, params) {
     const lock = params?.lock;
-    this.toast(t(reason, tParams(params)), 'warn', { icon: lock ? 'lock' : null, group: lock ? `lock:${lock}` : `warn:${reason}` });
+    // a refusal says how to get past it: a tap on the toast goes where the missing thing comes from
+    const help = reason === 'Not enough coins' ? ['orders', 'Fill orders to earn coins'] : lock === 'level' || /^Reach level/.test(reason) ? ['quests', 'Goals give XP'] :
+      /Missing goods|No feed|Nothing to plant/.test(reason) ? ['plan', 'See what to do'] : null;
+    const el = this.toast(help ? `${t(reason, tParams(params))} · ${t(help[1])} ›` : t(reason, tParams(params)), 'warn', { icon: lock ? 'lock' : null, group: lock ? `lock:${lock}` : `warn:${reason}` });
+    if (help && el) { el.classList.add('tappable'); el.onclick = () => { el.remove(); if (help[0] === 'plan') { const n = this.nextTask; if (n?.way) this.onShowWay?.(n.way); else this.onPanel?.('orders'); } else this.onPanel?.(help[0]); }; }
   }
   /** A short message. Options: icon (an icon id), group (messages of a group replace each other in one toast). */
   toast(text, kind = 'info', { icon = null, group = null } = {}) {
@@ -184,7 +188,7 @@ export class Hud {
     const chip = this.el.querySelector('[data-act="next"]'), n = nextTask(this.game.s, this.game.now), s = this.game.s;
     chip.hidden = !n || s.story?.tutorial < 3 && s.mode === 'restore' || document.body.classList.contains('panel-open');
     if (!n) return; this.nextTask = n;
-    const ic = ['wrench', 'today'].includes(n.icon) ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key)}`;
+    const ic = ['wrench', 'today'].includes(n.icon) ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key, n.params ? { ...n.params, good: t(GOODS[n.params.good]?.name ?? n.params.good) } : undefined)}`;
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */

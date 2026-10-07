@@ -231,3 +231,12 @@ test('family helpers: while you play, June brings in a few ripe crops and sows t
   const beforeAway = s.barn.items.wheat; for (const b of Object.values(s.beds)) b.doneAt = 0;
   tick(s, s.helpAt + 3 * HOUR); assert.equal(s.barn.items.wheat, beforeAway, 'no helping while you are away');
 });
+
+test('order plans: missing goods are worked back to what to plant, make, collect or catch, in order', async () => {
+  const { planFor } = await import('../src/core/plan.mjs');
+  const s = fresh(); s.barn.items = { wheat: 1 };
+  const steps = planFor(s, { bread: 2, egg: 1, perch: 1 });
+  const kinds = steps.map(x => `${x.how}:${x.good}:${x.n}`);
+  assert.deepEqual(kinds, ['plant:wheat:5', 'make:bread:2', 'collect:egg:1', 'fish:perch:1']);
+  assert.equal(steps[1].at, 'bakery');
+});

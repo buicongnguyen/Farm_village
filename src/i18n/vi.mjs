@@ -55,6 +55,8 @@ export const VI = {
   'June brought in {count} crops and sowed them again': 'June đã thu {count} cây trồng và gieo lại', 'Pip fetched {count} eggs and milk': 'Pip đã lấy {count} trứng và sữa', 'All': 'Tất cả',
   'All busy: enjoy the view': 'Mọi thứ đang bận: ngắm cảnh nhé', 'Everything is busy. Take a breath.': 'Mọi thứ đang bận. Hít một hơi thật sâu nhé.',
   'Tap the pond to send {name} fishing': 'Chạm vào ao để {name} đi câu cá', 'Off to the pond!': 'Ra ao câu cá nào!',
+  'Plant {n} {good}': 'Trồng {n} {good}', 'Make {n} {good}': 'Làm {n} {good}', 'Collect {n} {good}': 'Thu {n} {good}', 'Pick {n} {good}': 'Hái {n} {good}', 'Catch {n} {good}': 'Câu {n} {good}',
+  'Fill orders to earn coins': 'Giao đơn hàng để kiếm xu', 'Goals give XP': 'Mục tiêu cho điểm kinh nghiệm', 'See what to do': 'Xem cần làm gì',
   'Send the truck': 'Cho xe tải đi', 'Bigger truck': 'Xe tải lớn hơn', 'The truck is back with {coins} coins': 'Xe tải về rồi, mang theo {coins} xu',
   'Passers-by buy one thing every few minutes, at its base price.': 'Người qua đường cứ vài phút mua một món, theo giá gốc.',
   'Drag across more beds to plant them': 'Kéo qua các luống khác để trồng tiếp', 'Your farmhouse': 'Nhà của bạn',
