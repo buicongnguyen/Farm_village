@@ -12,9 +12,12 @@ export const PROFILES = {
 };
 const DAY = 86_400_000, MIN = 60_000;
 export const START = new Date(2026, 9, 7, 0, 0, 0).getTime();
-/** Run a profile for some days. Returns { steps: { id: day }, days: [...daily snapshots], s }. */
-export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false } = {}) {
-  const visits = PROFILES[profile], s = newGame(START + visits[0][0] * 3_600_000, seed), bot = new Bot(s), daily = [];
+/**
+ * Run a profile for some days. Returns { steps: { id: day }, levels: { level: hours since the first visit }, daily: [...], s }.
+ * cart / trees: false keeps the bot away from the weekly cart and fruit trees (to measure what they change).
+ */
+export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = false, cart = true, trees = true } = {}) {
+  const visits = PROFILES[profile], s = newGame(START + visits[0][0] * 3_600_000, seed), bot = new Bot(s, { cart, trees }), daily = [];
   tick(s, s.createdAt);
   for (let d = 0; d < days; d++) {
     visits.forEach(([h, len], i) => {
@@ -26,13 +29,16 @@ export function simulate(profile = 'steady', days = 21, { seed = 4242, trace = f
     if (trace) console.log(`  end of day ${snap.day}: level ${snap.level}, ${snap.coins} coins, ${snap.beds} beds, ${snap.cottages} cottages, ${snap.orders} orders (${snap.orderCoins} coins)`);
   }
   const steps = Object.fromEntries(bot.log.map(({ now, step }) => [step, Math.floor((now - START) / DAY) + 1]));
-  return { steps, daily, s };
+  const levels = Object.fromEntries(Object.entries(bot.levels).map(([l, now]) => [l, +((now - s.createdAt) / 3_600_000).toFixed(2)]));
+  return { steps, levels, daily, s };
 }
 if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}` || process.argv[1]?.endsWith('sim.mjs')) {
   const profile = process.argv[2] ?? 'steady', days = +(process.argv[3] ?? 14);
-  const t0 = performance.now(), { steps, daily } = simulate(profile, days, { trace: process.argv.includes('--trace') });
+  const t0 = performance.now(), { steps, daily, levels, s } = simulate(profile, days, { trace: process.argv.includes('--trace') });
   console.log(`profile ${profile}, ${days} days (${((performance.now() - t0) / 1000).toFixed(1)} s):`);
   for (const [id, day] of Object.entries(steps)) console.log(`  day ${String(day).padEnd(3)} ${id}`);
   const last = daily[daily.length - 1];
   console.log(`end: level ${last.level}, ${last.coins} coins, ${last.beds} beds, ${last.cottages} cottages, ${last.orders} orders filled`);
+  console.log(`hours to each level: ${Object.entries(levels).map(([l, h]) => `${l}: ${h}`).join(', ')}`);
+  console.log(`carts sent: ${s.stats.carts ?? 0}, fruit picked: ${s.stats.picked ?? 0}, heart scenes: ${Object.values(s.people).reduce((n, p) => n + (p.scenes?.length ?? 0), 0)}`);
 }

@@ -3,7 +3,7 @@ import { START } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
@@ -22,13 +22,19 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1) {
     orders: { cards: [], nextAt: now },
     projects: { step: 0, delivered: {} },
     homes: {},                              // cottage id → { level, family, arrivesAt, rentFrom }
-    people: {},                             // person id → { hearts }
+    people: {},                             // person id → { hearts (0–10), scenes: [3, 6, 9 seen], giftDay }
     neighbours: {},                         // id → { friendship, day, visits: [ms], visited: 0, trade: {...} | null }
     stall: { items: [], nextSaleAt: 0 },
-    today: { day: '', giftDay: 0, seen: true, away: null },
+    today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
+    trees: {},                              // fruit tree id → { doneAt, first? }
+    mail: [],                               // letters, newest first: [{ id, from, at, read }]
+    wishes: { day: '', list: [] },          // today's wishes: [{ home, person, kind, text, done }]
+    cart: null,                             // the weekly cart (cart.mjs), null until the school opens
+    village: { milestones: [], decor: [] }, // village charm milestones reached and the dressing they put up
+    known: {},                              // recipes learnt early from heart scenes: id → true
     story: { chapter: 0, tutorial: 0, firstWheat: true },
     firsts: {},                             // album: when each first happened
-    stats: { cleared: 0, paths: 0, harvested: 0, produced: 0, ordersFilled: 0, orderCoins: 0, coinsEarned: 0 },
+    stats: { cleared: 0, paths: 0, harvested: 0, produced: 0, ordersFilled: 0, orderCoins: 0, coinsEarned: 0, picked: 0, gifts: 0, carts: 0 },
     counts: {},                             // kind → how many are placed (kept in step by place/store)
     stored: {},                             // kind → how many are in the storage shed (placing them again is free)
     undo: [],                               // the last build actions, for undo (DESIGN 4.4)
@@ -56,6 +62,19 @@ export const TUTORIAL_WEEDS = [[2, 3], [3, 4], [2, 5]];
 export function migrate(save) {
   if (!save || typeof save !== 'object') throw new Error('not a save');
   if (save.version > SAVE_VERSION) throw new Error(`save version ${save.version} is newer than this game`);
-  // (v1 is the first version: nothing to migrate yet.)
-  return save;
+  // v1 → v2 (the AAA pass): fruit trees, letters, wishes, the weekly cart, village charm, the streak garden and heart scenes.
+  // Hearts already earned stay; a heart scene whose threshold was passed before this version plays on the next heart gained.
+  if ((save.version ?? 1) < 2) save.version = 2;
+  return withDefaults(save);
+}
+/** Fill every field a newer game expects with its default, keeping what the save has. */
+export function withDefaults(s) {
+  const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
+  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes']) if (s[k] === undefined) s[k] = fresh[k];
+  s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
+  s.stats = { ...fresh.stats, ...s.stats };
+  s.settings = { ...fresh.settings, ...s.settings };
+  s.village.milestones ??= []; s.village.decor ??= [];
+  for (const b of Object.values(s.people)) b.scenes ??= [];
+  return s;
 }

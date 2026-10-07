@@ -12,10 +12,16 @@ import { actions as orders, tickOrders } from './orders.mjs';
 import { actions as neighbours, tickNeighbours } from './neighbours.mjs';
 import { actions as today, tickToday } from './today.mjs';
 import { actions as stall, tickStall } from './stall.mjs';
+import { actions as trees } from './trees.mjs';
+import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
+import { actions as cart, tickCart } from './cart.mjs';
+import { actions as testmode } from './testmode.mjs';
 import { clampDone } from './clock.mjs';
-import { CROPS, RECIPES, ANIMALS } from '../content/goods.mjs';
+import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
+import { BUILDINGS } from '../content/buildings.mjs';
 
-export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall };
+export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall,
+  ...trees, ...bonds, ...cart, ...testmode };
 
 function context(s, now) {
   const events = [];
@@ -33,7 +39,7 @@ export function act(s, action, payload = {}, now = Date.now()) {
   const ctx = context(s, now);
   const out = handler(ctx, payload ?? {}) ?? {};
   if (out.ok === false) return { ...out, events: [] };
-  advance(ctx);
+  advance(ctx); tickCart(ctx); afterAction(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { ok: true, ...out, events: ctx.events };
@@ -42,17 +48,22 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickHomes(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); advance(ctx);
+  tickToday(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); advance(ctx); tickCart(ctx); tickBonds(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { events: ctx.events };
 }
 /** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */
-const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp']);
+const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter']);
 // "First times" for the album (DESIGN 13): the moment each first happened.
-const FIRSTS = { harvested: 'harvest', collected: 'egg', orderFilled: 'order', familyArrived: 'family', traded: 'trade', produced: 'product' };
+const FIRSTS = { harvested: 'harvest', collected: 'egg', orderFilled: 'order', familyArrived: 'family', traded: 'trade', produced: 'product',
+  picked: 'fruit', gifted: 'gift', wishGranted: 'wish', cartSent: 'cart', heartScene: 'heartScene', letter: 'letter' };
 function remember(s, events, now) {
-  for (const e of events) { const k = FIRSTS[e.type]; if (k && !(s.firsts ??= {})[k]) s.firsts[k] = now; if (e.type === 'projectDone') (s.firsts ??= {})[`project:${e.id}`] ??= now; }
+  for (const e of events) {
+    const k = FIRSTS[e.type]; if (k && !(s.firsts ??= {})[k]) s.firsts[k] = now;
+    if (e.type === 'projectDone') (s.firsts ??= {})[`project:${e.id}`] ??= now;
+    if (e.type === 'heartScene') (s.firsts ??= {})[`heart:${e.person}:${e.at}`] ??= now;   // the album's heart-scene pages
+  }
   for (const e of events) if (NEWS.has(e.type)) (s.news ??= []).unshift({ ...e, at: now });
   if (s.news?.length > 12) s.news.length = 12;
 }
@@ -60,4 +71,5 @@ function guardClock(s, now) {
   for (const b of Object.values(s.beds)) b.doneAt = clampDone(b.doneAt, now, CROPS[b.crop].growMs);
   for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null) a.doneAt = clampDone(a.doneAt, now, ANIMALS[a.kind].everyMs);
   for (const q of Object.values(s.production)) { let t = now; for (const j of q.queue) { j.doneAt = clampDone(j.doneAt, Math.max(t, now), RECIPES[j.recipe].timeMs); t = j.doneAt; } }
+  for (const [id, tr] of Object.entries(s.trees ?? {})) { const f = FRUITS[BUILDINGS[s.placed[id]?.kind]?.fruit]; if (f) tr.doneAt = clampDone(tr.doneAt, now, tr.first ? f.firstMs : f.regrowMs); }
 }

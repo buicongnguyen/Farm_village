@@ -14,6 +14,9 @@ const COTTAGE_COSTS = [150, 250, 900, 1400, 2000, 2800, 3800, 5000, 6500, 8000];
 export const BUILDINGS = {
   // Farm
   bed:        { name: 'Crop bed', cat: 'farm', size: [1, 1], area: 'farm', level: 1, cost: n => BEDS.cost(n + 1), tills: true },
+  // Fruit trees (goods.mjs FRUITS): planted once, picked again and again. Pretty too, so they count as charm.
+  apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
+  peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 6, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
   // Paths and fences (fence and gate sit on cell edges)
   path:       { name: 'Path', cat: 'paths', size: [1, 1], area: 'any', level: 1, cost: 1, cell: 'path', charm: 0 },
   fence:      { name: 'Fence', cat: 'paths', edge: true, area: 'any', level: 2, cost: 3, model: 'pen_fence' },
@@ -33,6 +36,14 @@ export const BUILDINGS = {
   tree:       { name: 'Blossom tree', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 25, charm: 2, model: 'tree_blossom' },
   bench:      { name: 'Bench', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 30, charm: 2, model: 'bench' },
   lamp:       { name: 'Lamp', cat: 'charm', size: [1, 1], area: 'any', level: 4, cost: 40, charm: 2, model: 'lamp' },
+  flowerpot:  { name: 'Flowerpot', cat: 'charm', size: [1, 1], area: 'any', level: 1, cost: 8, charm: 1, model: 'flowerpot' },
+  hay_bale:   { name: 'Hay bale', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 10, charm: 1, model: 'hay_bale' },
+  picket:     { name: 'Picket fence', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 6, charm: 1, model: 'picket' },
+  scarecrow:  { name: 'Scarecrow', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 20, charm: 1, model: 'scarecrow' },
+  fountain:   { name: 'Fountain', cat: 'charm', size: [2, 2], area: 'any', level: 5, cost: 300, charm: 4, model: 'fountain' },
+  street_lamp:{ name: 'Street lamp', cat: 'charm', size: [1, 1], area: 'any', level: 6, cost: 90, charm: 3, model: 'street_lamp' },
+  // The streak garden (today.mjs): one flower for every day you visit, planted by itself by the farmhouse. Not in the catalogue.
+  garden_flower: { name: 'Garden flower', cat: 'garden', size: [1, 1], area: 'any', level: 1, cost: 0, garden: true, model: 'flowers' },
   // Village projects (placed through the build order, DESIGN 11)
   school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 5, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
 };

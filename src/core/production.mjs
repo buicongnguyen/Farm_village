@@ -7,7 +7,9 @@ import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
 
 export const queueOf = (s, id) => (s.production[id] ??= { slots: SLOTS.start, queue: [] });
-export const recipesAt = (s, kind) => Object.entries(RECIPES).filter(([, r]) => r.at === kind && r.level <= s.level).map(([k]) => k);
+/** A recipe is open at its level, or earlier when a heart scene taught it (s.known). */
+export const recipeOpen = (s, id) => !!RECIPES[id] && (RECIPES[id].level <= s.level || !!s.known?.[id]);
+export const recipesAt = (s, kind) => Object.keys(RECIPES).filter(k => RECIPES[k].at === kind && recipeOpen(s, k));
 export const readyCount = (s, id, now) => queueOf(s, id).queue.filter(j => j.doneAt <= now).length;
 export const slotCost = (s, id) => SLOTS.cost[queueOf(s, id).slots] ?? null;
 
@@ -17,7 +19,7 @@ export const actions = {
     const { s, now } = ctx, p = s.placed[building], r = RECIPES[recipe];
     if (!p || !BUILDINGS[p.kind].produces) return ctx.fail('This building makes nothing');
     if (!r || r.at !== p.kind) return ctx.fail('Not made here');
-    if (s.level < r.level) return ctx.fail('Reach level {level} first', { level: r.level });
+    if (!recipeOpen(s, recipe)) return ctx.fail('Reach level {level} first', { level: r.level, recipe, lock: 'level' });
     const q = queueOf(s, building);
     if (q.queue.length >= q.slots) return ctx.fail('The queue is full');
     if (!barn.take(s, r.needs)) return ctx.fail('Missing ingredients');

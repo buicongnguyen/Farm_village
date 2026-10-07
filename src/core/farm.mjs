@@ -16,7 +16,7 @@ export const actions = {
   plant(ctx, { id, ids = [id], crop }) {
     const { s, now } = ctx, c = CROPS[crop];
     if (!c) return ctx.fail('Unknown crop');
-    if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level });
+    if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level, crop, lock: 'level' });
     let planted = 0;
     for (const bid of ids) {
       if (s.placed[bid]?.kind !== 'bed' || s.beds[bid]) continue;

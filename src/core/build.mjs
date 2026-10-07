@@ -7,6 +7,7 @@ import * as grid from './grid.mjs';
 import { mayBuild, projectCost, advance } from './projects.mjs';
 import { gainXp } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
+import { plantTree } from './trees.mjs';
 
 export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
@@ -18,7 +19,23 @@ const count = (s, kind, d) => { s.counts[kind] = Math.max(0, (s.counts[kind] ?? 
 const UNDO_MAX = 10;
 const remember = (s, entry) => { (s.undo ??= []).push(entry); if (s.undo.length > UNDO_MAX) s.undo.shift(); };
 /** Everything in the state that belongs to a placed item (crops, animals, queue, family) moves or goes with it. */
-const CONTENTS = ['beds', 'animals', 'production', 'homes'];
+const CONTENTS = ['beds', 'animals', 'production', 'homes', 'trees'];
+
+/**
+ * Land the player could buy next (for the For-sale signs and the parcel menu): parcels next to the farm that are not owned,
+ * while this version still sells land. [{ parcel, x, z, price, level, ok, reason, params }], x/z = the parcel's first cell.
+ */
+export function buyableParcels(s) {
+  if (s.parcels.length >= PARCELS.maxV01) return [];
+  const owned = new Set(s.parcels), out = [], price = PARCELS.cost(s.parcels.length + 1);
+  for (let pz = 0; pz < FARM.parcels; pz++) for (let px = 0; px < FARM.parcels; px++) {
+    const id = `${px},${pz}`; if (owned.has(id)) continue;
+    if (!s.parcels.some(p => { const [qx, qz] = p.split(',').map(Number); return Math.abs(qx - px) + Math.abs(qz - pz) === 1; })) continue;
+    const why = s.level < PARCELS.level ? ['Reach level {level} first', { level: PARCELS.level }] : s.coins < price ? ['Not enough coins'] : null;
+    out.push({ parcel: id, x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL, price, level: PARCELS.level, ok: !why, reason: why?.[0] ?? null, params: why?.[1] ?? null });
+  }
+  return out;
+}
 
 export const actions = {
   /** Place a thing: { kind, x, z, rot }. Paths change the cell; everything else becomes a placed item. */
@@ -37,6 +54,7 @@ export const actions = {
     if (def.tills) setCell(s, x, z, 'tilled');
     count(s, kind, 1); grid.touch(s);
     if (def.home) arriveNext(ctx, id);
+    if (def.fruit) plantTree(s, id, now);
     if (def.cost || def.project) gainXp(ctx, XP.build);
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
@@ -68,7 +86,7 @@ export const actions = {
       const p = s.placed[e.id]; if (!p) { s.undo.pop(); return ctx.fail('Nothing to undo'); }
       if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
-      for (const k of CONTENTS) delete s[k][e.id];
+      for (const k of CONTENTS) delete s[k]?.[e.id];
       delete s.placed[e.id]; count(s, p.kind, -1); grid.touch(s);
       if (e.fromStore) s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
       ctx.emit('stored', { id: e.id, kind: p.kind });
@@ -81,13 +99,14 @@ export const actions = {
   /** Put a placed item away. Its price is kept as a stored credit so placing it again is free. */
   store(ctx, { id }) {
     const { s } = ctx, p = s.placed[id]; if (!p) return ctx.fail('Nothing to store');
+    if (BUILDINGS[p.kind].garden) return ctx.fail('The streak garden keeps its flowers');
     if (s.homes[id]?.family) return ctx.fail('A family lives here: move the cottage instead');
     if (s.beds[id]) return ctx.fail('Harvest the crop first');
     if (s.animals[id]?.length) return ctx.fail('The animals live here: move it instead');
     if (s.production[id]?.queue.length) return ctx.fail('Collect what is being made first');
     if (BUILDINGS[p.kind].project === 'school' || BUILDINGS[p.kind].cat === 'projects') return ctx.fail('Village buildings can be moved, not stored');
     if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
-    for (const k of CONTENTS) delete s[k][id];
+    for (const k of CONTENTS) delete s[k]?.[id];
     delete s.placed[id]; count(s, p.kind, -1); grid.touch(s);
     s.stored = s.stored ?? {}; s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
     ctx.emit('stored', { id, kind: p.kind });
@@ -135,11 +154,11 @@ export const actions = {
     if (s.parcels.includes(parcel)) return ctx.fail('You own this land already');
     if (s.parcels.length >= PARCELS.maxV01) return ctx.fail('More land opens in a later version');
     if (!s.parcels.some(p => { const [qx, qz] = p.split(',').map(Number); return Math.abs(qx - px) + Math.abs(qz - pz) === 1; })) return ctx.fail('Buy land next to your farm');
-    if (s.level < 4) return ctx.fail('Reach level {level} first', { level: 4 });
+    if (s.level < PARCELS.level) return ctx.fail('Reach level {level} first', { level: PARCELS.level, lock: 'level' });
     const price = PARCELS.cost(s.parcels.length + 1); if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; s.parcels.push(parcel); overgrow(s, parcel); grid.touch(s);
     ctx.emit('parcelBought', { parcel, x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL });
-    return { price };
+    return { price, parcel };
   },
   upgradeBarn(ctx) {
     const { s } = ctx, price = BARN.upgradeCost(s.barn.upgrades);

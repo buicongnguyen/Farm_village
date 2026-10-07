@@ -1,27 +1,30 @@
 // The order board (DESIGN 8, ECONOMY 3): cards from villagers and neighbours, delivered from the barn.
-import { ORDERS, XP } from '../content/economy.mjs';
-import { GOODS, CROPS, RECIPES, ANIMALS } from '../content/goods.mjs';
-import { VILLAGERS, NEIGHBOURS, ORDER_LINES, FIRST_ORDER } from '../content/people.mjs';
+import { ORDERS, XP, BONDS } from '../content/economy.mjs';
+import { GOODS, CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
+import { VILLAGERS, NEIGHBOURS, ORDER_LINES, FIRST_ORDER, allPeople } from '../content/people.mjs';
 import * as barn from './barn.mjs';
 import { draw } from './rng.mjs';
 import { gainXp } from './levels.mjs';
 import { familiesIn } from './projects.mjs';
 import { animalCount } from './animals.mjs';
+import { addHearts } from './bonds.mjs';
 
 export const slots = s => ORDERS.slots(s.level);
-/** Goods an order may ask for: things the player can make right now. */
+/** Goods an order may ask for: things the player can make right now (fruit only once a tree of that kind is planted). */
 export function orderable(s) {
-  const has = kind => (s.counts[kind] ?? 0) > 0;
+  const has = kind => (s.counts[kind] ?? 0) > 0, fruitOk = id => has(FRUITS[id].tree);
   return Object.keys(GOODS).filter(id => {
     if (CROPS[id]) return CROPS[id].level <= s.level;
-    if (RECIPES[id]) return !id.endsWith('_feed') && RECIPES[id].level <= s.level && has(RECIPES[id].at);
+    if (FRUITS[id]) return fruitOk(id);
+    if (RECIPES[id]) return !id.endsWith('_feed') && RECIPES[id].level <= s.level && has(RECIPES[id].at) && Object.keys(RECIPES[id].needs).every(g => !FRUITS[g] || fruitOk(g));
     const animal = Object.entries(ANIMALS).find(([, a]) => a.gives === id);
     return animal ? animalCount(s, animal[0]) > 0 : false;
   });
 }
-/** People who can post orders now: Ada, neighbours, and families who have moved in. */
+/** People who can post orders now: villagers who are here (not noOrders ones such as your own family), neighbours, and
+ * families who have moved in. */
 export function posters(s, now) {
-  return [...VILLAGERS.filter(v => !v.arrives || (s.counts[v.arrives] ?? 0) > 0).map(v => v.id), ...NEIGHBOURS.map(n => n.id),
+  return [...VILLAGERS.filter(v => !v.noOrders && (!v.arrives || (s.counts[v.arrives] ?? 0) > 0)).map(v => v.id), ...NEIGHBOURS.map(n => n.id),
     ...familiesIn(s, now).flatMap(f => f.people.map(p => p.id))];
 }
 export const canFill = (s, card) => barn.hasAll(s, card.need);
@@ -43,7 +46,9 @@ export function makeCard(s, now, { easy = false } = {}) {
       need[g] = Math.min(cap, (need[g] ?? 0) + (easy ? Math.max(1, Math.min(n, barn.free(s, g) || n)) : n));
     }
     const worth = Object.entries(need).reduce((a, [g, n]) => a + GOODS[g].value * n, 0);
-    return { id, from: r.pick(posters(s, now)), need, coins: Math.round(worth * ORDERS.pay), xp: Math.max(1, Math.round(worth * XP.order)), line: r.pick(ORDER_LINES), readyAt: now };
+    // the poster first, then a line in their own voice (the story's `orders` lines), with the same two draws as before
+    const from = r.pick(posters(s, now)), lines = allPeople().find(p => p.id === from)?.orders;
+    return { id, from, need, coins: Math.round(worth * ORDERS.pay), xp: Math.max(1, Math.round(worth * XP.order)), line: r.pick(lines?.length ? lines : ORDER_LINES), readyAt: now };
   });
 }
 /** Fill empty slots whose wait is over. Called by tick(). */
@@ -67,9 +72,9 @@ export const actions = {
     }
     s.orders.cards.splice(i, 1); (s.orders.pending ??= []).push(now + ORDERS.refillMs);
     s.coins += card.coins; s.stats.coinsEarned += card.coins; s.stats.orderCoins += card.coins; s.stats.ordersFilled++;
-    s.people[card.from] = { hearts: Math.min(10, (s.people[card.from]?.hearts ?? 0) + 0.25) };
     gainXp(ctx, card.xp);
     ctx.emit('orderFilled', { id, from: card.from, coins: card.coins, xp: card.xp });
+    addHearts(ctx, card.from, BONDS.order, 'order');
     return { coins: card.coins, xp: card.xp };
   },
   discardOrder(ctx, { id }) {
