@@ -199,10 +199,11 @@ export class LandView {
 
   // ── Bed rims: one InstancedMesh per 32 × 32 cells and level of detail (near: rims and furrows; middle: a flat frame) ──
   makeRims() {
-    // near: a raised frame (top, outer and inner walls) and five furrow ridges, 44 triangles; middle: the flat frame
-    const near = [], mid = [], col = [], colMid = [], rim = new THREE.Color('#a8683a'), rimTop = new THREE.Color('#bd7c47'), inner = new THREE.Color('#6e4126'), ridge = new THREE.Color('#a06a3e'), ridgeLit = new THREE.Color('#b47a48');
+    // near: a raised frame (top, outer and inner walls) and five furrow ridges, 44 triangles; middle: the flat frame.
+    // Read as tilled soil, not a crate (review): a thin dark rim and crumbly dark-earth ridges with lit crests.
+    const near = [], mid = [], col = [], colMid = [], rim = new THREE.Color('#7a4526'), rimTop = new THREE.Color('#9a6034'), inner = new THREE.Color('#4a2a16'), ridge = new THREE.Color('#5a331c'), ridgeLit = new THREE.Color('#8b5634');
     const quad = (arr, c, cs, a, b2, c2, d) => { arr.push(...a, ...b2, ...c2, ...a, ...c2, ...d); for (let k = 0; k < 6; k++) cs.push(c.r, c.g, c.b); };
-    const o = 0.93, i = 0.78, h = 0.12, ring = [[-o, -o], [o, -o], [o, o], [-o, o]], inn = [[-i, -i], [i, -i], [i, i], [-i, i]];
+    const o = 0.93, i = 0.85, h = 0.1, ring = [[-o, -o], [o, -o], [o, o], [-o, o]], inn = [[-i, -i], [i, -i], [i, i], [-i, i]];
     for (let k = 0; k < 4; k++) {
       const a = ring[k], b2 = ring[(k + 1) % 4], c = inn[(k + 1) % 4], d = inn[k];
       quad(near, rimTop, col, [a[0], h, a[1]], [d[0], h, d[1]], [c[0], h, c[1]], [b2[0], h, b2[1]]);
@@ -211,7 +212,7 @@ export class LandView {
       quad(near, inner, col, [d[0], h, d[1]], [d[0], 0, d[1]], [c[0], 0, c[1]], [c[0], h, c[1]]);
     }
     for (let k = 0; k < 5; k++) {
-      const z = -0.64 + 0.32 * k, w = 0.11, y = 0.075;
+      const z = -0.64 + 0.32 * k, w = 0.15, y = 0.1;
       quad(near, ridgeLit, col, [-i, 0, z + w], [i, 0, z + w], [i, y, z], [-i, y, z]);
       quad(near, ridge, col, [-i, y, z], [i, y, z], [i, 0, z - w], [-i, 0, z - w]);
     }

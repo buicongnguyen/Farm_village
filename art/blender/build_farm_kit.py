@@ -31,7 +31,7 @@ for n, c in {
         'paper': '#FFF6D8', 'pink': '#FF7FB5', 'sky': '#35B6F2', 'mint': '#5EDFB0', 'sun': '#FFC83A', 'gold': '#F5B21E',
         'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
         # crops
-        'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
+        'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wheatg': '#F0A020', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
         'leaf': '#4FBF3A', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
         'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
@@ -84,40 +84,43 @@ def piece(name, parts, into=None, tint=None):
 GRID5 = [(-.64 + .32 * i, -.64 + .32 * j) for j in range(5) for i in range(5)]
 
 def wheat(stage, lod=0):
-    """Clumps of stalks on a 4 x 4 grid (3 x 3 for the _mid level): blades, then green ears, then fat golden ears."""
+    """A dense stand of wheat (fixer pass, after the review: 'sparse ochre stalks with soil between them').
+    A low many-sided mound of ears fills the bed edge to edge, and fat ears rise from it, bending outward under their
+    weight, in two golds; the green stage is the same stand, shorter and green. Sprouts are big bright tufts.
+    Near: about 250 triangles (was 752); _mid: about 90 (was 162)."""
     rnd = random.Random(11 + lod); p = []
-    grid = [(-.6 + .4 * i, -.6 + .4 * j) for j in range(4) for i in range(4)] if lod == 0 else [(-.56 + .56 * i, -.56 + .56 * j) for j in range(3) for i in range(3)]
-    for k, (gx, gy) in enumerate(grid):
-        x, y = gx + rnd.uniform(-.05, .05), gy + rnd.uniform(-.05, .05)
-        if stage == 'sprout':
+    if stage == 'sprout':
+        grid = [(-.52 + .52 * i, -.52 + .52 * j) for j in range(3) for i in range(3)]
+        if lod: grid = grid[::2]
+        for k, (gx, gy) in enumerate(grid):
+            x, y = gx + rnd.uniform(-.06, .06), gy + rnd.uniform(-.06, .06)
             for i in range(2 if lod == 0 else 1):
-                h = .22 + rnd.uniform(0, .08)
-                p.append(lf((x, y, 0), rnd.uniform(0, math.tau), h * .9, .1, 'sprout' if i % 2 else 'leafl', lift=h, droop=.04))
-            continue
-        ripe = stage == 'ripe'
-        n = (2 if ripe else 1) if lod == 0 else 1
-        for i in range(n):
-            a = k * 1.3 + i * math.tau / n
-            spread = (.1 if n > 1 else .03) + rnd.uniform(0, .06)
-            h = (.82 if ripe else .5) + rnd.uniform(-.08, .1)
-            top = (x + math.cos(a) * spread, y + math.sin(a) * spread, h)
-            p.append(st((x, y, 0), top, .025 if ripe else .022, 'wstalk' if ripe else 'cstalk'))
-            p.append(sp((.085 if ripe else .055) * (1 if lod == 0 else 1.4), .3 if ripe else .18, top[0], top[1], top[2] - .03,
-                        ('wheatl' if (k + i) % 3 == 0 else 'wheat') if ripe else 'wgreenl', sides=3,
-                        lean=(math.cos(a) * .35, math.sin(a) * .35), twist=k + i))
-        if lod == 0:
-            p.append(lf((x, y, .05), k * 2.1, .3, .09, 'wheatd' if ripe else 'leaf', lift=.2, droop=.14))
-    if lod == 0 and stage != 'sprout':
-        # a low skirt of leaves so the patch reads full between the stalks
-        for i in range(6):
-            a = i / 6 * math.tau + .3
-            p.append(lf((math.cos(a) * .25, math.sin(a) * .25, 0), a, .55, .18, 'leafd' if stage == 'mid' else 'wheatd', lift=.12, droop=.06))
+                h = .34 + rnd.uniform(0, .1)
+                p.append(lf((x, y, 0), k * 1.7 + i * math.pi, h * .95, .16, 'leafl' if i % 2 else 'sprout', lift=h, droop=.05))
+        return p
+    ripe = stage == 'ripe'
+    top = .34 if ripe else .22
+    # the mound: the mass of the stand, so no soil shows between the ears
+    p.append(cl('mound', .82, top, 0, 0, 0, 'wheatd' if ripe else 'wgreen', verts=6 if lod == 0 else 5, rt=.6))
+    spots = [(-.5 + .33 * i, -.5 + .33 * j) for j in range(4) for i in range(4)] if lod == 0 else             [(-.36, -.36), (.36, -.36), (0, 0), (-.36, .36), (.36, .36), (0, -.5)]
+    for k, (gx, gy) in enumerate(spots):
+        x, y = gx + rnd.uniform(-.06, .06), gy + rnd.uniform(-.06, .06)
+        d = math.hypot(x, y) or 1
+        bend = (.32 if ripe else .18) * (.5 + d)             # outer ears lean out further: the stand bows under its grain
+        h = top + (.52 if ripe else .3) + rnd.uniform(-.06, .08)
+        mt = ('wheatl' if k % 3 == 0 else 'wheatg' if k % 3 == 1 else 'wheat') if ripe else ('wgreenl' if k % 2 else 'wgreen')
+        p.append(sp((.13 if ripe else .08) * (1 if lod == 0 else 1.3), .44 if ripe else .26, x, y, h - .36,
+                    mt, sides=3, lean=(x / d * bend, y / d * bend), twist=k))
+    if lod == 0:
+        for i in range(4):                                  # a few blades at the foot, for life at close zoom
+            a = i / 4 * math.tau + .5
+            p.append(lf((math.cos(a) * .62, math.sin(a) * .62, 0), a, .4, .14, 'wheatd' if ripe else 'leaf', lift=.16, droop=.08))
     return p
 
 def carrot(stage, lod=0):
     rnd = random.Random(21 + lod); p = []
     grid = [(-.5 + .5 * i, -.5 + .5 * j) for j in range(3) for i in range(3)]
-    if lod: grid = grid[::2]
+    if lod: grid = grid[1::2]
     for k, (gx, gy) in enumerate(grid):
         x, y = gx + rnd.uniform(-.06, .06), gy + rnd.uniform(-.06, .06)
         if stage == 'sprout':
@@ -147,13 +150,13 @@ def corn(stage, lod=0):
         ripe = stage == 'ripe'
         h = (1.45 if ripe else .8) + rnd.uniform(-.08, .08)
         p.append(st((x, y, 0), (x, y, h), .05 if ripe else .04, 'cstalk', sides=5 if lod == 0 else 3, rt=.025))
-        nl = (4 if ripe else 3) if lod == 0 else 2
+        nl = (3 if ripe else 3) if lod == 0 else (1 if ripe else 2)
         for i in range(nl):
             z = h * (.2 + .6 * i / max(1, nl - 1)) * .9
             L = (.55 if ripe else .4) * (1 - .3 * i / nl)
             p.append(lf((x, y, z), i * 2.4 + k, L, .12, 'leaf' if i % 2 else 'leafl', lift=.18, droop=.28))
         if ripe:
-            for j, a in enumerate((k * 1.7, k * 1.7 + 3.1)[:2 if lod == 0 else 1]):
+            for j, a in enumerate((k * 1.7, k * 1.7 + 3.1)[:1 + (lod == 0 and k % 2 == 0)]):
                 cx, cy = x + math.cos(a) * .08, y + math.sin(a) * .08
                 p.append(sp(.08, .34, cx, cy, h * .45, 'corn', sides=5 if lod == 0 else 4, lean=(math.cos(a) * .35, math.sin(a) * .35)))
                 if lod == 0: p.append(lf((cx, cy, h * .42), a, .3, .12, 'husk', lift=.26, droop=.0))
@@ -166,7 +169,7 @@ def corn(stage, lod=0):
 def pumpkin_body(x, y, r, mt, lod=0, squash=.72):
     """A ribbed pumpkin: a lathe pushed in along its lobes, with a stem."""
     seg = 16 if lod == 0 else 8
-    rings = 6 if lod == 0 else 4
+    rings = 6 if lod == 0 else 3
     prof = []
     for i in range(rings + 1):
         a = -math.pi / 2 + math.pi * i / rings
@@ -188,7 +191,7 @@ def pumpkin(stage, lod=0):
             if lod == 0: p.append(lf((x, y, 0), 1.6 + y * 3, .2, .1, 'leaf', lift=.16, droop=.02))
         return p
     ripe = stage == 'ripe'
-    nl = 7 if lod == 0 else 4
+    nl = 7 if lod == 0 else 3
     for i in range(nl):
         a = i / nl * math.tau + .4
         r0 = .25 if ripe else .12

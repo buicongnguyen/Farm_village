@@ -79,7 +79,8 @@ export class WorldView {
     for (const [kit] of SCENERY) kits[kit] ??= await loadKit(kit);
     for (const [kit, src, name, size, kind] of SCENERY) {
       const geo = fit(bake(kits[kit][src]), size);
-      this.batches.register(name, { geo, mid: kind === 'static' ? geo : simplify(geo), kind, color: averageColor(geo) });
+      // trees: a leaner middle level (hundreds of them stand in the woods at every zoom past the near one)
+      this.batches.register(name, { geo, mid: kind === 'static' ? geo : simplify(geo, kind === 'tree' ? 0.28 : 0.4), kind, color: averageColor(geo) });
     }
     const c = W.CELL, at = (x, z) => ({ x: x * c + c / 2, z: z * c + c / 2 });
     this.batches.set('farmhouse', { model: 'farmhouse', ...at(W.FARMHOUSE.x, W.FARMHOUSE.z), rot: Math.PI / 2 });
