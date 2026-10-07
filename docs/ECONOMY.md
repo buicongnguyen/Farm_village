@@ -67,7 +67,9 @@ The new content is placed so that it does not move the v0.1 pace:
 - **The weekly cart** starts the day after the school opens, so it can never shortcut the school or the cottages after it.
 - **Fruit trees** open at level 4 and 6. Apples and apple pie only appear on orders once a tree of that kind is planted,
   so the order generator, and the pace before the school, are unchanged for a player who plants none.
-- **Heart scene rewards** default to decorations (a flowerpot, a bench, a fountain), not coins.
+- **Heart scene rewards** default to decorations (a flowerpot, a bench, a fountain), not coins. The story pays coins only
+  where the scene itself hands over money (Tomas's finds under the tractor seat, Olaf's sailor's silver): 170 coins in all.
+  With 14 coin scenes (about 900 coins) the keen bot reached level 22 10.3% sooner with the cart and trees than without.
 - **Order lines** in each poster's own voice use the same two random draws per card as before.
 
 `tests/sim.test.mjs` now pins the hours to each level up to 10 from the v0.1 report (±10 %), and runs every profile with

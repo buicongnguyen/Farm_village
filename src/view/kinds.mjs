@@ -35,7 +35,8 @@ export const KIND_MODELS = {
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
   bunting:      { kit: 'decor', node: 'bunting', authored: true, lod: 'static', late: true },
   banner:       { kit: 'decor', node: 'banner', authored: true, lod: 'static', late: true },
-  picket_fence: { kit: 'farm-kit', node: 'picket_straight', authored: true, lod: 'static' },
+  picket:       { kit: 'farm-kit', node: 'picket_straight', authored: true, lod: 'static' },
+  garden_flower: { kit: 'nature', node: 'flowers_b', width: 1.2, lod: 'crop', late: true },
   scarecrow:    { kit: 'props', node: 'scarecrow', height: 2.2, lod: 'static', late: true },
   hay_bale:     { kit: 'props', node: 'haybale', width: 1.5, lod: 'static', late: true },
   flowerpot:    { kit: 'props', node: 'flowerpot', width: 1.1, lod: 'static', late: true },
@@ -58,6 +59,7 @@ export const EARLY = {
   flowers: { kit: 'scenery', node: 'flowers', width: 1.4, lod: 'crop' },
   bush:    { kit: 'scenery', node: 'bush', width: 1.7, lod: 'crop' },
   tree:    { kit: 'scenery', node: 'tree_blossom', height: 4.5, lod: 'tree' },
+  garden_flower: { kit: 'scenery', node: 'flowers', width: 1.2, lod: 'crop' },
 };
 
 // ── Crops: three growth stages, authored at their real size in farm-kit.glb ──

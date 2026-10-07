@@ -188,9 +188,14 @@
   "root": "fountain"
  },
  {
-  "id": "picket_fence",
+  "id": "picket",
   "src": "raw:farm-kit",
   "root": "picket_straight"
+ },
+ {
+  "id": "garden_flower",
+  "src": "raw:nature",
+  "root": "flowers_b"
  },
  {
   "id": "scarecrow",

@@ -20,7 +20,7 @@ export const VI_CAST = {
   'Your crops are ready. Tap a bed and drag across the others to harvest them all.': 'Cây đã chín rồi. Chạm vào một luống rồi kéo qua các luống khác để thu hoạch hết.',
   'Empty beds earn nothing. Tap one, choose a crop, and drag across the rest.': 'Luống trống chẳng sinh lời. Chạm vào một luống, chọn cây rồi kéo qua các luống còn lại.',
   'The animals have something for you. Tap their home to collect it.': 'Đàn vật nuôi có quà cho bạn. Chạm vào chuồng để thu nhé.',
-  'The animals are hungry. Make feed at the feed mill, then tap their home.': 'Vật nuôi đang đói. Làm thức ăn ở máy xay rồi chạm vào chuồng.',
+  'The animals are hungry. Make feed at the feed mill, then tap their home.': 'Vật nuôi đang đói. Làm cám ở cối xay cám rồi chạm vào chuồng.',
   'Check the order board. Someone may want what is already in the barn.': 'Xem bảng đơn hàng đi. Có thể ai đó đang cần thứ đã có trong kho.',
   'Open the projects to see what the village needs next.': 'Mở mục dự án để xem làng cần gì tiếp theo.',
 };

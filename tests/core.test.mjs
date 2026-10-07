@@ -484,6 +484,7 @@ test('the streak garden plants one flower for each day you visit and never loses
 
 test('no pay pressure, no lost progress: a month away takes nothing away', () => {
   const s = schoolOpen(); s.people.lan = { hearts: 4.5, scenes: [3] };
+  tick(s, T0);   // post what those hand-set hearts already earned (Lan's 3-heart letter), so the month away starts settled
   const keep = () => ({ hearts: s.people.lan.hearts, flowers: gardenFlowers(s), cart: JSON.stringify(s.cart.crates.map(c => [c.good, c.n, c.filled])), coins: s.coins, stored: JSON.stringify(s.stored), village: JSON.stringify(s.village), level: s.level, mail: s.mail.length });
   const before = keep();
   for (let d = 1; d <= 31; d++) tick(s, T0 + d * DAY);

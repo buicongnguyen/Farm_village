@@ -106,6 +106,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
   add `remarks: [{ fact, text }]`. `REMARK_FACTS[fact](s)` gives the `{count}` or `{family}` parameters, or null; translate
   `family` with `t()` before filling. Gus has `arc: [{ visit: 1–3, text }]`.
 - `hearts.mjs`: `HEART_SCENES[personId][3|6|9] = { lines: [{ who, text }] × 3, reward: { decor } | { coins } }`.
+  Rewards are decorations unless the lines hand over money (ECONOMY.md section 1 keeps coin rewards out of the pace).
   `WISHES[personId] = [{ text, need: { kind, near: 'home' } }]`. `ARRIVALS[familyId] = [{ who, text }] × 3`.
 - `letters.mjs`: `LETTERS[] = { id, from, when: { type: 'chapter' | 'hearts' | 'level', value }, text }`. For `hearts`,
   the value is the hearts of `from`.
