@@ -889,5 +889,12 @@
   "roll": 24,
   "preset": "fish",
   "why": "side-on view shows the stripes and the fins"
+ },
+ {
+  "id": "trail_picnic_ribbon",
+  "src": "raw:exploration-props",
+  "root": "trail_picnic_ribbon",
+  "preset": "goods",
+  "rough": 0.6
  }
 ]

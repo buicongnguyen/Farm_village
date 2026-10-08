@@ -97,8 +97,8 @@ MIT) is a build tool only, not a dependency of the game.
   (`3d_farmer_fish_sell/public/assets/models/fish.glb`, the user's own project, nodes `fish_perch`, `fish_carp`,
   `fish_catfish`, `fish_golden`). Carp and catfish are recoloured warmer. They replace the 160 px copies of
   Willowmere's fish icons.
-- No new models in the game: the farmhouse forecourt is ground colour, two planters in the merged plaza mesh, and
-  the existing bench.
+- No new models in the game: the farmhouse forecourt is ground colour plus small tiles and two planters in the
+  homestead's `home-hedge` mesh, and the existing bench.
 - Before and after: `docs/reference-pass/`.
 
 ## Icon render v2
@@ -107,3 +107,12 @@ MIT) is a build tool only, not a dependency of the game.
   a hidden bounce floor, per-icon `rough`/`metal`, camera `preset`s) and `icon_post.py` (a round 2.8 % outline). Same
   sources as before; no new third-party art. `farm-kit.glb`: the pond's water discs moved 4 and 8 mm apart (no change
   to node counts or bounds).
+
+## AR-010 discovery trail
+
+- `exploration-props.glb` (21 KB, meshopt; generator `art/blender/build_farm_kit.py`, section "discovery trail (AR-010)",
+  Blender 4.5.9; original; one shared vertex-colour material). World size, base-centre pivot, front +z, no anchors:
+  `trail_porch_box_closed` 428 tris (0.75 × 0.46 × 0.35 m), `trail_porch_box_open` 452 tris, `trail_pond_cache_closed`
+  350 tris (about 0.8 m across with its earth patch and reeds), `trail_pond_cache_open` 372 tris, `trail_picnic_ribbon`
+  328 tris (0.42 m wide). No lettering.
+- Icon `trail_picnic_ribbon`: `render_icons.py` job (`raw:exploration-props`). Previews: `docs/discovery-trail/`.
