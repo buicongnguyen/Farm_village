@@ -75,7 +75,7 @@ export const EARLY = {
 };
 
 // ── Crops: three growth stages, authored at their real size in farm-kit.glb ──
-export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry'];
+export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng'];
 export const CROP_STAGES = ['sprout', 'mid', 'ripe'];
 for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
 for (const c of CROP_MODELS) KIND_MODELS[`crop:${c}`] = KIND_MODELS[`crop:${c}:ripe`];     // v0.1 names (life-view's cropStage)

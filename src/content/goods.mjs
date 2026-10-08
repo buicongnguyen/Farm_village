@@ -6,6 +6,9 @@ export const CROPS = {
   carrot:  { name: 'Carrot',  growMs: 30_000,  value: 4,  level: 2, model: 'crop_carrot', icon: '🥕' },
   corn:    { name: 'Corn',    growMs: 45_000, value: 7,  level: 3, model: 'crop_goldcorn', icon: '🌽' },
   pumpkin: { name: 'Pumpkin', growMs: 5 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
+  // premium crops (docs/VILLAGE-GROWTH-PLAN.md, stage 2): slow and valuable, the money for the village's big buildings
+  herb:    { name: 'Healing herb', growMs: 15 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },
+  ginseng: { name: 'Ginseng', growMs: 40 * MIN, value: 120, level: 9, model: 'crop_ginseng', icon: '🫚' },
 };
 export const TUTORIAL_FIRST_GROW_MS = 15_000;   // the very first wheat (DESIGN 15)
 
