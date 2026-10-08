@@ -609,9 +609,9 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred'))
+piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred', nfruit=10, fr=.27, out=1.3))   # fruit on the canopy, not inside it
 piece('cute_apple_bare', cute('ab', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach'))
+piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach', nfruit=10, fr=.27, out=1.3))
 piece('cute_peach_bare', cute('pb', 'leafwl', 'leafw', 'leafwd'))
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
 # tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
