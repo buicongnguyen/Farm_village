@@ -41,7 +41,6 @@ export class Hud {
         <button class="village-name" data-act="village" data-hud="village"></button>
         <div class="hud-status" data-hud="status"></div></div>
       <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
-      <button class="round small rim-grey hud-profile" data-act="profiles">${iconHtml('cottage', '', 'btn-icon')}<i class="badge" aria-hidden="true">1</i></button>
       <div class="hud-right">
         <button class="round rim-blue" data-act="today">${glyph('today', 'g')}<i class="badge dot"></i></button>
         <button class="round rim-teal" data-act="projects">${glyph('projects', 'g')}<i class="badge dot"></i></button>
@@ -83,10 +82,7 @@ export class Hud {
     q('[data-hud="village"]').title = t(journey.stage.goal);
     q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${t(journey.stage.name)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;   // how far the village is restored; a tap opens the projects
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
-    const profileButton = q('[data-act="profiles"]');
-    profileButton.setAttribute('aria-label', `${t('Farm profiles')} · ${t('Profile {n}', { n: this.profile ?? 1 })}`);
-    profileButton.title = t('Farm profiles');
-    profileButton.querySelector('.badge').textContent = this.profile ?? 1;
+    // farm profiles are chosen on the main menu (main.mjs) only
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
     for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`)?.setAttribute('aria-label', t(text));

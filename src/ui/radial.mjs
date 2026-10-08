@@ -121,7 +121,7 @@ export class Radial {
         const price = plantPrice(s, c), have = barn.stock(s, c);
         return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
-      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml(b.crop), label: t('All ({count})', { count: all }) }] : [])]; }
+      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml(b.crop, '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
       else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${bar(1 - (b.doneAt - now) / full)}`; }
     } else if (def?.fruit) {
       const st = treeState(s, id, now), f = FRUITS[def.fruit];

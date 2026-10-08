@@ -1,3 +1,4 @@
+import './mobile-game-init.mjs';
 // Boot: load the save, then the world, the land, life and people drawn from the rules state, the HUD, build mode, the
 // panels, the tap menu, the guide, day and night, sound, and autosave.
 import './style.css';
@@ -30,7 +31,7 @@ import { watchDiscoveries } from './ui/discovery-panels.mjs';
 import { watchExploration } from './ui/exploration-panels.mjs';
 import { ExplorationView } from './view/exploration-view.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
-import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
+import { t, languageReady, loadVietnamese, getLanguage, setLanguage } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
@@ -47,6 +48,35 @@ const app = document.getElementById('app');
 const splash = document.getElementById('boot');
 app.innerHTML = ''; if (splash) { splash.setAttribute('aria-hidden', 'true'); document.body.insertBefore(splash, app); }
 initModals(app);
+// The main menu (user request): choose the language and the farm profile before the game starts. Profiles are only
+// chosen here; reload the page to come back to this menu. Test builds skip it unless ?menu is given.
+if (!TEST_MODE || params.has('menu')) await mainMenu();
+async function mainMenu() {
+  splash?.remove();
+  const menu = document.createElement('section'); menu.className = 'main-menu'; menu.setAttribute('role', 'dialog');
+  app.appendChild(menu);
+  const draw = () => {
+    menu.setAttribute('aria-label', t('Main menu'));
+    menu.innerHTML = `<div class="main-menu-card"><div class="logo" role="img" aria-label="Farm Village"><b>Farm</b> <b>Village</b></div>
+      <div class="menu-lang" role="group" aria-label="${t('Language')}">
+        <button class="btn ${getLanguage() === 'en' ? 'primary' : 'ghost'}" data-lang="en">English</button>
+        <button class="btn ${getLanguage() === 'vi' ? 'primary' : 'ghost'}" data-lang="vi">Tiếng Việt</button></div>
+      <h2>${t('Choose your farm')}</h2>${renderProfiles(null, activeProfile())}</div>`;
+  };
+  draw();
+  await new Promise(done => menu.addEventListener('click', async e => {
+    const lang = e.target.closest('[data-lang]');
+    if (lang) { await setLanguage(lang.dataset.lang); draw(); return; }
+    const button = e.target.closest('[data-do]'), target = profileId(button?.dataset.n);
+    if (!button || button.disabled || !target) return;
+    if (button.dataset.do === 'resetProfile') {
+      if (!confirm(t('Start a new farm in Farm {n}? Only this farm will be erased.', { n: target }))) return;
+      if (!erase(target)) return;
+    } else if (button.dataset.do !== 'profile') return;
+    if (activeProfile() !== target && !selectProfile(target)) return;
+    menu.remove(); done();
+  }));
+}
 const profile = activeProfile(), savedProfile = inspectProfile(profile);
 // A damaged save is kept for recovery; never silently replace it with a fresh farm and autosave over it.
 if (!(TEST_MODE && params.has('new')) && savedProfile.error) await recoverProfile();

@@ -96,6 +96,8 @@ button.good-tile { cursor: pointer; }
 .radial-btn { position: absolute; left: -32px; top: -32px; width: 64px; height: 64px; border-radius: 50%; border: 4px solid var(--edge); background: radial-gradient(circle at 50% 30%, #fff, var(--paper) 60%, var(--paper-2));
   box-shadow: 0 4px 0 var(--edge-dark), 0 7px 12px #0004; display: grid; place-items: center; padding: 0; cursor: pointer; transform: translate(var(--x), var(--y)); }
 .radial-btn img.icon, .radial-btn .icon.glyph { width: 44px; height: 44px; margin-top: -6px; }
+/* every picture in a radial button fits its circle (the All buttons pass crop and tree icons with other classes) */
+.radial-btn > img, .radial-btn > .icon, .radial-btn > svg { width: 44px; height: 44px; max-width: 44px; max-height: 44px; object-fit: contain; margin-top: -6px; }
 .radial-btn .corner { position: absolute; right: -4px; top: -4px; width: 22px; height: 22px; }
 .radial-btn small { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font: 1000 12px 'Nunito', sans-serif; white-space: nowrap; background: #fff; border: 2px solid var(--edge); border-radius: 9px; padding: 0 6px; display: flex; align-items: center; gap: 2px; }
 .radial-btn small img.mark { width: 15px; height: 15px; }
