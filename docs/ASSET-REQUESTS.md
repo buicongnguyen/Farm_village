@@ -81,8 +81,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
-| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | delivered (PR, awaiting review) |
-| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | requested (scoped handoff below) |
+| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | done (live 2026-10-08) |
 | AR-002 | Meadow and dairy set | v0.5 (stage 3) | P1 | proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
 | AR-004 | Story set pieces for chapters 6-9 | v0.6-v0.8 | P2 | proposed |
@@ -92,11 +91,11 @@ replaced) and `dropped`.
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
-AR-001 is now requested with the scope in `docs/CLAUDE-HANDOFF.md`; the others remain proposed. The user or logic lane
+AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
 confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
-- Status: delivered (PR from `art/look-pass`, not merged; see `docs/look-pass/README.md`) · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
+- Status: done: merged in PR #2 (`32e3a62`), checked in production 2026-10-08; see `docs/look-pass/README.md` · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
 - Scope: `docs/CLAUDE-HANDOFF.md` and the consolidated plan section 6 take precedence over the original proposed
   treatment below. No requirement to reserve gold solely for rewards, prohibit red errors, use universal outlines,
   or add scene-wide light flashes. Other asset requests are not automatically approved by this request.
@@ -235,3 +234,8 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   AR-001 is requested for that handoff; no agent was automatically instructed to start implementation. During AR-001,
   Claude is the proposed active writer of visual handlers in `fx.mjs`/`juice.mjs`; Codex will avoid parallel edits
   there and own any necessary core payload or `main.mjs` sound-routing changes. Record the final handoff commit.
+- 2026-10-08, art lane: combined check of `art/look-pass` with `codex/v0.4-orchard` at `7610c40`: 179 rules tests and every
+  browser suite pass (`browser.mjs` 28/28). Logic's new `picked.stored/sold` and `fishCaught.first/rare` are used by the
+  effects; pick and rare-catch sounds now come only from `main.mjs` (art removed its duplicates, `448502d`). At the user's
+  request PR #1 and PR #2 were merged into `main` (`32e3a62`) and deployed; production loads on phone and PC with no errors
+  and serves the new colours and effects. AR-001 is done. Logic lane: merge `origin/main` into your next branch first.

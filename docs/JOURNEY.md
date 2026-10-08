@@ -208,7 +208,7 @@ is separate; neither branch is merged into production by this work.
 | Stage | Status |
 |---|---|
 | 1. Homecoming | done (v0.3) |
-| 2. The orchard | implemented in PR #1; logic/story/Vietnamese follow-up complete, awaiting review and art integration |
+| 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
