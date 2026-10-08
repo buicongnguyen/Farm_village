@@ -73,7 +73,7 @@ export class Radial {
     const s = this.s, now = this.game.now, lv = levelOf(s, id), name = thingName(s, id) ?? '';
     if (isRepairing(s, id)) { const left = Math.max(0, s.repairing[id].doneAt - now); return { buttons: [], info: `${name} · ${condLabel(s, id)} · ${shortTime(left)}${bar(1 - left / REPAIR.broken.ms)}` }; }
     const cost = repairCost(s, id), buttons = [{ act: 'repair', id, icon: iconHtml('wrench', '', 'ic'), label: `${coinMark()}${num(cost)}`, disabled: s.coins < cost }];
-    if (lv < 3 && (def?.produces || def?.stall || def?.market || def?.pond || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.stall || def.market ? 'stall' : def.pond ? 'pond' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
+    if (lv < 3 && (def?.produces || def?.fruitStand || def?.stall || def?.market || def?.pond || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.fruitStand ? 'fruit_stand' : def.stall || def.market ? 'stall' : def.pond ? 'pond' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
     return { buttons, info: `${name} · ${condLabel(s, id)}` };
   }
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
@@ -128,6 +128,9 @@ export class Radial {
       else info = t(def.name);
     } else if (def?.garden) info = `${iconHtml('garden_flower', '', 'mini')} ${t('Streak garden: day {count}', { count: s.today.days ?? 1 })}`;
     else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
+    else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
+    else if (p?.kind === 'clinic') { this.hide(); this.panels.show('clinic', id); return; }
+    else if (def?.pet) info = t('Biscuit watches the beds and chases crows. No upkeep needed.');
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
     else if (def?.pond) { this.hide(); this.panels.show('pond'); return; }

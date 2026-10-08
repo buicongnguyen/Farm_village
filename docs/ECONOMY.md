@@ -354,3 +354,14 @@ so the numbers above stand. Before v0.2, the pace model gets these additions and
 2. Run the three profiles. Keep the steady player's school on day 3–4 and the festival stage in weeks 4–8.
 3. Once the game exists, the same change goes into the game's content data, and its simulation test (M1) must still
    pass.
+
+## v0.4 orchard
+
+| Item | Opens | Price / timing |
+|---|---|---|
+| Cherry tree | Level 4 | 70 coins; 3 fruit after 25 s, then every 40 s; fruit base value 7 |
+| Fruit stand | Level 4 | 80 coins; 3 stacks of up to 10 fruit; one fruit sold per 30 s at rounded 1.25 × base value |
+| Biscuit's kennel | Level 5 | 90 coins; no upkeep, goods consumption or crop losses |
+| Clinic | Level 6, school completed, four arrived households | 600 coins plus 12 bread and 9 cherries donated to the project |
+
+The real-rules simulation plants the clinic's cherry tree before reserving its building price. Empty and restored starts both keep school days at casual 5, steady 3 and keen 2. All profiles finish the clinic and acquire the stand and kennel within fourteen days; `tests/sim.test.mjs` checks this alongside the earlier pace targets.

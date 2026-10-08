@@ -2,7 +2,7 @@
 // Small things (beds, paths, flowers, fences) are placed with one tap each, so a row can be painted quickly; bigger things
 // show the ghost first and are placed with the tick button (or a second tap on the same spot). Every card shows the art
 // kit's rendered icon; locked ones show a padlock with the level or project that opens them.
-import { t, num } from '../kit/i18n.mjs';
+import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL } from '../content/world.mjs';
@@ -64,7 +64,7 @@ export class BuildView {
     const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat).map(([kind, d]) => {
       const may = mayBuild(s, kind), level = s.level < d.level, price = priceOf(s, kind), stored = s.stored?.[kind] ?? 0;
       const locked = level || !may.ok;
-      const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, may.params)}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
+      const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
       return `<button class="card${kind === this.kind ? ' on' : ''}${locked ? ' locked' : ''}${stored ? ' stored' : ''}" data-kind="${kind}" ${locked ? 'aria-disabled="true"' : ''}>${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small>${stored ? `<i class="badge">${stored}</i>` : ''}</button>`;
     }).join('');
     const tools = TOOLS.map(tl => `<button class="round small tool${this.mode === tl.id ? ' on' : ''}" data-tool="${tl.id}" aria-label="${t(tl.name)}" title="${t(tl.name)}">${iconHtml(tl.icon, '', 'btn-icon')}</button>`).join('');
@@ -114,7 +114,7 @@ export class BuildView {
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
       : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building to take it down for part of its price')
-      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(priceOf(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, c.params) : t('Tap where it should go');
+      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(priceOf(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, tParams(c.params)) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
       <button class="round small" data-bar="undo" aria-label="${t('Undo')}">${glyph('undo', 'g')}</button>

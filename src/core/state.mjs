@@ -3,8 +3,10 @@ import { START, START_RESTORE } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
 import { applyRestore } from './restore.mjs';
+import { normalizeFruitStand } from './orchard.mjs';
+import { BUILDINGS } from '../content/buildings.mjs';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -27,6 +29,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     people: {},                             // person id → { hearts (0–10), scenes: [3, 6, 9 seen], giftDay }
     neighbours: {},                         // id → { friendship, day, visits: [ms], visited: 0, trade: {...} | null }
     stall: { items: [], nextSaleAt: 0 },
+    fruitStand: { items: [], coins: 0, nextSaleAt: 0 },
     quests: { list: [], done: 0 },           // three live goals (quests.mjs)
     weekly: null,                            // the weekly village goal { week, i, base, claimed }
     hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
@@ -42,7 +45,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     known: {},                              // recipes learnt early from heart scenes: id → true
     story: { chapter: 0, tutorial: 0, firstWheat: true },
     firsts: {},                             // album: when each first happened
-    stats: { cleared: 0, paths: 0, harvested: 0, produced: 0, ordersFilled: 0, orderCoins: 0, coinsEarned: 0, picked: 0, gifts: 0, carts: 0 },
+    stats: { cleared: 0, paths: 0, harvested: 0, produced: 0, ordersFilled: 0, orderCoins: 0, coinsEarned: 0, picked: 0, fruitSold: 0, gifts: 0, carts: 0 },
     counts: {},                             // kind → how many are placed (kept in step by place/store)
     stored: {},                             // kind → how many are in the storage shed (placing them again is free)
     undo: [],                               // the last build actions, for undo (DESIGN 4.4)
@@ -82,6 +85,11 @@ export function migrate(save) {
   if (save.version < 3) save.version = 3;
   // v3 → v4 (goals, fishing, the market): an older farm gets the pond and the market square where there is room
   const old = save.version < 4; if (save.version < 4) save.version = 4;
+  // v4 → v5: card 5 used to be a teaser; let the real clinic ending play once for those saves.
+  if (save.version < 5) {
+    if (save.story?.chapter === 5 && !(save.counts?.clinic > 0)) save.story.chapter = 4;
+    save.version = 5;
+  }
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -89,7 +97,10 @@ export function migrate(save) {
 /** Fill every field a newer game expects with its default, keeping what the save has. */
 export function withDefaults(s) {
   const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
-  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing', 'quests', 'weekly', 'hurry', 'album']) if (s[k] === undefined) s[k] = fresh[k];
+  for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing', 'quests', 'weekly', 'hurry', 'album', 'fruitStand']) if (s[k] === undefined) s[k] = fresh[k];
+  s.fruitStand = normalizeFruitStand(s.fruitStand);
+  // The first orchard build accidentally let pet homes acquire ordinary building wear.
+  for (const [id, p] of Object.entries(s.placed ?? {})) if (BUILDINGS[p.kind]?.pet && [1, 2].includes(s.cond?.[id]?.level) && !s.repairing?.[id]) delete s.cond[id];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid

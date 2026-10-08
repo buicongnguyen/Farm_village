@@ -557,7 +557,7 @@
      "Villager shirt": "#E8573F",
      "Villager trousers": "#4A5A7A"
     },
-    "x": 0.0
+    "x": 0
    },
    {
     "src": "3D_game_scene/public/models/villager-kid.glb",
@@ -595,7 +595,7 @@
      "Villager shirt": "#2B4C9B",
      "Villager trousers": "#4A5A7A"
     },
-    "x": 0.0
+    "x": 0
    },
    {
     "src": "3D_game_scene/public/models/villager-kid.glb",
@@ -661,7 +661,7 @@
      "Villager shirt": "#E8573F",
      "Villager trousers": "#4A5A7A"
     },
-    "x": 0.0
+    "x": 0
    },
    {
     "src": "3D_game_scene/public/models/villager-kid.glb",
@@ -718,5 +718,61 @@
    -30,
    16
   ]
+ },
+ {
+  "id": "cherry",
+  "src": "raw:farm-kit",
+  "root": "cherries",
+  "view": [
+   -30,
+   16
+  ]
+ },
+ {
+  "id": "cherry_tree",
+  "src": "raw:farm-kit",
+  "root": "cute_cherry",
+  "view": [
+   -30,
+   16
+  ]
+ },
+ {
+  "id": "kennel",
+  "src": "raw:farm-kit",
+  "root": "kennel",
+  "view": [
+   -30,
+   16
+  ]
+ },
+ {
+  "id": "fruit_stand",
+  "src": "raw:farm-kit",
+  "root": "fruit_stand",
+  "view": [
+   -30,
+   16
+  ]
+ },
+ {
+  "id": "clinic",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "hospital",
+  "view": [
+   -30,
+   16
+  ]
+ },
+ {
+  "id": "person:hazel",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#EDC3A4",
+   "Villager hair": "#DDDDCF",
+   "Villager shirt": "#EBF2E4",
+   "Villager trousers": "#567A6F"
+  }
  }
 ]

@@ -6,25 +6,24 @@
 // follows Pip. AI neighbours walk in from their signpost, say something about the farm, and leave. At night everyone
 // goes home. Tap a person to hear their line.
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
+import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
-const { JUNE_TIPS } = PEOPLE_DATA;
+import { conversationLine, juneAdvice, pipReactionLines } from '../core/conversation.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { CROPS, ANIMALS } from '../content/goods.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
-import { t } from '../kit/i18n.mjs';
+import { t, tParams } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS } = PEOPLE_DATA;
+const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
 const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
-/** Template params for t(): string values (the {family} name) are translated first. */
-const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit', you: 'You' };
 const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo']);   // villagers who like to fish
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
@@ -40,16 +39,6 @@ const OUTFITS = {
 };
 const outfitOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
 // What Pip says when things happen (the story package's lines win when it provides them), and June's stuck tips.
-const PIP_LINES = {
-  firstHarvest: 'We did it! Our very first harvest!',
-  harvested: ['I helped! Well, I watched.', 'Crunchy! Can we keep some?', 'The barn is getting full of good things.'],
-  animalArrived: ['A hen! Can I name her Pancake?', 'Welcome to the farm, new friend!'],
-  collected: ['Still warm! Eggs are amazing.', 'Fresh from the farm!'],
-  familyArrived: ['New neighbours! I hope they have a kid my age.'],
-  orderFilled: ['Ada says a thank you is the best payment. Coins are nice too.'],
-  levelUp: ['Level up! Does that mean I get a bigger room?'],
-  projectDone: ['Hooray! Everyone come and look!'],
-};
 const one = list => Array.isArray(list) ? list[Math.floor(Math.random() * list.length)] : list ?? null;
 const villager = id => VILLAGERS.find(p => p.id === id);
 /** Is this the first time this happened on the farm (so Pip uses his "first" line)? */
@@ -66,6 +55,7 @@ export class PeopleView {
     this.bubbles = document.createElement('div'); this.bubbles.className = 'bubbles'; root.appendChild(this.bubbles);
     world.onFrame((dt, now) => this.frame(dt, now));
     game.on((r, action) => {
+      if (action === 'load' || r.events?.some(e => PEN_CHANGES.has(e.type))) this.pens = null;
       if (action && action !== 'tick' && action !== 'test' && action !== 'load') this.lastAction = performance.now();
       for (const e of r.events ?? []) this.react(e);
     });
@@ -83,6 +73,8 @@ export class PeopleView {
     }
     const school = Object.entries(s.placed).find(([, p]) => p.kind === 'school');
     if (school) { const p = school[1]; out.push({ id: 'cora', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    const clinic = Object.entries(s.placed).find(([, p]) => p.kind === 'clinic');
+    if (clinic) { const p = clinic[1]; out.push({ id: 'hazel', body: 'hana', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     return out;
   }
   sync() {
@@ -220,6 +212,8 @@ export class PeopleView {
   turnTo(w, want, dt, rate = 8) { const turn = ((want - w.rot) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; w.rot += Math.max(-dt * rate, Math.min(dt * rate, turn)); }
   liveVillager(w, dt, night) {
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
+    // At dusk, leave the unfinished errand and walk straight home.
+    if (night && !w.visitor && !w.goingHome) { w.goingHome = true; w.route = this.route(this.cellOf(w), w.home); w.todo = null; w.carry = false; w.act = 'home'; }
     const speed = (w.kid ? 1.55 : 1.45) * (night ? 1.5 : 1);   // hurrying home after dark
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
     if (w.visitor) {
@@ -272,7 +266,7 @@ export class PeopleView {
     if (w.player) { w.goal = at; w.stay = 60; w.onArrive = () => { if (!this.s.fishing?.line) this.game.do('castLine'); w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z); w.clipFor = 'Sit'; w.wait = 20; }; }
     else if (w.family) { w.target = at; w.wait = 0; w.fishing = true; }
     else { w.route = this.route(this.cellOf(w), spot); w.todo = { act: 'fish', time: 40, face }; w.wait = 0; }
-    this.say(w, t('Off to the pond!'), 2500);
+    if (!w.player) this.say(w, t('Off to the pond!'), 2500);
   }
   // ── You: the main character walks to whatever you tap and does the chore there (the rules act at once; this is the show) ──
   playerGo(cell) { const w = this.walkers.get('you'); if (!w || w.indoors) return; w.goal = [(cell.x + 0.5) * CELL, (cell.z + 0.5) * CELL]; w.stay = 6; }
@@ -313,7 +307,66 @@ export class PeopleView {
     if ((w.wait -= dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
     const [x, z] = this.familySpot(w.id); w.target = [(x + 0.2 + Math.random() * 0.6) * CELL, (z + 0.2 + Math.random() * 0.6) * CELL];
   }
+  dogCanStand(x, z) {
+    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+    return this.canStand(x, z) || (cx >= VILLAGE.x0 && cx <= VILLAGE.x1 && cz >= VILLAGE.z0 && cz <= VILLAGE.z1 && !occupant(this.s, cx, cz) && !this.penCells().has(`${cx},${cz}`));
+  }
+  /** Rest outside the kennel's front, or another free neighbouring cell if the garden blocks it. */
+  dogRestSpot(kennel) {
+    const offsets = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,-1],[-1,1]];
+    for (let [dx, dz] of offsets) {
+      for (let i = 0; i < (kennel.rot ?? 0); i++) [dx, dz] = [dz, -dx];
+      const spot = [(kennel.x + dx + 0.5) * CELL, (kennel.z + dz + 0.5) * CELL];
+      if (this.dogCanStand(...spot) && !this.crossesFence((kennel.x + 0.5) * CELL, (kennel.z + 0.5) * CELL, ...spot)) return spot;
+    }
+    return null;
+  }
+  /** A kennel gives Biscuit a route across free ground, keeping him outside fences and buildings. */
+  dogRoute(from, to) {
+    const key = (x, z) => z * N + x;
+    const free = (x, z) => this.dogCanStand((x + 0.5) * CELL, (z + 0.5) * CELL);
+    const queue = [from], prev = new Map([[key(...from), -1]]);
+    for (let i = 0; i < queue.length; i++) {
+      const [x, z] = queue[i]; if (x === to[0] && z === to[1]) break;
+      for (const [nx, nz] of [[x+1,z],[x-1,z],[x,z+1],[x,z-1]]) {
+        const k = key(nx,nz); if (prev.has(k) || !free(nx,nz) || this.crossesFence((x+.5)*CELL,(z+.5)*CELL,(nx+.5)*CELL,(nz+.5)*CELL)) continue;
+        prev.set(k,key(x,z)); queue.push([nx,nz]);
+      }
+    }
+    if (!prev.has(key(...to))) return [];
+    const out = []; for (let k = key(...to); k !== -1; k = prev.get(k)) out.push([k % N, Math.floor(k / N)]);
+    return out.reverse();
+  }
   liveDog(w, dt, night) {
+    const kennel = kennelOf(this.s);
+    if (kennel) {
+      const critters = this.world.critters, calm = document.body.classList.contains('reduced-motion');
+      const crow = !night && !calm && critters?.crows.find(c => c.state === 'ground');
+      const home = this.dogRestSpot(kennel), target = crow ? [crow.sub.x, crow.sub.z] : home;
+      w.indoors = false;
+      if (!target) { w.route = []; w.dogTarget = null; w.duty = 'watch'; w.clip = night ? 'Sleep' : 'Sit'; w.speed = 1; return; }
+      const dx = target[0] - w.x, dz = target[1] - w.z, d = Math.hypot(dx, dz);
+      w.duty = crow ? 'chase' : d > 0.6 ? 'return' : 'watch';
+      if (d > (crow ? 2 : 0.6) && !calm) {
+        const clearStep = () => {
+          if (!w.route.length) return false;
+          const [cx, cz] = w.route[0], x = (cx + 0.5) * CELL, z = (cz + 0.5) * CELL;
+          return this.dogCanStand(x, z) && !this.crossesFence(w.x, w.z, x, z);
+        };
+        // A garden can change during a chase. Replan before crossing a newly placed obstacle,
+        // and retry an unreachable target at most once a second so clearing a path wakes him up.
+        const blocked = w.route.length && !clearStep();
+        if (w.dogTarget !== target.join(',') || blocked || (!w.route.length && this.time >= (w.dogPlanAt ?? 0))) {
+          w.route = this.dogRoute(this.cellOf(w), target.map(v => Math.floor(v / CELL)));
+          w.dogTarget = target.join(','); w.dogPlanAt = this.time + 1;
+        }
+        if (clearStep() && this.follow(w, dt, crow ? 4.2 : 2.2)) { if (crow) this.walking(w, 4.2, 'Run'); return; }
+        w.route = [];
+      }
+      if (crow && d <= 3) { critters.flyOff(crow); this.once(w, 'Bark', 1.4); w.dogTarget = null; }
+      w.clip = night ? 'Sleep' : crow && d <= 3 ? 'Bark' : 'Sit'; w.speed = 1; return;
+    }
+    w.duty = 'follow'; w.dogTarget = null;
     const pip = this.walkers.get('pip');
     if (night || !pip || pip.indoors) {   // asleep on the farmhouse porch
       const px = (FARMHOUSE.x + 3.4) * CELL, pz = (FARMHOUSE.z + 0.9) * CELL;
@@ -349,8 +402,7 @@ export class PeopleView {
   pipSays(e) {
     const pip = this.walkers.get('pip'); if (!pip || pip.indoors) return;
     const said = (this.said ??= new Set()), first = !said.has(e.type) && FIRSTS[e.type]?.(this.s); said.add(e.type);
-    const says = villager('pip')?.says?.[e.type], mine = first && e.type === 'harvested' ? PIP_LINES.firstHarvest : PIP_LINES[e.type];
-    const line = (first && says?.first) || one(says?.lines) || one(mine);
+    const line = one(pipReactionLines(this.s, e, first));
     if (!line || (!first && this.time - this.pipAt < 30)) return;
     this.pipAt = this.time;
     this.say(pip, t(line));
@@ -367,19 +419,14 @@ export class PeopleView {
     if (performance.now() - this.lastAction < this.idleTipMs || performance.now() - this.tipAt < 300000) return;
     this.juneTip();
   }
-  juneTip() {
+  juneTip({ introduce = false } = {}) {
     const june = this.walkers.get('june'); if (!june || june.indoors) return null;
-    const s = this.s, now = this.game.now, beds = Object.values(s.placed).filter(p => p.kind === 'bed').length, planted = Object.keys(s.beds).length;
-    const animals = Object.values(s.animals).flat(), feed = id => (s.barn.items[id] ?? 0) > 0;
-    const key = Object.values(s.beds).some(b => b.doneAt <= now) ? 'harvest' : animals.some(a => a.doneAt != null && a.doneAt <= now) ? 'collect'
-      : animals.some(a => a.doneAt == null && feed(ANIMALS[a.kind].eats)) ? 'feed' : animals.some(a => a.doneAt == null) ? 'feed'
-      : beds > planted ? 'plant' : (s.orders?.cards ?? []).length ? 'orders' : 'project';
-    // the story's own tip first, then its next ones in turn; what needs doing right now (ready crops, animals) comes first
-    const june$ = villager('june'), told = (this.tips = (this.tips ?? -1) + 1), urgent = ['harvest', 'collect', 'feed'].includes(key);
-    const line = urgent || !june$?.tip ? JUNE_TIPS[key] : told === 0 ? june$.tip : june$.tips?.[(told - 1) % june$.tips.length] ?? JUNE_TIPS[key];
+    const advice = juneAdvice(this.s, this.game.now, this.juneTopic);
+    this.juneTopic = advice.key;
     this.tipAt = performance.now(); this.lastAction = performance.now();
-    this.say(june, t(line), 8000); this.once(june, 'Wave', 1.4);
-    return key;
+    const line = [introduce ? t(villager('june').line) : null, t(advice.text)].filter(Boolean).join(' ');
+    this.say(june, line, 8000); this.once(june, 'Wave', 1.4);
+    return advice.key;
   }
   // ── Speech bubbles ──
   screenOf(w, y = 2.3) { const p = this.world.cam.camera.position.clone().set(w.x, y, w.z).project(this.world.cam.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }
@@ -399,22 +446,29 @@ export class PeopleView {
   }
   /** A line from the chatter pools for this time of day and age, dealt like cards: none repeats until most of its pool is used. */
   chatter(w) {
-    const part = partOfDay(new Date(this.game.now).getHours()), age = w.kid || w.id === 'pip' || GIRLS.has(w.id) ? 'kid' : 'grown', pool = CHATTER[part][age], key = `${part}|${age}`;
-    const used = (this.bags ??= new Map()).get(key) ?? new Set(); if (used.size >= Math.ceil(pool.length * 0.75)) used.clear();
+    const part = partOfDay(new Date(this.game.now).getHours()), age = w.kid || w.id === 'pip' || GIRLS.has(w.id) ? 'kid' : 'grown';
+    const id = w.person ?? w.id, personal = PEOPLE[id]?.idle, pool = personal?.length ? personal : CHATTER[part][age], key = personal?.length ? id : `${part}|${age}`;
+    // Personal voices (Ada and Pip) use their complete pool before repeating. Shared chatter keeps its session bag.
+    const used = (this.bags ??= new Map()).get(key) ?? new Set(); if (used.size >= (personal?.length ? pool.length : Math.ceil(pool.length * 0.75))) used.clear();
     const left = pool.filter(l => !used.has(l)), line = left[Math.floor(Math.random() * left.length)]; used.add(line); this.bags.set(key, used);
     return line;
   }
-  talk(w) {
-    const who = PEOPLE[w.person ?? w.id];
+  talk(w, { order = false } = {}) {
+    const id = w.person ?? w.id, who = PEOPLE[id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
-    if (w.player) { this.say(w, t(['A good day for farm work!', 'The farm looks better every day.', 'What shall we do next?'][Math.floor(Math.random() * 3)])); this.once(w, 'Wave', 1.2); return; }
-    // somebody with an order for you says so and opens the order board
-    const card = this.s.orders.cards.find(c => c.from === (w.person ?? w.id));
+    if (w.player) { w.bubble?.remove(); w.bubble = null; this.once(w, 'Wave', 1.2); return; }
+    // Orders are available on the board. An explicit caller can still open this person's card.
+    const card = order && this.s.orders.cards.find(c => c.from === id);
     if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
-    // their own line the first time, then the day's chatter, so people rarely repeat themselves
-    if (who) { this.say(w, t(w.comment ?? (w.heard ? this.chatter(w) : who.line))); w.heard = true; w.comment = null; }
-    else if (w.id === 'june') { if (Math.random() < 0.4) this.juneTip(); else this.say(w, t(this.chatter(w))); }
-    else if (w.id === 'pip') { this.say(w, t(w.heard ? this.chatter(w) : 'Can we get a pony one day? Or a goat? A goat would be fine.')); w.heard = true; }
+    if (id === 'june') { this.juneTip({ introduce: !w.heard }); w.heard = true; }
+    else if (who) {
+      // Introduce the person, then revisit their line when its story context changes. Otherwise deal fresh chatter.
+      const context = conversationLine(this.s, id), fresh = !w.heard || w.contextKey !== context.key;
+      this.say(w, t(w.comment ?? (fresh ? context.text : this.chatter(w)), tParams(w.params)));
+      // A visitor's arrival comment does not consume their personal introduction.
+      if (!w.comment) { w.heard = true; w.contextKey = context.key; }
+      w.comment = null;
+    }
     // face the camera and wave
     w.faceTo = this.world.cam.yaw; w.rot = this.world.cam.yaw; this.once(w, who && w.visitor ? 'Talk' : 'Wave', 1.3);
   }

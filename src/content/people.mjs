@@ -1,6 +1,8 @@
 // Families, villagers and AI neighbours for v0.1 (DESIGN 9, docs/STORY.md). Families move into cottages in this order.
 // Every person who can post an order has 4–6 `orders` lines in their own voice (orders.mjs picks from them and falls
 // back to ORDER_LINES). Voices and Vietnamese pronouns per speaker are listed in docs/STORY.md.
+import { workingCount } from '../core/working.mjs';
+
 export const FAMILIES = [
   { id: 'tran', name: 'The Tran family', kids: true, people: [
     { id: 'minh', name: 'Minh', role: 'Carpenter', line: 'A good house starts with a straight beam and a kind neighbour.', likes: ['corn_bread'],
@@ -10,6 +12,7 @@ export const FAMILIES = [
       orders: ['For the street supper on Friday.', 'Bo grew three centimetres this month. He eats like a horse.', 'Testing a recipe from my mother\'s notebook.',
         'A welcome basket for whoever moves in next.', 'I cook when I am happy. I am very happy.'] },
     { id: 'bo', name: 'Bo', role: 'Schoolboy', line: 'Is the school really going to open again? I want a desk by the window!', likes: ['carrot'], kid: true,
+      contextLines: [{ when: 'school', text: 'The school is open! My desk is by the window, just as I hoped.' }],
       orders: ['Mum said I could order something! This one!', 'It is for a frog party. Captain is the guest.', 'For my lunchbox. Pip says mine is the best one.',
         'I need it for school. It is important. Really!'] },
   ] },
@@ -34,6 +37,7 @@ export const FAMILIES = [
   ] },
   { id: 'reyes', name: 'The Reyes family', kids: true, people: [
     { id: 'marisol', name: 'Marisol', role: 'Nurse', line: 'A village needs a clinic. I have a list, and a plan.', likes: ['milk'],
+      contextLines: [{ when: 'clinic', text: 'The clinic is open. There is room to care for everyone now.' }],
       orders: ['For the clinic fundraiser.', 'Healthy snacks for the school. Nurse\'s orders.', 'Pia counted the pantry. All forty jars are empty.',
         'For a family I visit on my rounds.'] },
     { id: 'tomas', name: 'Tomas', role: 'Mechanic', line: 'If it squeaks, bring it to me.', likes: ['bread'],
@@ -48,13 +52,23 @@ export const FAMILIES = [
 // Villagers who are not in a rental family. `family: true` marks your own family: they never post orders (noOrders),
 // June gives tips, Pip comments on events in speech bubbles, and Ellis is away upriver: he appears only through letters.
 export const VILLAGERS = [
+  { id: 'hazel', name: 'Dr Hazel', role: 'Doctor', arrives: 'clinic', noOrders: true, noGifts: true,
+    line: 'A nurse, a vet, and a cherry tree outside. You have given me every reason to stay.' },
   { id: 'ada', name: 'Ada', role: 'Your grandmother', line: 'Bring Hollowbrook home, dear. Start with one seed.',
+    idle: [
+          "Ellis always said the brook keeps its own time. We can, too.",
+          "Pip has another question for me. I had better put the kettle on.",
+          "I kept my old bread tin. Some things are worth bringing home again.",
+          "There was always room for one more chair at our village table.",
+          "When you were small, you could smell my bread from the gate.",
+          "The old village had noisy days and quiet ones. Both were home."
+    ],
     orders: ['Ellis\'s favourite. I still make it for him, even when he is upriver.', 'For my oven. It has not been this busy since you were small.',
       'Pip asked for my old recipe. We will make it together.', 'A little something for whoever moves in next.',
       'I sold these at the mill gate when I was a girl. Let us see if I still can.'] },
   { id: 'june', name: 'June', role: 'Your partner', family: true, noOrders: true, line: 'I will keep the house, you keep the fields. Deal?',
-    // `tip`: the stuck tip after two idle minutes; `tips`: the next ones, in turn
-    tip: 'Stuck, love? The order board always has one card you can fill. Start there.',
+    // General encouragement when no immediate task is ready; contextual advice lives in JUNE_TIPS.
+    tip: 'We can look around together, or take a little break. There is no hurry.',
     tips: ['The Today board says what is ready and what comes next.', 'Short crops while we are here, long crops before bed. That is my rule.',
       'Projects open new things. Peek at the next one when you are not sure.'] },
   { id: 'pip', name: 'Pip', role: 'Your child', family: true, noOrders: true, kid: true, line: 'Can I name the next hen? Please?',
@@ -77,7 +91,7 @@ export const VILLAGERS = [
       'Science project: does bread rise faster if you sing to it?'] },
 ];
 
-// AI neighbours. `comments` follow commentFor's facts in order (10 beds, 6 paths, 6 planted, a cottage). `remarks` read
+// AI neighbours. Legacy `comments` use commentFor's per-neighbour fact map. State-aware `remarks` read
 // the state: REMARK_FACTS[fact](s) gives the {placeholders}, or null when the remark does not apply yet. Gus also has a
 // three-visit `arc` that ends with him admitting Ada taught him to bake.
 export const NEIGHBOURS = [
@@ -119,8 +133,8 @@ export const REMARK_FACTS = {
     const h = Object.values(s.homes ?? {}).filter(x => x.arrived && x.family).sort((a, b) => b.arrivesAt - a.arrivesAt)[0];
     const f = h && FAMILIES.find(x => x.id === h.family); return f ? { family: f.name } : null;
   },
-  cottages: s => (s.counts?.cottage ?? 0) >= 2 ? { count: s.counts.cottage } : null,
-  bakery: s => (s.counts?.bakery ?? 0) >= 1 ? {} : null,
+  cottages: s => { const n = Object.values(s.homes ?? {}).filter(h => h.arrived && h.family).length; return n >= 2 ? { count: n } : null; },
+  bakery: s => workingCount(s, 'bakery') > 0 ? {} : null,
 };
 
 /** Every person who can post an order, with their portrait colour. */
@@ -133,12 +147,14 @@ export const ORDER_LINES = [
 /** The tutorial's first order (DESIGN 15). */
 export const FIRST_ORDER = { from: 'ada', need: { wheat: 6 }, coins: 20, xp: 8, line: 'My first loaf in years! Six wheat, please.' };
 
-// June's tips when something needs doing now (view/people-view.mjs picks the key); she says them as mình to the player.
+// June's advice, selected without changing the game by core/conversation.mjs; she says mình to the player.
 export const JUNE_TIPS = {
   harvest: 'Your crops are ready. Tap a bed and drag across the others to harvest them all.',
-  plant: 'Empty beds earn nothing. Tap one, choose a crop, and drag across the rest.',
+  plant: 'If you fancy planting, there is room in the empty beds. They can wait, too.',
   collect: 'The animals have something for you. Tap their home to collect it.',
-  feed: 'The animals are hungry. Make feed at the feed mill, then tap their home.',
-  orders: 'Check the order board. Someone may want what is already in the barn.',
+  feed: 'There is feed in the barn. Tap the animals’ home when you want to feed them.',
+  makeFeed: 'There is grain ready for feed. The feed mill can make a batch when you like.',
+  products: 'Something is ready at a workshop. Tap the building when you want to collect it.',
+  orders: 'There is an order we can fill with spare goods. Shall we have a look at the board?',
   project: 'Open the projects to see what the village needs next.',
 };

@@ -138,7 +138,7 @@ await check('markers: a red ! over broken things, a gold coin over ripe crops; t
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));
   await ctx.close();
 });
-await check('people: you are on the farm and walk to what you tap; a villager with an order opens the board when tapped', async () => {
+await check('people: you walk to what you tap; conversation stays available and explicit order intent opens the board', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
   const before = await page.evaluate(() => { const w = farm.people.walkers.get('you'); return [w.x, w.z]; });
@@ -147,9 +147,16 @@ await check('people: you are on the farm and walk to what you tap; a villager wi
   await page.waitForTimeout(2500);
   const after = await page.evaluate(() => { const w = farm.people.walkers.get('you'); return [w.x, w.z, !!w.goal]; });
   expect(Math.hypot(after[0] - before[0], after[1] - before[1]) > 3, `you did not walk: ${before} -> ${after}`);
-  // a villager who posted an order: tapping them opens the order board
-  const opened = await page.evaluate(() => { const g = farm.game, ppl = farm.people; g.s.orders.cards = [{ id: 'x1', from: 'ada', need: { wheat: 1 }, coins: 5, xp: 1, line: 'hi' }]; const w = ppl.walkers.get('ada'); w.indoors = false; ppl.onOrder = c => { window.__asked = c.id; }; ppl.talk(w); return window.__asked; });
-  expect(opened === 'x1', 'tapping the order giver did not ask for the order');
+  const opened = await page.evaluate(() => {
+    const g = farm.game, ppl = farm.people;
+    g.s.orders.cards = [{ id: 'x1', from: 'ada', need: { wheat: 1 }, coins: 5, xp: 1, line: 'hi' }];
+    const w = ppl.walkers.get('ada'); w.indoors = false;
+    ppl.onOrder = c => { window.__asked = c.id; };
+    ppl.talk(w);
+    if (window.__asked || !w.bubble?.textContent) throw Error('ordinary talk was replaced by an order');
+    ppl.talk(w, { order: true }); return window.__asked;
+  });
+  expect(opened === 'x1', 'explicit order intent did not ask for the order');
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });

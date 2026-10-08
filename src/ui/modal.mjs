@@ -16,7 +16,12 @@ function next() {
   open = true;
   const el = document.createElement('div'); el.className = `modal${item.modal ? ' strict' : ''}${item.cls ? ` ${item.cls}` : ''}`;
   el.innerHTML = `<div class="card-modal">${item.html}</div>`;
-  const close = () => { el.remove(); item.onClose?.(); next(); };
+  let closing = false;
+  const close = () => {
+    if (closing) return; closing = true;
+    // Callbacks can queue the next chapter: keep this card connected so showModal does not start it twice.
+    try { item.onClose?.(); } finally { el.remove(); next(); }
+  };
   el.addEventListener('click', e => {
     if (e.target.closest('[data-close]')) { sfx('click'); close(); return; }
     if (e.target === el && !item.modal) close();

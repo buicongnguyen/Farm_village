@@ -20,5 +20,7 @@ export const STEPS = [
     needs: { level: 6, kidsFamilies: 2 }, deliver: { bread: 24, corn_bread: 10 }, cost: 4000, builds: ['school'], done: s => s.counts.school >= 1 },
   { id: 'cottages34', name: 'Cottages three and four', text: 'The school brings new families. Build two more cottages.',
     restore: 'The school brings new families. Repair the last cottage and build one more.', needs: {}, builds: ['cottage'], allow: { cottage: 4 }, done: s => working(s, 'cottage') >= 4 },
+  { id: 'clinic', name: 'Someone to care for us', text: 'Four settled families, bread for the waiting room and cherries from the orchard: help Marisol reopen the clinic.',
+    needs: { level: 6, families: 4 }, deliver: { bread: 12, cherry: 9 }, builds: ['clinic'], done: s => working(s, 'clinic') >= 1 },
 ];
 export const V01_LAST_STEP = 'school';

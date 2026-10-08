@@ -15,20 +15,22 @@ export function treeState(s, id, now) {
   const full = t.first ? f.firstMs : f.regrowMs;
   return { state: 'growing', fruit: fruitId(s, id), leftMs: t.doneAt - now, progress: Math.max(0, 1 - (t.doneAt - now) / full) };
 }
-/** A tree was just placed: its first fruit comes after FRUITS[...].firstMs. */
-export function plantTree(s, id, now) { const f = fruitOf(s, id); if (f) (s.trees ??= {})[id] = { doneAt: now + f.firstMs, first: true }; }
+/** A new tree gets its first wait; a stored or rebuilt tree waits a full regrowth cycle. */
+export function plantTree(s, id, now, { regrow = false } = {}) { const f = fruitOf(s, id); if (f) (s.trees ??= {})[id] = { doneAt: now + (regrow ? f.regrowMs : f.firstMs), first: !regrow, picked: 0 }; }
 export const ripeTrees = (s, now) => Object.keys(s.trees ?? {}).filter(id => s.placed[id] && s.trees[id].doneAt <= now);
 
 export const actions = {
-  /** Pick ripe fruit: { id } or { ids: [...] } (every ripe tree when neither is given). Stops when the barn is full. */
+  /** Pick ripe fruit: { id } or { ids: [...] } (every ripe tree when neither is given). Overflow sells at base value. */
   pick(ctx, { id, ids = id ? [id] : null } = {}) {
     const { s, now } = ctx; let picked = 0, sold = 0, xp = 0;
     for (const tid of ids == null ? ripeTrees(s, now) : Array.isArray(ids) ? ids : []) {
       const t = s.trees?.[tid], f = fruitOf(s, tid); if (!t || !f || t.doneAt > now) continue;
       const good = fruitId(s, tid);
-      sold += barn.addOrSell(s, good, f.yield); t.doneAt = now + f.regrowMs; delete t.first; picked++; xp += XP.harvest * f.yield;
+      const before = barn.stock(s, good), coins = barn.addOrSell(s, good, f.yield), stored = barn.stock(s, good) - before;
+      sold += coins; t.doneAt = now + f.regrowMs; t.picked = (t.picked ?? 0) + 1; delete t.first; picked++; xp += XP.harvest * f.yield;
       s.stats.picked = (s.stats.picked ?? 0) + f.yield; (s.album ??= { fish: {}, fruit: {} }).fruit[good] = (s.album.fruit[good] ?? 0) + f.yield;
-      ctx.emit('picked', { id: tid, good, count: f.yield });
+      // count is the full harvest; only stored units entered the barn. Coins were already paid by addOrSell.
+      ctx.emit('picked', { id: tid, good, count: f.yield, stored, sold: f.yield - stored, coins });
     }
     if (!picked) return ctx.fail('Nothing is ready yet');
     gainXp(ctx, xp);

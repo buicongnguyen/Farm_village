@@ -13,7 +13,7 @@ import { goodIcon, iconHtml, faceHtml, glyph, coinMark, xpMark } from './icon.mj
 import { nameOf } from './bonds-panels.mjs';
 
 export function renderCart(s) {
-  if (!cartHere(s)) return `<div class="cart-empty">${glyph('cart', 'g huge')}<p class="hint">${s.cart?.sent ? t('The cart has gone to market. The next one comes tomorrow.') : t('The weekly cart starts coming once the school is open.')}</p></div>`;
+  if (!cartHere(s)) return `<div class="cart-empty">${glyph('cart', 'g huge')}<p class="hint">${s.cart?.sent ? t('The cart has gone to market. The next one comes tomorrow.') : t('The market cart starts coming the day after the school opens.')}</p></div>`;
   const c = s.cart, left = cratesLeft(s);
   const crates = c.crates.map((cr, i) => {
     const have = barn.free(s, cr.good), ok = have >= cr.n;

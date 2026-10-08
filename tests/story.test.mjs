@@ -3,9 +3,10 @@
 import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CHAPTERS, BEATS, TUTORIAL, VILLAGE_NAME } from '../src/content/story.mjs';
+import { CHAPTERS, BEATS, TUTORIAL, RESTORE_TUTORIAL, VILLAGE_NAME } from '../src/content/story.mjs';
 import { FAMILIES, VILLAGERS, NEIGHBOURS, REMARK_FACTS, FIRST_ORDER, JUNE_TIPS } from '../src/content/people.mjs';
 import { HEART_SCENES, WISHES, ARRIVALS } from '../src/content/hearts.mjs';
+import { CHATTER, PIP_LINES } from '../src/content/chatter.mjs';
 import { LETTERS } from '../src/content/letters.mjs';
 import { BUILDINGS } from '../src/content/buildings.mjs';
 import { RECIPES } from '../src/content/goods.mjs';
@@ -14,7 +15,7 @@ import { game, tutorial } from './helpers.mjs';
 
 const residents = FAMILIES.flatMap(f => f.people);
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...residents].map(p => [p.id, p]));
-const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => sc.lines));
+const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => [...sc.lines, ...(sc.variants ?? []).flatMap(v => v.lines)]));
 const spoken = [...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
 
 test('every speaker in the story, heart scenes, arrivals and letters is a real person', () => {
@@ -84,6 +85,7 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
   const s = game(); tutorial(s);
   s.animals.c1 = [{ kind: 'hen', doneAt: null }, { kind: 'hen', doneAt: null }, { kind: 'hen', doneAt: null }];
   s.counts.bed = 12; s.counts.cottage = 2; s.counts.bakery = 1;
+  s.placed.testBakery = { kind: 'bakery', x: 0, z: 0 };
   s.homes.h1 = { family: 'tran', arrived: true, arrivesAt: 1 }; s.homes.h2 = { family: 'okafor', arrived: true, arrivesAt: 2 };
   const names = t => [...t.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join();
   for (const n of NEIGHBOURS) for (const r of n.remarks) {
@@ -96,10 +98,10 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
   assert.deepEqual(arc.map(a => a.visit), [1, 2, 3]); assert.match(arc[2].text, /Ada taught me to bake/);
 });
 
-test('chapters: one opening card, three chapter ends with an Ada beat, then the chapter 5 teaser', () => {
+test('chapters: one opening card, three chapter ends with an Ada beat, then the clinic chapter ending', () => {
   assert.deepEqual(CHAPTERS.map(c => c.id), [1, 2, 3, 4, 5]);
   assert.ok(CHAPTERS.every(c => c.ada && c.panels.length <= 3 && c.text.length <= 340), 'a card is too long for a phone');
-  assert.ok(CHAPTERS.at(-1).teaser && !CHAPTERS.slice(0, -1).some(c => c.teaser));
+  assert.ok(!CHAPTERS.some(c => c.teaser));
   assert.match(CHAPTERS[0].text, /The key is under the seed tin\. Bring Hollowbrook home\./);
   assert.ok(!JSON.stringify(CHAPTERS).includes('by the brook'), 'the cottage is on Brook Lane');
   assert.ok(CHAPTERS[0].when(game()) && !CHAPTERS[1].when(game()));
@@ -117,7 +119,7 @@ const YOU_BAN = ['của bạn', 'cho bạn', 'bạn có', 'bạn ơi', 'bạn đ
 const NEVER = {
   ada: ['tôi', ...YOU_BAN, 'của em', 'cho em'], ellis: ['tôi', ...YOU_BAN], june: ['tôi', ...YOU_BAN], pip: ['tôi', 'cháu', 'tớ'],
   minh: ['tôi', ...YOU_BAN], lan: ['tôi', ...YOU_BAN], grace: ['tôi', ...YOU_BAN], sam: ['tôi', ...YOU_BAN], marisol: ['tôi', ...YOU_BAN],
-  tomas: ['tôi', ...YOU_BAN], cora: ['tôi', ...YOU_BAN], olaf: ['tôi', ...YOU_BAN], gus: ['tôi', ...YOU_BAN],
+  hazel: ['tôi', ...YOU_BAN], tomas: ['tôi', ...YOU_BAN], cora: ['tôi', ...YOU_BAN], olaf: ['tôi', ...YOU_BAN], gus: ['tôi', ...YOU_BAN],
   mai: ['tôi', ...YOU_BAN, 'cháu'], elin: ['tôi', ...YOU_BAN, 'cháu'], bo: ['tôi', ...YOU_BAN], zara: ['tôi', ...YOU_BAN], pia: ['tôi', ...YOU_BAN],
 };
 const unquoted = s => s.replace(/"[^"]*"|“[^”]*”/g, ' ').replace(/bạn ấy/g, ' ');   // "bạn ấy": he or she
@@ -125,12 +127,18 @@ const linesBy = () => {
   const out = Object.fromEntries(Object.keys(NEVER).map(id => [id, []]));
   for (const p of Object.values(PEOPLE)) { const l = out[p.id]; if (!l) continue;
     l.push(p.line, ...(p.orders ?? []), ...(p.tips ?? []), ...(p.tip ? [p.tip] : []), ...(p.idle ?? []), ...(p.arc ?? []).map(a => a.text), ...(p.remarks ?? []).map(r => r.text), ...(p.comments ?? []),
-      ...Object.values(p.says ?? {}).flatMap(e => [e.first, ...e.lines].filter(Boolean))); }
+      ...(p.contextLines ?? []).map(l => l.text), ...Object.values(p.says ?? {}).flatMap(e => [e.first, ...e.lines].filter(Boolean))); }
   for (const l of spoken) out[l.who]?.push(l.text);
   for (const l of LETTERS) out[l.from]?.push(l.text);
   for (const [id, list] of Object.entries(WISHES)) out[id].push(...list.map(w => w.text));
   out.june.push(...Object.values(JUNE_TIPS));
-  out.ada.push(FIRST_ORDER.line, ...CHAPTERS.map(c => c.ada), ...TUTORIAL.map(st => st.text));
+  out.ada.push(FIRST_ORDER.line, ...CHAPTERS.map(c => c.ada), ...TUTORIAL.map(st => st.text), ...RESTORE_TUTORIAL.map(st => st.text));
+  out.pip.push(...Object.values(PIP_LINES).flat());
+  for (const [id, lines] of Object.entries(out)) {
+    if (id === 'ellis') continue; // away upriver; no tap-to-chat bubble
+    const age = ['pip', 'bo', 'zara', 'pia'].includes(id) ? 'kid' : 'grown';
+    lines.push('I have an order for you!', ...Object.values(CHATTER).flatMap(part => part[age]));
+  }
   return out;
 };
 
@@ -146,13 +154,29 @@ test('each speaker keeps their Vietnamese pronouns', () => {
   assert.ok(bc >= TUTORIAL.length / 2, `only ${bc} of Ada's tutorial lines say bà/cháu`);
 });
 
-test('one Vietnamese name for Hollowbrook, Bo stays Bo, and the feed mill is a cối xay cám', () => {
+test('one Vietnamese name for Hollowbrook, proper names stay unchanged, and the feed mill is a cối xay cám', () => {
   assert.equal(VI.Hollowbrook, 'Thung Suối');
   for (const [en, vi] of Object.entries(VI)) {
     if (/Hollowbrook/i.test(en)) assert.ok(/Thung Suối/i.test(vi), `Hollowbrook: ${vi}`);
     if (/feed mill/i.test(en)) assert.ok(/cối xay cám/i.test(vi), `feed mill: ${vi}`);
+    for (const name of ['Biscuit', 'Pancake']) if (en.includes(name)) assert.ok(vi.includes(name), `${name}: ${vi}`);
     if (/\bBo\b/.test(en)) assert.ok(!/\bBơ\b/u.test(vi) && /\bBo\b/.test(vi), `Bo: ${vi}`);
   }
   assert.equal(VI['Your grandmother'], 'Bà nội');
   assert.equal(VI['I know how'], 'Cháu biết rồi ạ');
+});
+
+test('shared chatter avoids incompatible family pronouns', () => {
+  // A single key is spoken by both Pip (con) and village children (cháu), or by adults with different forms of address.
+  // Rephrase shared lines naturally without choosing the wrong family relationship for any of their speakers.
+  for (const [age, banned] of [['kid', ['tôi', 'em', 'anh chị', 'cháu', 'con']], ['grown', ['tôi', 'anh chị', ...YOU_BAN]]]) {
+    for (const en of Object.values(CHATTER).flatMap(part => part[age])) {
+      const vi = unquoted(VI[en]);
+      for (const word of banned) {
+        // con is also the animal classifier: only prohibit it as the subject before a verb.
+        if (word === 'con') assert.doesNotMatch(vi, /(?:^|[.!?]\s*)con (?:đã|sẽ|muốn|thấy|nghe|tìm|đếm|đang|có|không)\b/iu, en);
+        else assert.ok(!has(vi, word), `${en}: ${word}`);
+      }
+    }
+  }
 });

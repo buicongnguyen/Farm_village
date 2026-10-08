@@ -20,6 +20,7 @@ export const ROAD_SEGMENTS = [
   // the civic lane: from the village street down to the old school, clinic, police station and company row
   { id: 'road_civic', name: 'School lane', x0: 55, x1: 56, z0: 92, z1: 102 },
   { id: 'road_civic_row', name: 'Civic row', x0: 48, x1: 92, z0: 103, z1: 104 },
+  { id: 'road_clinic', name: 'Clinic path', x0: 64, x1: 64, z0: 105, z1: 105 },
 ];
 export const ROADS = ROAD_SEGMENTS;
 export const roadSegmentAt = (x, z) => ROAD_SEGMENTS.find(r => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1) ?? null;

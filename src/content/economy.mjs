@@ -50,6 +50,7 @@ export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70], upgrade
 export const FISH = { waitMs: 25_000, baitMs: 12_000, feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */
 export const HELP = { level: 3, everyMs: 2 * MIN, beds: 4, products: 3 };
+export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: 30_000, bonus: 1.25 };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
 export const DAILY_RESET_HOUR = 4;
 export const FAMILY_ARRIVAL_MS = 2 * MIN;

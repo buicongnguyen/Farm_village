@@ -3,9 +3,10 @@
 // Toasts: the same message within 3 s bumps the one on screen instead of stacking, at most two show at once, and
 // refusals that share a lock (params.lock: level, project, goods, max, garden) merge into one toast with a padlock.
 // The coin counter rolls up to its new value with a pulse; the barn badge bounces when goods land.
-import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
+import { t, tParams, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
+import { journeyOf } from '../core/journey.mjs';
 import { nextTask } from '../core/next.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { questsOf, ready as questReady } from '../core/quests.mjs';
@@ -25,8 +26,6 @@ import { STEPS } from '../content/projects.mjs';
 import { RUIN_NAMES } from '../content/world.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
-/** Translate a message's string parameters too (a family's name, a good), then the message. */
-export const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const TOGGLED = ['orders', 'projects', 'today', 'friends'];   // the tutorial reveals these; build and barn are there from the start
 
 export class Hud {
@@ -57,7 +56,7 @@ export class Hud {
       const st = e.target.closest('[data-status]')?.dataset.status;
       if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
-      if (act === 'village') { this.onPanel?.('projects'); return; }
+      if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
@@ -75,7 +74,10 @@ export class Hud {
     q('.ring').style.strokeDasharray = `${Math.round(p.ratio * 100)} 100`;
     if (s.level !== this.level) { this.level = s.level; this.pulse(q('[data-hud="level"]')); }
     this.rollCoins(s.coins);
-    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${Math.min(s.projects.step, STEPS.length)}/${STEPS.length}`;   // how far the village is restored; a tap opens the projects
+    const journey = journeyOf(s);
+    q('[data-hud="village"]').setAttribute('aria-label', t('Roadmap'));
+    q('[data-hud="village"]').title = t(journey.stage.goal);
+    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${t(journey.stage.name)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;   // how far the village is restored; a tap opens the projects
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
@@ -127,7 +129,7 @@ export class Hud {
     if (e.type === 'familyTip') this.toast(t('A family left a tip: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:coin' });
     if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn' });
     if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn' });
-    if (e.type === 'cartArrived') this.toast(t('The weekly cart is at the gate'), 'info', { icon: 'cart' });
+    if (e.type === 'cartArrived') this.toast(t('The market cart is at the gate'), 'info', { icon: 'cart' });
     if (e.type === 'crateFilled' && e.by && e.by !== 'you') this.toast(t('{name} filled a crate on the cart', { name: t(NAMES[e.by] ?? e.by) }), 'good', { icon: 'crate' });
     if (e.type === 'cartSent') this.toast(t('The cart is off to market!'), 'good', { icon: 'cart' });
     if (e.type === 'charmMilestone') this.toast(t('Village charm {charm}!', { charm: e.at }), 'good', { icon: 'charm' });
@@ -176,8 +178,10 @@ export class Hud {
   /** The status stack at the top left: the goal, the order board, rent, the truck and the pond, each a tap away. */
   refreshStatus() {
     const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
+    const journey = journeyOf(s);
+    rows.push({ act: 'roadmap', ic: glyph('projects', 'g'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
     const step = currentStep(s);
-    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: t(s.mode === 'restore' && step.restore ? step.restore.split('.')[0] : step.name) });
+    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: s.mode === 'restore' && step.restore ? t(step.restore).split('.')[0] : t(step.name) });
     const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
     const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
     const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });

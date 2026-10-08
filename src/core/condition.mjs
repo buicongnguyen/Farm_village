@@ -11,6 +11,7 @@ import { hash } from './rng.mjs';
 import { gainXp } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
 import { mayBuild } from './projects.mjs';
+import { suspendFruitSales, resumeFruitSales } from './orchard.mjs';
 import * as grid from './grid.mjs';
 import { levelOf, isBroken, isRepairing } from './working.mjs';
 export { levelOf, isBroken, isRepairing, isWorking, workingCount } from './working.mjs';
@@ -32,7 +33,7 @@ export function repairCost(s, id) {
   return Math.max(REPAIR.worn.min, Math.round(base * REPAIR.worn.share * (lv === 2 ? 1.5 : 1)));
 }
 /** Things that can wear: buildings people live and work in, and the farmhouse (not beds, trees, decorations or the garden). */
-const wears = (s, id) => id === 'house' ? !!s.house : ['animals', 'production', 'homes', 'projects'].includes(BUILDINGS[s.placed[id]?.kind]?.cat);
+const wears = (s, id) => id === 'house' ? !!s.house : !BUILDINGS[s.placed[id]?.kind]?.pet && ['animals', 'production', 'homes', 'projects'].includes(BUILDINGS[s.placed[id]?.kind]?.cat);
 /** The worst thing that is worn or shabby (level 1–2, not broken), or null. For the neighbours' help. */
 export function worstWorn(s) {
   const ids = Object.keys(s.cond ?? {}).filter(id => { const lv = levelOf(s, id); return lv >= 1 && lv <= 2 && kindOf(s, id); })
@@ -41,8 +42,9 @@ export function worstWorn(s) {
 }
 
 function finish(ctx, id, helper = null) {
-  const { s } = ctx, kind = kindOf(s, id), wasBroken = isBroken(s, id);
+  const { s } = ctx, kind = kindOf(s, id), wasBroken = isBroken(s, id), wasClosed = wasBroken || isRepairing(s, id);
   delete s.cond[id]; delete s.repairing?.[id];
+  if (BUILDINGS[kind]?.fruitStand && wasClosed) resumeFruitSales(ctx);
   gainXp(ctx, wasBroken ? REPAIR.broken.xp : 2);
   if (kind === 'cottage' && s.homes[id] && !s.homes[id].family) arriveNext(ctx, id);    // the next family moves into a repaired cottage
   ctx.emit('repaired', { id, kind, broken: wasBroken, by: helper });
@@ -81,6 +83,7 @@ export const actions = {
     if (isRepairing(s, id)) return ctx.fail('It is being repaired');
     if (lv >= 3 && BUILDINGS[kind]) { const may = mayBuild(s, kind, { repair: true }); if (!may.ok) return ctx.fail(may.reason, may.params); }
     const cost = repairCost(s, id); if (s.coins < cost) return ctx.fail('Not enough coins');
+    if (lv >= 3 && BUILDINGS[kind]?.fruitStand) suspendFruitSales(ctx);
     s.coins -= cost;
     if (lv >= 3) { (s.repairing ??= {})[id] = { doneAt: now + REPAIR.broken.ms }; ctx.emit('repairStarted', { id, kind, cost, doneAt: now + REPAIR.broken.ms }); }
     else finish(ctx, id);
@@ -88,7 +91,7 @@ export const actions = {
   },
   /** Take a building down for part of its price; the same thing again later costs half (a rebuild credit). { id } */
   demolish(ctx, { id }) {
-    const { s } = ctx, p = typeof id === 'string' ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to demolish');
+    const { s } = ctx, p = typeof id === 'string' && Object.hasOwn(s.placed, id) ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to demolish');
     const def = BUILDINGS[p.kind];
     if (def.garden) return ctx.fail('The streak garden keeps its flowers');
     if (def.cat === 'projects') return ctx.fail('Village buildings can be moved, not demolished');
@@ -97,6 +100,7 @@ export const actions = {
     if (s.animals[id]?.length) return ctx.fail('The animals live here: move it instead');
     if (s.production[id]?.queue?.length) return ctx.fail('Collect what is being made first');
     const refund = Math.floor(basisPrice(s, p.kind) * DEMOLISH.refund);
+    if (def.fruitStand) suspendFruitSales(ctx);
     if (def.tills) s.cells[p.z * N + p.x] = 0;
     for (const k of CONTENTS) delete s[k]?.[id];
     delete s.placed[id]; delete s.cond[id]; delete s.repairing?.[id];

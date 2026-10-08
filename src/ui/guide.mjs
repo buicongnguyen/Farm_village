@@ -64,8 +64,9 @@ export class Guide {
   /** Chapter cards (each once, in order), then the story beats that are due. */
   chapters() {
     const s = this.s;
-    for (const ch of CHAPTERS) {
-      if (ch.id <= (s.story.chapter ?? 0) || this.shown.has(ch.id) || !ch.when(s)) continue;
+    // A later deed may happen first (a family can arrive before the first hens). Keep its chapter waiting.
+    const ch = CHAPTERS.find(c => c.id > (s.story.chapter ?? 0));
+    if (ch && !this.shown.has(ch.id) && ch.when(s)) {
       this.shown.add(ch.id);
       showModal(this.card(ch), { modal: true, cls: 'chapter-modal', onOpen: el => this.carousel(el), onClose: () => { this.game.do('chapterSeen', { id: ch.id }); if (ch.id === 1) this.begin(); } });
     }

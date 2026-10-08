@@ -10,8 +10,7 @@ const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isM
 const results = [];
 async function open(device = PHONE, { intro = false, query = '?new', before } = {}) {   // ?new in a test build: the empty field (a fresh public game opens on the restored village)
   const ctx = await browser.newContext(device), page = await ctx.newPage(), errors = [];
-  page.on('pageerror', e => errors.push(e.message + ' @ ' + (e.stack || '').split('
-').slice(1, 4).join(' | ')));
+  page.on('pageerror', e => errors.push(e.message + ' @ ' + (e.stack || '').split('\n').slice(1, 4).join(' | ')));
   page.on('console', m => { if (m.type() === 'error' && !/favicon|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   if (before) await before(page, ctx);
   await page.goto(URL_ + query);
@@ -120,6 +119,8 @@ for (const lang of ['en', 'vi']) await check(`phone (${lang}): two levels at onc
 
 await check('phone: speech bubbles stay inside the screen at both edges', async () => {
   const { ctx, page, errors } = await open();
+  await page.evaluate(() => farm.game.do('setting', { key: 'daylight', value: 'always' }));
+  await page.waitForFunction(() => [...farm.people.walkers.values()].some(w => !w.indoors));
   const out = await page.evaluate(async () => {
     const pv = farm.people, w = [...pv.walkers.values()][0]; if (!w) return 'no walkers';
     const res = [];

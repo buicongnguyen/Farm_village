@@ -11,6 +11,7 @@ export const TUTORIAL_FIRST_GROW_MS = 15_000;   // the very first wheat (DESIGN 
 
 /** Fruit grows on trees (buildings.mjs `fruit`): a tree is planted once and gives `yield` fruit every `regrowMs`. */
 export const FRUITS = {
+  cherry: { name: 'Cherry', tree: 'cherry_tree', value: 7, level: 4, yield: 3, firstMs: 25_000, regrowMs: 40_000 },
   apple: { name: 'Apple', tree: 'apple_tree', value: 9,  level: 2, yield: 3, firstMs: 30_000, regrowMs: 50_000, icon: '🍎' },
   peach: { name: 'Peach', tree: 'peach_tree', value: 15, level: 4, yield: 3, firstMs: 3 * MIN, regrowMs: 5 * MIN, icon: '🍑' },
 };

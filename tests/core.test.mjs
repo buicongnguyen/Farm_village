@@ -359,7 +359,7 @@ test('weekly cart: neighbours fill at most two crates, one a day, and never the 
 
 test('the cart never comes before the school is open, and its stand is kept free', () => {
   const s = village(); tick(s, T0 + 5 * DAY); assert.equal(s.cart, null);
-  assert.equal(grid.canPlace(s, 'flowers', CART_SPOT.x, CART_SPOT.z).reason, 'Kept for the weekly cart');
+  assert.equal(grid.canPlace(s, 'flowers', CART_SPOT.x, CART_SPOT.z).reason, 'Kept for the market cart');
 });
 
 test('fruit trees: placed once, fruit after a while, then regrow every few hours', () => {
@@ -429,7 +429,8 @@ test('story hooks: noOrders villagers never post; lines come from the poster; th
 
 test('neighbour comments fill {count} and {family} from the land; one neighbourVisit per visit', () => {
   const s = village(); tick(s, T0 + 3 * MIN);
-  const mai = NEIGHBOURS.find(n => n.id === 'mai'), keep = mai.comments;
+  const mai = NEIGHBOURS.find(n => n.id === 'mai'), keep = mai.comments, keepRemarks = mai.remarks;
+  mai.remarks = []; // Exercise the legacy adapter independently of the new state-aware remarks.
   mai.comments = [{ text: 'You have {count} hens now!', when: 'hens' }, { text: 'Say hello to the {family} family.', when: 'families' }];
   try {
     const c = commentFor(s, 'mai');
@@ -439,7 +440,7 @@ test('neighbour comments fill {count} and {family} from the land; one neighbourV
     assert.equal(commentFor(s, 'mai', 2).text, 'Second visit line');
     assert.notEqual(commentFor(s, 'mai', 3).text, 'Second visit line');
     delete mai.arc;
-  } finally { mai.comments = keep; }
+  } finally { mai.comments = keep; mai.remarks = keepRemarks; }
   const visits = s.neighbours.mai.visits, before = s.neighbours.mai.total, r = tick(s, visits[visits.length - 1] + 1);
   const mine = events(r, 'neighbourVisit').filter(e => e.id === 'mai');
   assert.ok(mine.length <= 1, 'a late login acts out one visit, not every one that was missed');
@@ -594,7 +595,7 @@ test('the village square stays clear round the well: no building on the plaza, b
 });
 
 test('story beats are marked seen once each; an unknown beat is refused', () => {
-  const s = game();
+  const s = game(); must(s, 'deliverOrder', { id: s.orders.cards[0].id });
   assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
   assert.deepEqual(must(s, 'beatSeen', { id: 'first-loaf' }).beats, ['first-loaf']);
   assert.equal(act(s, 'beatSeen', { id: 'nope' }).reason, 'Unknown story moment');
