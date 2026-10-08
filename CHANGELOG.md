@@ -1,5 +1,13 @@
 # Changelog
 
+## A picnic discovery trail and story-order fixes (2026-10-08)
+
+- After the first delivered order, explore the farmhouse porch, follow a note to the pond, and bring a picnic ribbon home. Three optional English/Vietnamese scenes form one happy family memory; completing it grants one flowerpot in storage. Start from Today or the farmhouse's **Explore the porch** menu.
+- Save version 8 keeps each farm's steps and read state, with durable completion markers. Reading, replaying, reloads and migration never grant another flowerpot. Only earned unread memories contribute to the Today badge; queued cards are acknowledged when visible.
+- Personal favours now wait for the requesting household to arrive. Old premature requests remain saved and return after arrival without blocking three usable goal slots.
+- Stored and rebuild-credit placement previews reflect the actual charge, so the earned flowerpot is visibly free to place.
+- The trail uses existing scenery and icons. Claude's separately scoped AR-010 box/tin/ribbon props are pending integration. Covered-land progression, skills/project energy and later chapters remain planned. See [delivery and story review](docs/DISCOVERY-TRAIL.md) for scope, validation and the art handoff.
+
 ## Playful local names — proposal only (2026-10-08)
 
 - Replaced the withdrawn formal-name proposal with the user-confirmed playful/home-name direction. The [revised naming plan](docs/CHARACTER-NAMING-PLAN.md) records the inspected Zoo Pet reference, language sources, and candidate English/Vietnamese/Korean/Japanese aliases for the current and planned cast. Individual names are still proposed; runtime names, saves, story behavior, and the live game are unchanged.

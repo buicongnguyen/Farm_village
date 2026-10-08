@@ -6,6 +6,7 @@ import * as barn from './barn.mjs';
 import { rng, hash } from './rng.mjs';
 import { gainXp } from './levels.mjs';
 import { addHearts } from './bonds.mjs';
+import { posters } from './orders.mjs';
 import { workingCount, isRepairing, isWorking } from './working.mjs';
 import { treeState } from './trees.mjs';
 import { animalState } from './animals.mjs';
@@ -15,14 +16,21 @@ const SLOTS = 3;
 const has = (s, needs) => !needs || needs === 'pond' || (needs === 'production' ? workingCount(s, 'feed_mill') + workingCount(s, 'bakery') > 0
   : needs === 'fruit_tree' ? Object.keys(s.trees ?? {}).some(id => !!BUILDINGS[s.placed[id]?.kind]?.fruit)
   : needs === 'apple_tree' ? (s.counts.apple_tree ?? 0) > 0 : workingCount(s, needs) > 0);
-export const questsOf = s => (s.quests ??= { list: [], done: 0 });
+const questState = s => (s.quests ??= { list: [], done: 0 });
+/** The three visible goals. Old premature favours wait in the save until arrival, without taking an active slot. */
+export function questsOf(s, now = s.lastSeen ?? 0) {
+  const qs = s.quests ?? { list: [], done: 0 }, present = new Set(posters(s, now));
+  return { ...qs, list: qs.list.filter(q => !q.favour || present.has(q.person)).slice(0, SLOTS) };
+}
 export const progressOf = (s, q) => q.favour ? Math.min(q.n, barn.free(s, q.good)) : Math.max(0, Math.min(q.n, (s.stats[QUESTS[q.t].stat] ?? 0) - q.base));
-export const ready = (s, q) => progressOf(s, q) >= q.n;
+export const ready = (s, q, now = s.lastSeen ?? 0) => (!q.favour || posters(s, now).includes(q.person)) && progressOf(s, q) >= q.n;
 function makeQuest(s, now) {
-  const qs = questsOf(s), r = rng(hash(s.seed, qs.done, qs.list.length, Math.floor(now / 60000))), L = s.level, taken = new Set(qs.list.map(q => q.favour ? `f:${q.person}` : q.t));
+  const qs = questState(s), r = rng(hash(s.seed, qs.done, qs.list.length, Math.floor(now / 60000))), L = s.level, taken = new Set(qs.list.map(q => q.favour ? `f:${q.person}` : q.t));
   const reward = QUEST_REWARD(L), id = `q${qs.done}-${qs.list.length}-${Math.floor(now / 1000)}`;
   if (r() < 0.25) {   // a favour
-    const opts = FAVOURS.filter(f => has(s, f.needs) && !taken.has(`f:${f.person}`));
+    // Use the order board's established presence rules: residents wait for arrival; familiar neighbours remain available.
+    const present = new Set(posters(s, now));
+    const opts = FAVOURS.filter(f => present.has(f.person) && has(s, f.needs) && !taken.has(`f:${f.person}`));
     if (opts.length) { const f = opts[Math.floor(r() * opts.length)]; return { id, favour: true, person: f.person, good: f.good, n: f.n(Math.floor(L / 3)), coins: reward.coins * 2, xp: reward.xp * 2, hearts: 0.5 }; }
   }
   const opts = Object.keys(QUESTS).filter(k => has(s, QUESTS[k].needs) && !taken.has(k));
@@ -30,8 +38,8 @@ function makeQuest(s, now) {
   return { id, t, n: QUESTS[t].n(L), base: s.stats[QUESTS[t].stat] ?? 0, ...reward };
 }
 export function tickQuests(ctx) {
-  const { s, now } = ctx, qs = questsOf(s);
-  while (qs.list.length < SLOTS) qs.list.push(makeQuest(s, now));
+  const { s, now } = ctx, qs = questState(s);
+  while (questsOf(s, now).list.length < SLOTS) qs.list.push(makeQuest(s, now));
   // the weekly village goal
   const week = Math.floor(now / (7 * DAY));
   if (!s.weekly || s.weekly.week !== week) { const w = WEEKLY[week % WEEKLY.length]; s.weekly = { week, i: week % WEEKLY.length, base: s.stats[w.stat] ?? 0, claimed: false }; }
@@ -58,8 +66,11 @@ export function hurryable(s, id, now) {
 }
 export const actions = {
   claimQuest(ctx, { id }) {
-    const { s } = ctx, qs = questsOf(s), i = qs.list.findIndex(q => q.id === id); if (i < 0) return ctx.fail('Unknown goal');
-    const q = qs.list[i]; if (!ready(s, q)) return ctx.fail('Not finished yet');
+    const { s } = ctx, qs = questState(s), i = qs.list.findIndex(q => q.id === id); if (i < 0) return ctx.fail('Unknown goal');
+    const q = qs.list[i];
+    // Old saves may retain a request generated before its family arrived. Keep it waiting without spending or granting hearts.
+    if (q.favour && !posters(s, ctx.now).includes(q.person)) return ctx.fail('They are not in the village yet');
+    if (!ready(s, q, ctx.now)) return ctx.fail('Not finished yet');
     if (q.favour && !barn.take(s, { [q.good]: q.n })) return ctx.fail('Missing goods');
     s.coins += q.coins; s.stats.coinsEarned += q.coins; gainXp(ctx, q.xp);
     if (q.favour) addHearts(ctx, q.person, q.hearts ?? 0.5, 'favour');

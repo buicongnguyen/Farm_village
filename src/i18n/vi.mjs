@@ -1,4 +1,5 @@
 import { VI_ADVICE } from './vi-advice.mjs';
+import { VI_EXPLORATION } from './vi-exploration.mjs';
 import { VI_ART } from './vi-art.mjs';
 import { VI_WORLD } from './vi-world.mjs';
 import { VI_JUICE } from './vi-juice.mjs';
@@ -10,6 +11,7 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
   ...VI_ADVICE,
+  ...VI_EXPLORATION,
   ...VI_PROFILES,
   'Lucky discoveries': 'Những khám phá may mắn',
   'Lucky discovery': 'Một khám phá may mắn',

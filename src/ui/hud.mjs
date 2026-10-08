@@ -21,6 +21,7 @@ import * as barn from '../core/barn.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild } from '../core/projects.mjs';
 import { unread } from '../core/bonds.mjs';
 import { unreadDiscoveries } from '../core/discoveries.mjs';
+import { unreadExploration } from '../core/exploration.mjs';
 import { unreadAdvice } from '../core/advice.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
@@ -105,7 +106,7 @@ export class Hud {
   }
   /** A completed timer can change a topic without a resource event; keep the unread count current too. */
   refreshTodayMessages() {
-    const messages = unreadDiscoveries(this.game.s) + unreadAdvice(this.game.s, this.game.now);
+    const messages = unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadAdvice(this.game.s, this.game.now);
     const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
     badge.textContent = messages || ''; badge.classList.remove('dot'); badge.hidden = !messages;
     button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));
@@ -218,5 +219,5 @@ export class Hud {
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */
-  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && (unreadDiscoveries(this.game.s) + unreadAdvice(this.game.s, this.game.now))); } }
+  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && (unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadAdvice(this.game.s, this.game.now))); } }
 }

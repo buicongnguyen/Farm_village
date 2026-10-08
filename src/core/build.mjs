@@ -14,6 +14,13 @@ export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
   return (typeof def.cost === 'function' ? def.cost(n) : def.cost) + projectCost(s, kind);
 };
+/** The next placement's actual charge. Edge pieces never consume storage or rebuild credits. */
+export const placementPrice = (s, kind) => {
+  if (BUILDINGS[kind].edge) return priceOf(s, kind);
+  if ((s.stored?.[kind] ?? 0) > 0) return 0;
+  const price = priceOf(s, kind);
+  return (s.rebuild?.[kind] ?? 0) > 0 ? Math.round(price * DEMOLISH.rebuild) : price;
+};
 /** A cell address is two whole numbers (a string such as "5" would add as text: "5" + 1 is "51"). */
 const spot = (x, z) => Number.isInteger(x) && Number.isInteger(z);
 const setCell = (s, x, z, type) => { s.cells[z * N + x] = CELL_TYPES[type]; grid.touch(s); };
@@ -52,7 +59,7 @@ export const actions = {
     const can = grid.canPlace(s, kind, x, z, rot); if (!can.ok) return ctx.fail(can.reason, can.params);
     // a thing taken away earlier (stored) comes back free; one demolished earlier costs half (a rebuild credit)
     const fromStore = (s.stored?.[kind] ?? 0) > 0, fromRebuild = !fromStore && (s.rebuild?.[kind] ?? 0) > 0;
-    const price = fromStore ? 0 : fromRebuild ? Math.round(priceOf(s, kind) * DEMOLISH.rebuild) : priceOf(s, kind);
+    const price = placementPrice(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; if (fromStore) s.stored[kind]--; if (fromRebuild) s.rebuild[kind]--;
     if (def.cell) { setCell(s, x, z, def.cell); if (kind === 'path') s.stats.paths++; count(s, kind, 1); remember(s, { type: 'cell', kind, x, z, price }); ctx.emit('cellChanged', { x, z }); advance(ctx); return { price }; }
@@ -158,7 +165,7 @@ export const actions = {
     if (!spot(x, z) || (side !== 'n' && side !== 'w')) return ctx.fail('Outside your land');
     const may = mayBuild(s, kind); if (!may.ok) return ctx.fail(may.reason, may.params);
     const can = grid.canPlaceEdge(s, kind, x, z, side); if (!can.ok) return ctx.fail(can.reason, can.params);
-    const price = priceOf(s, kind); if (s.coins < price) return ctx.fail('Not enough coins');
+    const price = placementPrice(s, kind); if (s.coins < price) return ctx.fail('Not enough coins');
     s.coins -= price; s.fences[grid.edgeKey(x, z, side)] = kind; count(s, kind, 1); remember(s, { type: 'edge', kind, x, z, side, price });
     ctx.emit('fenceChanged', { x, z, side, kind });
     return { price };

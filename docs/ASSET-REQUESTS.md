@@ -91,6 +91,7 @@ replaced) and `dropped`.
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 | AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
+| AR-010 | Old-object picnic discovery trail props | optional exploration | P1 | requested: Claude art, Codex logic; see [handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md) |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -376,3 +377,14 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   effects; pick and rare-catch sounds now come only from `main.mjs` (art removed its duplicates, `448502d`). At the user's
   request PR #1 and PR #2 were merged into `main` (`32e3a62`) and deployed; production loads on phone and PC with no errors
   and serves the new colours and effects. AR-001 is done. Logic lane: merge `origin/main` into your next branch first.
+
+### AR-010: Old-object picnic discovery trail
+
+- Status: requested · Priority: P1 · Asked by: user / logic lane, 2026-10-08.
+- Scope and delivery contract: [Claude discovery-trail handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md). One optional farmhouse → pond → family memory trail; existing art remains a stand-in while the new props are made.
+- Art: five low-poly closed/open/keepsake nodes in a separate packed kit, one ribbon icon; no always-visible world placement or reward logic.
+- Logic: Codex owns the rules, saved stage/read state, one-time flowerpot reward, bilingual dialogue, UI and integration. No additional coins; existing 110-coin finds unchanged.
+
+### Coordination note — 2026-10-08, AR-010
+
+- Baseline: PR #9 at `f80ceb0`; integrated into the Codex branch at `208167c`. Codex is the active writer for `src/main.mjs`, `src/ui/**`, the new exploration content/core/i18n modules, state/action wiring and tests. Claude owns new Blender/model/icon files and only their registration rows in `src/view/kinds.mjs` / `src/content/icons.mjs`. Neither lane edits shared world placement or effects for this delivery; integration will name the exact view functions after the art PR is ready. The current live farmhouse forecourt and pond are retained.

@@ -27,9 +27,10 @@ import { LevelUp } from './ui/levelup.mjs';
 import { autosave, save, pack, unpack, erase, activeProfile, profileId, inspectProfile, selectProfile } from './kit/save.mjs';
 import { renderProfiles } from './ui/profiles-panel.mjs';
 import { watchDiscoveries } from './ui/discovery-panels.mjs';
+import { watchExploration } from './ui/exploration-panels.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
+import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK, FARMHOUSE } from './content/world.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
@@ -86,6 +87,13 @@ panels = new Panels(app, game, hud, {
     const ids = Object.keys(game.s.placed).filter(k => game.s.placed[k].kind === at), id = ids.find(k => levelOf(game.s, k) >= 3) ?? ids[0];   // the run-down one first
     if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces && levelOf(game.s, id) < 3) panels.show('production', id); }
     else { build.cat = BUILDINGS[at].cat; build.start(at); }
+  },
+  onExplorePlace: place => {
+    if (!['porch', 'pond'].includes(place)) return;
+    if (build.open) build.close(); radial.hide();
+    const spot = place === 'pond' ? POND_DOCK : FARMHOUSE;
+    flyTo(spot.x * CELL, spot.z * CELL, Math.min(world.cam.span, 38));
+    panels.show('exploration', place);
   },
   onSave: handleSave,
   // Advice points to the exact placed building and previews its repair without paying for it.
@@ -162,6 +170,7 @@ new CartView(world, game);
 new Critters(world, game);
 new Daylight(world, game);
 watchDiscoveries(game, hud);
+watchExploration(game, hud);
 game.start();
 applySettings();
 saveSession = autosave(game, profile);

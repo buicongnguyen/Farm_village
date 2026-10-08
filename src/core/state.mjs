@@ -7,8 +7,9 @@ import { normalizeFruitStand } from './orchard.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { newDiscoveries, normalizeDiscoveries } from './discoveries.mjs';
 import { newAdvice, normalizeAdvice } from './advice-state.mjs';
+import { newExploration, normalizeExploration } from './exploration.mjs';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -36,6 +37,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     weekly: null,                            // the weekly village goal { week, i, base, claimed }
     hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
     album: { fish: {}, fruit: {} },          // collections: what has been caught and picked
+    exploration: newExploration(), // optional old-object trail, independent of the paid introductory finds
     discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
     advice: newAdvice(),                    // stable read/deferred contexts and bounded celebration records, never rendered text
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
@@ -98,6 +100,8 @@ export function migrate(save) {
   if (save.version < 6) save.version = 6;
   // v6 → v7: acknowledge advice across sessions; normalization retires already-passed legacy celebrations.
   if (save.version < 7) save.version = 7;
+  // v7 → v8: old farms may start the optional picnic trail; migration never grants its reward.
+  if (save.version < 8) save.version = 8;
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -119,5 +123,6 @@ export function withDefaults(s) {
   for (const b of Object.values(s.people)) b.scenes ??= [];
   s.discoveries = normalizeDiscoveries(s);
   s.advice = normalizeAdvice(s);
+  s.exploration = normalizeExploration(s);
   return s;
 }

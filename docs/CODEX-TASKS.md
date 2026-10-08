@@ -95,10 +95,21 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 
 This pass does not rename the cast, add a later chapter, implement covered land or introduce energy costs. The comparison report supplies observations and recommendations, not additional completed features.
 
+## Optional discovery trail — logic implemented
+
+- [x] Review Claude's fleet/opening releases and preserve the separate art lane.
+- [x] Implement three explicit porch/pond steps, one stored flowerpot, per-profile progress, replayable memories and earned-only unread counts.
+- [x] Author English and Vietnamese scenes and check speaker pronouns, save migration and duplicate-payment protection.
+- [x] Hide premature villager favours until arrival while preserving old requests and active goal capacity.
+- [x] Prepare the [AR-010 art handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md); existing icons/scenery keep the logic playable while Claude makes the props.
+- [ ] Integrate Claude's final AR-010 props after the separate delivery and combined browser review.
+
+The [delivery report](DISCOVERY-TRAIL.md) records validation and story recommendations. This is an optional branch within chapters 1–5.
+
 ## Following passes — still planned
 
 1. Extend guidance with truthful item-use cards and selected playful/welcome moments. The initial persistent opportunity/blocker/activity/celebration advice lifecycle is implemented on the current branch; broader scene and interaction work remains planned.
-2. Covered land, purchase previews, one usable revealed parcel and one discovery accessible without purchasing land.
+2. Covered land, purchase previews and one usable revealed parcel. The picnic trail now provides the first connected discovery without a land purchase; its world props remain separate art work.
 3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
 4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
 

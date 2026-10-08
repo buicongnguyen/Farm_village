@@ -55,17 +55,23 @@ test('a cherry-only farm receives a generic fruit goal and real harvests complet
   refused(s, 'claimQuest', { id: q.id }, s.lastSeen);
 });
 
-test('stored trees and decorative trees do not enable fruit goals; Sam still requests obtainable apples', () => {
+test('stored trees and decorative trees do not enable fruit goals; introduced Sam still requests obtainable apples', () => {
+  const withSam = seed => {
+    const s = farm(seed);
+    // Sam is already here: these cases isolate crop availability rather than the household-arrival gate.
+    s.homes.okafor = { family: 'okafor', arrivesAt: T0, arrived: true, level: 1, rentFrom: T0 };
+    return s;
+  };
   for (let seed = 1; seed <= 32; seed++) {
-    const s = farm(seed), id = tree(s);
+    const s = withSam(seed), id = tree(s);
     must(s, 'store', { id }); tree(s, 'round_tree');
     tick(s, T0);
     assert.ok(!s.quests.list.some(q => q.t === 'fruit'), 'no live fruit tree');
     assert.ok(!s.quests.list.some(q => q.favour && q.person === 'sam'), 'no obtainable apples');
-    const cherries = farm(seed); tree(cherries); tick(cherries, T0);
+    const cherries = withSam(seed); tree(cherries); tick(cherries, T0);
     assert.ok(!cherries.quests.list.some(q => q.favour && q.person === 'sam'), 'cherries do not satisfy an apple favour');
   }
-  const s = farm(5); tree(s, 'apple_tree'); tick(s, T0);
+  const s = withSam(5); tree(s, 'apple_tree'); tick(s, T0);
   const q = s.quests.list.find(q => q.favour && q.person === 'sam');
   assert.ok(q); assert.equal(q.good, 'apple');
 });
