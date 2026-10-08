@@ -3,6 +3,8 @@ import { CROPS, TUTORIAL_FIRST_GROW_MS } from '../content/goods.mjs';
 import { XP } from '../content/economy.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
+import { cropOpen } from './learning-state.mjs';
+export { cropOpen } from './learning-state.mjs';
 
 export const bedState = (s, id, now) => {
   const b = s.beds[id]; if (!b) return { state: 'empty' };
@@ -18,6 +20,7 @@ export const actions = {
     const { s, now } = ctx, c = CROPS[crop];
     if (!c) return ctx.fail('Unknown crop');
     if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level, crop, lock: 'level' });
+    if (!cropOpen(s, crop)) return ctx.fail('Restore the potting bench to grow strawberries');
     let planted = 0;
     for (const bid of ids) {
       if (s.placed[bid]?.kind !== 'bed' || s.beds[bid]) continue;

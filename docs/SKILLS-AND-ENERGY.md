@@ -2,7 +2,7 @@
 
 Date: 2026-10-08 (Asia/Seoul)
 
-Status: design notes only. The user confirmed that **energy applies to larger exploration and repair projects; everyday play stays available**. Skill branches, lesson formats, recovery rules, and numerical tuning below remain recommendations. No code or live balance changes have been made.
+Status update, 2026-10-09: the first garden-repair lesson, potting-bench project and project-only energy system are implemented in the [learning delivery](LEARNING-GARDEN-SCHOOL.md). The release PR records deployment. The user confirmed that **energy applies to larger exploration and repair projects; everyday play stays available**. Further skill branches and vehicle repairs below remain recommendations; the implemented first project uses the exact numbers in the delivery report.
 
 Use [HOLLOWBROOK-IMPLEMENTATION-PLAN.md](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) as the consolidated implementation entry point and [CLAUDE-RESEARCH-REVIEW.md](CLAUDE-RESEARCH-REVIEW.md) for the subsequent research evaluation.
 

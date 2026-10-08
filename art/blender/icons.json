@@ -995,5 +995,87 @@
   "src": "raw:decor",
   "root": "noodle_factory",
   "preset": "building"
+ },
+ {
+  "id": "police",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "police",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "company",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "company",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "hospital",
+  "src": "raw:decor",
+  "root": "hospital",
+  "view": [
+   -30,
+   18
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "hen",
+  "src": "self:public/assets/models/rigged/chicken.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "cow",
+  "src": "self:public/assets/models/rigged/cow.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "ui:today",
+  "src": "raw:items",
+  "root": "ui_today",
+  "preset": "token"
+ },
+ {
+  "id": "ui:projects",
+  "src": "raw:decor",
+  "root": "scaffold",
+  "view": [
+   -30,
+   22
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "ui:mail",
+  "src": "raw:items",
+  "root": "ui_mail",
+  "preset": "goods"
+ },
+ {
+  "id": "tool:demolish",
+  "src": "raw:items",
+  "root": "tool_demolish",
+  "preset": "tool"
+ },
+ {
+  "id": "ui:harvest_all",
+  "src": "raw:items",
+  "root": "ui_harvest_all",
+  "preset": "goods"
  }
 ]

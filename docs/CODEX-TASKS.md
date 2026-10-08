@@ -2,6 +2,8 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
+Next logic delivery, 2026-10-09: `codex/learning-garden-school` implements the first permanent lesson, useful bench repair, project-only energy/free recovery, strawberry planting and a replayable classroom activity. Claude's AR-011/AR-012 PR #27 is integrated for combined checks. [Scope, costs and acceptance](LEARNING-GARDEN-SCHOOL.md); publication is recorded by the release PR. PR #26's previous production/civic slice is already deployed at `e05c800`.
+
 Current status, 2026-10-09: the picnic trail/AR-010 shipped in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18), and ingredient guidance, the first covered plot and Lan's food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24). The `codex/production-village-growth` slice is implemented and validated: parallel trays, working shop customers and bounded civic/company progression, starting from `4377129` and integrating main `1add9a4`. **355 native tests, all 23 component browser suites, 28 smoke checks and eight production contexts pass; pace targets remain green.** The release PR records CI, Pages deployment and live verification. See [the current scope](PRODUCTION-AND-VILLAGE-GROWTH.md). Earlier release checklists retain their own historical test counts.
 
 Status: profiles and four discoveries shipped through PR #4 at `ab6b230`, after [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. The first logic pass and AR-001 shipped through PRs #1–3. Persistent adaptive advice and AR-009 icon integration are implemented on `codex/village-advice`; delivery and review are recorded in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6). Merging into main triggers deployment; check the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) for the production result. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), the [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md), and the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
@@ -146,9 +148,9 @@ chapters 6 onward, Pearl/Bea's introductions and the water/festival resolution a
 
 1. Additional playful/welcome scenes and selected character interactions beyond the shipped contextual advice and ingredient help.
 2. Further covered regions, selective scenery clearing and useful restoration activities beyond the first optional paid plot and existing free picnic trail.
-3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
-4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
-5. Integrate AR-011 dedicated civic icons/hospital tier and optional staff/brand art after delivery. Current model reuse and the two recorded icon placeholders keep the first tier usable.
-6. Integrate AR-012 menu pictures and declared `icons/sm/` variants, then complete semantic button styling and the compact HUD/status-stack pass with Claude's look tokens. Full-size URLs remain until real small files exist; the current round order tokens do not complete that redesign.
+3. More skills and useful restoration projects after the first garden-repair lesson/bench and project-only energy pass described above.
+4. Meadow/dairy, additional recipes, further school activities and vehicles as separate releases, with final IDs and asset requests defined before production art. The first picture-basket classroom game is implemented in the current pass.
+5. AR-013 dedicated potting-bench stages, plus optional staff/brand art. AR-011's dedicated civic icons and hospital tier are in the current integration; neither completes future civic tiers.
+6. Finish a compact HUD/status-stack layout after the current AR-012 menu pictures, delivered small-icon URLs and semantic button integration. The complete HUD redesign remains separate work.
 
 AR-002 and the old v0.5 label do not automatically select the next release. Keep the existing school targets (casual ≤10 days, steady 3–4, keen ≥2) and required family access intact while evaluating optional expansion.

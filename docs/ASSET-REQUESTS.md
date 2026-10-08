@@ -1,6 +1,25 @@
 # Asset requests
 
+### Active logic handoff — learning, garden and school (2026-10-09)
+
+This is the current writer reservation; older active-handoff paragraphs below are retained as release history.
+
+- Codex owns `codex/learning-garden-school`, starting from deployed main `e05c800` (PR #26). The next slice adds one practical garden-repair skill, a three-phase potting-bench project, project-only energy/free home rest, strawberries using the existing crop/icon art, and a replayable school counting activity. Existing farming, repairs and story requirements retain their gates.
+- Active shared behavior: Codex owns `src/main.mjs`, the new `src/view/learning-view.mjs` and `src/content/learning-site.mjs` for staged reuse/picking of a small project beside the farmhouse. It sits inside the existing fixed house footprint, so it claims no buildable land and changes no player's terrain. Codex also owns `src/ui/**` layout/controls and lazy panel extraction. Claude retains all colors, lighting, models, icon rendering and effects; AR-011/AR-012 remain his art work.
+- The school activity uses an illustrated panel with current item pictures. It does not claim a new 3D classroom or consume produce, energy or coins. No school reward pays repeat coins/XP. Exact rules and acceptance will be documented with the release.
+- AR-011/AR-012 integration: Claude's PR #27 (`7cba0e4`) is merged locally at `b1896f5` for combined testing. Codex is the active writer for `LandView.model()`/`apply()` in `src/view/land-view.mjs` to select/redraw the saved hospital tier, and for UI icon URL selection, menu IDs and semantic classes. Generators, registrations, binaries and Claude's color tokens are retained from his art commit. AR-013 remains a separate requested model; optional worker outfits and brand seals are still future art.
+- Combined native, component-browser and smoke validation passed. All 117 advertised small files are verified as 64 px WebP; real menu requests, hospital upgrade/reload/wear and phone budgets pass. [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) records the exact release head, production acceptance and deployment; it includes PR #27's art history. This completes the requested first AR-011/AR-012 integration, with the later compact HUD layout and optional outfits/seals still separate.
+
+### AR-013: Old potting bench — requested 2026-10-09
+
+- Gameplay project ID: `potting_bench`; this is a fixed optional project, not a purchasable building. Position/placement contract is in `src/content/learning-site.mjs`. Target envelope: about 2.4 m wide × 1.4 m deep, preserving the farmhouse walkway and neighboring resting bench.
+- Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
+- The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
+- Deliver packed GLB nodes and provenance on an `art/*` branch. Agree exact node IDs and the stage-to-model map with Codex before changing the runtime view. This request follows the already assigned AR-011/AR-012; no need to pause those.
+
 ### AR-011: Civic/company art — requested 2026-10-09
+
+- Current status: first civic icon/hospital-tier delivery received from Claude in PR #27; logic integration is under combined validation in `codex/learning-garden-school`. The placeholder descriptions below record the original request. Worker outfits and brand seals have not been delivered.
 
 - Runtime IDs stay `clinic`, `police`, `company`; every footprint is **4 × 3 cells** at its existing civic-row anchor. The clinic's `s.growth.hospitalAt` stamp indicates the hospital upgrade. No child workers or new character identities are introduced.
 - Current stand-ins: `clinic` uses `town.glb/hospital` at width 7.8; `police` uses `town.glb/police` at width 6; `company` uses `town.glb/company` at width 8. Dedicated richer first-tier art may replace these registrations together with packed models. Do not edit the generated ANCHORS block manually.
@@ -12,6 +31,8 @@
 - Acceptance: model/icon coherence, packed GLBs, provenance, real fixed-site placement, doorway fit, English/Vietnamese at 390 px/desktop, and all phone rendering budgets. Claude owns all look changes.
 
 ### AR-012: Menu pictures and small tokens — requested 2026-10-09
+
+- Current status: Claude delivered the requested menu/animal pictures, all 117 small variants and look tokens in PR #27. Logic URL selection, menu binding, ready/unread badges and source-button classes are integrated for combined checks. The full compact HUD/status-stack layout is a later task.
 
 - Deliver `hen`, `cow`, `ui:today`, `ui:projects`, `ui:mail`, `tool:demolish`, `ui:harvest_all` with registrations and provenance in one art PR. Existing SVG or home-building fallbacks stay until then.
 - Deliver small WebP files in `public/assets/icons/sm/` using the **same filename mapping** as the corresponding normal icon (`ui-coin.webp`, etc.), ideally a complete set for `ICONS`. Include the two new civic IDs or explicitly list unavailable small variants.
@@ -242,6 +263,23 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- 2026-10-09, art lane, **AR-011 and AR-012 delivered** on `art/ar011-012` (from main `e05c800`; PR below):
+  - AR-011 icons: `police.webp` (town.glb `police`), `company.webp` (town.glb `company`) replace the placeholder copies;
+    new `hospital.webp`. Model: `decor.glb` node **`hospital`** (1,448 triangles, about 9.2 × 6.0 m with the ambulance
+    bay; building body 7.6 × 5.2 m inside the 4 × 3 footprint, front +z, door at the front centre like the clinic),
+    registered as `KIND_MODELS['clinic:hospital']` (late decor kit). Not selected yet: when `s.growth.hospitalAt` is set,
+    draw the clinic with `clinic:hospital` instead of `clinic` (Codex: `modelFor`/LandView, as agreed). No anchors.
+  - AR-012 icons: `hen`, `cow` (from `public/assets/models/rigged/chicken.glb` / `cow.glb`, the world's own models),
+    `ui:today`, `ui:projects` (decor `scaffold`), `ui:mail`, `tool:demolish`, `ui:harvest_all`; ids in
+    `ICON_IDS.animals` and `ICON_IDS.menu`.
+  - Small variants: **every** icon (117) at 64 px in `public/assets/icons/sm/<same file name>`; data map
+    `SMALL_ICONS` (id → url) in `src/content/icons.mjs`; generator `art/blender/icon_small.py`; test in
+    `tests/assets.test.mjs`. Codex selects them for mini/mark/seed/status images.
+  - Look tokens in `src/style.css`: `--token-bg`, `--token-ring` (`-ok`, `-short`), `.token`, `.btn.go` (blue,
+    navigate), `.badge.ready` (green, actionable). Red stays the existing `.badge` for unread news.
+  - Not done (optional follow-ups): worker/manager outfits, brand seals `brand_brook`/`brand_sunshine`/`brand_clover`.
+  - Checks: npm test 356/356; art, world, review browser suites; first-load code +287 bytes (1,096,548).
 
 - 2026-10-08, art lane, **icon render v2** (`art/icons-v2`): all 92 icons re-rendered with a new light rig and a 7 px
   round outline; ids, files and sizes unchanged, so no code change. Requests for the logic lane from the comparison,

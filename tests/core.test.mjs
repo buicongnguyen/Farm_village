@@ -390,10 +390,10 @@ test('apple pie is baked at the bakery and pays more than its inputs', () => {
   assert.ok(R.apple_pie.value > inputs);
 });
 
-test('levelUp.unlocks matches the content level fields', () => {
+test('levelUp.unlocks matches content level fields without promising separately learned crops', () => {
   for (let L = 2; L <= 10; L++) {
     const u = unlocksAt(L), at = o => Object.keys(o).filter(k => o[k].level === L).sort();
-    assert.deepEqual([...u.crops].sort(), at(C)); assert.deepEqual([...u.fruits].sort(), at(FRUITS));
+    assert.deepEqual([...u.crops].sort(), at(C).filter(id => !C[id].skill)); assert.deepEqual([...u.fruits].sort(), at(FRUITS));
     assert.deepEqual([...u.recipes].sort(), at(R)); assert.deepEqual([...u.animals].sort(), at(A));
     assert.deepEqual([...u.buildings].sort(), at(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden));
     assert.equal(u.list.length, u.crops.length + u.fruits.length + u.recipes.length + u.animals.length + u.buildings.length);

@@ -41,3 +41,10 @@ button.round[hidden] { display: none; }
 @keyframes logo-in { from { transform: rotate(-3deg) scale(.4); opacity: 0; } }
 @keyframes dot { 50% { transform: translateY(-8px); background: #ffd23f; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* AR-012 look tokens: circular item tokens and button meanings (green = confirm, blue = go somewhere, red = unread) */
+:root { --token-bg: radial-gradient(circle at 50% 35%, #fffdf6 0 45%, #fff1d2); --token-ring: #c99a5a; --token-ring-ok: var(--leaf-dark); --token-ring-short: var(--berry); }
+.token { border-radius: 50%; background: var(--token-bg); border: 3px solid var(--token-ring); box-shadow: inset 0 -3px 0 #e8c99a; }
+.token.ok { border-color: var(--token-ring-ok); } .token.short { border-color: var(--token-ring-short); }
+.btn.go { background: linear-gradient(#5fb6ff, var(--sky)); border-color: var(--sky-dark); box-shadow: 0 4px 0 #134a80; color: #fff; }
+.badge.ready { background: linear-gradient(var(--leaf-hi), var(--leaf)); box-shadow: 0 2px 0 var(--leaf-dark); }

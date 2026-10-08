@@ -116,6 +116,8 @@ export class LandView {
     let name = modelFor(kind, id);
     if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = `${name}:bare`;
     const b = this.world.batches;
+    // AR-011: keep the clinic while its optional hospital model loads; the next late-kit sync selects the saved tier.
+    if (kind === 'clinic' && Number.isSafeInteger(this.s.growth?.hospitalAt) && this.s.growth.hospitalAt >= 0 && b.has('clinic:hospital')) name = 'clinic:hospital';
     return b.has(name) ? name : b.has(`${name}~`) ? `${name}~` : null;
   }
   /** Fruit trees show fruit when their harvest is ready (whatever shape the play package's state takes). */
@@ -374,6 +376,9 @@ export class LandView {
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
+      else if (e.type === 'hospitalUpgraded') {
+        for (const [id, p] of Object.entries(this.s.placed)) if (p.kind === 'clinic') this.drawPlaced(id);
+      }
       else if (e.type === 'repairStarted' || e.type === 'repaired' || e.type === 'worn') {
         if (this.s.placed[e.id]) this.drawPlaced(e.id);
         else if (e.id === 'house') this.drawHouse();

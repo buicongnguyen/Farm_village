@@ -31,6 +31,8 @@ import { watchDiscoveries } from './ui/discovery-panels.mjs';
 import { watchExploration } from './ui/exploration-panels.mjs';
 import { ExplorationView } from './view/exploration-view.mjs';
 import { LandDiscoveryView } from './view/land-discovery-view.mjs';
+import { LearningView } from './view/learning-view.mjs';
+import { LEARNING_SITE } from './content/learning-site.mjs';
 import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, loadVietnamese, getLanguage, setLanguage } from './kit/i18n.mjs';
@@ -119,6 +121,7 @@ panels = new Panels(app, game, hud, {
   },
   // "show the way": go to where a missing good is made, or open the catalogue on that building
   onShowWay: at => {
+    if (at === 'learning') { panels.onLearningVisit?.(); return; }
     if (at === 'pond') { flyTo((POND_DOCK.x - 2) * CELL, POND_DOCK.z * CELL); panels.show('pond'); return; }
     if (at === 'farm') { const o = parcelOrigin(START_PARCEL); flyTo((o.x + 6) * CELL, (o.z + 4) * CELL); hud.toast(t('Plant it in your beds'), 'info', { icon: 'bed' }); return; }
     const ids = Object.keys(game.s.placed).filter(k => game.s.placed[k].kind === at), id = ids.find(k => levelOf(game.s, k) >= 3) ?? ids[0];   // the run-down one first
@@ -145,6 +148,7 @@ panels = new Panels(app, game, hud, {
   onGoodHelpSource: target => {
     if (build.open) build.close();
     radial.hide(); radial.armed = null; radial.tool.hidden = true;
+    if (target.kind === 'learning') { panels.onLearningVisit?.(); return; }
     if (target.kind === 'pond') { panels.onShowWay('pond'); return; }
     if (target.kind === 'catalogue') {
       const def = BUILDINGS[target.buildingKind]; if (!def) return;
@@ -189,6 +193,11 @@ new LevelUp({ game, busy: () => build.open || radial.isArmed(), onShow: ({ type,
 } });
 
 const canvas = world.renderer.domElement;
+panels.onLearningVisit = () => {
+  if (build.open) build.close(); radial.hide(); radial.armed = null; radial.tool.hidden = true;
+  flyTo(LEARNING_SITE.worldX, LEARNING_SITE.worldZ, Math.min(world.cam.span, 38));
+  panels.show('learning');
+};
 panels.onShopVisit = shop => {
   const site = SHOP_SITES.find(s => s.shop === shop); if (!site) return;
   if (build.open) build.close(); radial.hide(); radial.armed = null; radial.tool.hidden = true;
@@ -222,6 +231,7 @@ world.cam.attach(canvas, {
       if (place) { radial.hide(); panels.show('exploration', place); }
       else if (shop) { radial.hide(); radial.armed = null; radial.tool.hidden = true; panels.show('shops', shop); }
       else if (world.landDiscovery?.pick(cell)) { radial.hide(); panels.show('land', world.landDiscovery.site.parcel); }
+      else if (world.learning?.pick(cell)) { radial.hide(); radial.armed = null; radial.tool.hidden = true; panels.show('learning'); }
       else radial.tap(cell, x, y);
     }
   },
@@ -267,6 +277,7 @@ watchDiscoveries(game, hud);
 watchExploration(game, hud);
 world.exploration = new ExplorationView(world, game);
 world.landDiscovery = new LandDiscoveryView(world, game);
+world.learning = new LearningView(world, game, land.later);
 game.start();
 applySettings();
 saveSession = autosave(game, profile);
@@ -290,12 +301,18 @@ async function handleSave(what, arg) {
     a.download = `farm-village-${profile}-${new Date().toISOString().slice(0, 10)}.json`; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000); return;
   }
-  if (!['import', 'newGame', 'resetProfile', 'profile'].includes(what)) return;
+  if (!['import', 'newGame', 'resetProfile', 'profile', 'reload'].includes(what)) return;
   changingProfile = true;
   let navigating = false;
   const fail = () => hud.toast(t('Could not save your farm. Please try again.'), 'warn');
   try {
-    if (what === 'import') {
+    if (what === 'reload') {
+      // A failed optional module can remain cached. Reopen only after preserving this profile's latest actions.
+      if (!saveSession?.()) { fail(); return; }
+      if (activeProfile() !== profile && !selectProfile(profile)) {
+        hud.toast(t('Could not switch farms. Your current farm is still open.'), 'warn'); return;
+      }
+    } else if (what === 'import') {
       if (!arg) return;
       let incoming;
       try { incoming = unpack(await arg.text()); }

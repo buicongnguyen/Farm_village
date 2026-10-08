@@ -9,6 +9,7 @@ import { familiesIn } from './projects.mjs';
 import { addHearts } from './bonds.mjs';
 import { isWorking } from './working.mjs';
 import { recipeOpen } from './production.mjs';
+import { cropOpen } from './learning-state.mjs';
 
 export const slots = s => ORDERS.slots(s.level);
 /** Renewable sources for new random orders. Existing cards stay saved when a source is stored or needs repair.
@@ -22,7 +23,7 @@ export function orderable(s) {
     memo.set(good, false); // fail closed if future content accidentally introduces a recipe cycle
     const crop = CROPS[good], fruit = FRUITS[good], recipe = RECIPES[good];
     let ok = false;
-    if (crop) ok = crop.level <= s.level && beds;
+    if (crop) ok = cropOpen(s, good) && beds;
     else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt));
     else if (recipe) ok = recipeOpen(s, good) && has(recipe.at) && Object.keys(recipe.needs).every(source);
     else {

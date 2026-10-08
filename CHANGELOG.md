@@ -1,5 +1,14 @@
 # Changelog
 
+## Garden repairs, strawberries and school baskets — implemented and validated (2026-10-09)
+
+- Minh's optional practical lesson leads to a three-step potting-bench restoration, two saved family memories and strawberries at level 4. The project costs 80 coins and 50 energy; its 100-point reserve recovers while away or through a free 30-second rest. Everyday farming, cooking, fishing, sales and normal repairs remain available at zero energy.
+- A working school offers replayable simple/challenge picture-basket rounds after Cora's introduction. Questions survive pauses, reloads and language changes. Free retries and one earned classroom memory add activity without recurring cash/XP rewards or consuming barn goods.
+- Save version 11 preserves old profiles, including farms created before restore mode; migration grants no extra rewards or terrain changes. Skill-aware crop choices, orders and ingredient guidance explain the strawberry unlock. English and Vietnamese share progression and each speaker's established voice.
+- Optional panel rendering loads on demand. Failed module loads can safely save and reopen the same profile; failed saves preserve the open game. Claude's AR-011/AR-012 art is integrated for the hospital tier, menu pictures and small icons. The bench uses existing art pending AR-013. [Detailed scope and release checks](docs/LEARNING-GARDEN-SCHOOL.md).
+- **Validation:** 389 native tests, pace targets, all 28 component browser suites, 28/28 smoke checks and 12/12 local production contexts pass. Older synchronous-loading/save-version test assumptions were corrected and their suites rerun. The new filled-farm tests stay within 93 draws / 253,830 triangles; existing budget suites pass too. Production first-load code is **1,073,842 bytes**. [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) records CI, deployment and live acceptance; Safari remains unverified because the local WebKit binary is unavailable.
+
+
 ## Parallel trays, village shops and optional civic growth — implemented and validated (2026-10-09)
 
 - Production buildings use independent trays: each new batch starts immediately, and a short batch can be collected while a longer one continues. Ready goods keep their tray until collected. Save version 10 preserves legacy serial completion times and explains their reserved start times; purchased capacity and already-paid work survive reloads.

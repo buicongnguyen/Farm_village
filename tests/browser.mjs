@@ -164,6 +164,7 @@ await check('first session: a truly modal chapter card, then the camera flies to
 await check('settings: a slider keeps its place while the clock redraws the panels', async () => {
   const { ctx, page } = await open('phone');
   await page.click('[data-act="settings"]');
+  await page.locator('[data-range="sound"]').waitFor();
   const same = await page.evaluate(async () => { const el = document.querySelector('[data-range="sound"]'); el.focus(); await new Promise(r => setTimeout(r, 2300)); return document.querySelector('[data-range="sound"]') === el; });
   expect(same, 'the sound slider was replaced by a redraw');
   await ctx.close();
@@ -324,7 +325,9 @@ await check('icons: the order board, barn, build catalogue and bakery show rende
   const panels = [['orders', () => farm.panels.show('orders')], ['barn', () => farm.panels.show('barn')], ['production', id => farm.panels.show('production', id)],
     ['build', () => { farm.panels.close(); farm.build.show(); farm.build.cat = 'charm'; farm.build.render(); }]];
   for (const [name, show] of panels) {
-    await page.evaluate(show, bakery); await page.waitForTimeout(200);
+    await page.evaluate(show, bakery);
+    if (name !== 'build') await page.waitForFunction(() => !!farm.panels.renderer);
+    await page.waitForTimeout(200);
     const c = await iconCount(page, name === 'build' ? '.sheet.build' : '.sheet.panel');
     expect(!c.missing && c.imgs >= 3 && c.emoji === 0, `${name}: ${JSON.stringify(c)}`);
   }
@@ -434,7 +437,8 @@ await check('Vietnamese: every panel fits a 390 px phone with no text sticking o
   const ids = await page.evaluate(() => ({ bakery: Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'bakery'), home: Object.keys(farm.state().homes)[0] }));
   const bad = [];
   for (const [kind, arg] of [['orders'], ['barn'], ['production', ids.bakery], ['today'], ['projects'], ['cottage', ids.home], ['cart'], ['mail'], ['friends'], ['gift', 'ada'], ['album'], ['settings']]) {
-    await page.evaluate(([k, a]) => farm.panels.show(k, a), [kind, arg]); await page.waitForTimeout(120);
+    await page.evaluate(([k, a]) => farm.panels.show(k, a), [kind, arg]);
+    await page.waitForFunction(() => !!farm.panels.renderer); await page.waitForTimeout(120);
     const b = await overflow(page, '.sheet.panel'); if (b) bad.push(`${kind}: ${b}`);
     await page.screenshot({ path: `${SHOTS}ui-vi-${kind}.png` });
   }
