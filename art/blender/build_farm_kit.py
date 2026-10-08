@@ -41,7 +41,7 @@ for n, c in {
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
         'rim': '#9C6236', 'riml': '#B87A45',
         # keepsakes (AR-009)
-        'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC',
+        'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
         }.items():
     C[n] = mat('FK ' + n, c, .55)
 
@@ -786,11 +786,11 @@ def obstacle_log():
 piece('obstacle_log', obstacle_log(), decor)
 
 # =================================================================== lucky finds (AR-009)
-# One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads until
-# the logic lane shows one (no world placement, no footprint). Modelled at about 0.5 m for comfortable numbers, then
-# scaled to a small handheld size (HANDHELD) when the kit is written; icons frame them either way. Warm painted colours; brass and gold only on rims, a clasp and a token coin or
-# two (the story's coins are counted in the card, not piled on the prop), plus one small four-point glint each:
-# charming keepsakes, not treasure. Each stays under the 1,200-triangle prop budget.
+# One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads
+# until the logic lane shows one (no world placement, no footprint). Modelled at about 0.5 m for comfortable numbers,
+# then scaled to a small handheld size (HANDHELD) when the kit is written; icons frame them either way. Warm painted
+# colours; brass and gold only on rims, the button, one clasp and two coins in the tin (the story's coins are counted
+# in the card, not piled on the props), plus one small four-point glint on each subject: keepsakes, not treasure.
 def glint(x, y, z, r=.07, mt='lampglow'):
     """A small upright four-point sparkle facing the front."""
     pts = [(math.cos(k * math.pi / 4 + math.pi / 2) * (r if k % 2 == 0 else r * .28),
@@ -804,7 +804,7 @@ def tilted(tilt, y0, z0, dy, dz):
 
 def lucky_tin():
     """A little round tin the pond gave up: teal paint, a wide cream label with a red fish, brass rims, the lid leaning
-    on its back, two of its coins showing, a puddle and a lily pad beside it and a drop or two of pond water on top."""
+    on its back, two of its coins showing, a puddle and a notched lily pad beside it and two drops of pond water on its rim."""
     p = [cl('tin', .22, .15, 0, 0, 0, 'teal', verts=18),
          cl('label', .224, .08, 0, 0, .035, 'cream', verts=18),
          cl('rim', .228, .022, 0, 0, .135, 'hayd', verts=18),
@@ -821,8 +821,8 @@ def lucky_tin():
     p.append(extrude_outline('lidfish', fish, .008, ax(.04), C['red'], rot=(t + math.pi / 2, 0, 0), bev=0))
     # pond water: a flat puddle and a lily pad at the front left, two smooth drops on the rim
     p.append(ball('puddle', .08, -.24, .16, .004, 'waterl', sub=2, sc=(1.7, 1.2, .08)))
-    p.append(cl('lilypad', .085, .014, -.29, .2, .008, 'leaf', verts=10))
-    p.append(bx('lilynotch', .07, .02, .02, -.25, .2, .006, 'waterl', bev=0, rot=.6))
+    pad = [(0, 0)] + [(math.cos(a) * .085, math.sin(a) * .085) for a in (.45 + k * (math.tau - .9) / 11 for k in range(12))]
+    p.append(extrude_outline('lilypad', pad, .014, (-.29, -.2, .015), C['leaf'], rot=(math.pi / 2, 0, 0), bev=0))   # notch cut in
     for x, y in ((-.15, .1), (.14, .12)):
         p.append(ball('drop', .016, x, y, .166, 'waterl', sub=2, sc=(1, 1, 1.25)))
     p.append(glint(-.17, .1, .36))
@@ -835,21 +835,22 @@ def fish_outline(L=.17, H=.1, n=12):
     return pts + [(-L * 1.55, H * 1.05), (-L * 1.25, 0), (-L * 1.55, -H * 1.05)]
 
 def lucky_button():
-    """A brass button shaped like a fish, propped against the soft blue cloth pouch it came in, one coin peeking from
-    the pouch's mouth and its red drawstring loose. The button has a bright rim, a darker brass face, an eye and a
+    """A brass button shaped like a fish, propped against the soft blue cloth pouch it came in, the pouch's red
+    drawstring loose. The button has a bright rim, a darker brass face, an eye and a
     four-hole centre, so it reads as a button and not as a coin or a biscuit; a tiny pond is engraved on its back."""
     p = [ball('pouch', .2, 0, -.05, .17, 'cloth', sub=2, sc=(1.05, 1, .85)),
          cl('neck', .085, .08, 0, -.05, .29, 'clothd', verts=10, rt=.06),
          cl('ruffle', .1, .07, 0, -.05, .36, 'clothl', verts=10, rt=.13),
          cl('tie', .09, .03, 0, -.05, .31, 'red', verts=10),
-         st((.07, .03, .32), (.17, .05, .2), .012, 'red', sides=4),
-         st((.17, .05, .2), (.27, .02, .01), .012, 'red', sides=4),
+         st((.07, .03, .32), (.21, .09, .25), .012, 'red', sides=4),
+         st((.21, .09, .25), (.25, .13, .12), .012, 'red', sides=4),
+         st((.25, .13, .12), (.31, .10, .01), .012, 'red', sides=4),
          st((.04, .03, .32), (-.08, .1, .23), .012, 'red', sides=4),
          ball('knot', .026, .06, .03, .32, 'redd', sub=1)]
     for k in range(5):   # cloth folds
         a = k * math.tau / 5 + .4
         p.append(ball('fold', .07, math.cos(a) * .17, -.05 + math.sin(a) * .17, .14, 'clothd', sub=1, sc=(.5, .5, 1.4)))
-    p += coin(.02, -.07, .38, tilt=1.15, r=.06)   # one of the forty coins, peeking out of the pouch
+    p.append(cl('mouth', .09, .01, 0, -.05, .43, 'clothd', verts=10))   # the open neck of the pouch
     # The button leans against the front of the pouch, lying on its side (head toward +x), tilted back 0.35 rad.
     t, y0, z0 = .35, .2, .09
     body = fish_outline(L=.14, H=.085)
@@ -871,14 +872,14 @@ def lucky_button():
     x, y, z = back(-.01, 0, .025); p.append(cyl('pondmark', .036, .006, (x, -y, z), C['hayd'], verts=12, bev=0, seg=1, rot=face))
     for dx, dz in ((-.022, .008), (.004, -.01)):
         x, y, z = back(-.01 + dx, dz, .029); p.append(box('ripple', (.026, .004, .006), (x, -y, z), C['woodd'], bev=0, seg=1, rot=(-t, 0, 0)))
-    p.append(glint(.24, .05, .45))
+    p.append(glint(.17, .28, .24))   # on the button, the subject
     return p
 piece('lucky_button', lucky_button(), discovery)
 
 def lucky_box():
     """A small trinket box from under a cleared rock: warm wood with darker wooden corners and one brass clasp, a teal
-    lining, the lid open on its back hinge, a smooth pebble on a cream cloth tied with a red ribbon, one coin tucked in
-    the corner, and a little spill of earth beside it."""
+    lining, the lid open on its back hinge, a smooth slate pebble on a cream cloth tied with a red ribbon, and a crumb of
+    earth beside it."""
     W, D, H = .38, .3, .17
     p = [bx('base', W, D, H, 0, 0, 0, 'wood', bev=.015),
          bx('lining', W - .05, D - .05, .012, 0, 0, H - .006, 'teal', bev=0),
@@ -901,15 +902,10 @@ def lucky_box():
         p.append(lf((-.03, .02, H + .02), .9 + k * 2.1, .15, .13, 'cream', lift=.03, droop=-.01))
     p.append(bx('ribbon', .03, .26, .05, -.03, .02, H - .01, 'red', bev=.005))
     p.append(ball('bow', .022, -.03, .15, H + .03, 'redd', sub=1, sc=(1.6, .8, 1)))
-    p.append(ball('pebble', .07, -.03, .03, H + .055, 'stone', sub=2, sc=(1.4, 1, .5)))
-    p.append(ball('pebblesheen', .02, -.06, .05, H + .085, 'white', sub=1, sc=(1.6, 1, .4)))
-    p += coin(.12, -.06, H - .002, tilt=-.12, r=.06)
-    # a little spill of earth off the front corners, with two small stones
-    for x, y, r in ((-.3, .06, .045), (.28, .15, .04), (-.05, .24, .035)):
-        p.append(ball('soil', r, x, y, .004, 'soil', sub=2, sc=(1.8, 1.4, .3)))
-    for x, y in ((-.27, .12), (.24, .2)):
-        p.append(ball('stone', .025, x, y, .015, 'stoned', sub=1))
-    p.append(glint(.2, .08, .38))
+    p.append(ball('pebble', .085, -.03, .03, H + .065, 'pebble', sub=2, sc=(1.4, 1, .5)))
+    p.append(ball('pebblesheen', .022, -.065, .055, H + .1, 'stonel', sub=1, sc=(1.6, 1, .4)))
+    p.append(ball('soil', .05, -.36, .02, .004, 'soill', sub=2, sc=(1.8, 1.4, .3)))   # a crumb of earth from under the rock
+    p.append(glint(-.12, .06, .34))   # on the pebble, the subject
     return p
 piece('lucky_box', lucky_box(), discovery)
 

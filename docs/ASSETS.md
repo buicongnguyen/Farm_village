@@ -32,7 +32,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 | Files | Source | Notes |
 |---|---|---|
-| 92 WebP icons, 256 px | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
+| 92 WebP icons: 88 rendered at 256 px from `icons.json`, plus the four 160 px Willowmere fish icons listed under v0.3b | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
 
 ## Added in v0.3b
 `farm-kit.glb` gained `truck` and `pond` (our own Blender pieces, `art/blender/build_farm_kit.py`). Icons `perch`, `carp`, `catfish`, `goldfish` are copied from Willowmere (`3d_farmer_fish_sell/public/assets/icons/fish/fish_perch|carp|catfish|golden.webp`); `round_tree`, `pine_tree` are rendered from Willowmere's `scenery.glb` (`tree_round`, `tree_pine`); `market`, `pond`, `truck` icons from our own kit.
@@ -74,9 +74,9 @@ MIT) is a build tool only, not a dependency of the game.
 ## AR-009 lucky finds
 
 - `discovery-props.glb`: original `lucky_tin` (a teal tin with a cream label and red fish, brass rims, its lid, two
-  coins, a puddle and a lily pad), `lucky_button` (a brass fish button with a four-hole centre and a tiny pond engraved
-  on its back, against a soft blue cloth pouch) and `lucky_box` (a wooden trinket box with a teal lining, a pebble on a
-  ribbon-tied cloth, one coin). Made in `art/blender/build_farm_kit.py` with the existing vertex-colour helpers at a
+  coins, a puddle and a notched lily pad), `lucky_button` (a brass fish button with a four-hole centre and a tiny pond
+  engraved on its back, against a soft blue cloth pouch) and `lucky_box` (a wooden trinket box with a teal lining and a
+  slate pebble on ribbon-tied cloth). Made in `art/blender/build_farm_kit.py` with the existing vertex-colour helpers at a
   0.5 m working size and written at handheld size (× 0.3); Blender 4.5.9 LTS; packed with `art/blender/pack.mjs`.
   No third-party asset or reference-game art used.
 - Icons `lucky_tin`, `lucky_button`, `lucky_box`: `art/blender/render_icons.py` jobs in `icons.json`
