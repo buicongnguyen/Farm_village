@@ -38,6 +38,8 @@ MIT) is a build tool only, not a dependency of the game.
 
 `fish.glb` is Willowmere's fish kit (`3d_farmer_fish_sell/public/assets/models/fish.glb`, itself from Zoo Garden), packed with `art/blender/pack.mjs`; the ponds draw perch, carp, catfish and golden carp from it.
 
+`farm-kit.glb` (AR-001 look pass): the cute tree and pine leaf colours were deepened in `build_farm_kit.py` (leafw `#4fab45`, leafwl `#8fd04c`, leafwd `#3a8444`, pinew `#2f8a50`, pinewl `#58b45e`) and the kit rebuilt; no geometry changed.
+
 ## Tools in `art/blender/`
 
 | Script | What it does |

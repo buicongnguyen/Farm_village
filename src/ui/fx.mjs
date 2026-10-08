@@ -6,6 +6,7 @@ import { CELL } from '../content/world.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { iconHtml } from './icon.mjs';
 import { sfx } from '../kit/sound.mjs';
+import { pickedFlow } from '../view/collect-flow.mjs';
 
 const CORNER = { '[data-act="barn"]': () => ({ x: innerWidth - 64, y: innerHeight - 52 }), '[data-hud="coins"]': () => ({ x: 110, y: 36 }), '[data-hud="level"]': () => ({ x: 36, y: 36 }) };
 const COIN = '🪙';
@@ -26,12 +27,15 @@ export class Fx {
   tapPoint() { return this.tap && performance.now() - this.tap.t < 1500 ? this.tap : { x: innerWidth / 2, y: innerHeight / 2 }; }
   /** One result's events: goods of one kind fly together (a sweep sends a few icons, not hundreds). */
   result(events) {
-    const goods = new Map(); let coins = 0;
+    const goods = new Map(); let coins = 0, pickedSeen = false;
     for (const e of events) {
       if (e.type === 'harvested') this.add(goods, e.crop, this.screenOf(e.id), e.count);
       else if (e.type === 'collected') this.add(goods, e.good, this.screenOf(e.home), 1);
       else if (e.type === 'produced') this.add(goods, e.good, this.screenOf(e.building), e.count);
-      else if (e.type === 'orderFilled' || e.type === 'rent' || e.type === 'stallSold' || e.type === 'coins') coins += e.coins ?? 0;
+      // coins reach the wallet only when money is actually paid: `stallSold` and `fruitSold` are takings WAITING at a stand
+      // (they fly on collection, which emits `coins`), so they are not counted here
+      else if (e.type === 'picked') { if (!pickedSeen) { pickedSeen = true; const flow = pickedFlow(events); for (const [good, n] of flow.stored) if (n > 0) this.add(goods, good, this.screenOf(events.find(x => x.type === 'picked' && x.good === good)?.id), n); } }
+      else if (e.type === 'orderFilled' || e.type === 'rent' || e.type === 'coins') coins += e.coins ?? 0;
       else if (e.type === 'giftClaimed' && e.coins) coins += e.coins;
       else if (e.type === 'levelUp' || e.type === 'projectDone' || e.type === 'familyArrived' || (e.type === 'repaired' && e.broken)) this.confetti(e.type === 'levelUp' ? 26 : 40);
     }

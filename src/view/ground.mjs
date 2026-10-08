@@ -23,8 +23,8 @@ export function noise(x, z) {
 export const noise2 = (x, z) => noise(x * 0.11, z * 0.11) * 0.65 + noise(x * 0.37 + 17.3, z * 0.37 - 4.1) * 0.35;
 
 // The three grass tones (light, mid, dark) and the warm dirt that shows through in patches.
-const TONES = ['#a6d45a', '#6fbf4a', '#4f9e3c'].map(c => new THREE.Color(c));
-const DIRT = new THREE.Color('#a8904e');
+const TONES = ['#a8d95a', '#72bd3e', '#529a38'].map(c => new THREE.Color(c));
+const DIRT = new THREE.Color('#b07c4e');
 const tone = new THREE.Color();
 /** The grass tone at a point (cells): a mix of the three tones; written into out. */
 export function grassTone(x, z, out = tone) {

@@ -77,8 +77,8 @@ export function toon({ color = '#ffffff', vertexColors = true, transparent = fal
 }
 /** Lights for an outdoor scene; returns them so day and night can retint them. */
 export function addLights(scene) {
-  const hemi = new THREE.HemisphereLight('#fff3d2', '#8aa85a', 1.55);
-  const sun = new THREE.DirectionalLight('#ffe9c0', 2.5); sun.position.set(-40, 80, 30);
+  const hemi = new THREE.HemisphereLight('#eaf0ff', '#6a9a48', 1.55);
+  const sun = new THREE.DirectionalLight('#ffe9c4', 2.45); sun.position.set(-40, 80, 30);
   scene.add(hemi, sun);
   return { hemi, sun };
 }

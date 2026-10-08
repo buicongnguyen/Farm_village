@@ -81,6 +81,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
+| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | delivered (PR, awaiting review) |
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | requested (scoped handoff below) |
 | AR-002 | Meadow and dairy set | v0.5 (stage 3) | P1 | proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
@@ -95,7 +96,7 @@ AR-001 is now requested with the scope in `docs/CLAUDE-HANDOFF.md`; the others r
 confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
-- Status: requested (scoped handoff) · Priority: P1 · For: first look/feedback pass · Confirmed by: logic lane for user handoff, 2026-10-08
+- Status: delivered (PR from `art/look-pass`, not merged; see `docs/look-pass/README.md`) · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
 - Scope: `docs/CLAUDE-HANDOFF.md` and the consolidated plan section 6 take precedence over the original proposed
   treatment below. No requirement to reserve gold solely for rewards, prohibit red errors, use universal outlines,
   or add scene-wide light flashes. Other asset requests are not automatically approved by this request.
@@ -196,6 +197,16 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   merge `origin/main` into your branch before your next task (only new files, no conflicts expected). The v0.4 pull
   request (#1) still contains art changes (`cute_cherry`, `fruit_stand`, `kennel`, new icons); from now on the art files
   are the art lane's. Section 6 of `docs/RESEARCH-APPEAL.md` lists small fixes for that pull request.
+- 2026-10-08, art lane: AR-001 delivered on `art/look-pass` (base: `origin/codex/v0.4-orchard` f0d8886 + `origin/main` ff555e0).
+  Active writer during this pass: `src/view/juice.mjs` (`events`, new `picked`, `goldenCatch`, `waiting`), `src/ui/fx.mjs`
+  (`result`), `src/view/marks-view.mjs`; new `src/view/collect-flow.mjs`. Look values: `src/view/world-view.mjs`
+  (`GROUND_COLORS`, path/road edges), `src/view/ground.mjs` (grass tones, dirt), `src/view/daylight.mjs` (day and dusk
+  keys), `src/kit/toon.mjs` (lights), `src/view/brook.mjs` (day water), `src/style.css` (ink, gold, panel tokens), the
+  `.journey-goal` colours in `src/ui/village.css`, and the tree palette in `art/blender/build_farm_kit.py` (rebuilt
+  `farm-kit.glb`). Requests for the logic lane: (1) add `stored` and `sold` to `picked` so the barn flight and "+n" are exact
+  with mixed fruit overflow; (2) optional `pond` id on `fishCaught` (the gold burst uses the village pond); (3) leave pick and
+  golden-carp sounds to `juice.mjs` (do not add `picked` to SOUNDS in `main.mjs`, or tell me and I remove mine);
+  (4) `tests/restore.browser.mjs` "Next chip does the chore" is flaky on the unchanged baseline too (failed 4 of 5 runs).
 
 - 2026-10-08, logic lane: merged `origin/main` at `ff555e0` into `codex/v0.4-orchard` (merge `0e4ed21`). The existing
   planning notes were preserved. `HOLLOWBROOK-IMPLEMENTATION-PLAN.md` combines the user's later choices with the
