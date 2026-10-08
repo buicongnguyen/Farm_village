@@ -25,7 +25,7 @@ C = {n: mat('IT ' + n, c, .5) for n, c in {
     'wstalk': '#E9B84A', 'wheatg': '#F0A020', 'burlap': '#D08A4A', 'burlapd': '#A9622E', 'burlapl': '#E8B070', 'label1': '#FFD23F',
     'label2': '#FFD23F', 'pellet': '#7A9A3A', 'burlapo': '#A8A65A', 'burlapod': '#7E7C3E', 'burlapol': '#C8C47E', 'hen': '#E8573F', 'cow': '#3A3D4A', 'skillet': '#3A3D4A', 'skilletl': '#5B6477', 'crumb': '#FFD86A', 'board': '#C98A4A',
     'boardd': '#7A4A28', 'flour': '#FFF8EA', 'straw': '#C99A3A', 'strawd': '#8A5A22', 'eggb': '#E9A868', 'eggb2': '#D98C4A',
-    'crustl': '#E39A48', 'eggw': '#FFF1D8', 'violet': '#9B6BFF', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
+    'crustl': '#E39A48', 'eggw': '#FFF1D8', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
 
 def P(name, r, loc, mt, sub=2, sc=None):
     return ico(name, r, loc, C[mt], subdiv=sub, scale=sc)
@@ -112,6 +112,12 @@ def fruit(name, mt, mtd, lf=True):
     return p
 item('item_apple', fruit('apple', 'apple', 'appled'))
 item('item_peach', fruit('peach', 'peach', 'peachl'))
+item('item_orange', fruit('orange', 'orangef', 'orangef'))
+def coconut():
+    """A coconut: a hairy brown husk ball, one half cracked open to the white flesh."""
+    return [sphere('husk', .36, (-.18, 0, .36), C['woodd'], segs=16, rings=10), sphere('half', .3, (.32, -.1, .2), C['woodd'], segs=14, rings=8, scale=(1, 1, .6)),
+            cyl('flesh', .25, .04, (.32, -.1, .37), C['egg'], verts=16, bev=0), P('eye', .04, (-.18, -.3, .5), 'woodd', sub=1)]
+item('item_coconut', coconut())
 
 def sack(grain, kern, label, emblem, bag=('burlap', 'burlapd', 'burlapl')):
     """A burlap feed sack (item pass): a soft square bag, its top rolled open on a heap of feed, a yellow label on the

@@ -1,7 +1,7 @@
 // Vietnamese lines added by the play package (merged into VI in vi.mjs).
 export const VI_PLAY = {
   // fruit, the new recipe and the fruit trees
-  'Apple': 'Táo', 'Peach': 'Đào', 'Apple pie': 'Bánh táo', 'Apple tree': 'Cây táo', 'Peach tree': 'Cây đào',
+  'Apple': 'Táo', 'Peach': 'Đào', 'Apple pie': 'Bánh táo', 'Apple tree': 'Cây táo', 'Peach tree': 'Cây đào', 'Orange': 'Cam', 'Coconut': 'Dừa', 'Orange tree': 'Cây cam', 'Coconut palm': 'Cây dừa', 'Weeping willow': 'Cây liễu rủ',
   // decorations
   'Flowerpot': 'Chậu hoa', 'Hay bale': 'Kiện cỏ khô', 'Picket fence': 'Hàng rào thanh gỗ', 'Scarecrow': 'Bù nhìn',
   'Fountain': 'Đài phun nước', 'Street lamp': 'Đèn đường', 'Garden flower': 'Hoa trong vườn',

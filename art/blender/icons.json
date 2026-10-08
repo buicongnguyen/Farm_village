@@ -902,5 +902,49 @@
   "root": "item_ginseng",
   "preset": "goods",
   "rough": 0.5
+ },
+ {
+  "id": "orange",
+  "src": "raw:items",
+  "root": "item_orange",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "coconut",
+  "src": "raw:items",
+  "root": "item_coconut",
+  "preset": "goods",
+  "rough": 0.7
+ },
+ {
+  "id": "orange_tree",
+  "src": "raw:farm-kit",
+  "root": "cute_orange",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "coconut_palm",
+  "src": "raw:farm-kit",
+  "root": "cute_palm",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "willow",
+  "src": "raw:farm-kit",
+  "root": "cute_willow",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
  }
 ]
