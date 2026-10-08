@@ -15,7 +15,6 @@ const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['ti
 export function renderSettings(s, profile) {
   const st = s.settings;
   return `<div class="settings">
-    <button class="btn wide" data-do="profiles">${iconHtml('cottage', '', 'mini')} ${t('Farm profiles')} · ${t('Profile {n}', { n: profile })}</button>
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${choice('lang', 'en', getLanguage(), 'English')}${choice('lang', 'vi', getLanguage(), 'Tiếng Việt')}</div></div>
     <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${st.playerName ?? ''}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>

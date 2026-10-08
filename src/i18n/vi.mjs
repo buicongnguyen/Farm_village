@@ -1,3 +1,4 @@
+import { MOBILE_VI } from './mobile.mjs';
 import { VI_ADVICE } from './vi-advice.mjs';
 import { VI_EXPLORATION } from './vi-exploration.mjs';
 import { VI_ART } from './vi-art.mjs';
@@ -220,6 +221,7 @@ export const VI = {
   'First family moved in': 'Gia đình đầu tiên dọn đến', 'First trade with a neighbour': 'Lần đầu trao đổi với hàng xóm', 'Your first harvest is waiting.': 'Mùa thu hoạch đầu tiên đang chờ bạn.',
 
   // ── Goods ──
+  'Main menu': 'Màn hình chính', 'Choose your farm': 'Chọn nông trại của bạn',
   'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô', 'Healing herb': 'Cây thuốc nam', 'Ginseng': 'Nhân sâm',
   'Hen': 'Gà mái', 'Cow': 'Bò sữa', 'Egg': 'Trứng', 'Milk': 'Sữa',
   'Chicken feed': 'Cám gà', 'Cow feed': 'Cám bò', 'Bread': 'Bánh mì', 'Corn bread': 'Bánh ngô', 'Carrot cake': 'Bánh cà rốt',
@@ -745,3 +747,5 @@ Object.assign(VI, {
   "Not by itself. With a bicycle bell and rather a lot of patience.": "Đâu có tự nhiên mà kêu. Nhờ một cái chuông xe đạp và bố kiên nhẫn lắm mới được đấy.",
   "Took the long way, did it, postman? ...Thank you.": "Lá thư cũng đi đường vòng hả, chú bưu tá? ...Cảm ơn nhé.",
 });
+
+Object.assign(VI, MOBILE_VI);
