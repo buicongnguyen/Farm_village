@@ -7,7 +7,7 @@ import { recipeOpen, productionOf, collectableJobs, productionDuration } from '.
 import { isWorking, isRepairing } from './working.mjs';
 import { repairCost } from './condition.mjs';
 import { placementPrice } from './build.mjs';
-import { plantPrice } from './farm.mjs';
+import { plantPrice, cropOpen } from './farm.mjs';
 import { animalPrice } from './animals.mjs';
 import { giftable, personOf } from './bonds.mjs';
 import { dayKey } from './clock.mjs';
@@ -69,6 +69,7 @@ function cropSource(s, good, now, missing) {
   if (ready.length) return { ...base, status: 'ready' };
   if (crop.level > s.level) return { ...base, status: 'level', level: crop.level };
   if (growing.length * 2 >= Math.max(1, missing)) return { ...base, status: 'waiting', target: { kind: 'farm', id: growing[0] } };
+  if (!cropOpen(s, good)) return { ...base, status: 'skill', target: { kind: 'learning' } };
   if (!beds.length) return { ...base, ...missingMaker(s, 'bed') };
   if (!empty.length) return { ...base, status: growing.length ? 'waiting' : 'beds-full' };
   return { ...base, status: cost > s.coins ? 'seed-coins' : 'plant' };
@@ -106,7 +107,7 @@ function usesOf(s, good, now) {
   if (projectNeed) uses.push({ kind: 'project', name: step.name, needed: projectNeed });
   for (const [id, r] of Object.entries(RECIPES)) if (r.needs[good] && recipeOpen(s, id)) uses.push({ kind: 'recipe', good: id,
     needed: r.needs[good], available: makers(s, r.at).some(id => isWorking(s, id) && queue(s, id).length < (s.production?.[id]?.slots ?? SLOTS.start)) && barn.hasAll(s, r.needs) });
-  if (CROPS[good] && !CROPS[good].free && CROPS[good].level <= s.level) uses.push({ kind: 'seed' });
+  if (CROPS[good] && !CROPS[good].free && cropOpen(s, good)) uses.push({ kind: 'seed' });
   const liked = giftable(s, now).filter(id => personOf(id)?.likes?.includes(good) && s.people[id]?.giftDay !== dayKey(now));
   if (liked.length) uses.push({ kind: 'gift', count: liked.length });
   for (const [id, a] of Object.entries(ANIMALS)) if (a.eats === good && makers(s, a.home).some(home =>

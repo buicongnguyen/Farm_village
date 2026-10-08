@@ -2,8 +2,9 @@
 // collect, pick or catch, in the order to do it. Pure: reads the state, changes nothing.
 import { RECIPES, CROPS, FRUITS, FISH_TABLE, ANIMALS } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
+import { gardenComplete } from './learning-state.mjs';
 
-export const STEP_TEXT = { plant: 'Plant {n} {good}', make: 'Make {n} {good}', collect: 'Collect {n} {good}', pick: 'Pick {n} {good}', fish: 'Catch {n} {good}' };
+export const STEP_TEXT = { plant: 'Plant {n} {good}', make: 'Make {n} {good}', collect: 'Collect {n} {good}', pick: 'Pick {n} {good}', fish: 'Catch {n} {good}', learn: 'Restore the potting bench for {good}' };
 const FISH = new Set(FISH_TABLE.map(f => f.id));
 /** Steps to get these goods: [{ how, good, n, at }] (at: where it is done, for "show the way"). */
 export function planFor(s, need) {
@@ -24,7 +25,7 @@ export function planFor(s, need) {
       const batches = Math.ceil(rest / r.makes); for (const [g, k] of Object.entries(r.needs)) want(g, k * batches);
       add('make', good, batches * r.makes, r.at); stock[good] += batches * r.makes - rest; return;
     }
-    if (CROPS[good]) return add('plant', good, rest, 'farm');
+    if (CROPS[good]) return CROPS[good].skill && !gardenComplete(s) ? add('learn', good, rest, 'learning') : add('plant', good, rest, 'farm');
     if (FRUITS[good]) return add('pick', good, rest, FRUITS[good].tree);
     if (FISH.has(good)) return add('fish', good, rest, 'pond');
     const animal = Object.values(ANIMALS).find(a => a.gives === good);

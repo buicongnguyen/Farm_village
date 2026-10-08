@@ -17,3 +17,5 @@ export * as land from './land.mjs';
 export * as contracts from './contracts.mjs';
 export * from './shops.mjs';
 export * from './village-growth.mjs';
+export * as learning from './learning.mjs';
+export * as schoolActivity from './school-activity.mjs';

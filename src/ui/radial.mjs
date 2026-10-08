@@ -13,7 +13,7 @@ import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, 
 import { tidied } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
-import { plantPrice } from '../core/farm.mjs';
+import { plantPrice, cropOpen } from '../core/farm.mjs';
 import { animalPrice, animalState } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
 import { buyableParcels } from '../core/build.mjs';
@@ -27,6 +27,7 @@ import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
 import { roadSegmentAt } from '../content/world.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
+import { learningStatus } from '../core/learning.mjs';
 
 const near = (cell, spot, r) => Math.abs(cell.x - spot.x) <= r && Math.abs(cell.z - spot.z) <= r;
 const nearCart = cell => cell.x >= CART_SPOT.x - 1 && cell.x <= CART_SPOT.x + CART_SPOT.w && cell.z >= CART_SPOT.z - 1 && cell.z <= CART_SPOT.z + CART_SPOT.d;
@@ -74,6 +75,7 @@ export class Radial {
     const s = this.s, now = this.game.now, lv = levelOf(s, id), name = thingName(s, id) ?? '';
     if (isRepairing(s, id)) { const left = Math.max(0, s.repairing[id].doneAt - now); return { buttons: [], info: `${name} · ${condLabel(s, id)} · ${shortTime(left)}${bar(1 - left / REPAIR.broken.ms)}` }; }
     const cost = repairCost(s, id), buttons = [{ act: 'repair', id, icon: iconHtml('wrench', '', 'ic'), label: `${coinMark()}${num(cost)}`, disabled: s.coins < cost }];
+    if (lv < 3 && s.placed[id]?.kind === 'school') buttons.push({ act: 'schoolActivity', icon: iconHtml('school', '', 'ic'), label: t('Open') });
     if (lv < 3 && (def?.produces || def?.fruitStand || def?.stall || def?.market || def?.pond || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.fruitStand ? 'fruit_stand' : def.stall || def.market ? 'stall' : def.pond ? 'pond' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
     return { buttons, info: `${name} · ${condLabel(s, id)}` };
   }
@@ -81,6 +83,8 @@ export class Radial {
   houseMenu() {
     const s = this.s, lv = s.house?.level ?? 1, buttons = [];
     if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
+    const lesson = learningStatus(s, this.game.now);
+    if (lesson.eligible || lesson.introduced) buttons.push({ act: 'learning', icon: iconHtml('wrench', '', 'ic'), label: t('Garden repairs') });
     let info = `${t('Your farmhouse')} · ${t('Level {level}', { level: lv })}`;
     if (levelOf(s, 'house') > 0 || isRepairing(s, 'house')) { const m = this.repairMenu('house'); buttons.push(...m.buttons); info = m.info; }
     if (lv < HOUSE.levels && levelOf(s, 'house') < 3 && !isRepairing(s, 'house')) {
@@ -118,7 +122,7 @@ export class Radial {
     if (p && !opts.open && levelOf(s, id) > 0) ({ buttons, info } = this.repairMenu(id, def));
     else if (p?.kind === 'bed') {
       const b = s.beds[id];
-      if (!b) buttons = Object.entries(CROPS).filter(([, c]) => c.level <= s.level).map(([c, def]) => {
+      if (!b) buttons = Object.entries(CROPS).filter(([c]) => cropOpen(s, c)).map(([c, def]) => {
         const price = plantPrice(s, c), have = barn.stock(s, c);
         return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
@@ -139,7 +143,7 @@ export class Radial {
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
     else if (def?.pond) { this.hide(); this.panels.show('pond'); return; }
     else if (def?.home) { this.hide(); this.panels.show('cottage', id); return; }
-    else if (p?.kind === 'school') info = t('The school is open!');
+    else if (p?.kind === 'school') { this.hide(); this.panels.show('schoolActivity'); return; }
     else if (def?.animals) {
       const list = s.animals[id] ?? [], kind = def.animals, a = ANIMALS[kind], pen = penOf(s, id);
       const hungry = list.filter(x => animalState(x, now) === 'hungry').length, ready = list.filter(x => animalState(x, now) === 'ready').length;
@@ -214,6 +218,8 @@ export class Radial {
     else if (d.act === 'repair') g.do('repair', { id: d.id });
     else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
     else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
+    else if (d.act === 'learning') this.panels.show('learning');
+    else if (d.act === 'schoolActivity') this.panels.show('schoolActivity');
     else if (d.act === 'villageGrowth') this.panels.show('villageGrowth');
     else if (d.act === 'open') { const l = this.last; if (l) this.tap(l.cell, l.x, l.y, { open: true }); }
     else if (d.act === 'buyParcel') {

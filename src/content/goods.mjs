@@ -5,6 +5,7 @@ export const CROPS = {
   wheat:   { name: 'Wheat',   growMs: 20_000,  value: 2,  level: 1, free: true, model: 'crop_wheat', icon: '🌾' },
   carrot:  { name: 'Carrot',  growMs: 30_000,  value: 4,  level: 2, model: 'crop_carrot', icon: '🥕' },
   corn:    { name: 'Corn',    growMs: 45_000, value: 7,  level: 3, model: 'crop_goldcorn', icon: '🌽' },
+  strawberry: { name: 'Strawberry', growMs: 2 * MIN, value: 12, level: 4, skill: 'garden-repairs', model: 'crop_strawberry', icon: '🍓' },
   pumpkin: { name: 'Pumpkin', growMs: 5 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
   // premium crops (docs/VILLAGE-GROWTH-PLAN.md, stage 2): slow and valuable, the money for the village's big buildings
   herb:    { name: 'Healing herb', growMs: 15 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },

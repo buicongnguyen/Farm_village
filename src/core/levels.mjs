@@ -17,7 +17,7 @@ export function gainXp(ctx, amount) {
  */
 export function unlocksAt(level) {
   const pick = obj => Object.entries(obj).filter(([, v]) => v.level === level).map(([k]) => k);
-  const out = { crops: pick(CROPS), fruits: pick(FRUITS), recipes: pick(RECIPES), animals: pick(ANIMALS), buildings: pick(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden),
+  const out = { crops: pick(CROPS).filter(id => !CROPS[id].skill), fruits: pick(FRUITS), recipes: pick(RECIPES), animals: pick(ANIMALS), buildings: pick(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden),
     orderSlots: level > 1 && ORDERS.slots(level) > ORDERS.slots(level - 1) ? ORDERS.slots(level) : 0 };
   out.list = [...out.crops.map(id => ({ type: 'crop', id })), ...out.fruits.map(id => ({ type: 'fruit', id })), ...out.recipes.map(id => ({ type: 'recipe', id })),
     ...out.animals.map(id => ({ type: 'animal', id })), ...out.buildings.map(id => ({ type: 'building', id }))];

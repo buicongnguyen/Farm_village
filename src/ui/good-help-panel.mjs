@@ -21,6 +21,7 @@ function sourceText(source) {
     case 'waiting': return t('Some supply is already growing or queued. Check the incoming amount before starting more.');
     case 'barn-full': return t('A finished batch is waiting. Make room in the barn before collecting it.');
     case 'level': return t('Reach level {level} first', { level: source.level });
+    case 'skill': return t('Restore the potting bench to learn strawberry planting.');
     case 'build': return source.reason ? t(source.reason, tParams(source.params)) : t('Place {building} to get started.', { building });
     case 'repair': return source.reason ? t(source.reason, tParams(source.params)) : t('Repair {building} before starting new work.', { building });
     case 'repairing': return t('{building} is being repaired. New work can start when it is ready.', { building });

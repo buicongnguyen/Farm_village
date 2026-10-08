@@ -6,6 +6,7 @@ import { goodHelp, goodHelpTarget } from '../src/core/good-help.mjs';
 import { GOODS, RECIPES } from '../src/content/goods.mjs';
 import { stepIndex } from '../src/core/projects.mjs';
 import { VI_GOOD_HELP } from '../src/i18n/vi-good-help.mjs';
+import { planFor } from '../src/core/plan.mjs';
 import { T0 } from './helpers.mjs';
 
 const fresh = () => newGame(T0, 31);
@@ -52,6 +53,28 @@ test('recipe guidance honors learned recipes and real project/building gates', (
   s.projects.step = stepIndex('mill_coop') + 1;
   assert.equal(goodHelp(s, 'bread', T0).source.reason, undefined);
   assert.deepEqual(goodHelpTarget(s, 'bread', T0), { kind: 'catalogue', buildingKind: 'bakery' });
+});
+
+test('strawberry guidance points to the optional bench until learned, then exposes ordinary planting and seed use', () => {
+  const s = fresh(); s.level = 4; put(s, 'bed', 'bed'); s.barn.items = {};
+  const before = structuredClone(s), help = goodHelp(s, 'strawberry', T0);
+  assert.equal(help.source.status, 'skill'); assert.deepEqual(help.source.target, { kind: 'learning' });
+  assert.ok(!help.uses.some(use => use.kind === 'seed'));
+  assert.deepEqual(planFor(s, { strawberry: 2 }), [{ how: 'learn', good: 'strawberry', n: 2, at: 'learning' }]);
+  assert.deepEqual(s, before);
+  s.firsts['learning:step:trays'] = T0;
+  assert.equal(goodHelp(s, 'strawberry', T0).source.status, 'plant');
+  assert.equal(goodHelp(s, 'strawberry', T0).source.cost, 12);
+  assert.ok(goodHelp(s, 'strawberry', T0).uses.some(use => use.kind === 'seed'));
+  assert.deepEqual(planFor(s, { strawberry: 2 }), [{ how: 'plant', good: 'strawberry', n: 2, at: 'farm' }]);
+  s.barn.items.strawberry = 2; assert.deepEqual(planFor(s, { strawberry: 2 }), []);
+});
+
+test('already planted strawberries can be collected or waited for when a partial save lost its optional skill marker', () => {
+  const s = fresh(); s.level = 4; put(s, 'bed', 'bed'); s.barn.items = {};
+  s.beds.bed = { crop: 'strawberry', doneAt: T0 + 1000 };
+  assert.equal(goodHelp(s, 'strawberry', T0, { needed: 2 }).source.status, 'waiting');
+  assert.equal(goodHelp(s, 'strawberry', T0 + 1000, { needed: 2 }).source.status, 'ready');
 });
 
 test('finished and paid-for queued batches are shown before repair or ingredient advice', () => {

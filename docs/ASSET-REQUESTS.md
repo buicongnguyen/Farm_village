@@ -1,5 +1,18 @@
 # Asset requests
 
+### Active logic handoff — learning, garden and school (2026-10-09)
+
+- Codex owns `codex/learning-garden-school`, starting from deployed main `e05c800` (PR #26). The next slice adds one practical garden-repair skill, a three-phase potting-bench project, project-only energy/free home rest, strawberries using the existing crop/icon art, and a replayable school counting activity. Existing farming, repairs and story requirements retain their gates.
+- Active shared behavior: Codex owns `src/main.mjs`, the new `src/view/learning-view.mjs` and `src/content/learning-site.mjs` for staged reuse/picking of a small project beside the farmhouse. It sits inside the existing fixed house footprint, so it claims no buildable land and changes no player's terrain. Codex also owns `src/ui/**` layout/controls and lazy panel extraction. Claude retains all colors, lighting, models, icon rendering and effects; AR-011/AR-012 remain his art work.
+- The school activity uses an illustrated panel with current item pictures. It does not claim a new 3D classroom or consume produce, energy or coins. No school reward pays repeat coins/XP. Exact rules and acceptance will be documented with the release.
+
+### AR-013: Old potting bench — requested 2026-10-09
+
+- Gameplay project ID: `potting_bench`; this is a fixed optional project, not a purchasable building. Position/placement contract is in `src/content/learning-site.mjs`. Target envelope: about 2.4 m wide × 1.4 m deep, preserving the farmhouse walkway and neighboring resting bench.
+- Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
+- The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
+- Deliver packed GLB nodes and provenance on an `art/*` branch. Agree exact node IDs and the stage-to-model map with Codex before changing the runtime view. This request follows the already assigned AR-011/AR-012; no need to pause those.
+
 ### AR-011: Civic/company art — requested 2026-10-09
 
 - Runtime IDs stay `clinic`, `police`, `company`; every footprint is **4 × 3 cells** at its existing civic-row anchor. The clinic's `s.growth.hospitalAt` stamp indicates the hospital upgrade. No child workers or new character identities are introduced.

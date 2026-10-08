@@ -1,4 +1,7 @@
 import { MOBILE_VI } from './mobile.mjs';
+import { VI_LEARNING } from './vi-learning.mjs';
+import { VI_LEARNING_UI } from './vi-learning-ui.mjs';
+import { VI_SCHOOL_ACTIVITY } from './vi-school-activity.mjs';
 import { VI_GOOD_HELP } from './vi-good-help.mjs';
 import { VI_LAND } from './vi-land.mjs';
 import { VI_CONTRACTS } from './vi-contracts.mjs';
@@ -16,6 +19,13 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_LEARNING,
+  ...VI_LEARNING_UI,
+  ...VI_SCHOOL_ACTIVITY,
+  'The potting bench is ready! A new crop to try.': 'Bàn ươm cây đã sửa xong! Có giống cây mới để trồng rồi.',
+  'Your first basket game: a new memory for the album!': 'Lần đầu chơi đếm nông sản: thêm một kỷ niệm vào album rồi!',
+  'Restore the potting bench to learn strawberry planting.': 'Sửa lại bàn ươm cây để học cách trồng dâu tây nhé.',
+  'Restore the potting bench for {good}': 'Sửa bàn ươm cây để trồng {good}',
   ...VI_SHOPS,
   ...VI_GROWTH,
   'Company delivery returned: {coins} coins waiting at the market': 'Xe giao hàng của công ty đã về: có {coins} xu chờ nhận ở chợ',

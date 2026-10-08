@@ -25,6 +25,8 @@ import { unreadExploration } from '../core/exploration.mjs';
 import { unreadLandDiscovery } from '../core/land-discovery.mjs';
 import { unreadContracts } from '../core/contracts.mjs';
 import { unreadGrowth } from '../core/village-growth.mjs';
+import { unreadLearning } from '../core/learning.mjs';
+import { unreadSchool } from '../core/school-activity.mjs';
 import { unreadAdvice } from '../core/advice.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
@@ -105,7 +107,7 @@ export class Hud {
   }
   /** A completed timer can change a topic without a resource event; keep the unread count current too. */
   refreshTodayMessages() {
-    const messages = unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
+    const messages = unreadLearning(this.game.s) + unreadSchool(this.game.s) + unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
     const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
     badge.textContent = messages || ''; badge.classList.remove('dot'); badge.hidden = !messages;
     button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));
@@ -128,6 +130,9 @@ export class Hud {
   }
   pulse(el, cls = 'pulse') { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   event(e) {
+    if (e.type === 'repairLearned') this.toast(t('Garden repairs learned'), 'good', { icon: 'wrench' });
+    if (e.type === 'gardenProject' && e.complete) this.toast(t('The potting bench is ready! A new crop to try.'), 'good', { icon: 'strawberry' });
+    if (e.type === 'schoolRoundCompleted' && e.first) this.toast(t('Your first basket game: a new memory for the album!'), 'good', { icon: 'school' });
     if (e.type === 'repairStarted') this.toast(t('Repair started: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'info', { icon: 'wrench' });
     if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish });
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
