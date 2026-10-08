@@ -6,6 +6,9 @@ export const CROPS = {
   carrot:  { name: 'Carrot',  growMs: 30_000,  value: 4,  level: 2, model: 'crop_carrot', icon: '🥕' },
   corn:    { name: 'Corn',    growMs: 45_000, value: 7,  level: 3, model: 'crop_goldcorn', icon: '🌽' },
   pumpkin: { name: 'Pumpkin', growMs: 5 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
+  // premium crops (docs/VILLAGE-GROWTH-PLAN.md, stage 2): slow and valuable, the money for the village's big buildings
+  herb:    { name: 'Healing herb', growMs: 15 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },
+  ginseng: { name: 'Ginseng', growMs: 40 * MIN, value: 120, level: 9, model: 'crop_ginseng', icon: '🫚' },
 };
 export const TUTORIAL_FIRST_GROW_MS = 15_000;   // the very first wheat (DESIGN 15)
 
@@ -14,6 +17,8 @@ export const FRUITS = {
   cherry: { name: 'Cherry', tree: 'cherry_tree', value: 7, level: 4, yield: 3, firstMs: 25_000, regrowMs: 40_000 },
   apple: { name: 'Apple', tree: 'apple_tree', value: 9,  level: 2, yield: 3, firstMs: 30_000, regrowMs: 50_000, icon: '🍎' },
   peach: { name: 'Peach', tree: 'peach_tree', value: 15, level: 4, yield: 3, firstMs: 3 * MIN, regrowMs: 5 * MIN, icon: '🍑' },
+  orange: { name: 'Orange', tree: 'orange_tree', value: 18, level: 5, yield: 3, firstMs: 4 * MIN, regrowMs: 6 * MIN, icon: '🍊' },
+  coconut: { name: 'Coconut', tree: 'coconut_palm', value: 26, level: 8, yield: 2, firstMs: 6 * MIN, regrowMs: 10 * MIN, icon: '🥥' },
 };
 
 /** Fish from the pond (core/fishing.mjs). Icons are Willowmere's fish art. */

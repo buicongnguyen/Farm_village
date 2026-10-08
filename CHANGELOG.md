@@ -12,6 +12,19 @@
 
 - Replaced the withdrawn formal-name proposal with the user-confirmed playful/home-name direction. The [revised naming plan](docs/CHARACTER-NAMING-PLAN.md) records the inspected Zoo Pet reference, language sources, and candidate English/Vietnamese/Korean/Japanese aliases for the current and planned cast. Individual names are still proposed; runtime names, saves, story behavior, and the live game are unchanged.
 
+## Premium crops and the village growth plan (2026-10-08)
+
+- **Healing herb** (level 7, 15 min, sells for 45) and **ginseng** (level 9, 40 min, sells for 120): new crops with their own growth-stage models and icons, the first step of `docs/VILLAGE-GROWTH-PLAN.md` (premium crops → services → food factories → shops → town → leisure).
+
+## Icon render v2 — art lane (2026-10-08, PR preview)
+
+- **Every icon re-rendered with richer light:** all 92 icons now come from a Cycles rig with a warm key from the top
+  left of the picture, a soft fill and rim, a low warm sky and a hidden bounce floor, so goods, buildings and people have
+  painted depth instead of a flat, pale look. Glossy fruit and eggs, matte sacks and bread.
+- **Icons keep their edge in small chips:** a round outline about 7 px at 256 replaces the thin 2 px ring.
+- **Consistent framing:** camera presets per kind of icon (goods, dishes, tokens, tools, fish, buildings) and more room
+  around goods. The research and the remaining item-model plan are in `docs/REFERENCE-NONGTRAI.md`.
+
 ## Reference pass: opening composition and item art — art lane (2026-10-08, PR preview)
 
 - **A first picture of home:** the restored village opens on the home farm, at full detail. A wide screen shows the
@@ -25,7 +38,7 @@
 
 ## The truck fleet — art lane at the user's request (2026-10-08, PR preview)
 
-- **More trucks for a growing farm:** buy a 2nd truck (800 coins, level 4) and a 3rd (2,500 coins, level 7) in the
+- **More trucks for a growing farm:** buy a 2nd truck (400 coins, level 4) and a 3rd (900 coins, level 6) in the
   market panel. Each runs its own 50 s trip and pays the goods' value × 1.2; Bigger trucks now upgrades all of them.
 - **One-tap loading:** "Fill the trucks with spare goods" loads every truck at the market, most plentiful goods first,
   keeping order needs, project goods, all feed and a seed per bed. "Send 3 trucks" sends every loaded truck; Collect

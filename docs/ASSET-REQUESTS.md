@@ -211,6 +211,12 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-08, art lane, **icon render v2** (`art/icons-v2`): all 92 icons re-rendered with a new light rig and a 7 px
+  round outline; ids, files and sizes unchanged, so no code change. Requests for the logic lane from the comparison,
+  for when you choose (details in `docs/REFERENCE-NONGTRAI.md` section 5): (1) a one-line `iconHtml` change to load
+  `assets/icons/sm/<id>.webp` for `mini`/`mark` icons once we ship those 64 px variants; (2) round item tokens and
+  have/need chips in order rows; (3) button colour meanings (green commit, blue go, red unread); (4) a tidier HUD
+  status stack. None of these is reserved by this note.
 - 2026-10-08, art lane, **reference pass** (`art/opening-pass`): this answers step 3 of
   `docs/REFERENCE-GAME-COMPARISON.md` and adds an item-art pass the report did not list. Art lane writes in shared
   files: `src/ui/guide.mjs` (`begin()` only: the opening frame, `HOME_FRAME`), `src/content/world.mjs` (`HOME_YARD`,
@@ -226,7 +232,7 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   plus Vietnamese lines in `src/i18n/vi.mjs` and tests `tests/fleet.test.mjs` / `tests/fleet.browser.mjs`. The first
   truck stays `s.truck`; extra trucks are `s.truck.fleet`. It follows the plan's "extend the existing truck, keep its
   access, explain costs and returns". Details: `docs/truck-fleet/README.md`. Logic lane: please merge `main` after it
-  lands before touching those functions, and review the numbers (800 at level 4, 2,500 at level 7).
+  lands before touching those functions, and review the numbers (400 at level 4, 900 at level 6).
 - 2026-10-08, logic lane, **AR-009 production acceptance — done**: art delivery PR #5 was integrated through
   [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as
   `a8b45988a8ff1549b10a164c48a5fda814b23eca`.

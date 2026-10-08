@@ -52,6 +52,26 @@ The tool gains `"roll"` in `art/blender/render_icons.py`. It turns a long subjec
 after at 160 px and 48 px: `item-icons.png`. We tried a three-carrot bunch and dropped it, because the single carrot
 reads better at 48 px.
 
+## Icon render v2 (follow-up PR)
+
+The item-art comparison measured our icons as pale and flat next to the reference's, with an outline that vanished at
+chip sizes. All 92 icons are re-rendered by a new rig (`art/blender/render_icons.py`, `icon_post.py`):
+
+- **Cycles** (96 samples, denoised; `--engine eevee` for drafts) for soft contact shadows and occlusion.
+- **Lights in the camera's basis** (after `roll`), so light always comes from the top left of the picture: a large warm
+  key, a soft warm fill at 25 %, a rim at 35 %; portraits get a 35 % brighter key so faces stay friendly.
+- **A low warm world** (strength .3, warm earth below, cream above; v1 used a flat .8 fill) and a **bounce floor** the
+  camera cannot see, for warm light and contact shade on undersides.
+- **Per-icon surfaces** (`rough`, `metal` in `icons.json`): glossy fruit, eggs and heart; matte sacks and bread.
+- **Camera presets** (`preset`: goods, dish, token, tool, fish, building) and a 1.18 margin for goods.
+- **A round outline** 2.8 % of the icon (7 px at 256) instead of a 2 px square ring, so icons keep their edge at
+  18–26 px.
+- The pond's three water discs no longer share a height (coincident faces shadowed each other to black in Cycles).
+
+Before and after: `icons-v1-v2.jpg` (every icon at 72 and 26 px), and the barn and build menus on a phone
+(`icons-v2-barn.jpg`, `icons-v2-build.jpg`). The full plan, with the per-item model rebuilds still to do, is
+`docs/REFERENCE-NONGTRAI.md`.
+
 ## Next (art lane), in order
 
 1. **Remaining item icons, the same treatment.** Corn (husk peeled back, brighter kernels), milk (our own churn or

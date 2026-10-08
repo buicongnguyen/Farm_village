@@ -2,93 +2,101 @@
  {
   "id": "wheat",
   "src": "raw:items",
-  "root": "item_wheat"
+  "root": "item_wheat",
+  "preset": "goods"
  },
  {
   "id": "carrot",
   "src": "raw:items",
-  "root": "item_carrot"
+  "root": "item_carrot",
+  "preset": "goods"
  },
  {
   "id": "corn",
   "src": "raw:items",
-  "root": "item_corn"
+  "root": "item_corn",
+  "preset": "goods"
  },
  {
   "id": "pumpkin",
   "src": "raw:items",
-  "root": "item_pumpkin"
+  "root": "item_pumpkin",
+  "preset": "goods",
+  "rough": 0.4
  },
  {
   "id": "strawberry",
   "src": "raw:items",
-  "root": "item_strawberry"
+  "root": "item_strawberry",
+  "preset": "goods",
+  "rough": 0.35
  },
  {
   "id": "egg",
   "src": "raw:items",
-  "root": "item_egg"
+  "root": "item_egg",
+  "preset": "goods",
+  "rough": 0.35
  },
  {
   "id": "milk",
   "src": "3d_farmer_fish_sell/public/assets/models/farm.glb",
   "root": "milk",
-  "view": [
-   -25,
-   18
-  ]
+  "preset": "goods"
  },
  {
   "id": "chicken_feed",
   "src": "raw:items",
-  "root": "chicken_feed"
+  "root": "chicken_feed",
+  "preset": "goods",
+  "rough": 0.75
  },
  {
   "id": "cow_feed",
   "src": "raw:items",
-  "root": "cow_feed"
+  "root": "cow_feed",
+  "preset": "goods",
+  "rough": 0.75
  },
  {
   "id": "bread",
   "src": "raw:items",
-  "root": "bread"
+  "root": "bread",
+  "preset": "goods",
+  "rough": 0.7
  },
  {
   "id": "corn_bread",
   "src": "raw:items",
   "root": "corn_bread",
-  "view": [
-   -30,
-   52
-  ]
+  "preset": "dish",
+  "rough": 0.7
  },
  {
   "id": "carrot_cake",
   "src": "raw:items",
   "root": "carrot_cake",
-  "view": [
-   -30,
-   34
-  ]
+  "preset": "dish"
  },
  {
   "id": "apple",
   "src": "raw:items",
-  "root": "item_apple"
+  "root": "item_apple",
+  "preset": "goods",
+  "rough": 0.35
  },
  {
   "id": "peach",
   "src": "raw:items",
-  "root": "item_peach"
+  "root": "item_peach",
+  "preset": "goods",
+  "rough": 0.7
  },
  {
   "id": "apple_pie",
   "src": "raw:items",
   "root": "apple_pie",
-  "view": [
-   -30,
-   40
-  ]
+  "preset": "dish"
  },
  {
   "id": "bed",
@@ -106,7 +114,8 @@
   "view": [
    -35,
    40
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "path",
@@ -115,56 +124,68 @@
   "view": [
    -35,
    45
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "fence",
   "src": "raw:farm-kit",
-  "root": "picket_straight"
+  "root": "picket_straight",
+  "preset": "building"
  },
  {
   "id": "gate",
   "src": "raw:farm-kit",
-  "root": "picket_gate"
+  "root": "picket_gate",
+  "preset": "building"
  },
  {
   "id": "coop",
   "src": "raw:farm-kit",
-  "root": "coop"
+  "root": "coop",
+  "preset": "building"
  },
  {
   "id": "cow_barn",
   "src": "raw:farm-kit",
-  "root": "cow_barn"
+  "root": "cow_barn",
+  "preset": "building"
  },
  {
   "id": "feed_mill",
   "src": "raw:farm-kit",
-  "root": "feed_mill"
+  "root": "feed_mill",
+  "preset": "building"
  },
  {
   "id": "bakery",
   "src": "raw:farm-kit",
-  "root": "bakery"
+  "root": "bakery",
+  "preset": "building"
  },
  {
   "id": "stall",
-  "src": "3d_farmer_fish_sell/public/assets/models/market-stall.glb"
+  "src": "3d_farmer_fish_sell/public/assets/models/market-stall.glb",
+  "preset": "building"
  },
  {
   "id": "cottage",
   "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
-  "root": "house_gable"
+  "root": "house_gable",
+  "preset": "building"
  },
  {
   "id": "flowers",
   "src": "raw:nature",
-  "root": "flowers_a"
+  "root": "flowers_a",
+  "preset": "building",
+  "outline": 0.014
  },
  {
   "id": "bush",
   "src": "raw:nature",
-  "root": "bush_a"
+  "root": "bush_a",
+  "preset": "building"
  },
  {
   "id": "tree",
@@ -173,37 +194,45 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "bench",
   "src": "raw:farm-kit",
-  "root": "bench"
+  "root": "bench",
+  "preset": "building"
  },
  {
   "id": "lamp",
   "src": "raw:farm-kit",
-  "root": "lamp"
+  "root": "lamp",
+  "preset": "building"
  },
  {
   "id": "school",
   "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
-  "root": "school"
+  "root": "school",
+  "preset": "building"
  },
  {
   "id": "fountain",
   "src": "raw:decor",
-  "root": "fountain"
+  "root": "fountain",
+  "preset": "building"
  },
  {
   "id": "picket",
   "src": "raw:farm-kit",
-  "root": "picket_straight"
+  "root": "picket_straight",
+  "preset": "building"
  },
  {
   "id": "garden_flower",
   "src": "raw:nature",
-  "root": "flowers_b"
+  "root": "flowers_b",
+  "preset": "building",
+  "outline": 0.014
  },
  {
   "id": "scarecrow",
@@ -212,17 +241,20 @@
   "view": [
    -20,
    14
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "hay_bale",
   "src": "raw:props",
-  "root": "haybale"
+  "root": "haybale",
+  "preset": "building"
  },
  {
   "id": "flowerpot",
   "src": "raw:props",
-  "root": "flowerpot"
+  "root": "flowerpot",
+  "preset": "building"
  },
  {
   "id": "street_lamp",
@@ -231,7 +263,8 @@
   "view": [
    -25,
    14
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "apple_tree",
@@ -240,7 +273,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "peach_tree",
@@ -249,7 +283,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "bunting",
@@ -258,7 +293,8 @@
   "view": [
    -20,
    14
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "banner",
@@ -267,7 +303,8 @@
   "view": [
    -20,
    14
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "sale_sign",
@@ -276,7 +313,8 @@
   "view": [
    -20,
    14
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "tool:clear",
@@ -285,7 +323,8 @@
   "view": [
    -20,
    15
-  ]
+  ],
+  "preset": "tool"
  },
  {
   "id": "tool:harvest",
@@ -294,7 +333,8 @@
   "view": [
    0,
    10
-  ]
+  ],
+  "preset": "tool"
  },
  {
   "id": "tool:move",
@@ -303,12 +343,14 @@
   "view": [
    -15,
    15
-  ]
+  ],
+  "preset": "tool"
  },
  {
   "id": "tool:store",
   "src": "raw:props",
-  "root": "crate"
+  "root": "crate",
+  "preset": "tool"
  },
  {
   "id": "tool:build",
@@ -316,39 +358,36 @@
   "view": [
    -30,
    24
-  ]
+  ],
+  "preset": "tool"
  },
  {
   "id": "ui:coin",
   "src": "raw:items",
   "root": "coin",
-  "view": [
-   -20,
-   10
-  ]
+  "preset": "token",
+  "rough": 0.35,
+  "metal": 0.15
  },
  {
   "id": "ui:xp",
   "src": "raw:items",
   "root": "xp",
-  "view": [
-   -15,
-   12
-  ]
+  "preset": "token",
+  "rough": 0.35
  },
  {
   "id": "ui:heart",
   "src": "raw:items",
   "root": "heart",
-  "view": [
-   -15,
-   12
-  ]
+  "preset": "token",
+  "rough": 0.35
  },
  {
   "id": "ui:barn",
   "src": "3d_farmer_fish_sell/public/assets/models/rural.glb",
-  "root": "barn"
+  "root": "barn",
+  "preset": "building"
  },
  {
   "id": "ui:orders",
@@ -357,7 +396,8 @@
   "view": [
    -20,
    12
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "person:ada",
@@ -685,7 +725,8 @@
   "view": [
    -30,
    22
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "pond",
@@ -694,7 +735,8 @@
   "view": [
    -30,
    38
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "truck",
@@ -703,7 +745,8 @@
   "view": [
    -40,
    22
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "round_tree",
@@ -712,7 +755,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "pine_tree",
@@ -721,16 +765,15 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "cherry",
   "src": "raw:farm-kit",
   "root": "cherries",
-  "view": [
-   -30,
-   16
-  ]
+  "preset": "goods",
+  "rough": 0.35
  },
  {
   "id": "cherry_tree",
@@ -739,7 +782,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "kennel",
@@ -748,7 +792,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "fruit_stand",
@@ -757,7 +802,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "clinic",
@@ -766,7 +812,8 @@
   "view": [
    -30,
    16
-  ]
+  ],
+  "preset": "building"
  },
  {
   "id": "person:hazel",
@@ -783,28 +830,20 @@
   "id": "lucky_tin",
   "src": "raw:discovery-props",
   "root": "lucky_tin",
-  "view": [
-   -30,
-   32
-  ]
+  "preset": "goods",
+  "rough": 0.4
  },
  {
   "id": "lucky_button",
   "src": "raw:discovery-props",
   "root": "lucky_button",
-  "view": [
-   -30,
-   32
-  ]
+  "preset": "goods"
  },
  {
   "id": "lucky_box",
   "src": "raw:discovery-props",
   "root": "lucky_box",
-  "view": [
-   -30,
-   32
-  ]
+  "preset": "goods"
  },
  {
   "id": "perch",
@@ -814,40 +853,30 @@
    -90,
    28
   ],
-  "roll": 38,
-  "margin": 1.08
+  "preset": "fish",
+  "why": "side-on view shows the stripes and the fins"
  },
  {
   "id": "carp",
   "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
   "root": "fish_carp",
-  "view": [
-   -65,
-   32
-  ],
   "recolor": {
    "Fish carp back": "#B4561A",
    "Fish carp bronze": "#D9782A"
   },
-  "roll": 38,
-  "margin": 1.08
+  "preset": "fish"
  },
  {
   "id": "catfish",
   "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
   "root": "fish_catfish",
-  "view": [
-   -65,
-   32
-  ],
   "recolor": {
    "Fish catfish body": "#A07A4A",
    "Fish catfish belly": "#D9B07A",
    "Fish catfish spots": "#6E5440",
    "Fish catfish fin": "#8A6640"
   },
-  "roll": 38,
-  "margin": 1.08
+  "preset": "fish"
  },
  {
   "id": "goldfish",
@@ -858,6 +887,64 @@
    28
   ],
   "roll": 24,
-  "margin": 1.04
+  "preset": "fish",
+  "why": "side-on view shows the stripes and the fins"
+ },
+ {
+  "id": "herb",
+  "src": "raw:items",
+  "root": "item_herb",
+  "preset": "goods"
+ },
+ {
+  "id": "ginseng",
+  "src": "raw:items",
+  "root": "item_ginseng",
+  "preset": "goods",
+  "rough": 0.5
+ },
+ {
+  "id": "orange",
+  "src": "raw:items",
+  "root": "item_orange",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "coconut",
+  "src": "raw:items",
+  "root": "item_coconut",
+  "preset": "goods",
+  "rough": 0.7
+ },
+ {
+  "id": "orange_tree",
+  "src": "raw:farm-kit",
+  "root": "cute_orange",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "coconut_palm",
+  "src": "raw:farm-kit",
+  "root": "cute_palm",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "willow",
+  "src": "raw:farm-kit",
+  "root": "cute_willow",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
  }
 ]

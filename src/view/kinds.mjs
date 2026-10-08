@@ -57,6 +57,11 @@ export const KIND_MODELS = {
   'apple_tree:bare': { kit: 'farm-kit', node: 'cute_apple_bare', width: 3.6, lod: 'tree' },
   peach_tree:   { kit: 'farm-kit', node: 'cute_peach', width: 3.6, lod: 'tree' },
   'peach_tree:bare': { kit: 'farm-kit', node: 'cute_peach_bare', width: 3.6, lod: 'tree' },
+  orange_tree:  { kit: 'farm-kit', node: 'cute_orange', width: 3.6, lod: 'tree' },
+  'orange_tree:bare': { kit: 'farm-kit', node: 'cute_orange_bare', width: 3.6, lod: 'tree' },
+  coconut_palm: { kit: 'farm-kit', node: 'cute_palm', height: 5.2, lod: 'tree' },
+  'coconut_palm:bare': { kit: 'farm-kit', node: 'cute_palm_bare', height: 5.2, lod: 'tree' },
+  willow:       { kit: 'farm-kit', node: 'cute_willow', width: 3.8, lod: 'tree' },
   // dressing drawn by land-view (not placeable)
   scaffold:     { kit: 'decor', node: 'scaffold', authored: true, lod: 'static', late: true },
   window_box:   { kit: 'decor', node: 'window_box', authored: true, lod: 'static', late: true },
@@ -75,7 +80,7 @@ export const EARLY = {
 };
 
 // ── Crops: three growth stages, authored at their real size in farm-kit.glb ──
-export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry'];
+export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng'];
 export const CROP_STAGES = ['sprout', 'mid', 'ripe'];
 for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
 for (const c of CROP_MODELS) KIND_MODELS[`crop:${c}`] = KIND_MODELS[`crop:${c}:ripe`];     // v0.1 names (life-view's cropStage)

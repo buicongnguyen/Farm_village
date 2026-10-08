@@ -39,7 +39,9 @@ for n, c in {
         'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
-        'rim': '#9C6236', 'riml': '#B87A45',
+        'rim': '#9C6236', 'riml': '#B87A45', 'orange': '#FF9A1F',
+        # premium crops (village growth plan, stage 2)
+        'herb': '#6FA86A', 'herbl': '#9CCB8A', 'herbd': '#4E7E4A', 'root': '#F2D9A8',
         # keepsakes (AR-009)
         'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
         }.items():
@@ -235,7 +237,46 @@ def strawberry(stage, lod=0):
             p.append(cl('eye', .03, .06, x + .15, y, .25, 'flower', verts=4))
     return p
 
-CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry}
+
+def herb(stage, lod=0):
+    """Healing herb (village growth stage 2): bushy clumps of soft sage-green leaves; ripe, tall violet flower spikes."""
+    rnd = random.Random(71 + lod); p = []
+    spots = [(-.4, -.38), (.4, -.38), (-.4, .4), (.4, .4)] if lod == 0 else [(-.3, 0), (.3, 0)]
+    for k, (x, y) in enumerate(spots):
+        n = {'sprout': 3, 'mid': 6, 'ripe': 7}[stage] if lod == 0 else 3
+        for i in range(n):
+            a = i / n * math.tau + k
+            ln = {'sprout': .18, 'mid': .3, 'ripe': .34}[stage]
+            p.append(lf((x, y, 0), a, ln, ln * .5, 'herbl' if i % 2 else 'herb', lift=ln * .9, droop=.04))
+        if stage == 'ripe':
+            for j in range(2 if lod == 0 else 1):
+                dx, dy = rnd.uniform(-.08, .08), rnd.uniform(-.08, .08)
+                p.append(st((x + dx, y + dy, 0), (x + dx, y + dy, .55), .02, 'herbd', sides=3))
+                p.append(sp(.07, .26, x + dx, y + dy, .5, 'violet', sides=5 if lod == 0 else 4, mid=(.3, .7)))
+    return p
+
+def ginseng(stage, lod=0):
+    """Ginseng (village growth stage 2): a five-leaflet plant on a slim stem; ripe, a cluster of red berries on top and
+    pale forked roots showing at the soil."""
+    p = []
+    spots = [(-.35, -.3), (.35, -.25), (0, .4)] if lod == 0 else [(0, 0)]
+    for k, (x, y) in enumerate(spots):
+        h = {'sprout': .18, 'mid': .42, 'ripe': .55}[stage]
+        p.append(st((x, y, 0), (x, y, h), .025, 'stem', sides=4))
+        nl = 3 if stage == 'sprout' else 5
+        for i in range(nl if lod == 0 else 3):
+            a = i / nl * math.tau + k
+            p.append(lf((x, y, h), a, .28 if stage != 'sprout' else .15, .13, 'leaf' if i % 2 else 'leafl', lift=.05, droop=.08))
+        if stage == 'ripe':
+            for j in range(5 if lod == 0 else 3):
+                a = j * 1.3
+                p.append(ball('berry', .045, x + math.cos(a) * .05, y + math.sin(a) * .05, h + .08 + (j % 2) * .03, 'fruitred', sub=1))
+            if lod == 0:
+                p.append(sp(.06, -.22, x + .08, y - .05, .06, 'root', sides=5, lean=(.08, 0)))
+                p.append(sp(.045, -.18, x - .06, y + .04, .05, 'root', sides=5, lean=(-.06, 0)))
+    return p
+
+CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng}
 for crop, gen in CROPS.items():
     for stage in ('sprout', 'mid', 'ripe'):
         piece(f'crop_{crop}_{stage}', gen(stage, 0))
@@ -540,7 +581,8 @@ anchors['truck'] = {'light': [(-.55, 2.44, .98), (.55, 2.44, .98)]}
 # =================================================================== the fish pond (v0.3b): a stone-ringed pond with reeds and a little plank dock, 4 x 3 cells (8 x 6 m)
 def pond():
     p = [cl('bank', 3.5, .16, 0, 0, 0, 'stoned', verts=22, rt=3.5), cl('bank2', 2.4, .16, -.2, 1.5, 0, 'stoned', verts=18), cl('bank3', 2.3, .16, .5, -1.5, 0, 'stoned', verts=18),
-         cl('water', 3.3, .12, 0, 0, .12, 'water', verts=22), cl('water2', 2.2, .12, -.2, 1.5, .12, 'water', verts=18), cl('water3', 2.1, .12, .5, -1.5, .12, 'water', verts=18)]
+         # the three water discs a few millimetres apart: coincident tops shadow each other to black in Cycles (icon renders)
+         cl('water', 3.3, .12, 0, 0, .12, 'water', verts=22), cl('water2', 2.2, .12, -.2, 1.5, .124, 'water', verts=18), cl('water3', 2.1, .12, .5, -1.5, .128, 'water', verts=18)]
     for i in range(14):
         a = i / 14 * math.tau; r = 3.5 + .2 * math.sin(i * 2.3)
         p.append(ball('rock', .3 + .08 * (i % 3), math.cos(a) * r, math.sin(a) * (r * .82), .22, 'stone' if i % 2 else 'stonel', sc=(1, 1, .7)))
@@ -556,14 +598,14 @@ piece('pond', pond())
 
 # =================================================================== cute trees (v0.3e): fat bubbly canopies, short trunks, bright warm greens
 CANOPY = [(0, 0, 3.0, 1.5, 0), (1.15, .3, 2.7, 1.1, 1), (-1.1, .4, 2.65, 1.1, 2), (.2, -1.1, 2.7, 1.1, 3), (.1, .1, 3.9, 1.0, 4)]
-def cute(name, base, light, dark, fruit=None, nfruit=7):
+def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
     p = [cl('trunk', .4, 2.4, 0, 0, 0, 'wood', verts=8, rt=.28), cl('root', .58, .25, 0, 0, 0, 'woodd', verts=8, rt=.4)]
     for i, (x, y, z, r, k) in enumerate(CANOPY):
         p.append(ball('puff', r, x, y, z, [base, light, dark, base, light][k % 5] if i else base, sub=2, sc=(1, 1, .92)))
     if fruit:
         for i in range(nfruit):
-            a = i / nfruit * math.tau + .4; r = 1.55 + .25 * (i % 2); z = 2.4 + .8 * ((i * 3) % 4) / 3
-            p.append(ball('fruit', .2, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
+            a = i / nfruit * math.tau + .4; r = (1.55 + .25 * (i % 2)) * out; z = 2.4 + .8 * ((i * 3) % 4) / 3
+            p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
 piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred'))
@@ -571,6 +613,38 @@ piece('cute_apple_bare', cute('ab', 'leafw', 'leafwl', 'leafwd'))
 piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach'))
 piece('cute_peach_bare', cute('pb', 'leafwl', 'leafw', 'leafwd'))
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
+# tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
+piece('cute_orange', cute('o', 'leafwd', 'leafw', 'pinew', 'orange', nfruit=9, fr=.28, out=1.3))
+piece('cute_orange_bare', cute('ob', 'leafwd', 'leafw', 'pinew'))
+def palm(fruit=True):
+    """A coconut palm: a curved, ringed trunk, six drooping fronds and a cluster of coconuts under them."""
+    p = []
+    pts = [(0, 0, 0), (.15, 0, 1.2), (.45, 0, 2.4), (.85, 0, 3.5), (1.1, 0, 4.3)]
+    for k in range(len(pts) - 1):
+        r0 = .32 - k * .05
+        p.append(st(pts[k], pts[k + 1], r0, 'wood' if k % 2 else 'woodl', sides=7, rt=r0 - .05))
+    top = pts[-1]
+    for i in range(7):
+        a = i / 7 * math.tau
+        p.append(lf(top, a, 2.2, .75, 'leafw' if i % 2 else 'leafwl', lift=.25, droop=.9))
+    if fruit:
+        for j in range(4):
+            a = j * 1.6
+            p.append(ball('coco', .2, top[0] + math.cos(a) * .22, top[1] + math.sin(a) * .22, top[2] - .25, 'woodd', sub=1))
+    return p
+piece('cute_palm', palm())
+piece('cute_palm_bare', palm(False))
+def willow():
+    """A weeping willow: a stout trunk, a dome of soft green, and long hanging curtains of leaves to the ground."""
+    p = [cl('trunk', .45, 2.6, 0, 0, 0, 'woodd', verts=8, rt=.3), cl('root', .65, .3, 0, 0, 0, 'wooddd', verts=8, rt=.45)]
+    p.append(ball('dome', 1.7, 0, 0, 3.2, 'leafw', sub=2, sc=(1.15, 1.15, .7)))
+    p.append(ball('dome2', 1.1, .3, -.2, 3.9, 'leafwl', sub=2, sc=(1, 1, .7)))
+    for i in range(14):
+        a = i / 14 * math.tau; r = 1.65 + .15 * (i % 2)
+        x, y = math.cos(a) * r, math.sin(a) * r
+        p.append(sp(.28, -2.3 + .3 * (i % 3), x, y, 3.0, 'leafwl' if i % 3 == 0 else 'leafw', sides=4, mid=(.2, .6)))
+    return p
+piece('cute_willow', willow())
 def cute_pine():
     p = [cl('trunk', .34, 1.2, 0, 0, 0, 'wood', verts=8, rt=.26)]
     for i, (r, z, mt) in enumerate([(1.7, 1.0, 'pinew'), (1.35, 2.2, 'pinewl'), (.95, 3.3, 'pinew'), (.55, 4.2, 'pinewl')]):

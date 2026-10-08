@@ -25,7 +25,7 @@ C = {n: mat('IT ' + n, c, .5) for n, c in {
     'wstalk': '#E9B84A', 'wheatg': '#F0A020', 'burlap': '#D08A4A', 'burlapd': '#A9622E', 'burlapl': '#E8B070', 'label1': '#FFD23F',
     'label2': '#FFD23F', 'pellet': '#7A9A3A', 'burlapo': '#A8A65A', 'burlapod': '#7E7C3E', 'burlapol': '#C8C47E', 'hen': '#E8573F', 'cow': '#3A3D4A', 'skillet': '#3A3D4A', 'skilletl': '#5B6477', 'crumb': '#FFD86A', 'board': '#C98A4A',
     'boardd': '#7A4A28', 'flour': '#FFF8EA', 'straw': '#C99A3A', 'strawd': '#8A5A22', 'eggb': '#E9A868', 'eggb2': '#D98C4A',
-    'crustl': '#E39A48', 'eggw': '#FFF1D8'}.items()}
+    'crustl': '#E39A48', 'eggw': '#FFF1D8', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
 
 def P(name, r, loc, mt, sub=2, sc=None):
     return ico(name, r, loc, C[mt], subdiv=sub, scale=sc)
@@ -112,6 +112,12 @@ def fruit(name, mt, mtd, lf=True):
     return p
 item('item_apple', fruit('apple', 'apple', 'appled'))
 item('item_peach', fruit('peach', 'peach', 'peachl'))
+item('item_orange', fruit('orange', 'orangef', 'orangef'))
+def coconut():
+    """A coconut: a hairy brown husk ball, one half cracked open to the white flesh."""
+    return [sphere('husk', .36, (-.18, 0, .36), C['woodd'], segs=16, rings=10), sphere('half', .3, (.32, -.1, .2), C['woodd'], segs=14, rings=8, scale=(1, 1, .6)),
+            cyl('flesh', .25, .04, (.32, -.1, .37), C['egg'], verts=16, bev=0), P('eye', .04, (-.18, -.3, .5), 'woodd', sub=1)]
+item('item_coconut', coconut())
 
 def sack(grain, kern, label, emblem, bag=('burlap', 'burlapd', 'burlapl')):
     """A burlap feed sack (item pass): a soft square bag, its top rolled open on a heap of feed, a yellow label on the
@@ -263,6 +269,38 @@ def egg():
     p.append(P('shine', .045, (-.2, -.06, .48), 'cream', sub=1, sc=(1, .6, 1.4)))
     return p
 item('item_egg', egg())
+
+
+def herb_bundle():
+    """Healing herb: a tied bunch of sage-green sprigs with violet flower tips."""
+    p = []
+    for i in range(9):
+        a = i / 9 * math.tau; r = .08 + .03 * (i % 2)
+        top = (math.cos(a) * r * 2.4, math.sin(a) * r * 2.4, .85 + .06 * math.sin(i))
+        p.append(stalk('st', (math.cos(a) * r * .5, math.sin(a) * r * .5, 0), top, .025, C['leafd'], sides=4))
+        for k in range(3):
+            t = .45 + k * .18
+            p.append(leaf('lf', (top[0] * t, top[1] * t, top[2] * t), a + k, .2, .1, C['leaf' if k % 2 else 'leafl'], lift=.06, droop=.04))
+        p.append(spindle('fl', .05, .18, top, C['violet'], sides=6))
+    p.append(torus('tie', .12, .035, (0, 0, .3), C['twine'], major_segs=12, minor_segs=5))
+    return p
+item('item_herb', herb_bundle())
+def ginseng_root():
+    """Ginseng: a pale forked root with fine hairs, its leafy stem and a few red berries."""
+    p = [sphere('body', .17, (0, 0, .45), C['root'], segs=14, rings=10, scale=(1, 1, 1.6))]
+    for sx, ln in ((-1, .38), (1, .44)):
+        p.append(cone('leg', .1, ln, (sx * .1, 0, .2), C['root'], verts=10, rot=(math.pi, sx * .35, 0)))
+    for i in range(6):
+        a = i * 1.1
+        p.append(stalk('hair', (math.cos(a) * .12, math.sin(a) * .12, .35), (math.cos(a) * .3, math.sin(a) * .3, .22), .01, C['rootd'], sides=3))
+    p.append(stalk('stem', (0, 0, .7), (0, 0, 1.05), .025, C['stem'], sides=4))
+    for i in range(5):
+        p.append(leaf('lf', (0, 0, 1.05), i / 5 * math.tau, .3, .14, C['leaf' if i % 2 else 'leafl'], lift=.06, droop=.07))
+    for j in range(5):
+        a = j * 1.3
+        p.append(P('berry', .05, (math.cos(a) * .05, math.sin(a) * .05, 1.12 + (j % 2) * .04), 'apple', sub=2))
+    return p
+item('item_ginseng', ginseng_root())
 
 objs = []
 for name, parts in items:

@@ -220,7 +220,7 @@ export const VI = {
   'First family moved in': 'Gia đình đầu tiên dọn đến', 'First trade with a neighbour': 'Lần đầu trao đổi với hàng xóm', 'Your first harvest is waiting.': 'Mùa thu hoạch đầu tiên đang chờ bạn.',
 
   // ── Goods ──
-  'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô',
+  'Wheat': 'Lúa mì', 'Carrot': 'Cà rốt', 'Corn': 'Ngô', 'Pumpkin': 'Bí ngô', 'Healing herb': 'Cây thuốc nam', 'Ginseng': 'Nhân sâm',
   'Hen': 'Gà mái', 'Cow': 'Bò sữa', 'Egg': 'Trứng', 'Milk': 'Sữa',
   'Chicken feed': 'Cám gà', 'Cow feed': 'Cám bò', 'Bread': 'Bánh mì', 'Corn bread': 'Bánh ngô', 'Carrot cake': 'Bánh cà rốt',
 
