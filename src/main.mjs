@@ -123,7 +123,10 @@ const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFille
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');
-  const played = new Set(); for (const e of r.events ?? []) { const name = SOUNDS[e.type]; if (name && !played.has(name)) { played.add(name); sfx(name); } }
+  const played = new Set(); for (const e of r.events ?? []) {
+    const name = e.type === 'fishCaught' && e.first && e.rare ? 'cheer' : e.type === 'picked' ? 'pop' : SOUNDS[e.type];
+    if (name && !played.has(name)) { played.add(name); sfx(name); }
+  }
   for (const e of r.events ?? []) if (e.type === 'settingChanged' || e.type === 'loaded') applySettings();
   if (r.events?.some(e => e.type === 'settingChanged')) panels.render();
 });

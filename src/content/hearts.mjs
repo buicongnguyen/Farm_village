@@ -8,6 +8,10 @@
 // ARRIVALS[familyId] = [{ who, text } × 3]: what the family says on the day they move in.
 
 const scene = (reward, ...lines) => ({ lines: lines.map(([who, text]) => ({ who, text })), reward });
+// The default is the before-building scene. Only its dialogue changes after the place opens; the gift stays the same.
+const afterBuilding = (kind, before, ...lines) => ({ ...before,
+  variants: [{ when: { type: 'count', key: kind, value: 1 }, lines: lines.map(([who, text]) => ({ who, text })) }],
+});
 
 export const HEART_SCENES = {
   // ── The Tran family ──
@@ -79,14 +83,17 @@ export const HEART_SCENES = {
       ['sam', 'Should I give it to him? Let me think about it.']),
     9: scene({ decor: 'bench' },
       ['sam', 'I gave Gus the letter. He read it on the bridge and said nothing for an hour.'],
-      ['gus', 'Twenty years late, postman. ...Thank you.'],
+      ['gus', 'Took the long way, did it, postman? ...Thank you.'],
       ['sam', 'Some letters take the long way. Here is a bench by the mailbox, for reading slowly.']),
   },
   zara: {
-    3: scene({ decor: 'flowers' },
+    3: afterBuilding("school", scene({ decor: 'flowers' },
       ['zara', 'I have read every book in our house. Twice. I need a library.'],
       ['grace', 'Or a school with a library. One day soon, I think.'],
       ['zara', 'I made you a bookmark. It is a carrot, because carrots are good for your eyes!']),
+      ["zara", "I have read every book in our house. Twice. What should I read next?"],
+      ["grace", "The school shelves have room for more books. We can choose some together."],
+      ["zara", "I made you a bookmark. It is a carrot, because carrots are good for your eyes!"]),
     6: scene({ decor: 'flowers' },
       ['zara', 'Bo says the old mill is haunted. That is not even scientific.'],
       ['zara', 'I looked through the window. There are flour sacks still stacked up, like everyone left in one night.'],
@@ -127,18 +134,27 @@ export const HEART_SCENES = {
   },
   // ── The Reyes family ──
   marisol: {
-    3: scene({ decor: 'flowerpot' },
+    3: afterBuilding("clinic", scene({ decor: 'flowerpot' },
       ['marisol', 'I bandaged Tomas\'s thumb again. Third time this week.'],
       ['tomas', 'The engine started, though!'],
       ['marisol', 'Hollowbrook needs a proper clinic, not just me with a first-aid box. I am starting a list.']),
-    6: scene({ decor: 'flowers' },
+      ["marisol", "I bandaged Tomas's thumb again. Third time this week."],
+      ["tomas", "The engine started, though!"],
+      ["marisol", "A proper treatment room, clean shelves, and Dr Hazel next door. This clinic was worth every name on my list."]),
+    6: afterBuilding("clinic", scene({ decor: 'flowers' },
       ['marisol', 'Every family has signed my list. Everyone wants the clinic back.'],
       ['marisol', 'I wrote to Dr Hazel, my old teacher from nursing school. She retired to the coast.'],
-      ['marisol', 'She wrote back: "Show me a village worth coming home to." So let us show her.']),
-    9: scene({ decor: 'bench' },
+      ['marisol', 'She wrote back: "Save me a sunny room and a place in the garden." I have added both to the list.']),
+      ["marisol", "All those names on my list, and now a clinic full of neighbours. We did it."],
+      ["marisol", "Dr Hazel brought her old medical books. I am learning from her all over again."],
+      ["marisol", "There is room for a vase on every windowsill. That is my next list."]),
+    9: afterBuilding("clinic", scene({ decor: 'bench' },
       ['marisol', 'Dr Hazel is coming to visit! She wants to see the old clinic.'],
       ['pia', 'I am going to show her my plasters. I have forty-two.'],
       ['marisol', 'You made this possible. A bench for the clinic garden, for whoever waits there.']),
+      ["marisol", "Dr Hazel asked me to choose flowers for the clinic garden. It is a much nicer kind of list."],
+      ["pia", "I am going to count them. The flowers, not the doctors."],
+      ["marisol", "You made this possible. A bench for the clinic garden, for whoever waits there."]),
   },
   tomas: {
     3: scene({ coins: 50 },
@@ -149,10 +165,13 @@ export const HEART_SCENES = {
       ['tomas', 'I looked at the old mill gears. Good steel. Rusty, but good.'],
       ['tomas', 'Funny thing, though. The sluice gate upriver is shut tight, with a new padlock.'],
       ['tomas', 'Who locks a river? I will ask Sam who owns that land.']),
-    9: scene({ decor: 'lamp' },
-      ['pia', 'Papa fixed the school bell! Now it rings all by itself at nine o\'clock.'],
-      ['tomas', 'Not by itself. With a clock I built from a bicycle.'],
+    9: afterBuilding("school", scene({ decor: 'lamp' },
+      ['pia', 'Papa made a clock for our kitchen! It rings all by itself at nine o\'clock.'],
+      ['tomas', 'Not by itself. With a bicycle bell and rather a lot of patience.'],
       ['tomas', 'You gave a mechanic a place to be useful. Here, a lamp I rewired. It never flickers.']),
+      ["pia", "Papa fixed the school bell! Now it rings all by itself at nine o'clock."],
+      ["tomas", "Not by itself. With a clock I built from a bicycle."],
+      ["tomas", "You gave a mechanic a place to be useful. Here, a lamp I rewired. It never flickers."]),
   },
   pia: {
     3: scene({ decor: 'flowers' },

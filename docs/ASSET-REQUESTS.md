@@ -11,7 +11,9 @@ are in `AGENTS.md`. Anyone can add a request: the logic lane, the art lane or th
 3. **Build.** The art lane sets `in progress`, builds on an `art/<topic>` branch, opens a pull request, and sets
    `delivered` with a delivery note. In the same pull request it registers the model and icon and switches the stand-in
    lines.
-4. **Check.** After the merge, the logic lane checks the asset in play and sets `done`, or writes what is wrong.
+4. **Check.** The logic lane checks the asset in play on the PR or an integration branch before merging to `main`,
+   because that merge deploys. Record acceptance or what needs changing; verify production after the approved merge,
+   then set `done`.
 5. **Change.** To change a request, edit it and add a dated line. Do not quietly rewrite a delivered one.
 
 **Status values:** `proposed` (the art lane suggests it; the user or the logic lane confirms) → `requested` →
@@ -55,7 +57,9 @@ replaced) and `dropped`.
   games (the list is under "Stock").
 - **Budgets** (`tests/assets.test.mjs`): building ≤ 8,000 triangles, prop ≤ 1,200, ripe crop ≤ 1,500, tree ≤ 3,500,
   animal ≤ 2,000. The whole scene stays within 120 draw calls and 300,000 triangles at every zoom.
-- **Style:** `docs/RESEARCH-APPEAL.md` section 4 (palette, rules for gold, the celebration ladder). Take patterns from
+- **Style:** `docs/HOLLOWBROOK-IMPLEMENTATION-PLAN.md` section 6 is the consolidated direction; section 4 of
+  `docs/RESEARCH-APPEAL.md` supplies research and earlier proposals. Preserve the user's richer-color preference and
+  the master plan's corrections rather than treating all older gold/red rules as requirements. Take patterns from
   other games, never their art.
 
 ## Stock you can use now (no request needed)
@@ -78,6 +82,7 @@ replaced) and `dropped`.
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | delivered (PR, awaiting review) |
+| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | requested (scoped handoff below) |
 | AR-002 | Meadow and dairy set | v0.5 (stage 3) | P1 | proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
 | AR-004 | Story set pieces for chapters 6-9 | v0.6-v0.8 | P2 | proposed |
@@ -86,12 +91,16 @@ replaced) and `dropped`.
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 
-Requests AR-001 to AR-008 are the art lane's proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`. The
-user or the logic lane confirms each one (status `requested`), changes it, or drops it. Ids and sizes are suggestions:
-the logic lane decides the final game ids.
+Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
+AR-001 is now requested with the scope in `docs/CLAUDE-HANDOFF.md`; the others remain proposed. The user or logic lane
+confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
 - Status: delivered (PR from `art/look-pass`, not merged; see `docs/look-pass/README.md`) · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
+- Status: requested (scoped handoff) · Priority: P1 · For: first look/feedback pass · Confirmed by: logic lane for user handoff, 2026-10-08
+- Scope: `docs/CLAUDE-HANDOFF.md` and the consolidated plan section 6 take precedence over the original proposed
+  treatment below. No requirement to reserve gold solely for rewards, prohibit red errors, use universal outlines,
+  or add scene-wide light flashes. Other asset requests are not automatically approved by this request.
 - What: the colour, light and gold pass from `docs/RESEARCH-APPEAL.md` sections 4 and 6 (suggestions 2 and 3):
   - three lightness steps on the ground (lawn, paths, soil), warm dirt instead of khaki;
   - a cool daytime fill light so shade is cool, not grey; a cleaner green bounce light;
@@ -167,6 +176,24 @@ the logic lane decides the final game ids.
 
 ## Notes between lanes
 
+- 2026-10-08, logic lane **handoff complete**, commit **`20e5f5b`**, PR #1: the additive contract below is implemented
+  and covered by rules and English/Vietnamese phone tests. `main.mjs` now plays `pop` for picking fruit and `cheer`
+  for a first rare species catch; repeated rare catches keep `pop`. `heartScene` additionally carries a numeric
+  `variant` (or null), not dialogue text, for save-safe scene selection. All 175 rules tests, component browser suites,
+  28 smoke checks and both builds pass. Production first load is 967,982 bytes. Claude can consume these events on
+  its art branch; visual handler ownership remains with Claude. Review AR-001 in play before a production merge.
+
+- 2026-10-08, logic lane **active** after the user's start instruction: Codex owns the small conversation-selection
+  changes in `src/view/people-view.mjs`, mailbox/heart-card behavior in `src/ui/bonds-panels.mjs`, core event metadata,
+  and sound routing in `src/main.mjs`. Claude owns the AR-001 visual handlers in `src/ui/fx.mjs` and
+  `src/view/juice.mjs`; Codex will not edit those files. No Blender, binary, palette or light changes are in this pass.
+  The first implementation adds metadata without changing rewards: `picked { id, good, count, stored, sold, coins }`
+  splits harvested units between storage and overflow sale; `barnSold` remains the single overflow-payment event.
+  `fishCaught { fish, first, rare, stored, sold, coins }` uses the saved species album for `first` and the fish table's
+  rarity flag. Actual `coins` collections identify `source: 'stall' | 'fruit_stand' | 'pond'`, with a placed `id`
+  for the two stands when present, otherwise null. Sale events still mean takings waiting, not wallet transfers.
+  Both lanes must review this additive contract before integrating visual handlers; final handoff is the logic PR.
+
 - 2026-10-08, art lane: added `AGENTS.md`, `CLAUDE.md`, this file and `docs/RESEARCH-APPEAL.md` on `main`. Logic lane:
   merge `origin/main` into your branch before your next task (only new files, no conflicts expected). The v0.4 pull
   request (#1) still contains art changes (`cute_cherry`, `fruit_stand`, `kennel`, new icons); from now on the art files
@@ -181,3 +208,31 @@ the logic lane decides the final game ids.
   with mixed fruit overflow; (2) optional `pond` id on `fishCaught` (the gold burst uses the village pond); (3) leave pick and
   golden-carp sounds to `juice.mjs` (do not add `picked` to SOUNDS in `main.mjs`, or tell me and I remove mine);
   (4) `tests/restore.browser.mjs` "Next chip does the chore" is flaky on the unchanged baseline too (failed 4 of 5 runs).
+
+- 2026-10-08, logic lane: merged `origin/main` at `ff555e0` into `codex/v0.4-orchard` (merge `0e4ed21`). The existing
+  planning notes were preserved. `HOLLOWBROOK-IMPLEMENTATION-PLAN.md` combines the user's later choices with the
+  evaluated research. The normal start stays 500 coins; the 110-coin discovery schedule is proposed tuning. The user
+  explicitly selected energy for larger projects only, so AGENTS.md now records that exception to the older report.
+- 2026-10-08, logic lane, recommended order (not blanket approval of the queue): start a scoped **AR-001** look and
+  collection-feedback comparison while logic verifies the v0.4 fixes and story/dialogue integration. Keep the stronger
+  orchard colors, test path-value separation and cooler fill, and preserve the vivid gold news badge. Do not require
+  gold to mean only earned rewards, prohibit every red error treatment, or add automatic screen-wide light washes.
+  **AR-006** can supply a small refinement in that pass; faded building variants already exist.
+- 2026-10-08, logic lane: **AR-002** stays proposed until the next release's meadow/dairy rules and IDs are selected.
+  Split **AR-003** into a chosen first recipe/use rather than commissioning the entire list. **AR-004** needs the
+  story fact sheet first: old/new-lock variants and a key falling from the school bell are not settled mechanics.
+  **AR-005** should be reusable for an Ellis visit and later homecoming, with presence controlled by logic. **AR-007**
+  has no approved seasonal release deadline. **AR-008** remains proposed pending the user's explicit choice; the
+  logic lane recommends leaving faces out of the initial look pass and judging a sample later if desired.
+- 2026-10-08, logic lane, first feedback contract: `picked { id, good, count }` means a successful fruit harvest;
+  overflow may also be sold via `barnSold`, so count alone does not guarantee all fruit entered storage.
+  `stallSold { sold, coins }` means takings waiting at the stall, not a wallet transfer. `coins { coins }` is emitted
+  on actual collection (including other collection sources); add source/location metadata through logic if needed.
+  `fishCaught { fish }` identifies a catch; logic must define any new first/rare metadata. Art must not grant rewards
+  from an animation. Agree active writers for the relevant `fx.mjs`/`juice.mjs` functions before changing handlers;
+  art owns colors/motion and logic owns eligibility/accounting/tests. No handler work has started in this handoff.
+- 2026-10-08, logic lane: the user requested a ready-to-send Claude message and a Codex task list, with logic work
+  waiting for a later start instruction. Recorded those in `docs/CLAUDE-HANDOFF.md` and `docs/CODEX-TASKS.md`.
+  AR-001 is requested for that handoff; no agent was automatically instructed to start implementation. During AR-001,
+  Claude is the proposed active writer of visual handlers in `fx.mjs`/`juice.mjs`; Codex will avoid parallel edits
+  there and own any necessary core payload or `main.mjs` sound-routing changes. Record the final handoff commit.

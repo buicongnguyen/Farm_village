@@ -3,7 +3,7 @@
 // The words (scene lines, wish texts, letters) are story data in content/hearts.mjs and content/letters.mjs:
 //   HEART_SCENES[personId][3|6|9] = { lines: [{ who, text }], reward: { decor | recipe | coins | goods } }
 //   WISHES[personId] = [{ text, need: { kind, near: 'home' } }]
-//   LETTERS = [{ id, from, when: { type: 'chapter' | 'hearts' | 'level', value, person? }, text, reward? }]
+//   LETTERS = [{ id, from, when, also?, after?: [letterId], text, reward? }]
 // useBondsData() swaps in fixtures (tests run before the story data lands).
 import { HEART_SCENES, WISHES } from '../content/hearts.mjs';
 import { LETTERS } from '../content/letters.mjs';
@@ -49,8 +49,12 @@ export function giftable(s, now = Infinity) {
   const villagers = VILLAGERS.filter(v => !v.family && !v.noGifts && (!v.arrives || (s.counts[v.arrives] ?? 0) > 0)).map(v => v.id);
   return [...villagers, ...residents(s, now).map(r => r.id)];
 }
-/** The story's scene for a person at 3, 6 or 9 hearts, or null. */
-export const sceneFor = (id, at) => data().scenes[id]?.[at] ?? null;
+/** The story's scene at 3, 6 or 9 hearts. Optional state selects a context variant without changing its reward. */
+export function sceneFor(id, at, s = null) {
+  const scene = data().scenes[id]?.[at]; if (!scene) return null;
+  const variant = s ? (scene.variants?.findIndex(v => whenDue(s, v.when ?? {}, id)) ?? -1) : -1;
+  return variant >= 0 ? { ...scene, lines: scene.variants[variant].lines, variant } : scene;
+}
 
 /** Give a reward: { coins } | { decor: kind } | { recipe: id } | { goods: { id: n } }. Returns what was really given. */
 export function grant(ctx, reward = {}) {
@@ -69,8 +73,8 @@ export function addHearts(ctx, id, amount, why) {
   for (const at of BONDS.scenes) {
     if (b.hearts < at || b.scenes.includes(at)) continue;
     b.scenes.push(at);
-    const scene = sceneFor(id, at), reward = grant(ctx, scene?.reward ?? BONDS.rewards[at]);
-    ctx.emit('heartScene', { person: id, at, reward, scripted: !!scene });
+    const scene = sceneFor(id, at, s), reward = grant(ctx, scene?.reward ?? BONDS.rewards[at]);
+    ctx.emit('heartScene', { person: id, at, reward, scripted: !!scene, variant: scene?.variant ?? null });
   }
 }
 
@@ -129,15 +133,28 @@ function whenDue(s, w, from, chapter) {
   if (w.type === 'count') return (s.counts?.[w.key] ?? 0) >= w.value;
   return false;
 }
+/** World-state eligibility only; migration uses this to preserve the history of old farms. */
 export function letterDue(s, letter, chapter = null) {
   return whenDue(s, letter.when ?? {}, letter.from, chapter) && (!letter.also || whenDue(s, letter.also, letter.from, chapter));
 }
-/** Post every letter that is due and not sent yet (newest first in s.mail). */
+/** Earliest unread prerequisite, or null. A legacy read letter already counts as a known fact. */
+export function letterPrerequisite(s, id, seen = new Set()) {
+  if (seen.has(id)) return id; // malformed cyclic content cannot silently unlock itself
+  seen.add(id);
+  for (const before of letterOf(id)?.after ?? []) {
+    if ((s.mail ?? []).some(m => m.id === before && m.read)) continue;
+    return letterPrerequisite(s, before, seen) ?? before;
+  }
+  return null;
+}
+/** New mail requires both its world milestone and acknowledged earlier clues. */
+export const letterReady = (s, letter, chapter = null) => letterDue(s, letter, chapter) && !letterPrerequisite(s, letter.id);
+/** Post every ready letter once (newest first in s.mail). A newly delivered clue is not yet an acknowledged fact. */
 export function postLetters(ctx) {
   const { s, now } = ctx, mail = (s.mail ??= []), letters = data().letters; if (!letters.length) return;
   const sent = new Set(mail.map(m => m.id)), chapter = chapterReached(s);
   for (const letter of letters) {
-    if (!letter?.id || sent.has(letter.id) || !letterDue(s, letter, chapter)) continue;
+    if (!letter?.id || sent.has(letter.id) || !letterReady(s, letter, chapter)) continue;
     sent.add(letter.id);
     mail.unshift({ id: letter.id, from: letter.from, at: now, read: false });
     ctx.emit('letter', { id: letter.id, from: letter.from });
@@ -191,11 +208,12 @@ export const actions = {
   },
   /** Open a letter: { id }. A letter with a gift gives it the first time it is read. */
   readLetter(ctx, { id }) {
-    const { s } = ctx, m = (s.mail ?? []).find(x => x.id === id);
-    if (!m) return ctx.fail('That letter is gone');
+    const { s } = ctx, m = (s.mail ?? []).find(x => x.id === id), letter = letterOf(id);
+    if (!m || !letter) return ctx.fail('That letter is gone');
     if (m.read) return { reward: {} };
+    if (letterPrerequisite(s, id)) return ctx.fail('Read the earlier letter first');
     m.read = true;
-    const reward = grant(ctx, letterOf(id)?.reward);
+    const reward = grant(ctx, letter.reward);
     ctx.emit('letterRead', { id, from: m.from, reward });
     return { reward };
   },

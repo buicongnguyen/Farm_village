@@ -7,6 +7,9 @@ Farm Village is a single-player cozy farm and village game for phones and PC bro
 player brings the run-down village of Hollowbrook (*Thung Suối*) back to life. The game is in English and Vietnamese.
 
 **Read first**
+- `docs/HOLLOWBROOK-IMPLEMENTATION-PLAN.md`: the consolidated design decisions, implementation phases, and research
+  corrections. Latest explicit user decisions take precedence over older research recommendations. Read it before
+  selecting a new feature or asset scope.
 - `docs/JOURNEY.md`: the eight stages, the story acts and the build order.
 - `docs/STORY.md`: the cast, how each person talks, and the Vietnamese pronoun rules.
 - `docs/RESEARCH-APPEAL.md`: what makes the game fun alone, the colour and gold rules, interaction ideas and the ranked
@@ -38,6 +41,10 @@ celebrations in `src/view/juice.mjs`, `src/ui/fx.mjs` and `src/view/marks-view.m
 - The rest of `src/view/**` is shared: the logic lane owns behaviour (who walks where, what a tap does), the art lane
   owns looks and purely visual modules (for example `src/view/pond-fish.mjs`). Keep edits small; before a big change,
   write a note in `docs/ASSET-REQUESTS.md` ("Notes between lanes") and tell the user.
+- Before overlapping edits in a shared file, record the active writer for the file or named function, the intended
+  change, and the handoff commit in "Notes between lanes". A proposed request does not reserve files indefinitely.
+  Logic owns event eligibility, payloads and accounting; art owns effect appearance. Coordinate subscriptions in
+  `juice.mjs`/`fx.mjs` explicitly. Colour sections of `src/ui/village.css` belong to art; layout and behaviour to logic.
 - `CHANGELOG.md`, `PROGRESS.md`, the status table in `docs/JOURNEY.md`: both lanes add their own lines; never rewrite
   the other lane's lines.
 
@@ -59,7 +66,8 @@ If the user moves a task from one lane to the other, follow the user and update 
 Git cannot merge binary files. GLB models, WebP icons and story pictures are written only by the art lane.
 
 - `public/assets/models/farm-kit.glb` and `decor.glb` are build outputs of `art/blender/build_farm_kit.py`. Never edit
-  them by hand. After a change to that script is merged, the art lane rebuilds and packs them.
+  them by hand. The art lane rebuilds and packs them on its branch, and includes the generator, packed outputs,
+  required icons and registration together in one coherent PR. Do not deploy mismatched generator/output revisions.
 - **Placeholder icons (the one exception).** Every good, building and tool needs an icon file
   (`tests/assets.test.mjs`). If the logic lane cannot wait for one, it may copy an existing icon to the new id's file
   name (for example `bread.webp` to `jam_cherry.webp`), add the id to `src/content/icons.mjs`, and log it in
@@ -69,7 +77,8 @@ Git cannot merge binary files. GLB models, WebP icons and story pictures are wri
 ## 4. Stand-ins: the logic lane never waits for art
 
 Use what already exists (the stock list in `docs/ASSET-REQUESTS.md`), file a request, and carry on. When the real model
-or icon lands, the art lane switches the stand-in line in the same pull request, and the logic lane checks it in play.
+or icon lands, the art lane switches the stand-in line in the same pull request. The logic lane checks it in play on
+the PR or an integration branch before a production merge; verify production afterward too.
 
 ## 5. House rules for code
 
@@ -78,9 +87,11 @@ or icon lands, the art lane switches the stand-in line in the same pull request,
   Drawing is in `src/view`, the interface in `src/ui`, saves in `src/kit/save.mjs`.
 - **Vietnamese:** every string on screen (`t()`, `ctx.fail()`, content text) needs a line in `src/i18n`. Tests check
   coverage and placeholders. Each speaker keeps the pronouns in `docs/STORY.md` section 2 (`tests/story.test.mjs`).
-- **Cozy rules:** nothing is lost, wilts, spoils or leaves while the player is away; no energy bars, no paid currency;
-  no lines that make the player feel guilty for being away; pets and animals never suffer if ignored
-  (`docs/RESEARCH-APPEAL.md` section 7).
+- **Cozy rules:** nothing is lost, wilts, spoils or leaves while the player is away; no paid currency; no lines that
+  make the player feel guilty for being away; pets and animals never suffer if ignored. The user's confirmed energy
+  scope (2026-10-08) permits a generous bar for larger optional exploration/repair projects only. Ordinary farming,
+  cooking, selling, fishing and social play stay available at zero; provide free accessible recovery. This supersedes
+  the blanket energy prohibition in `docs/RESEARCH-APPEAL.md` section 7. Capacity/cost/recovery values remain proposals.
 - **Pace:** `npm run sim` and `tests/sim.test.mjs` must stay green.
 - **Phone budgets:** at most 120 draw calls and 300,000 triangles at every zoom; first-load code at most 1.1 MB (the
   build prints it). Triangle caps per model are in `tests/assets.test.mjs`.
