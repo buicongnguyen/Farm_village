@@ -66,6 +66,12 @@ button.good-tile { cursor: pointer; }
 .slot.buy { cursor: pointer; border-style: dashed; border-color: var(--leaf); } .slot.buy .g { width: 26px; height: 26px; }
 .slot small { font-size: 11px; font-weight: 1000; position: relative; z-index: 1; }
 .recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 8px; }
+.recipe-group { min-width: 0; display: grid; align-content: start; gap: 6px; }
+.recipe-group .recipe { width: 100%; }
+.recipe-help .link { min-height: 44px; }
+button.good { min-height: 44px; cursor: pointer; }
+.help-return { position: fixed; z-index: 18; top: max(90px, calc(env(safe-area-inset-top) + 72px)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 120px); }
+.help-return[hidden] { display: none; }
 .recipe { border: 3px solid var(--line); background: linear-gradient(#fff, #fff7e6); border-radius: 16px; padding: 7px; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; text-align: left;
   font: 800 13px 'Nunito', sans-serif; color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 #d3a868; align-items: center; }
 .recipe.can { border-color: var(--leaf); box-shadow: 0 3px 0 var(--leaf-dark); }

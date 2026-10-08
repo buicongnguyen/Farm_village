@@ -28,11 +28,17 @@ import { renderFriends, renderGift, renderMail, heartBar, showLetter, PEOPLE, na
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
 import { setLanguage } from '../kit/i18n.mjs';
+import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
+import { goodHelpTarget } from '../core/good-help.mjs';
+import { renderLandPanel, renderLandEntry, showLandMemory } from './land-panel.mjs';
+import { renderContracts, renderContractMemories, renderContractMemory } from './contracts-panel.mjs';
+import { contractStatus } from '../core/contracts.mjs';
 
 export { goodIcon };
-const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) => {
+const goodsLine = (s, need, honour = true, help = true) => Object.entries(need).map(([g, n]) => {
   const have = barn.free(s, g, honour), ok = have >= n;
-  return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
+  return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n} ›</button>`
+    : `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { exploration: 'Picnic trail', advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
   stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', quests: 'Goals', cart: 'Market cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
@@ -42,10 +48,12 @@ const HEAD_ICONS = { exploration: 'lucky_box', advice: 'ui:heart', profiles: 'co
 /** Panels with nothing to count down. */
 const STILL = new Set(['exploration', 'profiles', 'settings', 'album', 'friends', 'gift', 'mail', 'advice']);
 export class Panels {
-  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onTest, onPhoto } = {}) {
-    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onTest, onPhoto });
+  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onTest, onPhoto } = {}) {
+    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onTest, onPhoto });
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
+    this.returnEl = document.createElement('button'); this.returnEl.className = 'btn help-return'; this.returnEl.hidden = true;
+    this.returnEl.addEventListener('click', () => this.returnFromHelp()); root.appendChild(this.returnEl);
     this.el.addEventListener('click', e => this.click(e));
     this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-name]')) this.game.do('setting', { key: 'playerName', value: e.target.value }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
     game.on(() => { if (this.open && !this.holding()) this.render(); });
@@ -62,13 +70,47 @@ export class Panels {
   holding() { return !!this.el.querySelector('input:active'); }
   close() { this.open = null; this.el.hidden = true; this.lift(); }
   /** Keep the HUD buttons above the sheet while it is open. */
-  lift() { document.body.classList.toggle('panel-open', !!this.open); document.body.style.setProperty('--sheet-h', `${this.open ? this.el.offsetHeight : 0}px`); }
+  lift() {
+    document.body.classList.toggle('panel-open', !!this.open); document.body.style.setProperty('--sheet-h', `${this.open ? this.el.offsetHeight : 0}px`);
+    this.returnEl.hidden = !this.helpReturn || !!this.open;
+    this.returnEl.textContent = t('Back to my request');
+  }
+  openGoodHelp(d, button) {
+    if (!GOODS[d.good]) return;
+    if (!this.helpReturn) this.helpReturn = { ...this.open, scroll: this.el.scrollTop, order: button?.closest('[data-order-id]')?.dataset.orderId };
+    if (this.open?.kind === 'goodHelp') (this.helpTrail ??= []).push(this.open.arg);
+    this.show('goodHelp', { good: d.good, needed: Math.max(1, Number(d.needed) || 1) });
+  }
+  returnFromHelp() {
+    const origin = this.helpReturn; this.helpReturn = null; this.helpTrail = [];
+    this.onGoodHelpReturn?.();
+    this.show(origin?.kind ?? 'orders', origin?.arg);
+    this.el.scrollTop = origin?.scroll ?? 0;
+    if (origin?.order) [...this.el.querySelectorAll('[data-order-id]')].find(el => el.dataset.orderId === origin.order)?.scrollIntoView({ block: 'nearest' });
+  }
   toggle(kind, arg) { this.open?.kind === kind && this.open.arg === arg ? this.close() : this.show(kind, arg); }
   click(e) {
     const b = e.target.closest('[data-do]'); if (!b || b.disabled) return;
     const d = b.dataset, g = this.game;
     sfx('click');
     if (d.do === 'close') this.close();
+    else if (d.do === 'goodHelp') this.openGoodHelp(d, b);
+    else if (d.do === 'goodHelpBack') { const previous = this.helpTrail?.pop(); previous ? this.show('goodHelp', previous) : this.returnFromHelp(); }
+    else if (d.do === 'goodHelpReturn') this.returnFromHelp();
+    else if (d.do === 'landVisit') { this.close(); this.onLandVisit?.(d.parcel); }
+    else if (d.do === 'landBuy') { if (g.do('buyParcel', { parcel: d.parcel }).ok) this.onLandVisit?.(d.parcel); }
+    else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) showLandMemory(g); }
+    else if (d.do === 'landMemory') showLandMemory(g);
+    else if (d.do === 'contracts') this.show('contracts');
+    else if (d.do === 'acceptContract') g.do('acceptContract', { id: d.id });
+    else if (d.do === 'deliverContract') { if (g.do('deliverContract', { id: d.id }).ok) { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); } }
+    else if (d.do === 'contractMemory') { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); }
+    else if (d.do === 'goodHelpSource') {
+      const arg = this.open?.kind === 'goodHelp' ? this.open.arg : null;
+      const target = arg && goodHelpTarget(g.s, arg.good, g.now, arg);
+      if (target) { this.close(); this.onGoodHelpSource?.(target); }
+      else this.render();
+    }
     else if (d.do === 'back') this.show(this.back?.kind ?? 'friends', this.back?.arg);
     else if (d.do === 'deliver') g.do('deliverOrder', { id: d.id });
     else if (d.do === 'discard') g.do('discardOrder', { id: d.id });
@@ -127,15 +169,22 @@ export class Panels {
   }
   /** The sheet's header: the panel's icon on a ribbon, its title and a close button (and Back for the gift picker). */
   head(title, icon) {
-    const back = this.open?.kind === 'gift' ? `<button class="round small" data-do="back" aria-label="${t('Back')}">${glyph('undo', 'g')}</button>` : '';
+    const back = this.open?.kind === 'gift' ? `<button class="round small" data-do="back" aria-label="${t('Back')}">${glyph('undo', 'g')}</button>` : this.helpReturn && this.open?.kind !== 'goodHelp' ? `<button class="round small" data-do="goodHelpReturn" aria-label="${t('Back to my request')}">${glyph('undo', 'g')}</button>` : '';
     return `<div class="panel-head">${back}${iconHtml(icon, '', 'head-icon')}<h2>${title}</h2><button class="round small close" data-do="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div>`;
   }
   render() {
     const s = this.game.s, o = this.open; if (!o) return;
     queueMicrotask(() => this.lift());
     const now = this.game.now;
+    const contract = contractStatus(s, now);
+    const contractEntry = contract.introduced && (s.level >= 6 || contract.canAccept || contract.active || contract.completedCount)
+      ? `<button class="next-project" data-do="contracts">${iconHtml('carrot_juice', '', 'mini')}<b>${t('A picnic menu')}</b><small>${t(contract.complete ? 'A memory to keep' : 'Optional food requests')}</small></button>` : '';
     let body = '', title = t(TITLES[o.kind] ?? ''), icon = HEAD_ICONS[o.kind];
-    if (o.kind === 'exploration') body = renderExploration(s, o.arg);
+    if (o.kind === 'goodHelp') { title = t(GOODS[o.arg.good]?.name ?? ''); icon = o.arg.good; body = renderGoodHelp(s, o.arg.good, now, o.arg); }
+    else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
+    else if (o.kind === 'contractMemory') { title = t('A picnic menu'); icon = 'noodles'; body = renderContractMemory(s, o.arg); }
+    else if (o.kind === 'land') { title = t('Sunlit clearing'); icon = 'sale_sign'; body = renderLandPanel(s, o.arg); }
+    else if (o.kind === 'exploration') body = renderExploration(s, o.arg);
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'clinic') body = `<div class="clinic-staff">${iconHtml('clinic', '', 'family-art')}<h3>${t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
     else if (o.kind === 'fruit_stand') {
@@ -146,16 +195,16 @@ export class Panels {
     }
     else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
-    else if (o.kind === 'album') body = renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
-    else if (o.kind === 'today') body = renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
+    else if (o.kind === 'album') body = renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
+    else if (o.kind === 'today') body = contractEntry + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
     else if (o.kind === 'advice') body = renderAdviceDetail(s, o.arg, now);
-    else if (o.kind === 'projects') body = renderProjects(s, now);
+    else if (o.kind === 'projects') body = renderLandEntry(s) + renderProjects(s, now);
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
     else if (o.kind === 'cart') body = renderCart(s);
     else if (o.kind === 'mail') body = renderMail(s, now);
     else if (o.kind === 'friends') body = renderFriends(s, now);
     else if (o.kind === 'gift') body = renderGift(s, o.arg, now);
-    else if (o.kind === 'orders') body = `<div class="order-list">${s.orders.cards.map(c => this.card(c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
+    else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${s.orders.cards.map(c => this.card(c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
@@ -166,7 +215,8 @@ export class Panels {
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
       const q = s.production[o.arg] ?? { slots: SLOTS.start, queue: [] }, ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
       const recipes = recipesAt(s, p.kind).map(r => { const def = RECIPES[r], can = barn.hasAll(s, def.needs);
-        return `<button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs)}</span><small>${glyph('clock', 'g')} ${shortTime(def.timeMs)}</small></button>`; }).join('');
+        return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(def.timeMs)}</small></button>
+          <div class="recipe-help">${goodHelpButton(r, def.makes)}</div></div>`; }).join('');
       const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue[i]; if (!j) return `<div class="slot empty"></div>`;
         const def = RECIPES[j.recipe], left = j.doneAt - now, k = left <= 0 ? 1 : Math.max(0, 1 - left / def.timeMs);
         return `<div class="slot ${left <= 0 ? 'ready' : ''}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : shortTime(left)}</small></div>`; }).join('');
@@ -225,8 +275,10 @@ export class Panels {
         <div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="stallList" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>`;
     }
     const postponedOpen = this.el.querySelector('.advice-deferred')?.open;
+    const futureOpen = this.el.querySelector('.contract-future')?.open;
     this.el.innerHTML = this.head(title, icon) + `<div class="panel-body">${body}</div>`;
     if (postponedOpen && o.kind === 'today') { const details = this.el.querySelector('.advice-deferred'); if (details) details.open = true; }
+    if (futureOpen && o.kind === 'contracts') { const details = this.el.querySelector('.contract-future'); if (details) details.open = true; }
   }
   card(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);
@@ -234,7 +286,7 @@ export class Panels {
     return `<div data-order-id="${id}" class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div>
       <div class="reward">${coinMark()} <b>${num(c.coins)}</b> ${xpMark()} <b>${num(c.xp)}</b></div></div>
       <p class="line">${c.line ? t(c.line) : ''}</p>
-      ${can ? '' : `<div class="order-plan">${planFor(s, c.need).map(st => `<button class="link plan-step" data-do="showWay" data-at="${st.at}">${goodIcon(st.good)} ${t(STEP_TEXT[st.how], { n: st.n, good: t(GOODS[st.good].name) })} ›</button>`).join('')}</div>`}
+      ${can ? '' : `<div class="order-plan">${planFor(s, c.need).map(st => `<button class="link plan-step" data-do="goodHelp" data-good="${st.good}" data-needed="${st.n + barn.free(s, st.good)}">${goodIcon(st.good)} ${t(STEP_TEXT[st.how], { n: st.n, good: t(GOODS[st.good].name) })} ›</button>`).join('')}</div>`}
       <div class="order-row"><div class="needs">${goodsLine(s, c.need)}</div>
       <div class="order-buttons"><button class="btn primary small-btn" data-do="deliver" data-id="${c.id}" ${can ? '' : 'disabled'}>${t('Sell')}</button>${c.story ? '' : `<button class="btn ghost icon-only" data-do="discard" data-id="${c.id}" aria-label="${t('Discard')}">${glyph('trash', 'g')}</button>`}</div></div></div>`;
   }

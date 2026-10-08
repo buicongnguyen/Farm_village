@@ -411,6 +411,7 @@ export class PeopleView {
     this.pipSays(e);
   }
   pipSays(e) {
+    if (document.querySelector('.panel:not([hidden]), .modal')) return;
     const pip = this.walkers.get('pip'); if (!pip || pip.indoors) return;
     const said = (this.said ??= new Set()), first = !said.has(e.type) && FIRSTS[e.type]?.(this.s); said.add(e.type);
     const line = one(pipReactionLines(this.s, e, first));
@@ -421,6 +422,7 @@ export class PeopleView {
   }
   /** Now and then Pip wonders aloud (when on screen and nothing else was said lately). */
   pipIdle() {
+    if (document.querySelector('.panel:not([hidden]), .modal, .guide:not([hidden])')) return;
     const pip = this.walkers.get('pip'), lines = villager('pip')?.idle; if (!pip || pip.indoors || !lines?.length || this.time - this.pipAt < 90) return;
     const p = this.screenOf(pip); if (p.x < 0 || p.y < 0 || p.x > innerWidth || p.y > innerHeight) return;
     this.pipAt = this.time; this.say(pip, t(one(lines)));
@@ -491,6 +493,8 @@ export class PeopleView {
   }
   placeBubbles() {
     const now = performance.now();
+    // Sheets own attention while they are open. Existing bubbles can expire normally without covering their controls.
+    this.bubbles.hidden = !!document.querySelector('.panel:not([hidden]), .modal');
     // Ada's guide card is drawn over the bubbles' layer: a bubble that would sit behind it rises above its top edge
     const guide = document.querySelector('.guide:not([hidden])')?.getBoundingClientRect();
     for (const w of this.walkers.values()) {

@@ -109,10 +109,21 @@ This pass does not rename the cast, add a later chapter, implement covered land 
 
 The [delivery report](DISCOVERY-TRAIL.md) records completed integration and validation: 261 native tests, pace, 19 component suites, 28/28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) records the deployment/live checks. This remains an optional branch within chapters 1–5.
 
+## Guidance, one covered plot and connected food requests — implemented
+
+- [x] Integrate current main through `b0172d6` in an isolated logic worktree, preserving unrelated mobile edits.
+- [x] Add truthful ingredient/source/use help, exact target previews and nested return navigation.
+- [x] Suppress competing tutorial/speech while a sheet is open; retain earned scenes for afterward.
+- [x] Keep level-4 / 500-coin parcel rules, include usable ground, and add one local covered marker with a one-time bench memory; preserve old parcel choices.
+- [x] Connect existing juice/noodle factories through three optional Lan requests, saved scenes and exactly-once payment.
+- [x] Include English/Vietnamese, migration, failed-action and reward-ledger checks, native feature tests and phone/desktop browser acceptance.
+
+See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and the release PR for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain; broader company contracts remain planned.
+
 ## Following passes — still planned
 
-1. Extend guidance with truthful item-use cards and selected playful/welcome moments. The initial persistent opportunity/blocker/activity/celebration advice lifecycle is implemented on the current branch; broader scene and interaction work remains planned.
-2. Covered land, purchase previews and one usable revealed parcel. The picnic trail provides the first connected discovery without a land purchase; its staged world props are integrated without adding covered-land ownership rules.
+1. Additional playful/welcome scenes and selected character interactions beyond the shipped contextual advice and ingredient help.
+2. Further covered regions, selective scenery clearing and useful restoration activities beyond the first optional paid plot and existing free picnic trail.
 3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
 4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
 

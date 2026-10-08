@@ -77,6 +77,8 @@ Do not measure story depth by dialogue count. A short line that remembers a real
 
 ## Recommended implementation order
 
+Implementation update (2026-10-08): step 1 is live through PRs #6/#7; step 3's opening and discovery presentation is integrated through PRs #9/#13/#18. The current logic follow-up implements steps 2, 4 and 5: ingredient/source help with return navigation, one covered plot with useful ground and a bench memory, and three linked picnic requests using the existing juice/noodle factories. Meadow/dairy is still a later selection. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md) distinguish implemented behavior from future regions/company systems. The observations earlier in this report remain the historical research baseline.
+
 | Priority | Bounded change | Completion check | Lane |
 |---|---|---|---|
 | 1 | Finish current saved advice/news pass | Real order and blocker selection, read/defer/restore across reloads and languages; no extra payments; exact target previews | Codex |

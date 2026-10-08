@@ -395,6 +395,12 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 - Baseline: PR #9 at `f80ceb0`; integrated into the Codex branch at `208167c`. Codex is the active writer for `src/main.mjs`, `src/ui/**`, the new exploration content/core/i18n modules, state/action wiring and tests. Claude owns new Blender/model/icon files and only their registration rows in `src/view/kinds.mjs` / `src/content/icons.mjs`. Neither lane edits shared world placement or effects for this delivery; integration will name the exact view functions after the art PR is ready. The current live farmhouse forecourt and pond are retained.
 
+### Coordination — guidance, land and food requests (2026-10-08)
+
+- Active writer: Codex on `codex/guidance-land-contracts`, starting from main `312fbe1`. The isolated logic worktree preserves unrelated unfinished mobile edits in the original checkout. Codex owns new ingredient-help, land-discovery and food-request rules/content/UI, state/action wiring, and tests.
+- Shared view behavior: Codex owns incidental speech suppression in `src/view/people-view.mjs`, staged reuse of existing land models in a new view module, and their input routing in `src/main.mjs`. Existing palettes, lighting, model geometry, icon rendering and effect appearance remain with Claude. No binary assets are requested for this slice.
+- The existing optional picnic props are already integrated through PR #18. This pass adds one paid parcel's usable clearing and optional keepsake, plus optional connected food requests; company hiring, later chapters, bakery parallel slots and the lighthouse are outside this delivery. Final handoff commit and validation will be recorded with the PR.
+
 ### Integration follow-up — 2026-10-08, AR-010 delivered
 
 - This note supersedes only the original AR-010 waiting-for-art/placement reservation above. Main `e8f09a5` and Claude's PR #13 delivery `6f312aa` are merged into the Codex integration branch at `94d1b8e`. Newer main icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth-plan changes are preserved.

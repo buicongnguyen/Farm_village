@@ -30,6 +30,8 @@ import { renderProfiles } from './ui/profiles-panel.mjs';
 import { watchDiscoveries } from './ui/discovery-panels.mjs';
 import { watchExploration } from './ui/exploration-panels.mjs';
 import { ExplorationView } from './view/exploration-view.mjs';
+import { LandDiscoveryView } from './view/land-discovery-view.mjs';
+import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, loadVietnamese, getLanguage, setLanguage } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
@@ -129,6 +131,32 @@ panels = new Panels(app, game, hud, {
     panels.show('exploration', place);
   },
   onSave: handleSave,
+  onLandVisit: parcel => {
+    if (build.open) build.close(); radial.hide();
+    const site = landDiscoverySite(game.s), origin = parcelOrigin(parcel ?? '1,2');
+    const target = site?.parcel === parcel ? site : { x: origin.x + 4, z: origin.z + 4 };
+    flyTo((target.x + 0.5) * CELL, (target.z + 0.5) * CELL, Math.min(world.cam.span, 38));
+    panels.show('land', parcel);
+  },
+  onGoodHelpReturn: () => { if (build.open) build.close(); radial.hide(); },
+  onGoodHelpSource: target => {
+    if (build.open) build.close();
+    radial.hide(); radial.armed = null; radial.tool.hidden = true;
+    if (target.kind === 'pond') { panels.onShowWay('pond'); return; }
+    if (target.kind === 'catalogue') {
+      const def = BUILDINGS[target.buildingKind]; if (!def) return;
+      build.show(); build.cat = def.cat; build.render(); return;
+    }
+    const p = target.id && game.s.placed[target.id];
+    if (!p) { if (target.kind === 'farm') panels.onShowWay('farm'); return; }
+    const [w, d] = footprint(p.kind, p.rot), cell = { x: p.x, z: p.z };
+    flyTo((p.x + w / 2) * CELL, (p.z + d / 2) * CELL, Math.min(world.cam.span, 38));
+    if (target.panel === 'production') { panels.show('production', target.id); return; }
+    if (target.repair) {
+      const { buttons, info } = radial.repairMenu(target.id, BUILDINGS[p.kind]);
+      radial.open(cell, innerWidth / 2, innerHeight * 0.45, buttons, info, { id: target.id });
+    } else radial.tap(cell, innerWidth / 2, innerHeight * 0.45, { open: true });
+  },
   // Advice points to the exact placed building and previews its repair without paying for it.
   onAdviceTarget: ({ id }) => {
     const p = game.s.placed[id]; if (!p) return;
@@ -166,6 +194,7 @@ world.cam.attach(canvas, {
       panels.close();
       const place = world.exploration?.pick(x, y);
       if (place) { radial.hide(); panels.show('exploration', place); }
+      else if (world.landDiscovery?.pick(cell)) { radial.hide(); panels.show('land', world.landDiscovery.site.parcel); }
       else radial.tap(cell, x, y);
     }
   },
@@ -210,11 +239,12 @@ new Daylight(world, game);
 watchDiscoveries(game, hud);
 watchExploration(game, hud);
 world.exploration = new ExplorationView(world, game);
+world.landDiscovery = new LandDiscoveryView(world, game);
 game.start();
 applySettings();
 saveSession = autosave(game, profile);
 if (!saveSession()) hud.toast(t('Could not save your farm. Please try again.'), 'warn');
-new Guide(app, { game, world, hud });
+new Guide(app, { game, world, hud, blocked: () => !!panels.open });
 if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 700); }
 // the Vietnamese lines come down once the farm is running, so a language switch is instant
 (globalThis.requestIdleCallback ?? setTimeout)(() => loadVietnamese().catch(() => {}), { timeout: 4000 });

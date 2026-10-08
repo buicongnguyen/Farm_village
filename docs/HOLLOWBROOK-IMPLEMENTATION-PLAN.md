@@ -1,5 +1,7 @@
 # Hollowbrook — consolidated implementation plan
 
+Implementation update: the [guidance, land and food-story delivery](GUIDANCE-LAND-FOOD-DELIVERY.md) implements one bounded covered-plot branch, ingredient/use help and three linked picnic food requests on main baseline `b0172d6`. Historical “covered land planned” paragraphs below describe earlier releases. Project energy, skills, broader regions and later chapters remain planned.
+
 Date: 2026-10-08 (Asia/Seoul)
 
 Historical release baseline: **profiles and four discoveries shipped through PR #4 at `ab6b230`; adaptive advice and AR-009 icon integration are implemented and validated for [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6).** The baseline [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. Merging into main triggers deployment; the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) records the production result. PRs #1 and #2 shipped the orchard logic and AR-001 look/feedback; PR #3 (`a1607de`) closes AR-001. The opening keeps 500 coins, three farm profiles and four one-time finds capped at 110 coins per save, with earned/read memories. The advice implementation adds 18 topic types and persistent acknowledgment/deferral; covered land, skills/project energy, vehicles and later regions remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) and [CODEX-TASKS.md](CODEX-TASKS.md) for scope and validation.

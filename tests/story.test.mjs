@@ -10,6 +10,8 @@ import { CHATTER, PIP_LINES } from '../src/content/chatter.mjs';
 import { LETTERS } from '../src/content/letters.mjs';
 import { DISCOVERIES } from '../src/content/discoveries.mjs';
 import { EXPLORATION_STEPS } from '../src/content/exploration.mjs';
+import { LAND_BRANCH } from '../src/content/land.mjs';
+import { CONTRACTS } from '../src/content/contracts.mjs';
 import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { BUILDINGS } from '../src/content/buildings.mjs';
 import { RECIPES } from '../src/content/goods.mjs';
@@ -19,7 +21,7 @@ import { game, tutorial } from './helpers.mjs';
 const residents = FAMILIES.flatMap(f => f.people);
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...residents].map(p => [p.id, p]));
 const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => [...sc.lines, ...(sc.variants ?? []).flatMap(v => v.lines)]));
-const spoken = [...EXPLORATION_STEPS.flatMap(step => step.lines), ...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
+const spoken = [...LAND_BRANCH.discovery.lines, ...CONTRACTS.flatMap(c => [...c.memory.lines, { who: c.person, text: c.line }, ...(c.ribbonLine ? [{ who: c.person, text: c.ribbonLine }] : [])]), ...EXPLORATION_STEPS.flatMap(step => step.lines), ...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
 
 test('every speaker in the story, heart scenes, arrivals and letters is a real person', () => {
   const unknown = [...spoken.map(l => l.who), ...LETTERS.map(l => l.from), ...Object.values(ADVICE_TOPICS).map(a => a.person)].filter(id => !PEOPLE[id]);

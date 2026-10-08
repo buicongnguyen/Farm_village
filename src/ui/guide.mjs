@@ -23,8 +23,8 @@ const HOME_FRAME = { tall: { x: 35.5, z: 60.5, span: 39 }, wide: { x: 29, z: 60,
 export const HUD_BUTTONS = ['build', 'orders', 'barn', 'projects', 'today', 'friends'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 export class Guide {
-  constructor(root, { game, world, hud }) {
-    Object.assign(this, { game, world, hud, shown: new Set(), beats: new Set(), flying: false });
+  constructor(root, { game, world, hud, blocked = () => false }) {
+    Object.assign(this, { game, world, hud, blocked, shown: new Set(), beats: new Set(), flying: false });
     this.el = document.createElement('div'); this.el.className = 'guide'; this.el.hidden = true; root.appendChild(this.el);
     this.mark = document.createElement('div'); this.mark.className = 'pointer'; this.mark.hidden = true; this.mark.innerHTML = `<i class="ring"></i>${glyph('hand', 'hand')}`; root.appendChild(this.mark);
     this.el.addEventListener('click', e => {
@@ -38,14 +38,18 @@ export class Guide {
     });
     game.on(() => this.update());
     onModal(() => this.update());
-    world.onFrame(() => this.placeMarker());
+    world.onFrame(() => {
+      const blocked = this.blocked();
+      if (blocked !== this.wasBlocked) { this.wasBlocked = blocked; this.update(); }
+      this.placeMarker();
+    });
     this.update();
   }
   get s() { return this.game.s; }
   get index() { return this.s.story.tutorial ?? 0; }
   get step() { return tutorialOf(this.s)[this.index] ?? null; }
   /** The guide waits while a story card is open, before the first chapter has been read, and while the camera flies. */
-  get waiting() { return modalOpen() || (this.s.story.chapter ?? 0) < 1 || this.flying; }
+  get waiting() { return this.blocked() || modalOpen() || (this.s.story.chapter ?? 0) < 1 || this.flying; }
   update() {
     if (this.busy) return; this.busy = true;
     try { this.refresh(); } finally { this.busy = false; }
@@ -53,7 +57,7 @@ export class Guide {
   refresh() {
     // move past finished steps
     while (this.step && !this.step.last && this.step.done(this.s)) this.game.do('tutorial', { step: this.index + 1 });
-    this.chapters();
+    if (!this.blocked()) this.chapters();
     const step = this.step;
     this.hud.show(step ? step.hud : HUD_BUTTONS);
     if (!step || this.waiting) { this.el.hidden = true; this.mark.hidden = true; return; }
