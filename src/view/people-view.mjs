@@ -14,10 +14,10 @@ import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CROPS, ANIMALS } from '../content/goods.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
-import { t } from '../kit/i18n.mjs';
+import { t, tParams } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
-import { CHATTER, partOfDay } from '../content/chatter.mjs';
+import { CHATTER, PIP_LINES, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
@@ -25,8 +25,6 @@ const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
-/** Template params for t(): string values (the {family} name) are translated first. */
-const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit', you: 'You' };
 const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo']);   // villagers who like to fish
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
@@ -42,16 +40,6 @@ const OUTFITS = {
 };
 const outfitOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
 // What Pip says when things happen (the story package's lines win when it provides them), and June's stuck tips.
-const PIP_LINES = {
-  firstHarvest: 'We did it! Our very first harvest!',
-  harvested: ['I helped! Well, I watched.', 'Crunchy! Can we keep some?', 'The barn is getting full of good things.'],
-  animalArrived: ['A hen! Can I name her Pancake?', 'Welcome to the farm, new friend!'],
-  collected: ['Still warm! Eggs are amazing.', 'Fresh from the farm!'],
-  familyArrived: ['New neighbours! I hope they have a kid my age.'],
-  orderFilled: ['Ada says a thank you is the best payment. Coins are nice too.'],
-  levelUp: ['Level up! Does that mean I get a bigger room?'],
-  projectDone: ['Hooray! Everyone come and look!'],
-};
 const one = list => Array.isArray(list) ? list[Math.floor(Math.random() * list.length)] : list ?? null;
 const villager = id => VILLAGERS.find(p => p.id === id);
 /** Is this the first time this happened on the farm (so Pip uses his "first" line)? */
@@ -478,7 +466,7 @@ export class PeopleView {
     const card = this.s.orders.cards.find(c => c.from === (w.person ?? w.id));
     if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
     // their own line the first time, then the day's chatter, so people rarely repeat themselves
-    if (who) { this.say(w, t(w.comment ?? (w.heard ? this.chatter(w) : who.line))); w.heard = true; w.comment = null; }
+    if (who) { this.say(w, t(w.comment ?? (w.heard ? this.chatter(w) : who.line), tParams(w.params))); w.heard = true; w.comment = null; }
     else if (w.id === 'june') { if (Math.random() < 0.4) this.juneTip(); else this.say(w, t(this.chatter(w))); }
     else if (w.id === 'pip') { this.say(w, t(w.heard ? this.chatter(w) : 'Can we get a pony one day? Or a goat? A goat would be fine.')); w.heard = true; }
     // face the camera and wave

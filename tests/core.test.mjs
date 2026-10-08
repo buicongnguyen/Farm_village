@@ -359,7 +359,7 @@ test('weekly cart: neighbours fill at most two crates, one a day, and never the 
 
 test('the cart never comes before the school is open, and its stand is kept free', () => {
   const s = village(); tick(s, T0 + 5 * DAY); assert.equal(s.cart, null);
-  assert.equal(grid.canPlace(s, 'flowers', CART_SPOT.x, CART_SPOT.z).reason, 'Kept for the weekly cart');
+  assert.equal(grid.canPlace(s, 'flowers', CART_SPOT.x, CART_SPOT.z).reason, 'Kept for the market cart');
 });
 
 test('fruit trees: placed once, fruit after a while, then regrow every few hours', () => {

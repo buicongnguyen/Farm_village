@@ -38,13 +38,20 @@ export function setLanguage(next) {
   return loadVietnamese().then(apply);
 }
 /** Resolves when the boot language's lines are in (await it before the first text is drawn). */
-export const languageReady = language === 'vi' ? loadVietnamese().catch(() => { language = 'en'; }) : Promise.resolve();
+export const languageReady = (language === 'vi' ? loadVietnamese().catch(() => { language = 'en'; }) : Promise.resolve()).then(() => {
+  if (globalThis.document) document.documentElement.lang = language;
+});
 export const onLanguageChange = f => (listeners.add(f), () => listeners.delete(f));
 
 const fill = (text, params) => params ? text.replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m)) : text;
 /** Translate an English string (with {placeholders}) into the current language. */
 export const t = (text, params) => fill(language === 'vi' ? VI?.[text] ?? text : text, params);
+/** Translate content names nested in a message's parameters (leave counts as numbers). */
+export const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 /** Same, for a fixed language (tests, saves). */
 export const tIn = (lang, text, params) => fill(lang === 'vi' ? VI?.[text] ?? text : text, params);   // vi once loaded
-/** Format a whole number the local way (1,234 or 1.234). */
-export const num = n => Math.round(n).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US');
+/** Format numbers with local separators; whole numbers by default, fixed decimals for rates. */
+export const num = (n, digits = 0) => {
+  const locale = language === 'vi' ? 'vi-VN' : 'en-US';
+  return digits ? n.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits }) : Math.round(n).toLocaleString(locale);
+};

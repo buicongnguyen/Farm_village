@@ -72,3 +72,15 @@ export const CHATTER = {
 };
 /** The part of the day at a given hour. */
 export const partOfDay = hour => (hour >= 5 && hour < 11 ? 'morning' : hour >= 11 && hour < 17 ? 'day' : 'evening');
+
+// Fallback reactions when an event has no story-specific Pip line. Kept here for translation and voice checks.
+export const PIP_LINES = {
+  firstHarvest: 'We did it! Our very first harvest!',
+  harvested: ['I helped! Well, I watched.', 'Crunchy! Can we keep some?', 'The barn is getting full of good things.'],
+  animalArrived: ['A hen! Can I name her Pancake?', 'Welcome to the farm, new friend!'],
+  collected: ['Still warm! Eggs are amazing.', 'Fresh from the farm!'],
+  familyArrived: ['New neighbours! I hope they have a kid my age.'],
+  orderFilled: ['Ada says a thank you is the best payment. Coins are nice too.'],
+  levelUp: ['Level up! Does that mean I get a bigger room?'],
+  projectDone: ['Hooray! Everyone come and look!'],
+};

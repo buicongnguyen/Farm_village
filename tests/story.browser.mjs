@@ -44,6 +44,7 @@ for (const lang of ['en', 'vi']) {
         3: s => { s.homes.story_home = { level: 0, family: 'tran', arrivesAt: 0, rentFrom: 0, arrived: true }; }, 4: s => { s.counts.school = 1; }, 5: s => { s.placed.story_clinic = { kind: 'clinic', x: 62, z: 106, rot: 2 }; s.counts.clinic = 1; for (const [i, family] of ['okafor', 'lindqvist', 'reyes'].entries()) s.homes[`story_family${i}`] = { level: 0, family, arrivesAt: 0, rentFrom: 0, arrived: true }; } })[n](s);
         farm.game.emit({ ok: true, events: [{ type: 'loaded' }] }, 'test'); }, n);
       await page.waitForSelector('.modal .chapter', { timeout: 5000 });
+      await page.waitForTimeout(350); // measure the settled card, after its fade and entrance animation
       const head = await page.textContent('.modal .chapter small');
       expect(head.includes(String(n)), `expected chapter ${n}, got "${head}"`);
       // the card as the guide draws it today, then with Ada's line added (the ui package's chapter-card hook): both must fit

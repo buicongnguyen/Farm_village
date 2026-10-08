@@ -52,6 +52,17 @@ wrong forms per speaker (for example *tôi* or *bạn* used as "you"). The narra
 Place names: Hollowbrook is **Thung Suối** everywhere, including titles and posters. Brook Lane is **ngõ Suối**. The
 feed mill is the **cối xay cám**, and chicken and cow feed are **cám gà** and **cám bò**.
 
+UI glossary: the charm score is **độ hấp dẫn** (the decoration category is **Trang trí**); clinic is **trạm y tế**;
+bench is **ghế dài**; hay bale is **kiện cỏ khô**; the daily-login garden is **vườn hoa điểm danh**. The cart is
+**Xe hàng ra chợ**, available the day after the school opens and returning the game day after each departure.
+Biscuit keeps the name **Biscuit** in labels, dialogue and letters. Adult player figures are **Nam / Nữ**.
+
+Pronouns also depend on the listener: Marisol calls her former teacher Hazel **cô** and herself **em**; Ada addresses
+Hazel by name as a fellow elder. Shared tap-to-chat lines avoid choosing one family relationship for all speakers
+(Pip says **con**, while the other children say **cháu**). Keep Pip's fallback reactions in `content/chatter.mjs`
+so translation coverage and speaker tests include them. Translate complete source sentences before shortening them,
+and translate content names in message parameters with `tParams()` before substitution.
+
 ## 3. Arcs
 
 - **Ada:** from a lonely keeper of an empty village to a grandmother with a full street. She gets a beat at the end of

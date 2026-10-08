@@ -13,4 +13,4 @@ export const inGarden = (x, z) => x >= GARDEN.x0 && x < GARDEN.x0 + GARDEN.w && 
 export const CART_SPOT = { x: 26, z: 55, w: 2, d: 2 };
 export const inCartSpot = (x, z) => x >= CART_SPOT.x && x < CART_SPOT.x + CART_SPOT.w && z >= CART_SPOT.z && z < CART_SPOT.z + CART_SPOT.d;
 /** Why a cell is kept, or null. */
-export const reservedReason = (x, z) => inGarden(x, z) ? 'Kept for your streak garden' : inCartSpot(x, z) ? 'Kept for the weekly cart' : null;
+export const reservedReason = (x, z) => inGarden(x, z) ? 'Kept for your streak garden' : inCartSpot(x, z) ? 'Kept for the market cart' : null;

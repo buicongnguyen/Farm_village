@@ -142,6 +142,13 @@ await check('first session: a truly modal chapter card, then the camera flies to
   expect(view.r.x > 0 && view.r.x < 390 && view.r.y > 0 && view.r.y < 844, `the weeds are off screen after Begin: ${JSON.stringify(view.r)}`);
   await page.screenshot({ path: `${SHOTS}ui-2-weeds-phone.png` });
   expect(await page.isVisible('[data-act="build"]') && await page.isVisible('[data-act="barn"]'), 'the build and barn buttons should be there from the start');
+  // This check targets weeds; Pip and Biscuit can wander across their tap targets and correctly take the tap
+  // themselves. Park the cast on the west lane while exercising the tutorial. Separate cast checks cover talking.
+  await page.evaluate(() => {
+    for (const w of farm.people.walkers.values()) Object.assign(w, {
+      x: 57, z: 129, route: [], goal: null, target: null, once: true, onceUntil: farm.people.time + 60,
+    });
+  });
   // clear the three tutorial weeds through the tap menu
   for (const [x, z] of [[34, 59], [35, 60], [34, 61]]) { await tapCell(page, x, z); await page.click('.radial-btn[data-act="clear"]'); }
   const step = await page.evaluate(() => farm.state().story.tutorial);

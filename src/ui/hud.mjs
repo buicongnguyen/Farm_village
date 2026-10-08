@@ -3,7 +3,7 @@
 // Toasts: the same message within 3 s bumps the one on screen instead of stacking, at most two show at once, and
 // refusals that share a lock (params.lock: level, project, goods, max, garden) merge into one toast with a padlock.
 // The coin counter rolls up to its new value with a pulse; the barn badge bounces when goods land.
-import { t, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
+import { t, tParams, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { journeyOf } from '../core/journey.mjs';
@@ -26,8 +26,6 @@ import { STEPS } from '../content/projects.mjs';
 import { RUIN_NAMES } from '../content/world.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
-/** Translate a message's string parameters too (a family's name, a good), then the message. */
-export const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 const TOGGLED = ['orders', 'projects', 'today', 'friends'];   // the tutorial reveals these; build and barn are there from the start
 
 export class Hud {
@@ -131,7 +129,7 @@ export class Hud {
     if (e.type === 'familyTip') this.toast(t('A family left a tip: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:coin' });
     if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn' });
     if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn' });
-    if (e.type === 'cartArrived') this.toast(t('The weekly cart is at the gate'), 'info', { icon: 'cart' });
+    if (e.type === 'cartArrived') this.toast(t('The market cart is at the gate'), 'info', { icon: 'cart' });
     if (e.type === 'crateFilled' && e.by && e.by !== 'you') this.toast(t('{name} filled a crate on the cart', { name: t(NAMES[e.by] ?? e.by) }), 'good', { icon: 'crate' });
     if (e.type === 'cartSent') this.toast(t('The cart is off to market!'), 'good', { icon: 'cart' });
     if (e.type === 'charmMilestone') this.toast(t('Village charm {charm}!', { charm: e.at }), 'good', { icon: 'charm' });
@@ -183,7 +181,7 @@ export class Hud {
     const journey = journeyOf(s);
     rows.push({ act: 'roadmap', ic: glyph('projects', 'g'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
     const step = currentStep(s);
-    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: t(s.mode === 'restore' && step.restore ? step.restore.split('.')[0] : step.name) });
+    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: s.mode === 'restore' && step.restore ? t(step.restore).split('.')[0] : t(step.name) });
     const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
     const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
     const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });

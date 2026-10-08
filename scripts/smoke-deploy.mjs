@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { simulate } from './sim.mjs';
 import { act } from '../src/core/act.mjs';
 import { BEATS, CHAPTERS } from '../src/content/story.mjs';
+import { VI } from '../src/i18n/vi.mjs';
 import { pack } from '../src/kit/save.mjs';
 const url=process.argv[2];if(!url)throw Error('usage: node scripts/smoke-deploy.mjs URL');
 // Use completed days before the review clock, so families and timers are not left in a simulated future.
@@ -19,20 +20,22 @@ for(const b of BEATS)if(b.when(s))act(s,'beatSeen',{id:b.id},s.lastSeen);
 s.settings.daylight='always';
 const shots=join(tmpdir(),'farm-village-v04-live');mkdirSync(shots,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:['--use-angle=d3d11','--enable-gpu','--ignore-gpu-blocklist']});
-for(const [device,viewport] of [['phone',{width:390,height:844}],['pc',{width:1280,height:800}]]){
+for(const [device,viewport] of [['phone',{width:390,height:844}],['pc',{width:1280,height:800}]]) for(const lang of ['en','vi']){
  const ctx=await browser.newContext({viewport,hasTouch:device==='phone',isMobile:device==='phone'});
- await ctx.addInitScript(save=>localStorage.setItem('farm-village:save:1',save),pack(s));
+ await ctx.addInitScript(({save,lang})=>{localStorage.setItem('farm-village:save:1',save);localStorage.setItem('farm-village.language',lang);},{save:pack(s),lang});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('requestfailed',r=>errors.push(r.url()+': '+r.failure()?.errorText));
  await page.goto(url);await page.waitForSelector('[data-act="village"]',{timeout:60000});
  await page.waitForTimeout(1500);
+ if(await page.getAttribute('html','lang')!==lang)throw Error('wrong document language');
  if(await page.evaluate(()=>!!window.farm))throw Error('test hooks published');
  await page.click('[data-act="village"]');await page.waitForSelector('.journey[data-stage="meadow"]',{timeout:10000});
  if(await page.locator('.journey-unlock').count()!==3)throw Error('missing roadmap unlocks');
- await page.waitForTimeout(500);await page.screenshot({path:join(shots,device+'.png')});
+ await page.waitForTimeout(500);await page.screenshot({path:join(shots,device+'-'+lang+'.png')});
  await page.click('[data-do="projects"]');await page.waitForSelector('.sheet[data-kind="projects"]');
- if(!(await page.textContent('.sheet.panel')).includes('Every project'))throw Error('clinic progression missing');
- if(errors.length)throw Error(errors.join(' | '));console.log('ok production '+device+': orchard save, roadmap, clinic, assets; no test hooks or page errors');
+ const completed='Every project of this version is done. More are coming!';
+ if(!(await page.textContent('.sheet.panel')).includes(lang==='vi'?VI[completed]:completed))throw Error('clinic progression missing');
+ if(errors.length)throw Error(errors.join(' | '));console.log('ok production '+device+' '+lang+': orchard save, roadmap, clinic, assets; no test hooks or page errors');
  await ctx.close();
 }
 for(const path of ['src/core/act.mjs','docs/JOURNEY.md','art/blender/build_farm_kit.py','.git/config']){

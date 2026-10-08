@@ -1,7 +1,7 @@
 // Village panels (DESIGN 10, 11, 14): the Today board, the projects with "show the way" and a cottage with its family's
 // hearts, gifts and today's wish. They draw into the shared sheet from panels.mjs. (The welcome card for a family that
 // moves in is in bonds-panels.mjs.)
-import { t, num } from '../kit/i18n.mjs';
+import { t, tParams, num } from '../kit/i18n.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { FAMILIES, NEIGHBOURS } from '../content/people.mjs';
 import { GOODS } from '../content/goods.mjs';
@@ -15,6 +15,7 @@ import { cartHere, cratesLeft } from '../core/cart.mjs';
 import { unread } from '../core/bonds.mjs';
 import * as barn from '../core/barn.mjs';
 import { goodIcon, iconHtml, faceHtml, glyph, coinMark } from './icon.mjs';
+import { thingName } from './repair-ui.mjs';
 import { familyRows, wishLine, nameOf } from './bonds-panels.mjs';
 
 const neighbour = id => t(NEIGHBOURS.find(n => n.id === id)?.name ?? '');
@@ -24,7 +25,7 @@ const milestone = at => CHARM_MILESTONES.find(m => m.at === at);
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
   repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
-  neighbourRepair: e => `${glyph('wrench', 'g')} ${t('{name} mended the {thing}!', { name: t(NEIGHBOURS.find(n => n.id === e.id)?.name ?? ''), thing: t(BUILDINGS[e.kind]?.name ?? '') })}`,
+  neighbourRepair: e => `${glyph('wrench', 'g')} ${t('{name} mended the {thing}!', { name: t(NEIGHBOURS.find(n => n.id === e.id)?.name ?? ''), thing: thingName(null, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
   houseUpgraded: e => `${glyph('home', 'g')} ${t('The farmhouse is now level {level}', { level: e.level })}`,
   projectDone: e => `${glyph('projects', 'g')} ${t('Project done: {name}', { name: t(e.name) })}`,
   familyArrived: e => `${iconHtml('cottage', '', 'mini')} ${t('{family} moved in', { family: t(FAMILIES.find(f => f.id === e.family)?.name ?? '') })}`,
@@ -33,7 +34,7 @@ export const NEWS = {
   levelUp: e => `${glyph('star', 'g')} ${t('Level {level}!', { level: e.level })}`,
   heartScene: e => `${glyph('heart', 'g')} ${t('{name} and you: {count} hearts', { name: nameOf(e.person), count: e.at })}`,
   wishGranted: e => `${glyph('charm', 'g')} ${t('You granted {name}\'s wish: {item}', { name: nameOf(e.person), item: t(BUILDINGS[e.kind]?.name ?? e.kind) })}`,
-  cartSent: e => `${glyph('cart', 'g')} ${t('The weekly cart went to market: {coins} coins', { coins: num(e.coins ?? 0) })}${e.decor && BUILDINGS[e.decor] ? ` · ${iconHtml(e.decor, '', 'mini')}` : ''}`,
+  cartSent: e => `${glyph('cart', 'g')} ${t('Market cart takings: {coins} coins', { coins: num(e.coins ?? 0) })}${e.decor && BUILDINGS[e.decor] ? ` · ${iconHtml(e.decor, '', 'mini')}` : ''}`,
   charmMilestone: e => `${glyph('charm', 'g')} ${t('Village charm {charm}: {name} goes up', { charm: e.at, name: t(milestone(e.at)?.name ?? e.decor) })}`,
   letter: e => `${glyph('mail', 'g')} ${t('A letter came from {name}', { name: nameOf(e.from) })}`,
 };
@@ -54,7 +55,7 @@ export function renderToday(s, now) {
     <div class="gift">${glyph('gift', 'g big')}<div><b>${t("Today's gift")}</b><small>${giftText(b.gift)}</small></div>
       ${b.claimed ? `<span class="done">${glyph('check', 'g')} ${t('Claimed')}</span>` : `<button class="btn primary" data-do="claimGift">${t('Claim')}</button>`}</div>
     ${days ? `<div class="streak">${iconHtml('garden_flower', '', 'mini')}<span>${t('Streak garden: day {count}', { count: days })}</span></div>` : ''}
-    ${cartHere(s) ? `<button class="next-project" data-do="cart">${glyph('cart', 'g')} ${t('The weekly cart is at the gate')} <small>${t('{count} crates to fill', { count: cratesLeft(s) })}</small></button>` : ''}
+    ${cartHere(s) ? `<button class="next-project" data-do="cart">${glyph('cart', 'g')} ${t('The market cart is at the gate')} <small>${t('{count} crates to fill', { count: cratesLeft(s) })}</small></button>` : ''}
     ${mail ? `<button class="next-project" data-do="mail">${glyph('mail', 'g')} ${t('{count} new letters', { count: mail })}</button>` : ''}
     ${ready.length ? `<h3>${t('While you were away')}</h3><ul class="ready">${ready.map(([i, r]) => `<li>${i}<span>${r}</span></li>`).join('')}</ul>` : ''}
     ${wishes.length ? `<h3>${t("Today's wishes")}</h3>${wishes.map(x => wishLine(s, x.home)).join('')}` : ''}
@@ -83,7 +84,7 @@ export function renderProjects(s, now) {
   return `<button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     ${goods ? `<div class="needs-list">${goods}</div>${ready.ok && !deliveredAll(s, step) ? `<button class="btn primary wide" data-do="projectDeliver">${t('Deliver goods')}</button>` : ''}` : ''}
-    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, runMay.params)}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, may.params)}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
+    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, tParams(runMay.params))}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
   </div><ul class="steps">${list}</ul>`;
 }
 
@@ -92,7 +93,7 @@ export function renderCottage(s, id, now) {
   const fam = FAMILIES.find(f => f.id === h.family), arrived = h.arrivesAt <= now, charm = charmOf(s, id), needs = needsOf(s, id), next = COTTAGE_LEVELS[h.level + 1];
   return `<div class="cottage">
     <div class="cottage-top">${fam ? iconHtml(`family:${fam.id}`, '', 'family-art') : glyph('home', 'g huge')}<div><b>${fam ? (arrived ? t(fam.name) : t('{family} are on their way', { family: t(fam.name) })) : t('Waiting for a family')}</b>
-      <div class="stats"><span>${glyph('home', 'g')} ${t(COTTAGE_LEVELS[h.level].name)}</span><span>${glyph('charm', 'g')} ${t('Charm {charm}', { charm })}</span><span>${coinMark()} ${t('{coins} an hour', { coins: rentPerHour(s, id).toFixed(1) })}</span></div></div></div>
+      <div class="stats"><span>${glyph('home', 'g')} ${t(COTTAGE_LEVELS[h.level].name)}</span><span>${glyph('charm', 'g')} ${t('Charm {charm}', { charm })}</span><span>${coinMark()} ${t('{coins} an hour', { coins: num(rentPerHour(s, id), 1) })}</span></div></div></div>
     ${fam ? familyRows(s, fam, now, arrived) : ''}
     ${arrived ? wishLine(s, id) : ''}
     ${needs.includes('path') ? `<p class="hint warn">${t('This family needs a path at their door. Rent is lower until then.')}</p>` : ''}

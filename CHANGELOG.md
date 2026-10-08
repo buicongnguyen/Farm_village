@@ -2,6 +2,10 @@
 
 ## 0.4.0 — The orchard (2026-10-08, PR preview)
 
+- **Vietnamese review:** corrected misleading actions, item names, crop counts, idioms and family forms of address across the interface, tutorials, letters and heart scenes. Biscuit keeps one name; clinic, charm and garden terms agree across panels; adult avatar choices say Nam/Nữ. The market cart label now agrees with its next-day return.
+- **Localized rendering:** project locks translate their project names, repair status translates the full sentence before shortening it, and tapping visitors fills their dialogue placeholders. Hourly rent uses Vietnamese decimal commas. Repair news now names repaired roads and the farmhouse without crashing the Today panel.
+- **Language checks:** added restoration, roadmap goals, quests, shared chatter and Pip's fallback reactions to translation/voice coverage, kept tutorial emphasis balanced, and added phone checks for the corrected dynamic text. Production smoke checks exercise both languages on phone and desktop.
+
 - **Roadmap:** tap the village name for the current stage, deed progress and the next three unlocks. The goal stays in the status stack. Future meadow, dairy and cat features are explicitly marked as planned.
 - **Orchard:** cherry trees open at level 4 for 70 coins, give three cherries after 25 seconds and regrow in 40 seconds. A fruit stand takes fruit stacks and pays a small premium as visitors buy; goods and takings persist across saves and away time. Takings have a map marker and a one-tap Next action.
 - **Biscuit:** a kennel at level 5 gives the existing dog a job: run to grounded crows, bark them away and return home. He avoids fences and buildings and costs no upkeep. Reduced motion keeps crow protection without the chase animation.

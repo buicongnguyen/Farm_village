@@ -16,7 +16,7 @@ export function renderSettings(s, profile) {
   return `<div class="settings">
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${choice('lang', 'en', getLanguage(), 'English')}${choice('lang', 'vi', getLanguage(), 'Tiếng Việt')}</div></div>
-    <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${st.playerName ?? ''}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Boy'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Girl'))}</div></div>
+    <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${st.playerName ?? ''}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>
     <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
     <div class="set-row"><b>${t('Music')}</b><input type="range" min="0" max="100" value="${Math.round(st.music * 100)}" data-range="music" aria-label="${t('Music')}"></div>
@@ -38,7 +38,7 @@ export function renderAlbum(s) {
   const when = at => new Date(at).toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-GB', { day: 'numeric', month: 'short' });
   const firsts = [['harvest', 'wheat', 'First harvest'], ['order', 'ui:orders', 'First order filled'], ['product', 'bread', 'First thing made'], ['egg', 'egg', 'First egg'],
     ['fruit', 'apple', 'First fruit picked'], ['family', 'cottage', 'First family moved in'], ['trade', 'gift', 'First trade with a neighbour'], ['gift', 'ui:heart', 'First gift given'],
-    ['wish', 'charm', 'First wish granted'], ['letter', 'mail', 'First letter'], ['cart', 'cart', 'First weekly cart sent']].filter(([k]) => s.firsts?.[k]);
+    ['wish', 'charm', 'First wish granted'], ['letter', 'mail', 'First letter'], ['cart', 'cart', 'First market cart sent']].filter(([k]) => s.firsts?.[k]);
   const projects = STEPS.filter(st => s.firsts?.[`project:${st.id}`]);
   const hearts = Object.keys(s.firsts ?? {}).filter(k => k.startsWith('heart:')).map(k => { const [, person, at] = k.split(':'); return { person, at, time: s.firsts[k] }; }).sort((a, b) => a.time - b.time);
   const families = FAMILIES.filter(f => Object.values(s.homes ?? {}).some(h => h.family === f.id && h.arrived));
