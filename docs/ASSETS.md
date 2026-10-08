@@ -12,7 +12,8 @@ the npm packages in `package.json` and the Nunito font (SIL Open Font License, `
 | `market-stall.glb`, `well.glb`, `animal-produce.glb` | Willowmere at 11df8e9 | Copied unchanged |
 | `hero-tall.glb`, `hero-girl-tall.glb`, `hero-tiny.glb`, `hero-girl-tiny.glb` | Willowmere `public/assets/models/` (from Zoo Garden) | Copied unchanged; villagers and neighbours |
 | `farm-kit.glb` | New: `art/blender/build_farm_kit.py` with Willowmere's `style.py` | Crops in three stages (wheat, carrot, corn, pumpkin, strawberry; authored `_mid` levels), feed mill + `feed_mill_sails`, bakery, coop with yard, cow barn, picket fence set, bench, lamp, order board, bed rim; anchor empties (AAA pass). Fixer pass: wheat re-authored as a dense golden stand (ripe 752 → 244 triangles near, 162 → 88 middle; sprouts bigger and greener), leaner corn, carrot and pumpkin middle levels, the cow barn's back and gable walls dressed (stable door, shuttered windows, loft hatch; two more window anchors) |
-| `decor.glb` | New: `art/blender/build_farm_kit.py` (AAA pass) | Plank bridge, fountain, bunting, banner, For-sale sign, scaffold, window box, door lantern, flowerpots, doormat, path stones, obstacle bush / stump / log; keepsakes `lucky_tin`, `lucky_button`, `lucky_box` (AR-009) |
+| `decor.glb` | New: `art/blender/build_farm_kit.py` (AAA pass) | Plank bridge, fountain, bunting, banner, For-sale sign, scaffold, window box, door lantern, flowerpots, doormat, path stones, obstacle bush / stump / log |
+| `discovery-props.glb` | New: `art/blender/build_farm_kit.py` (AR-009) | Keepsakes `lucky_tin`, `lucky_button`, `lucky_box`: handheld, loaded only when a discovery shows one |
 | `props.glb` | Starline (`3D_game_scene`, at 42424c7) `public/models/*.glb`, made by its `art/blender/build_props.py` | Scarecrow, haybale, sacks, crate, barrel, cart, signpost, postbox, street lamp, flowerpot, laundry line, beehive branch; joined into vertex-colour roots by `art/blender/extract_kit.py` (`art/blender/kits/props.json`), colours boosted 1.1–1.15, decimated `_mid` levels |
 | `nature.glb` | Starline at 42424c7 `public/models/*.glb`, made by its `art/blender/build_nature.py` | Lily pads, reeds, stepping stones, rocks, flowers, hydrangea, bushes, grass tuft, broadleaf, maple, sakura, chestnut and peach trees (Starline `-lod` copies as `_mid`); `tree_peach_bare` (fruit node dropped), `tree_apple` / `tree_apple_bare` (peach recoloured red, leaves deeper green); colours boosted (`art/blender/kits/nature.json`) |
 | `rural-extra.glb` | Willowmere `public/assets/models/rural.glb` (working copy at 6390128) | Silo, home_t0 / t2 / t3, picket and rail fence, round hay bale, tractor, pond dock, stump; vertex-colour roots (`art/blender/kits/rural-extra.json`) |
@@ -44,7 +45,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 | Script | What it does |
 |---|---|
-| `build_farm_kit.py` | farm-kit.glb, decor.glb and `anchors-farm-kit.json` |
+| `build_farm_kit.py` | farm-kit.glb, decor.glb, discovery-props.glb and `anchors-farm-kit.json` |
 | `extract_kit.py` | kits from other GLBs as vertex-colour roots (spec files in `kits/`), or the legacy keep-these-roots mode |
 | `anchors.mjs` | writes `ANCHORS` into `src/view/kinds.mjs` (farm-kit anchors, plus window points of the cottages and the farmhouse found from their glass faces) |
 | `pack.mjs` | meshopt compression with gltfpack |
@@ -72,10 +73,12 @@ MIT) is a build tool only, not a dependency of the game.
 
 ## AR-009 lucky finds
 
-- `decor.glb`: original `lucky_tin` (a teal tin with a cream and red band, brass rims, its lid and a painted fish),
-  `lucky_button` (a brass fish button against a cloth pouch with a red drawstring) and `lucky_box` (a wooden keepsake box
-  with brass corners, a red lining, a cloth-wrapped pebble), each with coins and one small four-point glint. Made in
-  `art/blender/build_farm_kit.py` with the existing vertex-colour helpers, Blender 4.5.9 LTS, packed with
-  `art/blender/pack.mjs`. No third-party asset or reference art used.
-- Icons `lucky_tin`, `lucky_button`, `lucky_box`: `art/blender/render_icons.py` jobs in `icons.json` (`raw:decor`).
+- `discovery-props.glb`: original `lucky_tin` (a teal tin with a cream label and red fish, brass rims, its lid, two
+  coins, a puddle and a lily pad), `lucky_button` (a brass fish button with a four-hole centre and a tiny pond engraved
+  on its back, against a soft blue cloth pouch) and `lucky_box` (a wooden trinket box with a teal lining, a pebble on a
+  ribbon-tied cloth, one coin). Made in `art/blender/build_farm_kit.py` with the existing vertex-colour helpers at a
+  0.5 m working size and written at handheld size (× 0.3); Blender 4.5.9 LTS; packed with `art/blender/pack.mjs`.
+  No third-party asset or reference-game art used.
+- Icons `lucky_tin`, `lucky_button`, `lucky_box`: `art/blender/render_icons.py` jobs in `icons.json`
+  (`raw:discovery-props`).
 - Comparison images: `docs/discovery-props/`.

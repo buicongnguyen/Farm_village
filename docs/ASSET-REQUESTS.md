@@ -67,7 +67,8 @@ replaced) and `dropped`.
 | Kit (`public/assets/models/`) | What is in it |
 |---|---|
 | `farm-kit.glb` (ours) | Crops in three growth stages (wheat, carrot, corn, pumpkin, strawberry); coop, cow barn, feed mill (+ `feed_mill_sails`), bakery, fruit stand, kennel, pond, truck, order board, bench, lamp, picket set; trees `cute_round`, `cute_pine`, `cute_blossom`, `cute_apple`, `cute_peach`, `cute_cherry` (each fruit tree also `_bare`) |
-| `decor.glb` (ours) | `plank_bridge`, `fountain`, `bunting`, `banner`, `sale_sign`, `scaffold`, `window_box`, `door_lantern`, `flowerpots`, `doormat`, `path_stones`, `obstacle_bush`, `obstacle_stump`, `obstacle_log`; keepsakes `lucky_tin`, `lucky_button`, `lucky_box` (AR-009, with icons) |
+| `discovery-props.glb` (ours) | Keepsakes `lucky_tin`, `lucky_button`, `lucky_box` (AR-009): handheld presentation pieces, not placed on the map |
+| `decor.glb` (ours) | `plank_bridge`, `fountain`, `bunting`, `banner`, `sale_sign`, `scaffold`, `window_box`, `door_lantern`, `flowerpots`, `doormat`, `path_stones`, `obstacle_bush`, `obstacle_stump`, `obstacle_log` |
 | `props.glb` (Starline) | `scarecrow`, `haybale`, `sacks`, `crate`, `barrel`, `cart`, `signpost`, `postbox`, `street_lamp`, `flowerpot`, `laundry_line`, `beehive_branch` |
 | `nature.glb` (Starline) | `lilypads`, `reeds`, stepping stones, rocks, flowers, `hydrangea`, bushes, `grass_tuft`, broadleaf, maple, sakura and chestnut trees |
 | `rural-extra.glb` (Willowmere) | `silo`, `home_t0`, `home_t2`, `home_t3`, `picket_fence`, `rail_fence`, `hay_round`, `tractor`, `pond_dock`, `stump` |
@@ -89,11 +90,10 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
-| AR-009 | Lucky-discovery keepsakes (tin, fish button, box) | one-time discoveries | P2 | delivered, art PR open |
+| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | requested |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
-AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; AR-002 to AR-008 remain proposed. AR-009 was
-asked for by the logic lane and is delivered on an art branch. The user or logic lane
+AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
 confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
@@ -174,40 +174,40 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 - What: a few hero crops and fruits get tiny faces, sleepy while growing and awake and smiling when ripe, seen only up
   close, never sad, with a setting to turn them off. The pattern comes from My Dear Farm; the art is our own.
 
-### AR-009: Lucky-discovery keepsakes
-- Status: delivered on `art/discovery-props` (PR open, not merged) · Priority: P2 · For: the four one-time discoveries
-  in `src/content/discoveries.mjs` (logic, `codex/dialogue-review`) · Asked by: logic lane, 2026-10-08
-- What: three small Blender props with matching icons for the finds: `lucky_tin` (the little tin from the pond,
-  `pond-tin`), `lucky_button` (the brass fish-shaped button in a cloth pouch, `pond-keepsake`) and `lucky_box` (the
-  small box beneath a cleared rock, `stone-keepsake`). `street-thanks` keeps the existing coin art (`ui:coin`); there is
-  no envelope icon in the set, and none was made for this request. Rich, warm look with a restrained golden glint;
-  keepsakes, not treasure. Each prop within the 1,200-triangle prop budget. No new effect subscriptions.
-- Delivered: branch `art/discovery-props`, 2026-10-08 (base `origin/main` `a1607de`)
-- Model: `decor.glb` (loaded after the first frame), nodes `lucky_tin` 1,064 triangles, 0.48 × 0.63 × 0.47 m
-  (w × d × h); `lucky_button` 916 triangles, 0.51 × 0.62 × 0.44 m; `lucky_box` 920 triangles, 0.60 × 0.55 × 0.51 m.
-  Modelled a little larger than life so they read beside a person. Authored around their centre, standing on z = 0.
-  Generator: `art/blender/build_farm_kit.py` ("lucky finds (AR-009)"), packed with `art/blender/pack.mjs`.
-- Anchors: none.
-- Icons: `public/assets/icons/lucky_tin.webp`, `lucky_button.webp`, `lucky_box.webp` (256 px, jobs in
-  `art/blender/icons.json`).
-- Registered: `src/view/kinds.mjs` (`KITS.decor` gains the three roots), `src/content/icons.mjs` (new `keepsakes` list:
-  `lucky_tin`, `lucky_button`, `lucky_box`; `iconUrl('lucky_tin')` etc.). No `KIND_MODELS` entry: nothing is placed on
-  the map. `tests/assets.test.mjs` gains one check (each keepsake is in `KITS.decor`, ≤ 1,200 triangles, icon present).
-- Checked: `npm test`; `npm run build:test` (first-load code unchanged at 970,846 bytes; `decor.glb` loads later);
-  every browser suite and `node tests/browser.mjs` on port 5242. Comparison images in `docs/discovery-props/`.
-- For the logic lane: switch the stand-in icons in `DISCOVERIES` when you merge this: `pond-tin` `ui:coin` →
-  `lucky_tin`, `pond-keepsake` `perch` → `lucky_button`, `stone-keepsake` `tool:clear` → `lucky_box`; `street-thanks`
-  stays `ui:coin`. If a card or the album should show a 3D keepsake (for example the tin bobbing up beside the fish), it
-  is in `KITS.decor` and can be loaded with the decor kit; tell me in the notes which effect should show it and I
-  will make the visual handler. Album or card wording and its Vietnamese lines stay with you.
+### AR-009: Small discovery keepsakes and icons
+- Status: requested · Priority: P1 · For: introductory discoveries · Asked by: user / logic lane, 2026-10-08
+- Scope: [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md). First delivery is assets and registration only,
+  on `art/discovery-props` in the art worktree. Codex owns rules, saves, UI behavior, story and English/Vietnamese
+  content on `codex/dialogue-review`. AR-001 remains done; this request does not approve AR-002 through AR-008.
+- What: three small keepsakes with different readable silhouettes: a little found tin; a brass fish-shaped button
+  with a simple pond mark on its back; a small box with cloth and a smooth pebble. The street thank-you reuses the
+  existing envelope/mail and coin treatment; it does not need a fourth model.
+- Game ids: discovery `pond-tin` → asset `lucky_tin`; `pond-keepsake` → `lucky_button`;
+  `stone-keepsake` → `lucky_box`; `street-thanks` → existing mail/coin treatment.
+- Size: small handheld keepsake scale, not a placeable building and not a cell footprint; front +z, origin at base.
+  Record final dimensions in the delivery note. Each complete prop is at most 1,200 triangles.
+- Anchors: none required for the first static delivery. Do not add guessed world-location anchors.
+- Variants: one readable static presentation per keepsake. Separate opening/closing animations are outside this delivery.
+- Moves: static. Use the established warm, rich look and selective highlights; any later reveal should have a
+  restrained glint. Coordinate new visual subscriptions before touching `src/view/juice.mjs` or `src/ui/fx.mjs`.
+- Icons: `lucky_tin`, `lucky_button`, `lucky_box`, each with a matching WebP at `public/assets/icons/<id>.webp`.
+- Deliver: Blender generator/source changes, meshopt-packed GLB output, matching icons, registry entries and
+  provenance in one coherent art PR. A dedicated `discovery-props.glb` is a suitable packaging choice; record the
+  actual kit path and exact node names. Never hand-edit generated `ANCHORS`.
+- Stand-in now: existing icons only: `pond-tin` → `ui:coin`; `pond-keepsake` → `perch`;
+  `stone-keepsake` → `tool:clear`; `street-thanks` → `ui:coin`. No new placeholder files or world actors are required.
+  Art registers the new asset ids; Codex switches discovery-content icon references after integration.
+- Rules context: second successful catch pays 20 coins; tenth pays 40; second newly observed successful owned-rock
+  clear pays 30; completed broken restoration of Village Street (`road_south`) pays 20. Each is once per save,
+  at most 110 coins total. These are authored discoveries, not repeating lottery rolls. Starting coins stay 500.
+- Event contract: `discovery { id, coins, person }` plus `coins { coins, source: 'discovery', id }` for the same
+  already-accounted reward. Neither event contains a position. Here `id` is a discovery id, not a placed-object id.
+  Do not award coins, duplicate payment feedback, invent source coordinates, or spawn all props into the world.
+- Notes: the fish button is a local pond keepsake; it does not advance the sluice/letter mystery. The full logic
+  and profile scope is recorded in [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md). Art can proceed with
+  models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
-
-- 2026-10-08, art lane: **AR-009 delivered** on `art/discovery-props` (from `origin/main` `a1607de`): `lucky_tin`,
-  `lucky_button`, `lucky_box` in `decor.glb` with icons, registered in `KITS.decor` and a new `keepsakes` icon list.
-  Touched outside art files: `src/view/kinds.mjs` (`KITS.decor` only), `src/content/icons.mjs` (one id list, as
-  section 1 allows) and one added check in `tests/assets.test.mjs`. No changes to `juice.mjs`, `fx.mjs`, discovery
-  triggers, rewards, saves, dialogue or UI. The stand-in icons in `discoveries.mjs` are yours to switch (AR-009 above).
 
 - 2026-10-08, logic lane **handoff complete**, commit **`20e5f5b`**, PR #1: the additive contract below is implemented
   and covered by rules and English/Vietnamese phone tests. `main.mjs` now plays `pop` for picking fruit and `cheer`
@@ -215,6 +215,32 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   `variant` (or null), not dialogue text, for save-safe scene selection. All 175 rules tests, component browser suites,
   28 smoke checks and both builds pass. Production first load is 967,982 bytes. Claude can consume these events on
   its art branch; visual handler ownership remains with Claude. Review AR-001 in play before a production merge.
+
+- 2026-10-08, art lane, **AR-009 delivered** on `art/discovery-props` (from `origin/main` `a1607de`; PR and commit
+  below). Built to `docs/CLAUDE-DISCOVERY-HANDOFF.md` on `codex/dialogue-review` (read only):
+  - Source: `art/blender/build_farm_kit.py`, section "lucky finds (AR-009)" (new soft cloth colours `cloth`, `clothd`,
+    `clothl`); icon jobs in `art/blender/icons.json`. Blender 4.5.9 LTS, vertex colours, packed with
+    `art/blender/pack.mjs` (meshopt). `farm-kit.glb` and `decor.glb` are byte-identical to `main`.
+  - Kit: **`public/assets/models/discovery-props.glb`** (27.7 KB), nodes `lucky_tin`, `lucky_button`, `lucky_box`.
+    Nothing loads it yet: no world placement, no footprint, no KIND_MODELS entry; load it with `loadKit('discovery-props')`
+    when a card or reveal needs a model. Front faces +z, origin at the base centre, metres.
+  - `lucky_tin`: 1,076 triangles, 0.18 × 0.21 × 0.14 m (w × d × h, lid included): a teal tin with a cream label and red
+    fish, brass rims, the lid leaning behind, two coins, a puddle and a lily pad beside it.
+  - `lucky_button`: 1,076 triangles, 0.16 × 0.15 × 0.16 m: a brass fish button with a four-hole centre and an eye,
+    leaning on a soft blue cloth pouch (red drawstring, one coin at its mouth). The tiny pond (ring, pool and ripple) is
+    engraved on the button's back, which faces the pouch in this pose.
+  - `lucky_box`: 1,104 triangles, 0.22 × 0.17 × 0.15 m: a wooden trinket box with a teal lining and one brass clasp,
+    a smooth pebble on cream cloth tied with a red ribbon, one coin, a little spill of earth.
+  - Icons: `public/assets/icons/lucky_tin.webp`, `lucky_button.webp`, `lucky_box.webp` (256 px, transparent).
+  - Registered: `src/view/kinds.mjs` `KITS['discovery-props']`; `src/content/icons.mjs` `ICON_IDS.keepsakes`.
+    `tests/assets.test.mjs`: one check (≤ 1,200 triangles, handheld size, base origin, icon present, never placed).
+  - Screenshots: `docs/discovery-props/` (stand-in vs new icons at 160 px and 48 px on dark and light panels; a
+    close-up render of the three props).
+  - `street-thanks`: no fourth asset. The set has no envelope icon, so `ui:coin` stays as the existing treatment.
+  - No changes to `juice.mjs`, `fx.mjs`, `discoveries.mjs`, triggers, rewards, saves, dialogue or UI.
+  - For the logic lane: switch the three stand-in icons in `DISCOVERIES` after integration (`ui:coin` → `lucky_tin`,
+    `perch` → `lucky_button`, `tool:clear` → `lucky_box`) and check the cards on phone and PC in both languages. A
+    later reveal or glint needs the shared-function handoff the brief describes.
 
 - 2026-10-08, logic lane **active** after the user's start instruction: Codex owns the small conversation-selection
   changes in `src/view/people-view.mjs`, mailbox/heart-card behavior in `src/ui/bonds-panels.mjs`, core event metadata,
