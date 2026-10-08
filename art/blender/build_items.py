@@ -25,7 +25,8 @@ C = {n: mat('IT ' + n, c, .5) for n, c in {
     'wstalk': '#E9B84A', 'wheatg': '#F0A020', 'burlap': '#D08A4A', 'burlapd': '#A9622E', 'burlapl': '#E8B070', 'label1': '#FFD23F',
     'label2': '#FFD23F', 'pellet': '#7A9A3A', 'burlapo': '#A8A65A', 'burlapod': '#7E7C3E', 'burlapol': '#C8C47E', 'hen': '#E8573F', 'cow': '#3A3D4A', 'skillet': '#3A3D4A', 'skilletl': '#5B6477', 'crumb': '#FFD86A', 'board': '#C98A4A',
     'boardd': '#7A4A28', 'flour': '#FFF8EA', 'straw': '#C99A3A', 'strawd': '#8A5A22', 'eggb': '#E9A868', 'eggb2': '#D98C4A',
-    'crustl': '#E39A48', 'eggw': '#FFF1D8', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
+    'crustl': '#E39A48', 'eggw': '#FFF1D8', 'dish': '#1FB5B0', 'dishd': '#14857F', 'frostw': '#FFF4DC', 'xpblue': '#2F95EA', 'xpbluel': '#8FD0FF',
+    'fruitpeachr': '#FF6A5A', 'orangefd': '#E8771A', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
 
 def P(name, r, loc, mt, sub=2, sc=None):
     return ico(name, r, loc, C[mt], subdiv=sub, scale=sc)
@@ -57,62 +58,78 @@ def sheaf():
 item('item_wheat', sheaf())
 
 def carrot():
-    p = [cone('root', .17, .85, (0, 0, -.1), C['carrot'], verts=10, rot=(math.pi, 0, 0))]
-    for i in range(5):
-        a = i / 5 * math.tau
-        p.append(leaf('lf', (0, 0, .3), a, .42, .17, C['leaf' if i % 2 else 'leafl'], lift=.38, droop=.05))
-    p[0].location.z = .1
-    o = join(p, 'tmpc'); o.rotation_euler = (0, math.radians(35), 0)
-    return [o]
+    """Carrot (item pass 2): a smooth lathe root, a little bent, with shallow rings and a bushy top of leaflets."""
+    prof = [(0, -.5), (.07, -.42), (.1, -.3), (.14, -.15), (.165, 0), (.18, .15), (.17, .28), (0, .32)]
+    o = lathe('root', [(r, z + .5) for r, z in prof], (0, 0, 0), C['carrot'], segments=20, smooth_angle=180)
+    p = [o]
+    for z in (.2, .35, .5, .65):
+        p.append(torus('ring', .12 + z * .07, .012, (0, 0, z), C['carrotd'], major_segs=16, minor_segs=3))
+    for i in range(3):
+        a = i / 3 * math.tau + .3
+        p.append(stalk('stem', (0, 0, .8), (math.cos(a) * .12, math.sin(a) * .12, 1.15), .025, C['leafd'], sides=4))
+        for k in range(3):
+            p.append(P('leaflet', .08, (math.cos(a) * (.08 + k * .03), math.sin(a) * (.08 + k * .03), 1.0 + k * .08), 'leaf' if k % 2 else 'leafl', sub=1, sc=(1, .45, .6)))
+    o2 = join(p, 'tmpc2'); o2.rotation_euler = (0, math.radians(30), 0)
+    return [o2]
 item('item_carrot', carrot())
 
 def corn():
-    p = [spindle('cob', .16, .78, (0, 0, 0), C['corn'], sides=10, mid=(.2, .75))]
-    for k in range(5):
+    """Corn (item pass 2): a fat golden cob in neat kernel rows, its green husk peeled back in three leaves."""
+    p = [lathe('cob', [(0, 0), (.13, .05), (.17, .25), (.17, .6), (.12, .82), (0, .88)], (0, 0, 0), C['corn'], segments=16, smooth_angle=180)]
+    for k in range(7):
         for j in range(10):
-            a = j / 10 * math.tau + k * .3
-            p.append(P('kern', .035, (math.cos(a) * .15, math.sin(a) * .15, .17 + k * .11), 'cornd' if (j + k) % 4 == 0 else 'corn', sub=0))
+            a = j / 10 * math.tau + (k % 2) * .31
+            z = .12 + k * .1; r = .17 if .2 < z < .65 else .14
+            p.append(P('kern', .04, (math.cos(a) * r, math.sin(a) * r, z), 'cornd' if (j + k) % 5 == 0 else 'corn', sub=1, sc=(1, 1, .8)))
     for i in range(3):
-        a = i / 3 * math.tau + .4
-        p.append(leaf('husk', (0, 0, .02), a, .55, .24, C['husk' if i % 2 else 'huskl'], lift=.36, droop=-.05))
-    o = join(p, 'tmpk'); o.rotation_euler = (0, math.radians(40), 0)
+        a = i / 3 * math.tau + .5
+        p.append(leaf('husk', (0, 0, .05), a, .62, .3, C['husk' if i % 2 else 'huskl'], lift=.32, droop=.1))
+    o = join(p, 'tmpk2'); o.rotation_euler = (0, math.radians(35), 0)
     return [o]
 item('item_corn', corn())
 
 def pumpkin():
-    seg, r = 16, .42
-    prof = [(0 if i in (0, 8) else math.cos(-math.pi / 2 + math.pi * i / 8) * r, (math.sin(-math.pi / 2 + math.pi * i / 8) + 1) * r * .75) for i in range(9)]
-    o = lathe('pk', prof, (0, 0, 0), C['pumpkin'], segments=seg, smooth_angle=70)
+    """Pumpkin (item pass 2): deep ten-lobed body with a dimpled top, a thick curly stem and a leaf."""
+    seg, r = 30, .44
+    prof = [(0 if i in (0, 10) else math.cos(-math.pi / 2 + math.pi * i / 10) * r, (math.sin(-math.pi / 2 + math.pi * i / 10) + 1) * r * .74) for i in range(11)]
+    o = lathe('pk', prof, (0, 0, 0), C['pumpkin'], segments=seg, smooth_angle=180)
     for v in o.data.vertices:
-        k = .5 + .5 * math.cos(math.atan2(v.co.y, v.co.x) * seg / 2)
-        v.co.x *= 1 - .1 * k; v.co.y *= 1 - .1 * k
-    return [o, cyl('stem', .06, .2, (0, 0, .66), C['stem'], verts=6, bev=0, radius_top=.04, rot=(.3, 0, 0)),
-            leaf('lf', (0, 0, .62), 1.0, .32, .22, C['leaf'], lift=.08, droop=.08)]
+        f = 1 - .16 * abs(math.cos(5 * math.atan2(v.co.y, v.co.x))) ** .6
+        v.co.x *= f; v.co.y *= f
+        if v.co.z > r * 1.35 and math.hypot(v.co.x, v.co.y) < .12: v.co.z -= .05
+    return [o, cyl('stem', .07, .22, (0, 0, .68), C['stem'], verts=8, bev=0, radius_top=.05, rot=(.35, 0, 0)),
+            leaf('lf', (0, 0, .64), 1.0, .38, .26, C['leaf'], lift=.1, droop=.08), leaf('lf2', (0, 0, .64), 3.6, .3, .2, C['leafl'], lift=.08, droop=.06)]
 item('item_pumpkin', pumpkin())
 
 def strawberry():
-    o = spindle('berry', .3, -.6, (0, 0, .62), C['berry'], sides=8, mid=(.25, .62))
-    p = [o]
-    for k in range(3):
+    """Strawberry (item pass 2): a smooth heart-shaped berry with yellow seeds and a leafy green cap."""
+    prof = [(0, 0), (.1, .06), (.22, .25), (.3, .5), (.29, .62), (.2, .7), (0, .72)]
+    p = [lathe('berry', prof, (0, 0, 0), C['berry'], segments=20, smooth_angle=180)]
+    for k in range(4):
         for j in range(7):
             a = j / 7 * math.tau + k * .45
-            rr = .27 - k * .06
-            p.append(P('seed', .022, (math.cos(a) * rr, math.sin(a) * rr, .5 - k * .14), 'seed', sub=0, sc=(1, 1, 1.6)))
-    for i in range(6):
-        p.append(leaf('cal', (0, 0, .6), i / 6 * math.tau, .2, .1, C['leaf'], lift=.02, droop=.04))
-    p.append(cyl('stem', .025, .12, (0, 0, .66), C['stem'], verts=5, bev=0))
+            z = .15 + k * .14; rr = [.13, .22, .28, .29][k] + .005
+            p.append(P('seed', .022, (math.cos(a) * rr, math.sin(a) * rr, z), 'seed', sub=1, sc=(1, 1, 1.5)))
+    for i in range(7):
+        p.append(leaf('cal', (0, 0, .7), i / 7 * math.tau, .24, .12, C['leaf' if i % 2 else 'leafd'], lift=.02, droop=.05))
+    p.append(cyl('stem', .03, .14, (0, 0, .78), C['stem'], verts=6, bev=0))
     return p
 item('item_strawberry', strawberry())
 
-def fruit(name, mt, mtd, lf=True):
-    p = [sphere('f', .4, (0, 0, .4), C[mt], segs=16, rings=10, scale=(1, 1, .92)), cyl('stem', .03, .2, (0, 0, .82), C['woodd'], verts=5, bev=0, rot=(.25, 0, 0))]
-    p.append(P('shine', .07, (-.16, -.3, .6), 'cream', sub=1, sc=(1, .5, 1.4)))
-    if lf:
-        p.append(leaf('lf', (0, 0, .82), .6, .32, .16, C['leaf'], lift=.05, droop=-.03))
+def fruit(name, mt, mtd, lf=True, kind='apple'):
+    """Round fruit (item pass 2): dimpled poles; the peach has a suture crease and a soft point, the apple a gloss dot."""
+    o = sphere('f', .4, (0, 0, .4), C[mt], segs=20, rings=12, scale=(1, 1, .92))
+    for v in o.data.vertices:
+        if abs(v.co.z) > .3 and math.hypot(v.co.x, v.co.y) < .14: v.co.z *= .88
+        if kind == 'peach' and v.co.y < 0 and abs(v.co.x) < .06: v.co.y *= .9
+        if kind == 'peach' and v.co.z > .34: v.co.z += .03
+    p = [o, cyl('stem', .03, .2, (0, 0, .82), C['woodd'], verts=6, bev=0, rot=(.25, 0, 0))]
+    if kind == 'apple': p.append(P('shine', .07, (-.16, -.3, .6), 'cream', sub=1, sc=(1, .5, 1.4)))
+    if lf: p.append(leaf('lf', (0, 0, .82), .6, .34, .17, C['leaf'], lift=.05, droop=-.03))
     return p
 item('item_apple', fruit('apple', 'apple', 'appled'))
-item('item_peach', fruit('peach', 'peach', 'peachl'))
-item('item_orange', fruit('orange', 'orangef', 'orangef'))
+item('item_peach', fruit('peach', 'peach', 'fruitpeachr', kind='peach'))
+item('item_orange', fruit('orange', 'orangef', 'orangefd', kind='orange'))
 def coconut():
     """A coconut: a hairy brown husk ball, one half cracked open to the white flesh."""
     return [sphere('husk', .36, (-.18, 0, .36), C['woodd'], segs=16, rings=10), sphere('half', .3, (.32, -.1, .2), C['woodd'], segs=14, rings=8, scale=(1, 1, .6)),
@@ -190,59 +207,81 @@ def cornbread():
     return p
 item('corn_bread', cornbread())
 def cake():
-    p = [cyl('plate', .62, .05, (0, 0, .025), C['plate'], verts=24, bev=0), torus('rim', .6, .025, (0, 0, .05), C['platerim'], major_segs=24, minor_segs=4)]
-    p += [cyl('l1', .48, .22, (0, 0, .16), C['cake'], verts=20, bev=.02), cyl('f1', .49, .05, (0, 0, .3), C['frost'], verts=20, bev=.01),
-          cyl('l2', .48, .2, (0, 0, .42), C['cake'], verts=20, bev=.02), cyl('f2', .5, .08, (0, 0, .56), C['frost'], verts=20, bev=.03)]
+    """Carrot cake (item pass 2): a whole cake with one slice cut out so the layers show, on a teal plate."""
+    p = [cyl('plate', .66, .05, (0, 0, .025), C['dish'], verts=28, bev=0), torus('rim', .64, .03, (0, 0, .05), C['dishd'], major_segs=28, minor_segs=4)]
+    def ring(a0, a1, r, z0, h, mt, name):
+        pts = [(0, 0)] + [(math.cos(a0 + (a1 - a0) * k / 16) * r, math.sin(a0 + (a1 - a0) * k / 16) * r) for k in range(17)]
+        o = extrude_outline(name, pts, h, (0, 0, 0), C[mt], bev=0); o.rotation_euler = (math.pi / 2, 0, 0); o.location = (0, 0, z0 + h / 2); return o
+    a0, a1 = .5, .5 + math.tau * 5 / 6
+    for z0, h, mt in ((.05, .16, 'cake'), (.21, .04, 'eggw'), (.25, .16, 'cake'), (.41, .07, 'frostw')):
+        p.append(ring(a0, a1, .5, z0, h, mt, 'layer'))
     for i in range(6):
-        a = i / 6 * math.tau
-        p.append(cone('car', .04, .16, (math.cos(a) * .34, math.sin(a) * .34, .64), C['carrot'], verts=6, rot=(math.pi / 2, 0, a)))
-        p.append(P('lf', .03, (math.cos(a) * .27, math.sin(a) * .27, .63), 'leaf', sub=0))
+        a = a0 + (a1 - a0) * (i + .5) / 6
+        p.append(cone('car', .045, .18, (math.cos(a) * .34, math.sin(a) * .34, .52), C['carrot'], verts=6, rot=(math.pi / 2, 0, a)))
+        p.append(P('lf', .035, (math.cos(a) * .27, math.sin(a) * .27, .51), 'leaf', sub=1))
     return p
 item('carrot_cake', cake())
 def pie():
-    p = [cyl('tin', .55, .14, (0, 0, .07), C['iron'], verts=24, bev=.01, radius_top=.62), cyl('fill', .54, .05, (0, 0, .15), C['filling'], verts=24, bev=0),
-         torus('crust', .56, .07, (0, 0, .17), C['piecrust'], major_segs=24, minor_segs=6)]
+    """Apple pie (item pass 2): a fluted teal dish, a crimped golden crust and a lattice with apple peeking through."""
+    p = [cyl('dish', .6, .16, (0, 0, .08), C['dish'], verts=28, bev=.02, radius_top=.66), cyl('fill', .56, .05, (0, 0, .17), C['filling'], verts=28, bev=0)]
+    for i in range(24):
+        a = i / 24 * math.tau
+        p.append(P('crimp', .07, (math.cos(a) * .58, math.sin(a) * .58, .21), 'piecrust' if i % 2 else 'piecrustd', sub=1, sc=(1, 1, .7)))
     for i in range(3):
-        p.append(box('lat', (1.0, .1, .04), (0, -.3 + i * .3, .2), C['piecrust'], bev=.02, seg=1))
-        p.append(box('lat', (.1, 1.0, .04), (-.3 + i * .3, 0, .22), C['piecrustd'], bev=.02, seg=1))
+        p.append(box('lat', (1.0, .1, .04), (0, -.3 + i * .3, .22), C['piecrust'], bev=.02, seg=1))
+        p.append(box('lat', (.1, 1.0, .04), (-.3 + i * .3, 0, .24), C['piecrustd'], bev=.02, seg=1))
+    for x, y in ((-.15, -.15), (.15, .15), (.15, -.15), (-.15, .15)):
+        p.append(P('apple', .05, (x, y, .2), 'wheatl', sub=1, sc=(1, 1, .5)))
     return p
 item('apple_pie', pie())
 
 def coin():
-    return [cyl('coin', .45, .12, (0, 0, .45), C['gold'], verts=24, bev=.03, rot=(math.pi / 2, 0, 0)),
-            cyl('face', .34, .14, (0, 0, .45), C['goldl'], verts=24, bev=.01, rot=(math.pi / 2, 0, 0)),
-            box('mark', (.12, .16, .4), (0, 0, .45), C['goldd'], bev=.03, seg=1)]
+    """Coin (item pass 2): a thick gold coin with a raised rim and an embossed wheat ear (not a bar)."""
+    p = [cyl('coin', .45, .16, (0, 0, .45), C['gold'], verts=40, bev=.03, rot=(math.pi / 2, 0, 0)),
+         cyl('face', .35, .17, (0, 0, .45), C['goldl'], verts=40, bev=.01, rot=(math.pi / 2, 0, 0)),
+         torus('rimring', .4, .035, (0, 0, .45), C['goldd'], major_segs=40, minor_segs=4, rot=(math.pi / 2, 0, 0))]
+    p.append(stalk('stalk', (0, -.1, .25), (0, -.1, .62), .025, C['goldd'], sides=4))
+    for k in range(4):
+        for sx in (-1, 1):
+            p.append(P('grain', .045, (sx * .05, -.1, .48 + k * .06), 'goldd', sub=1, sc=(.7, .5, 1.1)))
+    return p
 item('coin', coin())
 def star():
-    pts = []
-    for i in range(10):
-        r = .5 if i % 2 == 0 else .22
-        a = math.pi / 2 + i * math.pi / 5
-        pts.append((math.cos(a) * r, math.sin(a) * r))
-    o = extrude_outline('star', pts, .2, (0, 0, .5), C['star'], bev=.05)
-    return [o]
+    """XP star (item pass 2): a domed blue star with a gold rim, so it never reads as a coin."""
+    def outline(r1, r2):
+        return [(math.cos(math.pi / 2 + i * math.pi / 5) * (r1 if i % 2 == 0 else r2), math.sin(math.pi / 2 + i * math.pi / 5) * (r1 if i % 2 == 0 else r2)) for i in range(10)]
+    return [extrude_outline('rim', outline(.52, .23), .2, (0, 0, .5), C['gold'], bev=.06),
+            extrude_outline('face', outline(.42, .19), .26, (0, 0, .5), C['xpblue'], bev=.05),
+            P('dome', .14, (0, -.12, .5), 'xpbluel', sub=2, sc=(1, .5, 1))]
 item('xp', star())
 def heart():
+    """Heart (item pass 2): a puffy pillow heart, deeper red at the tip, with a soft highlight."""
     pts = []
-    for i in range(32):
-        t = i / 32 * math.tau
+    for i in range(40):
+        t = i / 40 * math.tau
         x = 16 * math.sin(t) ** 3; y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
         pts.append((x / 34, y / 34))
-    return [extrude_outline('heart', pts, .24, (0, 0, .5), C['heart'], bev=.07)]
+    return [extrude_outline('heart', pts, .26, (0, 0, .5), C['heart'], bev=.1),
+            extrude_outline('front', [(x * .8, y * .8 + .03) for x, y in pts], .34, (0, 0, .5), C['heartl'], bev=.06),
+            P('shine', .07, (-.2, -.2, .66), 'cream', sub=1, sc=(1.2, .5, .8))]
 item('heart', heart())
 def sickle():
-    p = [cyl('handle', .06, .55, (0, 0, .28), C['wood'], verts=8, bev=.01), cyl('ferrule', .07, .06, (0, 0, .56), C['irond'], verts=8, bev=0)]
-    for i in range(10):
-        a0, a1 = i / 10 * math.pi * 1.1, (i + 1) / 10 * math.pi * 1.1
+    """Sickle (tool:harvest): a thick wooden handle with a green grip sleeve and a bright crescent blade."""
+    p = [cyl('handle', .07, .55, (0, 0, .28), C['wood'], verts=10, bev=.01), cyl('grip', .085, .25, (0, 0, .15), C['leafd'], verts=10, bev=.02),
+         cyl('ferrule', .08, .06, (0, 0, .56), C['irond'], verts=10, bev=0)]
+    for i in range(12):
+        a0, a1 = i / 12 * math.pi * 1.1, (i + 1) / 12 * math.pi * 1.1
         r0 = .3
-        p.append(stalk('blade', (math.cos(a0) * r0 - r0, 0, .6 + math.sin(a0) * r0), (math.cos(a1) * r0 - r0, 0, .6 + math.sin(a1) * r0), .045 - i * .003, C['iron'], sides=4))
+        p.append(stalk('blade', (math.cos(a0) * r0 - r0, 0, .6 + math.sin(a0) * r0), (math.cos(a1) * r0 - r0, 0, .6 + math.sin(a1) * r0), .055 - i * .003, C['iron'], sides=4))
     o = join(p, 'tmps'); o.rotation_euler = (0, math.radians(-25), 0)
     return [o]
 item('sickle', sickle())
 def shovel():
-    p = [cyl('handle', .045, .9, (0, 0, .75), C['wood'], verts=8, bev=.01), cyl('grip', .09, .07, (0, 0, 1.22), C['woodd'], verts=8, bev=.02, rot=(0, math.pi / 2, 0)),
-         box('blade', (.36, .06, .42), (0, 0, .2), C['iron'], bev=.04, seg=2), cone('tip', .18, .14, (0, 0, -.06), C['iron'], verts=4, rot=(math.pi, 0, math.pi / 4)),
-         cyl('sock', .07, .16, (0, 0, .45), C['irond'], verts=8, bev=.01)]
+    """Shovel (tool:clear): a thick handle with a red grip, a D-grip top and a bright steel blade with dirt on the tip."""
+    p = [cyl('handle', .065, .9, (0, 0, .75), C['wood'], verts=10, bev=.01), cyl('grip', .08, .25, (0, 0, 1.05), C['twine'], verts=10, bev=.02),
+         torus('dgrip', .11, .03, (0, 0, 1.28), C['woodd'], major_segs=12, minor_segs=4, rot=(math.pi / 2, 0, 0)),
+         box('blade', (.38, .06, .44), (0, 0, .2), C['iron'], bev=.04, seg=2), cone('tip', .19, .14, (0, 0, -.06), C['iron'], verts=4, rot=(math.pi, 0, math.pi / 4)),
+         box('dirt', (.3, .07, .1), (0, 0, .02), C['woodd'], bev=.03, seg=1), cyl('sock', .075, .16, (0, 0, .45), C['irond'], verts=8, bev=.01)]
     o = join(p, 'tmpv'); o.rotation_euler = (0, math.radians(-30), 0)
     return [o]
 item('shovel', shovel())
