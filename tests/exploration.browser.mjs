@@ -4,6 +4,7 @@ import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { VI } from '../src/i18n/vi.mjs';
+import { POND_DOCK } from '../src/content/world.mjs';
 import { EXPLORATION_SITES } from '../src/content/exploration-sites.mjs';
 import { EXPLORATION_STEPS } from '../src/content/exploration.mjs';
 import { findSpot } from '../src/core/grid.mjs';
@@ -129,6 +130,24 @@ await check('optional prop download failure leaves the trail usable', { width: 3
   await page.evaluate(async () => { await farm.world.exploration.ready; });
   expect(await page.evaluate(() => farm.state().exploration.steps.length === 3 && farm.state().stored.flowerpot === 1), 'missing optional art blocked reward');
   expect(errors.length === 0, errors.join(' | '));
+});
+await check('distant discovery props do not capture normal pond fishing taps', { width: 390, height: 844 }, async ctx => {
+  const page = await ctx.newPage(); await page.goto(url + '?new&restore'); await prepare(page);
+  await page.evaluate(() => {
+    const g = farm.game; g.s.stats.ordersFilled = 1;
+    for (const step of ['porch','pond','share']) g.do('inspectExploration', {step});
+    farm.closeCards();
+  });
+  await page.waitForFunction(() => farm.world.exploration?.loaded);
+  for (const span of [24,38,40,45,90,140,220]) {
+    const target = await page.evaluate(({dock,span}) => {
+      farm.panels.close(); farm.radial.hide(); farm.focus(dock.x,dock.z,span);
+      return farm.cellToScreen(dock.x,dock.z);
+    }, {dock:POND_DOCK,span});
+    await page.mouse.click(target.x,target.y);
+    expect(await page.locator('[data-do="castLine"]').first().isVisible(), 'distant prop stole pond control at span ' + span);
+    expect(await page.locator('.exploration-trail').count() === 0, 'dock tap opened picnic trail');
+  }
 });
 await check('discovery props preserve full-farm budgets at every zoom', { width: 390, height: 844 }, async ctx => {
   const page = await ctx.newPage(); await page.goto(url + '?new&restore'); await prepare(page);

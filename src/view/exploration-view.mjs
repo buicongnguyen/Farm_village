@@ -66,7 +66,7 @@ export class ExplorationView {
     this.visible = wanted;
   }
 
-  /** Client-screen coordinates. The projected model footprint gets a 44 px minimum target for a finger tap.
+  /** Client-screen coordinates. Close-up props get a 44 px minimum finger target; wider views use their actual bounds.
    * This only identifies visible props; the caller opens the appropriate panel and core validates any later action. */
   pick(x, y) {
     if (!this.loaded || this.disposed || !Number.isFinite(x) || !Number.isFinite(y)) return null;
@@ -90,7 +90,9 @@ export class ExplorationView {
       // A model wholly off screen is not an invisible edge target.
       if (maxX < rect.left || minX > rect.right || maxY < rect.top || minY > rect.bottom) continue;
       const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
-      const halfW = Math.max(22, (maxX - minX) / 2), halfH = Math.max(22, (maxY - minY) / 2);
+      // Expanding tiny distant props would steal nearby dock/mailbox/farmhouse taps. Navigation zooms in for inspection.
+      const minimum = this.world.cam.span <= 40 ? 22 : 0;
+      const halfW = Math.max(minimum, (maxX - minX) / 2), halfH = Math.max(minimum, (maxY - minY) / 2);
       if (Math.abs(x - cx) > halfW || Math.abs(y - cy) > halfH) continue;
       const distance = Math.hypot(x - cx, y - cy);
       if (distance < nearest) { nearest = distance; best = place; }

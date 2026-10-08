@@ -218,7 +218,7 @@ Current picnic integration baseline: main `e8f09a5` includes newer icons, lower 
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
 | Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
-| Cross-stage follow-up: picnic discovery trail | Logic implemented; AR-010 art delivered in [PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) and staged box/tin world taps plus pink butterfly-ribbon icon are being integrated. Main `e8f09a5` and art `6f312aa` merged at `94d1b8e`; combined validation/release pending. [Scope and historical checks](DISCOVERY-TRAIL.md). |
+| Cross-stage follow-up: picnic discovery trail | Implemented and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md); deployment acceptance is recorded in the PR. |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |

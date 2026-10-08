@@ -95,7 +95,7 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 
 This pass does not rename the cast, add a later chapter, implement covered land or introduce energy costs. The comparison report supplies observations and recommendations, not additional completed features.
 
-## Optional discovery trail — AR-010 integration in progress
+## Optional discovery trail — implemented and validated
 
 - [x] Review Claude's fleet/opening releases and preserve the separate art lane.
 - [x] Implement three explicit porch/pond steps, one stored flowerpot, per-profile progress, replayable memories and earned-only unread counts.
@@ -103,16 +103,16 @@ This pass does not rename the cast, add a later chapter, implement covered land 
 - [x] Hide premature villager favours until arrival while preserving old requests and active goal capacity.
 - [x] Prepare the [AR-010 art handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md); Claude delivered the packed five-node kit and ribbon icon in [PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) (`6f312aa`).
 - [x] Merge current main `e8f09a5` and AR-010 into the integration branch (`94d1b8e`), preserving the newer icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth plans.
-- [ ] Finish staged world placement/picking: porch box after the first order, pond tin after its clue, one closed/open state per site, and no hidden future pick targets. Keep explicit inspection and menu fallback.
-- [ ] Use the delivered pink butterfly-shaped ribbon and its icon consistently in English/Vietnamese memories.
-- [ ] Validate the final combined tree with native tests, pace, build, all browser suites and smoke checks before recording release acceptance.
+- [x] Finish staged world placement/picking: porch box after the first order, pond tin after its clue, one closed/open state per site, and no hidden future pick targets. Keep explicit inspection and menu fallback.
+- [x] Use the delivered pink butterfly-shaped ribbon and its icon consistently in English/Vietnamese memories.
+- [x] Validate the final combined tree with native tests, pace, build, all browser suites and smoke checks before recording release acceptance.
 
-The [delivery report](DISCOVERY-TRAIL.md) records validation and story recommendations. The earlier logic-only tree passed 261 native tests, 19 component suites and 28/28 smoke checks before the newer main/art merge; those results are historical, not acceptance of this integration. This remains an optional branch within chapters 1–5.
+The [delivery report](DISCOVERY-TRAIL.md) records completed integration and validation: 261 native tests, pace, 19 component suites, 28/28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) records the deployment/live checks. This remains an optional branch within chapters 1–5.
 
 ## Following passes — still planned
 
 1. Extend guidance with truthful item-use cards and selected playful/welcome moments. The initial persistent opportunity/blocker/activity/celebration advice lifecycle is implemented on the current branch; broader scene and interaction work remains planned.
-2. Covered land, purchase previews and one usable revealed parcel. The picnic trail provides the first connected discovery without a land purchase; its delivered world props are being integrated now, without adding covered-land ownership rules.
+2. Covered land, purchase previews and one usable revealed parcel. The picnic trail provides the first connected discovery without a land purchase; its staged world props are integrated without adding covered-land ownership rules.
 3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
 4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
 
