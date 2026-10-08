@@ -78,7 +78,7 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 - [x] Run the current rules, pace and test build: **211 tests pass**, steady **school day 3 / clinic day 3**, **986,313 bytes** first-load test code.
 - [x] All component browser suites pass after targeted fixture corrections; **28/28** main smoke checks pass. Both-language profiles/discoveries, import/reset/recovery, legacy saves, phone fit and rendering budgets are covered. Reviewed the phone screenshots in both languages.
 - [x] Complete the independent code review and fix malformed imports, stale autosaves and cross-tab profile selection. Production build: **985,234 bytes** first-load code; the local test server is stopped.
-- [ ] Publish the reviewed changes through a PR. This implementation is on `codex/dialogue-review`, **not yet live**.
+- [x] Commit and push the implementation (`dc8223f`) through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4). This implementation is on `codex/dialogue-review`, **not yet live**.
 
 ## Following passes — still planned
 

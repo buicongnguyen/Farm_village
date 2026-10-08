@@ -199,6 +199,8 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Current logic delivery: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), implementation commit `dc8223f`; open for review, not yet deployed.
+
 Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; current main is `a1607de`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish that completed first pass from later expansion.
 
 Follow-up review on `codex/dialogue-review`: `b03c38c` fixes in-transit visitor taps, refreshes observations at speech time, and corrects saved heart/charm news counts. Further changes remove obsolete hen translations and clarify Pia's role. English and Vietnamese share adaptive rules; the [character naming plan](CHARACTER-NAMING-PLAN.md) proposes a complete cast, including replacing Pip, while retaining stable save/art IDs. Proposed human names and future chapters are not implemented by this review.

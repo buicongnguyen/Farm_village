@@ -6,6 +6,8 @@ Codex is working on `codex/dialogue-review`. Claude's art branch for this task i
 
 ## Current baseline and reading
 
+The discovery implementation is committed and pushed as **`dc8223f`** on `origin/codex/dialogue-review`, in [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4). Use that actual revision when integrating the event contract and cards. The PR is not yet merged into production.
+
 The current logic checkout has integrated main **`a1607de`** through merge **`7e126fb`**. That main update closes AR-001 as done; the discovery request does not reopen the completed look pass. The earlier review fix **`b03c38c`** is also in the logic branch.
 
 Read these current sources before beginning:
