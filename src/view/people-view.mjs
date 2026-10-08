@@ -9,15 +9,14 @@
 import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
-const { JUNE_TIPS } = PEOPLE_DATA;
+import { conversationLine, juneAdvice, pipReactionLines } from '../core/conversation.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { CROPS, ANIMALS } from '../content/goods.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { t, tParams } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
-import { CHATTER, PIP_LINES, partOfDay } from '../content/chatter.mjs';
+import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
@@ -267,7 +266,7 @@ export class PeopleView {
     if (w.player) { w.goal = at; w.stay = 60; w.onArrive = () => { if (!this.s.fishing?.line) this.game.do('castLine'); w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z); w.clipFor = 'Sit'; w.wait = 20; }; }
     else if (w.family) { w.target = at; w.wait = 0; w.fishing = true; }
     else { w.route = this.route(this.cellOf(w), spot); w.todo = { act: 'fish', time: 40, face }; w.wait = 0; }
-    this.say(w, t('Off to the pond!'), 2500);
+    if (!w.player) this.say(w, t('Off to the pond!'), 2500);
   }
   // ── You: the main character walks to whatever you tap and does the chore there (the rules act at once; this is the show) ──
   playerGo(cell) { const w = this.walkers.get('you'); if (!w || w.indoors) return; w.goal = [(cell.x + 0.5) * CELL, (cell.z + 0.5) * CELL]; w.stay = 6; }
@@ -403,8 +402,7 @@ export class PeopleView {
   pipSays(e) {
     const pip = this.walkers.get('pip'); if (!pip || pip.indoors) return;
     const said = (this.said ??= new Set()), first = !said.has(e.type) && FIRSTS[e.type]?.(this.s); said.add(e.type);
-    const says = villager('pip')?.says?.[e.type], mine = first && e.type === 'harvested' ? PIP_LINES.firstHarvest : PIP_LINES[e.type];
-    const line = (first && says?.first) || one(says?.lines) || one(mine);
+    const line = one(pipReactionLines(this.s, e, first));
     if (!line || (!first && this.time - this.pipAt < 30)) return;
     this.pipAt = this.time;
     this.say(pip, t(line));
@@ -421,19 +419,14 @@ export class PeopleView {
     if (performance.now() - this.lastAction < this.idleTipMs || performance.now() - this.tipAt < 300000) return;
     this.juneTip();
   }
-  juneTip() {
+  juneTip({ introduce = false } = {}) {
     const june = this.walkers.get('june'); if (!june || june.indoors) return null;
-    const s = this.s, now = this.game.now, beds = Object.values(s.placed).filter(p => p.kind === 'bed').length, planted = Object.keys(s.beds).length;
-    const animals = Object.values(s.animals).flat(), feed = id => (s.barn.items[id] ?? 0) > 0;
-    const key = Object.values(s.beds).some(b => b.doneAt <= now) ? 'harvest' : animals.some(a => a.doneAt != null && a.doneAt <= now) ? 'collect'
-      : animals.some(a => a.doneAt == null && feed(ANIMALS[a.kind].eats)) ? 'feed' : animals.some(a => a.doneAt == null) ? 'feed'
-      : beds > planted ? 'plant' : (s.orders?.cards ?? []).length ? 'orders' : 'project';
-    // the story's own tip first, then its next ones in turn; what needs doing right now (ready crops, animals) comes first
-    const june$ = villager('june'), told = (this.tips = (this.tips ?? -1) + 1), urgent = ['harvest', 'collect', 'feed'].includes(key);
-    const line = urgent || !june$?.tip ? JUNE_TIPS[key] : told === 0 ? june$.tip : june$.tips?.[(told - 1) % june$.tips.length] ?? JUNE_TIPS[key];
+    const advice = juneAdvice(this.s, this.game.now, this.juneTopic);
+    this.juneTopic = advice.key;
     this.tipAt = performance.now(); this.lastAction = performance.now();
-    this.say(june, t(line), 8000); this.once(june, 'Wave', 1.4);
-    return key;
+    const line = [introduce ? t(villager('june').line) : null, t(advice.text)].filter(Boolean).join(' ');
+    this.say(june, line, 8000); this.once(june, 'Wave', 1.4);
+    return advice.key;
   }
   // ── Speech bubbles ──
   screenOf(w, y = 2.3) { const p = this.world.cam.camera.position.clone().set(w.x, y, w.z).project(this.world.cam.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }
@@ -453,22 +446,29 @@ export class PeopleView {
   }
   /** A line from the chatter pools for this time of day and age, dealt like cards: none repeats until most of its pool is used. */
   chatter(w) {
-    const part = partOfDay(new Date(this.game.now).getHours()), age = w.kid || w.id === 'pip' || GIRLS.has(w.id) ? 'kid' : 'grown', pool = CHATTER[part][age], key = `${part}|${age}`;
-    const used = (this.bags ??= new Map()).get(key) ?? new Set(); if (used.size >= Math.ceil(pool.length * 0.75)) used.clear();
+    const part = partOfDay(new Date(this.game.now).getHours()), age = w.kid || w.id === 'pip' || GIRLS.has(w.id) ? 'kid' : 'grown';
+    const id = w.person ?? w.id, personal = PEOPLE[id]?.idle, pool = personal?.length ? personal : CHATTER[part][age], key = personal?.length ? id : `${part}|${age}`;
+    // Personal voices (Ada and Pip) use their complete pool before repeating. Shared chatter keeps its session bag.
+    const used = (this.bags ??= new Map()).get(key) ?? new Set(); if (used.size >= (personal?.length ? pool.length : Math.ceil(pool.length * 0.75))) used.clear();
     const left = pool.filter(l => !used.has(l)), line = left[Math.floor(Math.random() * left.length)]; used.add(line); this.bags.set(key, used);
     return line;
   }
-  talk(w) {
-    const who = PEOPLE[w.person ?? w.id];
+  talk(w, { order = false } = {}) {
+    const id = w.person ?? w.id, who = PEOPLE[id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
-    if (w.player) { this.say(w, t(['A good day for farm work!', 'The farm looks better every day.', 'What shall we do next?'][Math.floor(Math.random() * 3)])); this.once(w, 'Wave', 1.2); return; }
-    // somebody with an order for you says so and opens the order board
-    const card = this.s.orders.cards.find(c => c.from === (w.person ?? w.id));
+    if (w.player) { w.bubble?.remove(); w.bubble = null; this.once(w, 'Wave', 1.2); return; }
+    // Orders are available on the board. An explicit caller can still open this person's card.
+    const card = order && this.s.orders.cards.find(c => c.from === id);
     if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
-    // their own line the first time, then the day's chatter, so people rarely repeat themselves
-    if (who) { this.say(w, t(w.comment ?? (w.heard ? this.chatter(w) : who.line), tParams(w.params))); w.heard = true; w.comment = null; }
-    else if (w.id === 'june') { if (Math.random() < 0.4) this.juneTip(); else this.say(w, t(this.chatter(w))); }
-    else if (w.id === 'pip') { this.say(w, t(w.heard ? this.chatter(w) : 'Can we get a pony one day? Or a goat? A goat would be fine.')); w.heard = true; }
+    if (id === 'june') { this.juneTip({ introduce: !w.heard }); w.heard = true; }
+    else if (who) {
+      // Introduce the person, then revisit their line when its story context changes. Otherwise deal fresh chatter.
+      const context = conversationLine(this.s, id), fresh = !w.heard || w.contextKey !== context.key;
+      this.say(w, t(w.comment ?? (fresh ? context.text : this.chatter(w)), tParams(w.params)));
+      // A visitor's arrival comment does not consume their personal introduction.
+      if (!w.comment) { w.heard = true; w.contextKey = context.key; }
+      w.comment = null;
+    }
     // face the camera and wave
     w.faceTo = this.world.cam.yaw; w.rot = this.world.cam.yaw; this.once(w, who && w.visitor ? 'Talk' : 'Wave', 1.3);
   }

@@ -30,7 +30,7 @@ wrong forms per speaker (for example *tôi* or *bạn* used as "you"). The narra
 | Person | Who | English voice | Vietnamese pair |
 |---|---|---|---|
 | **Ada** | Your grandmother, the guide. Role label: *Bà nội*. | Warm and practical. Remembers Ellis in every other line. Calls the player "dear". | **bà – cháu**. The skip button says *Cháu biết rồi ạ*. |
-| **Ellis** | Your grandfather, away upriver (letters only, and fishing in v0.2) | Short, wry, signs "-E". | **ông – cháu** |
+| **Ellis** | Your grandfather, away upriver (letters only in the current game) | Short, wry, signs "-E". | **ông – cháu** |
 | **June** | Your partner. She gives a tip when you are stuck. | Calm and teasing. Calls you "love". | refers to herself as **June** and calls you **mình** |
 | **Pip** | Your child | Excited and curious, and names every animal. Calls Ada "Granny Ada" and Ellis "Grandpa Ellis". | **con**. Calls Ada and Ellis **cụ** (great-grandparents). |
 | **Minh** (Tran) | Carpenter | Dry, proud of his woodwork | **chú – cháu** |
@@ -67,11 +67,16 @@ and translate content names in message parameters with `tParams()` before substi
 
 - **Ada:** from a lonely keeper of an empty village to a grandmother with a full street. She gets a beat at the end of
   every chapter, and in the end she gets Gus's thanks (his arc).
-- **Ellis:** he is never seen in v0.1. His letters move from "gone fishing" to "the brook runs low" to "a new padlock on
-  the sluice gate". In v0.2 he comes home to teach fishing, and his notes on the sluice carry the mill mystery through chapters 6–8.
+- **Ellis:** he remains away upriver in the current game, including after fishing unlocks and the school celebration.
+  His optional letters move from fishing to low water, the locked sluice and old flour-company papers. They establish
+  a mystery; they do not open the gate or bring Ellis home. His return needs a later implemented story and actor.
 - **Gus:** three visits. He sees Ada's stubborn chin in you, slips that he learned on her oven, and finally admits that
   Ada taught him to bake the winter the mill froze. The letter in Sam's heart scenes (the night the stage burned) is
   the start of his chapter 9 story.
+- **The water and festival mysteries are distinct:** the old flour-company papers concern the water agreement. Gus
+  did not confess to locking the sluice, and there is no playable key under the school bell. His personal story is the
+  lantern-stage fire and the children he rescued, reserved for chapter 9. Do not give the incidents exact dates until
+  the complete timeline is authored. The existing school celebration is not the restored Harvest Festival.
 - **The families:** each has three heart scenes (3, 6 and 9 hearts), two wishes and an arrival.
   - **The Trans:** Minh is curious about the mill wheel, Lan rebuilds Ada's recipe book, and Bo has his frog and his
     desk.
@@ -115,15 +120,26 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
   `says[eventType] = { first?, lines }` and `idle`. Neighbours keep `comments` (in the order of `commentFor`'s facts) and
   add `remarks: [{ fact, text }]`. `REMARK_FACTS[fact](s)` gives the `{count}` or `{family}` parameters, or null; translate
   `family` with `t()` before filling. Gus has `arc: [{ visit: 1–3, text }]`.
-- `hearts.mjs`: `HEART_SCENES[personId][3|6|9] = { lines: [{ who, text }] × 3, reward: { decor } | { coins } }`.
+- `hearts.mjs`: `HEART_SCENES[personId][3|6|9] = { lines: [{ who, text }] × 3, reward: { decor } | { coins }, variants? }`.
+  A variant is `{ when: { type: 'count', key, value }, lines: [{ who, text }] × 3 }`. `sceneFor(id, at, state)` picks
+  the first matching variant; without state it returns the default. Heart events carry only its numeric `variant`
+  index (or null for the default), so the UI shows the context when earned without storing dialogue in save history. Zara and Tomas react to the school; Marisol reacts to the clinic.
+  These variants keep the same threshold and reward and never replay an already-earned scene.
   Rewards are decorations unless the lines hand over money (ECONOMY.md section 1 keeps coin rewards out of the pace).
   `WISHES[personId] = [{ text, need: { kind, near: 'home' } }]`. `ARRIVALS[familyId] = [{ who, text }] × 3`.
-- `letters.mjs`: `LETTERS[] = { id, from, when, also?, text }`. `when` (and the optional second test `also`) is
+- `letters.mjs`: `LETTERS[] = { id, from, when, also?, after?: [letterId], text }`. `when` (and the optional second test `also`) is
   `{ type: 'chapter' | 'hearts' | 'level', value }` or `{ type: 'stat', key, value }` (`s.stats[key]`, a dotted key reads
   deeper, e.g. `liked.sam`) or `{ type: 'count', key, value }` (how many of a building). For `hearts`, the value is the
   hearts of `from`. **A letter only names what has happened by then:** Ada's "you sold your first wheat" waits for the
   first order (`stat ordersFilled 1`), Gus's "your fence is crooked" for a fence and a harvest, Sam's "thank you for
   the pumpkins" for a liked gift to Sam.
+  `after` requires the named earlier letters to be read before delivery or first reading. The clue order is
+  `ellis-1 → ellis-2 → ellis-3 → ellis-4 → ellis-5 → ellis-6 → gus-3 → ellis-7 → ellis-8`; world milestones still apply.
+  Existing read letters remain acknowledged and never grant their gift twice. An old save with unread later clues
+  must read their earlier letters first. This is optional story order only: no project or activity requires reading mail.
+  `letterDue` checks world milestones (also used by old-save migration); `letterReady` adds clue order, and
+  `letterPrerequisite(state, id)` identifies the earliest unread predecessor for the UI. Mai calls the hens Cloud and
+  Drizzle; Biscuit is the dog.
 - Heart scenes exist for everyone who can earn hearts: residents, and Ada, Cora, Mai and Gus (Ada's carry the Ellis
   thread: his hat, his empty place at the table, the lamp kept for the day Hollowbrook comes home; Gus's carry the
   Harvest Festival: fence posts, the bread prize he won in Ada's oven, "somebody should start it again").

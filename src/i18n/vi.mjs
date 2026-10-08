@@ -666,3 +666,47 @@ Object.assign(VI, {
 VI['Collect fruit stand takings'] = 'Thu tiền quầy trái cây';
 
 VI['Clinic path'] = 'Lối vào trạm y tế';
+
+// Ordered letters and state-aware friendship scenes (logic review, 2026-10-08).
+Object.assign(VI, {
+  "Ellis always said the brook keeps its own time. We can, too.": "Ông Ellis vẫn bảo con suối có nhịp riêng của nó. Bà cháu mình cũng cứ thong thả thôi.",
+  "Pip has another question for me. I had better put the kettle on.": "Pip lại có câu hỏi cho bà rồi. Để bà đun ấm nước đã.",
+  "I kept my old bread tin. Some things are worth bringing home again.": "Bà vẫn giữ cái khuôn bánh mì cũ. Có những thứ đáng để mang về nhà lần nữa.",
+  "There was always room for one more chair at our village table.": "Bữa cơm chung của làng mình lúc nào cũng có thể kê thêm một chiếc ghế, cháu ạ.",
+  "When you were small, you could smell my bread from the gate.": "Ngày cháu còn bé, từ ngoài cổng cháu đã ngửi thấy mùi bánh mì bà nướng rồi.",
+  "The old village had noisy days and quiet ones. Both were home.": "Làng mình ngày xưa có hôm rộn ràng, có hôm yên ắng. Ngày nào cũng là nhà, cháu ạ.",
+});
+
+Object.assign(VI, {
+  "The school is open! My desk is by the window, just as I hoped.": "Trường mở cửa rồi! Bàn của cháu ở cạnh cửa sổ, đúng như cháu mong!",
+  "The clinic is open. There is room to care for everyone now.": "Trạm y tế mở cửa rồi. Giờ bà con đã có nơi để được chăm sóc.",
+  "Early start today. The morning air is lovely.": "Dậy sớm thế này, không khí trong lành thật.",
+  "We can look around together, or take a little break. There is no hurry.": "June cùng mình đi dạo một vòng, hoặc nghỉ một lát cũng được. Không cần vội đâu.",
+  "If you fancy planting, there is room in the empty beds. They can wait, too.": "Nếu mình muốn trồng thêm thì vẫn còn luống trống đấy. Để lúc khác cũng được mà.",
+  "There is feed in the barn. Tap the animals’ home when you want to feed them.": "Trong kho có sẵn cám đấy. Khi muốn cho chúng ăn, mình chạm vào chuồng nhé.",
+  "There is grain ready for feed. The feed mill can make a batch when you like.": "Trong kho có đủ nguyên liệu làm cám rồi. Lúc nào muốn, mình ghé cối xay cám làm một mẻ nhé.",
+  "Something is ready at a workshop. Tap the building when you want to collect it.": "Có mẻ hàng làm xong rồi đấy. Khi muốn lấy, mình chạm vào xưởng nhé.",
+  "There is an order we can fill with spare goods. Shall we have a look at the board?": "Có đơn hàng mình giao được bằng hàng còn dư đấy. Mình ghé bảng đơn hàng xem nhé?",
+});
+
+Object.assign(VI, {
+  "Welcome to the valley! Pip tells me the hens are called Cloud and Drizzle. Lovely names. Come to Lotus Farm for tea! Love, Mai": "Chào mừng em đến với thung lũng! Pip kể với chị hai cô gà tên là Mây và Mưa Phùn. Tên dễ thương quá. Ghé trang trại Hoa Sen uống trà nhé! Thân mến, Mai",
+  "Pip tells me you have caught three fish already. Good. I found the name of a city flour company on an old mill notice. A name is a start. I will write when I know more. -E": "Pip kể cháu đã câu được ba con cá rồi. Khá lắm. Ông thấy tên một công ty bột mì ở thành phố trên tờ thông báo cũ của nhà máy. Có tên để lần theo là tốt rồi. Biết thêm gì ông sẽ viết thư.",
+  "I heard a truck on the road all the way up here. A truck! Your goods are reaching the market. Gus may still have the old mill papers. I have asked him to look. -E": "Ở tận đây ông vẫn nghe tiếng xe tải trên đường. Xe tải đấy! Hàng của cháu đã ra đến chợ rồi. Bác Gus có thể vẫn còn giữ giấy tờ cũ của nhà máy. Ông đã nhờ bác ấy tìm lại. -E",
+  "Found the old mill papers. The flour company dealt with the water as well as the grain. Sent the lot to Ellis. Kept them dry all these years. You are welcome. -Gus": "Bác tìm thấy giấy tờ cũ của nhà máy rồi. Công ty bột mì ấy lo cả chuyện nguồn nước, chứ không chỉ thu mua ngũ cốc. Bác gửi hết cho ông Ellis rồi. Giữ khô ráo bao nhiêu năm đấy. Không cần cảm ơn đâu. -Gus",
+  "Gus sent the old mill papers. The water agreement is in there, but we still need to find out who holds it now. The gate can wait. Keep bringing the village together, and save me a chair. -E": "Bác Gus gửi giấy tờ cũ của nhà máy cho ông rồi. Có cả thỏa thuận về nguồn nước, nhưng vẫn phải tìm xem giờ ai nắm quyền. Chuyện cống cứ để ông tìm hiểu thêm. Cháu cứ giúp xóm làng sum vầy, nhớ để dành cho ông một chiếc ghế. -E",
+  "Pip wrote about the school celebration. Singing, neighbours, and hens underfoot. Sounds just right. I am still upriver, but I raised my mug to all of you. Save a song for next time. -E": "Pip viết thư kể ông nghe về buổi mừng trường mở cửa. Có tiếng hát, hàng xóm quây quần, gà thì chạy quanh chân. Thế mới vui chứ. Ông vẫn ở thượng nguồn, nhưng đã nâng cốc mừng cả nhà rồi. Để dành ông một bài hát cho lần tới nhé. -E",
+  "Read the earlier letter first": "Hãy đọc lá thư trước đó nhé",
+  "I have read every book in our house. Twice. What should I read next?": "Cháu đọc hết sách trong nhà rồi. Hai lần luôn. Giờ cháu nên đọc gì nữa nhỉ?",
+  "The school shelves have room for more books. We can choose some together.": "Kệ sách ở trường vẫn còn chỗ đấy. Mẹ con mình cùng chọn thêm vài cuốn nhé.",
+  "A proper treatment room, clean shelves, and Dr Hazel next door. This clinic was worth every name on my list.": "Có phòng khám đàng hoàng, kệ sạch sẽ, lại có bác sĩ Hazel ngay bên. Bao nhiêu chữ ký cô xin được đều đáng công cả.",
+  "She wrote back: \"Save me a sunny room and a place in the garden.\" I have added both to the list.": "Cô ấy viết lại: \"Để dành cho cô một căn phòng có nắng và một góc vườn nhé.\" Cô thêm cả hai vào danh sách rồi.",
+  "All those names on my list, and now a clinic full of neighbours. We did it.": "Ngày trước chỉ có những cái tên trong danh sách, giờ trạm y tế đã rộn ràng bà con. Cả làng làm được rồi.",
+  "Dr Hazel brought her old medical books. I am learning from her all over again.": "Bác sĩ Hazel mang theo cả sách y cũ. Cô lại được học bao điều từ cô ấy.",
+  "There is room for a vase on every windowsill. That is my next list.": "Bậu cửa sổ nào cũng đặt được một bình hoa. Danh sách tiếp theo của cô là những bình hoa ấy.",
+  "Dr Hazel asked me to choose flowers for the clinic garden. It is a much nicer kind of list.": "Bác sĩ Hazel nhờ cô chọn hoa cho vườn trạm y tế. Lập danh sách hoa thích hơn hẳn.",
+  "I am going to count them. The flowers, not the doctors.": "Cháu sẽ đếm hết. Đếm hoa thôi, không đếm bác sĩ đâu.",
+  "Papa made a clock for our kitchen! It rings all by itself at nine o'clock.": "Bố làm đồng hồ cho nhà bếp rồi! Cứ chín giờ là nó tự kêu đấy.",
+  "Not by itself. With a bicycle bell and rather a lot of patience.": "Đâu có tự nhiên mà kêu. Nhờ một cái chuông xe đạp và bố kiên nhẫn lắm mới được đấy.",
+  "Took the long way, did it, postman? ...Thank you.": "Lá thư cũng đi đường vòng hả, chú bưu tá? ...Cảm ơn nhé.",
+});

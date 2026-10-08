@@ -429,7 +429,8 @@ test('story hooks: noOrders villagers never post; lines come from the poster; th
 
 test('neighbour comments fill {count} and {family} from the land; one neighbourVisit per visit', () => {
   const s = village(); tick(s, T0 + 3 * MIN);
-  const mai = NEIGHBOURS.find(n => n.id === 'mai'), keep = mai.comments;
+  const mai = NEIGHBOURS.find(n => n.id === 'mai'), keep = mai.comments, keepRemarks = mai.remarks;
+  mai.remarks = []; // Exercise the legacy adapter independently of the new state-aware remarks.
   mai.comments = [{ text: 'You have {count} hens now!', when: 'hens' }, { text: 'Say hello to the {family} family.', when: 'families' }];
   try {
     const c = commentFor(s, 'mai');
@@ -439,7 +440,7 @@ test('neighbour comments fill {count} and {family} from the land; one neighbourV
     assert.equal(commentFor(s, 'mai', 2).text, 'Second visit line');
     assert.notEqual(commentFor(s, 'mai', 3).text, 'Second visit line');
     delete mai.arc;
-  } finally { mai.comments = keep; }
+  } finally { mai.comments = keep; mai.remarks = keepRemarks; }
   const visits = s.neighbours.mai.visits, before = s.neighbours.mai.total, r = tick(s, visits[visits.length - 1] + 1);
   const mine = events(r, 'neighbourVisit').filter(e => e.id === 'mai');
   assert.ok(mine.length <= 1, 'a late login acts out one visit, not every one that was missed');

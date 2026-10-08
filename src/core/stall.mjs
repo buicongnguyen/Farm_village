@@ -7,7 +7,8 @@ import { rng, hash } from './rng.mjs';
 export const STACK = 10;
 export function tickStall(ctx) {
   const { s, now } = ctx, st = s.stall;
-  st.items = st.items.filter(item => item.n >= 1);   // a broken stack (an old save) never sells forever
+  st.items = st.items.filter(item => item && Object.hasOwn(GOODS, item.good)
+    && Number.isSafeInteger(item.n) && item.n >= 1 && item.n <= STACK);   // corrupt old stacks never throw or sell forever
   if (!(s.counts.stall > 0) || !st.items.length) { st.nextSaleAt = 0; return; }
   if (!st.nextSaleAt) st.nextSaleAt = now + STALL.sellEveryMs[0];
   let sold = 0, coins = 0;
@@ -24,7 +25,7 @@ export const actions = {
   /** Put goods on the stall: { good, n }. */
   stallList(ctx, { good, n = 1 }) {
     const { s } = ctx; if (!(s.counts.stall > 0)) return ctx.fail('Build a roadside stall first');
-    if (!GOODS[good]) return ctx.fail('Unknown good');
+    if (typeof good !== 'string' || !Object.hasOwn(GOODS, good)) return ctx.fail('Unknown good');
     if (s.stall.items.length >= STALL.slots) return ctx.fail('The stall is full');
     n = Math.floor(Number(n)); if (!(n >= 1)) return ctx.fail('Missing goods');
     n = Math.min(n, STACK); if (!barn.take(s, { [good]: n })) return ctx.fail('Missing goods');
@@ -33,9 +34,10 @@ export const actions = {
     return { listed: n };
   },
   stallCollect(ctx) {
-    const { s } = ctx, coins = s.stall.coins ?? 0; if (!coins) return ctx.fail('Nothing sold yet');
+    const { s } = ctx, coins = s.stall.coins ?? 0; if (!Number.isSafeInteger(coins) || coins <= 0) return ctx.fail('Nothing sold yet');
     s.coins += coins; s.stats.coinsEarned += coins; s.stall.coins = 0;
-    ctx.emit('coins', { coins });
+    const id = Object.keys(s.placed).find(id => s.placed[id].kind === 'stall') ?? null;
+    ctx.emit('coins', { coins, source: 'stall', id });
     return { coins };
   },
 };

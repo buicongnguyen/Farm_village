@@ -52,6 +52,7 @@ export const actions = {
     const { s } = ctx, st = normalizeFruitStand(s.fruitStand), coins = st.coins;
     if (!coins) return ctx.fail('Nothing sold yet');
     s.coins += coins; s.stats.coinsEarned += coins; s.fruitStand = { ...st, coins: 0 };
-    ctx.emit('coins', { coins }); return { coins };
+    const id = Object.keys(s.placed).find(id => s.placed[id].kind === 'fruit_stand' && isWorking(s, id)) ?? null;
+    ctx.emit('coins', { coins, source: 'fruit_stand', id }); return { coins };
   },
 };

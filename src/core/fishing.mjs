@@ -27,27 +27,30 @@ export function tickFishing(ctx) {
 export const actions = {
   /** Cast a line; with bait (chicken feed) the fish bite sooner and rare ones come more often. */
   castLine(ctx, { bait = false } = {}) {
-    const { s, now } = ctx, f = fishingOf(s); if (!hasPond(s)) return ctx.fail('Build a fish pond first');
-    if (f.line) return ctx.fail('The line is already in the water');
+    const { s, now } = ctx; if (!hasPond(s)) return ctx.fail('Build a fish pond first');
+    if (s.fishing?.line) return ctx.fail('The line is already in the water');
     bait = !!bait; if (bait && !barn.take(s, { chicken_feed: 1 })) return ctx.fail('Missing goods');
+    const f = fishingOf(s);
     f.line = { doneAt: now + (bait ? FISH.baitMs : FISH.waitMs), bait, seed: `${now}:${f.caught}` };
     ctx.emit('lineCast', { bait });
     return { doneAt: f.line.doneAt };
   },
   /** Reel in: a fish when the wait is over. */
   reelIn(ctx) {
-    const { s, now } = ctx, f = fishingOf(s); if (!f.line) return ctx.fail('Cast a line first');
+    const { s, now } = ctx, f = s.fishing; if (!f?.line) return ctx.fail('Cast a line first');
     if (f.line.doneAt > now) return ctx.fail('Nothing is biting yet');
-    const fish = pick(f.line.seed, f.line.bait);
-    const sold = barn.addOrSell(s, fish, 1); if (sold) ctx.emit('barnSold', { coins: sold });
+    const fish = pick(f.line.seed, f.line.bait), first = !(s.album?.fish?.[fish] > 0);
+    const before = barn.stock(s, fish), coins = barn.addOrSell(s, fish, 1), stored = barn.stock(s, fish) - before;
+    if (coins) ctx.emit('barnSold', { coins });
     f.line = null; f.caught++; (s.album ??= { fish: {}, fruit: {} }).fish[fish] = (s.album.fish[fish] ?? 0) + 1; s.stats.fished = (s.stats.fished ?? 0) + 1;
-    ctx.emit('fishCaught', { fish });
+    // first means this species' first album entry. Rarity comes from the same content used by bait odds.
+    ctx.emit('fishCaught', { fish, first, rare: !!FISH_TABLE.find(f => f.id === fish)?.rare, stored, sold: 1 - stored, coins });
     return { fish };
   },
   collectFees(ctx) {
-    const { s } = ctx, f = fishingOf(s), coins = f.coins ?? 0; if (!coins) return ctx.fail('Nothing sold yet');
+    const { s } = ctx, f = s.fishing, coins = f?.coins ?? 0; if (!Number.isSafeInteger(coins) || coins <= 0) return ctx.fail('Nothing sold yet');
     s.coins += coins; s.stats.coinsEarned += coins; f.coins = 0;
-    ctx.emit('coins', { coins });
+    ctx.emit('coins', { coins, source: 'pond' });
     return { coins };
   },
 };

@@ -13,6 +13,7 @@ import { queueOf } from './production.mjs';
 
 const SLOTS = 3;
 const has = (s, needs) => !needs || needs === 'pond' || (needs === 'production' ? workingCount(s, 'feed_mill') + workingCount(s, 'bakery') > 0
+  : needs === 'fruit_tree' ? Object.keys(s.trees ?? {}).some(id => !!BUILDINGS[s.placed[id]?.kind]?.fruit)
   : needs === 'apple_tree' ? (s.counts.apple_tree ?? 0) > 0 : workingCount(s, needs) > 0);
 export const questsOf = s => (s.quests ??= { list: [], done: 0 });
 export const progressOf = (s, q) => q.favour ? Math.min(q.n, barn.free(s, q.good)) : Math.max(0, Math.min(q.n, (s.stats[QUESTS[q.t].stat] ?? 0) - q.base));
@@ -34,7 +35,7 @@ export function tickQuests(ctx) {
   // the weekly village goal
   const week = Math.floor(now / (7 * DAY));
   if (!s.weekly || s.weekly.week !== week) { const w = WEEKLY[week % WEEKLY.length]; s.weekly = { week, i: week % WEEKLY.length, base: s.stats[w.stat] ?? 0, claimed: false }; }
-  // the festival that ends Ellis's trail
+  // the school celebration; Ellis's story continues toward the clinic
   if (!s.firsts.festival && (s.counts.school ?? 0) > 0 && qs.done >= FESTIVAL.goals) {
     s.firsts.festival = now; s.stats.festival = 1; s.coins += FESTIVAL.coins; s.stats.coinsEarned += FESTIVAL.coins; gainXp(ctx, FESTIVAL.xp);
     for (const id of Object.keys(s.people)) addHearts(ctx, id, FESTIVAL.hearts, 'festival');

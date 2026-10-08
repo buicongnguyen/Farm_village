@@ -15,7 +15,7 @@ import { game, tutorial } from './helpers.mjs';
 
 const residents = FAMILIES.flatMap(f => f.people);
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...residents].map(p => [p.id, p]));
-const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => sc.lines));
+const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => [...sc.lines, ...(sc.variants ?? []).flatMap(v => v.lines)]));
 const spoken = [...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
 
 test('every speaker in the story, heart scenes, arrivals and letters is a real person', () => {
@@ -85,6 +85,7 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
   const s = game(); tutorial(s);
   s.animals.c1 = [{ kind: 'hen', doneAt: null }, { kind: 'hen', doneAt: null }, { kind: 'hen', doneAt: null }];
   s.counts.bed = 12; s.counts.cottage = 2; s.counts.bakery = 1;
+  s.placed.testBakery = { kind: 'bakery', x: 0, z: 0 };
   s.homes.h1 = { family: 'tran', arrived: true, arrivesAt: 1 }; s.homes.h2 = { family: 'okafor', arrived: true, arrivesAt: 2 };
   const names = t => [...t.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join();
   for (const n of NEIGHBOURS) for (const r of n.remarks) {
@@ -126,7 +127,7 @@ const linesBy = () => {
   const out = Object.fromEntries(Object.keys(NEVER).map(id => [id, []]));
   for (const p of Object.values(PEOPLE)) { const l = out[p.id]; if (!l) continue;
     l.push(p.line, ...(p.orders ?? []), ...(p.tips ?? []), ...(p.tip ? [p.tip] : []), ...(p.idle ?? []), ...(p.arc ?? []).map(a => a.text), ...(p.remarks ?? []).map(r => r.text), ...(p.comments ?? []),
-      ...Object.values(p.says ?? {}).flatMap(e => [e.first, ...e.lines].filter(Boolean))); }
+      ...(p.contextLines ?? []).map(l => l.text), ...Object.values(p.says ?? {}).flatMap(e => [e.first, ...e.lines].filter(Boolean))); }
   for (const l of spoken) out[l.who]?.push(l.text);
   for (const l of LETTERS) out[l.from]?.push(l.text);
   for (const [id, list] of Object.entries(WISHES)) out[id].push(...list.map(w => w.text));
