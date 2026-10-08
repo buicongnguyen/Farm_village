@@ -113,10 +113,17 @@ await check('the market panel with three trucks fits a phone in Vietnamese', asy
 
 await check('a full barn: the next chip loads the trucks, then sends them', async () => {
   const { ctx, page, errors } = await open('phone');
-  await page.evaluate(() => { const s = farm.state(); farm.game.do('buyTruck'); s.barn.cap = 140; for (const b of Object.values(s.beds)) b.doneAt = farm.game.now + 3_600_000; });
-  await page.waitForFunction(() => /load the trucks/.test(document.querySelector('[data-act="next"]')?.textContent ?? ''), null, { timeout: 8000 });
+  // nothing that outranks the trucks in the Next chip: no ripe beds, no finished goals waiting to be claimed
+  await page.evaluate(() => {
+    const s = farm.state(); farm.game.do('buyTruck'); s.barn.cap = 140;
+    for (const b of Object.values(s.beds)) b.doneAt = farm.game.now + 3_600_000;
+    for (const q of s.quests?.list ?? []) farm.game.do('claimQuest', { id: q.id });
+  });
+  const chip = re => page.waitForFunction(re => new RegExp(re).test(document.querySelector('[data-act="next"]')?.textContent ?? ''), re, { timeout: 8000 })
+    .catch(async () => { throw new Error(`the chip says "${await page.evaluate(() => document.querySelector('[data-act="next"]')?.textContent)}"`); });
+  await chip('load the trucks');
   await click(page, '[data-act="next"]');
-  await page.waitForFunction(() => /Send the loaded trucks/.test(document.querySelector('[data-act="next"]')?.textContent ?? ''), null, { timeout: 8000 });
+  await chip('Send the loaded trucks');
   await click(page, '[data-act="next"]');
   expect(await page.evaluate(() => [farm.state().truck, ...farm.state().truck.fleet].every(u => u.away)), 'both trucks left');
   expect(!errors.length, errors.join(' | '));
