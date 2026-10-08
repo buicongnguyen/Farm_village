@@ -38,3 +38,5 @@ gradually instead of in jumps.
 Per bed and hour that is about 180 (herb) and 180 (ginseng) coins against about 216 for pumpkin, but in far fewer
 taps, so they suit a player who checks in now and then; their real role is high-value order and shop goods for
 stages 3–4.
+
+See `PRODUCT-CHAINS.md` for what each farm good can be processed into, and the factory ladder.
