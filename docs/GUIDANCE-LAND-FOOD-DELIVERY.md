@@ -48,7 +48,15 @@ Codex owns these rules, UI behavior, story and translations. Claude retains mode
 
 ## Validation and release record
 
-Required checks are the native tests, pace simulation, test and production builds, all component browser suites, the main smoke suite, and production acceptance. Exact results and deployment links are recorded in the release PR after checks complete. Browser acceptance uses isolated saves, never the user's farm. It covers English/Vietnamese at 390 px and 1280 px, actual food production/delivery, ingredient return navigation, world clue taps, one-time rewards, saved replay and pointer/speech suppression. Screenshots are reviewed after their images decode.
+The final game tree at `e533d96`, including main `b0172d6`, passed:
+
+- **304/304 native tests**, including story voices, translation coverage, migration, action atomicity and reward accounting.
+- **Pace simulation and all pace targets**; steady school and clinic both day 3.
+- **All 21 component browser suites**, including **15/15** new guidance/land/food checks, plus **28/28** main smoke checks. Phone budgets remain within 120 draws and 300,000 triangles at every tested zoom.
+- Test and production builds: **1,069,742 / 1,068,656 bytes** of first-load code respectively, below the 1,100,000-byte limit.
+- **4/4 local production acceptance contexts**: English/Vietnamese at 390 px and 1280 px, using the real menu and controls without the debug hook.
+
+Browser acceptance uses isolated saves, never the user's farm. It covers actual food production/delivery, ingredient return navigation, world clue taps, one-time rewards, saved replay and pointer/speech suppression. Screenshots were reviewed after their images decoded. The same production acceptance script (`tests/optional-branches.production.mjs`) is used after deployment. [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) records the exact released commit, Pages result and live acceptance; the documentation-only follow-up does not alter the tested game.
 
 ## Still separate work
 

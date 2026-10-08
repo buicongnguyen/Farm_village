@@ -7,6 +7,7 @@
 - Lan's optional three-batch picnic menu connects carrot juice, fresh noodles and instant noodles to three saved scenes. Real deliveries pay 70, 150 and 300 coins once, with no deadline, extra delivery XP or normal-order-count changes. Finished goods remain deliverable after a maker is stored or breaks.
 - Save version 9 preserves per-profile progress/read state and repairs malformed backup reward stamps on successful new claims. Earned memories use the existing Today badge and Album. English/Vietnamese use identical requirements and accounting.
 - Includes Claude's latest item art through main `b0172d6`; the logic changes do not edit art assets. See [scope, review and release checks](docs/GUIDANCE-LAND-FOOD-DELIVERY.md).
+- **Validation:** 304 native tests, all pace targets, all 21 component browser suites and 28/28 smoke checks passed. All 15 new feature browser checks and four English/Vietnamese phone/desktop production contexts passed. First-load code: 1,069,742 bytes test / 1,068,656 bytes production. [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) records deployment and live acceptance.
 
 ## A picnic discovery trail and story-order fixes (2026-10-08)
 

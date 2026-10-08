@@ -211,7 +211,7 @@ The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed
 
 Completed picnic release: [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) integrated AR-010 and passed its combined checks. The full 261-native / 19-component / 28-smoke run preceded the final factory-content merge; native/pace, affected art/orchard/discovery, all smoke checks and local production acceptance passed again afterward. The PR records successful Pages deployment and live acceptance. The former “waiting for integration” note is obsolete.
 
-Current follow-up: ingredient source/return guidance, one usable covered-land branch and an optional three-batch food story are implemented on `codex/guidance-land-contracts`, based on main `b0172d6`. [Delivery details](GUIDANCE-LAND-FOOD-DELIVERY.md) separate this slice from energy/skills, company hiring and later chapters; the release PR records final checks/deployment.
+Current follow-up: ingredient source/return guidance, one usable covered-land branch and an optional three-batch food story are implemented and validated in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24), based on main `b0172d6`. All 304 native tests, pace targets, 21 component browser suites, 28 smoke checks and four local production contexts passed. [Delivery details](GUIDANCE-LAND-FOOD-DELIVERY.md) separate this slice from energy/skills, company hiring and later chapters; the PR records deployment/live acceptance.
 
 | Stage | Status |
 |---|---|
@@ -221,7 +221,7 @@ Current follow-up: ingredient source/return guidance, one usable covered-land br
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
 | Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
 | Cross-stage follow-up: picnic discovery trail | Implemented and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md); deployment acceptance is recorded in the PR. |
-| Cross-stage follow-up: guidance, covered land and food story | Implemented: truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
+| Cross-stage follow-up: guidance, covered land and food story | Implemented and validated for [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24): truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |

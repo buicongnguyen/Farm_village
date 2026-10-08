@@ -117,8 +117,9 @@ The [delivery report](DISCOVERY-TRAIL.md) records completed integration and vali
 - [x] Keep level-4 / 500-coin parcel rules, include usable ground, and add one local covered marker with a one-time bench memory; preserve old parcel choices.
 - [x] Connect existing juice/noodle factories through three optional Lan requests, saved scenes and exactly-once payment.
 - [x] Include English/Vietnamese, migration, failed-action and reward-ledger checks, native feature tests and phone/desktop browser acceptance.
+- [x] Complete 304 native tests, pace, all 21 browser suites, 28 smoke checks and four local production contexts; production first-load code is 1,068,656 bytes.
 
-See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and the release PR for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain; broader company contracts remain planned.
+See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain; broader company contracts remain planned.
 
 ## Following passes — still planned
 
