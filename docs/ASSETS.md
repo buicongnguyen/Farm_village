@@ -32,7 +32,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 | Files | Source | Notes |
 |---|---|---|
-| 92 WebP icons: 88 rendered at 256 px from `icons.json`, plus the four 160 px Willowmere fish icons listed under v0.3b | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
+| 92 WebP icons: all 92 rendered at 256 px from `icons.json` (the four fish since the reference pass) | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
 
 ## Added in v0.3b
 `farm-kit.glb` gained `truck` and `pond` (our own Blender pieces, `art/blender/build_farm_kit.py`). Icons `perch`, `carp`, `catfish`, `goldfish` are copied from Willowmere (`3d_farmer_fish_sell/public/assets/icons/fish/fish_perch|carp|catfish|golden.webp`); `round_tree`, `pine_tree` are rendered from Willowmere's `scenery.glb` (`tree_round`, `tree_pine`); `market`, `pond`, `truck` icons from our own kit.
@@ -88,3 +88,15 @@ MIT) is a build tool only, not a dependency of the game.
 - Icons `lucky_tin`, `lucky_button`, `lucky_box`: `art/blender/render_icons.py` jobs in `icons.json`
   (`raw:discovery-props`).
 - Comparison images: `docs/discovery-props/`.
+
+## Reference pass (opening composition and item art)
+
+- Icons `wheat`, `bread`, `corn_bread`, `chicken_feed`, `cow_feed`, `egg`: new models in `art/blender/build_items.py`
+  (original), rendered by `render_icons.py`.
+- Icons `perch`, `carp`, `catfish`, `goldfish`: now rendered by our icon rig from Willowmere's fish kit
+  (`3d_farmer_fish_sell/public/assets/models/fish.glb`, the user's own project, nodes `fish_perch`, `fish_carp`,
+  `fish_catfish`, `fish_golden`). Carp and catfish are recoloured warmer. They replace the 160 px copies of
+  Willowmere's fish icons.
+- No new models in the game: the farmhouse forecourt is ground colour, two planters in the merged plaza mesh, and
+  the existing bench.
+- Before and after: `docs/reference-pass/`.

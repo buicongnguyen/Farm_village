@@ -7,6 +7,9 @@ export const PARCEL = 16;          // cells per parcel side
 export const FARM = { x0: 32, z0: 24, parcels: 4 };
 export const START_PARCEL = '0,2';
 export const FARMHOUSE = { x: 22, z: 62, model: 'home_t1', width: 9 };       // west of the start parcel, by the road
+/** The farmhouse forecourt (cells): stone tiles from the porch steps toward the road, with a bench and planters (view only;
+ *  x 24–26 lie in the farmhouse's fixed footprint, so nothing can be built on them). */
+export const HOME_YARD = { x0: 24, x1: 26, z0: 60, z1: 64 };
 export const BARN = { x: 22, z: 72, model: 'barn', width: 8 };
 export const ORDER_BOARD = { x: 28, z: 58 };
 // Roads (2 cells wide) and the brook.
