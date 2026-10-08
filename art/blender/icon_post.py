@@ -18,8 +18,8 @@ for name, path in job['raw'].items():
     small = small.filter(ImageFilter.UnsharpMask(radius=1.0, percent=55, threshold=2))
     alpha = small.split()[3]
     # a round outline about 2.8 % of the icon wide (7 px at 256), so it still reads at chip sizes (v1: a 2 px square ring)
-    px = max(2, round(size * .028))
-    ring = alpha.filter(ImageFilter.GaussianBlur(px * .5)).point(lambda v: int(min(255, v * 10))).filter(ImageFilter.GaussianBlur(.8))
+    px = max(2, round(size * job.get('outline', {}).get(name, .028)))
+    ring = alpha.filter(ImageFilter.GaussianBlur(px * .5)).point(lambda v: int(max(0, min(255, (v - 16) * 20)))).filter(ImageFilter.GaussianBlur(.6))
     base = Image.new('RGBA', (size, size), OUTLINE + (0,))
     base.putalpha(ring)
     icon = Image.alpha_composite(base, small)

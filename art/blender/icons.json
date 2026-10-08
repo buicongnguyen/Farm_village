@@ -178,7 +178,8 @@
   "id": "flowers",
   "src": "raw:nature",
   "root": "flowers_a",
-  "preset": "building"
+  "preset": "building",
+  "outline": 0.014
  },
  {
   "id": "bush",
@@ -230,7 +231,8 @@
   "id": "garden_flower",
   "src": "raw:nature",
   "root": "flowers_b",
-  "preset": "building"
+  "preset": "building",
+  "outline": 0.014
  },
  {
   "id": "scarecrow",
