@@ -9,6 +9,7 @@ import { gainXp, xpFor } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
 import { plantTree } from './trees.mjs';
 import { suspendFruitSales, resumeFruitSales } from './orchard.mjs';
+import { afterParcelBought } from './land-discovery.mjs';
 
 export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
@@ -187,7 +188,7 @@ export const actions = {
     if (!s.parcels.some(p => { const [qx, qz] = p.split(',').map(Number); return Math.abs(qx - px) + Math.abs(qz - pz) === 1; })) return ctx.fail('Buy land next to your farm');
     if (s.level < PARCELS.level) return ctx.fail('Reach level {level} first', { level: PARCELS.level, lock: 'level' });
     const price = PARCELS.cost(s.parcels.length + 1); if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; s.parcels.push(parcel); overgrow(s, parcel); grid.touch(s);
+    s.coins -= price; s.parcels.push(parcel); overgrow(s, parcel); afterParcelBought(ctx, parcel); grid.touch(s);
     ctx.emit('parcelBought', { parcel, x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL });
     return { price, parcel };
   },

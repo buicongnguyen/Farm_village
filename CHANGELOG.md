@@ -1,5 +1,14 @@
 # Changelog
 
+## Ingredient guidance, a sunlit clearing and a picnic menu (2026-10-08)
+
+- Orders, recipes and picnic requests explain where missing goods come from, current blockers/costs, queued output and project-held stock. Source previews never spend or craft; a return control preserves the original request. Sheets suppress the tutorial pointer/incidental speech and defer earned story scenes until closed.
+- Restored farms can preview one level-4, 500-coin expansion with an included clear 4 × 4 patch. An optional local planting-marker discovery gives one stored bench and a saved bilingual family memory. Older second-parcel choices remain usable; loading never changes their terrain or pays a reward.
+- Lan's optional three-batch picnic menu connects carrot juice, fresh noodles and instant noodles to three saved scenes. Real deliveries pay 70, 150 and 300 coins once, with no deadline, extra delivery XP or normal-order-count changes. Finished goods remain deliverable after a maker is stored or breaks.
+- Save version 9 preserves per-profile progress/read state and repairs malformed backup reward stamps on successful new claims. Earned memories use the existing Today badge and Album. English/Vietnamese use identical requirements and accounting.
+- Includes Claude's latest item art through main `b0172d6`; the logic changes do not edit art assets. See [scope, review and release checks](docs/GUIDANCE-LAND-FOOD-DELIVERY.md).
+- **Validation:** 304 native tests, all pace targets, all 21 component browser suites and 28/28 smoke checks passed. All 15 new feature browser checks and four English/Vietnamese phone/desktop production contexts passed. First-load code: 1,069,742 bytes test / 1,068,656 bytes production. [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) records deployment and live acceptance.
+
 ## A picnic discovery trail and story-order fixes (2026-10-08)
 
 - After the first delivered order, explore the farmhouse porch, follow a note to the pond, and bring a picnic ribbon home. Three optional English/Vietnamese scenes form one happy family memory; completing it grants one flowerpot in storage. Start from Today or the farmhouse's **Explore the porch** menu.

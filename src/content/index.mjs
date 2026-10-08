@@ -13,3 +13,5 @@ export * as quests from './quests.mjs';
 export * as discoveries from './discoveries.mjs';
 export * as advice from './advice.mjs';
 export * as exploration from './exploration.mjs';
+export * as land from './land.mjs';
+export * as contracts from './contracts.mjs';

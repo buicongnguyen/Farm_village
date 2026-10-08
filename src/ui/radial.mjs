@@ -147,6 +147,7 @@ export class Radial {
       info = true ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
+      if (s.mode === 'restore') { this.hide(); this.panels.show('land', land.parcel); return; }
       info = `${iconHtml('sale_sign', '', 'mini')} ${t('Land for sale')} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;
       buttons = [{ act: 'buyParcel', parcel: land.parcel, icon: iconHtml('sale_sign'), label: t('Buy'), disabled: !land.ok }];
     }

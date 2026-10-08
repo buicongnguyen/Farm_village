@@ -1,4 +1,7 @@
 import { MOBILE_VI } from './mobile.mjs';
+import { VI_GOOD_HELP } from './vi-good-help.mjs';
+import { VI_LAND } from './vi-land.mjs';
+import { VI_CONTRACTS } from './vi-contracts.mjs';
 import { VI_ADVICE } from './vi-advice.mjs';
 import { VI_EXPLORATION } from './vi-exploration.mjs';
 import { VI_ART } from './vi-art.mjs';
@@ -11,6 +14,13 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_GOOD_HELP,
+  ...VI_LAND,
+  ...VI_CONTRACTS,
+  'About {good}': 'Tìm hiểu về {good}',
+  'Back to my request': 'Quay lại việc đang làm',
+  'Optional food requests': 'Góp món cho buổi dã ngoại',
+  'Picnic delivery received: {coins} coins': 'Đã giao món cho buổi dã ngoại: nhận {coins} xu',
   ...VI_ADVICE,
   ...VI_EXPLORATION,
   ...VI_PROFILES,

@@ -110,6 +110,8 @@ await check('first session in the restored village: harvest, deliver the first o
   await page.click('[data-act="orders"]'); await page.click('.order.can [data-do="deliver"]');
   expect(await step() === 2, `step after the order: ${await step()}`);
   await page.evaluate(() => document.querySelector('.panel [data-do="close"]')?.click());
+  await page.waitForSelector('.modal [data-close]'); // the first-loaf scene waits for the order sheet to close
+  await page.locator('.modal [data-close]').last().click();
   for (const kind of ['feed_mill', 'coop']) { const id = await idOf(page, kind), [cx, cz] = await cellOf(page, id); await tap(page, cx, cz); await page.click('.radial-btn[data-act="repair"]'); }
   await page.evaluate(() => farm.setClockOffset(40_000 + 100_000));
   await page.waitForFunction(() => farm.state().projects.step > 2, null, { timeout: 8000 });

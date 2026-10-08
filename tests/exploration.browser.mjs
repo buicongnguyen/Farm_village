@@ -51,6 +51,10 @@ for (const lang of ['en','vi']) for (const viewport of [{ width: 390, height: 84
     // Deliver the real tutorial order with the actual button and starter wheat.
     const id = await page.evaluate(() => { farm.panels.show('orders'); return farm.state().orders.cards.find(c => c.story).id; });
     await page.locator(`[data-do="deliver"][data-id="${id}"]`).click();
+    // The earned first-loaf scene waits until the sheet is closed; finish it before targeting a world prop.
+    await page.evaluate(() => farm.panels.close());
+    await page.waitForSelector('.modal [data-close]');
+    await page.locator('.modal [data-close]').last().click();
     await page.evaluate(() => { farm.closeCards(); farm.panels.show('today'); });
     expect(await page.locator('.exploration-entry').count() === 1, 'completed order did not unlock optional trail');
     await page.waitForFunction(() => farm.world.exploration?.loaded && farm.world.batches.items.has('trail_porch_box_closed'));

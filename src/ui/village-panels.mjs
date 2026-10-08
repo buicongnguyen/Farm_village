@@ -17,6 +17,7 @@ import * as barn from '../core/barn.mjs';
 import { goodIcon, iconHtml, faceHtml, glyph, coinMark } from './icon.mjs';
 import { thingName } from './repair-ui.mjs';
 import { explorationStep } from '../content/exploration.mjs';
+import { LAND_BRANCH } from '../content/land.mjs';
 import { familyRows, wishLine, nameOf } from './bonds-panels.mjs';
 import { renderDiscoveries } from './discovery-panels.mjs';
 import { discoveryOf } from '../content/discoveries.mjs';
@@ -34,6 +35,8 @@ function heartThreshold(e, s) {
 }
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
+  landDiscovered: () => `${iconHtml('bench', '', 'mini')} ${t('A little discovery: {name}', { name: t(LAND_BRANCH.discovery.title) })}`,
+  contractDelivered: e => `${iconHtml('noodles', '', 'mini')} ${t('Picnic delivery received: {coins} coins', { coins: num(e.coins ?? 0) })}`,
   explorationStep: e => `${iconHtml('lucky_box', '', 'mini')} ${t('A little discovery: {name}', { name: t(explorationStep(e.step)?.title ?? 'Picnic trail') })}`,
   discovery: e => `${glyph('gift', 'g')} ${t('Lucky find: {name}', { name: t(discoveryOf(e.id)?.title ?? 'Lucky discovery') })}`,
   repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
