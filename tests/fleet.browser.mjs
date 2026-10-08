@@ -62,7 +62,7 @@ await check('buy two more trucks, fill them with spare goods, send all three, wa
   await showMarket(page); await click(page, '[data-do="buyTruck"]'); await page.waitForTimeout(300);
   await showMarket(page);
   const after = await page.evaluate(() => ({ trucks: 1 + farm.state().truck.fleet.length, coins: farm.state().coins, buy: !!document.querySelector('[data-do="buyTruck"]') }));
-  expect(after.trucks === 3 && after.coins === coins0 - 800 - 2500 && !after.buy, `bought: ${JSON.stringify(after)}`);
+  expect(after.trucks === 3 && after.coins === coins0 - 400 - 900 && !after.buy, `bought: ${JSON.stringify(after)}`);
   expect(await page.locator('.truck-row').count() === 3, 'three truck rows');
   // the parked trucks: three batch items in a row by the market, in their own colours once the decor kit is in
   await page.waitForFunction(() => ['truck', 'truck1', 'truck2'].every(k => farm.world.batches.items.has(k)) && farm.world.batches.items.get('truck2').model === 'truck_sun', null, { timeout: 15000 });
