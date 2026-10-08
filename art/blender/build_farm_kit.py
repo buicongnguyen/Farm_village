@@ -516,19 +516,20 @@ piece('lamp', [cl('foot', .22, .18, 0, 0, 0, 'charcoal', verts=8, rt=.15), cl('p
 anchors['lamp'] = {'light': [(0, 0, 2.33)]}
 
 # =================================================================== the delivery truck (PLAN-v0.3 P3): a little red pickup, front toward +y
-def truck():
+def truck(body='red', roof='redd', cargo=(('hay', 'sack', 'hayd'), 'sackd')):
+    """The pickup; body/roof colours and cargo (three crates and a sack) vary for the fleet's extra trucks."""
     p = [bx('chassis', 1.5, 4.0, .34, 0, 0, .36, 'charcoal', bev=.04),
-         bx('cab', 1.55, 1.45, 1.0, 0, 1.2, .62, 'red', bev=.07), bx('cabroof', 1.6, 1.3, .12, 0, 1.15, 1.58, 'redd', bev=.04),
-         bx('hood', 1.5, .9, .5, 0, 1.95, .62, 'red', bev=.06),
+         bx('cab', 1.55, 1.45, 1.0, 0, 1.2, .62, body, bev=.07), bx('cabroof', 1.6, 1.3, .12, 0, 1.15, 1.58, roof, bev=.04),
+         bx('hood', 1.5, .9, .5, 0, 1.95, .62, body, bev=.06),
          bx('windshield', 1.3, .08, .55, 0, 1.58, 1.0, 'glass', bev=.02), bx('sidewinl', .06, .8, .5, -.79, 1.2, 1.0, 'glass', bev=.01), bx('sidewinr', .06, .8, .5, .79, 1.2, 1.0, 'glass', bev=.01),
          bx('grille', 1.0, .08, .3, 0, 2.42, .72, 'iron', bev=.02), bx('bumper', 1.6, .18, .16, 0, 2.45, .42, 'iron', bev=.03),
          bx('lampl', .22, .08, .16, -.55, 2.44, .9, 'sun', bev=.02), bx('lampr', .22, .08, .16, .55, 2.44, .9, 'sun', bev=.02),
          bx('bedfloor', 1.6, 2.2, .1, 0, -1.0, .62, 'woodd', bev=.02),
          bx('sidel', .1, 2.2, .45, -.78, -1.0, .72, 'wood', bev=.02), bx('sider', .1, 2.2, .45, .78, -1.0, .72, 'wood', bev=.02),
          bx('tail', 1.6, .1, .45, 0, -2.1, .72, 'wood', bev=.02), bx('front', 1.6, .1, .55, 0, -.05, .72, 'wood', bev=.02)]
-    for x, y, c in [(-.45, -1.2, 'hay'), (.4, -1.5, 'sack'), (-.1, -.55, 'hayd')]:
+    for (x, y), c in zip([(-.45, -1.2), (.4, -1.5), (-.1, -.55)], cargo[0]):
         p.append(bx('crate', .62, .62, .5, x, y, .72, c, bev=.04))
-    p.append(ball('sackball', .26, .45, -.65, 1.05, 'sackd', sc=(1, 1, 1.1)))
+    p.append(ball('sackball', .26, .45, -.65, 1.05, cargo[1], sc=(1, 1, 1.1)))
     for x, y in [(-.86, 1.45), (.86, 1.45), (-.86, -1.35), (.86, -1.35)]:
         p.append(cl('tyre', .42, .3, x, y, .42, 'charcoal', verts=12, rot=(0, math.pi / 2, 0)))
         p.append(cl('hub', .2, .34, x, y, .42, 'iron', verts=8, rot=(0, math.pi / 2, 0)))
@@ -727,6 +728,10 @@ def scaffold(w=4.0, d=3.0, h=3.2):
           extrude_outline('flag', [(0, 0), (.4, -.1), (0, -.25)], .02, (w / 2, d / 2, h + .68), C['red'], bev=0)]
     return p
 piece('scaffold', scaffold(), decor)
+
+# the second and third delivery trucks (core/market.mjs fleet): the same pickup in teal and in sunny yellow, with other cargo
+piece('truck_teal', truck('teal', 'teald', (('woodl', 'cream', 'wood'), 'sack')), decor)
+piece('truck_sun', truck('sun', 'hayd', (('pumpkin', 'woodl', 'berry'), 'sackd')), decor)
 
 # cottage dressing (placed by land-view at a cottage's door and windows, by furnish level)
 def window_box():

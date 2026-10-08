@@ -18,6 +18,8 @@ import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
 const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
+// the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
+const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
 const PEN_EARTH = '#c9a46a';
 
@@ -325,21 +327,29 @@ export class LandView {
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
-  /** The delivery truck: parked by the market, or driving west along the village street and back while a trip runs. */
+  /** The delivery trucks: parked in a row by the market (the first nearest, later ones further east, each in its own
+   *  colour once the late decor kit is in), or driving west along the village street and back while a trip runs. */
   driveTruck() {
-    const b = this.world.batches, s = this.s, tr = s.truck, id = Object.keys(s.placed).find(k => s.placed[k].kind === 'market');
-    if (!id || !tr || !b.has('truck') || levelOf(s, id) >= 3) { b.remove('truck'); return; }
-    const p = s.placed[id], c = this.centre('market', p.x, p.z, p.rot), z = 91 * CELL, homeX = c.x + 4.4 * CELL;
-    let x = homeX, rot = -Math.PI / 2, show = true;
-    if (tr.away) {
-      const k = Math.max(0, Math.min(1, 1 - (tr.backAt - this.game.now) / TRUCK.tripMs)), reach = homeX - 2 * CELL;
-      if (k < 0.2) x = homeX - reach * (k / 0.2);                // drives off west
-      else if (k > 0.8) { x = homeX - reach * (1 - (k - 0.8) / 0.2); rot = Math.PI / 2; }   // comes home from the west
-      else show = false;                                          // out in town
-    }
-    if (!show) { b.remove('truck'); return; }
-    const cur = b.items.get('truck');
-    if (!cur || cur.x !== x || cur.rot !== rot) b.set('truck', { model: 'truck', x, z: tr.away ? z : z - 0.4 * CELL, rot });
+    const b = this.world.batches, s = this.s, id = Object.keys(s.placed).find(k => s.placed[k].kind === 'market');
+    const units = s.truck ? [s.truck, ...(s.truck.fleet ?? [])] : [];
+    const clear = from => { for (let i = from; i < TRUCK.fleet.max; i++) b.remove(i ? `truck${i}` : 'truck'); };
+    if (!id || !units.length || !b.has('truck') || levelOf(s, id) >= 3) { clear(0); return; }
+    const p = s.placed[id], c = this.centre('market', p.x, p.z, p.rot), z = 91 * CELL;
+    units.forEach((tr, i) => {
+      const key = i ? `truck${i}` : 'truck', want = TRUCK_MODELS[i] ?? 'truck', model = b.has(want) ? want : 'truck';
+      const homeX = c.x + (4.4 + i * TRUCK_GAP) * CELL;
+      let x = homeX, rot = -Math.PI / 2, show = true;
+      if (tr.away) {
+        const k = Math.max(0, Math.min(1, 1 - (tr.backAt - this.game.now) / TRUCK.tripMs)), reach = homeX - 2 * CELL;
+        if (k < 0.2) x = homeX - reach * (k / 0.2);                // drives off west
+        else if (k > 0.8) { x = homeX - reach * (1 - (k - 0.8) / 0.2); rot = Math.PI / 2; }   // comes home from the west
+        else show = false;                                          // out in town
+      }
+      if (!show) { b.remove(key); return; }
+      const cur = b.items.get(key), zz = tr.away ? z : z - 0.4 * CELL;
+      if (!cur || cur.x !== x || cur.z !== zz || cur.rot !== rot || cur.model !== model) b.set(key, { model, x, z: zz, rot });
+    });
+    clear(units.length);
   }
   sync() {
     if (!this.ready || !this.s) return;

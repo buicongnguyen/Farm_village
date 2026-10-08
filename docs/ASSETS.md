@@ -71,6 +71,12 @@ MIT) is a build tool only, not a dependency of the game.
 - Icons `cherry`, `cherry_tree`, `fruit_stand`, `kennel`, `clinic`: `art/blender/render_icons.py` jobs in `icons.json`, rendered from the roots above. `person-hazel`: the existing Starline villager-woman portrait with grey hair and a light coat, using the same generator and recorded source path.
 - Chapter 5 reuses the existing clinic, petition and festival-poster story panels as the chapter's history; its text and ending are new.
 
+## Truck fleet
+
+- `decor.glb`: `truck_teal` and `truck_sun`, the second and third delivery trucks: the existing `truck()` pickup in
+  `art/blender/build_farm_kit.py`, now with body, roof and cargo parameters (the red `truck` in `farm-kit.glb` is
+  byte-identical). 1,144 triangles each. Original.
+
 ## AR-009 lucky finds
 
 - `discovery-props.glb`: original `lucky_tin` (a teal tin with a cream label and red fish, brass rims, its lid, two

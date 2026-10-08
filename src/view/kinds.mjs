@@ -18,6 +18,8 @@ export const KIND_MODELS = {
   market:    { kit: 'market-stall', node: 'market-stall', width: 5.4, lod: 'static' },
   pond:      { kit: 'farm-kit', node: 'pond', authored: true, lod: 'static' },
   truck:     { kit: 'farm-kit', node: 'truck', authored: true, lod: 'static' },
+  truck_teal: { kit: 'decor', node: 'truck_teal', authored: true, lod: 'static', late: true },   // the 2nd and 3rd trucks (land-view)
+  truck_sun:  { kit: 'decor', node: 'truck_sun', authored: true, lod: 'static', late: true },
   school:    { kit: 'town', node: 'school', width: 9.6, lod: 'static', late: true },
   flowers:   { kit: 'nature', node: 'flowers_a', width: 1.5, lod: 'crop', late: true },
   round_tree: { kit: 'farm-kit', node: 'cute_round', width: 3.4, lod: 'tree' },

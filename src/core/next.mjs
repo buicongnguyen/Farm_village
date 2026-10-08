@@ -10,6 +10,7 @@ import { questsOf, ready as questReady } from './quests.mjs';
 import { bestOrder, STEP_TEXT } from './plan.mjs';
 import { rentWaiting } from './homes.mjs';
 import { MAILBOX, POND_DOCK } from '../content/world.mjs';
+import { trucksOf, truckCoins, roomIn, spareForTrucks, blocked as truckBlocked } from './market.mjs';
 
 const centre = p => { const [w, d] = footprint(p.kind, p.rot); return { x: Math.floor(p.x + w / 2), z: Math.floor(p.z + d / 2) }; };
 export function nextTask(s, now) {
@@ -28,8 +29,16 @@ export function nextTask(s, now) {
   if (rentWaiting(s, now) >= 10) return { key: 'Collect the rent from the mailbox', at: { x: MAILBOX.x, z: MAILBOX.z }, icon: 'ui:coin', do: ['collectRent', {}] };
   if (questsOf(s).list.some(q => questReady(s, q))) return { key: 'Claim a finished goal', at: null, icon: 'ui:xp', panel: 'quests' };
   if (s.fishing?.line && s.fishing.line.doneAt <= now) return { key: 'Reel in the fish', at: { x: POND_DOCK.x, z: POND_DOCK.z }, icon: 'perch', do: ['reelIn', {}] };
-  const truck = of((id, p, d) => d.market && (s.truck?.coins ?? 0) > 0)[0];
-  if (truck) return { key: "Collect the truck's coins", at: at(truck), icon: 'market', do: ['collectTruck', {}] };
+  const market = of((id, p, d) => d.market)[0];
+  if (market && s.truck && truckCoins(s) > 0) return { key: "Collect the truck's coins", at: at(market), icon: 'market', do: ['collectTruck', {}] };
+  // a barn filling up: the trucks take the spare goods to town for more than the barn's overflow sale pays; a loaded
+  // truck waiting at the market is sent
+  if (market && s.truck && !truckBlocked(s)) {
+    const home = trucksOf(s).filter(u => !u.away);
+    if (barn.used(s) >= 0.85 * s.barn.cap && home.some(u => roomIn(s, u) > 0) && spareForTrucks(s).length)
+      return { key: 'The barn is nearly full: load the trucks', at: at(market), icon: 'truck', do: ['fillTruck', {}] };
+    if (home.some(u => u.load.length)) return { key: 'Send the loaded trucks', at: at(market), icon: 'truck', do: ['sendTruck', {}] };
+  }
   if (s.orders.cards.some(c => barn.hasAll(s, c.need))) return { key: 'Deliver an order', at: null, icon: 'ui:orders', panel: 'orders' };
   const broken = of((id, p, d) => isBroken(s, id) && !isRepairing(s, id) && (d.produces || d.animals || d.home || d.market))[0] ?? (isBroken(s, 'house') ? 'house' : null);
   if (broken && broken !== 'house' && s.coins >= 30) return { key: 'Repair a broken building', at: at(broken), icon: 'wrench', id: broken };

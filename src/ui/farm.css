@@ -50,6 +50,12 @@ button.good-tile { cursor: pointer; }
 .good-tile.liked { border-color: #ff8fa6; box-shadow: 0 3px 0 #c43c5d; background: linear-gradient(#fff, #fff0f3); }
 .good-tile .love { position: absolute; top: -7px; right: -5px; width: 22px; height: 22px; }
 .queue { display: flex; gap: 8px; flex-wrap: wrap; }
+/* the market trucks: one row each (panels.mjs, market) */
+.trucks { display: grid; gap: 6px; margin: 4px 0 8px; }
+.truck-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border-radius: 14px; background: linear-gradient(#fff, #fff4dd); border: 3px solid var(--line); box-shadow: 0 3px 0 #d3a868; }
+.truck-row b { white-space: nowrap; }
+.truck-row span { flex: 1; min-width: 0; text-align: right; font-size: 0.92em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.truck-row.away { background: #5e3a1812; box-shadow: none; border-style: dashed; }
 .slot { position: relative; width: 70px; height: 70px; border-radius: 16px; background: linear-gradient(#fff, #fff4dd); border: 3px solid var(--line); box-shadow: 0 3px 0 #d3a868; display: grid; place-items: center; align-content: center; overflow: hidden; padding: 0; }
 .slot img.icon { width: 40px; height: 40px; }
 .slot::after { content: ''; position: absolute; left: 0; bottom: 0; height: 5px; width: calc(var(--k, 0) * 100%); background: var(--leaf); }

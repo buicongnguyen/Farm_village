@@ -1,5 +1,20 @@
 # Changelog
 
+## The truck fleet — art lane at the user's request (2026-10-08, PR preview)
+
+- **More trucks for a growing farm:** buy a 2nd truck (800 coins, level 4) and a 3rd (2,500 coins, level 7) in the
+  market panel. Each runs its own 50 s trip and pays the goods' value × 1.2; Bigger trucks now upgrades all of them.
+- **One-tap loading:** "Fill the trucks with spare goods" loads every truck at the market, most plentiful goods first,
+  keeping order needs, project goods, all feed and a seed per bed. "Send 3 trucks" sends every loaded truck; Collect
+  takes all their coins at once.
+- **A full barn has a next step:** at 85 % the Next chip offers to load the trucks, then to send them, then to collect.
+- **On the map:** the trucks park in a row along Village Street (red, teal and sunny-yellow pickups, the new two in the
+  late `decor.glb`) and drive off in a line; the status row counts the trucks on the road.
+- **Compatibility and checks:** the first truck is still `s.truck` (extra trucks in `s.truck.fleet`, validated on
+  load), so older saves and one-truck play are unchanged. New `tests/fleet.test.mjs` (8 rules tests) and
+  `tests/fleet.browser.mjs` (4 phone/PC checks: buy, fill, send, drive, collect, Vietnamese panel, budgets).
+  Screenshots in `docs/truck-fleet/`.
+
 ## Adaptive village ideas — PR #6 (2026-10-08)
 
 **Live:** [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) merged as `a8b45988a8ff1549b10a164c48a5fda814b23eca`; [Pages deployment 37733300401](https://github.com/buicongnguyen/Farm_village/actions/runs/37733300401) passed. Production acceptance passed in eight isolated browser contexts: four fresh starts and four using explicit save fixtures, each covering phone-sized/desktop viewports in English/Vietnamese. UI/art assertions and page, console, HTTP and request-error checks passed. AR-009 is accepted and closed. These are browser viewport checks, not physical-device tests. The baseline release remains PR #4 at `ab6b230`.

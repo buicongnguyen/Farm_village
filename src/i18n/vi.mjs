@@ -137,6 +137,13 @@ export const VI = {
   "Sunset over the brook. Never gets old.": "Hoàng hôn trên suối. Ngắm mãi không chán.",
   "Supper, then bed. The beds outside can wait till morning.": "Ăn tối rồi đi ngủ. Luống rau ngoài kia chờ đến sáng được.",
   "Good night, farmer. Sleep well.": "Chúc ngủ ngon, nhà nông. Ngủ thật ngon nhé.",
+  // the truck fleet (core/market.mjs)
+  'Unknown truck': 'Không có xe tải này', 'All the trucks are away': 'Các xe tải đều đang đi giao', 'The trucks are full': 'Các xe tải đã đầy',
+  'Nothing spare to load': 'Không có hàng dư để chất lên xe', 'No room for another truck': 'Đã đủ số xe tải', 'Trucks': 'Đội xe tải',
+  'Truck {n}': 'Xe tải {n}', 'Back with {coins} coins': 'Đã về, mang theo {coins} xu', 'Fill the trucks with spare goods': 'Chất hàng dư lên các xe tải',
+  'Fill the truck with spare goods': 'Chất hàng dư lên xe tải', 'Send {n} trucks': 'Cho {n} xe tải đi', 'Buy another truck': 'Mua thêm xe tải',
+  'Bigger trucks': 'Các xe tải lớn hơn', 'Send the loaded trucks': 'Cho các xe tải đã chất hàng đi',
+  'The barn is nearly full: load the trucks': 'Kho gần đầy: chất hàng lên xe tải', 'A new truck is parked at the market': 'Xe tải mới đã đỗ ở chợ',
   'Send the truck': 'Cho xe tải đi', 'Bigger truck': 'Xe tải lớn hơn', 'The truck is back with {coins} coins': 'Xe tải về rồi, mang theo {coins} xu',
   'Passers-by buy one thing every few minutes, at its base price.': 'Người qua đường cứ vài phút mua một món, theo giá gốc.',
   'Drag across more beds to plant them': 'Kéo qua các luống khác để trồng tiếp', 'Your farmhouse': 'Nhà của bạn',
