@@ -39,7 +39,7 @@ import { modalOpen } from './modal.mjs';
 
 const goodsLine = (s, need, honour = true, help = true) => Object.entries(need).map(([g, n]) => {
   const have = barn.free(s, g, honour), ok = have >= n;
-  return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}"><span class="item-token">${goodIcon(g, 'mini')}</span><span>${num(have)}/${n} ›</span></button>`
+  return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}"><span class="item-token token ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')}</span><span>${num(have)}/${n} ›</span></button>`
     : `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { exploration: 'Picnic trail', advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
@@ -63,7 +63,7 @@ export function renderPanel() {
       title = t(LEARNING.project); icon = 'strawberry'; body = renderLearningMemory(s, o.arg, now);
       const earned = learningStatus(s, now).earned.find(memory => memory.id === o.arg);
       if (earned && !earned.read) queueMicrotask(() => {
-        if (this.open === o && !this.el.hidden && !document.hidden && !modalOpen() && this.el.querySelector('[data-learning-memory]')) this.game.do('readLearningMemory', { id: o.arg });
+        if (this.open === o && !this.el.hidden && !document.hidden && !modalOpen() && this.el.querySelector('[data-learning-memory]') && learningStatus(this.game.s, this.game.now).earned.some(memory => memory.id === o.arg && !memory.read)) this.game.do('readLearningMemory', { id: o.arg });
       });
     }
     else if (o.kind === 'schoolActivity') { title = t(SCHOOL_ACTIVITY.title); icon = 'school'; body = renderSchool(s, now); }
@@ -71,7 +71,7 @@ export function renderPanel() {
       title = t(SCHOOL_ACTIVITY.title); icon = 'school'; body = renderSchoolMemory(s);
       const school = schoolStatus(s, now);
       if (school.memoryAt !== null && !school.memoryRead) queueMicrotask(() => {
-        if (this.open === o && !this.el.hidden && !document.hidden && !modalOpen() && this.el.querySelector('.school-memory')) this.game.do('readSchoolMemory');
+        if (this.open === o && !this.el.hidden && !document.hidden && !modalOpen() && this.el.querySelector('.school-memory') && !schoolStatus(this.game.s, this.game.now).memoryRead) this.game.do('readSchoolMemory');
       });
     }
     else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
@@ -97,8 +97,8 @@ export function renderPanel() {
     else if (o.kind === 'exploration') body = renderExploration(s, o.arg);
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'clinic') {
-      if (growthRecord.hospitalAt !== null) title = t('Our little hospital');
-      body = `<div class="clinic-staff">${iconHtml('clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+      if (growthRecord.hospitalAt !== null) { title = t('Our little hospital'); icon = 'hospital'; }
+      body = `<div class="clinic-staff">${iconHtml(growthRecord.hospitalAt !== null ? 'hospital' : 'clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn go wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
     }
     else if (o.kind === 'fruit_stand') {
       const st = s.fruitStand, spare = Object.entries(s.barn.items).filter(([g]) => GOODS[g]?.kind === 'fruit' && barn.free(s, g) > 0);

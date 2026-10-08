@@ -7,7 +7,7 @@ import { iconHtml, faceHtml, coinMark } from './icon.mjs';
 import { nameOf } from './bonds-panels.mjs';
 import { goodHelpButton } from './good-help-panel.mjs';
 
-const button = (action, text, attrs = '', disabled = false, primary = false) => `<button class="btn ${primary ? 'primary ' : ''}wide" data-do="${action}" ${attrs} ${disabled ? 'disabled' : ''}>${text}</button>`;
+const button = (action, text, attrs = '', disabled = false, primary = false) => `<button class="btn ${primary ? 'primary ' : action === 'learningVisit' ? 'go ' : ''}wide" data-do="${action}" ${attrs} ${disabled ? 'disabled' : ''}>${text}</button>`;
 const memories = status => status.earned.length ? `<section class="learning-memories"><h3>${t('Repair memories')}</h3>${status.earned.map(memory =>
   `<button class="next-project" data-do="learningMemory" data-id="${memory.id}">${iconHtml(memory.id === 'seed-label' ? 'strawberry' : 'bench', '', 'mini')}<span><b>${t(memory.title)}</b><small>${t(memory.read ? 'In your album' : 'New discovery')}</small></span></button>`).join('')}</section>` : '';
 

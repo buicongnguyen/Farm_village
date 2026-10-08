@@ -11,7 +11,7 @@ export const VI_LEARNING = {
   'Seal every gap in the bottom': 'Bịt kín mọi khe hở ở đáy khay',
   'Leave small drainage holes': 'Chừa những lỗ nhỏ để thoát nước',
   'Small holes let extra water drain away.': 'Những lỗ nhỏ giúp nước thừa thoát ra ngoài.',
-  'Uncover the frame': 'Dọn lộ khung bàn',
+  'Uncover the frame': 'Dọn quanh khung bàn',
   'Brace the frame': 'Gia cố khung bàn',
   'Fit the seed trays': 'Lắp khay ươm cây',
   'A strawberry-red label': 'Tấm nhãn đỏ hình dâu tây',

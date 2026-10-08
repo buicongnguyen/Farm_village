@@ -566,9 +566,13 @@ favours, ingredient/use guidance, one covered plot and Lan's three-batch food st
 validated:** parallel trays with legacy-save compatibility, actual shop customers, source-aware orders and the first
 hospital/police/company loop. It keeps the current early prices, 500-coin opening and 110-coin discovery cap.
 
-**Separate remaining work:** one learned skill plus one larger repair project with generous project-only energy and
-free recovery; AR-011 dedicated civic icons/upgrade art; AR-012 small icons, menu pictures and compact status-stack
-layout; meadow/dairy, broader regions, school activities, useful vehicle restoration and later chapters. Pearl/Bea's
+**Next implemented slice:** [garden learning and school baskets](LEARNING-GARDEN-SCHOOL.md) adds one permanent repair
+lesson, a useful potting-bench project with generous project-only energy/free rest, strawberries, and the first
+replayable classroom activity. It integrates AR-011's hospital tier and AR-012's menu/small-icon delivery. Its release
+PR records combined checks and deployment; later phase outcomes are still separate work.
+
+**Separate remaining work:** AR-013 dedicated bench art, further skill branches, the compact HUD/status-stack layout,
+meadow/dairy, broader regions, more school activities, useful vehicle restoration and later chapters. Pearl/Bea's
 introductions, Ellis's permanent return, the water-rights repair sequence and the visible festival are not completed
 by optional company contracts. Later rows, especially phase 7, are groups of separate releases, not one PR or a size
 estimate.

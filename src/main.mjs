@@ -309,6 +309,9 @@ async function handleSave(what, arg) {
     if (what === 'reload') {
       // A failed optional module can remain cached. Reopen only after preserving this profile's latest actions.
       if (!saveSession?.()) { fail(); return; }
+      if (activeProfile() !== profile && !selectProfile(profile)) {
+        hud.toast(t('Could not switch farms. Your current farm is still open.'), 'warn'); return;
+      }
     } else if (what === 'import') {
       if (!arg) return;
       let incoming;

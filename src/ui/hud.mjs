@@ -47,17 +47,17 @@ export class Hud {
         <div class="hud-status" data-hud="status"></div></div>
       <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
-        <button class="round rim-blue" data-act="today">${glyph('today', 'g')}<i class="badge dot"></i></button>
-        <button class="round rim-teal" data-act="projects">${glyph('projects', 'g')}<i class="badge dot"></i></button>
+        <button class="round rim-blue" data-act="today">${iconHtml('ui:today', '', 'btn-icon')}<i class="badge dot"></i></button>
+        <button class="round rim-teal" data-act="projects">${iconHtml('ui:projects', '', 'btn-icon')}<i class="badge dot ready"></i></button>
         <button class="round rim-pink" data-act="friends">${iconHtml('ui:heart', '', 'btn-icon')}</button>
-        <button class="round rim-red" data-act="mail" hidden>${glyph('mail', 'g')}<i class="badge"></i></button>
+        <button class="round rim-red" data-act="mail" hidden>${iconHtml('ui:mail', '', 'btn-icon')}<i class="badge"></i></button>
       </div>
       <button class="next-chip" data-act="next" hidden></button>
       <div class="toasts" aria-live="polite"></div>
       <div class="hud-tools">
         <button class="round rim-grey lang" data-act="lang" hidden></button>
         <button class="round rim-red" data-act="barn">${iconHtml('ui:barn', '', 'btn-icon')}<i class="badge cap"></i></button>
-        <button class="round rim-orange" data-act="orders">${iconHtml('ui:orders', '', 'btn-icon')}<i class="badge"></i></button>
+        <button class="round rim-orange" data-act="orders">${iconHtml('ui:orders', '', 'btn-icon')}<i class="badge ready"></i></button>
         <button class="round big" data-act="build">${iconHtml('tool:build', '', 'btn-icon')}</button>
       </div>`;
     this.el.addEventListener('click', e => {
@@ -200,9 +200,9 @@ export class Hud {
   refreshStatus() {
     const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
     const journey = journeyOf(s);
-    rows.push({ act: 'roadmap', ic: glyph('projects', 'g'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
+    rows.push({ act: 'roadmap', ic: iconHtml('ui:projects', '', 'mini'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
     const step = currentStep(s);
-    if (step) rows.push({ act: 'projects', ic: glyph('projects', 'g'), text: s.mode === 'restore' && step.restore ? t(step.restore).split('.')[0] : t(step.name) });
+    if (step) rows.push({ act: 'projects', ic: iconHtml('ui:projects', '', 'mini'), text: s.mode === 'restore' && step.restore ? t(step.restore).split('.')[0] : t(step.name) });
     const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
     const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
     const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });
@@ -219,7 +219,7 @@ export class Hud {
     const chip = this.el.querySelector('[data-act="next"]'), n = nextTask(this.game.s, this.game.now), s = this.game.s;
     chip.hidden = !n || s.story?.tutorial < 3 && s.mode === 'restore' || document.body.classList.contains('panel-open');
     if (!n) return; this.nextTask = n;
-    const ic = ['wrench', 'today'].includes(n.icon) ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key, n.params ? { ...n.params, good: t(GOODS[n.params.good]?.name ?? n.params.good) } : undefined)}`;
+    const ic = n.icon === 'wrench' ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key, n.params ? { ...n.params, good: t(GOODS[n.params.good]?.name ?? n.params.good) } : undefined)}`;
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */

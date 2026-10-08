@@ -101,8 +101,10 @@ async function saveReload(page) { await page.evaluate(() => window.__fvSave()); 
 
 for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
   await run('hospital and company work stay explicit, adaptive and readable', lang, width, async page => {
+    await page.waitForFunction(() => farm.world.batches.has('clinic:hospital') && farm.world.batches.items.get('fixture-clinic')?.model === 'clinic');
     await openBoard(page); const before = await page.evaluate(() => ({ coins: farm.game.s.coins, herb: farm.game.s.barn.items.herb, ginseng: farm.game.s.barn.items.ginseng }));
     await panel(page).locator('[data-do="upgradeHospital"]').click();
+    await page.waitForFunction(() => farm.world.batches.items.get('fixture-clinic')?.model === 'clinic:hospital');
     await page.waitForFunction(() => farm.game.s.growth.read.includes('hospital'));
     expect((await panel(page).innerText()).includes(tr(lang, HOSPITAL_MEMORY.title)), 'hospital story missing');
     expect(await page.evaluate(b => farm.game.s.coins === b.coins - 1800 && farm.game.s.barn.items.herb === b.herb - 6 && farm.game.s.barn.items.ginseng === b.ginseng - 2, before), 'hospital cost wrong');
@@ -132,6 +134,7 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
     const money = await page.evaluate(() => farm.game.s.coins); await delivery.click();
     expect(await page.evaluate(() => farm.game.s.truck.away && farm.game.s.truck.companyDelivery.sequence === 1), 'existing truck not used');
     await saveReload(page); await openBoard(page);
+    await page.waitForFunction(() => farm.world.batches.items.get('fixture-clinic')?.model === 'clinic:hospital');
     expect(await panel(page).locator('[data-do="sendCompanyDelivery"]').isDisabled(), 'reload allowed duplicate shipment');
     await advance(page); await openBoard(page);
     await panel(page).locator('[data-do="growthMarket"]').click(); await panel(page).locator('[data-do="collectTruck"]').click();
@@ -150,6 +153,20 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
     await page.waitForFunction(() => farm.game.s.growth.read.includes('pantry')); await fit(page);
     await shot(page, `company-memory-${lang}-${width}.png`); await saveReload(page);
     expect(await page.evaluate(m => farm.game.s.coins === m, final.coins), 'reloading a memory paid twice');
+    if (lang === 'en') {
+      await page.waitForFunction(() => farm.world.batches.items.get('fixture-clinic')?.model === 'clinic:hospital');
+      for (const span of [24, 40, 70, 90, 140, 220]) {
+        const info = await page.evaluate(async span => { farm.view(span, 128, 215); return farm.measure(600); }, span);
+        expect(info.draws <= 120 && info.triangles <= 300000, `hospital budget ${width}/${span}: ${JSON.stringify(info)}`);
+      }
+      await page.evaluate(() => farm.view(32, 128, 215));
+      await shot(page, `hospital-world-${width}.png`);
+      expect(await page.evaluate(() => {
+        farm.game.s.cond['fixture-clinic'] = { level: 2, ms: farm.game.now };
+        farm.land.apply([{ type: 'worn', id: 'fixture-clinic' }]);
+        return farm.world.batches.items.get('fixture-clinic').model === 'clinic:hospital@2';
+      }), 'wear reverted the hospital to the old clinic');
+    }
   });
   await run('old civic sites preview without spending and rebuild through real placement controls', lang, width, async page => {
     for (const kind of ['police', 'company']) {

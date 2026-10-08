@@ -94,10 +94,15 @@ for (const lang of ['en', 'vi']) {
     await page.waitForTimeout(150);
     expect(navigations === 0, 'recovery navigated after storage refused the current farm');
     expect(await page.evaluate(() => farm.state().settings.playerName === 'KeepMe'), 'failed save discarded the open farm');
-    await page.evaluate(() => { Storage.prototype.setItem = window.panelTestSetItem; });
+    await page.evaluate(() => {
+      Storage.prototype.setItem = window.panelTestSetItem;
+      // Another tab may have changed the menu selection. Recovery must retain the farm this tab was editing.
+      localStorage.setItem('farm-village:profile', '2');
+    });
     await Promise.all([page.waitForNavigation({ waitUntil: 'domcontentloaded' }), retry.click()]);
     await ready(page);
     expect(await page.evaluate(() => farm.state().settings.playerName === 'KeepMe'), 'reopen lost the latest change');
+    expect(await page.evaluate(() => localStorage.getItem('farm-village:profile') === '1'), 'reopen followed another tab into a different farm');
     await page.evaluate(() => farm.panels.show('settings'));
     await page.locator('.panel input[data-range="sound"]').waitFor();
     expect(navigations === 1, 'recovery navigated more than once');

@@ -19,7 +19,7 @@ const needs = (s, goods) => Object.entries(goods).map(([good, n]) => `<div class
 export function renderVillageGrowth(s, now) {
   const g = growthStatus(s, now);
   let body = `<section class="village-growth"><h3>${t('Room for the village to grow')}</h3><p>${t('Optional projects, familiar neighbours, and useful things made here.')}</p>
-    <h3>${t('Our little hospital')}</h3>`;
+    <h3>${goodIcon('hospital', 'mini')} ${t('Our little hospital')}</h3>`;
   if (g.hospitalAt !== null) body += `<p>${t('The hospital pantry can now place company requests.')}</p>${button('growthMemory', t(HOSPITAL_MEMORY.title), 'data-id="hospital"')}`;
   else body += `<p>${t('Upgrade the existing clinic: level {level}, {coins} coins, and these supplies.', { level: GROWTH.hospital.level, coins: num(GROWTH.hospital.coins) })}</p>${needs(s, GROWTH.hospital.need)}
     <p class="hint">${t('Opens hospital supply requests. The clinic keeps its place in the village.')}</p>

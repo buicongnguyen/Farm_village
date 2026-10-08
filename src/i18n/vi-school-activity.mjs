@@ -37,7 +37,7 @@ export const VI_SCHOOL_ACTIVITY = {
   'A fresh set replaces these unfinished baskets. Your completed memories stay.': 'Bộ giỏ mới sẽ thay cho lượt đang dở. Những kỷ niệm đã có vẫn được giữ lại.',
   'All three baskets are ready. There is a place for your drawing in the album!': 'Cả ba giỏ đã xong rồi. Cuốn lưu niệm có chỗ dành cho bức vẽ của bạn đấy!',
   'Our counting notebook': 'Sổ đếm của nhà mình',
-  'Rounds finished: {count}. Best first-try answers: {score} out of 3.': 'Đã chơi xong: {count} lượt. Lượt trả lời đúng ngay nhiều nhất: {score}/3 câu.',
+  'Rounds finished: {count}. Best first-try answers: {score} out of 3.': 'Đã xong: {count} lượt. Nhiều nhất: {score}/3 câu đúng ngay lần đầu.',
   'Retries count toward finishing too. This notebook is just for fun.': 'Thử lại vẫn giúp mình hoàn thành lượt chơi. Cuốn sổ này chỉ để xem cho vui thôi.',
   'Back to the basket game': 'Trở lại trò xếp giỏ',
 };

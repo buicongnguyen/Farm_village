@@ -76,7 +76,7 @@ button.good-tile { cursor: pointer; }
 .slot small { text-align: center; }
 button.good { min-height: 44px; cursor: pointer; }
 .order button.good { flex-direction: column; padding: 4px 6px; min-width: 60px; }
-.item-token { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 2px solid currentColor; }
+.item-token { display: grid; place-items: center; width: 42px; height: 42px; }
 .item-token img.mini { width: 38px; height: 38px; margin: 0; }
 .village-growth { min-width: 0; overflow-wrap: anywhere; }
 .village-growth .set-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }

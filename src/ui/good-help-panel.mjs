@@ -11,7 +11,7 @@ const name = good => t(GOODS[good]?.name ?? 'Unknown good');
 export function goodHelpButton(good, needed = 1) {
   if (typeof good !== 'string' || !Object.hasOwn(GOODS, good)) return '';
   const count = Number.isFinite(needed) && needed > 0 ? Math.ceil(needed) : 1;
-  return `<button class="btn small-btn good-help-link" data-do="goodHelp" data-good="${esc(good)}" data-needed="${count}">${goodIcon(good, 'mini')} ${esc(t('Find {good}', { good: name(good) }))}</button>`;
+  return `<button class="btn go small-btn good-help-link" data-do="goodHelp" data-good="${esc(good)}" data-needed="${count}">${goodIcon(good, 'mini')} ${esc(t('Find {good}', { good: name(good) }))}</button>`;
 }
 
 function sourceText(source) {
@@ -72,7 +72,7 @@ export function renderGoodHelp(s, good, now, { needed = 1 } = {}) {
     ${source.ready || source.queued ? `<p>${esc(t('{ready} ready · {queued} growing or queued', { ready: num(source.ready), queued: num(source.queued) }))}</p>` : ''}
     ${seed}${price}${source.status === 'animal' && source.level > s.level ? `<p>${esc(t('Reach level {level} first', { level: source.level }))}</p>` : ''}
     ${batch}${rows ? `<h3>${t('Ingredients for the next batch')}</h3><ul>${rows}</ul>` : ''}
-    <button class="btn primary wide" data-do="goodHelpSource" data-good="${esc(good)}" data-needed="${help.needed}">${t('Show the source')}</button>
+    <button class="btn go wide" data-do="goodHelpSource" data-good="${esc(good)}" data-needed="${help.needed}">${t('Show the source')}</button>
     <p class="hint">${t('This opens the controls. Nothing is planted, made or bought automatically.')}</p>
     <h3>${t('Useful ways to use it')}</h3><ul>${help.uses.map(use => `<li>${esc(useText(use))}${use.kind === 'recipe' ? ` ${goodHelpButton(use.good, 1)}` : ''}</li>`).join('')}</ul>${back}</article>`;
 }

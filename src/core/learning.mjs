@@ -2,7 +2,7 @@ import { LEARNING, REPAIR_LESSON, GARDEN_STEPS, LEARNING_MEMORIES } from '../con
 import { newLearning, normalizeLearning, learningStamp, stampLearning } from './learning-state.mjs';
 export { newLearning, normalizeLearning } from './learning-state.mjs';
 
-const eligible = (s, now) => s.mode === 'restore' && s.story?.chapter >= 3 && Object.entries(s.homes ?? {}).some(([id, home]) =>
+const eligible = (s, now) => s.story?.chapter >= 3 && Object.entries(s.homes ?? {}).some(([id, home]) =>
   s.placed?.[id]?.kind === 'cottage' && home.family === 'tran' && home.arrived === true && learningStamp(home.arrivesAt) && home.arrivesAt <= now);
 /** Pure energy projection. A backward clock earns nothing; full reserves cannot bank future recovery. */
 function energyAt(l, now) {

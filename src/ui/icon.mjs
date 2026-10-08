@@ -2,7 +2,7 @@
 // id, 'tool:*', 'ui:*', 'person:*', 'family:*'); for interface symbols the kit has no picture of (calendar, gear, letter,
 // lock, close ...) it draws a small glossy SVG in the same toy style: thick brown outline, bright fill, a white shine.
 // The emoji is only the last resort for an id nobody knows. 'coin' and 'xp' also find 'ui:coin' and 'ui:xp'.
-import { iconUrl } from '../content/icons.mjs';
+import { iconUrl, SMALL_ICONS } from '../content/icons.mjs';
 import { GOODS } from '../content/goods.mjs';
 
 const O = '#5b3418';   // outline
@@ -45,12 +45,17 @@ export const GLYPHS = {
   demolish: svg(`<rect x="6" y="9" width="26" height="13" rx="3" fill="#ef7a4c" stroke="${O}" stroke-width="3" transform="rotate(25 19 15)"/><path d="M22 24l15 15" stroke="${O}" stroke-width="10"/><path d="M22 24l15 15" stroke="#d9894a" stroke-width="5"/><path d="M33 38l9 3-3 3z" fill="#ffc93c" stroke="${O}" stroke-width="2"/>`),
   home: svg(`<path d="M6 24L24 9l18 15" fill="#ef5b4c" stroke="${O}" stroke-width="3"/><rect x="11" y="22" width="26" height="19" fill="#fff4dc" stroke="${O}" stroke-width="3"/><rect x="20" y="29" width="8" height="12" fill="#c77d3e" stroke="${O}" stroke-width="2.5"/>`),
 };
-const ALIAS = { coin: 'ui:coin', xp: 'ui:xp', barn: 'ui:barn', orders: 'ui:orders' };
+const ALIAS = { coin: 'ui:coin', xp: 'ui:xp', barn: 'ui:barn', orders: 'ui:orders', today: 'ui:today', projects: 'ui:projects', mail: 'ui:mail', demolish: 'tool:demolish' };
+const SMALL_CLASSES = new Set(['mini', 'mark', 'seed', 'status-icon', 'mini-face']);
 const glyphName = id => (typeof id === 'string' ? id.replace(/^(ui|glyph):/, '') : '');
 /** The rendered icon for an id (an <img>), else an SVG symbol, else the emoji. `cls` is the element's class. */
 export const iconHtml = (id, emoji = '', cls = 'icon') => {
   const u = id && (iconUrl(id) ?? (ALIAS[id] && iconUrl(ALIAS[id])));
-  if (u) return `<img class="${cls}" src="${u}" alt="" draggable="false" decoding="async">`;
+  if (u) {
+    const small = String(cls).split(/\s+/).some(name => SMALL_CLASSES.has(name));
+    const smallUrl = small && (SMALL_ICONS[id] ?? SMALL_ICONS[`person:${id}`] ?? SMALL_ICONS[ALIAS[id]]);
+    return `<img class="${cls}" src="${smallUrl || u}" alt="" draggable="false" decoding="async">`;
+  }
   const g = GLYPHS[glyphName(id)];
   if (g) return `<span class="${cls} glyph">${g}</span>`;
   return emoji ? `<span class="${cls} emoji">${emoji}</span>` : '';

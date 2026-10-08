@@ -59,6 +59,16 @@ test('both ordered lesson answers are required; mistakes retry freely and skills
   assert.ok(call(s, 'workGardenProject', { step: 'uncover' }).ok, 'learned repairs stay usable if the teacher house is absent from an imported save');
 });
 
+test('older empty-start farms can choose the lesson after Minh arrives; migration grants nothing', () => {
+  const old = fixture(); old.mode = null; old.house = null; old.version = 10; delete old.learning;
+  const coins = old.coins, cells = [...old.cells], loaded = migrate(old);
+  assert.equal(learningStatus(loaded, NOW).eligible, true);
+  assert.equal(learningStatus(loaded, NOW).introduced, false); assert.equal(learningStatus(loaded, NOW).energy, 0);
+  assert.equal(unreadLearning(loaded), 0); assert.equal(loaded.coins, coins); assert.deepEqual(loaded.cells, cells);
+  assert.ok(call(loaded, 'inspectLearning').ok); assert.equal(learningStatus(loaded, NOW).energy, 100);
+  assert.equal(loaded.coins, coins);
+});
+
 test('three visible phases cost exactly 80 coins and 50 energy, with two saved memories and no lucky cash', () => {
   const s = fixture(), cells = [...s.cells], stock = { ...s.barn.items }; learn(s);
   assert.equal(learningStatus(s, NOW).nextStep.id, 'uncover');

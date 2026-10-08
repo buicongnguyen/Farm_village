@@ -126,7 +126,7 @@ export class Radial {
         const price = plantPrice(s, c), have = barn.stock(s, c);
         return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
-      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml(b.crop, '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
+      else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml('ui:harvest_all', '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
       else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${bar(1 - (b.doneAt - now) / full)}`; }
     } else if (def?.fruit) {
       const st = treeState(s, id, now), f = FRUITS[def.fruit];
@@ -149,7 +149,7 @@ export class Radial {
       const hungry = list.filter(x => animalState(x, now) === 'hungry').length, ready = list.filter(x => animalState(x, now) === 'ready').length;
       if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
-      if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(p.kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
+      if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
       info = true ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
