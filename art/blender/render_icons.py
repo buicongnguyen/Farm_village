@@ -34,6 +34,8 @@ os.makedirs(TMP, exist_ok=True); os.makedirs(OUT, exist_ok=True)
 
 
 def src_path(src):
+    if src.startswith('self:'):   # a file in this repository (e.g. the rigged animals the world uses)
+        return os.path.join(ROOT, src[5:])
     if src.startswith('raw:'):
         return os.path.join(tempfile.gettempdir(), f'fv-raw-{src[4:]}.glb')
     return src if os.path.isabs(src) else os.path.join(REPOS, src)
