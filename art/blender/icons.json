@@ -946,5 +946,47 @@
    16
   ],
   "preset": "building"
+ },
+ {
+  "id": "apple_juice",
+  "src": "raw:items",
+  "root": "item_apple_juice",
+  "preset": "goods"
+ },
+ {
+  "id": "carrot_juice",
+  "src": "raw:items",
+  "root": "item_carrot_juice",
+  "preset": "goods"
+ },
+ {
+  "id": "orange_juice",
+  "src": "raw:items",
+  "root": "item_orange_juice",
+  "preset": "goods"
+ },
+ {
+  "id": "noodles",
+  "src": "raw:items",
+  "root": "item_noodles",
+  "preset": "goods"
+ },
+ {
+  "id": "instant_noodles",
+  "src": "raw:items",
+  "root": "item_instant_noodles",
+  "preset": "goods"
+ },
+ {
+  "id": "juice_press",
+  "src": "raw:decor",
+  "root": "juice_press",
+  "preset": "building"
+ },
+ {
+  "id": "noodle_factory",
+  "src": "raw:decor",
+  "root": "noodle_factory",
+  "preset": "building"
  }
 ]

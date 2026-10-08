@@ -30,6 +30,9 @@ export const BUILDINGS = {
   kennel:     { name: "Biscuit's kennel", cat: 'animals', size: [1, 1], area: 'any', level: 5, cost: 90, pet: true, max: 1, model: 'kennel', charm: 2 },
   // Production
   feed_mill:  { name: 'Feed mill', cat: 'production', size: [2, 2], area: 'farm', level: 2, cost: 30, door: true, produces: true, project: 'mill_coop', max: 1, model: 'feed_mill', charm: -1 },
+  // food factories (docs/VILLAGE-GROWTH-PLAN.md, stage 3b): the same farm goods processed for more profit
+  juice_press: { name: 'Juice press', cat: 'production', size: [2, 2], area: 'farm', level: 6, cost: 600, door: true, produces: true, max: 1, model: 'juice_press' },
+  noodle_factory: { name: 'Noodle factory', cat: 'production', size: [3, 2], area: 'farm', level: 8, cost: 1200, door: true, produces: true, max: 1, model: 'noodle_factory', charm: -1 },
   bakery:     { name: 'Bakery', cat: 'production', size: [3, 2], area: 'farm', level: 3, cost: 150, door: true, produces: true, after: 'mill_coop', max: 1, model: 'bakery', charm: -1 },
   stall:      { name: 'Roadside stall', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, stall: true, max: 1, model: 'market-stall' },
   fruit_stand:{ name: 'Fruit stand', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, fruitStand: true, max: 1, model: 'fruit_stand', charm: 1 },
