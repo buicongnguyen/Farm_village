@@ -210,6 +210,12 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-08, art lane, **reference pass** (`art/opening-pass`): this answers step 3 of
+  `docs/REFERENCE-GAME-COMPARISON.md` and adds an item-art pass the report did not list. Art lane writes in shared
+  files: `src/ui/guide.mjs` (`begin()` only: the opening frame, `HOME_FRAME`), `src/content/world.mjs` (`HOME_YARD`,
+  a view-only constant), `src/view/world-view.mjs`, `src/view/ground.mjs` and `src/view/dress.mjs` (ground looks and
+  the forecourt dressing). No rules, saves or UI behaviour change. Steps 1, 2, 4 and 5 stay with the logic lane or
+  both lanes as the report says. Plan and results: `docs/reference-pass/README.md`.
 - 2026-10-08, art lane, **truck fleet at the user's request** ("add more trucks so we can deliver more goods when the
   farm grows too much product"), on `art/truck-fleet`: the user gave this logic feature to Claude directly, so Claude
   was the active writer of `src/core/market.mjs` (fleet, `fillTruck`, `buyTruck`, send-all, collect-all), `TRUCK.fleet`
