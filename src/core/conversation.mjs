@@ -5,7 +5,7 @@ import { ANIMALS, RECIPES } from '../content/goods.mjs';
 import { SLOTS } from '../content/economy.mjs';
 import { isWorking, workingCount } from './working.mjs';
 import { currentStep } from './projects.mjs';
-import { recipeOpen } from './production.mjs';
+import { recipeOpen, collectableJobs } from './production.mjs';
 import { canFill } from './orders.mjs';
 import * as barn from './barn.mjs';
 
@@ -25,10 +25,7 @@ export function juneTopics(s, now) {
   const hungry = animals.filter(({ animal }) => animal.doneAt == null);
   if (Object.entries(s.beds).some(([id, b]) => available(id, 'bed') && b.doneAt <= now)) add('harvest');
   if (animals.some(({ animal }) => animal.doneAt != null && animal.doneAt <= now)) add('collect');
-  if (Object.entries(s.production).some(([id, q]) => {
-    const job = q.queue[0], recipe = RECIPES[job?.recipe];
-    return recipe && available(id, recipe.at) && job.doneAt <= now && barn.space(s) >= recipe.makes;
-  })) add('products');
+  if (Object.keys(s.production).some(id => collectableJobs(s, id, now).some(job => s.placed[id]?.kind === RECIPES[job.recipe].at))) add('products');
   if (hungry.some(({ animal }) => barn.stock(s, ANIMALS[animal.kind].eats) > 0)) add('feed');
   const feedKinds = [...new Set(hungry.map(({ animal }) => ANIMALS[animal.kind].eats))].filter(id => !barn.stock(s, id));
   const canMakeFeed = feedKinds.some(id => {

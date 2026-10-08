@@ -84,7 +84,7 @@ export const ADVICE_TOPICS = {
     type: 'opportunity', person: 'june', icon: 'bakery',
     title: 'Room for another batch',
     line: 'The {building} queue is full, love. Another slot costs {cost} coins if we want to line up more work.',
-    reason: 'A slot lets you queue one more batch before leaving. It does not make production faster, and you can also wait for the current batches.',
+    reason: 'An extra tray makes another batch at the same time. You can also wait and collect a finished batch to free its tray.',
   },
   'fishing-break': {
     type: 'activity', person: 'pip', icon: 'pond',

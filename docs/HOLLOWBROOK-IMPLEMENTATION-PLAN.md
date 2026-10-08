@@ -1,6 +1,8 @@
 # Hollowbrook — consolidated implementation plan
 
-Implementation update: the [guidance, land and food-story delivery](GUIDANCE-LAND-FOOD-DELIVERY.md) implements one bounded covered-plot branch, ingredient/use help and three linked picnic food requests on main baseline `b0172d6`. Historical “covered land planned” paragraphs below describe earlier releases. Project energy, skills, broader regions and later chapters remain planned.
+Implementation update, 2026-10-09: [guidance, land and the food story](GUIDANCE-LAND-FOOD-DELIVERY.md) are live through PR #24, following the picnic trail/AR-010 release in PR #18. The [production and village growth slice](PRODUCTION-AND-VILLAGE-GROWTH.md) is implemented and validated, starting from `4377129` and integrating main `1add9a4`: independent trays, source-aware orders, explicit lake/plaza shop sales and the first optional hospital/police/company tier. **355/355 native tests, all pace targets, all 23 component browser suites, 28/28 smoke checks and eight production contexts pass.** The component result includes the corrected old cast fixture (9/9) after the initial 22/23 run and affected final-build reruns. All 20 new checks pass; production contexts cover four new growth and four existing optional flows in English/Vietnamese at 390/1280 px. Steady school/clinic remain day 3; production first-load code is **1,094,983 bytes**. The release PR records CI, Pages deployment and live verification.
+
+Historical “covered land planned” paragraphs below describe earlier releases. One covered plot and ingredient/use cards now exist; broader regions, selective scenery clearing, skills/project-only energy, later civic tiers and later story chapters remain planned. AR-011 tracks dedicated civic art. AR-012 tracks menu pictures, real small icon files and the later compact HUD/status-stack integration; current round order tokens and full-size icon URLs do not complete that work.
 
 Date: 2026-10-08 (Asia/Seoul)
 
@@ -8,7 +10,7 @@ Historical release baseline: **profiles and four discoveries shipped through PR 
 
 Previous release, PR #18: **the picnic trail and AR-010 integration are complete and validated for [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18)**. Staged box/tin world taps, three bilingual memories, one stored flowerpot, earned/read progress and arrival-gated favours were implemented. That release preserved updated icons, lower truck prices, herb/ginseng, orange/coconut/willow, the juice press/noodle factory and growth/company plans. Validation: 261 native tests, pace targets, 19 component suites, 28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [DISCOVERY-TRAIL.md](DISCOVERY-TRAIL.md) gives its scope; the PR records deployment/live acceptance. Covered-area progression was still planned at that point; the current update above implements its first bounded branch. Selective scenery clearing, skills/project energy, major vehicle restoration and later chapters remain planned. Earlier branch/status paragraphs below are historical.
 
-Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Visitor/saved-news review fixes (`b03c38c`) and profiles/discoveries shipped in PR #4. That advice delivery used `codex/village-advice`, based on main at `ab6b230`; the current picnic integration baseline is recorded above.
+Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Visitor/saved-news review fixes (`b03c38c`) and profiles/discoveries shipped in PR #4. The advice delivery used `codex/village-advice`, based on main at `ab6b230`. Current work is isolated on `codex/production-village-growth`; unrelated mobile changes in the original checkout remain untouched.
 
 Coordination update, 2026-10-08: the user asked to continue implementation and deploy ready changes; the PR #4 baseline is live. The next bounded delivery implements adaptive business/blocker/activity advice and three earned celebration memories, with 72 bilingual content/control strings and save version 7. Validation: 229 native tests on the combined advice/art tree and all pace targets pass, steady school and clinic day 3; all 17 component browser suites and 28/28 smoke checks passed on the advice build. Final first-load code: 1,005,608 bytes test / 1,004,534 bytes production. Advice/discovery suites were rerun in both languages after icon integration; a dedicated AR-009 check passed all 12 cards across phone/desktop and English/Vietnamese, including fit, 256 px icons, no payment on reading, no GLB loading and no errors. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md). AR-001 is closed; the [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) WebP icons are integrated for PR #6, while its GLB remains available for future 3D presentation. The [reference-game comparison](REFERENCE-GAME-COMPARISON.md) separates observed reference behavior from recommended future work.
 
@@ -66,18 +68,19 @@ The earlier 500-versus-1,000 simulation was a historical, single-seed experiment
 
 ## 3. Baseline to preserve
 
-| Area | Current foundation (orchard, profiles and finds live) | Implication for new work |
+| Area | Foundation, with unreleased branch work explicitly marked | Implication for new work |
 |---|---|---|
 | Core architecture | Rules in `src/core` behind `act()`/`tick()`; data in `src/content`; views/UI separate | Extend the same boundaries |
 | Main progression | Sequential farm projects, families, school, then clinic | Add optional branches without new mandatory gates |
 | Roadmap | Current stage goal and next three unlocks already implemented | Extend it with truthful context; do not rebuild a second roadmap |
-| Farm profiles and finds | Three isolated local farms; four one-time discoveries; earned/retired/read state and optional memories | Review-branch scope only; keep profile state and payments independent |
+| Farm profiles and finds | Three isolated local farms; four one-time discoveries; earned/retired/read state and optional memories, all live | Keep profile state and payments independent |
 | Orchard and Biscuit | Cherry tree, fruit stand, kennel and crow protection implemented | Give these existing objects more contextual meaning |
-| Land | 4 × 4 parcel grid; currently at most two owned parcels; second parcel costs 500 at level 4 and must be adjacent | Land discovery remains planned; more purchasable land needs explicit progression work |
+| Land | 4 × 4 parcel grid; at most two owned parcels; second parcel costs 500 at level 4; PR #24 adds useful clear ground and one optional planting-marker memory | Preserve old parcel choices; more purchasable land and broader reveals need explicit progression work |
 | Existing cover | Unowned parcels have tall grass, saplings, rocks, fences and signs | Replace abrupt purchase dressing changes with deliberate reveals |
 | Clearing | Owned/buildable weeds and rocks, including batches | Wild scenery trees are not presently harvestable obstacles |
-| Vehicles | Working animated delivery truck; sourced tractor model available | Preserve truck use; tractor gameplay and other vehicle systems are new |
-| Buildings | Cottage repair, farmhouse repair/upgrades, civic tidy-up, school and clinic projects | Police/company reopening and playable interiors remain future work |
+| Vehicles | Working animated truck fleet; current branch adds optional company requests using those same trucks | Preserve ordinary deliveries; tractor gameplay and other vehicle systems remain new work |
+| Buildings | Cottage/farmhouse repairs, school and clinic are live; current branch adds hospital upgrade and fixed-site police/company reopening | Complete branch verification; later visual tiers and playable interiors remain future work |
+| Production and customers | Juice press (level 6), noodle factory (8) and Lan's picnic menu are live; current branch adds parallel trays and explicit kiosk/plaza basket sales | Keep saved batch schedules, held goods and quotes accurate; avoid a simultaneous global rebalance |
 | Fishing | Permanent village pond available from the opening | Do not put existing fishing behind new land, skill, or energy gates |
 | Experience | General XP and level unlocks already exist | Dedicated skill tracks and energy are new |
 | School | Level 6, two families with children, 24 bread, 10 corn bread and 4,000 coins after prior projects | Protect its timing and ingredient availability |
@@ -516,11 +519,16 @@ Prefer shared rule calculations over UI estimates that can disagree with the act
 
 ### Saved concepts and later schema work
 
-The current slice persists bounded discovery progress plus separate earned, retired and read IDs per farm profile. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the implemented API and migration. The remaining concepts below are future schema responsibilities, not finalized field names:
+Live saves already retain per-profile discovery/trail progress, read/deferred advice, one land discovery and the
+three picnic deliveries. The current branch's save version 10 adds stable production tray metadata, shared shop
+request/cooldown records and bounded civic/company progress/payment ledgers. Existing serial batch deadlines stay
+intact and loading grants no new reward. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the original
+discovery API and [PRODUCTION-AND-VILLAGE-GROWTH.md](PRODUCTION-AND-VILLAGE-GROWTH.md) for current migration behavior.
+The remaining concepts below are additional schema responsibilities, not replacement field names:
 
 - Further discoveries: extend stable IDs and eligibility without reopening already settled rewards.
 - Regions: knowledge, access, ownership through existing parcel rules, and optional restoration stages.
-- News: stable topic/event IDs, unread/read/deferred state, bounded history and suppression context.
+- Further news: extend existing stable IDs and unread/read/deferred history without recreating earned rewards.
 - Skills: reliable practice totals, completed lessons, learned capabilities.
 - Projects: committed resources, completed steps, active work and cancellation policy.
 - Energy: current amount, capacity source, recovery timestamp, and versioned migration treatment.
@@ -535,7 +543,7 @@ Preserve existing abilities and access on migration. The current discovery migra
 
 ## 14. Implementation phases
 
-Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1's bounded first pass and AR-001 are live. Phase 3's four-find subset plus profiles is also live. The initial persistent advice subset of phase 2 is implemented and validated for PR #6; item-use cards, additional interactions and later phases remain planned.
+Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1, the profiles/four-find subset of phase 3, and phase 2's adaptive advice are live. PR #18 adds the accessible porch/pond trail; PR #24 adds ingredient/use cards, one useful covered plot and the connected food story. The current production/shop/civic slice extends existing business activities; it does not complete all of a later phase or chapter.
 
 Implementation phases are delivery groupings, independent of Journey stage and chapter numbers. For example, implementation phase 7 includes the later story's stage 6 water resolution.
 
@@ -552,7 +560,18 @@ Implementation phases are delivery groupings, independent of Journey stage and c
 
 **Art track:** AR-001 established the richer palette, path-value separation, lighting and collection feedback. AR-009 supplies the discovery keepsakes; its WebP icons are integrated for PR #6 and its packed GLB is not loaded by those discovery cards. AR-010 is delivered through PR #13: a separate five-node exploration kit and ribbon icon. Codex integrated stage-dependent box/tin placement and explicit world inspection routes; future objects stay hidden and unpickable, and the pink butterfly-shaped ribbon matches the bilingual story. Combined rendering, loading, save and tap checks passed; the discovery delivery report records the results. Apply the established treatment to cover/reveals in phase 4 and vehicles/interiors as they arrive; review normal phone play after each asset addition.
 
-**Completed slices:** clue-order and truthful-feedback fixes, the look pass, contextual conversations, three local farm profiles, four saved one-time discoveries, adaptive advice and the working truck fleet. **Current slice:** one connected picnic memory, arrival-gated favours and integrated AR-010 world props. The eight-stage story rewrite, broad item-use expansion, major vehicle restoration and energy/skills remain future work. Later rows, especially phase 7, are groups of separate releases, not one PR or a size estimate.
+**Completed live slices:** clue-order and truthful-feedback fixes, the look pass, contextual conversations, three
+profiles, four bounded finds, adaptive advice, the truck fleet, the connected picnic trail/AR-010, arrival-gated
+favours, ingredient/use guidance, one covered plot and Lan's three-batch food story. **Current slice, implemented and
+validated:** parallel trays with legacy-save compatibility, actual shop customers, source-aware orders and the first
+hospital/police/company loop. It keeps the current early prices, 500-coin opening and 110-coin discovery cap.
+
+**Separate remaining work:** one learned skill plus one larger repair project with generous project-only energy and
+free recovery; AR-011 dedicated civic icons/upgrade art; AR-012 small icons, menu pictures and compact status-stack
+layout; meadow/dairy, broader regions, school activities, useful vehicle restoration and later chapters. Pearl/Bea's
+introductions, Ellis's permanent return, the water-rights repair sequence and the visible festival are not completed
+by optional company contracts. Later rows, especially phase 7, are groups of separate releases, not one PR or a size
+estimate.
 
 For every phase, record: accepted scope, content changes, saved-state migration, economy changes, player-visible result, rules/browser checks, and remaining tuning questions. Avoid combining a global rebalance with several new systems in the same first release.
 

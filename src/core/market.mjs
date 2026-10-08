@@ -8,6 +8,7 @@ import { TRUCK } from '../content/economy.mjs';
 import { GOODS, CROPS } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { workingCount, isWorking } from './working.mjs';
+import { growthTruckPayment, collectGrowthTruck } from './village-growth.mjs';
 
 export const truckOf = s => { const t = (s.truck ??= { level: 1, away: false, backAt: 0, load: [], coins: 0, fleet: [] }); t.fleet ??= []; return t; };
 /** Every truck, the first one (`s.truck`) included. */
@@ -53,7 +54,7 @@ export function tickTruck(ctx) {
   const { s, now } = ctx; if (!s.truck) return;
   trucksOf(s).forEach((u, i) => {
     if (!u.away || u.backAt > now) return;
-    const coins = Math.round(loadValue(u) * TRUCK.pay);
+    const coins = growthTruckPayment(ctx, u) ?? Math.round(loadValue(u) * TRUCK.pay);
     u.away = false; u.coins = (u.coins ?? 0) + coins; u.load = []; s.stats.trips = (s.stats.trips ?? 0) + 1;
     ctx.emit('truckBack', { coins, truck: i });
   });
@@ -109,7 +110,7 @@ export const actions = {
   /** Collect every truck's takings at once. */
   collectTruck(ctx) {
     const { s } = ctx, coins = truckCoins(s); if (!coins) return ctx.fail('Nothing sold yet');
-    for (const u of trucksOf(s)) u.coins = 0;
+    for (const u of trucksOf(s)) { if (u.coins > 0) collectGrowthTruck(s, u); u.coins = 0; }
     s.coins += coins; s.stats.coinsEarned += coins;
     ctx.emit('coins', { coins });
     return { coins };

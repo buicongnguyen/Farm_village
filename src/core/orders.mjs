@@ -6,21 +6,36 @@ import * as barn from './barn.mjs';
 import { draw } from './rng.mjs';
 import { gainXp } from './levels.mjs';
 import { familiesIn } from './projects.mjs';
-import { animalCount } from './animals.mjs';
 import { addHearts } from './bonds.mjs';
-import { outOfOrder } from './working.mjs';
+import { isWorking } from './working.mjs';
+import { recipeOpen } from './production.mjs';
 
 export const slots = s => ORDERS.slots(s.level);
-/** Goods an order may ask for: things the player can make right now (fruit only once a tree of that kind is planted). */
+/** Renewable sources for new random orders. Existing cards stay saved when a source is stored or needs repair.
+ * A maker alone is not enough: follow every ingredient back to real beds, planted trees, animals and feed. */
 export function orderable(s) {
-  const has = kind => (s.counts[kind] ?? 0) - outOfOrder(s, kind) > 0, fruitOk = id => has(FRUITS[id].tree);
-  return Object.keys(GOODS).filter(id => {
-    if (CROPS[id]) return CROPS[id].level <= s.level;
-    if (FRUITS[id]) return fruitOk(id);
-    if (RECIPES[id]) return !id.endsWith('_feed') && RECIPES[id].level <= s.level && has(RECIPES[id].at) && Object.keys(RECIPES[id].needs).every(g => !FRUITS[g] || fruitOk(g));
-    const animal = Object.entries(ANIMALS).find(([, a]) => a.gives === id);
-    return animal ? animalCount(s, animal[0]) > 0 : false;
-  });
+  const placed = Object.entries(s.placed), memo = new Map();
+  const has = kind => placed.some(([id, p]) => p.kind === kind && isWorking(s, id));
+  const beds = placed.some(([, p]) => p.kind === 'bed');
+  const source = good => {
+    if (memo.has(good)) return memo.get(good);
+    memo.set(good, false); // fail closed if future content accidentally introduces a recipe cycle
+    const crop = CROPS[good], fruit = FRUITS[good], recipe = RECIPES[good];
+    let ok = false;
+    if (crop) ok = crop.level <= s.level && beds;
+    else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt));
+    else if (recipe) ok = recipeOpen(s, good) && has(recipe.at) && Object.keys(recipe.needs).every(source);
+    else {
+      const animal = Object.entries(ANIMALS).find(([, a]) => a.gives === good);
+      if (animal) {
+        const [kind, a] = animal;
+        ok = a.level <= s.level && placed.some(([id, p]) => p.kind === a.home && isWorking(s, id)
+          && (s.animals[id] ?? []).some(an => an.kind === kind)) && source(a.eats);
+      }
+    }
+    memo.set(good, ok); return ok;
+  };
+  return Object.keys(GOODS).filter(good => !good.endsWith('_feed') && source(good));
 }
 /** People who can post orders now: villagers who are here (not noOrders ones such as your own family), neighbours, and
  * families who have moved in. */
@@ -35,8 +50,10 @@ export function makeCard(s, now, { easy = false } = {}) {
     const id = `o${s.nextId++}`;
     if (!s.stats.ordersFilled && !s.orders.cards.length) // the tutorial's first order (DESIGN 15)
       return { id, ...FIRST_ORDER, need: { ...FIRST_ORDER.need }, readyAt: now, story: true };
-    let pool = orderable(s);
-    if (easy) { const inStock = pool.filter(g => barn.free(s, g) > 0); pool = inStock.length ? inStock : ['wheat']; }
+    let pool = orderable(s), stockOnly = false;
+    if (easy) { const inStock = pool.filter(g => barn.free(s, g) > 0); stockOnly = inStock.length > 0; pool = stockOnly ? inStock : ['wheat']; }
+    // Empty farms can always begin again with the free wheat seed and free starter beds.
+    if (!pool.length) pool = ['wheat'];
     const kinds = 1 + r.int(Math.min(3, pool.length)), target = ORDERS.size(s.level), need = {};
     // No good may ask for more than a quarter of the barn, so cheap goods drop out as orders grow (ECONOMY 3).
     const cap = Math.max(3, Math.floor(s.barn.cap / 4));
@@ -44,7 +61,8 @@ export function makeCard(s, now, { easy = false } = {}) {
     if (!easy && fits.length) pool = fits;
     for (let i = 0; i < kinds; i++) {
       const g = r.pick(pool), n = Math.min(cap, Math.max(1, Math.round(target / kinds / GOODS[g].value)));
-      need[g] = Math.min(cap, (need[g] ?? 0) + (easy ? Math.max(1, Math.min(n, barn.free(s, g) || n)) : n));
+      const amount = stockOnly ? Math.min(n, Math.max(0, barn.free(s, g) - (need[g] ?? 0))) : n;
+      if (amount) need[g] = Math.min(cap, (need[g] ?? 0) + amount);
     }
     const worth = Object.entries(need).reduce((a, [g, n]) => a + GOODS[g].value * n, 0);
     // the poster first, then a line in their own voice (the story's `orders` lines), with the same two draws as before

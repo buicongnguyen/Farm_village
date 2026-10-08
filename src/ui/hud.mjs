@@ -24,6 +24,7 @@ import { unreadDiscoveries } from '../core/discoveries.mjs';
 import { unreadExploration } from '../core/exploration.mjs';
 import { unreadLandDiscovery } from '../core/land-discovery.mjs';
 import { unreadContracts } from '../core/contracts.mjs';
+import { unreadGrowth } from '../core/village-growth.mjs';
 import { unreadAdvice } from '../core/advice.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
@@ -104,7 +105,7 @@ export class Hud {
   }
   /** A completed timer can change a topic without a resource event; keep the unread count current too. */
   refreshTodayMessages() {
-    const messages = unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
+    const messages = unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
     const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
     badge.textContent = messages || ''; badge.classList.remove('dot'); badge.hidden = !messages;
     button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));

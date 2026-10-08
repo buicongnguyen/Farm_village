@@ -10,8 +10,11 @@ import { newAdvice, normalizeAdvice } from './advice-state.mjs';
 import { newExploration, normalizeExploration } from './exploration.mjs';
 import { newLandDiscovery, normalizeLandDiscovery } from './land-discovery.mjs';
 import { newContracts, normalizeContracts } from './contracts.mjs';
+import { normalizeProduction } from './production-state.mjs';
+import { normalizeShops } from './shops-state.mjs';
+import { newGrowth, normalizeGrowth } from './growth-state.mjs';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -42,6 +45,8 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     exploration: newExploration(), // optional old-object trail, independent of the paid introductory finds
     landDiscovery: newLandDiscovery(),
     contracts: newContracts(),
+    shops: {},
+    growth: newGrowth(),
     discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
     advice: newAdvice(),                    // stable read/deferred contexts and bounded celebration records, never rendered text
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
@@ -108,6 +113,8 @@ export function migrate(save) {
   if (save.version < 8) save.version = 8;
   // v8 → v9: optional land keepsake and food requests start unpaid; loading never rewards or changes owned terrain.
   if (save.version < 9) save.version = 9;
+  // v9 → v10: independent production trays keep old completion times; optional shop/civic progress starts empty.
+  if (save.version < 10) save.version = 10;
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -132,5 +139,8 @@ export function withDefaults(s) {
   s.exploration = normalizeExploration(s);
   s.landDiscovery = normalizeLandDiscovery(s);
   s.contracts = normalizeContracts(s);
+  s.production = normalizeProduction(s);
+  s.shops = normalizeShops(s);
+  s.growth = normalizeGrowth(s);
   return s;
 }

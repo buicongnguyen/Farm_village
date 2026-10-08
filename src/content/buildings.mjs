@@ -61,6 +61,8 @@ export const BUILDINGS = {
   garden_flower: { name: 'Garden flower', cat: 'garden', size: [1, 1], area: 'any', level: 1, cost: 0, garden: true, model: 'flowers' },
   // Village projects (placed through the build order, DESIGN 11)
   clinic:     { name: 'Clinic', cat: 'projects', size: [4, 3], area: 'village', level: 6, cost: 600, door: true, project: 'clinic', max: 1, model: 'hospital', charm: 4 },
+  police:     { name: 'Police post', cat: 'projects', size: [4, 3], area: 'village', level: 12, cost: 2200, door: true, civicSite: true, max: 1, model: 'police', charm: 4 },
+  company:    { name: 'Company office', cat: 'projects', size: [4, 3], area: 'village', level: 15, cost: 3000, door: true, civicSite: true, max: 1, model: 'company', charm: 2 },
   school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 6, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
 };
 export const COTTAGE_LEVELS = [{ name: 'Basic' }, { name: 'Cozy' }, { name: 'Deluxe' }];

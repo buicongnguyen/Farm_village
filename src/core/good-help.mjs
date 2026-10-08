@@ -3,7 +3,7 @@ import { GOODS, CROPS, FRUITS, RECIPES, ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { SLOTS } from '../content/economy.mjs';
 import { currentStep, mayBuild } from './projects.mjs';
-import { recipeOpen } from './production.mjs';
+import { recipeOpen, productionOf, collectableJobs, productionDuration } from './production.mjs';
 import { isWorking, isRepairing } from './working.mjs';
 import { repairCost } from './condition.mjs';
 import { placementPrice } from './build.mjs';
@@ -15,7 +15,7 @@ import * as barn from './barn.mjs';
 
 const own = (table, id) => typeof id === 'string' && Object.hasOwn(table, id);
 const makers = (s, kind) => Object.keys(s.placed).filter(id => s.placed[id].kind === kind);
-const queue = (s, id) => s.production?.[id]?.queue ?? [];
+const queue = (s, id) => productionOf(s, id).queue;
 const stock = (s, good, needed, honourHold = true) => {
   const have = barn.stock(s, good), free = barn.free(s, good, honourHold);
   return { good, needed, stock: have, free, held: Math.max(0, have - free), missing: Math.max(0, needed - free) };
@@ -35,25 +35,19 @@ function repair(s, id, kind) {
 
 function recipeSource(s, good, now, missing) {
   const recipe = RECIPES[good], ids = makers(s, recipe.at);
-  const jobs = ids.flatMap(id => {
-    let spaceNeeded = 0;
-    return queue(s, id).map(job => {
-      spaceNeeded += RECIPES[job.recipe].makes;
-      return { id, ...job, spaceNeeded };
-    }).filter(job => job.recipe === good);
-  });
+  const jobs = ids.flatMap(id => queue(s, id).filter(job => job.recipe === good).map(job => ({ id, ...job })));
   const ready = jobs.filter(j => j.doneAt <= now), waiting = jobs.filter(j => j.doneAt > now);
   const counts = { ready: ready.length * recipe.makes, queued: waiting.length * recipe.makes };
   const ingredients = Object.entries(recipe.needs).map(([g, n]) => stock(s, g, n));
   const base = { type: 'recipe', at: recipe.at, makes: recipe.makes, duration: recipe.timeMs, ingredients, ...counts };
   // Finished output can be collected even if the building subsequently broke or the recipe was learned early.
   if (ready.length) {
-    // Collection takes the queue in order, including earlier batches of a different recipe.
-    const collectable = ready.find(job => barn.space(s) >= job.spaceNeeded), job = collectable ?? ready[0];
-    return { ...base, status: collectable ? 'ready' : 'barn-full', spaceNeeded: job.spaceNeeded,
+    // Match the actual independent-tray collection, including its shared barn capacity.
+    const collectable = ready.find(job => collectableJobs(s, job.id, now).some(candidate => candidate.slot === job.slot)), job = collectable ?? ready[0];
+    return { ...base, duration: job.durationMs, status: collectable ? 'ready' : 'barn-full',
       target: buildingTarget(job.id, recipe.at, { panel: 'production' }) };
   }
-  if (waiting.length && counts.queued >= Math.max(1, missing)) return { ...base, status: 'waiting',
+  if (waiting.length && counts.queued >= Math.max(1, missing)) return { ...base, duration: waiting[0].durationMs, status: 'waiting',
     target: buildingTarget(waiting[0].id, recipe.at, { panel: 'production' }) };
   if (!recipeOpen(s, good)) return { ...base, status: 'level', level: recipe.level,
     target: ids.length ? buildingTarget(ids[0], recipe.at, { panel: 'production' }) : { kind: 'catalogue', buildingKind: recipe.at } };
@@ -61,7 +55,7 @@ function recipeSource(s, good, now, missing) {
   const working = ids.filter(id => isWorking(s, id));
   if (!working.length) return { ...base, ...repair(s, ids[0], recipe.at) };
   const id = working.find(id => queue(s, id).length < (s.production?.[id]?.slots ?? SLOTS.start));
-  return { ...base, status: !id ? 'queue-full' : ingredients.some(i => i.missing) ? 'ingredients' : 'make',
+  return { ...base, duration: productionDuration(s, id ?? working[0], good, now), status: !id ? 'queue-full' : ingredients.some(i => i.missing) ? 'ingredients' : 'make',
     target: buildingTarget(id ?? working[0], recipe.at, { panel: 'production' }) };
 }
 

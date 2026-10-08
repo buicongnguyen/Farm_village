@@ -35,6 +35,8 @@ function heartThreshold(e, s) {
 }
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
+  hospitalUpgraded: () => `${iconHtml('clinic', '', 'mini')} ${t('Our little hospital')}`,
+  companyDelivered: e => `${iconHtml('truck', '', 'mini')} ${t('Company delivery returned: {coins} coins waiting at the market', { coins: num(e.coins) })}`,
   landDiscovered: () => `${iconHtml('bench', '', 'mini')} ${t('A little discovery: {name}', { name: t(LAND_BRANCH.discovery.title) })}`,
   contractDelivered: e => `${iconHtml('noodles', '', 'mini')} ${t('Picnic delivery received: {coins} coins', { coins: num(e.coins ?? 0) })}`,
   explorationStep: e => `${iconHtml('lucky_box', '', 'mini')} ${t('A little discovery: {name}', { name: t(explorationStep(e.step)?.title ?? 'Picnic trail') })}`,

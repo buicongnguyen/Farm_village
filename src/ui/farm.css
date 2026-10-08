@@ -69,7 +69,19 @@ button.good-tile { cursor: pointer; }
 .recipe-group { min-width: 0; display: grid; align-content: start; gap: 6px; }
 .recipe-group .recipe { width: 100%; }
 .recipe-help .link { min-height: 44px; }
+.shop-card { display: grid; gap: 8px; padding: 12px 0; border-bottom: 2px solid var(--line); }
+.shop-card .link { min-height: 44px; text-align: left; }
+.shop-offer { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.shop-offer span { min-width: 0; overflow-wrap: anywhere; }
+.slot small { text-align: center; }
 button.good { min-height: 44px; cursor: pointer; }
+.order button.good { flex-direction: column; padding: 4px 6px; min-width: 60px; }
+.item-token { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 2px solid currentColor; }
+.item-token img.mini { width: 38px; height: 38px; margin: 0; }
+.village-growth { min-width: 0; overflow-wrap: anywhere; }
+.village-growth .set-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.village-growth .btn { margin-block: 4px; white-space: normal; }
+.village-growth summary { cursor: pointer; }
 .help-return { position: fixed; z-index: 18; top: max(90px, calc(env(safe-area-inset-top) + 72px)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 120px); }
 .help-return[hidden] { display: none; }
 .recipe { border: 3px solid var(--line); background: linear-gradient(#fff, #fff7e6); border-radius: 16px; padding: 7px; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; text-align: left;

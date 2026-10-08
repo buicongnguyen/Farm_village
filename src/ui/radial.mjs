@@ -107,6 +107,7 @@ export class Radial {
     if (ruin && !(s.counts[ruin.kind] > 0)) {   // an old building on the civic row: its name, what will bring it back, and a tidy-up
       const step = STEPS[s.projects.step], next = step?.builds?.includes(ruin.kind), ruinButtons = [];
       if (next) ruinButtons.push({ act: 'projects', icon: glyph('projects', 'ic'), label: t('Rebuild') });
+      if (['police', 'company'].includes(ruin.kind)) ruinButtons.push({ act: 'villageGrowth', icon: glyph('projects', 'ic'), label: t('Village growth') });
       if (!tidied(s, ruin.kind)) ruinButtons.push({ act: 'tidyRuin', kind: ruin.kind, icon: glyph('sprout', 'ic'), label: `${coinMark()}${TIDY.coins}`, disabled: s.coins < TIDY.coins });
       return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
@@ -132,6 +133,7 @@ export class Radial {
     else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
     else if (p?.kind === 'clinic') { this.hide(); this.panels.show('clinic', id); return; }
+    else if (def?.civicSite) { this.hide(); this.panels.show('villageGrowth'); return; }
     else if (def?.pet) info = t('Biscuit watches the beds and chases crows. No upkeep needed.');
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
@@ -212,6 +214,7 @@ export class Radial {
     else if (d.act === 'repair') g.do('repair', { id: d.id });
     else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
     else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
+    else if (d.act === 'villageGrowth') this.panels.show('villageGrowth');
     else if (d.act === 'open') { const l = this.last; if (l) this.tap(l.cell, l.x, l.y, { open: true }); }
     else if (d.act === 'buyParcel') {
       const r = g.do('buyParcel', { parcel: d.parcel });

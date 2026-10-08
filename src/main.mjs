@@ -39,6 +39,9 @@ import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/wo
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
+import { pickShop } from './view/shop-picking.mjs';
+import { SHOP_SITES } from './content/shops.mjs';
+import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
@@ -186,6 +189,28 @@ new LevelUp({ game, busy: () => build.open || radial.isArmed(), onShow: ({ type,
 } });
 
 const canvas = world.renderer.domElement;
+panels.onShopVisit = shop => {
+  const site = SHOP_SITES.find(s => s.shop === shop); if (!site) return;
+  if (build.open) build.close(); radial.hide(); radial.armed = null; radial.tool.hidden = true;
+  flyTo(site.x * CELL, site.z * CELL, Math.min(world.cam.span, 38));
+  panels.show('shops', shop);
+};
+panels.onGrowthSite = kind => {
+  const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
+  if (build.open) build.close(); radial.hide();
+  flyTo((site.x + 2) * CELL, (site.z + 1.5) * CELL, Math.min(world.cam.span, 38));
+  const id = Object.keys(game.s.placed).find(id => game.s.placed[id].kind === kind);
+  if (id && (levelOf(game.s, id) > 0 || game.s.repairing?.[id])) {
+    panels.close(); const { buttons, info } = radial.repairMenu(id, BUILDINGS[kind]);
+    radial.open({ x: site.x, z: site.z }, innerWidth / 2, innerHeight * .45, buttons, info, { id });
+  } else panels.show(id ? 'villageGrowth' : 'civicSite', id ? undefined : kind);
+};
+panels.onGrowthPath = kind => {
+  const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
+  const [x, z] = doorCell(kind, site.x, site.z, site.rot); panels.close(); radial.hide();
+  flyTo((x + .5) * CELL, (z + .5) * CELL, Math.min(world.cam.span, 38));
+  build.start('path', { x, z, point: { x: (x + .5) * CELL, z: (z + .5) * CELL } });
+};
 world.cam.attach(canvas, {
   onTap: (x, y) => {
     const cell = world.cellAt(x, y);
@@ -193,7 +218,9 @@ world.cam.attach(canvas, {
     else {
       panels.close();
       const place = world.exploration?.pick(x, y);
+      const shop = !place && pickShop(world, x, y);
       if (place) { radial.hide(); panels.show('exploration', place); }
+      else if (shop) { radial.hide(); radial.armed = null; radial.tool.hidden = true; panels.show('shops', shop); }
       else if (world.landDiscovery?.pick(cell)) { radial.hide(); panels.show('land', world.landDiscovery.site.parcel); }
       else radial.tap(cell, x, y);
     }

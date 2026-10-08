@@ -70,6 +70,12 @@ The gaps this plan closes (from the evaluation of 2026-10-07):
 Each stage has one clear goal on screen, one new kind of fun, and one story chapter. Levels are targets for the
 economy simulation (`npm run sim`), not promises.
 
+The later bounded growth slice implements some business systems earlier than this original stage ladder: juice
+press at level 6, noodle factory at 8, hospital at 10, police at 12 and company at 15. The first two factories are
+already live; the civic/company slice is implemented and validated. These mechanics do not complete the later story
+chapters, automated job roster or water-rights resolution. Exact implemented gates are in
+[VILLAGE-GROWTH-PLAN.md](VILLAGE-GROWTH-PLAN.md).
+
 Future cast proposals: **Priya** is a grower from a neighbouring farm, and **the twins** are two growers from another
 valley holding. Their names, voices and first-meeting scenes must be settled before implementation. Introduce each
 through an actual visit before any later co-operative dialogue assumes the player knows them; these are not current
@@ -199,6 +205,16 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Current slice, 2026-10-09: [parallel trays, village shops and civic/company growth](PRODUCTION-AND-VILLAGE-GROWTH.md)
+are implemented and validated on `codex/production-village-growth`, starting from `4377129` and integrating main
+`1add9a4`. **355/355 native tests, all 23 component suites, 28/28 smoke checks and eight production contexts pass.**
+Pace targets pass with steady school/clinic day 3; production first-load code is 1,094,983 bytes. The 23-suite result
+includes the corrected cast fixture (9/9) after the initial 22/23 run and affected final-build reruns. All 20 new
+checks and the eight production contexts cover English/Vietnamese at 390/1280 px. The release PR records CI, Pages
+deployment and live verification. The picnic trail/AR-010 (PR #18) and guidance/covered plot/picnic
+menu (PR #24) are already live. Skills/project energy, the AR-012 compact HUD/small-icon integration and later
+chapters remain separate tasks; AR-011 tracks dedicated civic art.
+
 Baseline release: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`; [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. **Adaptive advice and AR-009 discovery icons are live** through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as `a8b45988a8ff1549b10a164c48a5fda814b23eca`. [Pages deployment 37733300401](https://github.com/buicongnguyen/Farm_village/actions/runs/37733300401) passed, followed by production acceptance in eight isolated browser contexts: four fresh starts and four with explicit save fixtures, covering phone-sized/desktop viewports and both English and Vietnamese. UI/art and error checks passed; AR-009 is done. This verification used browser viewports, not physical devices.
 
 Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; PR #4 adds profiles and discoveries to main at `ab6b230`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish those completed releases from later expansion.
@@ -211,7 +227,7 @@ The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed
 
 Completed picnic release: [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) integrated AR-010 and passed its combined checks. The full 261-native / 19-component / 28-smoke run preceded the final factory-content merge; native/pace, affected art/orchard/discovery, all smoke checks and local production acceptance passed again afterward. The PR records successful Pages deployment and live acceptance. The former “waiting for integration” note is obsolete.
 
-Current follow-up: ingredient source/return guidance, one usable covered-land branch and an optional three-batch food story are implemented and validated in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24), based on main `b0172d6`. All 304 native tests, pace targets, 21 component browser suites, 28 smoke checks and four local production contexts passed. [Delivery details](GUIDANCE-LAND-FOOD-DELIVERY.md) separate this slice from energy/skills, company hiring and later chapters; the PR records deployment/live acceptance.
+Completed guidance follow-up: ingredient source/return guidance, one usable covered-land branch and an optional three-batch food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24), based on main `b0172d6`. All 304 native tests, pace targets, 21 component browser suites, 28 smoke checks and four local production contexts passed. [Delivery details](GUIDANCE-LAND-FOOD-DELIVERY.md) describe that release; the PR records deployment/live acceptance. The new civic/company slice above has its own checks.
 
 | Stage | Status |
 |---|---|
@@ -220,11 +236,13 @@ Current follow-up: ingredient source/return guidance, one usable covered-land br
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
 | Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
-| Cross-stage follow-up: picnic discovery trail | Implemented and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md); deployment acceptance is recorded in the PR. |
-| Cross-stage follow-up: guidance, covered land and food story | Implemented and validated for [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24): truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
+| Cross-stage follow-up: picnic discovery trail | Live through [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md). |
+| Cross-stage follow-up: guidance, covered land and food story | Live through [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24): truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
+| Cross-stage follow-up: parallel trays and useful shops | Implemented and validated: independent trays with legacy timing, obtainable orders, lake/plaza customers and held-stock-safe quotes. Combined validation: 355 native, pace, 23 component suites, 28 smoke checks and eight production contexts. Release PR records deployment/live verification. |
+| Cross-stage follow-up: hospital/police/company first tier | Implemented and validated at levels 10/12/15: civic gates, one worker/manager, labels, real fleet contracts and earned memories. [Scope](PRODUCTION-AND-VILLAGE-GROWTH.md); later chapters and art tiers remain planned. |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
-| 6. Hollowbrook Farm Co. | not started |
+| 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |

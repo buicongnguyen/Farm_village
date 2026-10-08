@@ -5,7 +5,7 @@
 import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
-import { CELL } from '../content/world.mjs';
+import { CELL, RUINS } from '../content/world.mjs';
 import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
 import { mayBuild } from '../core/projects.mjs';
 import { placementPrice } from '../core/build.mjs';
@@ -85,6 +85,13 @@ export class BuildView {
     Object.assign(this, { mode: 'place', kind, rot: 0, moving: null });
     // start the ghost at the middle of the screen, so it is visible straight away
     this.at = this.world.cellAt(innerWidth / 2, innerHeight * 0.42); this.side = 'n';
+    if (d.civicSite) {
+      const site = RUINS.find(r => r.kind === kind), [w, depth] = footprint(kind, site.rot);
+      this.rot = site.rot;
+      const x = site.x + Math.floor((w - 1) / 2), z = site.z + Math.floor((depth - 1) / 2);
+      this.at = { x, z, point: { x: (x + .5) * CELL, z: (z + .5) * CELL } };
+      this.world.cam.flyTo?.((site.x + w / 2) * CELL, (site.z + depth / 2) * CELL, Math.min(this.world.cam.span, 40));
+    }
     this.render(); this.refreshGhost();
   }
   tool(id) { Object.assign(this, { mode: id, kind: null, moving: null }); this.ghost.hide(); this.render(); this.renderBar(); }

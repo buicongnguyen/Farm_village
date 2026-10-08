@@ -7,12 +7,23 @@ export const STEP_TEXT = { plant: 'Plant {n} {good}', make: 'Make {n} {good}', c
 const FISH = new Set(FISH_TABLE.map(f => f.id));
 /** Steps to get these goods: [{ how, good, n, at }] (at: where it is done, for "show the way"). */
 export function planFor(s, need) {
-  const stock = {}, steps = [];
+  const stock = {}, pending = {}, steps = [], held = barn.held(s);
+  for (const [id, production] of Object.entries(s.production ?? {})) for (const job of production.queue ?? []) {
+    const recipe = RECIPES[job.recipe];
+    if (recipe && s.placed[id]?.kind === recipe.at) pending[job.recipe] = (pending[job.recipe] ?? 0) + recipe.makes;
+  }
+  for (const good of Object.keys(pending)) pending[good] = Math.max(0, pending[good] - Math.max(0, (held[good] ?? 0) - barn.stock(s, good)));
   const want = (good, n) => {
     if (!(good in stock)) stock[good] = barn.free(s, good);
-    const use = Math.min(stock[good], n); stock[good] -= use; const rest = n - use; if (rest <= 0) return;
+    const use = Math.min(stock[good], n); stock[good] -= use; let rest = n - use; if (rest <= 0) return;
     const r = RECIPES[good];
-    if (r) { const batches = Math.ceil(rest / r.makes); for (const [g, k] of Object.entries(r.needs)) want(g, k * batches); add('make', good, batches * r.makes, r.at); return; }
+    const incoming = Math.min(pending[good] ?? 0, rest);
+    if (incoming) { pending[good] -= incoming; rest -= incoming; add('collect', good, incoming, r.at); }
+    if (rest <= 0) return;
+    if (r) {
+      const batches = Math.ceil(rest / r.makes); for (const [g, k] of Object.entries(r.needs)) want(g, k * batches);
+      add('make', good, batches * r.makes, r.at); stock[good] += batches * r.makes - rest; return;
+    }
     if (CROPS[good]) return add('plant', good, rest, 'farm');
     if (FRUITS[good]) return add('pick', good, rest, FRUITS[good].tree);
     if (FISH.has(good)) return add('fish', good, rest, 'pond');
