@@ -24,9 +24,16 @@ export const noise2 = (x, z) => noise(x * 0.11, z * 0.11) * 0.65 + noise(x * 0.3
 
 // The three grass tones (light, mid, dark) and the warm dirt that shows through in patches.
 const TONES = ['#a8d95a', '#72bd3e', '#529a38'].map(c => new THREE.Color(c));
-const DIRT = new THREE.Color('#b07c4e');
-// the wilds lean olive so tended land, flowers, people and buildings stand out against them (opening composition pass)
-const OLIVE = new THREE.Color('#7d9a3c');
+// the wilds lean warmer and more olive (a hue shift, not a darker value), with patches of sunlit dry grass, so tended
+// land, flowers, people and buildings stand out against them (reference pass)
+const OLIVE = new THREE.Color('#a8a53c'), DRY = new THREE.Color('#c9b04e');
+/** The wild tint at a point (cells), by how wild it is (k, 0..1): the brook's banks use it too, so their edges meet the ground. */
+export function wildTint(gx, gz, c, k = 1) {
+  if (!k) return c;
+  c.lerp(OLIVE, (0.22 + noise(gx * 0.07 - 3.3, gz * 0.07 + 12.9) * 0.2) * k);
+  const d = noise(gx * 0.21 + 91.1, gz * 0.21 - 7.7); if (d > 0.8) c.lerp(DRY, Math.min(0.35, (d - 0.8) * 3) * k);
+  return c;
+}
 const tone = new THREE.Color();
 /** The grass tone at a point (cells): a mix of the three tones; written into out. */
 export function grassTone(x, z, out = tone) {
@@ -88,10 +95,10 @@ export class Ground {
         grassTone(gx, gz, corner); corner.sub(MID_TONE);
         if (look.tended) corner.multiplyScalar(0.55);                               // tended land: calmer
         base.add(corner);                                                            // the look sets the mean, the noise the variation
-        if (look.wild) {
-          base.lerp(OLIVE, 0.16 + noise(gx * 0.07 - 3.3, gz * 0.07 + 12.9) * 0.14);
-          const d = noise(gx * 0.21 + 91.1, gz * 0.21 - 7.7); if (d > 0.8) base.lerp(DIRT, Math.min(0.5, (d - 0.8) * 4));
-        }
+        // the wild tint by corner (the share of soft wild cells around it), so wild and kept grass meet in a ramp, not a seam
+        let wild = 0;
+        for (let dz = -1; dz <= 0; dz++) for (let dx = -1; dx <= 0; dx++) { const l = looks[(vz + dz + 1) * W + vx + dx + 1]; if (l.wild && l.soft !== false) wild++; }
+        wildTint(gx, gz, base, wild / 4);
         if (edge) base.multiplyScalar(look.edge ?? 0.88);
       } else {
         base.offsetHSL(0, 0, (noise(gx * 0.9, gz * 0.9) - 0.5) * (look.grain ?? 0.07));
@@ -104,8 +111,7 @@ export class Ground {
     for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) {
       const look = looks[(z + 1) * W + x + 1], y = look.y ?? 0;
       // tended land: a faint 2 × 2-cell plot grid (each cell has its own vertices, so the step stays crisp)
-      // stone tiles (the farmhouse forecourt): one tile per cell, every other one a shade darker
-      const plot = look.tended ? (((Math.floor((cx + x) / 2) + Math.floor((cz + z) / 2)) & 1) ? 1.025 : 0.975) : look.tile ? (((cx + x + cz + z) & 1) ? 1.04 : 0.93) : 1;
+      const plot = look.tended ? (((Math.floor((cx + x) / 2) + Math.floor((cz + z) / 2)) & 1) ? 1.025 : 0.975) : 1;
       const x0 = (cx + x) * CELL, z0 = (cz + z) * CELL, x1 = x0 + CELL, z1 = z0 + CELL;
       pos.set([x0, y, z0, x0, y, z1, x1, y, z1, x0, y, z0, x1, y, z1, x1, y, z0], i);
       const vs = [x, z, x, z + 1, x + 1, z + 1, x, z, x + 1, z + 1, x + 1, z];

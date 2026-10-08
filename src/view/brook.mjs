@@ -5,9 +5,9 @@
 // the road crosses, stepping stones north of the farm and the pond's dock. Ducks paddle on the pond (one instanced draw).
 // Draws: water 1, props 1, ducks 1. Triangles: about 6k in all.
 import * as THREE from 'three';
-import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, POND_DOCK, ROADS } from '../content/world.mjs';
+import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, POND_DOCK, ROADS, inVillage, nearHome } from '../content/world.mjs';
 import { HAZE, MAP, merge, part, swayByHeight, decorMaterial } from './backdrop.mjs';
-import { grassTone, MID_TONE, noise } from './ground.mjs';
+import { grassTone, MID_TONE, noise, wildTint } from './ground.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
 import { loadKit, bake, fit } from './models.mjs';
 
@@ -112,6 +112,8 @@ let seed = 4242; const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0
 const onRoad = xm => ROADS.some(r => r.x1 - r.x0 < 4 && xm > r.x0 * CELL - 2.5 && xm < (r.x1 + 1) * CELL + 2.5);
 
 /** The bank: a strip from under the water's edge out to where the grass takes over, coloured to meet the lawn. */
+// the lawn a bank's edge meets is wild outside the village and the homestead (world-view.mjs fixedLook)
+const wildAt = (px, pz) => { const x = Math.floor(px / CELL), z = Math.floor(pz / CELL); return inVillage(x, z) || nearHome(x, z) ? 0 : 1; };
 function bankGeometry() {
   const pos = [], col = [], idx = [], c = new THREE.Color(), t = new THREE.Color(), wet = lin('#a88d5a'), dry = lin(GROUND_COLORS.bank), grass = lin(GROUND_COLORS.grass);
   const x0 = -SKIRT - 60, x1 = MAP + SKIRT + 60, ACROSS = [0, 0.3, 0.65, 1], A = ACROSS.length;
@@ -123,7 +125,7 @@ function bankGeometry() {
       const px = x + nx * off, pz = zc + nz * off;
       pos.push(px, 0.02, pz);
       c.copy(wet).lerp(dry, Math.min(1, a * 1.7));
-      if (a > 0.6) { grassTone(px / CELL, pz / CELL, t); t.sub(MID_TONE).add(grass); c.lerp(t, (a - 0.6) / 0.4); }
+      if (a > 0.6) { grassTone(px / CELL, pz / CELL, t); t.sub(MID_TONE).add(grass); wildTint(px / CELL, pz / CELL, t, wildAt(px, pz)); c.lerp(t, (a - 0.6) / 0.4); }
       col.push(c.r, c.g, c.b);
     }
   }
@@ -136,7 +138,7 @@ function bankGeometry() {
   for (const [r, w] of [[0.9, 0], [1.12, 0.4], [1.32, 1]]) for (let s = 0; s < SEG; s++) {
     const a = s / SEG * Math.PI * 2, wob = 1 + 0.06 * Math.sin(a * 3 + 1) + (w ? (noise(s, w * 9) - 0.5) * 0.08 : 0);
     const px = P.x + Math.cos(a) * P.rx * r * wob, pz = P.z + Math.sin(a) * P.rz * r * wob;
-    c.copy(wet).lerp(dry, w ? 0.8 : 0); if (w === 1) { grassTone(px / CELL, pz / CELL, t); c.copy(t.sub(MID_TONE).add(grass)); }
+    c.copy(wet).lerp(dry, w ? 0.8 : 0); if (w === 1) { grassTone(px / CELL, pz / CELL, t); c.copy(wildTint(px / CELL, pz / CELL, t.sub(MID_TONE).add(grass), wildAt(px, pz))); }
     pos.push(px, 0.025, pz); col.push(c.r, c.g, c.b);
   }
   for (let ri = 0; ri < 2; ri++) { const a0 = base + ri * SEG, a1 = a0 + SEG; for (let s = 0; s < SEG; s++) { const s1 = (s + 1) % SEG; idx.push(a0 + s, a0 + s1, a1 + s, a0 + s1, a1 + s1, a1 + s); } }

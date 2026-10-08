@@ -2,11 +2,12 @@
 
 ## Reference pass: opening composition and item art — art lane (2026-10-08, PR preview)
 
-- **A first picture of home:** the restored village opens on the home farm. A wide screen shows the farmhouse, its
-  new stone forecourt, the road, the ripe beds and the mill; a phone keeps the beds clear of Ada's card.
+- **A first picture of home:** the restored village opens on the home farm, at full detail. A wide screen shows the
+  farmhouse, its new stone forecourt, the road, the six beds and the mill; a phone keeps all six beds clear of Ada's card.
 - **Calmer tended land, quieter wilds:** owned farm land is a calmer green with a faint plot grid; unbought land and
   the countryside lean olive. Crops, roofs and people stand out without louder colours. No new draw calls.
-- **Farmhouse forecourt:** warm stone tiles from the porch to the road, with two flower planters and a bench.
+- **Farmhouse forecourt:** small warm stone tiles from the porch toward the road, joined to it by a step of path, with two
+  flower planters and a bench.
 - **Item icons:** a full wheat sheaf, a loaf and roll on a board, corn bread in a skillet, burlap feed sacks, eggs in
   a nest, and the four fish rendered by our own icon rig. Before and after in `docs/reference-pass/`.
 

@@ -16,8 +16,9 @@ import { showBeat } from './bonds-panels.mjs';
 import { faceHtml, glyph } from './icon.mjs';
 import { sfx } from '../kit/sound.mjs';
 
-// The restored village's opening picture (cells and span in metres): a portrait phone, a wide screen.
-const HOME_FRAME = { tall: { x: 34, z: 60, span: 40 }, wide: { x: 30.5, z: 60.5, span: 48 } };
+// The restored village's opening picture (cells and span in metres): a portrait phone, a wide screen. Spans stay under
+// SPAN.mid (40, view/camera.mjs) so the opening draws at full detail (fluffy crops, bed rims, rigged villagers).
+const HOME_FRAME = { tall: { x: 35.5, z: 60.5, span: 39 }, wide: { x: 29, z: 60, span: 39.5 } };
 
 export const HUD_BUTTONS = ['build', 'orders', 'barn', 'projects', 'today', 'friends'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);

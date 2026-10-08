@@ -12,7 +12,7 @@ import * as W from '../content/world.mjs';
 // value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
 export const GROUND_COLORS = {
   grass: '#6db446', meadow: '#74b44a', wildMeadow: '#6aa83a', path: '#dfbd87', road: '#d6ad78', tilled: '#7a4a2a',
-  water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e', yard: '#e2c99c',
+  water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e', yard: '#b98a62',
 };
 
 const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza, GROUND_COLORS.yard]);
@@ -63,8 +63,10 @@ export class WorldView {
   fixedLook(x, z) {
     if (W.isBrook(x, z)) return { color: GROUND_COLORS.bank };   // the water itself is the brook mesh
     if (W.isRoad(x, z)) return { color: GROUND_COLORS.road };
-    // the farmhouse forecourt: warm stone tiles from the porch to the road, in line with the path over to the farm
-    const Y = W.HOME_YARD; if (x >= Y.x0 && x <= Y.x1 && z >= Y.z0 && z <= Y.z1) return { color: GROUND_COLORS.yard, grain: 0.05, tile: true };
+    // the farmhouse forecourt: the grout under its stone tiles (dress.mjs draws the tiles), and one step of path from it
+    // to the road in line with the path over to the farm
+    const Y = W.HOME_YARD; if (x >= Y.x0 && x <= Y.x1 && z >= Y.z0 && z <= Y.z1) return { color: GROUND_COLORS.yard, grain: 0.04 };
+    if (x === Y.x1 + 1 && z === 63) return { color: GROUND_COLORS.path };
     // owned farm land is tended: calmer than the wild, with a faint plot grid (ground.mjs `tended`); land not yet bought
     // stays the rougher wild meadow
     if (W.inFarm(x, z)) return !this.owned || this.owned(W.parcelOf(x, z)) ? { color: GROUND_COLORS.meadow, tended: true } : { color: GROUND_COLORS.wildMeadow, wild: true };

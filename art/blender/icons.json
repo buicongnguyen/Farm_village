@@ -815,7 +815,7 @@
    28
   ],
   "roll": 38,
-  "margin": 1.02
+  "margin": 1.08
  },
  {
   "id": "carp",
@@ -830,7 +830,7 @@
    "Fish carp bronze": "#D9782A"
   },
   "roll": 38,
-  "margin": 1.02
+  "margin": 1.08
  },
  {
   "id": "catfish",
@@ -841,12 +841,13 @@
    32
   ],
   "recolor": {
-   "Fish catfish body": "#8C6F52",
-   "Fish catfish fin": "#6E5440",
-   "Fish catfish spots": "#5E4632"
+   "Fish catfish body": "#A07A4A",
+   "Fish catfish belly": "#D9B07A",
+   "Fish catfish spots": "#6E5440",
+   "Fish catfish fin": "#8A6640"
   },
   "roll": 38,
-  "margin": 1.02
+  "margin": 1.08
  },
  {
   "id": "goldfish",
