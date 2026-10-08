@@ -18,6 +18,8 @@ export const BUILDINGS = {
   cherry_tree:{ name: 'Cherry tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 70, fruit: 'cherry', charm: 2, max: 12, model: 'cute_cherry' },
   apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 2, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
   peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
+  orange_tree: { name: 'Orange tree', cat: 'farm', size: [1, 1], area: 'any', level: 5, cost: 300, fruit: 'orange', charm: 2, max: 12, model: 'cute_orange' },
+  coconut_palm: { name: 'Coconut palm', cat: 'farm', size: [1, 1], area: 'any', level: 8, cost: 500, fruit: 'coconut', charm: 3, max: 8, model: 'cute_palm' },
   // Paths and fences (fence and gate sit on cell edges)
   path:       { name: 'Path', cat: 'paths', size: [1, 1], area: 'any', level: 1, cost: 1, cell: 'path', charm: 0 },
   fence:      { name: 'Fence', cat: 'paths', edge: true, area: 'any', level: 2, cost: 3, model: 'pen_fence' },
@@ -40,6 +42,7 @@ export const BUILDINGS = {
   // Charm (DESIGN 12)
   flowers:    { name: 'Flower bed', cat: 'charm', size: [1, 1], area: 'any', level: 1, cost: 5, charm: 1, model: 'flowers' },
   round_tree: { name: 'Round tree', cat: 'charm', size: [1, 1], area: 'any', level: 1, cost: 15, charm: 2, model: 'tree_round' },
+  willow: { name: 'Weeping willow', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 40, charm: 3, model: 'cute_willow' },
   pine_tree:  { name: 'Pine tree', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 20, charm: 2, model: 'tree_pine' },
   bush:       { name: 'Bush', cat: 'charm', size: [1, 1], area: 'any', level: 2, cost: 8, charm: 1, model: 'bush' },
   tree:       { name: 'Blossom tree', cat: 'charm', size: [1, 1], area: 'any', level: 3, cost: 25, charm: 2, model: 'tree_blossom' },
