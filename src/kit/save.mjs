@@ -3,6 +3,7 @@
 import { migrate, CELL_TYPES } from '../core/state.mjs';
 import { N } from '../content/world.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
+import { TRUCK } from '../content/economy.mjs';
 import { upgradeV1 } from '../core/upgrade.mjs';
 
 export const PROFILE_IDS = Object.freeze([1, 2, 3]);
@@ -51,6 +52,10 @@ function validateSave(s) {
   for (const p of Object.values(s.production)) requireSave(record(p) && Array.isArray(p.queue) && p.queue.every(record));
   for (const k of ['today', 'stats', 'settings', 'firsts', 'counts', 'stored', 'known', 'rebuild', 'fishing', 'truck', 'quests', 'hurry', 'album', 'wishes', 'village']) if (s[k] !== undefined) requireSave(record(s[k]));
   for (const k of ['mail', 'news', 'undo']) if (s[k] !== undefined) requireSave(Array.isArray(s[k]) && s[k].every(record));
+  // the delivery trucks: the first is s.truck, more (bought later) in s.truck.fleet, never more than the fleet allows
+  const truckRecord = u => record(u) && (u.load === undefined || Array.isArray(u.load) && u.load.every(i => record(i) && typeof i.good === 'string' && natural(i.n)));
+  if (s.truck !== undefined) requireSave(truckRecord(s.truck) && (s.truck.fleet === undefined
+    || Array.isArray(s.truck.fleet) && s.truck.fleet.length < TRUCK.fleet.max && s.truck.fleet.every(u => truckRecord(u) && Array.isArray(u.load))));
 
 }
 /**

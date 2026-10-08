@@ -17,7 +17,7 @@ import { planFor, STEP_TEXT } from '../core/plan.mjs';
 import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
 import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
-import { truckOf, loadUnits, loadValue, capacity, blocked as blockedWhy } from '../core/market.mjs';
+import { truckOf, trucksOf, loadUnits, loadValue, capacity, roomIn, truckCoins, nextTruck, spareForTrucks, blocked as blockedWhy } from '../core/market.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';
@@ -95,6 +95,8 @@ export class Panels {
     else if (d.do === 'reelIn') g.do('reelIn');
     else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');
+    else if (d.do === 'fillTruck') g.do('fillTruck');
+    else if (d.do === 'buyTruck') g.do('buyTruck');
     else if (d.do === 'collectTruck') g.do('collectTruck');
     else if (d.do === 'upgradeTruck') g.do('upgradeTruck');
     else if (d.do === 'claimGift') g.do('claimGift');
@@ -187,14 +189,29 @@ export class Panels {
         <div class="goods-grid">${fish.map(x => `<div class="good-tile">${goodIcon(x.id)}<b>${num(s.barn.items[x.id])}</b><small>${t(x.name)} · ${coinMark()} ${x.value}</small></div>`).join('')}</div>
         <p class="hint">${t('Sell fish with the market truck, or keep them for friends.')} (${num(f.caught)} ${t('caught')})</p>`;
     } else if (o.kind === 'market') {
-      const tr = truckOf(s), why = blockedWhy(s), spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0), next = tr.level < TRUCK.capacity.length;
-      const status = tr.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, tr.backAt - now))}` : why ? t(why) : `${t('Load')}: ${num(loadUnits(tr))}/${num(capacity(tr))} · ${coinMark()} ${num(Math.round(loadValue(tr) * TRUCK.pay))}`;
-      body = `<p class="hint">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p><p class="hint"><b>${status}</b></p>
-        <div class="queue">${tr.load.map(i => `<div class="slot">${goodIcon(i.good)}<small>×${i.n}</small></div>`).join('')}</div>
-        ${tr.coins ? `<button class="btn primary wide" data-do="collectTruck">${t('Collect {coins} coins', { coins: num(tr.coins) })}</button>` : ''}
-        ${!tr.away && !why && tr.load.length ? `<button class="btn orange wide" data-do="sendTruck">${t('Send the truck')}</button>` : ''}
-        ${next ? `<button class="btn ghost wide" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}>${glyph('up', 'g')} ${t('Bigger truck')} · ${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</button>` : ''}
-        ${!tr.away && !why ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}`;
+      // The trucks (core/market.mjs): one row each, then fill / send / collect for all of them at once. A tapped good
+      // goes on the first truck at the market with room.
+      const tr = truckOf(s), units = trucksOf(s), why = blockedWhy(s), many = units.length > 1, cap = capacity(tr);
+      const spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0), next = tr.level < TRUCK.capacity.length;
+      const home = units.filter(u => !u.away), takings = truckCoins(s), buy = nextTruck(s);
+      const loaded = home.filter(u => u.load.length).length, canFill = !why && home.some(u => roomIn(s, u) > 0) && spareForTrucks(s).length > 0;
+      const rowOf = (u, i) => {
+        const name = many ? t('Truck {n}', { n: i + 1 }) : t('Truck');
+        const state = u.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, u.backAt - now))}`
+          : u.coins ? t('Back with {coins} coins', { coins: num(u.coins) })
+          : `${t('Load')}: ${num(loadUnits(u))}/${num(cap)}${u.load.length ? ` · ${coinMark()} ${num(Math.round(loadValue(u) * TRUCK.pay))}` : ''}`;
+        return `<div class="truck-row${u.away ? ' away' : ''}">${iconHtml('truck', '', 'mini')}<b>${name}</b><span>${state}</span></div>
+          ${u.load.length && !u.away ? `<div class="queue">${u.load.map(l => `<div class="slot">${goodIcon(l.good)}<small>×${l.n}</small></div>`).join('')}</div>` : ''}`;
+      };
+      body = `<p class="hint">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p>
+        ${why ? `<p class="hint"><b>${t(why)}</b></p>` : ''}
+        <div class="trucks">${units.map(rowOf).join('')}</div>
+        ${takings ? `<button class="btn primary wide" data-do="collectTruck">${t('Collect {coins} coins', { coins: num(takings) })}</button>` : ''}
+        ${canFill ? `<button class="btn ghost wide" data-do="fillTruck">${glyph('plus', 'g')} ${t(home.length > 1 ? 'Fill the trucks with spare goods' : 'Fill the truck with spare goods')}</button>` : ''}
+        ${!why && loaded ? `<button class="btn orange wide" data-do="sendTruck">${loaded > 1 ? t('Send {n} trucks', { n: loaded }) : t('Send the truck')}</button>` : ''}
+        ${buy ? `<button class="btn ghost wide" data-do="buyTruck" ${s.level < buy.level || why ? 'disabled' : ''}>${iconHtml('truck', '', 'mini')} ${t('Buy another truck')} · ${coinMark()} ${num(buy.cost)} · ${t('level {level}', { level: buy.level })}</button>` : ''}
+        ${next ? `<button class="btn ghost wide" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}>${glyph('up', 'g')} ${t(many ? 'Bigger trucks' : 'Bigger truck')} · ${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</button>` : ''}
+        ${home.length && !why ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}`;
     } else if (o.kind === 'stall') {
       const st = s.stall, spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0);
       body = `<p class="hint">${t('Passers-by buy one thing every few minutes, at its base price.')}</p>

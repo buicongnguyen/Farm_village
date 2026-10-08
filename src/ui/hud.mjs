@@ -11,6 +11,7 @@ import { nextTask } from '../core/next.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { questsOf, ready as questReady } from '../core/quests.mjs';
 import { shortTime } from '../core/clock.mjs';
+import { trucksOf, truckCoins } from '../core/market.mjs';
 import { FISH_TABLE, GOODS } from '../content/goods.mjs';
 const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
 import { thingName } from './repair-ui.mjs';
@@ -130,6 +131,7 @@ export class Hud {
     if (e.type === 'repairStarted') this.toast(t('Repair started: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'info', { icon: 'wrench' });
     if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish });
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
+    if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });
     if (e.type === 'neighbourRepair') this.toast(t('{name} mended the {thing}!', { name: t(NAMES[e.id] ?? e.id), thing: thingName(this.game.s, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') }), 'good', { icon: 'wrench' });
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
@@ -199,8 +201,10 @@ export class Hud {
     const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
     const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
     const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });
-    const tr = s.truck; if (tr?.away) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t('Truck')}: ${shortTime(Math.max(0, tr.backAt - now))}` });
-    else if (tr?.coins) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t('Truck')}: +${num(tr.coins)}`, hot: true });
+    // the trucks: takings to collect first, otherwise the next one home (and how many are on the road)
+    const units = s.truck ? trucksOf(s) : [], away = units.filter(u => u.away), takings = s.truck ? truckCoins(s) : 0;
+    if (takings) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t(units.length > 1 ? 'Trucks' : 'Truck')}: +${num(takings)}`, hot: true });
+    else if (away.length) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t(units.length > 1 ? 'Trucks' : 'Truck')}: ${away.length > 1 ? `${away.length} · ` : ''}${shortTime(Math.max(0, Math.min(...away.map(u => u.backAt)) - now))}` });
     const line = s.fishing?.line; if (line) rows.push({ act: 'pond', ic: iconHtml('perch', '', 'mini'), text: line.doneAt <= now ? t('A fish is biting!') : `${t('Fishing')}: ${shortTime(line.doneAt - now)}`, hot: line.doneAt <= now });
     const html = rows.map(r => `<button class="status-row${r.hot ? ' hot' : ''}" data-status="${r.act}">${r.ic}<span>${r.text}</span></button>`).join('');
     if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }

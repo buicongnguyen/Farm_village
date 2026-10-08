@@ -210,6 +210,16 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-08, art lane, **truck fleet at the user's request** ("add more trucks so we can deliver more goods when the
+  farm grows too much product"), on `art/truck-fleet`: the user gave this logic feature to Claude directly, so Claude
+  was the active writer of `src/core/market.mjs` (fleet, `fillTruck`, `buyTruck`, send-all, collect-all), `TRUCK.fleet`
+  in `src/content/economy.mjs`, the market panel in `src/ui/panels.mjs`, the truck rows in `src/ui/farm.css`, the truck
+  lines in `src/core/next.mjs`, `src/ui/hud.mjs`, `src/view/marks-view.mjs`, `src/view/land-view.mjs` (`driveTruck`),
+  `src/core/act.mjs` (clock guard), `src/core/state.mjs` (default fleet) and `src/kit/save.mjs` (fleet validation),
+  plus Vietnamese lines in `src/i18n/vi.mjs` and tests `tests/fleet.test.mjs` / `tests/fleet.browser.mjs`. The first
+  truck stays `s.truck`; extra trucks are `s.truck.fleet`. It follows the plan's "extend the existing truck, keep its
+  access, explain costs and returns". Details: `docs/truck-fleet/README.md`. Logic lane: please merge `main` after it
+  lands before touching those functions, and review the numbers (800 at level 4, 2,500 at level 7).
 - 2026-10-08, logic lane, **AR-009 integration for [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6)**:
   Claude's complete PR #5 delivery is integrated. `DISCOVERIES` uses `lucky_tin`, `lucky_button` and `lucky_box`
   in its cards, Today/Album entries and find notifications; `street-thanks` retains the existing envelope/coin

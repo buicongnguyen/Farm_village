@@ -39,7 +39,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
     advice: newAdvice(),                    // stable read/deferred contexts and bounded celebration records, never rendered text
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
-    truck: { level: 1, away: false, backAt: 0, load: [], coins: 0 },   // the delivery truck (market.mjs)
+    truck: { level: 1, away: false, backAt: 0, load: [], coins: 0, fleet: [] },   // the delivery trucks (market.mjs; fleet = trucks 2 and 3)
     today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
     trees: {},                              // fruit tree id → { doneAt, first? }
     mail: [],                               // letters, newest first: [{ id, from, at, read }]
@@ -107,6 +107,7 @@ export function withDefaults(s) {
   const fresh = newGame(s.createdAt ?? 0, s.seed ?? 1);
   for (const k of ['trees', 'mail', 'wishes', 'cart', 'village', 'known', 'firsts', 'stored', 'undo', 'news', 'counts', 'neighbours', 'people', 'homes', 'cond', 'repairing', 'rebuild', 'truck', 'fishing', 'quests', 'weekly', 'hurry', 'album', 'fruitStand']) if (s[k] === undefined) s[k] = fresh[k];
   s.fruitStand = normalizeFruitStand(s.fruitStand);
+  if (s.truck) s.truck.fleet ??= [];   // trucks bought later (core/market.mjs); older saves have only the first
   // The first orchard build accidentally let pet homes acquire ordinary building wear.
   for (const [id, p] of Object.entries(s.placed ?? {})) if (BUILDINGS[p.kind]?.pet && [1, 2].includes(s.cond?.[id]?.level) && !s.repairing?.[id]) delete s.cond[id];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;

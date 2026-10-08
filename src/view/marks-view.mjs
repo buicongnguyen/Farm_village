@@ -9,6 +9,7 @@ import { treeState } from '../core/trees.mjs';
 import { readyCount } from '../core/production.mjs';
 import { isBroken } from '../core/working.mjs';
 import { rentWaiting } from '../core/homes.mjs';
+import { truckCoins } from '../core/market.mjs';
 import { MAILBOX, POND_DOCK } from '../content/world.mjs';
 
 const CAP = 160, SIZE = 7;
@@ -57,7 +58,7 @@ export class Marks {
       else if (def.animals) ready = (s.animals[id] ?? []).some(a => animalState(a, now) === 'ready');
       else if (def.produces) ready = readyCount(s, id, now) > 0;
       else if (def.pond) ready = (s.fishing?.coins ?? 0) > 0 || (!!s.fishing?.line && s.fishing.line.doneAt <= now);
-      else if (def.market) ready = (s.truck?.coins ?? 0) > 0;
+      else if (def.market) ready = !!s.truck && truckCoins(s) > 0;
       else if (def.fruitStand) ready = (s.fruitStand?.coins ?? 0) > 0;
       else if (def.stall) ready = (s.stall?.coins ?? 0) > 0;
       if (ready) coin.push([x, high, z]);

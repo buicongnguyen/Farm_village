@@ -96,7 +96,7 @@ function guardClock(s, now) {
   if (s.orders?.pending) s.orders.pending = s.orders.pending.map(at => Math.min(at, now + ORDERS.discardMs));
   if (s.fishing?.line) s.fishing.line.doneAt = Math.min(s.fishing.line.doneAt, now + FISH.waitMs);
   if (s.helpAt) s.helpAt = Math.min(s.helpAt, now + 2 * 60_000);
-  if (s.truck?.away) s.truck.backAt = Math.min(s.truck.backAt, now + TRUCK.tripMs);
+  for (const u of s.truck ? [s.truck, ...(s.truck.fleet ?? [])] : []) if (u.away) u.backAt = Math.min(u.backAt, now + TRUCK.tripMs);
   for (const h of Object.values(s.homes)) if (h.tipAt) h.tipAt = Math.min(h.tipAt, now + RENT.tipMs[1]);
   if (s.fruitStand?.nextSaleAt) s.fruitStand.nextSaleAt = Math.min(s.fruitStand.nextSaleAt, now + FRUIT_STAND.everyMs);
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);
