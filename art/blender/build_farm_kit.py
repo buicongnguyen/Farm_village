@@ -865,6 +865,58 @@ def obstacle_log():
     return p
 piece('obstacle_log', obstacle_log(), decor)
 
+
+# =================================================================== food factories (village growth plan, stage 3b)
+def juice_press():
+    """Juice press (2 x 2 cells): an open timber shed with an orange awning, a big wooden screw press, barrels and fruit
+    crates, a row of filled bottles on a shelf."""
+    p = [bx('floor', 3.8, 3.6, .15, 0, 0, 0, 'stonel', bev=.04)]
+    for x in (-1.7, 1.7):
+        for y in (-1.5, 1.5):
+            p.append(bx('post', .2, .2, 2.6, x, y, .15, 'woodd', bev=.03))
+    p.append(bx('back', 3.6, .15, 2.2, 0, -1.6, .15, 'wood', bev=.03))
+    for i in range(8):
+        p.append(bx('awning', .48, 3.8, .14, -1.68 + i * .48, 0, 2.75, 'cream' if i % 2 else 'pumpkin' if 'pumpkin' in C else 'red'))
+    p.append(gable('roof', 3.8, 3.4, .7, 0, 0, 2.88, 'roof'))
+    # the screw press
+    p += [cl('vat', .55, .5, -.6, .3, .15, 'woodl', verts=12), cl('vatband', .57, .08, -.6, .3, .45, 'iron', verts=12),
+          bx('frame', .12, .12, 1.5, -1.15, .3, .15, 'woodd'), bx('frame2', .12, .12, 1.5, -.05, .3, .15, 'woodd'),
+          bx('beam', 1.25, .16, .16, -.6, .3, 1.6, 'woodd'), cl('screw', .07, .9, -.6, .3, .75, 'iron', verts=6),
+          bx('bar', .9, .06, .06, -.6, .3, 1.5, 'wood')]
+    for x, c in ((.7, 'fruitred'), (1.2, 'orange' if 'orange' in C else 'fruitpeach')):
+        p.append(bx('crate', .45, .4, .3, x, .9, .15, 'wood', bev=.02))
+        for k in range(4):
+            p.append(ball('fruit', .1, x - .1 + (k % 2) * .2, .82 + (k // 2) * .16, .5, c, sub=0))
+    p.append(cl('barrel', .32, .7, 1.1, -.6, .15, 'wood', verts=10, rt=.3))
+    p.append(cl('hoop', .34, .06, 1.1, -.6, .45, 'iron', verts=10))
+    p.append(bx('shelf', 1.6, .3, .06, .6, -1.35, 1.2, 'woodl'))
+    for i, c in enumerate(('fruitred', 'orange' if 'orange' in C else 'sun', 'pumpkin' if 'pumpkin' in C else 'sun', 'fruitred')):
+        p.append(cl('bottle', .09, .32, .05 + i * .38, -1.35, 1.26, 'glass', verts=6))
+        p.append(cl('juice', .085, .2, .05 + i * .38, -1.35, 1.27, c, verts=6))
+    return p
+piece('juice_press', juice_press(), decor)
+
+def noodle_factory():
+    """Noodle factory (3 x 2 cells): a cheerful brick workshop with a teal roof and a chimney, a big round window, and
+    racks of drying noodles outside."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stoned', bev=.04), bx('walls', 4.0, 3.0, 2.4, -.7, -.2, .15, 'brick', bev=.05),
+         bx('trim', 4.1, 3.1, .15, -.7, -.2, 2.5, 'cream', bev=.03), gable('roof', 4.2, 3.2, 1.1, -.7, -.2, 2.62, 'teal'),
+         cl('chimney', .3, 1.3, -2.0, -.8, 3.0, 'brickd', verts=8), cl('chimtop', .36, .15, -2.0, -.8, 4.3, 'charcoal', verts=8),
+         bx('door', .9, .1, 1.5, -.3, 1.32, .15, 'woodd', bev=.03), bx('sign', 1.6, .08, .5, -.7, 1.34, 1.9, 'sun', bev=.03),
+         cl('window', .4, .08, -1.8, 1.31, 1.25, 'glass', verts=12, rot=(math.pi / 2, 0, 0)),
+         cl('wframe', .46, .07, -1.8, 1.3, 1.25, 'cream', verts=12, rot=(math.pi / 2, 0, 0))]
+    # the sign's little noodle bowl
+    p += [cl('bowl', .14, .1, -.7, 1.4, 2.0, 'red', verts=8, rt=.18), ball('steam', .07, -.7, 1.42, 2.25, 'white', sub=0)]
+    # drying racks with hanging noodles
+    for rx in (1.8, 2.6):
+        p += [bx('rackpost', .08, .08, 1.6, rx, -1.2, .15, 'woodd'), bx('rackpost', .08, .08, 1.6, rx, 1.2, .15, 'woodd'),
+              bx('rackbar', .06, 2.5, .06, rx, 0, 1.7, 'wood')]
+        for k in range(9):
+            p.append(bx('noodle', .05, .05, 1.0, rx, -1.0 + k * .25, .7, 'wheatl' if k % 2 else 'cream', bev=0))
+    p.append(bx('sacks', .6, .5, .5, 1.0, 1.2, .15, 'sack', bev=.12))
+    return p
+piece('noodle_factory', noodle_factory(), decor)
+
 # =================================================================== lucky finds (AR-009)
 # One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads
 # until the logic lane shows one (no world placement, no footprint). Modelled at about 0.5 m for comfortable numbers,

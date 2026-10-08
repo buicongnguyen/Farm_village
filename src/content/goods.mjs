@@ -41,6 +41,11 @@ export const RECIPES = {
   corn_bread:   { name: 'Corn bread', at: 'bakery', needs: { corn: 2, egg: 2 }, makes: 1, timeMs: 45_000, value: 55, level: 4, icon: '🥖' },
   apple_pie:    { name: 'Apple pie', at: 'bakery', needs: { apple: 3, wheat: 2, egg: 1 }, makes: 1, timeMs: 55_000, value: 70, level: 5, icon: '🥧' },
   carrot_cake:  { name: 'Carrot cake', at: 'bakery', needs: { carrot: 3, egg: 2, milk: 1 }, makes: 1, timeMs: 5 * MIN, value: 110, level: 7, icon: '🍰' },
+  apple_juice:  { name: 'Apple juice', at: 'juice_press', needs: { apple: 3 }, makes: 1, timeMs: 40_000, value: 40, level: 6, icon: '🧃' },
+  carrot_juice: { name: 'Carrot juice', at: 'juice_press', needs: { carrot: 4 }, makes: 1, timeMs: 45_000, value: 26, level: 6, icon: '🥕' },
+  orange_juice: { name: 'Orange juice', at: 'juice_press', needs: { orange: 3 }, makes: 1, timeMs: 60_000, value: 70, level: 6, icon: '🍊' },
+  noodles:      { name: 'Noodles', at: 'noodle_factory', needs: { wheat: 4, egg: 1 }, makes: 2, timeMs: 60_000, value: 30, level: 8, icon: '🍜' },
+  instant_noodles: { name: 'Instant noodles', at: 'noodle_factory', needs: { noodles: 2, carrot: 1 }, makes: 1, timeMs: 2 * MIN, value: 95, level: 9, icon: '🍲' },
 };
 /** Every good the barn can hold: { id → { name, value, icon, kind } }. */
 export const GOODS = {

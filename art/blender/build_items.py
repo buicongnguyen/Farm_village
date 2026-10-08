@@ -302,6 +302,30 @@ def ginseng_root():
     return p
 item('item_ginseng', ginseng_root())
 
+def juice(color):
+    """A juice bottle: a glass bottle of coloured juice with a cream label and a red cap, a little fruit slice beside it."""
+    return [cyl('juice', .24, .62, (0, 0, .31), C[color], verts=16, bev=.04), cyl('glass', .23, .1, (0, 0, .67), C['milk'], verts=16, bev=.02),
+            cyl('neck', .1, .2, (0, 0, .82), C['milk'], verts=12, bev=0, radius_top=.08), cyl('cap', .1, .1, (0, 0, .96), C['twine'], verts=12, bev=.02),
+            cyl('label', .245, .2, (0, 0, .4), C['cream'], verts=16, bev=0), P('slice', .16, (.34, -.18, .08), color, sub=2, sc=(1, 1, .35))]
+item('item_apple_juice', juice('apple'))
+item('item_carrot_juice', juice('carrot'))
+item('item_orange_juice', juice('orangef'))
+def noodle_bundle():
+    """Noodles: a bundle of pale noodles tied with a red band, a few loose strands, on a little bamboo mat."""
+    p = [box('mat', (1.0, .7, .04), (0, 0, .02), C['wheat'], bev=.02, seg=1)]
+    for i in range(14):
+        a = i / 14 * math.tau
+        p.append(stalk('n', (math.cos(a) * .12 - .4, math.sin(a) * .08, .12), (math.cos(a) * .12 + .4, math.sin(a) * .08, .12), .03, C['cream' if i % 2 else 'wheatl'], sides=4))
+    p.append(torus('band', .16, .04, (0, 0, .12), C['twine'], major_segs=12, minor_segs=5, rot=(0, math.pi / 2, 0)))
+    return p
+item('item_noodles', noodle_bundle())
+def noodle_cup():
+    """Instant noodles: a red and cream cup with a peeled-back lid, steam-free, a fork on top."""
+    return [cyl('cup', .34, .6, (0, 0, .3), C['twine'], verts=20, bev=.02, radius_top=.4), cyl('band', .38, .18, (0, 0, .42), C['cream'], verts=20, bev=0, radius_top=.39),
+            cyl('noodle', .37, .04, (0, 0, .6), C['wheatl'], verts=20, bev=0), box('lid', (.5, .46, .02), (.1, .2, .68), C['cream'], bev=.01, seg=1, rot=(.6, 0, .3)),
+            P('egg', .1, (-.12, -.08, .64), 'egg', sub=1, sc=(1, 1, .4)), P('herb', .06, (.12, -.12, .63), 'leaf', sub=1, sc=(1, 1, .3))]
+item('item_instant_noodles', noodle_cup())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)
