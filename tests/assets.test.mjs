@@ -77,6 +77,14 @@ test('every good, building and tool has an icon whose file exists', () => {
   assert.equal(files.length, Object.keys(ICONS).length, 'every icon file is listed in ICONS');
 });
 
+test('the lucky-find keepsakes (AR-009) are decor pieces within the prop budget, each with its icon', () => {
+  for (const n of ICON_IDS.keepsakes) {
+    assert.ok(KITS.decor.includes(n), `${n} is listed in KITS.decor`);
+    const t = roots('decor')[n]?.triangles;
+    assert.ok(t > 0 && t <= 1200, `${n}: ${t} triangles (prop budget 1,200)`);
+    assert.ok(existsSync(new URL(ICONS[n].replace('./', ''), PUBLIC)), `${n}: ${ICONS[n]} is missing`);
+  }
+});
 test('pieces stay within their triangle budgets: ripe crop 1,500, prop 1,200, building 8,000 (animal 2,000, tree 3,500)', () => {
   const over = [];
   for (const [name, spec] of Object.entries(KIND_MODELS)) {

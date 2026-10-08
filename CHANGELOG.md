@@ -1,5 +1,13 @@
 # Changelog
 
+## Art lane: lucky-discovery keepsakes (AR-009, art PR, not released)
+
+- **Keepsake props and icons:** three small original Blender props in the late `decor.glb`, `lucky_tin` (the pond tin),
+  `lucky_button` (the brass fish button in its cloth pouch) and `lucky_box` (the box beneath a cleared rock), each under
+  1,200 triangles, with matching 256 px icons and a restrained golden glint. Registered in `KITS.decor` and a new
+  `keepsakes` icon list; the logic lane switches its stand-in discovery icons. `street-thanks` keeps the coin art.
+  Comparison images in `docs/discovery-props/`. First-load code is unchanged.
+
 ## Planning and coordination — not a gameplay release (2026-10-08)
 
 - **Logic lane:** consolidated the design and evaluated research, prepared the scoped Claude AR-001 handoff and Codex task list, and aligned the shared rules with the user's project-only energy decision. Clarified shared effect ownership, coherent asset delivery, and integration checks before a production merge. The user subsequently authorized the first logic pass below; larger expansion systems remain planned.

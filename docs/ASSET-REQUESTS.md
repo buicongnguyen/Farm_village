@@ -67,7 +67,7 @@ replaced) and `dropped`.
 | Kit (`public/assets/models/`) | What is in it |
 |---|---|
 | `farm-kit.glb` (ours) | Crops in three growth stages (wheat, carrot, corn, pumpkin, strawberry); coop, cow barn, feed mill (+ `feed_mill_sails`), bakery, fruit stand, kennel, pond, truck, order board, bench, lamp, picket set; trees `cute_round`, `cute_pine`, `cute_blossom`, `cute_apple`, `cute_peach`, `cute_cherry` (each fruit tree also `_bare`) |
-| `decor.glb` (ours) | `plank_bridge`, `fountain`, `bunting`, `banner`, `sale_sign`, `scaffold`, `window_box`, `door_lantern`, `flowerpots`, `doormat`, `path_stones`, `obstacle_bush`, `obstacle_stump`, `obstacle_log` |
+| `decor.glb` (ours) | `plank_bridge`, `fountain`, `bunting`, `banner`, `sale_sign`, `scaffold`, `window_box`, `door_lantern`, `flowerpots`, `doormat`, `path_stones`, `obstacle_bush`, `obstacle_stump`, `obstacle_log`; keepsakes `lucky_tin`, `lucky_button`, `lucky_box` (AR-009, with icons) |
 | `props.glb` (Starline) | `scarecrow`, `haybale`, `sacks`, `crate`, `barrel`, `cart`, `signpost`, `postbox`, `street_lamp`, `flowerpot`, `laundry_line`, `beehive_branch` |
 | `nature.glb` (Starline) | `lilypads`, `reeds`, stepping stones, rocks, flowers, `hydrangea`, bushes, `grass_tuft`, broadleaf, maple, sakura and chestnut trees |
 | `rural-extra.glb` (Willowmere) | `silo`, `home_t0`, `home_t2`, `home_t3`, `picket_fence`, `rail_fence`, `hay_round`, `tractor`, `pond_dock`, `stump` |
@@ -89,9 +89,11 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
+| AR-009 | Lucky-discovery keepsakes (tin, fish button, box) | one-time discoveries | P2 | delivered, art PR open |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
-AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
+AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; AR-002 to AR-008 remain proposed. AR-009 was
+asked for by the logic lane and is delivered on an art branch. The user or logic lane
 confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
@@ -172,7 +174,40 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 - What: a few hero crops and fruits get tiny faces, sleepy while growing and awake and smiling when ripe, seen only up
   close, never sad, with a setting to turn them off. The pattern comes from My Dear Farm; the art is our own.
 
+### AR-009: Lucky-discovery keepsakes
+- Status: delivered on `art/discovery-props` (PR open, not merged) · Priority: P2 · For: the four one-time discoveries
+  in `src/content/discoveries.mjs` (logic, `codex/dialogue-review`) · Asked by: logic lane, 2026-10-08
+- What: three small Blender props with matching icons for the finds: `lucky_tin` (the little tin from the pond,
+  `pond-tin`), `lucky_button` (the brass fish-shaped button in a cloth pouch, `pond-keepsake`) and `lucky_box` (the
+  small box beneath a cleared rock, `stone-keepsake`). `street-thanks` keeps the existing coin art (`ui:coin`); there is
+  no envelope icon in the set, and none was made for this request. Rich, warm look with a restrained golden glint;
+  keepsakes, not treasure. Each prop within the 1,200-triangle prop budget. No new effect subscriptions.
+- Delivered: branch `art/discovery-props`, 2026-10-08 (base `origin/main` `a1607de`)
+- Model: `decor.glb` (loaded after the first frame), nodes `lucky_tin` 1,064 triangles, 0.48 × 0.63 × 0.47 m
+  (w × d × h); `lucky_button` 916 triangles, 0.51 × 0.62 × 0.44 m; `lucky_box` 920 triangles, 0.60 × 0.55 × 0.51 m.
+  Modelled a little larger than life so they read beside a person. Authored around their centre, standing on z = 0.
+  Generator: `art/blender/build_farm_kit.py` ("lucky finds (AR-009)"), packed with `art/blender/pack.mjs`.
+- Anchors: none.
+- Icons: `public/assets/icons/lucky_tin.webp`, `lucky_button.webp`, `lucky_box.webp` (256 px, jobs in
+  `art/blender/icons.json`).
+- Registered: `src/view/kinds.mjs` (`KITS.decor` gains the three roots), `src/content/icons.mjs` (new `keepsakes` list:
+  `lucky_tin`, `lucky_button`, `lucky_box`; `iconUrl('lucky_tin')` etc.). No `KIND_MODELS` entry: nothing is placed on
+  the map. `tests/assets.test.mjs` gains one check (each keepsake is in `KITS.decor`, ≤ 1,200 triangles, icon present).
+- Checked: `npm test`; `npm run build:test` (first-load code unchanged at 970,846 bytes; `decor.glb` loads later);
+  every browser suite and `node tests/browser.mjs` on port 5242. Comparison images in `docs/discovery-props/`.
+- For the logic lane: switch the stand-in icons in `DISCOVERIES` when you merge this: `pond-tin` `ui:coin` →
+  `lucky_tin`, `pond-keepsake` `perch` → `lucky_button`, `stone-keepsake` `tool:clear` → `lucky_box`; `street-thanks`
+  stays `ui:coin`. If a card or the album should show a 3D keepsake (for example the tin bobbing up beside the fish), it
+  is in `KITS.decor` and can be loaded with the decor kit; tell me in the notes which effect should show it and I
+  will make the visual handler. Album or card wording and its Vietnamese lines stay with you.
+
 ## Notes between lanes
+
+- 2026-10-08, art lane: **AR-009 delivered** on `art/discovery-props` (from `origin/main` `a1607de`): `lucky_tin`,
+  `lucky_button`, `lucky_box` in `decor.glb` with icons, registered in `KITS.decor` and a new `keepsakes` icon list.
+  Touched outside art files: `src/view/kinds.mjs` (`KITS.decor` only), `src/content/icons.mjs` (one id list, as
+  section 1 allows) and one added check in `tests/assets.test.mjs`. No changes to `juice.mjs`, `fx.mjs`, discovery
+  triggers, rewards, saves, dialogue or UI. The stand-in icons in `discoveries.mjs` are yours to switch (AR-009 above).
 
 - 2026-10-08, logic lane **handoff complete**, commit **`20e5f5b`**, PR #1: the additive contract below is implemented
   and covered by rules and English/Vietnamese phone tests. `main.mjs` now plays `pop` for picking fruit and `cheer`

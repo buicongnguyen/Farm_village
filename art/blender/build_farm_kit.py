@@ -780,6 +780,112 @@ def obstacle_log():
     return p
 piece('obstacle_log', obstacle_log(), decor)
 
+# =================================================================== lucky finds (AR-009)
+# One-time keepsakes from the pond and a cleared rock. Modelled a little larger than life (about 0.5 m) so they read
+# beside a person and in a 48 px icon. Warm painted colours; brass and gold only on rims, clasps and coins, plus one
+# small four-point glint each: charming keepsakes, not treasure. Each stays under the 1,200-triangle prop budget.
+def glint(x, y, z, r=.07, mt='lampglow'):
+    """A small upright four-point sparkle facing the front."""
+    pts = [(math.cos(k * math.pi / 4 + math.pi / 2) * (r if k % 2 == 0 else r * .28),
+            math.sin(k * math.pi / 4 + math.pi / 2) * (r if k % 2 == 0 else r * .28)) for k in range(8)]
+    return extrude_outline('glint', pts, .012, (x, -y, z), C[mt], bev=0)
+def coin(x, y, z, tilt=0., r=.075):
+    return [cl('coin', r, .024, x, y, z, 'gold', verts=12, rot=(tilt, 0, 0)), cl('coinface', r * .7, .028, x, y, z - .002, 'sun', verts=12, rot=(tilt, 0, 0))]
+def tilted(tilt, y0, z0, dy, dz):
+    """Plan (y, z) of a point on a face tilted back by `tilt` about x through (y0, z0): dy along the face's depth, dz up it."""
+    return y0 + dy * math.cos(tilt) - dz * math.sin(tilt), z0 + dy * math.sin(tilt) + dz * math.cos(tilt)
+
+def lucky_tin():
+    """A little round tin the pond gave up: teal paint, a cream label band with a red stripe, brass rims, the lid
+    leaning on its back, coins showing, and a few drops of pond water still on it."""
+    p = [cl('tin', .22, .15, 0, 0, 0, 'teal', verts=18),
+         cl('band', .224, .06, 0, 0, .045, 'cream', verts=18),
+         cl('stripe', .226, .016, 0, 0, .067, 'red', verts=18),
+         cl('rim', .228, .022, 0, 0, .135, 'hayd', verts=18),
+         cl('inside', .205, .012, 0, 0, .152, 'teald', verts=18),
+         cl('foot', .215, .02, 0, 0, 0, 'teald', verts=18)]
+    for i, (x, y) in enumerate(((-.06, .02), (.06, -.03), (0, .07), (.03, -.09))):
+        p += coin(x * .8, y * .8, .158 + i * .01, tilt=.15 * (i % 2 * 2 - 1), r=.065)
+    # the lid, standing almost upright against the back of the tin; a little red fish painted on its cream boss
+    t, ly, lz = 1.25, .3, .23   # Blender coords of the lid's centre; its face looks along (0, -sin t, cos t)
+    ax = lambda d: (0, ly - math.sin(t) * d, lz + math.cos(t) * d)
+    for name, r, h, mt, verts, out in (('lid', .235, .05, 'teal', 18, 0), ('lidrim', .242, .02, 'hayd', 18, 0), ('lidboss', .11, .016, 'cream', 14, .03)):
+        p.append(cyl(name, r, h, ax(out), C[mt], verts=verts, bev=0, seg=1, rot=(t, 0, 0)))
+    p.append(extrude_outline('lidfish', [(.055, 0), (.02, .024), (-.025, .017), (-.055, .032), (-.044, 0), (-.055, -.032), (-.025, -.017), (.02, -.024)],
+                             .008, ax(.04), C['red'], rot=(t + math.pi / 2, 0, 0), bev=0))
+    for x, y, z in ((-.2, .1, .1), (.12, .19, .05), (-.1, .21, .02)):
+        p.append(ball('drop', .022, x, y, z, 'waterl', sub=1, sc=(1, 1, 1.3)))
+    p.append(glint(-.13, .12, .34))
+    return p
+piece('lucky_tin', lucky_tin(), decor)
+
+def fish_outline(L=.17, H=.1, n=12):
+    """A plump fish in profile, head toward +x: an elliptical body and a notched tail."""
+    pts = [(math.cos(math.radians(-145 + 290 * k / n)) * L, math.sin(math.radians(-145 + 290 * k / n)) * H) for k in range(n + 1)]
+    return pts + [(-L * 1.55, H * 1.05), (-L * 1.25, 0), (-L * 1.55, -H * 1.05)]
+
+def lucky_button():
+    """A brass button shaped like a fish, propped against the cloth pouch it came in: the pouch's red drawstring
+    loose, two coins at its foot. The button has a raised face, an eye and two thread holes."""
+    p = [ball('pouch', .2, 0, -.05, .17, 'sack', sub=2, sc=(1.05, 1, .85)),
+         cl('neck', .085, .08, 0, -.05, .29, 'sackd', verts=10, rt=.06),
+         cl('ruffle', .1, .07, 0, -.05, .36, 'sack', verts=10, rt=.13),
+         cl('tie', .09, .03, 0, -.05, .31, 'red', verts=10),
+         st((.07, .03, .32), (.21, .12, .02), .012, 'red', sides=4),
+         st((.05, .03, .32), (-.22, .08, .01), .012, 'red', sides=4),
+         ball('knot', .026, .06, .03, .32, 'redd', sub=1)]
+    for k in range(5):   # cloth folds
+        a = k * math.tau / 5 + .4
+        p.append(ball('fold', .07, math.cos(a) * .17, -.05 + math.sin(a) * .17, .14, 'sackd', sub=1, sc=(.5, .5, 1.4)))
+    # The button stands on its tail edge in front of the pouch, tilted back 0.35 rad (top away from the viewer).
+    t, y0, z0 = .35, .15, .17
+    body = fish_outline()
+    p.append(extrude_outline('button', body, .035, (0, -y0, z0), C['hayd'], rot=(-t, 0, 0), bev=.008))
+    p.append(extrude_outline('buttonface', [(x * .84, z * .8) for x, z in body], .045, (0, -y0, z0), C['gold'], rot=(-t, 0, 0), bev=0))
+    def on(x, z, out=.025):   # plan point on the button's front face
+        y, zz = tilted(t, y0, z0, out, z)
+        return (x, y, zz)
+    x, y, z = on(.09, .025); p.append(ball('eye', .02, x, y, z, 'wooddd', sub=1))
+    for hx in (-.07, -.01):
+        x, y, z = on(hx, -.005, .02); p.append(ball('hole', .013, x, y, z, 'woodd', sub=1, sc=(1, .5, 1)))
+    p += coin(-.21, .22, 0, tilt=.1) + coin(-.16, .29, .024, tilt=-.15)
+    p.append(glint(.16, .2, .33))
+    return p
+piece('lucky_button', lucky_button(), decor)
+
+def lucky_box():
+    """A small keepsake box from under a cleared rock: warm wood with brass corners and clasp, a red lining, the lid
+    open on its back hinge, a cream cloth folded back from a smooth pebble, two coins, and a little soil at its foot."""
+    W, D, H = .46, .32, .18
+    p = [bx('base', W, D, H, 0, 0, 0, 'wood', bev=.015),
+         bx('lining', W - .05, D - .05, .012, 0, 0, H - .006, 'red', bev=0),
+         bx('trim', W + .012, D + .012, .025, 0, 0, H - .03, 'woodd', bev=.006),
+         bx('skirt', W + .02, D + .02, .025, 0, 0, 0, 'woodd', bev=.006)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p.append(bx('corner', .05, .05, .05, sx * (W / 2 - .012), sy * (D / 2 - .012), .006, 'hayd', bev=.008))
+    p.append(bx('clasp', .07, .02, .07, 0, D / 2 + .005, H - .09, 'gold', bev=.006))
+    p.append(ball('claspnub', .014, 0, D / 2 + .018, H - .055, 'hayd', sub=1))
+    # The lid: hinged along the back top edge, swung open past upright (leaning back by 0.35 rad).
+    t, hy, hz = .35, -D / 2, H
+    def lid(dy, dz):   # plan (y, z): dy from the hinge up the open lid, dz out of its inner face (toward the viewer)
+        return tilted(t, hy, hz, dz, dy)
+    y, z = lid(D / 2 + .01, -.025); p.append(box('lid', (W + .02, .05, D + .02), (0, -y, z), C['woodl'], bev=.012, seg=1, rot=(-t, 0, 0)))
+    y, z = lid(D / 2 + .01, -.052); p.append(box('lidband', (W + .03, .008, .04), (0, -y, z), C['hayd'], bev=0, seg=1, rot=(-t, 0, 0)))
+    y, z = lid(D / 2, .002); p.append(box('lidlining', (W - .04, .006, D - .04), (0, -y, z), C['redd'], bev=0, seg=1, rot=(-t, 0, 0)))
+    # the cloth and the pebble
+    p.append(ball('cloth', .13, -.04, .02, H, 'cream', sub=2, sc=(1.4, 1.1, .4)))
+    for k in range(3):
+        p.append(lf((-.04, .02, H + .02), .9 + k * 2.1, .17, .14, 'cream', lift=.03, droop=-.01))
+    p.append(ball('pebble', .075, -.04, .03, H + .06, 'stoned', sub=2, sc=(1.25, 1, .7)))
+    p.append(ball('pebblesheen', .022, -.07, .06, H + .1, 'stonel', sub=1, sc=(1.6, 1, .5)))
+    p += coin(.14, .06, H - .004, tilt=.1) + coin(.15, -.05, H + .01, tilt=-.12)
+    for x, y in ((-.24, .17), (.22, .19), (.26, -.1)):
+        p.append(ball('soil', .04, x, y, .01, 'soil', sub=1, sc=(1.4, 1.2, .5)))
+    p.append(glint(.17, .1, .34))
+    return p
+piece('lucky_box', lucky_box(), decor)
+
 # =================================================================== orchard (v0.4)
 def cherry_tree(ripe=True):
     p = cute('cherry', 'leafw', 'blossoml', 'leafwd')
