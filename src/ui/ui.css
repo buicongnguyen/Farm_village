@@ -125,3 +125,25 @@ button.round[disabled] { filter: saturate(.25); opacity: .55; }
 }
 /* `hidden` must win over the display rules above */
 .sheet[hidden], .place-bar[hidden], .radial[hidden], .sweep-tool[hidden] { display: none !important; }
+
+/* Profile navigation uses the existing buttons, cards, icons and colour tokens. */
+.hud > button.hud-profile { position: absolute; right: max(96px, calc(env(safe-area-inset-right) + 84px)); top: max(10px, env(safe-area-inset-top)); width: 44px; height: 44px; z-index: 6; }
+.hud-profile .btn-icon { width: 28px; height: 28px; }
+.profiles-panel, .profile-list, .profile-details { display: grid; min-width: 0; gap: 8px; }
+.profiles-panel > .hint, .profile-details > .hint { margin: 0; }
+.profile-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); align-items: stretch; padding-bottom: 6px; }
+.profile-card { min-width: 0; align-content: start; grid-template-rows: auto 1fr auto; }
+.profile-heading, .profile-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.profile-heading h3 { margin: 0; font-size: 17px; }
+.profile-heading small { margin-left: auto; }
+.profile-details { gap: 4px; }
+.profile-player, .profile-card p, .profile-card small { overflow-wrap: anywhere; }
+.profile-card .btn { min-height: 44px; white-space: normal; }
+.profile-progress span { display: inline-flex; align-items: center; gap: 4px; }
+.discovery-memory { min-height: 44px; width: 100%; text-align: left; }
+.discovery-memory > span { display: grid; gap: 4px; min-width: 0; }
+.discovery-memory b, .discovery-detail p { overflow-wrap: anywhere; }
+.discovery-detail > .family-art { display: block; margin: 0 auto; width: 72px; height: 72px; }
+.discovery-detail .scene-line { display: flex; gap: 10px; align-items: flex-start; text-align: left; }
+.discovery-detail .scene-line > div { min-width: 0; }
+.discovery-detail .scene-line .face { flex: none; }

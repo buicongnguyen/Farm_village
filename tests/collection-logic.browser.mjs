@@ -128,12 +128,15 @@ for (const lang of ['en', 'vi']) {
     }, seed);
     await panel(page, 'pond'); await page.click('[data-do="reelIn"]');
     assert.deepEqual(await events(page, 'fishCaught'), [{ type: 'fishCaught', fish: 'goldfish', first: false, rare: true, stored: 1, sold: 0, coins: 0 }]);
-    assert.equal(await page.evaluate(() => farm.state().coins), before + GOODS.goldfish.value);
+    // The second stored fish earns no sale income; its separate one-time discovery pays twenty coins.
+    assert.deepEqual(await events(page, 'discovery'), [{ type: 'discovery', id: 'pond-tin', coins: 20, person: 'pip' }]);
+    assert.deepEqual(await events(page, 'barnSold'), []);
+    assert.equal(await page.evaluate(() => farm.state().coins), before + GOODS.goldfish.value + 20);
     assert.equal(await page.evaluate(() => farm.state().barn.items.goldfish), 1);
     await page.evaluate(() => { farm.game.s.fishing.coins = 9; farm.game.emit({ ok: true, events: [] }, 'test'); });
     await page.click('[data-do="collectFees"]');
-    assert.deepEqual(await events(page, 'coins'), [{ type: 'coins', coins: 9, source: 'pond' }]);
-    assert.equal(await page.evaluate(() => farm.state().coins), before + GOODS.goldfish.value + 9);
+    assert.deepEqual(await events(page, 'coins'), [{ type: 'coins', coins: 20, source: 'discovery', id: 'pond-tin' }, { type: 'coins', coins: 9, source: 'pond' }]);
+    assert.equal(await page.evaluate(() => farm.state().coins), before + GOODS.goldfish.value + 20 + 9);
     assert(await page.evaluate(() => {
       const g = farm.game, before = JSON.stringify(g.s), r = g.do('collectFees');
       return !r.ok && !r.events.length && JSON.stringify(g.s) === before;

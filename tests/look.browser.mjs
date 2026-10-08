@@ -3,6 +3,7 @@
 // keeps the effects still, and the phone budgets hold with effects running.
 // Run after `npm run build:test` with dist served (GAME_URL, default http://127.0.0.1:5242/).
 import { chromium } from 'playwright';
+import { SHAPE } from '../src/view/particles.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5242/';
 const gpu = process.env.GPU !== '0';
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: gpu ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--enable-unsafe-swiftshader'] });
@@ -17,7 +18,12 @@ async function open() {
   await page.waitForFunction(() => farm.world.juice && farm.radial?.fx, null, { timeout: 30000 });
   await page.evaluate(() => {
     const g = farm.game, s = g.s; s.level = 8; s.coins = 50000; s.settings.daylight = 'always'; farm.closeCards();
-    for (const [k, x, z] of [['cherry_tree', 40, 69], ['apple_tree', 42, 69], ['peach_tree', 44, 69]]) g.do('place', { kind: k, x, z });
+    for (const [k, x, z] of [['cherry_tree', 40, 69], ['apple_tree', 42, 69], ['peach_tree', 44, 69]]) {
+      // New farms seed these owned cells with grass, weeds or rocks. Prepare them before planting,
+      // and refuse a missing-tree fixture rather than passing on incidental particles elsewhere.
+      if (s.cells[z * 128 + x] !== 0) { const r = g.do('clear', { x, z }); if (!r.ok) throw Error('fixture clearing: ' + r.reason); }
+      const r = g.do('place', { kind: k, x, z }); if (!r.ok) throw Error('fixture planting: ' + r.reason);
+    }
     for (const id of Object.keys(s.trees)) s.trees[id].doneAt = g.now - 1;
     g.tick(); farm.focus(42, 70, 22); farm.people?.walkers.forEach(w => { w.indoors = true; });
   });
@@ -34,13 +40,18 @@ const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 await check('picking fruit bursts fruit and leaves, floats +n, and flies only what was stored to the barn', async () => {
   const { ctx, page, errors } = await open();
   const r = await page.evaluate(async () => {
-    const j = farm.world.juice, before = j.alive;
-    const events = farm.game.do('pick', {}).events.filter(e => e.type === 'picked').length;
+    const j = farm.world.juice, shapes = [], spawn = j.particles.spawn;
+    // Count this action's emitted shapes: the 19-particle burst must not rely on incidental smoke
+    // to reach twenty, or lose already-existing particles while waiting for the frame to render.
+    j.particles.spawn = function (o) { const added = spawn.call(this, o); if (added !== false) shapes.push(o.shape); return added; };
+    let events;
+    try { events = farm.game.do('pick', {}).events.filter(e => e.type === 'picked').length; }
+    finally { j.particles.spawn = spawn; }
     await new Promise(res => setTimeout(res, 120));
-    return { events, spawned: j.alive - before, floaters: document.querySelectorAll('.jfloat').length, flying: document.querySelectorAll('.jcoin, .jfly, [class*="fly"]').length };
+    return { events, shapes, floaters: document.querySelectorAll('.jfloat').length, flying: document.querySelectorAll('.jcoin, .jfly, [class*="fly"]').length };
   });
   expect(r.events >= 1, `trees should have been picked: ${JSON.stringify(r)}`);
-  expect(r.spawned >= 20, `fruit and leaves should burst: ${JSON.stringify(r)}`);
+  expect(r.shapes.includes(SHAPE.dot) && r.shapes.includes(SHAPE.leaf) && r.shapes.includes(SHAPE.star), `fruit, leaves and glints should burst: ${JSON.stringify(r)}`);
   expect(r.floaters >= 1, `a +n floater should show: ${JSON.stringify(r)}`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();

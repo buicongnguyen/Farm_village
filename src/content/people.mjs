@@ -43,7 +43,7 @@ export const FAMILIES = [
     { id: 'tomas', name: 'Tomas', role: 'Mechanic', line: 'If it squeaks, bring it to me.', likes: ['bread'],
       orders: ['Fuel for the mechanic.', 'I fixed Gus\'s tractor. Time to celebrate.', 'Grease on my hands, hunger in my belly.',
         'Lunch in the workshop. Pia is helping. Mostly by eating.'] },
-    { id: 'pia', name: 'Pia', role: 'Little sister', line: 'I can count to a hundred. Do you want to hear?', likes: ['carrot'], kid: true,
+    { id: 'pia', name: 'Pia', role: 'Young neighbour', line: 'I can count to a hundred. Do you want to hear?', likes: ['carrot'], kid: true,
       orders: ['I want this one! I counted it!', 'For my teddy\'s birthday. He is four.', 'Mama said one treat. This is one. One big one.',
         'For the Brook Club! Pip says clubs need snacks.'] },
   ] },

@@ -208,7 +208,11 @@ await check('goals, hurry, albums and the player look: the status row opens thre
 await check('the Next chip does the chore in one tap: ripe crops are harvested; "All" sows the empty beds with the last crop', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.waitForTimeout(1500);
-  await page.evaluate(() => { farm.closeCards(); for (const b of Object.values(farm.game.s.beds)) b.doneAt = farm.game.now - 1; });
+  await page.evaluate(() => {
+    farm.closeCards();
+    for (const b of Object.values(farm.game.s.beds)) b.doneAt = farm.game.now - 1;
+    farm.hud.refreshNext();   // the same Harvest label can otherwise still hold a smaller, previously ripe batch
+  });
   await page.waitForSelector('[data-act="next"]:not([hidden])', { timeout: 8000 });
   await page.waitForFunction(() => /harvest/i.test(document.querySelector('[data-act="next"]')?.innerText ?? ''), null, { timeout: 8000 });
   await page.evaluate(() => document.querySelector('[data-act="next"]').click());

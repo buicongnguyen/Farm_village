@@ -87,6 +87,10 @@ the PR or an integration branch before a production merge; verify production aft
   Drawing is in `src/view`, the interface in `src/ui`, saves in `src/kit/save.mjs`.
 - **Vietnamese:** every string on screen (`t()`, `ctx.fail()`, content text) needs a line in `src/i18n`. Tests check
   coverage and placeholders. Each speaker keeps the pronouns in `docs/STORY.md` section 2 (`tests/story.test.mjs`).
+- **Both languages adapt:** select dialogue/advice from the same game facts and stable topic IDs before translating.
+  English and Vietnamese must share prerequisites, priorities, rewards and repetition rules. Language changes must
+  not reset story progress or make rewards claimable again. Cover both languages before/after relevant milestones.
+  Character display-name proposals live in `docs/CHARACTER-NAMING-PLAN.md`; keep internal character/save/art IDs stable.
 - **Cozy rules:** nothing is lost, wilts, spoils or leaves while the player is away; no paid currency; no lines that
   make the player feel guilty for being away; pets and animals never suffer if ignored. The user's confirmed energy
   scope (2026-10-08) permits a generous bar for larger optional exploration/repair projects only. Ordinary farming,

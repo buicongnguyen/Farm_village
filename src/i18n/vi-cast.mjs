@@ -7,7 +7,6 @@ export const VI_CAST = {
   'I helped! Well, I watched.': 'Con cũng giúp mà! À, con đứng xem thôi.',
   'Crunchy! Can we keep some?': 'Giòn ghê! Mình giữ lại một ít được không?',
   'The barn is getting full of good things.': 'Trong kho ngày càng có nhiều đồ ngon!',
-  'A hen! Can I name her Pancake?': 'Một cô gà! Con đặt tên là Pancake nha?',
   'Welcome to the farm, new friend!': 'Chào bạn mới! Mừng bạn đến nông trại!',
   'Still warm! Eggs are amazing.': 'Còn ấm nè! Trứng kỳ diệu thật đó!',
   'Fresh from the farm!': 'Tươi ngon từ nông trại nhà mình!',

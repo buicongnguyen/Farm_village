@@ -199,11 +199,13 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
-Logic-lane coordination, 2026-10-08: the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md),
-[Claude art brief](CLAUDE-HANDOFF.md), and [Codex task list](CODEX-TASKS.md) are recorded. The user authorized the first
-logic pass: contextual dialogue, ordered clues, truthful school/clinic scenes, cherry goals and collection-event
-contracts are implemented on the v0.4 PR branch. Larger expansion systems remain planned. Claude's AR-001 art pass
-is separate; neither branch is merged into production by this work.
+Current logic delivery: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), implementation commit `dc8223f`; open for review, not yet deployed.
+
+Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; current main is `a1607de`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish that completed first pass from later expansion.
+
+Follow-up review on `codex/dialogue-review`: `b03c38c` fixes in-transit visitor taps, refreshes observations at speech time, and corrects saved heart/charm news counts. Further changes remove obsolete hen translations and clarify Pia's role. English and Vietnamese share adaptive rules; the [character naming plan](CHARACTER-NAMING-PLAN.md) proposes a complete cast, including replacing Pip, while retaining stable save/art IDs. Proposed human names and future chapters are not implemented by this review.
+
+The current playable slice implements three local farm profiles and four one-time discoveries, with the unchanged 500-coin opening plus at most 110 discovery coins per save. Today/Album cards retain earned memories and read state. See [Profiles and discoveries](PROFILES-AND-DISCOVERIES.md) for behavior and migration. This work is **on the review branch, not yet live**. Validation: 211 rules tests, all pace targets, all component browser suites after fixture corrections, and 28/28 smoke checks pass. Steady school and clinic day 3; test build 986,313 bytes, production 985,234 bytes. Phone/PC rendering budgets pass. Persistent contextual advice cards, covered land, skills/project energy, and meadow progression remain future work. [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next art brief; do not repeat completed AR-001.
 
 | Stage | Status |
 |---|---|

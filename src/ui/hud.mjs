@@ -19,6 +19,7 @@ import { used as barnUsed } from '../core/barn.mjs';
 import * as barn from '../core/barn.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild } from '../core/projects.mjs';
 import { unread } from '../core/bonds.mjs';
+import { unreadDiscoveries } from '../core/discoveries.mjs';
 import { cartHere } from '../core/cart.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
@@ -38,6 +39,7 @@ export class Hud {
         <button class="village-name" data-act="village" data-hud="village"></button>
         <div class="hud-status" data-hud="status"></div></div>
       <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
+      <button class="round small rim-grey hud-profile" data-act="profiles">${iconHtml('cottage', '', 'btn-icon')}<i class="badge" aria-hidden="true">1</i></button>
       <div class="hud-right">
         <button class="round rim-blue" data-act="today">${glyph('today', 'g')}<i class="badge dot"></i></button>
         <button class="round rim-teal" data-act="projects">${glyph('projects', 'g')}<i class="badge dot"></i></button>
@@ -61,7 +63,7 @@ export class Hud {
       if (act === 'turn') onTurn?.();
       if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
-      if (['orders', 'barn', 'today', 'projects', 'album', 'settings', 'friends', 'mail'].includes(act)) onPanel?.(act);
+      if (['orders', 'barn', 'today', 'projects', 'album', 'settings', 'profiles', 'friends', 'mail'].includes(act)) onPanel?.(act);
     });
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.refuse(r.reason, r.params); for (const e of r.events ?? []) this.event(e); });
@@ -79,6 +81,10 @@ export class Hud {
     q('[data-hud="village"]').title = t(journey.stage.goal);
     q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${t(journey.stage.name)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;   // how far the village is restored; a tap opens the projects
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
+    const profileButton = q('[data-act="profiles"]');
+    profileButton.setAttribute('aria-label', `${t('Farm profiles')} · ${t('Profile {n}', { n: this.profile ?? 1 })}`);
+    profileButton.title = t('Farm profiles');
+    profileButton.querySelector('.badge').textContent = this.profile ?? 1;
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
     for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`)?.setAttribute('aria-label', t(text));
@@ -86,7 +92,10 @@ export class Hud {
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
-    q('[data-act="today"] .badge').hidden = !!s.today.claimed && !cartHere(s);
+    const discoveries = unreadDiscoveries(s), todayBadge = q('[data-act="today"] .badge');
+    todayBadge.textContent = discoveries || ''; todayBadge.classList.toggle('dot', !discoveries);
+    todayBadge.hidden = !discoveries && !!s.today.claimed && !cartHere(s);
+    if (discoveries) q('[data-act="today"]').hidden = false;
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
     q('[data-act="projects"] .badge').hidden = !canWork;
     const mail = unread(s), mailBtn = q('[data-act="mail"]');
@@ -200,5 +209,5 @@ export class Hud {
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */
-  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act); } }
+  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && unreadDiscoveries(this.game.s)); } }
 }

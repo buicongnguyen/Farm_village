@@ -24,7 +24,9 @@ import { initModals } from './ui/modal.mjs';
 import { Bonds } from './ui/bonds-panels.mjs';
 import { CartView } from './ui/cart-panel.mjs';
 import { LevelUp } from './ui/levelup.mjs';
-import { load, autosave, save, pack, unpack, erase } from './kit/save.mjs';
+import { autosave, save, pack, unpack, erase, activeProfile, profileId, inspectProfile, selectProfile } from './kit/save.mjs';
+import { renderProfiles } from './ui/profiles-panel.mjs';
+import { watchDiscoveries } from './ui/discovery-panels.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
@@ -42,20 +44,22 @@ const app = document.getElementById('app');
 const splash = document.getElementById('boot');
 app.innerHTML = ''; if (splash) { splash.setAttribute('aria-hidden', 'true'); document.body.insertBefore(splash, app); }
 initModals(app);
-const PROFILE_KEY = 'farm-village:profile';
-const profile = (() => { try { return Math.min(3, Math.max(1, +(localStorage.getItem(PROFILE_KEY) ?? 1))); } catch { return 1; } })();
+const profile = activeProfile(), savedProfile = inspectProfile(profile);
+// A damaged save is kept for recovery; never silently replace it with a fresh farm and autosave over it.
+if (!(TEST_MODE && params.has('new')) && savedProfile.error) await recoverProfile();
 // test builds can run the clock ahead (kept for the tab, so a reload sees the same time)
 const clockOffset = TEST_MODE ? +(sessionStorage.getItem('fv-clock-offset') ?? 0) : 0;
 // ?new starts a fresh farm (test builds only: in the public game a stray link must never replace a saved farm)
 // a test build's ?new starts on an empty field (the browser suites build their own farm); add &restore for the restored village
 const clock = () => Date.now() + clockOffset, emptyStart = TEST_MODE && params.has('new') && !params.has('restore');
-const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : load(profile), clock);
+const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : savedProfile.state, clock);
 const world = new WorldView(app);
 const land = new LandView(world, game);
 const marks = new Marks(world, game, land);
 const pondFish = new PondFish(world, game);
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;
+let saveSession = null, changingProfile = false;
 // the camera eases to places the interface points at (the guide, "show the way", notifications)
 const flyTo = (x, z, span) => (world.cam.flyTo ? world.cam.flyTo(x, z, span) : world.cam.lookAt(x, z, span));
 const hud = new Hud(app, game, {
@@ -83,20 +87,14 @@ panels = new Panels(app, game, hud, {
     if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces && levelOf(game.s, id) < 3) panels.show('production', id); }
     else { build.cat = BUILDINGS[at].cat; build.start(at); }
   },
-  onSave: (what, arg) => {
-    if (what === 'export') {
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([pack(game.s)], { type: 'application/json' }));
-      a.download = `farm-village-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    } else if (what === 'import' && arg) arg.text().then(text => { try { const s = unpack(text); save(s, profile); location.reload(); } catch { hud.toast(t('That file is not a Farm Village save'), 'warn'); } });
-    else if (what === 'newGame') { if (confirm(t('Start a new farm in this save? The current farm will be lost.'))) { erase(profile); location.replace(location.pathname); } }
-    else if (what === 'profile') { try { save(game.s, profile); localStorage.setItem(PROFILE_KEY, String(arg)); } catch {} location.reload(); }
-  },
+  onSave: handleSave,
   // a wish's Build button: the catalogue on that decoration
   onBuildKind: kind => { if (!BUILDINGS[kind]) return; build.cat = BUILDINGS[kind].cat; build.start(kind); },
   onPhoto: () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })),
   onTest: TEST_MODE ? what => testAction(what) : null,
 });
 panels.profile = profile;
+hud.profile = profile; hud.update();
 radial = new Radial(app, { game, world, panels, hud });   // people and life are handed over once their chunk is in
 radial.fx = new Fx(app, { game, world });
 new Bonds({ game, hud });
@@ -124,7 +122,7 @@ game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');
   const played = new Set(); for (const e of r.events ?? []) {
-    const name = e.type === 'fishCaught' && e.first && e.rare ? 'cheer' : e.type === 'picked' ? 'pop' : SOUNDS[e.type];
+    const name = e.type === 'discovery' || e.type === 'fishCaught' && e.first && e.rare ? 'cheer' : e.type === 'picked' ? 'pop' : SOUNDS[e.type];
     if (name && !played.has(name)) { played.add(name); sfx(name); }
   }
   for (const e of r.events ?? []) if (e.type === 'settingChanged' || e.type === 'loaded') applySettings();
@@ -152,9 +150,11 @@ new Juice(world, game, app);
 new CartView(world, game);
 new Critters(world, game);
 new Daylight(world, game);
+watchDiscoveries(game, hud);
 game.start();
 applySettings();
-autosave(game, profile);
+saveSession = autosave(game, profile);
+if (!saveSession()) hud.toast(t('Could not save your farm. Please try again.'), 'warn');
 new Guide(app, { game, world, hud });
 if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 700); }
 // the Vietnamese lines come down once the farm is running, so a language switch is instant
@@ -165,6 +165,95 @@ if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); 
 if (TEST_MODE) {
   const { installTestHook } = await import('./kit/test-hook.mjs');
   installTestHook({ world, game, land, marks, pondFish, build, hud, panels, radial, people, juice: world.juice });
+}
+/** All transitions leave the old farm's timers and pagehide writer behind before reloading another save. */
+async function handleSave(what, arg) {
+  if (changingProfile) return;
+  if (what === 'export') {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([pack(game.s)], { type: 'application/json' }));
+    a.download = `farm-village-${profile}-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000); return;
+  }
+  if (!['import', 'newGame', 'resetProfile', 'profile'].includes(what)) return;
+  changingProfile = true;
+  let navigating = false;
+  const fail = () => hud.toast(t('Could not save your farm. Please try again.'), 'warn');
+  try {
+    if (what === 'import') {
+      if (!arg) return;
+      let incoming;
+      try { incoming = unpack(await arg.text()); }
+      catch { hud.toast(t('That file is not a Farm Village save'), 'warn'); return; }
+      if (!confirm(t('Replace the farm in Farm {n} with this save?', { n: profile }))) return;
+      if (!saveSession?.()) { fail(); return; }
+      saveSession.pause();
+      if (activeProfile() !== profile && !selectProfile(profile)) {
+        saveSession.resume(); hud.toast(t('Could not switch farms. Your current farm is still open.'), 'warn'); return;
+      }
+      if (!save(incoming, profile)) { saveSession.resume(); fail(); return; }
+    } else {
+      const target = what === 'newGame' ? profile : profileId(arg);
+      if (!target || what === 'profile' && target === profile) return;
+      if (what === 'profile') {
+        const destination = inspectProfile(target);
+        if (destination.error) { hud.toast(t('This farm could not be opened. Choose another farm or import a backup.'), 'warn'); return; }
+      } else if (!confirm(t('Start a new farm in Farm {n}? Only this farm will be erased.', { n: target }))) return;
+      if (!saveSession?.()) { fail(); return; }
+      saveSession.pause();
+      // Selecting another slot must succeed before a destructive reset touches it.
+      if (activeProfile() !== target && !selectProfile(target)) {
+        saveSession.resume(); hud.toast(t('Could not switch farms. Your current farm is still open.'), 'warn'); return;
+      }
+      if (what !== 'profile' && !erase(target)) {
+        if (target !== profile) selectProfile(profile);
+        saveSession.resume(); fail(); return;
+      }
+    }
+    saveSession.dispose(); clearInterval(game.timer);
+    navigating = true;
+    location.replace(location.pathname);   // discard test-only ?new and stale navigation parameters
+  } finally { if (!navigating) changingProfile = false; }
+}
+
+/** Recover or choose another slot before creating a game, so a broken save cannot be overwritten at boot. */
+function recoverProfile() {
+  splash?.remove();
+  const picker = document.createElement('section'); picker.className = 'sheet panel';
+  picker.setAttribute('role', 'dialog'); picker.setAttribute('aria-label', t('Farm profiles'));
+  picker.innerHTML = `<h2>${t('Farm profiles')}</h2><p class="hint" data-profile-error>${t('This farm could not be opened. Choose another farm or import a backup.')}</p>${renderProfiles(null, profile)}<label class="btn wide">${t('Import save')}<input type="file" accept=".json,application/json" data-recovery-file hidden></label><button class="btn wide" data-retry>${t('Try again')}</button>`;
+  app.appendChild(picker);
+  let recovering = false;
+  picker.addEventListener('change', async e => {
+    const input = e.target; if (!input.matches('[data-recovery-file]') || !input.files[0] || recovering) return;
+    recovering = true;
+    let navigating = false;
+    try {
+      let incoming;
+      try { incoming = unpack(await input.files[0].text()); }
+      catch { picker.querySelector('[data-profile-error]').textContent = t('That file is not a Farm Village save'); return; }
+      if (!confirm(t('Replace the farm in Farm {n} with this save?', { n: profile }))) return;
+      if (activeProfile() !== profile && !selectProfile(profile)) { picker.querySelector('[data-profile-error]').textContent = t('Could not switch farms. Your current farm is still open.'); return; }
+      if (!save(incoming, profile)) { picker.querySelector('[data-profile-error]').textContent = t('Could not save your farm. Please try again.'); return; }
+      navigating = true;
+      location.replace(location.pathname);
+    } finally { if (!navigating) recovering = false; input.value = ''; }
+  });
+  picker.addEventListener('click', e => {
+    if (recovering) return;
+    if (e.target.closest('[data-retry]')) { location.replace(location.pathname); return; }
+    const button = e.target.closest('[data-do]'), target = profileId(button?.dataset.n);
+    if (!button || button.disabled || !target) return;
+    if (button.dataset.do === 'resetProfile') {
+      if (!confirm(t('Start a new farm in Farm {n}? Only this farm will be erased.', { n: target }))) return;
+    } else if (button.dataset.do !== 'profile' || inspectProfile(target).error) return;
+    if (activeProfile() !== target && !selectProfile(target)) { picker.querySelector('[data-profile-error]').textContent = t('Could not switch farms. Your current farm is still open.'); return; }
+    if (button.dataset.do === 'resetProfile' && !erase(target)) {
+      if (target !== profile) selectProfile(profile);
+      picker.querySelector('[data-profile-error]').textContent = t('Could not save your farm. Please try again.'); return;
+    }
+    recovering = true; location.replace(location.pathname);
+  });
+  return new Promise(() => {});   // choosing a slot navigates; there is no unsafe fallback into a fresh game
 }
 /** The Settings panel's Test section (test builds only). */
 function testAction(what) {

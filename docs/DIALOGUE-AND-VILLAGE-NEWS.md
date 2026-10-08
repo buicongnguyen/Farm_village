@@ -2,7 +2,7 @@
 
 Date: 2026-10-08 (Asia/Seoul)
 
-Status: the previous conversational evaluation, saved as a design proposal at the user's request. This document accompanies [RESEARCH-DIRECTION.md](RESEARCH-DIRECTION.md). The subsequent proposal about demand, opening money, housing, and school activities is evaluated in [OPENING-ECONOMY-AND-SCHOOL.md](OPENING-ECONOMY-AND-SCHOOL.md).
+Status: design proposal with implementation notes. The first contextual dialogue pass is live through PR #1. Saved discovery memories and unread/read state are implemented on `codex/dialogue-review`, not yet live; the broader persistent advice-card lifecycle remains planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md). This document accompanies [RESEARCH-DIRECTION.md](RESEARCH-DIRECTION.md); the demand, opening-money, housing and school proposal is evaluated in [OPENING-ECONOMY-AND-SCHOOL.md](OPENING-ECONOMY-AND-SCHOOL.md).
 
 ## 1. Evaluation of the idea
 
@@ -142,9 +142,9 @@ For Hollowbrook, consider three kinds:
 
 These are proposed examples. A notification should introduce the clue, such as "Pip wants to show you something," while letting the player discover the answer. Essential farming knowledge should remain readily available, and missed discoveries should remain accessible on later visits.
 
-## 8. Findings in the current implementation
+## 8. Baseline findings and implementation update
 
-The game has news history, achievement messages, contextual tips, and some anti-repeat selection. However:
+At the pre-pass baseline, the game already had news history, achievement messages, contextual tips and some anti-repeat selection, with these gaps:
 
 - Everyday chatter mainly uses shared pools based on time of day and age, with session-only history.
 - A pending order can repeatedly take priority over ordinary conversation.
@@ -152,7 +152,7 @@ The game has news history, achievement messages, contextual tips, and some anti-
 
 See [dialogue selection](../src/view/people-view.mjs), [neighbor comments](../src/core/neighbours.mjs), [saved news events](../src/core/act.mjs), and the [existing HUD](../src/ui/hud.mjs).
 
-These are observations from the reviewed implementation, not fixes included in this document.
+These observations describe the baseline before the first logic pass, now live through PR #1. It routes ordinary conversation separately from orders, gives June actionable advice, and adds personal Ada chatter plus school/clinic context. The review follow-up (`b03c38c`, not yet live) waits for visitor arrival and rechecks an observation when spoken, with one observation per visit. The current branch also adds saved earned/read discovery cards in Today and the Album. Conversation history remains session-only; persistent adaptive topic history, deferral and the broader Village news redesign are still planned.
 
 ## 9. Recommended first version and success criteria
 
@@ -160,6 +160,10 @@ Start with one improved Village news button, a small set of trustworthy opportun
 
 Authored English and Vietnamese lines selected from actual farm progress would preserve character voices and make the system easier to verify. Keep speaker pronouns consistent with STORY.md. Business calculations should come from the same game rules that determine the real outcome, with saved history preventing repeated topics across reloads.
 
+English has the same adaptive behavior as Vietnamese. Choose the topic from shared game facts first, then localize the text. Both languages must agree on blockers, useful actions, achievement status, clue order, reward eligibility and repeat suppression. Use natural language-specific wording without changing those facts. Future saved topic IDs, context versions, unread/dismissed state and cooldowns survive language switches. Existing session-only chatter is not a substitute for that persistence.
+
+Validate before/after scenarios in both languages; assert topic IDs as well as text. In particular, a one-time introduction disappearing does not prove that a repeated advice topic has changed. Use the proposed [cast naming plan](CHARACTER-NAMING-PLAN.md) when preparing new scenes, while the current published names remain authoritative until a separate rename is implemented.
+
 Success means players understand their options, notice that villagers remember their actions, and can comfortably ignore an optional suggestion.
 
-No gameplay changes are included in this documentation step.
+This document is a design specification with implementation status notes; see [CHANGELOG.md](../CHANGELOG.md) for implemented PR changes.

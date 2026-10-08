@@ -1,10 +1,12 @@
-# Claude handoff — first art pass
+# Claude handoff — historical first art pass
 
-Prepared: 2026-10-08 (Asia/Seoul). Scope: AR-001 only; other asset requests remain proposed. This is a brief for the user to send, not an automatic start instruction to another agent.
+Prepared: 2026-10-08 (Asia/Seoul). **AR-001 is complete and live through PR #2; PR #3 (`a1607de`) records its production checks and closure.** Do not restart this request. The current scoped handoff is [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md) for AR-009; consult the live [asset queue](ASSET-REQUESTS.md) for ownership.
 
-## Copyable message
+## Archived brief — completed AR-001 scope
 
-Please take the art lane and start a scoped **AR-001 look and collection-feedback pass** for Hollowbrook. Codex will handle gameplay rules, economy, saves, interface behavior, story, Vietnamese, and tests when I separately tell it to start.
+The material below preserves the original instructions and event contract for reference. Its branch setup, active-writer assignment and delivery steps applied to the completed first pass, not the current task.
+
+The first art pass covered **AR-001 look and collection feedback** for Hollowbrook. Codex handled gameplay rules, economy, saves, interface behavior, English/Vietnamese story, and tests; the initial logic implementation shipped through PR #1.
 
 Read these latest local documents first, **read-only**, from Codex's checkout:
 
@@ -13,7 +15,7 @@ Read these latest local documents first, **read-only**, from Codex's checkout:
 - `C:\Users\n\source\repos\Farm_village\docs\ASSET-REQUESTS.md`, including the latest Notes between lanes
 - `C:\Users\n\source\repos\Farm_village\docs\CLAUDE-RESEARCH-REVIEW.md`
 
-These include newer decisions than the original research. They are currently local planning changes; do not assume that fetching `origin/main` provides them. Work only in `C:\Users\n\source\repos\Farm_village-art` on an `art/*` branch, preserving any existing work. Fetch origin and integrate both the latest `origin/main` and the committed v0.4 logic branch (`origin/codex/v0.4-orchard`) into your art branch before editing, so your pass includes the orchard and clinic. Do not change Codex's checkout, push to main, or merge/deploy without my instruction.
+These include newer decisions than the original research and are committed on the logic branch; do not assume that fetching `origin/main` alone provides them. Work only in `C:\Users\n\source\repos\Farm_village-art` on an `art/*` branch, preserving any existing work. Fetch origin and integrate both the latest `origin/main` and the committed v0.4 logic branch (`origin/codex/v0.4-orchard`) into your art branch before editing, so your pass includes the orchard and clinic. Do not change Codex's checkout, push to main, or merge/deploy without my instruction.
 
 The initial art scope is:
 
@@ -35,6 +37,6 @@ Validate on your port **5242**: required build/tests, English/Vietnamese phone l
 
 Deliver one focused PR with an exact file list, comparison screenshots, test/budget results, and any event contracts Codex still needs to wire. If generated assets change, include generator changes, packed GLBs, icons and registration together, and update provenance. Gameplay integration should be checked before merging to main because that deploys. Stop at the reviewable PR; I will decide when it merges.
 
-## Coordination status
+## Completed coordination
 
-Codex merged main's coordination documents as `0e4ed21`, and the user subsequently authorized the first logic pass. Its implementation and these plans are delivered through PR #1 on `codex/v0.4-orchard`. Read the latest logic commit and event contract before integrating AR-001. Neither lane should edit or commit the other's checkout.
+Codex merged main's coordination documents as `0e4ed21` and delivered the first logic pass through PR #1. Claude delivered AR-001 through PR #2, and PR #3 closed it after production verification. The review branch has integrated current main. Future work follows the new AR-009 brief and current queue; neither lane edits or commits the other's checkout.
