@@ -1,8 +1,8 @@
 # Farm profiles and the first lucky discoveries
 
-Prepared 2026-10-08. Implemented on `codex/dialogue-review`; this document does not mean the PR is deployed.
+Prepared 2026-10-08. **Live through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4) at `ab6b230`.** [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed.
 
-This is the next playable slice of the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md). It adds three visible farm profiles and four small discoveries to the existing village. Covered land, persistent business advice, learned skills, project energy, school interiors and the meadow remain later work.
+This live slice of the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) adds three visible farm profiles and four small discoveries to the existing village. The next branch, `codex/village-advice`, implements persistent business/blocker/activity advice and retained milestone memories but is not yet deployed. Covered land, learned skills, project energy, school interiors and the meadow remain later work; the playable story still ends at chapter 5. See the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md) for further design evaluation.
 
 ## Three independent farms
 
@@ -29,7 +29,7 @@ English and Vietnamese select the same discovery IDs, conditions, rewards and re
 
 ## Continuing an older farm
 
-Save version 6 initializes discovery state without giving a pile of missed rewards on load. Known fishing milestones already passed and a street already restored are retired without money, album entries, or unread notices. A still-broken street and future catch milestones remain eligible.
+The live release introduced save version 6, which initializes discovery state without giving a pile of missed rewards on load. The pending advice branch advances to version 7 while preserving these discovery records. Known fishing milestones already passed and a street already restored are retired without money, album entries, or unread notices. A still-broken street and future catch milestones remain eligible.
 
 Old clearing totals include weeds and cannot prove how many rocks the player cleared. Therefore old farms begin counting newly observed successful owned-rock clearances from zero. The stone story deliberately says a box was found while lifting a rock, without claiming it was the second rock the player ever cleared. Fresh profiles can experience all four finds.
 
@@ -47,7 +47,7 @@ Rules tests cover exact thresholds, repeat/refused actions, additive money accou
 
 Final validation results are recorded in CHANGELOG.md and CODEX-TASKS.md. The existing school pace, first-load code and phone rendering budgets still apply.
 
-## How to try it after this PR is deployed
+## How to try it in the live game
 
 1. Open the cottage profile button and start an empty Farm 2 or Farm 3; the original farm stays in its slot.
 2. Catch two fish to find the little tin. Continue to ten for the brass fish button.

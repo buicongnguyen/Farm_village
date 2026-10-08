@@ -199,18 +199,22 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
-Current logic delivery: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), implementation commit `dc8223f`; open for review, not yet deployed.
+Latest live logic delivery: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`; [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. Current work on `codex/village-advice` implements adaptive advice and remains **not yet deployed**.
 
-Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; current main is `a1607de`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish that completed first pass from later expansion.
+Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; PR #4 adds profiles and discoveries to main at `ab6b230`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish those completed releases from later expansion.
 
-Follow-up review on `codex/dialogue-review`: `b03c38c` fixes in-transit visitor taps, refreshes observations at speech time, and corrects saved heart/charm news counts. Further changes remove obsolete hen translations and clarify Pia's role. English and Vietnamese share adaptive rules; the [character naming plan](CHARACTER-NAMING-PLAN.md) proposes a complete cast, including replacing Pip, while retaining stable save/art IDs. Proposed human names and future chapters are not implemented by this review.
+Follow-up review shipped in PR #4: `b03c38c` fixes in-transit visitor taps, refreshes observations at speech time, and corrects saved heart/charm news counts. Further changes remove obsolete hen translations and clarify Pia's role. English and Vietnamese share adaptive rules; the [character naming plan](CHARACTER-NAMING-PLAN.md) proposes a complete cast, including replacing Pip, while retaining stable save/art IDs. Proposed human names and future chapters are not implemented by this review.
 
-The current playable slice implements three local farm profiles and four one-time discoveries, with the unchanged 500-coin opening plus at most 110 discovery coins per save. Today/Album cards retain earned memories and read state. See [Profiles and discoveries](PROFILES-AND-DISCOVERIES.md) for behavior and migration. This work is **on the review branch, not yet live**. Validation: 211 rules tests, all pace targets, all component browser suites after fixture corrections, and 28/28 smoke checks pass. Steady school and clinic day 3; test build 986,313 bytes, production 985,234 bytes. Phone/PC rendering budgets pass. Persistent contextual advice cards, covered land, skills/project energy, and meadow progression remain future work. [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next art brief; do not repeat completed AR-001.
+The live profile/discovery slice supplies three local farms and four one-time discoveries, with the unchanged 500-coin opening plus at most 110 discovery coins per save. Today/Album cards retain earned memories and read state. See [Profiles and discoveries](PROFILES-AND-DISCOVERIES.md) for behavior and migration. Its release validation passed 211 rules tests, all pace targets, all component browser suites after fixture corrections, and 28/28 smoke checks. Steady school and clinic day 3; test build 986,313 bytes, production 985,234 bytes. Phone/PC rendering budgets passed. [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next art brief; do not repeat completed AR-001.
+
+The current advice branch adds 18 English/Vietnamese topic types, saved read/postponed states, truthful production and business guidance, and three one-time celebration memories. Previews spend no resources; save version 7 preserves old farms. Validation so far: 228 rules tests and all pace targets pass, steady school/clinic day 3, test build 1,005,452 bytes; browser and final production checks are pending. This is an interface/progression follow-up within the existing chapters 1–5, not completion of the later stages. Covered land, skills/project energy, school activities and meadow progression remain planned. See the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md) for further design evaluation.
 
 | Stage | Status |
 |---|---|
 | 1. Homecoming | done (v0.3) |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
+| Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
+| Cross-stage follow-up: adaptive advice | implemented on `codex/village-advice`, not deployed; browser validation pending |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |

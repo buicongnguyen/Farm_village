@@ -25,18 +25,19 @@ import { actions as cart, tickCart } from './cart.mjs';
 import { actions as condition, tickCondition } from './condition.mjs';
 import { actions as testmode } from './testmode.mjs';
 import { actions as discoveries, normalizeDiscoveries, afterDiscoveries } from './discoveries.mjs';
+import { actions as advice, normalizeAdvice, afterAdvice } from './advice.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
 export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins,
-  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries };
+  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice };
 
 function context(s, now) {
   const events = [];
   return {
-    s, now, events, discoveryBefore: normalizeDiscoveries(s),
+    s, now, events, discoveryBefore: normalizeDiscoveries(s), adviceBefore: normalizeAdvice(s),
     emit: (type, data = {}) => events.push({ type, ...data }),
     fail: (reason, params) => ({ ok: false, reason, params }),
   };
@@ -53,7 +54,7 @@ export function act(s, action, payload = {}, now = Date.now()) {
   // a finished project step cannot be undone: undoing its building would refund the price and keep the step done
   if (s.projects.step !== step) s.undo = [];
   s.lastSeen = Math.max(s.lastSeen, now);
-  remember(s, ctx.events, now);
+  remember(s, ctx.events, now); afterAdvice(ctx);
   return { ok: true, ...out, events: ctx.events };
 }
 export function tick(s, now = Date.now()) {
@@ -63,7 +64,7 @@ export function tick(s, now = Date.now()) {
   tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
-  remember(s, ctx.events, now);
+  remember(s, ctx.events, now); afterAdvice(ctx);
   return { events: ctx.events };
 }
 /** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */

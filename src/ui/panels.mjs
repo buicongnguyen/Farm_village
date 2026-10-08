@@ -7,13 +7,12 @@ import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { BARN, SLOTS, TRUCK } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
-import { recipesAt, queueOf } from '../core/production.mjs';
+import { recipesAt } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { renderJourney } from './journey-panel.mjs';
 import { FRUIT_STAND } from '../content/economy.mjs';
 import { fruitPrice } from '../core/orchard.mjs';
 import { STACK } from '../core/stall.mjs';
-import { fishingOf } from '../core/fishing.mjs';
 import { planFor, STEP_TEXT } from '../core/plan.mjs';
 import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
 import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
@@ -23,6 +22,7 @@ import { renderToday, renderProjects, renderCottage } from './village-panels.mjs
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';
 import { showDiscovery } from './discovery-panels.mjs';
+import { renderAdviceList, renderAdviceMemories, renderAdviceDetail, openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';
 import { renderFriends, renderGift, renderMail, heartBar, showLetter, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
@@ -33,16 +33,16 @@ const goodsLine = (s, need, honour = true) => Object.entries(need).map(([g, n]) 
   const have = barn.free(s, g, honour), ok = have >= n;
   return `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
-const TITLES = { profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
+const TITLES = { advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
   stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', quests: 'Goals', cart: 'Market cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
-const HEAD_ICONS = { profiles: 'cottage', roadmap: 'projects', fruit_stand: 'fruit_stand', clinic: 'clinic', settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
+const HEAD_ICONS = { advice: 'ui:heart', profiles: 'cottage', roadmap: 'projects', fruit_stand: 'fruit_stand', clinic: 'clinic', settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
 /** Panels with nothing to count down. */
-const STILL = new Set(['profiles', 'settings', 'album', 'friends', 'gift', 'mail']);
+const STILL = new Set(['profiles', 'settings', 'album', 'friends', 'gift', 'mail', 'advice']);
 export class Panels {
-  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onTest, onPhoto } = {}) {
-    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onTest, onPhoto });
+  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onTest, onPhoto } = {}) {
+    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onTest, onPhoto });
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
     this.el.addEventListener('click', e => this.click(e));
@@ -79,6 +79,10 @@ export class Panels {
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
     else if (d.do === 'profiles') this.show('profiles');
+    else if (d.do === 'adviceToday') this.show('today');
+    else if (d.do === 'readAdvice') openAdvice(this, d);
+    else if (d.do === 'deferAdvice' || d.do === 'restoreAdvice') changeAdvice(this, d.do, d);
+    else if (d.do === 'showAdvice') followAdvice(this, d);
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });
@@ -135,8 +139,9 @@ export class Panels {
     }
     else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
-    else if (o.kind === 'album') body = renderAlbum(s);
-    else if (o.kind === 'today') body = renderToday(s, now);
+    else if (o.kind === 'album') body = renderAdviceMemories(s) + renderAlbum(s);
+    else if (o.kind === 'today') body = renderAdviceList(s, now) + renderToday(s, now);
+    else if (o.kind === 'advice') body = renderAdviceDetail(s, o.arg, now);
     else if (o.kind === 'projects') body = renderProjects(s, now);
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
     else if (o.kind === 'cart') body = renderCart(s);
@@ -152,7 +157,7 @@ export class Panels {
     } else if (o.kind === 'production') {
       const p = s.placed[o.arg]; if (!p) { this.close(); return; }
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
-      const q = queueOf(s, o.arg), ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
+      const q = s.production[o.arg] ?? { slots: SLOTS.start, queue: [] }, ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
       const recipes = recipesAt(s, p.kind).map(r => { const def = RECIPES[r], can = barn.hasAll(s, def.needs);
         return `<button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs)}</span><small>${glyph('clock', 'g')} ${shortTime(def.timeMs)}</small></button>`; }).join('');
       const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue[i]; if (!j) return `<div class="slot empty"></div>`;
@@ -173,7 +178,7 @@ export class Panels {
           <button class="btn orange small-btn" data-do="claimWeekly" ${!s.weekly?.claimed && wp >= w.n ? '' : 'disabled'}>${s.weekly?.claimed ? t('Done') : t('Claim')}</button></div>
         <p class="hint">${t('Goals finished')}: ${num(qs.done)}</p>`;
     } else if (o.kind === 'pond') {
-      const f = fishingOf(s), line = f.line, left = line ? Math.max(0, line.doneAt - now) : 0, bait = barn.free(s, 'chicken_feed') > 0, fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0);
+      const f = s.fishing ?? { line: null, coins: 0, caught: 0, feeAt: 0 }, line = f.line, left = line ? Math.max(0, line.doneAt - now) : 0, bait = barn.free(s, 'chicken_feed') > 0, fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0);
       const status = !line ? t('No line in the water') : left > 0 ? `${t('Waiting for a bite')} · ${shortTime(left)}` : t('A fish is biting!');
       body = `<p class="hint">${t('Cast a line and wait. Fishing villagers sit here and leave a little money.')}</p><p class="hint"><b>${status}</b></p>
         ${line && left <= 0 ? `<button class="btn primary wide" data-do="reelIn">${glyph('plus', 'g')} ${t('Reel in')}</button>` : ''}
@@ -197,11 +202,14 @@ export class Panels {
         ${st.coins ? `<button class="btn primary wide" data-do="stallCollect">${t('Collect {coins} coins', { coins: num(st.coins) })}</button>` : ''}
         <div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="stallList" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>`;
     }
+    const postponedOpen = this.el.querySelector('.advice-deferred')?.open;
     this.el.innerHTML = this.head(title, icon) + `<div class="panel-body">${body}</div>`;
+    if (postponedOpen && o.kind === 'today') { const details = this.el.querySelector('.advice-deferred'); if (details) details.open = true; }
   }
   card(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);
-    return `<div class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div>
+    const id = String(c.id).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    return `<div data-order-id="${id}" class="order ${can ? 'can' : ''}${c.story ? ' story' : ''}"><div class="who">${faceHtml(c.from)}<div class="who-name"><b>${who ? nameOf(c.from) : ''}</b>${who ? heartBar(s, c.from) : ''}</div>
       <div class="reward">${coinMark()} <b>${num(c.coins)}</b> ${xpMark()} <b>${num(c.xp)}</b></div></div>
       <p class="line">${c.line ? t(c.line) : ''}</p>
       ${can ? '' : `<div class="order-plan">${planFor(s, c.need).map(st => `<button class="link plan-step" data-do="showWay" data-at="${st.at}">${goodIcon(st.good)} ${t(STEP_TEXT[st.how], { n: st.n, good: t(GOODS[st.good].name) })} ›</button>`).join('')}</div>`}

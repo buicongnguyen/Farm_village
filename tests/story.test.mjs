@@ -9,6 +9,7 @@ import { HEART_SCENES, WISHES, ARRIVALS } from '../src/content/hearts.mjs';
 import { CHATTER, PIP_LINES } from '../src/content/chatter.mjs';
 import { LETTERS } from '../src/content/letters.mjs';
 import { DISCOVERIES } from '../src/content/discoveries.mjs';
+import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { BUILDINGS } from '../src/content/buildings.mjs';
 import { RECIPES } from '../src/content/goods.mjs';
 import { VI } from '../src/i18n/vi.mjs';
@@ -20,7 +21,7 @@ const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(l
 const spoken = [...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
 
 test('every speaker in the story, heart scenes, arrivals and letters is a real person', () => {
-  const unknown = [...spoken.map(l => l.who), ...LETTERS.map(l => l.from)].filter(id => !PEOPLE[id]);
+  const unknown = [...spoken.map(l => l.who), ...LETTERS.map(l => l.from), ...Object.values(ADVICE_TOPICS).map(a => a.person)].filter(id => !PEOPLE[id]);
   assert.deepEqual([...new Set(unknown)], []);
   assert.ok(spoken.every(l => typeof l.text === 'string' && l.text.length > 0));
 });
@@ -132,6 +133,7 @@ const linesBy = () => {
   for (const l of spoken) out[l.who]?.push(l.text);
   for (const l of LETTERS) out[l.from]?.push(l.text);
   for (const d of DISCOVERIES) out[d.person]?.push(d.line);
+  for (const a of Object.values(ADVICE_TOPICS)) out[a.person]?.push(a.line);
   for (const [id, list] of Object.entries(WISHES)) out[id].push(...list.map(w => w.text));
   out.june.push(...Object.values(JUNE_TIPS));
   out.ada.push(FIRST_ORDER.line, ...CHAPTERS.map(c => c.ada), ...TUTORIAL.map(st => st.text), ...RESTORE_TUTORIAL.map(st => st.text));

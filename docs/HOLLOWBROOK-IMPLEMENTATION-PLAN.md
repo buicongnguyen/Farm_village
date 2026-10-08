@@ -2,11 +2,11 @@
 
 Date: 2026-10-08 (Asia/Seoul)
 
-Status: **first v0.4 logic/art passes live; profiles and four discoveries implemented on the review branch, not yet live.** PRs #1 and #2 shipped the orchard logic and AR-001 look/feedback; PR #3 (`a1607de`) closes AR-001. The current `codex/dialogue-review` slice keeps the 500-coin opening, adds three farm profiles and four one-time finds capped at 110 coins per save, and saves earned/read memories. Persistent adaptive advice cards, covered land, skills/project energy, vehicles and later regions remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) and [CODEX-TASKS.md](CODEX-TASKS.md) for scope and validation.
+Status: **profiles and four discoveries are live through PR #4 at `ab6b230`; adaptive advice is implemented on `codex/village-advice`, not yet deployed.** [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. PRs #1 and #2 shipped the orchard logic and AR-001 look/feedback; PR #3 (`a1607de`) closes AR-001. The live game keeps the 500-coin opening, three farm profiles and four one-time finds capped at 110 coins per save, with earned/read memories. The current advice branch adds 18 topic types and persistent acknowledgment/deferral; covered land, skills/project energy, vehicles and later regions remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) and [CODEX-TASKS.md](CODEX-TASKS.md) for scope and validation.
 
-Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Current work is on `codex/dialogue-review`, with main through `a1607de` integrated and visitor/saved-news review fixes committed as `b03c38c`.
+Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Visitor/saved-news review fixes (`b03c38c`) and profiles/discoveries shipped in PR #4. Current work is on `codex/village-advice`, based on main at `ab6b230`.
 
-Coordination update, 2026-10-08: the first logic/art passes and production checks are complete. The user asked to continue implementing the larger plan; profiles and four small discoveries form the next bounded playable slice. Current checks: 211 rules tests pass, steady school and clinic day 3, test first-load code 986,313 bytes; browser validation is pending final integration results. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md). AR-001 is closed; [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next scoped art brief.
+Coordination update, 2026-10-08: the user asked to continue implementation and deploy ready changes; PR #4 is now live. The next bounded slice implements adaptive business/blocker/activity advice and three earned celebration memories, with 72 bilingual content/control strings and save version 7. Current checks: 228 rules tests pass, steady school and clinic day 3, test first-load code 1,005,452 bytes; browser and final production validation are pending. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md). AR-001 is closed; [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the scoped art brief. The [reference-game comparison](REFERENCE-GAME-COMPARISON.md) separates observed reference behavior from recommended future work.
 
 This is the single starting document for the next implementation work. It combines the research and subsequent design discussion. **Latest explicit user decisions take precedence, followed by this plan, then the older research notes.** Existing implementation status remains in [JOURNEY.md](JOURNEY.md); character and language rules remain in [STORY.md](STORY.md).
 
@@ -40,12 +40,12 @@ Let care add pleasant responses without introducing animal suffering, crop damag
 |---|---|---|
 | Audience | Broad adult/family appeal, approachable for children and less experienced players | Accepted direction |
 | Opening money | **500 coins** in the normal restored-village start | Confirmed; already matches current rules |
-| Lucky discoveries | Small surprises connected to actual effort and exploration | First four implemented on the review branch; broader discovery systems remain planned |
-| Introductory treasure budget | Four one-time finds totaling at most **110 coins per save**, plus unchanged 500 start | Chosen for the current playable slice; rules/pace checked, browser validation pending |
+| Lucky discoveries | Small surprises connected to actual effort and exploration | First four live through PR #4; broader discovery systems remain planned |
+| Introductory treasure budget | Four one-time finds totaling at most **110 coins per save**, plus unchanged 500 start | Live; release rules, pace and browser checks passed |
 | Story tone | Hopeful, happy, personal; villagers notice progress and help with real opportunities | Confirmed direction |
 | Color | Richer greens, terracotta, turquoise, deep shadows, vivid produce, selective gold | AR-001 delivered and production-checked; retain the art lane's treatment |
 | Guidance | Useful opportunity or blocker, enjoyable activity, and achievement recognition | Confirmed direction |
-| Notification treatment | Small vivid badge on an existing entry point | Discovery unread count implemented in Today on the review branch; full adaptive advice/news lifecycle remains planned |
+| Notification treatment | Small vivid badge on an existing entry point | Discovery unread count is live; combined unread advice/discoveries and saved deferral are implemented on the current advice branch, awaiting browser validation |
 | Land | Cover unbought or undiscovered areas; buying or exploring reveals useful content gradually | Confirmed direction |
 | Vehicles | Consider bicycle, tractor, motorbike, car, and truck activities | Requested direction; roles and sequence proposed |
 | Skills | Learn new planting, cooking, product-making, and repair capabilities | Requested direction; progression model proposed |
@@ -62,7 +62,7 @@ The earlier 500-versus-1,000 simulation was a historical, single-seed experiment
 
 ## 3. Baseline to preserve
 
-| Area | Current foundation (orchard live; profiles/finds on review branch) | Implication for new work |
+| Area | Current foundation (orchard, profiles and finds live) | Implication for new work |
 |---|---|---|
 | Core architecture | Rules in `src/core` behind `act()`/`tick()`; data in `src/content`; views/UI separate | Extend the same boundaries |
 | Main progression | Sequential farm projects, families, school, then clinic | Add optional branches without new mandatory gates |
@@ -190,7 +190,7 @@ Defer literal aging of Pip, adding the player's absent parent, and a four-genera
 
 ### Dialogue work
 
-The table records the original review targets. The live first logic pass fixed order-first chatter, June's branch, actionable advice, school/clinic context, unsupported watering reminders and the silent player's tap. The current branch adds persistent earned/read records for four discoveries; persistent adaptive topic history, broader object discovery states and more character-specific dialogue remain planned.
+The table records the original review targets. The live first logic pass fixed order-first chatter, June's branch, actionable advice, school/clinic context, unsupported watering reminders and the silent player's tap. Persistent earned/read records for four discoveries shipped in PR #4. The current advice branch implements saved topic/context acknowledgment and deferral; broader object discovery states and more character-specific dialogue remain planned.
 
 | Situation to review | Required behavior |
 |---|---|
@@ -213,11 +213,11 @@ Every shipped screen string, `t()` key, refusal from `ctx.fail()`, and content l
 
 **English must be equally adaptive.** Select a stable topic/scene ID from the farm's state, then render its authored English or natural Vietnamese version. Both languages use the same prerequisites, useful-action ranking, blockers, clue order, achievement state, reward eligibility and repetition policy. Vietnamese may change sentence structure and forms of address; neither locale may invent a missing building, reward or relationship.
 
-Changing language must preserve progress, reward markers and conversation/news history. For the future saved history system, store IDs and context versions, not rendered sentences; unread state, cooldowns and dismissal remain unchanged by language switches. Current conversation bags and June's previous-topic memory are session-only; persistent history is still planned. Existing news remains bounded event data, with compatibility handling for older payloads.
+Changing language must preserve progress, reward markers and conversation/news history. Store stable IDs and context versions, not rendered sentences; unread state, cooldowns and dismissal must remain unchanged by language switches. The current advice branch implements persisted read/postponed IDs for its 18 topic types; ordinary conversation bags and previous-topic variation remain session-only. Wider conversation history and any future cooldown system remain planned. Existing news remains bounded event data, with compatibility handling for older payloads.
 
 Acceptance: exercise each new condition before/after completion in **both** languages, including unavailable ingredients, a removed/broken building, a completed clue, an already claimed reward and a repeated visit. Test the selected topic as well as its rendered sentence. A changed greeting must not masquerade as new advice. Verify phone fit and that switching locale cannot repeat a reward.
 
-The first logic pass already supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The follow-up review covers visitors whose farm facts change while they walk. The broader adaptive news system and later story chapters remain future work.
+The first logic pass supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The shipped follow-up review covers visitors whose farm facts change while they walk. The current advice branch adds the first persistent advice-card lifecycle and retained first-bread/school/clinic memories. Broader scene systems and story chapters beyond the existing chapter 5 remain future work.
 
 See [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) for the full cast proposal, including replacing Pip. Names there are proposed display text, not yet applied. Stable IDs, family relationships, pronouns and the player's chosen name must survive the eventual change.
 
@@ -276,6 +276,8 @@ Coalesce simultaneous celebrations. Keep permanent records for meaningful milest
 
 ## 7. Advice, customer demand, and Village news
 
+Implementation status: the first 18-topic subset is implemented on `codex/village-advice`, pending browser checks and deployment. It covers current order opportunities and blockers, actual bread surplus, queued output, fruit stands, queue capacity, optional fishing, and three one-time milestone memories. Reading/postponing is saved per farm; “Show me” rechecks the current target and opens a preview without spending resources. This does not complete the later item-use cards or all proposed interactions below.
+
 ### Message categories
 
 | Category | What the player learns | Appropriate action |
@@ -321,7 +323,7 @@ Use stable topic identifiers and revalidate before showing or acting on a sugges
 
 Keep the normal 500-coin opening. Introductory discoveries should be designed milestones with a surprising presentation; they are not advertised as extraordinarily rare random events.
 
-The following bounded subset is implemented on `codex/dialogue-review` and is not yet live. These are deterministic successful-action milestones, not random drops.
+The following bounded subset is live through PR #4 (`ab6b230`). These are deterministic successful-action milestones, not random drops.
 
 | Implemented discovery | Trigger | One-time reward |
 |---|---|---:|
@@ -339,7 +341,7 @@ Budget discoveries alongside the existing first daily gift of 50 coins, level-sc
 
 Other finds can offer a memory, clue, decoration, recovered tool, or useful place. Do not give every cleared object a cash box. Required progression and recovery from poor spending must remain possible without treasure.
 
-Implemented grants save each earned ID and its coins together. Successful batch threshold crossings and repair completion (including a helper finishing an underway restoration) pay once; starting repairs, refused actions, card reads, animations and reloads do not. Old saves retire known passed fishing milestones and previously restored Village Street without payout or earned album entries. Missing historical rock counts start at zero new observations. Earned, retired and read IDs are separate, so migration never invents a keepsake or loses an actual claimed record. Optional Today/Album cards acknowledge the find without another payment; the full adaptive advice-card flow remains future work.
+Implemented grants save each earned ID and its coins together. Successful batch threshold crossings and repair completion (including a helper finishing an underway restoration) pay once; starting repairs, refused actions, card reads, animations and reloads do not. Old saves retire known passed fishing milestones and previously restored Village Street without payout or earned album entries. Missing historical rock counts start at zero new observations. Earned, retired and read IDs are separate, so migration never invents a keepsake or loses an actual claimed record. Optional Today/Album cards acknowledge the find without another payment. The current advice branch extends that entry point with the initial persistent advice-card flow described in section 7.
 
 ## 9. Covered land and gradual discovery
 
@@ -529,7 +531,7 @@ Preserve existing abilities and access on migration. The current discovery migra
 
 ## 14. Implementation phases
 
-Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1's bounded first pass and AR-001 are live. Phase 3's four-find subset plus profiles is implemented on the review branch; it does not complete all phase 2 guidance or the later phases.
+Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1's bounded first pass and AR-001 are live. Phase 3's four-find subset plus profiles is also live. The initial persistent advice subset of phase 2 is implemented on the current branch and awaiting final validation; item-use cards, additional interactions and later phases remain planned.
 
 Implementation phases are delivery groupings, independent of Journey stage and chapter numbers. For example, implementation phase 7 includes the later story's stage 6 water resolution.
 

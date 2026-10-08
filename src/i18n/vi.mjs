@@ -1,3 +1,4 @@
+import { VI_ADVICE } from './vi-advice.mjs';
 import { VI_ART } from './vi-art.mjs';
 import { VI_WORLD } from './vi-world.mjs';
 import { VI_JUICE } from './vi-juice.mjs';
@@ -8,6 +9,7 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_ADVICE,
   ...VI_PROFILES,
   'Lucky discoveries': 'Những khám phá may mắn',
   'Lucky discovery': 'Một khám phá may mắn',

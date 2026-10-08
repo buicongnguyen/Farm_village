@@ -3,6 +3,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { SAVE_VERSION } from '../src/core/state.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots=join(tmpdir(),'farm-village-v04'); mkdirSync(shots,{recursive:true});
 const browser=await chromium.launch({channel:'chrome',headless:true,args:process.env.GPU==='0'?['--enable-unsafe-swiftshader']:['--use-angle=d3d11','--enable-gpu','--ignore-gpu-blocklist']});
@@ -183,7 +184,7 @@ await check('v0.3 save migration reopens chapter five for the real clinic ending
  const {ctx,page,errors}=await open();
  await page.evaluate(()=>{farm.game.s.version=4;farm.game.s.story.chapter=5;window.__fvSave();});
  await page.goto(URL_);await page.waitForFunction(()=>window.farm?.ready,null,{timeout:60000});
- expect(await page.evaluate(()=>farm.state().version===6&&farm.state().story.chapter===4&&farm.state().fruitStand.items.length===0&&!!farm.state().discoveries),'teaser migration failed');
+ expect(await page.evaluate(version=>farm.state().version===version&&farm.state().story.chapter===4&&farm.state().fruitStand.items.length===0&&!!farm.state().discoveries,SAVE_VERSION),'teaser migration failed');
  expect(!errors.length,errors.join(' | '));await ctx.close();
 });
 for(const pc of [false,true]) await check('orchard art stays within phone budgets at every zoom ('+(pc?'PC':'phone')+')',async()=>{

@@ -9,8 +9,9 @@
 import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
-import { conversationLine, juneAdvice, pipReactionLines } from '../core/conversation.mjs';
+import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
+import { adviceCards, adviceOf } from '../core/advice.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
@@ -431,12 +432,17 @@ export class PeopleView {
   }
   juneTip({ introduce = false } = {}) {
     const june = this.walkers.get('june'); if (!june || june.indoors) return null;
-    const advice = juneAdvice(this.s, this.game.now, this.juneTopic);
-    this.juneTopic = advice.key;
+    const next = adviceCards(this.s, this.game.now).find(card => card.person === 'june' && !card.read);
+    const current = next && adviceOf(this.s, next.id, next.context, this.game.now);
+    // Acknowledgement belongs to the save, so a repeated tap or reload never repeats the same business suggestion.
+    const result = current && this.game.do('readAdvice', { id: current.id, context: current.context });
+    const advice = result?.ok ? result.card : null;
+    this.juneTopic = advice?.id ?? 'chat';
     this.tipAt = performance.now(); this.lastAction = performance.now();
-    const line = [introduce ? t(villager('june').line) : null, t(advice.text)].filter(Boolean).join(' ');
+    const text = advice ? t(advice.line, tParams(advice.params)) : t(this.chatter(june));
+    const line = [introduce ? t(villager('june').line) : null, text].filter(Boolean).join(' ');
     this.say(june, line, 8000); this.once(june, 'Wave', 1.4);
-    return advice.key;
+    return this.juneTopic;
   }
   // ── Speech bubbles ──
   screenOf(w, y = 2.3) { const p = this.world.cam.camera.position.clone().set(w.x, y, w.z).project(this.world.cam.camera); return { x: (p.x + 1) / 2 * innerWidth, y: (1 - p.y) / 2 * innerHeight }; }

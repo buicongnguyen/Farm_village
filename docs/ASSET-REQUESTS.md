@@ -208,6 +208,8 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-08, logic lane: PR #4 merged as `ab6b230` after the user's deployment instruction. Pages run 37728932775 passed; production profiles were checked on phone and desktop in English and Vietnamese. Codex is now on `codex/village-advice`, active writer for the small `PeopleView.juneTip` behavior change in `src/view/people-view.mjs`: choose and acknowledge current advice, then fall back to social conversation. Base handoff is `ab6b230`; appearance, models, icons and AR-009 remain with Claude. The new advice UI and rules do not change collection rewards or effects.
+
 - 2026-10-08, logic delivery: profiles and four lucky discoveries are pushed in `dc8223f` on `origin/codex/dialogue-review`, [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4). The AR-009 event contract and existing-icon cards are ready for art integration. 211 rules tests, all browser components after fixture corrections, 28/28 smoke checks, pace and production build pass. AR-009 assets are still requested; production has not changed.
 
 - 2026-10-08, logic verification: the AR-001 fruit test now checks fruit, leaf and glint shapes emitted by the pick action itself. Its former threshold of 20 particles depended on unrelated particles: one normal tree emits 19. No art handlers, particle values, models or colours changed. The orchard migration check now expects save version 6; discovery money is checked separately from ordinary fish income.

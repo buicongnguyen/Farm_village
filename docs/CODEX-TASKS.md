@@ -2,7 +2,7 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
-Status: **first logic pass merged and live** through PR #1, with AR-001 art live through PR #2 and closed by PR #3 (`a1607de`). The current pass on `codex/dialogue-review` implements profiles and four small discoveries, plus review fixes; it is not yet live. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the next [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), and the future [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
+Status: **profiles and four discoveries are live** through PR #4 at `ab6b230`, after [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. The first logic pass and AR-001 remain live through PRs #1–3. Current work on `codex/village-advice` adds persistent adaptive advice and is **not yet deployed**. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), the [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md), and the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
 
 ## Preparation completed
 
@@ -67,7 +67,7 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 - Screenshot review confirms the translated story cards fit. Independent logic review found no outstanding issue in this pass. The local server was stopped after testing.
 - Claude's active visual handlers were left untouched. The additive event contract is in [ASSET-REQUESTS.md](ASSET-REQUESTS.md), with logic handoff commit `20e5f5b`. AR-001 subsequently delivered the look/effects and corrected stall-sale wallet feedback in PR #2; PR #3 records production checks and closes it.
 
-## Current pass — profiles and four discoveries
+## Completed release — profiles and four discoveries
 
 - [x] Commit visitor-arrival and saved-news fixes (`b03c38c`) and integrate current main through `a1607de`.
 - [x] Add three local farm profiles with isolated saves, import/reset, recovery and switching lifecycle.
@@ -78,11 +78,24 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 - [x] Run the current rules, pace and test build: **211 tests pass**, steady **school day 3 / clinic day 3**, **986,313 bytes** first-load test code.
 - [x] All component browser suites pass after targeted fixture corrections; **28/28** main smoke checks pass. Both-language profiles/discoveries, import/reset/recovery, legacy saves, phone fit and rendering budgets are covered. Reviewed the phone screenshots in both languages.
 - [x] Complete the independent code review and fix malformed imports, stale autosaves and cross-tab profile selection. Production build: **985,234 bytes** first-load code; the local test server is stopped.
-- [x] Commit and push the implementation (`dc8223f`) through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4). This implementation is on `codex/dialogue-review`, **not yet live**.
+- [x] Commit and push the implementation (`dc8223f`) through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`. Pages deployment **37728932775** passed; this release is live.
+
+## Current pass — adaptive village ideas
+
+- [x] Use 18 authored topic types for actual orders, surplus bread versus other demand, missing/working makers, ingredients, queued/finished batches, stand stock/takings/investment, queue capacity, optional fishing and three milestones.
+- [x] Share topic IDs, eligibility, useful-action ranking and history between English and Vietnamese. Add 72 bilingual content/control strings and integrate June's advice with the same current-fact selection.
+- [x] Persist read and postponed topic/context IDs per farm; let players inspect and restore eligible postponed ideas, and retire stale advice. The Today count combines unread ideas and earned discoveries.
+- [x] Recheck each card and its target before display/following. “Show me” opens existing controls without delivering, producing, placing, repairing or spending automatically.
+- [x] Retain one-time first-bread, school and clinic celebrations in the Album, gated by real progress and character introductions. Save version 7 preserves prior farms and does not invent old celebrations or duplicate rewards.
+- [x] Run current rules and pace checks: **228 tests pass**, steady **school day 3 / clinic day 3**. Test first-load code: **1,005,452 bytes**.
+- [ ] Complete component browser suites, smoke checks, phone screenshots and final production build.
+- [ ] Commit, push, open the advice PR and verify all checks before any production merge.
+
+This pass does not rename the cast, add a later chapter, implement covered land or introduce energy costs. The comparison report supplies observations and recommendations, not additional completed features.
 
 ## Following passes — still planned
 
-1. Persistent contextual advice cards: opportunity/blocker selection, deferral, stale-topic retirement, bread/corn-bread blockers, and truthful item-use cards. Discovery unread/read memories are implemented; the full advice lifecycle is not.
+1. Extend guidance with truthful item-use cards and selected playful/welcome moments. The initial persistent opportunity/blocker/activity/celebration advice lifecycle is implemented on the current branch; broader scene and interaction work remains planned.
 2. Covered land, purchase previews, one usable revealed parcel and one discovery accessible without purchasing land.
 3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
 4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.

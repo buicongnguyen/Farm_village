@@ -4,6 +4,8 @@ import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DISCOVERIES } from '../src/content/discoveries.mjs';
+import { unreadAdvice } from '../src/core/advice.mjs';
+import { unreadDiscoveries } from '../src/core/discoveries.mjs';
 import { VI } from '../src/i18n/vi.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
@@ -54,9 +56,16 @@ async function catchOne(page) {
   await page.click('.panel [data-do="reelIn"]');
 }
 async function badge(page, count) {
-  const state = await page.locator('[data-act="today"] .badge').evaluate(el => ({ text: el.textContent, hidden: el.hidden }));
-  expect(state.text === (count ? String(count) : ''), 'wrong unread count: ' + JSON.stringify(state));
-  if (count) expect(!state.hidden, 'unread finds have no Today badge');
+  // Capture facts and DOM together: June may acknowledge an idea between separate browser calls.
+  // Finds keep their exact expected count; the shared badge also includes whichever current advice remains unread.
+  const state = await page.evaluate(() => {
+    const badge = document.querySelector('[data-act="today"] .badge');
+    return { text: badge.textContent, hidden: badge.hidden, farm: farm.state(), now: farm.game.now };
+  });
+  expect(unreadDiscoveries(state.farm) === count, 'wrong number of unread discoveries');
+  const expected = count + unreadAdvice(state.farm, state.now);
+  expect(state.text === (expected ? String(expected) : ''), 'wrong combined unread count: ' + JSON.stringify({ text: state.text, expected, discoveries: count }));
+  expect(state.hidden === !expected, 'Today badge visibility does not match unread messages');
 }
 async function showMemories(page, kind) {
   await page.evaluate(kind => { farm.closeCards(); farm.panels.show(kind); }, kind);
