@@ -7,6 +7,7 @@ import { XP } from '../content/economy.mjs';
 import * as barn from './barn.mjs';
 import { committedCount } from './working.mjs';
 import { gainXp } from './levels.mjs';
+import { civicBuildReason } from './village-growth.mjs';
 
 export const stepIndex = id => STEPS.findIndex(st => st.id === id);
 export const currentStep = s => STEPS[s.projects.step] ?? null;
@@ -33,6 +34,7 @@ export function allowance(s, kind) {
 /** Can this kind be placed at all right now (ignoring the spot)? { ok, reason, params } */
 export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   const def = BUILDINGS[kind];
+  const civicReason = civicBuildReason(s, kind); if (civicReason) return { ok: false, reason: civicReason };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
   if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name, project: def.after, kind, lock: 'project' } };

@@ -1,5 +1,5 @@
 // The land grid and placement rules (DESIGN 4). Pure: reads the state, never changes it.
-import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA } from '../content/world.mjs';
+import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA, RUINS } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL_TYPES } from './state.mjs';
 import { reservedReason } from './reserved.mjs';
@@ -79,6 +79,10 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
   if (!def) return { ok: false, reason: 'Unknown item' };
   if (def.edge) return { ok: false, reason: 'Fences go on cell edges' };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden' };
+  if (def.civicSite) {
+    const site = RUINS.find(r => r.kind === kind);
+    if (!site || x !== site.x || z !== site.z || rot !== site.rot) return { ok: false, reason: 'Restore this building on its old civic site' };
+  }
   if (s.level < def.level) return { ok: false, reason: 'Reach level {level} first', params: { level: def.level, kind, lock: 'level' } };
   if (unlocked && !unlocked.has(kind)) return { ok: false, reason: 'Not unlocked yet' };
   for (const [cx, cz] of cellsOf(kind, x, z, rot)) {

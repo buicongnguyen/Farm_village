@@ -15,3 +15,5 @@ export * as advice from './advice.mjs';
 export * as exploration from './exploration.mjs';
 export * as land from './land.mjs';
 export * as contracts from './contracts.mjs';
+export * from './shops.mjs';
+export * from './village-growth.mjs';

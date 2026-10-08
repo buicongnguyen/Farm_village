@@ -2,6 +2,8 @@ import { MOBILE_VI } from './mobile.mjs';
 import { VI_GOOD_HELP } from './vi-good-help.mjs';
 import { VI_LAND } from './vi-land.mjs';
 import { VI_CONTRACTS } from './vi-contracts.mjs';
+import { VI_SHOPS } from './vi-shops.mjs';
+import { VI_GROWTH } from './vi-growth.mjs';
 import { VI_ADVICE } from './vi-advice.mjs';
 import { VI_EXPLORATION } from './vi-exploration.mjs';
 import { VI_ART } from './vi-art.mjs';
@@ -14,6 +16,24 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_SHOPS,
+  ...VI_GROWTH,
+  'Company delivery returned: {coins} coins waiting at the market': 'Xe giao hàng của công ty đã về: có {coins} xu chờ nhận ở chợ',
+  'Village growth': 'Làng mình lớn lên',
+  'Opening the village board…': 'Đang mở bảng công việc của làng…',
+  'Could not open the village board. Try again.': 'Chưa mở được bảng công việc của làng. Bạn thử lại nhé.',
+  'This project restores the old building in its original place.': 'Dự án này khôi phục công trình ngay trên nền cũ.',
+  'Connect its front door to the civic road with a path tile first.': 'Trước tiên, nối cửa trước với đường của làng bằng một ô lối đi nhé.',
+  'Preview the entrance path': 'Xem chỗ đặt lối vào',
+  'Preview the rebuild': 'Xem trước công trình khôi phục',
+  'Restore this building on its old civic site': 'Khôi phục công trình tại nền cũ trên dãy phố công cộng',
+  'The production clock is unavailable': 'Chưa thể tính thời gian làm hàng lúc này',
+  'Choose one to three batches': 'Chọn từ một đến ba mẻ',
+  'Each tray starts its own batch immediately. Finished goods wait here until collected.': 'Mỗi ô bắt đầu làm một mẻ riêng ngay khi có nguyên liệu. Hàng làm xong sẽ ở đây cho đến khi bạn lấy.',
+  'Earlier saved batches keep their original schedule. New batches start immediately.': 'Các mẻ đã lưu từ trước giữ nguyên lịch cũ. Mẻ mới sẽ bắt đầu ngay.',
+  'Starts in {time}': 'Bắt đầu sau {time}',
+  'Empty tray': 'Ô còn trống',
+  'Buy a parallel tray': 'Thêm ô làm hàng đồng thời',
   ...VI_GOOD_HELP,
   ...VI_LAND,
   ...VI_CONTRACTS,

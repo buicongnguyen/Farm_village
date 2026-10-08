@@ -7,7 +7,7 @@ import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { BARN, SLOTS, TRUCK } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
-import { recipesAt } from '../core/production.mjs';
+import { recipesAt, productionOf, productionDuration } from '../core/production.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { renderJourney } from './journey-panel.mjs';
 import { FRUIT_STAND } from '../content/economy.mjs';
@@ -33,11 +33,14 @@ import { goodHelpTarget } from '../core/good-help.mjs';
 import { renderLandPanel, renderLandEntry, showLandMemory } from './land-panel.mjs';
 import { renderContracts, renderContractMemories, renderContractMemory } from './contracts-panel.mjs';
 import { contractStatus } from '../core/contracts.mjs';
+import { renderShops, shopsEntry } from './shops-panel.mjs';
+import { normalizeGrowth } from '../core/growth-state.mjs';
+import { renderCivicSite } from './civic-site-panel.mjs';
 
 export { goodIcon };
 const goodsLine = (s, need, honour = true, help = true) => Object.entries(need).map(([g, n]) => {
   const have = barn.free(s, g, honour), ok = have >= n;
-  return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n} ›</button>`
+  return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}"><span class="item-token">${goodIcon(g, 'mini')}</span><span>${num(have)}/${n} ›</span></button>`
     : `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
 const TITLES = { exploration: 'Picnic trail', advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
@@ -102,6 +105,21 @@ export class Panels {
     else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) showLandMemory(g); }
     else if (d.do === 'landMemory') showLandMemory(g);
     else if (d.do === 'contracts') this.show('contracts');
+    else if (d.do === 'shops') this.show('shops', d.shop);
+    else if (d.do === 'villageGrowth') this.show('villageGrowth');
+    else if (d.do === 'growthSite') this.onGrowthSite?.(d.kind);
+    else if (d.do === 'growthPath') this.onGrowthPath?.(d.kind);
+    else if (d.do === 'growthBuild') { this.close(); this.onBuild?.(d.kind); }
+    else if (d.do === 'growthMemory') this.show('growthMemory', d.id);
+    else if (d.do === 'growthMarket') this.show('market');
+    else if (d.do === 'upgradeHospital') { if (g.do('upgradeHospital').ok) this.show('growthMemory', 'hospital'); }
+    else if (d.do === 'chooseCompanyBrand') g.do(d.do, { brand: d.brand });
+    else if (d.do === 'hireCompanyStaff') g.do(d.do, { role: d.role, person: d.person, building: d.building });
+    else if (d.do === 'releaseCompanyStaff') g.do(d.do, { role: d.role });
+    else if (d.do === 'companyBatch') g.do(d.do, { building: d.building, recipe: d.recipe, count: +d.count });
+    else if (d.do === 'sendCompanyDelivery') g.do(d.do, { id: d.id });
+    else if (d.do === 'shopVisit') this.onShopVisit?.(d.shop);
+    else if (d.do === 'sellToShop' || d.do === 'changeShopRequest') g.do(d.do, { shop: d.shop, offer: d.offer });
     else if (d.do === 'acceptContract') g.do('acceptContract', { id: d.id });
     else if (d.do === 'deliverContract') { if (g.do('deliverContract', { id: d.id }).ok) { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); } }
     else if (d.do === 'contractMemory') { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); }
@@ -177,16 +195,38 @@ export class Panels {
     queueMicrotask(() => this.lift());
     const now = this.game.now;
     const contract = contractStatus(s, now);
+    const growthRecord = normalizeGrowth(s);
+    const growthEntry = s.level >= 10 || growthRecord.hospitalAt !== null || Object.keys(growthRecord.memories).length ? `<button class="btn ghost wide" data-do="villageGrowth">${iconHtml('projects', '', 'mini')} ${t('Village growth')}</button>` : '';
     const contractEntry = contract.introduced && (s.level >= 6 || contract.canAccept || contract.active || contract.completedCount)
       ? `<button class="next-project" data-do="contracts">${iconHtml('carrot_juice', '', 'mini')}<b>${t('A picnic menu')}</b><small>${t(contract.complete ? 'A memory to keep' : 'Optional food requests')}</small></button>` : '';
     let body = '', title = t(TITLES[o.kind] ?? ''), icon = HEAD_ICONS[o.kind];
     if (o.kind === 'goodHelp') { title = t(GOODS[o.arg.good]?.name ?? ''); icon = o.arg.good; body = renderGoodHelp(s, o.arg.good, now, o.arg); }
     else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
+    else if (o.kind === 'shops') { title = t('Village shops'); icon = 'stall'; body = renderShops(s, now, o.arg); }
+    else if (o.kind === 'civicSite') { title = t(BUILDINGS[o.arg]?.name ?? 'Village growth'); icon = o.arg; body = renderCivicSite(s, o.arg); }
+    else if (o.kind === 'villageGrowth' || o.kind === 'growthMemory') {
+      title = t('Village growth'); icon = 'projects';
+      if (this.growthUI) {
+        body = o.kind === 'growthMemory' ? this.growthUI.renderGrowthMemory(s, o.arg) : this.growthUI.renderVillageGrowth(s, now);
+        const progress = normalizeGrowth(s), earned = o.arg === 'hospital' ? progress.hospitalAt !== null : progress.memories[o.arg] != null;
+        if (o.kind === 'growthMemory' && earned && !progress.read.includes(o.arg)) queueMicrotask(() => {
+          if (this.open === o && !normalizeGrowth(this.game.s).read.includes(o.arg)) this.game.do('readGrowthMemory', { id: o.arg });
+        });
+      } else {
+        body = `<p>${t('Opening the village board…')}</p>`;
+        if (!this.growthLoading) this.growthLoading = import('./village-growth-panel.mjs').then(module => { this.growthUI = module; this.render(); }).catch(() => {
+          if (this.open === o) this.el.querySelector('.panel-body').innerHTML = `<p>${t('Could not open the village board. Try again.')}</p><button class="btn wide" data-do="villageGrowth">${t('Try again')}</button>`;
+        }).finally(() => { this.growthLoading = null; });
+      }
+    }
     else if (o.kind === 'contractMemory') { title = t('A picnic menu'); icon = 'noodles'; body = renderContractMemory(s, o.arg); }
     else if (o.kind === 'land') { title = t('Sunlit clearing'); icon = 'sale_sign'; body = renderLandPanel(s, o.arg); }
     else if (o.kind === 'exploration') body = renderExploration(s, o.arg);
     else if (o.kind === 'roadmap') body = renderJourney(s);
-    else if (o.kind === 'clinic') body = `<div class="clinic-staff">${iconHtml('clinic', '', 'family-art')}<h3>${t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+    else if (o.kind === 'clinic') {
+      if (growthRecord.hospitalAt !== null) title = t('Our little hospital');
+      body = `<div class="clinic-staff">${iconHtml('clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+    }
     else if (o.kind === 'fruit_stand') {
       const st = s.fruitStand, spare = Object.entries(s.barn.items).filter(([g]) => GOODS[g]?.kind === 'fruit' && barn.free(s, g) > 0);
       body = `<p class="hint">${t('Orchard fruit sells for a little more here. A visitor buys one every thirty seconds.')}</p><div class="stall-slots">${st.items.map(it => `<div class="slot">${goodIcon(it.good)}<b>×${it.n}</b><small>${coinMark()} ${fruitPrice(it.good)}</small></div>`).join('')}</div>
@@ -196,9 +236,9 @@ export class Panels {
     else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
     else if (o.kind === 'album') body = renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
-    else if (o.kind === 'today') body = contractEntry + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
+    else if (o.kind === 'today') body = contractEntry + shopsEntry(s) + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
     else if (o.kind === 'advice') body = renderAdviceDetail(s, o.arg, now);
-    else if (o.kind === 'projects') body = renderLandEntry(s) + renderProjects(s, now);
+    else if (o.kind === 'projects') body = growthEntry + renderLandEntry(s) + renderProjects(s, now);
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
     else if (o.kind === 'cart') body = renderCart(s);
     else if (o.kind === 'mail') body = renderMail(s, now);
@@ -213,15 +253,15 @@ export class Panels {
     } else if (o.kind === 'production') {
       const p = s.placed[o.arg]; if (!p) { this.close(); return; }
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
-      const q = s.production[o.arg] ?? { slots: SLOTS.start, queue: [] }, ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
+      const q = productionOf(s, o.arg), ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
       const recipes = recipesAt(s, p.kind).map(r => { const def = RECIPES[r], can = barn.hasAll(s, def.needs);
-        return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(def.timeMs)}</small></button>
+        return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(productionDuration(s, o.arg, r, now))}</small></button>
           <div class="recipe-help">${goodHelpButton(r, def.makes)}</div></div>`; }).join('');
-      const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue[i]; if (!j) return `<div class="slot empty"></div>`;
-        const def = RECIPES[j.recipe], left = j.doneAt - now, k = left <= 0 ? 1 : Math.max(0, 1 - left / def.timeMs);
-        return `<div class="slot ${left <= 0 ? 'ready' : ''}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : shortTime(left)}</small></div>`; }).join('');
+      const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue.find(job => job.slot === i); if (!j) return `<div class="slot empty" data-tray="${i}" aria-label="${t('Empty tray')}"></div>`;
+        const def = RECIPES[j.recipe], left = j.doneAt - now, k = left <= 0 ? 1 : Math.max(0, 1 - left / (j.durationMs ?? def.timeMs));
+        return `<div class="slot ${left <= 0 ? 'ready' : ''}" data-tray="${i}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : j.startedAt > now ? t('Starts in {time}', { time: shortTime(j.startedAt - now) }) : shortTime(left)}</small></div>`; }).join('');
       const hurry = hurryLeft(s) > 0 && hurryable(s, o.arg, now) ? `<button class="btn ghost wide" data-do="hurry">${glyph('clock', 'g')} ${t('Hurry')}</button>` : '';
-      body = `<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
+      body = `<p class="hint">${t('Each tray starts its own batch immediately. Finished goods wait here until collected.')}</p>${q.queue.some(j => j.startedAt > now) ? `<p class="hint">${t('Earlier saved batches keep their original schedule. New batches start immediately.')}</p>` : ''}<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot" aria-label="${t('Buy a parallel tray')}">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
         ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}${hurry}<div class="recipes">${recipes}</div>`;
     } else if (o.kind === 'quests') {
       const qs = questsOf(s), w = WEEKLY[s.weekly?.i ?? 0], wp = weeklyProgress(s), left = hurryLeft(s);
@@ -276,9 +316,12 @@ export class Panels {
     }
     const postponedOpen = this.el.querySelector('.advice-deferred')?.open;
     const futureOpen = this.el.querySelector('.contract-future')?.open;
+    const growthOpen = [...this.el.querySelectorAll('details[data-growth-detail][open]')].map(el => el.dataset.growthDetail);
+    if (['today', 'clinic', 'album'].includes(o.kind)) body = growthEntry + body;
     this.el.innerHTML = this.head(title, icon) + `<div class="panel-body">${body}</div>`;
     if (postponedOpen && o.kind === 'today') { const details = this.el.querySelector('.advice-deferred'); if (details) details.open = true; }
     if (futureOpen && o.kind === 'contracts') { const details = this.el.querySelector('.contract-future'); if (details) details.open = true; }
+    for (const id of growthOpen) { const details = this.el.querySelector(`[data-growth-detail="${id}"]`); if (details) details.open = true; }
   }
   card(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);

@@ -79,11 +79,12 @@ test('repair guidance states the existing project gate, without inventing one fo
   assert.equal(goodHelp(s, 'chicken_feed', T0).source.reason, undefined);
 });
 
-test('ready recipe guidance accounts for earlier batches before directing collection', () => {
+test('ready recipe guidance matches independent trays and barn capacity instead of blocking behind an oversized batch', () => {
   const s = fresh(); s.level = 9; put(s, 'factory', 'noodle_factory'); s.barn.items = {}; s.barn.cap = 1;
   s.production.factory = { slots: 2, queue: [{ recipe: 'noodles', doneAt: T0 - 1000 }, { recipe: 'instant_noodles', doneAt: T0 }] };
-  assert.equal(goodHelp(s, 'instant_noodles', T0).source.status, 'barn-full', 'one free slot cannot reach output behind two noodles');
-  assert.equal(goodHelp(s, 'instant_noodles', T0).source.spaceNeeded, 3);
+  assert.equal(goodHelp(s, 'instant_noodles', T0).source.status, 'ready', 'one free space fits the noodle cup independently');
+  s.barn.cap = 2;
+  assert.equal(goodHelp(s, 'instant_noodles', T0).source.status, 'barn-full', 'collecting the two noodles first uses both free spaces');
   s.barn.cap = 3;
   assert.equal(goodHelp(s, 'instant_noodles', T0).source.status, 'ready');
 });

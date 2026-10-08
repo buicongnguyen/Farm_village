@@ -105,10 +105,10 @@ test('animals need no fence work: buy hens, then they eat feed and give produce'
   assert.equal(s.barn.items.egg, 2);
 });
 
-test('production queues run one after another and need free slots', () => {
+test('production trays run concurrently and need free slots', () => {
   const s = game(); const { mill } = millAndCoop(s); s.barn.items.wheat = 30;
   const a = must(s, 'produce', { building: mill, recipe: 'chicken_feed' }), b = must(s, 'produce', { building: mill, recipe: 'chicken_feed' });
-  assert.equal(b.doneAt - a.doneAt, RECIPES.chicken_feed.timeMs);
+  assert.equal(b.doneAt, a.doneAt); assert.notEqual(b.slot, a.slot);
   assert.equal(act(s, 'produce', { building: mill, recipe: 'chicken_feed' }).reason, 'The queue is full');
   must(s, 'buySlot', { building: mill });
   must(s, 'produce', { building: mill, recipe: 'chicken_feed' });
@@ -379,6 +379,7 @@ test('fruit trees: placed once, fruit after a while, then regrow every few hours
   const t = game(); tutorial(t); setLevel(t, 6); t.counts.bakery = 1;
   for (let i = 0; i < 40; i++) assert.ok(!['apple', 'peach', 'apple_pie'].some(g => makeCard(t, T0).need[g]));
   t.counts.apple_tree = 1; let seen = false;
+  t.placed.orderApple = { kind: 'apple_tree', x: 40, z: 66, rot: 0 }; t.trees.orderApple = { doneAt: T0 + FRUITS.apple.firstMs };
   for (let i = 0; i < 200 && !seen; i++) seen = ['apple', 'apple_pie'].some(g => makeCard(t, T0).need[g]);
   assert.ok(seen, 'with a tree, apples can be ordered');
 });

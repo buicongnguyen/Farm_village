@@ -2,6 +2,8 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
+Current status, 2026-10-09: the picnic trail/AR-010 shipped in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18), and ingredient guidance, the first covered plot and Lan's food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24). The `codex/production-village-growth` slice is implemented and validated: parallel trays, working shop customers and bounded civic/company progression, starting from `4377129` and integrating main `1add9a4`. **355 native tests, all 23 component browser suites, 28 smoke checks and eight production contexts pass; pace targets remain green.** The release PR records CI, Pages deployment and live verification. See [the current scope](PRODUCTION-AND-VILLAGE-GROWTH.md). Earlier release checklists retain their own historical test counts.
+
 Status: profiles and four discoveries shipped through PR #4 at `ab6b230`, after [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. The first logic pass and AR-001 shipped through PRs #1–3. Persistent adaptive advice and AR-009 icon integration are implemented on `codex/village-advice`; delivery and review are recorded in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6). Merging into main triggers deployment; check the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) for the production result. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), the [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md), and the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
 
 ## Preparation completed
@@ -80,7 +82,7 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 - [x] Complete the independent code review and fix malformed imports, stale autosaves and cross-tab profile selection. Production build: **985,234 bytes** first-load code; the local test server is stopped.
 - [x] Commit and push the implementation (`dc8223f`) through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`. Pages deployment **37728932775** passed; this release is live.
 
-## Current pass — adaptive village ideas
+## Completed release — adaptive village ideas
 
 - [x] Use 18 authored topic types for actual orders, surplus bread versus other demand, missing/working makers, ingredients, queued/finished batches, stand stock/takings/investment, queue capacity, optional fishing and three milestones.
 - [x] Share topic IDs, eligibility, useful-action ranking and history between English and Vietnamese. Add 72 bilingual content/control strings and integrate June's advice with the same current-fact selection.
@@ -109,7 +111,7 @@ This pass does not rename the cast, add a later chapter, implement covered land 
 
 The [delivery report](DISCOVERY-TRAIL.md) records completed integration and validation: 261 native tests, pace, 19 component suites, 28/28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) records the deployment/live checks. This remains an optional branch within chapters 1–5.
 
-## Guidance, one covered plot and connected food requests — implemented
+## Completed release — guidance, one covered plot and connected food requests
 
 - [x] Integrate current main through `b0172d6` in an isolated logic worktree, preserving unrelated mobile edits.
 - [x] Add truthful ingredient/source/use help, exact target previews and nested return navigation.
@@ -119,7 +121,26 @@ The [delivery report](DISCOVERY-TRAIL.md) records completed integration and vali
 - [x] Include English/Vietnamese, migration, failed-action and reward-ledger checks, native feature tests and phone/desktop browser acceptance.
 - [x] Complete 304 native tests, pace, all 21 browser suites, 28 smoke checks and four local production contexts; production first-load code is 1,068,656 bytes.
 
-See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain; broader company contracts remain planned.
+See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain. The separate company slice below follows that release.
+
+## Current pass — parallel production, shops and civic/company growth
+
+- [x] Reconcile Claude's handoff against main `4377129`: PR #23 item art, PR #18 trail integration and PR #24 guidance/food story already exist. Preserve the unrelated mobile work in the original checkout.
+- [x] Give every production tray independent start/completion/collection, retain ready batches until collection, and preserve legacy serial schedules in save version 10. Align hurry, clock recovery, ingredient advice and worker duration previews with the real rules.
+- [x] Make new orders require actual renewable ingredient sources and stop easy orders from promising one stored item repeatedly. Keep saved cards, current prices and the existing Lan picnic scenes.
+- [x] Connect the physical lake/plaza shops and Today entry to saved quotes, held-stock checks, explicit sales, 15-minute replenishment and free five-minute replacement. Keep preview/source navigation free of resource actions.
+- [x] Add the optional hospital/police/office gates and fixed-site/path previews; one arrived adult worker and manager; translated company labels; bounded truck requests and once-earned memories. Validate failed actions, undo consequences, partial saves and replay accounting.
+- [x] Add bilingual story/control text, circular order tokens and actual quantity chips. Record civic placeholders and art follow-ups in AR-011/AR-012 without changing the art lane's look.
+- [x] Pass 355/355 native tests and all pace targets; steady school and clinic remain on day 3. All 20 new phone/desktop checks pass in English/Vietnamese (12 production/shop and 8 civic/company checks).
+- [x] Verify all 23 component browser suites: the initial full run passed 22/23; the corrected old cast fixture passed 9/9, followed by green affected art/orchard/shops/civic checks on the final build.
+- [x] Pass 28/28 smoke checks and eight production contexts: four new growth and four existing optional flows, each covering English/Vietnamese at 390/1280 px. Production first-load code is 1,094,983 bytes.
+
+Publication record: the release PR is authoritative for the reviewed commit, CI checks, authorized main merge,
+Pages deployment and live verification. The integrated main baseline is `1add9a4`.
+
+See [PRODUCTION-AND-VILLAGE-GROWTH.md](PRODUCTION-AND-VILLAGE-GROWTH.md) for the release contract and
+[PRODUCT-CHAINS.md](PRODUCT-CHAINS.md) for the reviewed margins. This is the first optional civic/company tier;
+chapters 6 onward, Pearl/Bea's introductions and the water/festival resolution are still future story work.
 
 ## Following passes — still planned
 
@@ -127,5 +148,7 @@ See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope 
 2. Further covered regions, selective scenery clearing and useful restoration activities beyond the first optional paid plot and existing free picnic trail.
 3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
 4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
+5. Integrate AR-011 dedicated civic icons/hospital tier and optional staff/brand art after delivery. Current model reuse and the two recorded icon placeholders keep the first tier usable.
+6. Integrate AR-012 menu pictures and declared `icons/sm/` variants, then complete semantic button styling and the compact HUD/status-stack pass with Claude's look tokens. Full-size URLs remain until real small files exist; the current round order tokens do not complete that redesign.
 
 AR-002 and the old v0.5 label do not automatically select the next release. Keep the existing school targets (casual ≤10 days, steady 3–4, keen ≥2) and required family access intact while evaluating optional expansion.

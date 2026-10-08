@@ -59,7 +59,7 @@ export const VI_ADVICE = {
   'The stand costs {cost} coins. Each {good} earns {extra} coins more than a direct barn sale, covering that cost after {sales} sales. This assumes steady stocking and excludes orchard costs and other selling options.': 'Quầy tốn {cost} xu. Mỗi quả {good} bán ở quầy được thêm {extra} xu so với bán thẳng từ kho; bán {sales} quả thì phần thu thêm bù được chi phí đó. Cách tính này cần bổ sung hàng đều đặn, chưa tính chi phí vườn cây hay so sánh với cách bán khác.',
   'Room for another batch': 'Thêm chỗ cho một mẻ nữa',
   'The {building} queue is full, love. Another slot costs {cost} coins if we want to line up more work.': 'Hàng chờ của {building} đã đầy rồi, mình ơi. Nếu muốn xếp thêm một mẻ, mình có thể mua thêm ô với {cost} xu.',
-  'A slot lets you queue one more batch before leaving. It does not make production faster, and you can also wait for the current batches.': 'Thêm một ô thì bạn có thể xếp sẵn thêm một mẻ trước khi rời đi. Tốc độ làm hàng vẫn như cũ; bạn cũng có thể chờ các mẻ hiện tại làm xong.',
+  'An extra tray makes another batch at the same time. You can also wait and collect a finished batch to free its tray.': 'Thêm một ô thì bạn có thể làm thêm một mẻ cùng lúc. Bạn cũng có thể chờ mẻ hiện tại xong rồi lấy hàng để dùng lại ô đó.',
   'A little time by the pond': 'Ra ao chơi một lát',
   'Can we go fishing? I want to see what comes up this time!': 'Nhà mình đi câu được không? Con muốn xem lần này câu được gì!',
   'The pond is open for a new cast. Bait is optional, and the other jobs can wait.': 'Ao đã sẵn sàng cho lượt câu mới. Không có mồi vẫn câu được, còn những việc khác có thể để sau.',

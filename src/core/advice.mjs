@@ -8,7 +8,7 @@ import { SLOTS, FRUIT_STAND, DEMOLISH } from '../content/economy.mjs';
 import { N } from '../content/world.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { mayBuild, projectCost } from './projects.mjs';
-import { recipeOpen } from './production.mjs';
+import { recipeOpen, collectableJobs } from './production.mjs';
 import { isWorking } from './working.mjs';
 import { canPlace, doorCell, roadReach } from './grid.mjs';
 
@@ -71,7 +71,7 @@ function orderSuggestion(s, now, held, reserved, order) {
   const { o, good, count } = candidate, r = RECIPES[good], context = `order/${o.id}/${good}`;
   const params = { good: GOODS[good]?.name ?? good, count }, target = { kind: 'order', id: o.id, good };
   if (r && incoming(s, good, held) >= count) {
-    const readyAt = makers(s, r.at).find(([id]) => queue(s, id).some(j => j.recipe === good && j.doneAt <= now));
+    const readyAt = makers(s, r.at).find(([id]) => collectableJobs(s, id, now).some(j => j.recipe === good));
     const room = Math.max(0, amount(s.barn?.cap) - Object.values(s.barn?.items ?? {}).reduce((a, n) => a + amount(n), 0));
     if (readyAt && incoming(s, good, held, now) > 0 && room >= r.makes)
       return topic('order-collect', context, params, { kind: 'building', id: readyAt[0], good });

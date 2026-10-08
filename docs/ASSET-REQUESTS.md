@@ -1,5 +1,35 @@
 # Asset requests
 
+### AR-011: Civic/company art — requested 2026-10-09
+
+- Runtime IDs stay `clinic`, `police`, `company`; every footprint is **4 × 3 cells** at its existing civic-row anchor. The clinic's `s.growth.hospitalAt` stamp indicates the hospital upgrade. No child workers or new character identities are introduced.
+- Current stand-ins: `clinic` uses `town.glb/hospital` at width 7.8; `police` uses `town.glb/police` at width 6; `company` uses `town.glb/company` at width 8. Dedicated richer first-tier art may replace these registrations together with packed models. Do not edit the generated ANCHORS block manually.
+- Placeholder icon provenance: `public/assets/icons/police.webp` is an exact copy of the existing `clinic.webp`; `company.webp` is an exact copy of `market.webp`. Both are registered and need dedicated renders from Claude. These copies are the only binary changes by logic.
+- First delivery requested: dedicated police and office icons plus a hospital upgrade model/icon that preserves the clinic footprint and doorway. Coordinate the hospital tier selection with Codex before editing `modelFor`/`LandView`; the logic flag is already saved, but the new art selection is not wired yet.
+- Worker/manager outfits may be optional appearance layers for the existing adult residents. They must not replace villagers, add employment timers, or hide their ordinary family/social behavior. Staff IDs remain the existing person IDs.
+- Brands are translated labels (`brook`, `sunshine`, `clover`) attached to deliveries of existing goods. Optional brand-seal icons may use `brand_brook`, `brand_sunshine`, `brand_clover`; they are proposed art IDs, not new inventory goods. Do not generate separate product SKUs without a subsequent recipe decision.
+- Office tiers 2–3 and later police/hospital upgrades are future releases. The implemented prices, gates and payoffs are in [VILLAGE-GROWTH-PLAN.md](VILLAGE-GROWTH-PLAN.md).
+- Acceptance: model/icon coherence, packed GLBs, provenance, real fixed-site placement, doorway fit, English/Vietnamese at 390 px/desktop, and all phone rendering budgets. Claude owns all look changes.
+
+### AR-012: Menu pictures and small tokens — requested 2026-10-09
+
+- Deliver `hen`, `cow`, `ui:today`, `ui:projects`, `ui:mail`, `tool:demolish`, `ui:harvest_all` with registrations and provenance in one art PR. Existing SVG or home-building fallbacks stay until then.
+- Deliver small WebP files in `public/assets/icons/sm/` using the **same filename mapping** as the corresponding normal icon (`ui-coin.webp`, etc.), ideally a complete set for `ICONS`. Include the two new civic IDs or explicitly list unavailable small variants.
+- Provide a data-only list/map of delivered small IDs in `src/content/icons.mjs`. Codex will select those URLs for mini/mark/seed/status images and add file-coverage tests at integration. No probing missing URLs or invisible 404 fallback downloads.
+- Order source buttons already have circular item tokens and actual available/required counts, using existing color values. Claude may supply `--token-bg`, `--token-ring`, `.btn.go` and `.badge.ready` look tokens. Codex owns applying semantic classes and the later compact status-stack layout; new color values remain art-owned.
+- Keep green for committing a positive action, blue for navigation, and red for genuinely unread news as agreed. The exact palette, contrast and appearance are Claude's pass. Do not label available-but-unread-less content as new merely to show a red badge.
+- Marker atlas and world crop/fruit readability remain a separate art delivery; Codex will coordinate any marker behavior only after the atlas layout is explicit.
+
+### Active logic handoff — 2026-10-09
+
+Codex is the active writer on `codex/production-village-growth`, based on main `4377129` (PR #24). Guidance and AR-010 are already live; this pass owns parallel production/save compatibility, obtainable orders, useful kiosk/plaza offers, and the first optional civic/company rules. Shared behavior ownership: `src/main.mjs` tap routing, `src/ui/**` controls/layout, and small existing civic-model registration/visibility hooks. Existing building appearances, palettes, lights, particles and binary authorship remain Claude's. The two new civic icons are authorized placeholder copies under AGENTS.md section 3, recorded in AR-011 below. The original checkout's unfinished mobile work stays untouched in its checkout. The final PR will record integration and verification.
+
+Menu art is still awaiting Claude: Codex will retain current full-size icon URLs until the small variants exist, and will request the exact IDs before changing resource paths. Current UI layout work will reuse existing color tokens; new look tokens remain with Claude.
+
+Integration update: main `1add9a4`, including Claude's PR #25 tree-fruit visibility pass, is merged into this logic branch. Its generator, tree icons and packed model remain unchanged by logic.
+
+Logic acceptance: 355 native tests, all pace targets, 23 component suites (including the corrected cast fixture and affected reruns), 28 smoke checks and eight local production contexts pass. Civic phone rendering peaks at 78 draws / 234,934 triangles in seven tested zooms. Production code is 1,094,983 bytes, leaving about 5 KB under the first-load cap: keep future optional UI in lazy chunks. The release PR records its exact handoff commit, CI, deployment and live verification; active edit reservations end with that handoff. AR-011/AR-012 remain requested art/integration work.
+
 The queue between the **logic lane** (usually Codex) and the **art lane** (usually Claude Code). The rules for both lanes
 are in `AGENTS.md`. Anyone can add a request: the logic lane, the art lane or the user.
 
@@ -92,6 +122,8 @@ replaced) and `dropped`.
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 | AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
 | AR-010 | Old-object picnic discovery trail props | optional exploration | P1 | integrated and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18); includes Claude's PR #13 delivery and runtime wiring |
+| AR-011 | Civic/company first tier and later upgrade art | hospital, police, office and labels | P1 | requested; existing town models reused, police/company icons are placeholders |
+| AR-012 | Menu icons, small variants and semantic UI tokens | next art/UI integration | P1 | requested; current full-size URLs remain in use |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane

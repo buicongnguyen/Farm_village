@@ -10,6 +10,7 @@ import { arriveNext } from './homes.mjs';
 import { plantTree } from './trees.mjs';
 import { suspendFruitSales, resumeFruitSales } from './orchard.mjs';
 import { afterParcelBought } from './land-discovery.mjs';
+import { normalizeGrowth, stamp } from './growth-state.mjs';
 
 export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
@@ -75,7 +76,8 @@ export const actions = {
     // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.
     const built = (s.stats.built ??= {}); let xp = 0;
     if ((def.cost || def.project) && s.counts[kind] > (built[kind] ?? 0)) { built[kind] = s.counts[kind]; xp = XP.build; gainXp(ctx, xp); }
-    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, fruitSold: def.fruitStand ? s.stats.fruitSold : undefined });
+    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, fruitSold: def.fruitStand ? s.stats.fruitSold : undefined,
+      ...(def.civicSite ? { growthSent: normalizeGrowth(s).sent } : {}) });
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
     return { id, price };
@@ -108,6 +110,13 @@ export const actions = {
       delete s.fences[key]; count(s, e.kind, -1); ctx.emit('fenceChanged', { x: e.x, z: e.z, side: e.side, kind: null });
     } else {
       const p = s.placed[e.id];
+      // Dispatch bonuses and paid staff work survive removal: a used civic building cannot be fully refunded.
+      if (p.kind === 'clinic' && normalizeGrowth(s).hospitalAt !== null) return ctx.fail('It is in use now: move it instead');
+      if (BUILDINGS[p.kind].civicSite) {
+        const growth = normalizeGrowth(s);
+        if (e.civicUsed || growth.sent > (stamp(e.growthSent) ? e.growthSent : 0)
+          || (p.kind === 'company' && Object.values(growth.staff).some(Boolean))) return ctx.fail('It is in use now: move it instead');
+      }
       if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived || (s.trees[e.id] && (s.trees[e.id].picked ?? (s.trees[e.id].first ? 0 : 1)) > 0)
         || (BUILDINGS[p.kind].fruitStand && (s.fruitStand.items.length || s.fruitStand.coins || s.stats.fruitSold > (e.fruitSold ?? 0)))) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);

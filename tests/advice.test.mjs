@@ -91,7 +91,7 @@ test('an unlocked recipe still names a broken maker, a missing maker or a real m
 test('queue investment requires a full working queue, usable recipe inputs and an affordable available slot', () => {
   const s = base(); queueJob(s, 'bread', T0 + 30_000); queueJob(s, 'bread', T0 + 60_000);
   const c = card(s, 'queue-full'); assert.equal(c.params.cost, 60);
-  assert.match(c.reason, /does not make production faster/);
+  assert.match(c.reason, /another batch at the same time/);
   s.coins = 59; assert.equal(card(s, 'queue-full'), undefined);
   s.coins = 500; s.production.bakery.slots = 6; while (s.production.bakery.queue.length < 6) queueJob(s, 'bread', T0 + 60_000);
   assert.equal(card(s, 'queue-full'), undefined);

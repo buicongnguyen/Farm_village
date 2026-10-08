@@ -1,6 +1,6 @@
 // Run manually against a production build or deployed URL. Only isolated browser storage; no test hook needed.
 import { chromium } from 'playwright';
-import { newGame } from '../src/core/state.mjs';
+import { newGame, SAVE_VERSION } from '../src/core/state.mjs';
 import { xpFor } from '../src/core/levels.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
@@ -62,7 +62,7 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'production viewport overflow');
     await page.evaluate(() => window.__fvSave());
     const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
-    expect(saved.version === 9 && saved.coins === 4570 && saved.stored.bench === 1 && saved.contracts.completed['picnic-drinks'] != null && saved.landDiscovery.discoveredAt != null, 'production accounting/save mismatch');
+    expect(saved.version === SAVE_VERSION && saved.coins === 4570 && saved.stored.bench === 1 && saved.contracts.completed['picnic-drinks'] != null && saved.landDiscovery.discoveredAt != null, 'production accounting/save mismatch');
     await page.reload(); await enter();
     await page.click('[data-act="today"]'); await page.locator('[data-do="landVisit"]').first().click();
     expect(await page.locator('[data-do="inspectLandDiscovery"]').count() === 0, 'land reward reappeared after reload');

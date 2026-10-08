@@ -10,7 +10,7 @@ import { posters } from './orders.mjs';
 import { workingCount, isRepairing, isWorking } from './working.mjs';
 import { treeState } from './trees.mjs';
 import { animalState } from './animals.mjs';
-import { queueOf } from './production.mjs';
+import { productionOf } from './production.mjs';
 
 const SLOTS = 3;
 const has = (s, needs) => !needs || needs === 'pond' || (needs === 'production' ? workingCount(s, 'feed_mill') + workingCount(s, 'bakery') > 0
@@ -61,7 +61,7 @@ export function hurryable(s, id, now) {
   if (p.kind === 'bed') return !!s.beds[id] && s.beds[id].doneAt > now;
   if (b.fruit) return treeState(s, id, now)?.state === 'growing';
   if (b.animals) return (s.animals[id] ?? []).some(a => a.doneAt != null && a.doneAt > now);
-  if (b.produces) return isWorking(s, id) && queueOf(s, id).queue.some(j => j.doneAt > now);
+  if (b.produces) return isWorking(s, id) && productionOf(s, id).queue.some(j => j.doneAt > now);
   return false;
 }
 export const actions = {
@@ -99,7 +99,10 @@ export const actions = {
     else if (p.kind === 'bed') s.beds[id].doneAt = now;
     else if (b.fruit) s.trees[id].doneAt = now;
     else if (b.animals) { const a = (s.animals[id] ?? []).find(x => x.doneAt != null && x.doneAt > now); if (a) a.doneAt = now; }
-    else if (b.produces) { const j = queueOf(s, id).queue.find(x => x.doneAt > now); if (j) j.doneAt = now; }
+    else if (b.produces) {
+      const q = productionOf(s, id), j = q.queue.find(x => x.doneAt > now);
+      if (j) { j.doneAt = now; j.startedAt = Math.min(j.startedAt, now); s.production[id] = q; }
+    }
     ctx.emit('hurried', { id });
     return { ok: true };
   },
