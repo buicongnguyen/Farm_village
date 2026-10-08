@@ -90,7 +90,7 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
-| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | delivered (PR #5, awaiting logic-lane check) |
+| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | delivered in PR #5; integrated and locally validated in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6); production result in Pages |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -209,6 +209,27 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- 2026-10-08, logic lane, **AR-009 integration for [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6)**:
+  Claude's complete PR #5 delivery is integrated. `DISCOVERIES` uses `lucky_tin`, `lucky_button` and `lucky_box`
+  in its cards, Today/Album entries and find notifications; `street-thanks` retains the existing envelope/coin
+  treatment. These views load the **WebP icons only**. `discovery-props.glb` is registered and available for future
+  3D presentation; opening a current discovery card does not load it. No art source, palette, visual-effect
+  handler or reward rule was changed by the logic wiring. The art delivery entry below is preserved in full.
+  - Shared behavior ownership: Codex owns the `PeopleView.juneTip` and `PeopleView.maybeTip` changes in
+    `src/view/people-view.mjs` for the PR #6 handoff. `juneTip` selects/acknowledges current saved advice;
+    `maybeTip` waits while a panel, modal or guide is visible, so a covered automatic bubble cannot consume
+    an unread topic. The contextual-dialogue browser regression covers the guard. Appearance remains with Claude.
+  - Combined advice/art native tests: **229 passed**. All **17 component browser suites** and **28/28 smoke checks**
+    passed on the advice build before icon integration; the advice/discovery suites were rerun in English and
+    Vietnamese after integration and passed. Dedicated AR-009 checks passed **12 cards** (three icons in each
+    phone/desktop × English/Vietnamese context): fit, 256 px image loading, reading without another payment,
+    no GLB request, and no errors. Phone Vietnamese tin and desktop English box screenshots were inspected.
+  - Final first-load code: **1,005,608 bytes** test / **1,004,534 bytes** production, below 1,100,000.
+  - This records local integration acceptance. Production acceptance requires the Pages deployment and a live
+    check; retain `delivered` until that check passes, then record `done` with the deployment revision. Follow
+    [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) and the
+    [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) for delivery.
 
 - 2026-10-08, logic lane: PR #4 merged as `ab6b230` after the user's deployment instruction. Pages run 37728932775 passed; production profiles were checked on phone and desktop in English and Vietnamese. Codex is now on `codex/village-advice`, active writer for the small `PeopleView.juneTip` behavior change in `src/view/people-view.mjs`: choose and acknowledge current advice, then fall back to social conversation. Base handoff is `ab6b230`; appearance, models, icons and AR-009 remain with Claude. The new advice UI and rules do not change collection rewards or effects.
 

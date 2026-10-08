@@ -111,7 +111,13 @@ for (const lang of ['en', 'vi']) {
       g.s.orders.pending = Array(4).fill(g.now + 86400000);
       g.s.advice = { read: [], deferred: [], celebrated: {}, retired: [] };
       const before = g.s.coins;
-      p.talk(june); const advice = june.bubble?.textContent, firstTopic = p.juneTopic;
+      p.lastAction = performance.now() - p.idleTipMs - 1; p.tipAt = -Infinity;
+      farm.panels.show('settings');
+      const unread = JSON.stringify(g.s.advice.read);
+      p.maybeTip();
+      if (JSON.stringify(g.s.advice.read) !== unread) throw Error('idle advice was marked read behind Settings');
+      farm.panels.close();
+      p.maybeTip(); const advice = june.bubble?.textContent, firstTopic = p.juneTopic;
       if (!g.s.advice.read.includes('order-ready:order/chat-order')) throw Error('June did not acknowledge her advice in the save');
       if (g.s.coins !== before || g.s.orders.cards.length !== 1) throw Error('June delivered or rewarded an order while speaking');
       p.talk(ada); if (farm.panels.open?.kind === 'orders') throw Error('an order replaced conversation');

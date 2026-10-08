@@ -428,6 +428,8 @@ export class PeopleView {
   /** June's tip when nothing has happened for two minutes: the most useful next thing to do. */
   maybeTip() {
     if (performance.now() - this.lastAction < this.idleTipMs || performance.now() - this.tipAt < 300000) return;
+    // Reading a sheet or story card is not inactivity: obscured speech must not acknowledge unseen advice.
+    if (document.querySelector('.panel:not([hidden]), .modal, .guide:not([hidden])')) return;
     this.juneTip();
   }
   juneTip({ introduce = false } = {}) {

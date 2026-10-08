@@ -2,7 +2,7 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
-Status: **profiles and four discoveries are live** through PR #4 at `ab6b230`, after [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. The first logic pass and AR-001 remain live through PRs #1–3. Current work on `codex/village-advice` adds persistent adaptive advice and is **not yet deployed**. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), the [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md), and the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
+Status: profiles and four discoveries shipped through PR #4 at `ab6b230`, after [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. The first logic pass and AR-001 shipped through PRs #1–3. Persistent adaptive advice and AR-009 icon integration are implemented on `codex/village-advice`; delivery and review are recorded in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6). Merging into main triggers deployment; check the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) for the production result. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), the [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md), and the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
 
 ## Preparation completed
 
@@ -84,12 +84,14 @@ The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 
 
 - [x] Use 18 authored topic types for actual orders, surplus bread versus other demand, missing/working makers, ingredients, queued/finished batches, stand stock/takings/investment, queue capacity, optional fishing and three milestones.
 - [x] Share topic IDs, eligibility, useful-action ranking and history between English and Vietnamese. Add 72 bilingual content/control strings and integrate June's advice with the same current-fact selection.
+- [x] Keep automatic June advice waiting while a panel, modal or guide is visible; cover the unchanged read state and subsequent visible conversation in the contextual-dialogue browser regression.
 - [x] Persist read and postponed topic/context IDs per farm; let players inspect and restore eligible postponed ideas, and retire stale advice. The Today count combines unread ideas and earned discoveries.
 - [x] Recheck each card and its target before display/following. “Show me” opens existing controls without delivering, producing, placing, repairing or spending automatically.
 - [x] Retain one-time first-bread, school and clinic celebrations in the Album, gated by real progress and character introductions. Save version 7 preserves prior farms and does not invent old celebrations or duplicate rewards.
-- [x] Run current rules and pace checks: **228 tests pass**, steady **school day 3 / clinic day 3**. Test first-load code: **1,005,452 bytes**.
-- [ ] Complete component browser suites, smoke checks, phone screenshots and final production build.
-- [ ] Commit, push, open the advice PR and verify all checks before any production merge.
+- [x] Run rules and pace checks: **229 native tests pass** on the combined advice/art tree, steady **school day 3 / clinic day 3**. First-load code: **1,005,608 bytes** in the test build and **1,004,534 bytes** in production.
+- [x] Complete all **17 component browser suites** on the advice build, including English/Vietnamese advice lifecycle and phone checks. Smoke checks: **28/28 passed on the advice build**.
+- [x] Integrate Claude's AR-009 delivery and wire its three WebP icons into discovery cards and notifications. The GLB remains available for future 3D presentation and is not loaded by these views. Integration checks: **English/Vietnamese advice and discovery suites passed again after integration; 12 keepsake cards passed on phone/desktop in both languages (fit, exact 256 px icons, no extra payment, no GLB request and no errors)**.
+- [x] Commit, push and open [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6). Verify the PR checks and [Pages production result](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) as part of delivery; merging main deploys.
 
 This pass does not rename the cast, add a later chapter, implement covered land or introduce energy costs. The comparison report supplies observations and recommendations, not additional completed features.
 
