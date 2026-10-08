@@ -209,6 +209,23 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-08, logic delivery: profiles and four lucky discoveries are pushed in `dc8223f` on `origin/codex/dialogue-review`, [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4). The AR-009 event contract and existing-icon cards are ready for art integration. 211 rules tests, all browser components after fixture corrections, 28/28 smoke checks, pace and production build pass. AR-009 assets are still requested; production has not changed.
+
+- 2026-10-08, logic verification: the AR-001 fruit test now checks fruit, leaf and glint shapes emitted by the pick action itself. Its former threshold of 20 particles depended on unrelated particles: one normal tree emits 19. No art handlers, particle values, models or colours changed. The orchard migration check now expects save version 6; discovery money is checked separately from ordinary fish income.
+
+- 2026-10-08, logic lane, **AR-009 handoff**: the user requested three discovery keepsakes and matching icons on
+  `art/discovery-props`. First delivery is assets/registration only; no new writer is reserved for `juice.mjs` or
+  `fx.mjs`. Before a later effect subscription, record the named functions, active writer and committed handoff
+  revision here. Codex is active on `codex/dialogue-review` for discovery eligibility/accounting, independent save
+  profiles, UI and English/Vietnamese. Current source includes main `a1607de`, merged as `7e126fb`; AR-001's done
+  status and every earlier art note below are preserved. New discovery work is not represented as already merged
+  or deployed. Refer to `CLAUDE-DISCOVERY-HANDOFF.md` for the exact first delivery and event contract.
+- 2026-10-08, logic lane, review handoff **`b03c38c`**: `PeopleView.visit` carries the visit number and `sayVisit`
+  re-evaluates dialogue eligibility against the farm when the visitor actually speaks, once per visit. Preserve
+  this behavior when making later actor/effect changes. Persisted heart/charm news now stores numeric `threshold`
+  separately from timestamp `at`; live events keep their existing threshold in `at`. Do not treat a saved news
+  timestamp as a heart/charm threshold or restore the older stale visitor line behavior.
+
 - 2026-10-08, logic lane **handoff complete**, commit **`20e5f5b`**, PR #1: the additive contract below is implemented
   and covered by rules and English/Vietnamese phone tests. `main.mjs` now plays `pop` for picking fruit and `cheer`
   for a first rare species catch; repeated rare catches keep `pop`. `heartScene` additionally carries a numeric

@@ -1,5 +1,17 @@
 # Changelog
 
+## Profiles, small discoveries, and review follow-up — branch work (2026-10-08)
+
+Implemented on `codex/dialogue-review`; **not yet live**. The branch includes live main through `a1607de` (PR #3); the orchard logic and AR-001 look pass are already live through PRs #1 and #2.
+
+- **Review fixes (`b03c38c`):** tapping a visitor during arrival no longer breaks later speech, and observations use the farm's state when spoken. Saved heart/charm news keeps milestone counts separate from timestamps. The follow-up removes obsolete hen translations, checks the canonical animal names, and describes Pia as a young neighbour. English and Vietnamese share the same adaptive selection rules; proposed human renaming remains documented only.
+- **Farm profiles:** three independent local farms, with previews and switching from a cottage button or Settings. Saving, export/import, reset, recovery, and discovery history belong to the selected farm. Switching saves the departing farm and stops its autosave lifecycle. Incomplete imports are refused; corrupt saves use a healthy backup or offer recovery. Reset/import retain their intended destination when another tab changes the selected profile.
+- **Four small finds:** keep the 500-coin start and add at most 110 coins per save: 20 on the second successful catch, 40 and a local pond keepsake on the tenth, 30 after two actual owned-rock clearances, and 20 when Village Street's first restoration finishes. Starting repair and repairing School Lane do not qualify. The keepsake does not advance Ellis's letters or reveal the sluice story.
+- **Saved discovery memories:** optional cards in Today and the Album, a badge counting earned unread finds, and saved acknowledgment. Awards happen with successful work; opening cards, repeat taps, reload/import, and animations cannot pay again. Legacy saves retire known passed fishing/street milestones without money or invented album memories; rock counting starts with newly observed rock clearances.
+- **Validation:** 211 rules tests and all pace targets pass; steady simulation reaches school and clinic on day 3. All component browser suites pass after targeted fixture corrections, plus 28/28 smoke checks. English/Vietnamese phone cards, save recovery, read-state persistence and phone/PC rendering budgets pass. First-load code is 986,313 bytes in the test build and 985,234 in production, below 1,100,000. The local test server was stopped.
+- **Test reliability:** refresh the Next-chip fixture after changing crop readiness; check that art-fixture trees were actually planted on cleared ground; measure fruit/leaf/glint emission without counting unrelated particles. Migration and fishing tests explicitly account for schema version 6 and the separate discovery payment. Art appearance is unchanged.
+- **Scope:** see [Profiles and discoveries](docs/PROFILES-AND-DISCOVERIES.md). Persistent adaptive advice cards, covered-land progression, skills/project energy, meadow/dairy, and later story chapters remain future work. AR-001 is complete; [AR-009's discovery brief](docs/CLAUDE-DISCOVERY-HANDOFF.md) is the next art handoff.
+
 ## Planning and coordination — not a gameplay release (2026-10-08)
 
 - **Logic lane:** consolidated the design and evaluated research, prepared the scoped Claude AR-001 handoff and Codex task list, and aligned the shared rules with the user's project-only energy decision. Clarified shared effect ownership, coherent asset delivery, and integration checks before a production merge. The user subsequently authorized the first logic pass below; larger expansion systems remain planned.
@@ -8,21 +20,21 @@
 
 - **Keepsake props and icons:** three small original Blender keepsakes in a new kit, `discovery-props.glb`, that loads
   only when a discovery shows one: `lucky_tin` (the pond tin), `lucky_button` (the brass fish button with a pond
-  engraved on its back, against its cloth pouch) and `lucky_box` (the trinket box with a ribbon-tied pebble). Each is
-  handheld size and under 1,200 triangles, with a matching 256 px icon and a restrained golden glint. Registered in
-  `KITS['discovery-props']` and a `keepsakes` icon list; the logic lane switches its stand-in discovery icons.
-  `street-thanks` keeps the coin art. No new loads for players: `farm-kit.glb` and `decor.glb` are unchanged.
-  Comparison images in `docs/discovery-props/`.
+  engraved on its back, against its cloth pouch) and `lucky_box` (the trinket box with a smooth pebble on ribbon-tied
+  cloth). Each is handheld size and under 1,200 triangles, with a matching 256 px icon and a restrained golden glint.
+  Registered in `KITS['discovery-props']` and a `keepsakes` icon list; the logic lane switches its stand-in discovery
+  icons. `street-thanks` needs no new art: it keeps the existing `mail` envelope glyph and coin. No new loads for
+  players: `farm-kit.glb` and `decor.glb` are unchanged. Comparison images in `docs/discovery-props/`.
 
-## 0.4.0 — The orchard (2026-10-08, PR preview)
+## 0.4.0 — The orchard (live 2026-10-08, PRs #1 and #2)
 
 - **Look pass (AR-001, art lane):** a deeper, calmer lawn with paler warm paths and darker path edges; a cool daytime fill against the warm sun; a green dusk instead of olive; turquoise water; stronger orchard greens. Fruit picking gets its own burst, sound and "+n"; a golden carp gets a gold ring and star fountain. Coins fly to the wallet only when money is paid: takings waiting at a stall or the fruit stand just glint there. Coin markers get a dark backing and a warm glint. Comparison images in `docs/look-pass/`.
 - **Contextual conversation:** June offers actions the farm can currently support, with different consecutive tips when another useful action exists. Ordinary NPC taps keep conversation available alongside the order board. Bo and Marisol notice the restored school and clinic; Mai and Gus use eligible farm observations. Pip names the first two hens consistently and distinguishes other animals and goods. The player responds silently.
 - **Story order:** Ellis's clues arrive after the preceding letters are read. Existing read mail keeps its history; blocked unread clues show a hint and cannot reveal their contents. The water-rights thread no longer claims a nonexistent key quest or Ellis homecoming. School/clinic friendship scenes select appropriate dialogue while preserving their original rewards and save compatibility.
 - **Collection rules:** cherry-only farms can receive generic fruit goals; Sam's apple favour remains apple-specific. Harvest and catch events report actual stored/overflow quantities, and collected takings identify their source. Fruit picking gets a sound cue; the first rare species catch gets a distinct cue. Refused fishing/collection actions leave state untouched, and invalid stall stacks cannot sell forever.
-- **Art handoff:** documented additive event contracts for Claude's collection effects. This logic pass changes no models, icons, palettes, lighting or visual-effect handlers; the existing stall-sale animation is still part of Claude's AR-001 pass.
+- **Art handoff (first logic pass):** documented additive event contracts for Claude's collection effects without changing models, icons, palettes, lighting or visual-effect handlers. Claude subsequently delivered the collection effects and corrected stall-sale wallet feedback in AR-001 (PR #2); PR #3 records production verification and closes that request.
 - **Regression coverage:** added rules and English/Vietnamese phone checks for clue sequencing, contextual scenes and conversations, cherry goals, actual collection accounting, duplicate refusals and save/reload. Translation coverage includes new scene and conversation variants.
-- **Validation for this logic pass:** 175 rules tests, all component browser suites and 28/28 smoke checks pass. School pacing remains green (steady day 3). Production first-load code is 967,982 bytes of the 1,100,000-byte budget; tested phone/PC zooms remain below 120 draws and 300,000 triangles.
+- **Historical validation for the first logic pass:** 175 rules tests, all component browser suites and 28/28 smoke checks pass. School pacing remains green (steady day 3). Production first-load code is 967,982 bytes of the 1,100,000-byte budget; tested phone/PC zooms remain below 120 draws and 300,000 triangles.
 
 - **Vietnamese review:** corrected misleading actions, item names, crop counts, idioms and family forms of address across the interface, tutorials, letters and heart scenes. Biscuit keeps one name; clinic, charm and garden terms agree across panels; adult avatar choices say Nam/Nữ. The market cart label now agrees with its next-day return.
 - **Localized rendering:** project locks translate their project names, repair status translates the full sentence before shortening it, and tapping visitors fills their dialogue placeholders. Hourly rent uses Vietnamese decimal commas. Repair news now names repaired roads and the farmhouse without crashing the Today panel.

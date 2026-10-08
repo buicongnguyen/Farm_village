@@ -2,7 +2,7 @@
 
 Date: 2026-10-08 (Asia/Seoul)
 
-Status: the user's latest design direction, with proposed reward values and dialogue revisions. This is a documentation step; the proposals have not been implemented in gameplay or localization.
+Status: **the first four discoveries are implemented on `codex/dialogue-review`, not yet live**, with the unchanged 500-coin start and at most 110 one-time discovery coins per farm save. Optional Today/Album cards retain earned/read memories in both languages. The first contextual-dialogue fixes are already live through PR #1; the broader persistent advice system and future discoveries remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the current feature and migration.
 
 This document supersedes the earlier ideas of starting with 1,000 coins, starting with zero coins, or using a 1,000-coin opening treasure. It refines [OPENING-ECONOMY-AND-SCHOOL.md](OPENING-ECONOMY-AND-SCHOOL.md) and [DIALOGUE-AND-VILLAGE-NEWS.md](DIALOGUE-AND-VILLAGE-NEWS.md). Audience and art direction remain in [RESEARCH-DIRECTION.md](RESEARCH-DIRECTION.md).
 
@@ -19,7 +19,7 @@ The intended experience is:
 
 > Explore or help → discover something small → consider a useful choice → achieve a goal → see people respond → notice another possibility.
 
-The 500 coins already match the normal restored-village opening. This decision preserves that starting amount while changing the proposed way additional discoveries and guidance would work.
+The 500 coins match the normal restored-village opening and remain unchanged. The implemented four-find subset adds small rewards for successful work; the broader guidance design below remains a plan.
 
 ## 2. Why this version fits the game
 
@@ -31,26 +31,30 @@ Use designed milestones for the introductory discoveries. Their contents and pre
 
 Not every action needs a prize. Interesting outcomes also include a clue, a short exchange, an album memory, a decoration, or a visible change in someone's routine.
 
-## 3. A small introductory reward plan
+## 3. Implemented introductory subset
 
-These amounts are **prototype recommendations**, not approved balance changes or measured optimal values.
+These narrow amounts and triggers were selected for the current playable slice. They are implemented and covered by rules/pace checks; browser integration validation is pending. They do not establish a final balance for every future discovery.
 
-| Discovery | Proposed condition | Proposed reward | Purpose |
+| Discovery | Implemented condition | One-time reward | Purpose |
 |---|---|---:|---|
 | A small tin from the pond | Second successful catch | 20 coins | Make the first attempt at fishing feel eventful |
-| Something unusual in the deeper water | Tenth successful catch | 40 coins and a story clue | Recognize continued interest and introduce another discovery |
-| A keepsake beneath a stone | Second rock successfully cleared on owned land | 30 coins | Connect useful farm preparation with a small surprise |
+| A keepsake from the pond | Tenth successful catch | 40 coins and a fish-shaped brass button | Recognize continued interest with a local pond memory |
+| A keepsake beneath a stone | Second successful owned-rock clearance observed by this system | 30 coins | Connect useful farm preparation with a small surprise |
 | A neighbor's thank-you | First completed restoration of Village Street | 20 coins and a warm exchange | Recognize work that helps the village |
 
-The four rewards add at most **110 new coins per save**. They do not reset each day or repeat every ten catches. Together with the starting money, that is 610 coins from these particular sources before spending; ordinary earnings and existing rewards are additional.
+The four rewards add at most **110 new coins per save**. They do not reset each day or repeat every ten catches, and the first four milestones use no RNG. Together with the starting money, that is 610 coins from these particular sources before spending; ordinary earnings and existing rewards are additional. The tenth-catch keepsake is a local pond memory: it reveals no sluice clue, marks no Ellis letter read, and preserves the ordered story.
 
 Current costs give these finds some meaning: a cherry tree costs 70 coins, a fruit stand 80, and the first extra production queue slot 60. A discovery can help close a small gap without paying for several major milestones. Affordability advice must still check level, project, placement, and ingredient requirements.
 
-Clearing a rock currently costs 10 coins and repairing a broken road costs 40. The proposed stone reward follows 20 coins of clearing costs; the road thank-you is only a partial reimbursement. The usable land and repaired road remain their main benefits. Do not describe either as a large profit opportunity.
+Clearing a rock currently costs 10 coins and repairing a broken road costs 40. The stone reward follows 20 coins of clearing costs; the road thank-you is only a partial reimbursement. The usable land and repaired road remain their main benefits. Do not describe either as a large profit opportunity.
 
 Village Street is already a damaged starting road. School Lane exists but is not initially broken. A future school-road restoration can use the same design principle, but it needs its own explicitly designed event and budget; it should not silently add another cash payment to this introductory plan.
 
-References: [economy values](../src/content/economy.mjs), [building prices](../src/content/buildings.mjs), [clearing rules](../src/core/build.mjs), [repairs](../src/core/condition.mjs), and [starting roads](../src/content/start.mjs).
+The award and earned ID are saved together when successful work crosses a threshold. Clearing weeds, tapping a rock twice, refused actions, starting a repair, and repairing School Lane do not qualify. A neighbour finishing an underway Village Street restoration can complete that same one-time milestone. Batch clears count distinct actual owned rocks, and discovery money cannot fund another item midway through that batch.
+
+Old saves retire known passed fishing milestones and already restored Village Street without retroactive money or invented album entries. A still-broken street remains eligible unless its saved history proves an earlier restoration. Historical mixed clearing totals cannot identify rocks, so old farms count newly observed rock clearances from zero. Earned, retired and read IDs remain separate: actual earned records survive save/load/import, and opening or rereading their optional cards never pays.
+
+References: [discovery definitions](../src/content/discoveries.mjs), [discovery rules](../src/core/discoveries.mjs), [economy values](../src/content/economy.mjs), [building prices](../src/content/buildings.mjs), [clearing rules](../src/core/build.mjs), [repairs](../src/core/condition.mjs), and [starting roads](../src/content/start.mjs).
 
 ## 4. Include the rewards the game already gives
 
@@ -68,9 +72,9 @@ Level-ups and first-time album stamps do not automatically award money. Preserve
 
 See [daily gifts](../src/core/today.mjs), [goal and festival rewards](../src/content/quests.mjs), [Tomas's scene](../src/content/hearts.mjs), and [first-time records](../src/core/act.mjs).
 
-The earlier experiment with 1,000 starting coins does not validate this new reward schedule. Future testing must include the existing rewards and the proposed discoveries together.
+The earlier experiment with 1,000 starting coins does not validate this reward schedule. The current rules and simulation include the implemented discoveries; steady school and clinic remain day 3. Continue accounting for existing rewards when adding or tuning future finds.
 
-## 5. Let a discovery open an interesting choice
+## 5. Future guidance: let a discovery open an interesting choice
 
 After a find, offer one relevant suggestion and make it easy to continue playing freely.
 
@@ -87,11 +91,11 @@ An early fishing find should not direct the player into a school activity that h
 
 Different interests are flexible choices within the village journey. They are not permanent classes, and the current game does not yet support a complete independent progression route for each one.
 
-## 6. Review of existing conversations
+## 6. Historical conversation review — first pass implemented
 
-The reviewed dialogue already contains warmth, humor, and achievement reactions. The main issues are a few stern or overly economic phrases, statements that can become stale after progress, and advice that needs stronger checks against the actual game state.
+This section preserves the original review and draft alternatives. The first contextual-dialogue pass, now live through PR #1, addressed June's reachable, eligible advice, truthful school/clinic variants, and unsupported watering reminders. The shipped wording is authoritative in the content and translation files and need not exactly match these drafts. The Gus order-tone proposal below remains unimplemented; the other quoted pre-pass lines are historical context, not a report of current defects.
 
-The following revisions are **draft replacements for a future implementation**. They include English and Vietnamese so tone and relationships can be reviewed together. They have not been added to the live content files.
+English and Vietnamese use the same game-state selection and prerequisites. The remaining work is persistent topic history and the wider opportunity/blocker advice lifecycle, not redoing these baseline fixes.
 
 ### June: make planting an invitation
 
@@ -145,7 +149,7 @@ This works before the clinic opens. If the player reaches the friendship scene a
 
 Her six- and nine-heart scenes also discuss gathering signatures and Hazel's future visit. Review those scenes as a sequence and provide matching post-opening variants. Replacing just one line would leave later conversations out of step with the village.
 
-### Gus: preserve his grumble while showing trust
+### Gus: preserve his grumble while showing trust — still a wording proposal
 
 Existing, in [Gus's order lines](../src/content/people.mjs):
 
@@ -180,9 +184,11 @@ Ada should continue to use her own family- and village-specific lines, as requir
 
 A happy story can include quiet memories and a gentle mystery. Let difficult memories move toward care, repair, or companionship. Constant praise and exclamation marks would make the characters less believable.
 
-## 8. A proposed discovery exchange
+## 8. Historical draft exchange and further dialogue ideas
 
-After the second rock has actually been cleared and its one-time reward granted:
+The initial sketch below is retained as a future conversation idea. The implemented cards use the authored lines in [discoveries.mjs](../src/content/discoveries.mjs), with one earned memory and no automatic multi-speaker sequence. Old saves do not know their second-ever rock, so narration describes finding a box while lifting a rock rather than asserting that lifetime count.
+
+Original sketch, after a qualifying rock clearance and its one-time reward:
 
 **Pip**
 
@@ -203,9 +209,11 @@ The final suggestion should open an explanation or preview. It should not automa
 
 All final dialogue must retain the pronouns and relationships in [STORY.md](STORY.md): Ada uses bà–cháu, Ellis ông–cháu, Gus bác–cháu, and June uses June for herself and mình for the player. Pip speaks as a child and uses con when referring to himself.
 
-## 9. Present discoveries and achievements through village news
+## 9. Discovery memories now; broader village news later
 
-Use the existing proposed compact Village news entry point:
+The current slice adds an optional discovery card to Today and the Album, an unread count on Today, and saved read acknowledgment per farm profile. Only actually earned discoveries appear. Coins are already granted by the successful action, so opening the memory is never another collection step. Cards do not interrupt play automatically. Dedicated discovery art follows [AR-009](CLAUDE-DISCOVERY-HANDOFF.md).
+
+For the broader future Village news flow:
 
 - A brief golden reveal and character response mark a notable discovery.
 - The badge counts new unread messages, not unfinished obligations.
@@ -216,23 +224,25 @@ Use the existing proposed compact Village news entry point:
 
 When the player follows advice, replace it with a specific acknowledgment. When the player chooses a different interest, leave room for that choice and avoid repeated reminders.
 
-## 10. Rules and verification needed before implementation
+## 10. Rules and verification
 
-1. **Count successful actions.** Fishing milestones count completed catches. Rock milestones count actual cleared rocks on owned land, not taps or weeds. The existing combined clearing statistic begins at three in restored games, so it cannot identify the player's second stone.
-2. **Grant each discovery once.** Save the reward and its milestone together through the core action/tick system. Reloading, opening a message, or replaying an animation must not grant more money.
-3. **Handle batch actions correctly.** Clearing several rocks together can cross a threshold, but should still create only one reward for that milestone.
-4. **Scope road rewards.** Pay for the first restoration of the selected damaged segment. Neighbor-assisted completion can qualify, but must not produce a second payment. Later maintenance does not repeat the grant.
+1. **Count successful actions — implemented.** Fishing milestones count completed catches. Rock milestones count actual cleared rocks on owned land, not taps or weeds. The mixed legacy clearing statistic cannot identify past rocks; use new observations.
+2. **Grant each discovery once — implemented.** Save the reward and its milestone together through the core action/tick system. Reloading, opening a message, or replaying an animation must not grant more money.
+3. **Handle batch actions correctly — implemented.** Clearing several rocks together can cross a threshold, but should still create only one reward for that milestone.
+4. **Scope road rewards — implemented.** Pay for the first restoration of the selected damaged segment. Neighbor-assisted completion can qualify, but must not produce a second payment. Later maintenance does not repeat the grant.
 5. **Budget all reward sources together.** Include daily gifts, goals, friendship scenes, weekly rewards, and festival rewards. If discovery money contributes to an earn-coins goal, count the income once and verify the resulting combined payout.
-6. **Make migration deliberate.** Existing saves need an explicit treatment of already completed milestones. Avoid accidentally paying every introductory reward at once on loading an old farm.
+6. **Make migration deliberate — implemented.** Retire known passed legacy fishing/road milestones without awards or album claims. Count newly observed rocks where history is unknown; preserve actual earned IDs.
 7. **Keep advice truthful.** Check current buildings, repairs, stock, queued goods, project reservations, recipes, costs, and player progress before offering a recommendation.
-8. **Preserve memories across sessions.** Seen discoveries, recent advice topics, and achievements should not restart with every visit.
+8. **Preserve memories across sessions.** Earned/retired/read discovery state is implemented per farm. Persistent recent advice topics and the wider achievement/news lifecycle remain future work.
 9. **Verify happy dialogue in context.** Review early and late friendship scenes, before/after school and clinic states, and both English and Vietnamese voices. No completed project should still be described as missing.
-10. **Test pacing when the features are built.** Check all discoveries together and different player interests, retaining the school targets: casual by day 10, steady day 3–4, keen no earlier than day 2. The earlier 1,000-coin experiment is not evidence that these new triggers meet those targets.
+10. **Test pacing with the features.** The current rules/pace checks include the discoveries; steady school and clinic remain day 3. Retain school targets of casual by day 10, steady day 3–4, keen no earlier than day 2. Browser integration is pending. The historical 1,000-coin experiment is not evidence for these triggers.
 
-## 11. Recommended first implementation scope
+## 11. Current delivery and remaining scope
 
-Keep the 500-coin restored start. Prototype the four small discoveries, a bounded saved history, relevant follow-up advice, and the contextual dialogue revisions above. Reuse the existing news and album foundations.
+Implemented on the review branch: the 500-coin restored start plus four one-time finds capped at 110 coins, bounded progress, separate earned/retired/read records, optional Today/Album memories, and isolation across three local farm profiles. The first contextual dialogue pass is already live. Current validation: **211 rules tests pass**, steady **school day 3 / clinic day 3**, test first-load code **986,313 bytes**. **Browser validation pending — fill with final integration results before delivery.**
+
+Relevant persistent follow-up advice, more item uses, covered-land discoveries, skills/project energy, and meadow progression remain future work; this slice does not complete the larger plan.
 
 Evaluate whether players notice the connection between effort and discovery, understand one useful way to spend or save the reward, and remember a villager's reaction. Also check that ordinary farming remains rewarding when no treasure appears and that choosing leisure does not attract discouraging messages.
 
-Only the starting amount and two design principles are settled here. The 110-coin reward schedule, exact triggers, and draft wording remain proposals for balance and content review.
+The four-find 110-coin schedule and triggers are chosen and implemented for this bounded slice. The historical dialogue drafts and future guidance examples remain reference material; current source defines shipped wording and rule behavior.

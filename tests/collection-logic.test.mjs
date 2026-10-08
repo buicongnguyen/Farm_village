@@ -120,7 +120,8 @@ test('fish events use saved species history and content rarity, with no extra ra
     assert.equal(e.first, false); assert.equal(e.rare, !!def.rare);
     assert.equal(e.stored, 1); assert.equal(e.sold, 0); assert.equal(e.coins, 0);
     assert.equal(s.barn.items[def.id], 1); assert.equal(s.album.fish[def.id], 2);
-    assert.equal(s.coins, before + def.value); assert.deepEqual(ofType(r, 'barnSold'), []);
+    assert.equal(s.coins, before + def.value + 20); assert.deepEqual(ofType(r, 'barnSold'), []);
+    assert.deepEqual(ofType(r, 'discovery').map(e => [e.id, e.coins]), [['pond-tin', 20]], 'the second-catch find is separate from rarity and first-species metadata');
   }
 });
 

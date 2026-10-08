@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LETTERS } from '../src/content/letters.mjs';
 import { sceneFor } from '../src/core/bonds.mjs';
+import { commentFor } from '../src/core/neighbours.mjs';
 import { JUNE_TIPS, FAMILIES, NEIGHBOURS, VILLAGERS } from '../src/content/people.mjs';
 import { VI } from '../src/i18n/vi.mjs';
 
@@ -106,7 +107,7 @@ for (const lang of ['en', 'vi']) {
       const bed = Object.keys(g.s.placed).find(id => g.s.placed[id].kind === 'bed');
       if (!bed) throw Error('no fixture bed');
       g.s.beds[bed] = { crop: 'wheat', doneAt: g.now - 1 };
-      p.talk(june); const advice = june.bubble?.textContent;
+      p.talk(june); const advice = june.bubble?.textContent, firstTopic = p.juneTopic;
       g.s.orders.cards = [{ id: 'chat-order', from: 'ada', need: { wheat: 1 }, coins: 5, xp: 1 }];
       p.talk(ada); if (farm.panels.open?.kind === 'orders') throw Error('an order replaced conversation');
       if (!ada.bubble?.textContent) throw Error('Ada said nothing');
@@ -114,11 +115,13 @@ for (const lang of ['en', 'vi']) {
       for (let i = 0; i < 6; i++) { p.talk(ada); adaLines.push(ada.bubble?.textContent); }
       p.talk(you); if (you.bubble) throw Error('player spoke when tapped');
       p.sendFishing(you); if (you.bubble) throw Error('player spoke when sent fishing');
-      p.talk(june); const next = june.bubble?.textContent;
-      return { advice, next, adaLines };
+      p.talk(june); const next = june.bubble?.textContent, nextTopic = p.juneTopic;
+      return { advice, next, firstTopic, nextTopic, adaLines };
     });
     expect(lines.advice.includes(tr(lang, JUNE_TIPS.harvest)), 'June did not offer the ready harvest');
-    expect(lines.next && lines.next !== lines.advice, 'consecutive taps repeated the same tip');
+    expect(lines.firstTopic === 'harvest', 'wrong first advice topic');
+    expect(lines.nextTopic !== lines.firstTopic && !!JUNE_TIPS[lines.nextTopic], 'consecutive taps repeated the same topic');
+    expect(lines.next?.includes(tr(lang, JUNE_TIPS[lines.nextTopic])), 'next advice did not render its selected topic');
     const ada = VILLAGERS.find(p => p.id === 'ada');
     expect(new Set(lines.adaLines).size === 6, 'Ada repeated before her own pool was exhausted');
     for (const line of lines.adaLines) expect(ada.idle.some(text => line.includes(tr(lang, text))), 'Ada used generic chatter');
@@ -141,7 +144,11 @@ for (const lang of ['en', 'vi']) {
       g.tick(); stop(); farm.closeCards();
       const remarks = visits.map(e => {
         const w = p.walkers.get('visit:' + e.id); if (!w) throw Error('visitor did not appear: ' + e.id);
-        w.indoors = false; p.talk(w); return { ...e, bubble: w.bubble?.textContent };
+        w.indoors = false; p.talk(w); const bubble = w.bubble?.textContent;
+        // A player can tap on the way in. Completing that walk must neither crash nor repeat the observation.
+        Object.assign(w, { route: [], wait: 0, once: null });
+        p.liveVillager(w, 1, false); const arrived = w.bubble?.textContent;
+        p.talk(w); return { ...e, bubble, arrived, conversation: w.bubble?.textContent };
       });
       return { before, after, remarks };
     });
@@ -153,7 +160,69 @@ for (const lang of ['en', 'vi']) {
       expect(NEIGHBOURS.find(n => n.id === e.id).remarks.some(r => r.text === e.comment), 'unused neighbour remarks remain disconnected');
       const expected = tr(lang, e.comment).replace(/\{(\w+)\}/g, (_, key) => typeof e.params[key] === 'string' ? tr(lang, e.params[key]) : e.params[key]);
       expect(e.bubble.includes(expected), 'visitor text or Vietnamese placeholders were not rendered');
+      expect(e.arrived === e.bubble, 'arrival repeated or replaced the observation heard on the way in');
+      expect(e.conversation.includes(tr(lang, NEIGHBOURS.find(n => n.id === e.id).line)), 'visitor introduction became unavailable');
     }
+    expect(!errors.length, errors.join(' | '));
+  });
+  await check('arriving neighbours recheck a bakery stored while they walk (' + lang + ')', async ctx => {
+    const { page, errors } = await open(ctx, lang);
+    const state = await page.evaluate(() => {
+      const g = farm.game;
+      g.s.placed.visitBakery = { kind: 'bakery', x: 32, z: 56, rot: 0 };
+      g.s.counts.bakery = (g.s.counts.bakery ?? 0) + 1;
+      return farm.state();
+    });
+    const bakeryLine = NEIGHBOURS.find(n => n.id === 'mai').remarks.find(r => r.fact === 'bakery').text;
+    const visit = Array.from({ length: 5 }, (_, i) => i + 1).find(n => commentFor(state, 'mai', n).text === bakeryLine);
+    expect(visit != null, 'fixture did not select the bakery observation');
+    const result = await page.evaluate(({ visit, bakeryLine }) => {
+      const g = farm.game, p = farm.people;
+      p.visit('mai', bakeryLine, {}, visit);
+      const w = p.walkers.get('visit:mai'); if (!w) throw Error('visitor missing');
+      const stored = g.do('store', { id: 'visitBakery' }); if (!stored.ok) throw Error(stored.reason);
+      Object.assign(w, { route: [], wait: 0, once: null, indoors: false });
+      p.liveVillager(w, 1, false);
+      return { bubble: w.bubble?.textContent, state: farm.state() };
+    }, { visit, bakeryLine });
+    const latest = commentFor(result.state, 'mai', visit);
+    expect(latest.text !== bakeryLine, 'fixture still has another working bakery');
+    const expected = tr(lang, latest.text).replace(/\{(\w+)\}/g, (_, key) => typeof latest.params[key] === 'string' ? tr(lang, latest.params[key]) : latest.params[key]);
+    expect(result.bubble?.includes(expected), 'arrival used an obsolete farm observation');
+    expect(!errors.length, errors.join(' | '));
+  });
+  await check('Today keeps heart and charm counts separate from saved dates (' + lang + ')', async ctx => {
+    const { page, errors } = await open(ctx, lang);
+    const at = await page.evaluate(() => {
+      const g = farm.game;
+      // Settle the fixture's chapter mail and offline visits before saving the five news rows.
+      g.clock = () => Date.now(); g.tick(); farm.closeCards();
+      const at = g.now;
+      g.s.firsts['heart:lan:3'] = at - 1;
+      g.s.news = [
+        { type: 'heartScene', person: 'lan', at, threshold: 6 },
+        { type: 'heartScene', person: 'lan', at: at - 1 },
+        { type: 'heartScene', person: 'ada', at: at - 2 },
+        { type: 'charmMilestone', threshold: 20, at, decor: 'banner', charm: 23 },
+        { type: 'charmMilestone', at, decor: 'bunting', charm: 47 },
+      ];
+      window.__fvSave(); return at;
+    });
+    await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+    await page.evaluate(() => { clearInterval(farm.game.timer); farm.closeCards(); farm.panels.show('today'); });
+    const rows = await page.locator('.today .news li').allTextContents();
+    expect(rows.length === 5, 'saved news rows disappeared');
+    for (const [index, count] of [[0, 6], [1, 3]]) {
+      const expected = tr(lang, '{name} and you: {count} hearts').replace('{name}', 'Lan').replace('{count}', count);
+      expect(rows[index].includes(expected), 'heart threshold was replaced by its date: ' + JSON.stringify(rows));
+    }
+    expect(rows[2].includes(tr(lang, 'Heart scene')) && rows[2].includes('Ada'), 'legacy scene fallback missing');
+    for (const [index, charm, name] of [[3, 20, 'Village banner'], [4, 8, 'Bunting']]) {
+      const expected = tr(lang, 'Village charm {charm}: {name} goes up').replace('{charm}', charm).replace('{name}', tr(lang, name));
+      expect(rows[index].includes(expected), 'wrong charm milestone');
+    }
+    expect(rows.every(row => !row.includes(String(at))), 'news displays a timestamp as a count');
+    await fits(page, '.sheet.panel');
     expect(!errors.length, errors.join(' | '));
   });
 }

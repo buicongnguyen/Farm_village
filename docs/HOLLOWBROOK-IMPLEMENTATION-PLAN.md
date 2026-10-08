@@ -2,11 +2,11 @@
 
 Date: 2026-10-08 (Asia/Seoul)
 
-Status: **future expansion plan; the first v0.4 logic review is implemented on the PR branch.** Persistent Village news, discoveries, covered land, skills, energy, vehicles and later regions remain planned. See [CODEX-TASKS.md](CODEX-TASKS.md) for the bounded first pass and its validation.
+Status: **first v0.4 logic/art passes live; profiles and four discoveries implemented on the review branch, not yet live.** PRs #1 and #2 shipped the orchard logic and AR-001 look/feedback; PR #3 (`a1607de`) closes AR-001. The current `codex/dialogue-review` slice keeps the 500-coin opening, adds three farm profiles and four one-time finds capped at 110 coins per save, and saves earned/read memories. Persistent adaptive advice cards, covered land, skills/project energy, vehicles and later regions remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) and [CODEX-TASKS.md](CODEX-TASKS.md) for scope and validation.
 
-Repository: `Farm_village`, Three.js and plain JavaScript ESM. Reviewed baseline: branch `codex/v0.4-orchard`, commit `f0d8886`, with v0.4 orchard, roadmap, kennel, clinic, review fixes, and Vietnamese corrections already present on that branch. This is not a statement that the branch is merged or deployed to production.
+Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Current work is on `codex/dialogue-review`, with main through `a1607de` integrated and visitor/saved-news review fixes committed as `b03c38c`.
 
-Coordination update, 2026-10-08: main's shared rulebook and art queue (`ff555e0`) were merged into the logic branch as `0e4ed21`; that merge added documentation only. The user then authorized the first logic pass: ordered letters, contextual conversations/scenes, fruit-goal eligibility and collection metadata. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md).
+Coordination update, 2026-10-08: the first logic/art passes and production checks are complete. The user asked to continue implementing the larger plan; profiles and four small discoveries form the next bounded playable slice. Current checks: 211 rules tests pass, steady school and clinic day 3, test first-load code 986,313 bytes; browser validation is pending final integration results. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md). AR-001 is closed; [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next scoped art brief.
 
 This is the single starting document for the next implementation work. It combines the research and subsequent design discussion. **Latest explicit user decisions take precedence, followed by this plan, then the older research notes.** Existing implementation status remains in [JOURNEY.md](JOURNEY.md); character and language rules remain in [STORY.md](STORY.md).
 
@@ -40,12 +40,12 @@ Let care add pleasant responses without introducing animal suffering, crop damag
 |---|---|---|
 | Audience | Broad adult/family appeal, approachable for children and less experienced players | Accepted direction |
 | Opening money | **500 coins** in the normal restored-village start | Confirmed; already matches current rules |
-| Lucky discoveries | Small surprises connected to actual effort and exploration | Confirmed direction; amounts and triggers proposed below |
-| Introductory treasure budget | Four proposed one-time finds totaling **110 coins** | Prototype recommendation; not final balance |
+| Lucky discoveries | Small surprises connected to actual effort and exploration | First four implemented on the review branch; broader discovery systems remain planned |
+| Introductory treasure budget | Four one-time finds totaling at most **110 coins per save**, plus unchanged 500 start | Chosen for the current playable slice; rules/pace checked, browser validation pending |
 | Story tone | Hopeful, happy, personal; villagers notice progress and help with real opportunities | Confirmed direction |
-| Color | Richer greens, terracotta, turquoise, deep shadows, vivid produce, selective gold | Confirmed direction; palette requires rendered review |
+| Color | Richer greens, terracotta, turquoise, deep shadows, vivid produce, selective gold | AR-001 delivered and production-checked; retain the art lane's treatment |
 | Guidance | Useful opportunity or blocker, enjoyable activity, and achievement recognition | Confirmed direction |
-| Notification treatment | Small vivid badge on an existing entry point | Requested; unread-message behavior recommended below |
+| Notification treatment | Small vivid badge on an existing entry point | Discovery unread count implemented in Today on the review branch; full adaptive advice/news lifecycle remains planned |
 | Land | Cover unbought or undiscovered areas; buying or exploring reveals useful content gradually | Confirmed direction |
 | Vehicles | Consider bicycle, tractor, motorbike, car, and truck activities | Requested direction; roles and sequence proposed |
 | Skills | Learn new planting, cooking, product-making, and repair capabilities | Requested direction; progression model proposed |
@@ -62,13 +62,14 @@ The earlier 500-versus-1,000 simulation was a historical, single-seed experiment
 
 ## 3. Baseline to preserve
 
-| Area | Present on the reviewed branch | Implication for new work |
+| Area | Current foundation (orchard live; profiles/finds on review branch) | Implication for new work |
 |---|---|---|
 | Core architecture | Rules in `src/core` behind `act()`/`tick()`; data in `src/content`; views/UI separate | Extend the same boundaries |
 | Main progression | Sequential farm projects, families, school, then clinic | Add optional branches without new mandatory gates |
 | Roadmap | Current stage goal and next three unlocks already implemented | Extend it with truthful context; do not rebuild a second roadmap |
+| Farm profiles and finds | Three isolated local farms; four one-time discoveries; earned/retired/read state and optional memories | Review-branch scope only; keep profile state and payments independent |
 | Orchard and Biscuit | Cherry tree, fruit stand, kennel and crow protection implemented | Give these existing objects more contextual meaning |
-| Land | 4 × 4 parcel grid; currently at most two owned parcels; second parcel costs 500 at level 4 and must be adjacent | Discovery is new; more purchasable land needs explicit progression work |
+| Land | 4 × 4 parcel grid; currently at most two owned parcels; second parcel costs 500 at level 4 and must be adjacent | Land discovery remains planned; more purchasable land needs explicit progression work |
 | Existing cover | Unowned parcels have tall grass, saplings, rocks, fences and signs | Replace abrupt purchase dressing changes with deliberate reveals |
 | Clearing | Owned/buildable weeds and rocks, including batches | Wild scenery trees are not presently harvestable obstacles |
 | Vehicles | Working animated delivery truck; sourced tractor model available | Preserve truck use; tractor gameplay and other vehicle systems are new |
@@ -78,7 +79,9 @@ The earlier 500-versus-1,000 simulation was a historical, single-seed experiment
 | School | Level 6, two families with children, 24 bread, 10 corn bread and 4,000 coins after prior projects | Protect its timing and ingredient availability |
 | Clinic | Later project with four settled families, 12 bread, nine cherries, and clinic construction | Preserve its relationship to housing and the orchard |
 
-### Verified issues to address early
+### Baseline issues and current ownership
+
+The following findings were recorded against pre-pass `f0d8886`. The live first logic pass fixed clue ordering, the false Ellis-homecoming letter, and the unused-neighbour-remarks path; it also added fruit/rare-catch sound cues and truthful collection metadata. AR-001 subsequently delivered collection effects and truthful stall-wallet presentation. A visible festival remains future story work. The list preserves the reasons for those tasks rather than reporting them all as current defects.
 
 - **Clue ordering:** several letters depend only on catch, trip, or quest counts. They can reveal the sluice or its supposed solution before earlier facts; mailbox insertion can also put simultaneously eligible letters in reverse narrative order.
 - **Story/world mismatch:** Ellis remains absent from the playable village even when his final festival letter says he has returned. The present festival grants rewards and records progress, but lacks a visible gathering or playable payoff.
@@ -125,7 +128,7 @@ Later learning and transport connect branches without permanently locking choice
 
 Only show a small number of actionable opportunities at once. Keep farther places as silhouettes or named promises, and label content that is still planned. Build the valley's content and connections in advance while revealing activities at an understandable pace.
 
-## 5. Story, character memory, and Vietnamese
+## 5. Story, character memory, and both languages
 
 ### Story direction
 
@@ -143,7 +146,7 @@ Use the theme of remembering the source of the village's life, with a small ques
 
 - **Water thread:** the city flour company's land and water control explain the closed sluice. The village learns the facts, agrees a cooperative solution, settles access/rights, repairs the mechanism, and opens it through an actual player action.
 - **Gus's thread:** his shame concerns the lantern-stage fire; later evidence reveals that he saved children. Gratitude and the rebuilt festival resolve that story.
-- **Revision required:** rewrite the current letters that attribute a decades-old sluice closure and a complete key solution to Gus. Do not invent extra locks or incidents merely to preserve every contradictory line. Choose one chronology before editing all English/Vietnamese variants.
+- **Baseline revision, now completed in the first logic pass:** the current letters no longer attribute a decades-old sluice closure or a complete key solution to Gus. Do not invent extra locks or incidents merely to preserve older contradictory lines. Later chapters must follow the same chronology in both languages.
 
 The report's twenty- and thirty-year references concern different incidents; they are not a verified direct date contradiction. Use an explicit story fact sheet for event, order, participants, dates if necessary, and what each character knows. A new-looking padlock can be a maintenance detail once explained; its appearance alone must not imply a second unresolved mystery.
 
@@ -187,10 +190,12 @@ Defer literal aging of Pip, adding the player's absent parent, and a four-genera
 
 ### Dialogue work
 
+The table records the original review targets. The live first logic pass fixed order-first chatter, June's branch, actionable advice, school/clinic context, unsupported watering reminders and the silent player's tap. The current branch adds persistent earned/read records for four discoveries; persistent adaptive topic history, broader object discovery states and more character-specific dialogue remain planned.
+
 | Situation to review | Required behavior |
 |---|---|
 | Repeated order-first chatter | Allow ordinary conversation and an explicit request for advice; do not make every tap a repeated order reminder |
-| June's advice branch | Investigate the currently bypassed on-tap branch and route requests deliberately |
+| June's advice branch | Completed: route taps deliberately to advice selected from available actions |
 | Empty-bed advice | Invite planting without treating leisure as failure |
 | Claim that an order is always completable | Check the order; otherwise explain an achievable ingredient or offer another activity |
 | Bo asking if school will open | Select a post-opening line after the school opens |
@@ -198,13 +203,23 @@ Defer literal aging of Pip, adding the player's absent parent, and a four-genera
 | Generic watering reminder | Remove advice for a watering chore that does not exist |
 | Gus's standards line | Keep personality while making the request friendly and relevant |
 | Hidden-object hint after discovery | Acknowledge inspection, restoration, and use instead of repeating the original clue |
-| Generic speech when the player figure is tapped | Replace the existing spoken fallback with non-dialogue status/inspection feedback to follow STORY.md's silent-player rule |
+| Generic speech when the player figure is tapped | Completed: respond silently with a wave under STORY.md's player rule |
 
 Use authored lines selected by game facts. Save a bounded topic history across sessions. Changing words alone is insufficient if the same subject keeps returning.
 
 ### Language requirements
 
 Every shipped screen string, `t()` key, refusal from `ctx.fail()`, and content line needs Vietnamese coverage. Preserve complete meanings before shortening text for a phone. Use the established glossary and interpolate translated names correctly.
+
+**English must be equally adaptive.** Select a stable topic/scene ID from the farm's state, then render its authored English or natural Vietnamese version. Both languages use the same prerequisites, useful-action ranking, blockers, clue order, achievement state, reward eligibility and repetition policy. Vietnamese may change sentence structure and forms of address; neither locale may invent a missing building, reward or relationship.
+
+Changing language must preserve progress, reward markers and conversation/news history. For the future saved history system, store IDs and context versions, not rendered sentences; unread state, cooldowns and dismissal remain unchanged by language switches. Current conversation bags and June's previous-topic memory are session-only; persistent history is still planned. Existing news remains bounded event data, with compatibility handling for older payloads.
+
+Acceptance: exercise each new condition before/after completion in **both** languages, including unavailable ingredients, a removed/broken building, a completed clue, an already claimed reward and a repeated visit. Test the selected topic as well as its rendered sentence. A changed greeting must not masquerade as new advice. Verify phone fit and that switching locale cannot repeat a reward.
+
+The first logic pass already supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The follow-up review covers visitors whose farm facts change while they walk. The broader adaptive news system and later story chapters remain future work.
+
+See [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) for the full cast proposal, including replacing Pip. Names there are proposed display text, not yet applied. Stable IDs, family relationships, pronouns and the player's chosen name must survive the eventual change.
 
 Key relationships: Ada **bà–cháu**, Ellis **ông–cháu**, Gus **bác–cháu**, June refers to herself as **June** and addresses the player as **mình**, Pip uses **con**, and Bo uses **cháu**. Ellis and Gus never use **tôi** for themselves. Hollowbrook is **Thung Suối**; Biscuit keeps his name. Follow the full cast table in STORY.md.
 
@@ -213,7 +228,7 @@ Draft contextual example after a tractor becomes visible:
 - EN: “It is a tractor! Can it help in our field?”
 - VI, Pip: “Máy cày kìa! Nó giúp nhà mình làm ruộng được không?”
 
-No character may refer to someone not yet introduced, except the existing Ellis exception. The player must remain silent under STORY.md's rule; the current generic on-tap speech is a mismatch to correct, not a model for new dialogue. Final story scenes follow the existing scene format; isolated sample lines are not finished scenes.
+No character may refer to someone not yet introduced, except the existing Ellis exception. The player remains silent under STORY.md's rule; the first logic pass removed the generic on-tap speech. Final story scenes follow the existing scene format; isolated sample lines are not finished scenes.
 
 ## 6. Rich orchard art direction
 
@@ -306,15 +321,17 @@ Use stable topic identifiers and revalidate before showing or acting on a sugges
 
 Keep the normal 500-coin opening. Introductory discoveries should be designed milestones with a surprising presentation; they are not advertised as extraordinarily rare random events.
 
-| Proposed discovery | Trigger | Proposed one-time reward |
+The following bounded subset is implemented on `codex/dialogue-review` and is not yet live. These are deterministic successful-action milestones, not random drops.
+
+| Implemented discovery | Trigger | One-time reward |
 |---|---|---:|
 | Pond tin | Second successful catch | 20 coins |
-| Deeper-water discovery | Tenth successful catch | 40 coins and a clue |
-| Keepsake under a stone | Second rock actually cleared on owned land | 30 coins |
-| Village thank-you | First completed restoration of Village Street | 20 coins and dialogue |
+| Pond keepsake | Tenth successful catch | 40 coins and a local fish-shaped brass button |
+| Keepsake under a stone | Second actual owned-rock clearance observed by this system | 30 coins |
+| Village thank-you | First completed restoration of Village Street (`road_south`) | 20 coins and dialogue |
 | **Total additional introductory coins** | **Once per save** | **110** |
 
-These amounts and triggers remain a prototype, not final tuning. They do not repeat every ten catches or each day. The existing combined clearing statistic begins at three in restored games and includes weeds, so it cannot identify a player's second rock.
+This narrow balance is selected for the current slice; future finds still need their own design and tests. Nothing repeats every ten catches or each day. The tenth-catch keepsake does not reveal a sluice clue, acknowledge an unread Ellis letter, or advance the ordered story. For old saves, the mixed clearing statistic cannot identify past rocks: count new rock clearances from zero.
 
 Clearing two rocks currently costs 20 coins; road repair costs 40. The finds are small help alongside the useful action, not large profit engines. School Lane already exists and is not initially broken; this road reward refers to the damaged Village Street. A different school-route event needs its own design and budget.
 
@@ -322,7 +339,7 @@ Budget discoveries alongside the existing first daily gift of 50 coins, level-sc
 
 Other finds can offer a memory, clue, decoration, recovered tool, or useful place. Do not give every cleared object a cash box. Required progression and recovery from poor spending must remain possible without treasure.
 
-Grant each reward and its saved milestone together. Count successful work, including batch threshold crossings and helper completion exactly once. Reopening news, replaying an animation, undoing, or reloading must not duplicate a reward. Choose an explicit old-save policy; do not deliver every missed introductory reward as a surprise cash burst on load.
+Implemented grants save each earned ID and its coins together. Successful batch threshold crossings and repair completion (including a helper finishing an underway restoration) pay once; starting repairs, refused actions, card reads, animations and reloads do not. Old saves retire known passed fishing milestones and previously restored Village Street without payout or earned album entries. Missing historical rock counts start at zero new observations. Earned, retired and read IDs are separate, so migration never invents a keepsake or loses an actual claimed record. Optional Today/Album cards acknowledge the find without another payment; the full adaptive advice-card flow remains future work.
 
 ## 9. Covered land and gradual discovery
 
@@ -491,11 +508,11 @@ As a later social test, build a quiet clinic afternoon around people using the r
 
 Prefer shared rule calculations over UI estimates that can disagree with the actual action. The same prerequisite logic should serve a preview, recommendation, refusal, and execution where practical. Views and animation completion must not directly grant rewards.
 
-### Proposed saved concepts
+### Saved concepts and later schema work
 
-These are responsibilities for a later schema design, not finalized field names:
+The current slice persists bounded discovery progress plus separate earned, retired and read IDs per farm profile. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the implemented API and migration. The remaining concepts below are future schema responsibilities, not finalized field names:
 
-- Discovery milestones: stable ID, progress where necessary, found/claimed status.
+- Further discoveries: extend stable IDs and eligibility without reopening already settled rewards.
 - Regions: knowledge, access, ownership through existing parcel rules, and optional restoration stages.
 - News: stable topic/event IDs, unread/read/deferred state, bounded history and suppression context.
 - Skills: reliable practice totals, completed lessons, learned capabilities.
@@ -508,11 +525,11 @@ Derive transient eligibility from current facts rather than saving duplicate tru
 
 Validate IDs, ownership, access, prerequisites, affordability, and placement before mutation. A refused action spends nothing. Handle repeated taps and completion events idempotently. Keep project progress and its resource/reward change coherent across save/load.
 
-Preserve existing abilities and access on migration. Decide how to acknowledge already satisfied discovery milestones and practice without large retroactive grants. Recover gracefully from incomplete new fields. Handle offline energy with a capped, consistent clock policy, including backward clock changes.
+Preserve existing abilities and access on migration. The current discovery migration retires known past fishing/road milestones without retroactive grants or invented memories; actual earned records remain independent. Apply the same deliberate policy to future practice and milestones, with recovery from incomplete fields. Future offline energy needs a capped, consistent clock policy, including backward clock changes.
 
 ## 14. Implementation phases
 
-Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Rich-color review can run alongside the first gameplay phase.
+Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1's bounded first pass and AR-001 are live. Phase 3's four-find subset plus profiles is implemented on the review branch; it does not complete all phase 2 guidance or the later phases.
 
 Implementation phases are delivery groupings, independent of Journey stage and chapter numbers. For example, implementation phase 7 includes the later story's stage 6 water resolution.
 
@@ -521,15 +538,15 @@ Implementation phases are delivery groupings, independent of Journey stage and c
 | **0. Baseline and content contract** | Existing v0.4 remains a stable starting point | Verify branch/PR state, tests, pace, save fixtures and reward ledger; finalize one story fact sheet and dependency order | Record real baseline; no speculative balance changes |
 | **1. Correctness and readable feedback** | Story hints make sense; collection and money effects tell the truth | Correct clue prerequisites and mailbox order; rewrite or temporarily withhold obsolete Gus sluice-closure/key-resolution letters; align Ellis letters with supported presence; stall transfer effect; fruit feedback; rare-find distinction | Unusual progression orders, reloads, account balances, languages and reduced motion pass |
 | **2. Useful village and item guidance** | Villagers remember results; players understand what goods can do | Persistent news/topics; wire eligible Mai/Gus remarks; initial demand/blocker advice; four representative item-use cards; one simple playful interaction; optional welcome/porch moment | No false or stale advice, gesture conflicts, repeated unread counts, or pressure to finish optional tasks |
-| **3. Focused opening and small discoveries** | 500 coins, a clear farm success, small finds and reactions | Successful-action counters; atomic rewards; four proposed milestones; accessible clues and saved memories | New/old saves, batches, helpers and reloads work; reward ledger and pace pass |
+| **3. Focused opening and small discoveries** | 500 coins, a clear farm success, small finds and reactions | Successful-action counters; atomic rewards; four implemented milestones and saved memories; further accessible clues remain future scope | New/old saves, batches, helpers and reloads work; reward ledger and pace pass |
 | **4. Covered land and one revealed place** | Purchase opens useful space; exploration opens a small optional pocket | Region state; land preview; controlled cover/reveal; one discovery without buying land; old-house object or tractor landmark; before/after memory | Ownership/access remain distinct; no hidden interactions or blocked old saves; phone budgets pass |
 | **5. One skill and one larger project** | Learn an ability, complete a useful repair, recover energy comfortably | Compact skills; one optional lesson/project with a real activity payoff; project-only energy and free recovery | Zero-energy normal play works; knowledge persists; no extra gates on existing story |
 | **6. More uses, school, and visible gatherings** | Broader skill choices, classroom activity, inhabited restored places | One fish/product extension at a time; classroom and contest; clinic interaction; small school gathering and consistent Ellis visit | Pace and phone UI pass; no repeat milestone jackpots; appearances match story state |
 | **7. Purposeful transport and valley resolution** | Vehicles serve worthwhile destinations; later story threads pay off | Useful tractor work, motorbike/car routes, truck opportunities, land progression, actual sluice restoration and rebuilt lantern festival | Distinct roles; coherent rights→repair→water sequence; visible family/character resolution; developed-world performance passes |
 
-**Art track:** establish the richer palette, path-value separation, and lighting comparison in real scenes during phases 0–1; apply them to cover/reveals in phase 4 and vehicles/interiors as they arrive. Review normal phone play after each asset addition. Do not defer all visual coherence to the final phase.
+**Art track:** AR-001 established the richer palette, path-value separation, lighting and collection feedback. AR-009 is the next scoped discovery presentation brief. Apply the established treatment to cover/reveals in phase 4 and vehicles/interiors as they arrive; review normal phone play after each asset addition.
 
-**First implementation slice:** choose the verified clue-order and truthful-feedback fixes, a small color/lighting comparison, and one narrow contextual message flow. Do not attempt an eight-stage story rewrite, universal item-use expansion, all vehicles, and the full energy/skill system in one release. Later rows, especially phase 7, are groups of separate releases, not one PR or a size estimate.
+**Completed first slice:** verified clue-order and truthful-feedback fixes, the look pass, and contextual conversations. **Current slice:** three local farm profiles and four saved, one-time discoveries with optional cards. The eight-stage story rewrite, broad item-use expansion, vehicles and energy/skills remain future work. Later rows, especially phase 7, are groups of separate releases, not one PR or a size estimate.
 
 For every phase, record: accepted scope, content changes, saved-state migration, economy changes, player-visible result, rules/browser checks, and remaining tuning questions. Avoid combining a global rebalance with several new systems in the same first release.
 
@@ -617,11 +634,11 @@ The art lane uses `art/blender/build_farm_kit.py`, renders icons through `art/bl
 
 Use port **5241** for logic checks and **5242** for art. Stop only the server process the lane started. Preserve the shared first-load code budget of **1.1 MB**, alongside draw/triangle limits.
 
-Recommended first parallel work: **AR-001** for a scoped look/feedback pass, and verified v0.4 correctness plus dialogue work for Codex. AR-002 remains proposed until meadow/dairy is chosen for the next release. Narrow AR-003 by actual recipe needs; finalize the story before AR-004; make AR-005 reusable across Ellis appearances; avoid duplicating existing fades in AR-006. AR-007 has no approved release date. AR-008 requires the user's explicit decision; the recommendation is to leave crop faces out of the initial pass. These recommendations do not mark all eight asset requests approved.
+**AR-001 is complete and live**; its old [handoff](CLAUDE-HANDOFF.md) is historical. The next art scope is [AR-009's discovery brief](CLAUDE-DISCOVERY-HANDOFF.md), paired with the implemented four-find event contract. AR-002 remains proposed until meadow/dairy is chosen for a release. Narrow AR-003 by actual recipe needs; finalize the story before AR-004; make AR-005 reusable across Ellis appearances; avoid duplicating existing fades in AR-006. AR-007 has no approved release date. AR-008 requires the user's explicit decision; leave crop faces out of this pass. The current scope does not approve the rest of the queue.
 
 After an implemented phase, update [CHANGELOG.md](../CHANGELOG.md) and the status table in [JOURNEY.md](JOURNEY.md) to describe what actually ships. This plan does not mark proposed work complete or authorize a production release during the documentation step.
 
-Before the relevant phase, settle its narrow tuning choices through prototypes: the exact discovery amounts and triggers; cover density and placement; energy capacity/cost/recovery; the first useful repair activity; skill milestones; later housing prices; and school rewards. No answer to those numerical questions is required to finish this planning document.
+The current four discovery amounts and triggers are chosen and implemented as a bounded 110-coin subset, with 500 starting coins preserved. This does not settle the remaining tuning: future discoveries, cover density and placement, energy capacity/cost/recovery, a first useful repair activity, skill milestones, later housing prices, and school rewards still need their own prototypes and validation.
 
 ## 17. Research and supporting notes
 

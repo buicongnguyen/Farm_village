@@ -10,6 +10,7 @@ import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { conversationLine, juneAdvice, pipReactionLines } from '../core/conversation.mjs';
+import { commentFor } from '../core/neighbours.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
@@ -92,12 +93,21 @@ export class PeopleView {
   }
   drop(w) { w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
   /** A neighbour walks in from their signpost to the order board and says something about the farm. */
-  visit(id, comment, params) {
+  visit(id, comment, params, visitNumber) {
     const sign = NEIGHBOUR_SIGNS.find(n => n.id === id); if (!sign) return;
     const start = this.nearestWalkable(sign.x, sign.z); if (!start) return;
     const old = this.walkers.get(`visit:${id}`); if (old) this.drop(old);
-    const w = this.add({ id: `visit:${id}`, person: id, visitor: true, body: id === 'gus' ? 'man' : 'woman', x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL, comment, params, stage: 'coming', home: start });
+    const w = this.add({ id: `visit:${id}`, person: id, visitor: true, body: id === 'gus' ? 'man' : 'woman', x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL, comment, params, visitNumber, stage: 'coming', home: start });
     w.route = this.route([start[0], start[1]], [ORDER_BOARD.x, ORDER_BOARD.z]); w.wait = 0;
+  }
+  /** Speak one observation per visit, using the farm as it is when the neighbour actually speaks. */
+  sayVisit(w) {
+    if (!w.visitor || w.visitSpoken) return false;
+    const said = Number.isInteger(w.visitNumber) && w.visitNumber > 0
+      ? commentFor(this.s, w.person, w.visitNumber) : { text: w.comment, params: w.params };
+    if (!said.text) return false;
+    this.say(w, t(said.text, tParams(said.params))); w.visitSpoken = true;
+    return true;
   }
   nearestWalkable(x, z) {
     for (let r = 0; r < 12; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (walkable(this.s, x + dx, z + dz)) return [x + dx, z + dz];
@@ -218,7 +228,7 @@ export class PeopleView {
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
     if (w.visitor) {
       if ((w.wait -= dt) > 0) { this.doing(w, w.stage === 'talking' ? 'Talk' : 'Idle', dt); return; }
-      if (w.stage === 'coming') { w.stage = 'talking'; w.wait = 5; this.say(w, t(w.comment, tParams(w.params))); this.once(w, 'Wave', 1.2); return; }
+      if (w.stage === 'coming') { w.stage = 'talking'; w.wait = 5; this.sayVisit(w); this.once(w, 'Wave', 1.2); return; }
       if (w.stage === 'talking') { w.stage = 'leaving'; w.route = this.route(this.cellOf(w), w.home); return; }
       this.drop(w); return;
     }
@@ -392,7 +402,7 @@ export class PeopleView {
   react(e) {
     if (e.type === 'settingChanged' && ['playerColor', 'playerBody'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.drop(me); }   // sync() draws you again in the new look
 
-    if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params); return; }
+    if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);
     if (e.type === 'familyArrived') setTimeout(() => { for (const w of this.walkers.values()) if (FAMILIES.find(f => f.id === e.family)?.people.some(p => p.id === w.id)) this.once(w, 'Wave', 1.5); }, 1500);
     if (e.type === 'orderFilled') { const w = this.walkers.get(e.from); if (w && !w.family && !w.indoors) { w.route = this.route(this.cellOf(w), [ORDER_BOARD.x, ORDER_BOARD.z]); w.todo = { act: 'idle', time: 1, carryHome: true }; w.wait = 0; } }
@@ -461,13 +471,12 @@ export class PeopleView {
     const card = order && this.s.orders.cards.find(c => c.from === id);
     if (card && this.onOrder) { this.say(w, t('I have an order for you!')); this.onOrder(card); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }
     if (id === 'june') { this.juneTip({ introduce: !w.heard }); w.heard = true; }
-    else if (who) {
+    else if (who && !this.sayVisit(w)) {
       // Introduce the person, then revisit their line when its story context changes. Otherwise deal fresh chatter.
       const context = conversationLine(this.s, id), fresh = !w.heard || w.contextKey !== context.key;
-      this.say(w, t(w.comment ?? (fresh ? context.text : this.chatter(w)), tParams(w.params)));
-      // A visitor's arrival comment does not consume their personal introduction.
-      if (!w.comment) { w.heard = true; w.contextKey = context.key; }
-      w.comment = null;
+      this.say(w, t(fresh ? context.text : this.chatter(w)));
+      // A visitor's observation does not consume their personal introduction.
+      w.heard = true; w.contextKey = context.key;
     }
     // face the camera and wave
     w.faceTo = this.world.cam.yaw; w.rot = this.world.cam.yaw; this.once(w, who && w.visitor ? 'Talk' : 'Wave', 1.3);
