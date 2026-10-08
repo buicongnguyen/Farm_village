@@ -8,7 +8,7 @@
 //   a tap on the map → a ring on the cell and a squish of what is there
 // Reachable as world.juice: pop(cell) for the radial sweep, burst(), ring().
 import * as THREE from 'three';
-import { CELL, BARN, FARMHOUSE, ORDER_BOARD, MAILBOX } from '../content/world.mjs';
+import { CELL, BARN, FARMHOUSE, ORDER_BOARD, MAILBOX, POND } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { GOODS, CROPS } from '../content/goods.mjs';
 import { XP } from '../content/economy.mjs';
@@ -18,6 +18,7 @@ import { tickSway } from '../kit/toon.mjs';
 import { sfx } from '../kit/sound.mjs';
 import * as KINDS from './kinds.mjs';
 import { loadKit, bake } from './models.mjs';
+import { pickedFlow } from './collect-flow.mjs';
 import { Particles, SHAPE } from './particles.mjs';
 import { STANDINS, ShadowLayer } from './batches.mjs';
 
@@ -27,6 +28,10 @@ const CROP_COLORS = {
 };
 const SOIL = ['#7a4a2a', '#9a6a44', '#5e3a20'];
 const GOLD = '#ffd84a';
+// the gold ramp (shadow, body, light, glint) and the fruit colours the pick bursts use
+const GOLD_RAMP = ['#956020', '#e8aa24', '#ffe18a', '#fff6d8'];
+const FRUIT_COLORS = { cherry: ['#ce3f59', '#e85d75', '#9b2a44'], apple: ['#e8453c', '#ff7a5a', '#b02a2a'], peach: ['#ffa07a', '#ffc2a0', '#e8845e'] };
+const LEAF_COLORS = ['#3a8444', '#4fab45', '#8fd04c'];
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const quietNow = () => document.body.classList.contains('reduced-motion');
@@ -150,6 +155,8 @@ export class Juice {
     if (!list.length) return;
     const harvest = list.filter(e => e.type === 'harvested');
     if (harvest.length) this.harvested(harvest);
+    const picks = list.filter(e => e.type === 'picked');
+    if (picks.length) this.picked(picks, list);
     let cleared = 0;
     for (const e of list) {
       if (e.type === 'placed') this.placed(e);
@@ -162,6 +169,8 @@ export class Juice {
       else if (e.type === 'queued') { this.b.pulse(e.building, { from: 0.9, to: 1.06, ms: 300, squash: true }); const at = this.centreOf(e.building); if (at) this.smoke(at.setY(1.5), 0.6); }
       else if (e.type === 'fed') this.grainAt(action === 'feed' ? this.lastHome : null);
       else if (e.type === 'animalArrived') { this.b.pulse(e.home, { from: 0.9, to: 1.06, ms: 300, squash: true }); this.dustAt(e.home); }
+      else if (e.type === 'fishCaught' && (e.rare || e.fish === 'goldfish')) this.goldenCatch(e);
+      else if (e.type === 'stallSold' || e.type === 'fruitSold') this.waiting(e.type);
       else if (e.type === 'levelUp') this.celebrate();
       else if (e.type === 'projectDone') this.celebrate(true);
     }
@@ -179,6 +188,59 @@ export class Juice {
     sfx('harvest');
     const parts = [...totals].map(([crop, n]) => `<span class="jf-item">${iconHtml(crop, GOODS[crop]?.icon ?? CROPS[crop]?.icon ?? '')}<b>+${n}</b></span>`);
     this.floater((first.x + 0.5) * CELL, 1.2, (first.z + 0.5) * CELL, parts.join('') + `<span class="jf-xp">⭐<b>+${Math.round(xp)}</b></span>`);
+  }
+  /** Fruit picked: the tree shakes and squashes, fruit and leaves fall, one small gold star and a few glints, a soft pick
+   *  sound, and a "+n" for what really went into the barn. Restrained: it never grants or changes anything. */
+  picked(list, all) {
+    const flow = pickedFlow(all), seen = new Set();   // (the sound is routed by main.mjs)
+    list.forEach((e, n) => {
+      const p = this.s.placed[e.id]; if (!p) return;
+      this.b.pulse(e.id, { from: 0.9, to: 1.05, ms: 300, squash: true });
+      if (n >= 6 || seen.has(e.id) || quietNow()) return;
+      seen.add(e.id);
+      const cx = (p.x + 0.5) * CELL, cz = (p.z + 0.5) * CELL, fruit = FRUIT_COLORS[e.good] ?? FRUIT_COLORS.apple, busy = this.particles.alive > 130 ? 0.5 : 1;
+      for (let i = 0; i < Math.round(8 * busy); i++) {   // fruit falling from the canopy
+        const a = rand(0, Math.PI * 2), sp = rand(0.6, 1.8);
+        this.particles.spawn({ x: cx + rand(-0.9, 0.9), y: rand(2.2, 3.4), z: cz + rand(-0.9, 0.9), vx: Math.cos(a) * sp, vy: rand(0.5, 2), vz: Math.sin(a) * sp, gravity: 12, drag: 0.6,
+          life: rand(0.55, 0.8), size: rand(0.24, 0.34), size1: 0.22, shape: SHAPE.dot, color: pick(fruit) });
+      }
+      for (let i = 0; i < Math.round(7 * busy); i++) {   // leaves shaken loose
+        const a = rand(0, Math.PI * 2), sp = rand(0.5, 1.5);
+        this.particles.spawn({ x: cx + rand(-1.1, 1.1), y: rand(2.4, 3.6), z: cz + rand(-1.1, 1.1), vx: Math.cos(a) * sp, vy: rand(0.2, 1.4), vz: Math.sin(a) * sp, gravity: 3.5, drag: 1.4,
+          life: rand(0.9, 1.3), size: rand(0.45, 0.65), size1: 0.3, shape: SHAPE.leaf, color: pick(LEAF_COLORS), rot: rand(0, 6.3), spin: rand(-6, 6) });
+      }
+      this.particles.spawn({ x: cx, y: 3.4, z: cz, vy: 1.4, drag: 2, life: 0.5, size: 0.55, size1: 1.2, shape: SHAPE.star, color: GOLD_RAMP[2], spin: 3 });
+      for (let i = 0; i < Math.round(3 * busy); i++) {   // a few warm glints on the fruit
+        const a = rand(0, Math.PI * 2);
+        this.particles.spawn({ x: cx + Math.cos(a) * 0.9, y: rand(2.4, 3.2), z: cz + Math.sin(a) * 0.9, vx: Math.cos(a) * 0.8, vy: rand(0.6, 1.4), vz: Math.sin(a) * 0.8, drag: 3, life: rand(0.35, 0.5), size: rand(0.3, 0.42), size1: 0.05, shape: SHAPE.star, color: GOLD_RAMP[3], spin: rand(-4, 4) });
+      }
+    });
+    const first = this.s.placed[list[0].id]; if (!first) return;
+    const parts = [...flow.picked].map(([good, n]) => `<span class="jf-item">${iconHtml(good, GOODS[good]?.icon ?? '')}${flow.exact ? `<b>+${flow.stored.get(good) ?? 0}</b>` : ''}</span>`);
+    this.floater((first.x + 0.5) * CELL, 3.6, (first.z + 0.5) * CELL, parts.join(''));
+  }
+  /** A golden carp is a notable catch: a gold ring on the water, a fountain of gold stars, a chime and a gold-ringed floater.
+   *  Only the look: whether it is rare or a first is logic's to say (the event names the fish, nothing more). */
+  goldenCatch(e) {
+    const x = (POND.x0 + POND.x1 + 1) / 2 * CELL, z = (POND.z0 + POND.z1 + 1) / 2 * CELL;
+    if (!quietNow()) {   // (the sound is routed by main.mjs: a cheer for a first rare catch)
+      this.ground.spawn({ x, y: 0.1, z, life: 0.9, size: 1.2, size1: 5.5, shape: SHAPE.ring, flat: true, color: GOLD_RAMP[2], alpha: 0.9 });
+      this.ground.spawn({ x, y: 0.1, z, life: 1.2, size: 0.6, size1: 4, shape: SHAPE.ring, flat: true, color: GOLD_RAMP[1], alpha: 0.7, fadeIn: 0.1 });
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2, sp = rand(1.2, 2.4);
+        this.particles.spawn({ x: x + Math.cos(a) * 0.5, y: 0.5, z: z + Math.sin(a) * 0.5, vx: Math.cos(a) * sp, vy: rand(4, 6.5), vz: Math.sin(a) * sp, gravity: 11, drag: 0.8,
+          life: rand(0.9, 1.3), size: rand(0.45, 0.7), size1: 0.2, shape: i % 4 ? SHAPE.star : SHAPE.coin, color: i % 4 ? pick(GOLD_RAMP.slice(1)) : '#ffd23a', spin: rand(-5, 5) });
+      }
+    }
+    this.floater(x, 1.6, z, `<span class="jf-item jf-gold">${iconHtml(e.fish, GOODS[e.fish]?.icon ?? '')}<b>★</b></span>`);
+  }
+  /** Takings waiting at a stall or the fruit stand: a small glint and a nod from the stand. The money stays there until
+   *  it is collected, so nothing flies to the wallet (the gold coin marker over the stand says "collect me"). */
+  waiting(type) {
+    const kind = type === 'fruitSold' ? 'fruitStand' : 'stall';
+    const id = Object.keys(this.s.placed).find(k => BUILDINGS[this.s.placed[k].kind]?.[kind]); if (!id) return;
+    this.b.pulse(id, { from: 0.96, to: 1.03, ms: 260, squash: true });
+    this.sparkleAt(id, 3);
   }
   /** The radial sweep's pop: whatever stands on the cell pops (once per 0.4 s per cell). */
   pop(cell) {
@@ -318,6 +380,7 @@ export class Juice {
 .jfloat .jf-xp b { color: #fff1a8; }
 @keyframes jfloat { 0% { opacity: 0; transform: translate(-50%, -60%) scale(.5); } 14% { opacity: 1; transform: translate(-50%, -110%) scale(1.15); }
   28% { transform: translate(-50%, -120%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -260%) scale(.95); } }
+.jfloat .jf-gold { filter: drop-shadow(0 0 6px #ffe18a); } .jfloat .jf-gold b { color: #ffe18a; -webkit-text-stroke: 2px #956020; }
 body.reduced-motion .jfloat { animation: jfloat-q 1.2s linear forwards; }
 @keyframes jfloat-q { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }`;
     document.head.appendChild(st);

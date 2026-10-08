@@ -32,7 +32,7 @@ for n, c in {
         'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
         # crops
         'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wheatg': '#F0A020', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
-        'leaf': '#4FBF3A', 'leafw': '#8EE04A', 'leafwl': '#B9F25E', 'leafwd': '#52BE3A', 'blossom': '#FFB6D4', 'blossomd': '#FF8CBD', 'blossoml': '#FFD6E6', 'fruitred': '#FF3B3B', 'fruitpeach': '#FF9A72', 'pinew': '#3DB35A', 'pinewl': '#6BD86C', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
+        'leaf': '#4FBF3A', 'leafw': '#4fab45', 'leafwl': '#8fd04c', 'leafwd': '#3a8444', 'blossom': '#FFB6D4', 'blossomd': '#FF8CBD', 'blossoml': '#FFD6E6', 'fruitred': '#FF3B3B', 'fruitpeach': '#FF9A72', 'pinew': '#2f8a50', 'pinewl': '#58b45e', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
         'carrotd': '#E35E10', 'corn': '#FFD23F', 'cornl': '#FFE680', 'husk': '#A5DB57', 'tassel': '#E8C46A', 'cstalk': '#7DC94A',
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',

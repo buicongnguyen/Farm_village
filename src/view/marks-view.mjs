@@ -23,6 +23,12 @@ function sparkleTexture() {   // a four-point white glint
   g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? 6 : 30; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
+function backingTexture() {   // a soft dark-brown disc behind each coin, so gold reads on golden wheat, sand and bright fruit
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  const r = g.createRadialGradient(32, 32, 14, 32, 32, 31); r.addColorStop(0, 'rgba(74,42,18,.62)'); r.addColorStop(0.72, 'rgba(74,42,18,.5)'); r.addColorStop(1, 'rgba(74,42,18,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
 function cloud(map) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(CAP * 3), 3));
   const mat = new THREE.PointsMaterial({ map, size: SIZE, sizeAttenuation: false, transparent: true, depthTest: false, depthWrite: false, alphaTest: 0.05 });
@@ -33,7 +39,9 @@ export class Marks {
     Object.assign(this, { world, game, land, acc: 0, list: { coin: [], alert: [] } });
     const coin = new THREE.TextureLoader().load('./assets/icons/ui-coin.webp'); coin.colorSpace = THREE.SRGBColorSpace;
     this.coin = cloud(coin); this.alert = cloud(alertTexture()); this.glint = cloud(sparkleTexture()); this.glint.material.blending = THREE.AdditiveBlending;
-    world.scene.add(this.coin, this.alert, this.glint);
+    this.glint.material.color.set('#ffe9a8');   // a warm glint: gold light, not white
+    this.backing = cloud(backingTexture()); this.backing.renderOrder = 19;
+    world.scene.add(this.backing, this.coin, this.alert, this.glint);
     world.onFrame?.((dt, now) => this.frame(dt, now));
   }
   /** Where every marker belongs right now: { coin: [[x, y, z]], alert: [...] } (also read by the tests). */
@@ -59,17 +67,22 @@ export class Marks {
     return { coin, alert };
   }
   frame(dt, now) {
-    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = false; return; }   // (the lighting checks measure the world alone)
+    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = this.backing.visible = false; return; }   // (the lighting checks measure the world alone)
     this.acc += dt; if (this.acc > 0.4 || !this.list.coin.length && !this.list.alert.length && this.acc > 0.1) { this.acc = 0; this.list = this.collect(); }
     const t = document.body.classList.contains('reduced-motion') ? 0 : performance.now() / 1000;
     const dim = 1 - 0.5 * (this.world.daylight?.nightness ?? 0);   // markers soften at night
-    for (const pts of [this.coin, this.alert, this.glint]) pts.material.color.setScalar(dim);
+    for (const pts of [this.coin, this.alert]) pts.material.color.setScalar(dim);
+    this.glint.material.color.set('#ffe9a8').multiplyScalar(dim);
     for (const [key, pts] of [['coin', this.coin], ['alert', this.alert]]) {
       const list = this.list[key], arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { const [x, y, z] = list[i]; arr[i * 3] = x; arr[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); arr[i * 3 + 2] = z; }
       pts.geometry.attributes.position.needsUpdate = true; pts.geometry.setDrawRange(0, n); pts.visible = n > 0; pts.userData.n = n;
       pts.material.size = SIZE * this.world.renderer.getPixelRatio() * (key === 'coin' ? 1 + 0.1 * Math.sin(t * 6) : 1);
     }
+    // the backing disc follows every coin (same bob), a little bigger
+    { const bk = this.backing, ba = bk.geometry.attributes.position.array, bn = Math.min(CAP, this.list.coin.length);
+      for (let i = 0; i < bn; i++) { const [x, y, z] = this.list.coin[i]; ba[i * 3] = x; ba[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); ba[i * 3 + 2] = z; }
+      bk.geometry.attributes.position.needsUpdate = true; bk.geometry.setDrawRange(0, bn); bk.visible = bn > 0; bk.material.size = SIZE * 1.55 * this.world.renderer.getPixelRatio(); }
     // the shine: a glint twinkling at the coins' upper right, each out of step with the next
     const g = this.glint, ga = g.geometry.attributes.position.array, cn = Math.min(CAP, this.list.coin.length);
     for (let i = 0; i < cn; i++) { const [x, y, z] = this.list.coin[i]; ga[i * 3] = x + 0.18; ga[i * 3 + 1] = y + 0.18 + 0.18 * Math.sin(t * 3 + i * 1.7); ga[i * 3 + 2] = z; }
