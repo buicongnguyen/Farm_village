@@ -1,5 +1,9 @@
 # Changelog
 
+## Food factories: juice press and noodle factory (2026-10-08)
+
+- **Juice press** (level 6, 600): apple juice (40), carrot juice (26), orange juice (70). **Noodle factory** (level 8, 1,200): noodles (2 for 4 wheat + 1 egg, 30 each) and instant noodles (95). The same farm goods, worth 2–3× after processing. Models, product icons and Vietnamese names.
+
 ## Premium crops and the village growth plan (2026-10-08)
 
 - **Healing herb** (level 7, 15 min, sells for 45) and **ginseng** (level 9, 40 min, sells for 120): new crops with their own growth-stage models and icons, the first step of `docs/VILLAGE-GROWTH-PLAN.md` (premium crops → services → food factories → shops → town → leisure).

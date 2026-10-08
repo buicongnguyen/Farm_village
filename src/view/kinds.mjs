@@ -64,6 +64,8 @@ export const KIND_MODELS = {
   willow:       { kit: 'farm-kit', node: 'cute_willow', width: 3.8, lod: 'tree' },
   // dressing drawn by land-view (not placeable)
   scaffold:     { kit: 'decor', node: 'scaffold', authored: true, lod: 'static', late: true },
+  juice_press:  { kit: 'decor', node: 'juice_press', authored: true, lod: 'static', late: true },
+  noodle_factory: { kit: 'decor', node: 'noodle_factory', authored: true, lod: 'static', late: true },
   window_box:   { kit: 'decor', node: 'window_box', authored: true, lod: 'static', late: true },
   door_lantern: { kit: 'decor', node: 'door_lantern', authored: true, lod: 'static', late: true },
   flowerpots:   { kit: 'decor', node: 'flowerpots', authored: true, lod: 'static', late: true },
