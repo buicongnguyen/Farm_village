@@ -199,7 +199,7 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
-Baseline release: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`; [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. Adaptive advice and AR-009 icon integration are implemented on `codex/village-advice`; delivery is recorded in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6). A merge into main triggers deployment; the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) records production status.
+Baseline release: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`; [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. **Adaptive advice and AR-009 discovery icons are live** through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as `a8b45988a8ff1549b10a164c48a5fda814b23eca`. [Pages deployment 37733300401](https://github.com/buicongnguyen/Farm_village/actions/runs/37733300401) passed, followed by production acceptance in eight isolated browser contexts: four fresh starts and four with explicit save fixtures, covering phone-sized/desktop viewports and both English and Vietnamese. UI/art and error checks passed; AR-009 is done. This verification used browser viewports, not physical devices.
 
 Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; PR #4 adds profiles and discoveries to main at `ab6b230`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish those completed releases from later expansion.
 
@@ -214,7 +214,7 @@ The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed
 | 1. Homecoming | done (v0.3) |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
-| Cross-stage follow-up: adaptive advice and discovery icons | implemented and validated; delivery in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), production status in Pages |
+| Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
