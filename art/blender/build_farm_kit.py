@@ -40,6 +40,8 @@ for n, c in {
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
         'rim': '#9C6236', 'riml': '#B87A45',
+        # premium crops (village growth plan, stage 2)
+        'herb': '#6FA86A', 'herbl': '#9CCB8A', 'herbd': '#4E7E4A', 'root': '#F2D9A8',
         # keepsakes (AR-009)
         'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
         }.items():
@@ -235,7 +237,46 @@ def strawberry(stage, lod=0):
             p.append(cl('eye', .03, .06, x + .15, y, .25, 'flower', verts=4))
     return p
 
-CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry}
+
+def herb(stage, lod=0):
+    """Healing herb (village growth stage 2): bushy clumps of soft sage-green leaves; ripe, tall violet flower spikes."""
+    rnd = random.Random(71 + lod); p = []
+    spots = [(-.4, -.38), (.4, -.38), (-.4, .4), (.4, .4)] if lod == 0 else [(-.3, 0), (.3, 0)]
+    for k, (x, y) in enumerate(spots):
+        n = {'sprout': 3, 'mid': 6, 'ripe': 7}[stage] if lod == 0 else 3
+        for i in range(n):
+            a = i / n * math.tau + k
+            ln = {'sprout': .18, 'mid': .3, 'ripe': .34}[stage]
+            p.append(lf((x, y, 0), a, ln, ln * .5, 'herbl' if i % 2 else 'herb', lift=ln * .9, droop=.04))
+        if stage == 'ripe':
+            for j in range(2 if lod == 0 else 1):
+                dx, dy = rnd.uniform(-.08, .08), rnd.uniform(-.08, .08)
+                p.append(st((x + dx, y + dy, 0), (x + dx, y + dy, .55), .02, 'herbd', sides=3))
+                p.append(sp(.07, .26, x + dx, y + dy, .5, 'violet', sides=5 if lod == 0 else 4, mid=(.3, .7)))
+    return p
+
+def ginseng(stage, lod=0):
+    """Ginseng (village growth stage 2): a five-leaflet plant on a slim stem; ripe, a cluster of red berries on top and
+    pale forked roots showing at the soil."""
+    p = []
+    spots = [(-.35, -.3), (.35, -.25), (0, .4)] if lod == 0 else [(0, 0)]
+    for k, (x, y) in enumerate(spots):
+        h = {'sprout': .18, 'mid': .42, 'ripe': .55}[stage]
+        p.append(st((x, y, 0), (x, y, h), .025, 'stem', sides=4))
+        nl = 3 if stage == 'sprout' else 5
+        for i in range(nl if lod == 0 else 3):
+            a = i / nl * math.tau + k
+            p.append(lf((x, y, h), a, .28 if stage != 'sprout' else .15, .13, 'leaf' if i % 2 else 'leafl', lift=.05, droop=.08))
+        if stage == 'ripe':
+            for j in range(5 if lod == 0 else 3):
+                a = j * 1.3
+                p.append(ball('berry', .045, x + math.cos(a) * .05, y + math.sin(a) * .05, h + .08 + (j % 2) * .03, 'fruitred', sub=1))
+            if lod == 0:
+                p.append(sp(.06, -.22, x + .08, y - .05, .06, 'root', sides=5, lean=(.08, 0)))
+                p.append(sp(.045, -.18, x - .06, y + .04, .05, 'root', sides=5, lean=(-.06, 0)))
+    return p
+
+CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng}
 for crop, gen in CROPS.items():
     for stage in ('sprout', 'mid', 'ripe'):
         piece(f'crop_{crop}_{stage}', gen(stage, 0))

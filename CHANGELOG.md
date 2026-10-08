@@ -1,5 +1,9 @@
 # Changelog
 
+## Premium crops and the village growth plan (2026-10-08)
+
+- **Healing herb** (level 7, 15 min, sells for 45) and **ginseng** (level 9, 40 min, sells for 120): new crops with their own growth-stage models and icons, the first step of `docs/VILLAGE-GROWTH-PLAN.md` (premium crops → services → food factories → shops → town → leisure).
+
 ## Icon render v2 — art lane (2026-10-08, PR preview)
 
 - **Every icon re-rendered with richer light:** all 92 icons now come from a Cycles rig with a warm key from the top

@@ -889,5 +889,18 @@
   "roll": 24,
   "preset": "fish",
   "why": "side-on view shows the stripes and the fins"
+ },
+ {
+  "id": "herb",
+  "src": "raw:items",
+  "root": "item_herb",
+  "preset": "goods"
+ },
+ {
+  "id": "ginseng",
+  "src": "raw:items",
+  "root": "item_ginseng",
+  "preset": "goods",
+  "rough": 0.5
  }
 ]
