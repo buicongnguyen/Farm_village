@@ -1,5 +1,9 @@
 # Changelog
 
+## Playful local names — proposal only (2026-10-08)
+
+- Replaced the withdrawn formal-name proposal with the user-confirmed playful/home-name direction. The [revised naming plan](docs/CHARACTER-NAMING-PLAN.md) records the inspected Zoo Pet reference, language sources, and candidate English/Vietnamese/Korean/Japanese aliases for the current and planned cast. Individual names are still proposed; runtime names, saves, story behavior, and the live game are unchanged.
+
 ## The truck fleet — art lane at the user's request (2026-10-08, PR preview)
 
 - **More trucks for a growing farm:** buy a 2nd truck (800 coins, level 4) and a 3rd (2,500 coins, level 7) in the

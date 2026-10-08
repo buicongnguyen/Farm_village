@@ -215,6 +215,7 @@ The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
+| Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
