@@ -143,7 +143,7 @@ export const actions = {
       if (type === 'path') { if (grid.occupant(s, cx, cz)) continue; setCell(s, cx, cz, 'grass'); count(s, 'path', -1); lifted++; ctx.emit('cellChanged', { x: cx, z: cz }); continue; }
       if (type !== 'weeds' && type !== 'rock') continue;
       const price = CLEAR[type]; if (s.coins < price) break;
-      s.coins -= price; spent += price; setCell(s, cx, cz, 'grass'); cleared++; ctx.emit('cellChanged', { x: cx, z: cz });
+      s.coins -= price; spent += price; setCell(s, cx, cz, 'grass'); cleared++; ctx.emit('cellChanged', { x: cx, z: cz, cleared: type, owned: land === 'farm' });
     }
     if (!cleared && lifted) return { cleared: 0, lifted };
     if (!cleared) return ctx.fail(s.coins < CLEAR.weeds ? 'Not enough coins' : 'Nothing to clear here');

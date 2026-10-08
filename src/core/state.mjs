@@ -5,8 +5,9 @@ import { rng } from './rng.mjs';
 import { applyRestore } from './restore.mjs';
 import { normalizeFruitStand } from './orchard.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
+import { newDiscoveries, normalizeDiscoveries } from './discoveries.mjs';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -34,6 +35,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     weekly: null,                            // the weekly village goal { week, i, base, claimed }
     hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
     album: { fish: {}, fruit: {} },          // collections: what has been caught and picked
+    discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
     truck: { level: 1, away: false, backAt: 0, load: [], coins: 0 },   // the delivery truck (market.mjs)
     today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
@@ -90,6 +92,8 @@ export function migrate(save) {
     if (save.story?.chapter === 5 && !(save.counts?.clinic > 0)) save.story.chapter = 4;
     save.version = 5;
   }
+  // v5 → v6: discoveries keep prior milestones retired; normalization never pays or invents earned album entries.
+  if (save.version < 6) save.version = 6;
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -108,5 +112,6 @@ export function withDefaults(s) {
   if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger
   s.village.milestones ??= []; s.village.decor ??= [];
   for (const b of Object.values(s.people)) b.scenes ??= [];
+  s.discoveries = normalizeDiscoveries(s);
   return s;
 }

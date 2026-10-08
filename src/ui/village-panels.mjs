@@ -17,6 +17,8 @@ import * as barn from '../core/barn.mjs';
 import { goodIcon, iconHtml, faceHtml, glyph, coinMark } from './icon.mjs';
 import { thingName } from './repair-ui.mjs';
 import { familyRows, wishLine, nameOf } from './bonds-panels.mjs';
+import { renderDiscoveries } from './discovery-panels.mjs';
+import { discoveryOf } from '../content/discoveries.mjs';
 
 const neighbour = id => t(NEIGHBOURS.find(n => n.id === id)?.name ?? '');
 const giftText = g => g.coins ? `${coinMark()} ${num(g.coins)}` : g.goods ? Object.entries(g.goods).map(([id, n]) => `${goodIcon(id, 'mini')} ×${n}`).join(' ')
@@ -31,6 +33,7 @@ function heartThreshold(e, s) {
 }
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
+  discovery: e => `${glyph('gift', 'g')} ${t('Lucky find: {name}', { name: t(discoveryOf(e.id)?.title ?? 'Lucky discovery') })}`,
   repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
   neighbourRepair: e => `${glyph('wrench', 'g')} ${t('{name} mended the {thing}!', { name: t(NEIGHBOURS.find(n => n.id === e.id)?.name ?? ''), thing: thingName(null, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
   houseUpgraded: e => `${glyph('home', 'g')} ${t('The farmhouse is now level {level}', { level: e.level })}`,
@@ -66,6 +69,7 @@ export function renderToday(s, now) {
   const step = currentStep(s), mail = unread(s), days = s.today.days ?? 0;
   const wishes = (s.wishes?.list ?? []).filter(x => !x.done && s.placed[x.home]);
   return `<div class="today">
+    ${renderDiscoveries(s)}
     <div class="gift">${glyph('gift', 'g big')}<div><b>${t("Today's gift")}</b><small>${giftText(b.gift)}</small></div>
       ${b.claimed ? `<span class="done">${glyph('check', 'g')} ${t('Claimed')}</span>` : `<button class="btn primary" data-do="claimGift">${t('Claim')}</button>`}</div>
     ${days ? `<div class="streak">${iconHtml('garden_flower', '', 'mini')}<span>${t('Streak garden: day {count}', { count: days })}</span></div>` : ''}

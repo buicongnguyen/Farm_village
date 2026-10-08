@@ -43,7 +43,7 @@ wrong forms per speaker (for example *tôi* or *bạn* used as "you"). The narra
 | **Olaf** (Lindqvist) | Retired sailor | Sea words, slow and fond | **ông – cháu** |
 | **Marisol** (Reyes) | Nurse. She campaigns for the clinic. | Organised: "I have a list" | **cô – cháu** |
 | **Tomas** (Reyes) | Mechanic | Fixes everything and notices machines | **chú – cháu** |
-| **Pia** (Reyes, 5) | Little sister | Counts everything | **cháu** |
+| **Pia** (Reyes, 5) | Young neighbour | Counts everything | **cháu** |
 | **Cora** | Teacher. She arrives with the school. | Bright and dry ("the staff is me") | **cô – cháu**; calls her pupils *các em* |
 | **Mai** | Neighbour, Lotus Farm | Cheerful, ducks, tea | **chị – em** |
 | **Gus** | Neighbour, Old Mill Farm | Grumpy-sweet. "Hmph." Secretly soft. | **bác – cháu** |

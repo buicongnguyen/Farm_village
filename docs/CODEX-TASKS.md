@@ -2,7 +2,7 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
-Status: **first logic pass complete**, authorized by the user on 2026-10-08 and implemented in `20e5f5b` on `codex/v0.4-orchard` (PR #1). Claude's first brief is [CLAUDE-HANDOFF.md](CLAUDE-HANDOFF.md); the full future roadmap is [HOLLOWBROOK-IMPLEMENTATION-PLAN.md](HOLLOWBROOK-IMPLEMENTATION-PLAN.md).
+Status: **first logic pass merged and live** through PR #1, with AR-001 art live through PR #2 and closed by PR #3 (`a1607de`). The current pass on `codex/dialogue-review` implements profiles and four small discoveries, plus review fixes; it is not yet live. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md), the next [AR-009 art brief](CLAUDE-DISCOVERY-HANDOFF.md), and the future [implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md). The [first Claude brief](CLAUDE-HANDOFF.md) is historical.
 
 ## Preparation completed
 
@@ -12,7 +12,7 @@ Status: **first logic pass complete**, authorized by the user on 2026-10-08 and 
 - [x] Reconcile the rulebook with the user's confirmed project-only energy scope.
 - [x] Prepare Claude's scoped AR-001 brief and this logic checklist.
 
-The plans and completed logic checklist accompany the PR update. Main is unchanged; the user reviews the logic and art changes before a production merge.
+The checklist below records the completed first pass (`20e5f5b`). PRs #1 and #2 are now live; their historical validation is retained separately from the current branch checks.
 
 ## First implementation pass
 
@@ -58,21 +58,33 @@ The plans and completed logic checklist accompany the PR update. Main is unchang
 - [x] Update CHANGELOG.md, the JOURNEY status notes, and the asset queue with only the work actually completed and any agreed event contract.
 - [x] Commit and push the reviewed logic branch/update its PR when included in the user's start/delivery scope. Never push or merge main, deploy, rewrite Claude's branch, or change its checkout without the user's instruction.
 
-## Validation and handoff
+## Historical validation and handoff — first pass
 
 - `npm test`: **175/175** pass, including old saves, refused actions, duplicate collections, ordered clues, contextual dialogue and Vietnamese voice/coverage.
 - `npm run sim`: steady school day **3**; casual/steady/keen and restored-village pace assertions pass.
 - `npm run build:test`: **969,043 bytes** first-load code. Production `npm run build`: **967,982 bytes**, below **1,100,000**.
 - All component browser suites and **28/28** main smoke checks pass. New collection and story suites cover both English and Vietnamese on a 390 px phone; existing suites cover phone/PC zoom budgets, touch input and reduced motion.
 - Screenshot review confirms the translated story cards fit. Independent logic review found no outstanding issue in this pass. The local server was stopped after testing.
-- Claude's active visual handlers were left untouched. The exact additive event contract is in [ASSET-REQUESTS.md](ASSET-REQUESTS.md), with logic handoff commit `20e5f5b`. Claude's look/effect screenshots and integration checks remain part of the separate AR-001 delivery, including correcting the existing stall-sale wallet animation.
+- Claude's active visual handlers were left untouched. The additive event contract is in [ASSET-REQUESTS.md](ASSET-REQUESTS.md), with logic handoff commit `20e5f5b`. AR-001 subsequently delivered the look/effects and corrected stall-sale wallet feedback in PR #2; PR #3 records production checks and closes it.
 
-## Following passes — not bundled into the first fixes
+## Current pass — profiles and four discoveries
 
-1. Persistent contextual advice and Village news: unread counts, deferral, stale-topic retirement, bread/corn-bread blockers, and a small set of truthful item-use cards.
-2. Small discoveries with the 500-coin opening, successful-action counters and one-time rewards; the proposed 110-coin total still needs balance testing.
-3. Covered land, purchase previews, one usable revealed parcel and one discovery accessible without purchasing land.
-4. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
-5. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
+- [x] Commit visitor-arrival and saved-news fixes (`b03c38c`) and integrate current main through `a1607de`.
+- [x] Add three local farm profiles with isolated saves, import/reset, recovery and switching lifecycle.
+- [x] Keep the 500-coin opening and implement four deterministic one-time finds totaling at most 110 coins; count successful catches and owned-rock clearances, and completed Village Street restoration.
+- [x] Keep the tenth-catch keepsake local to the pond; preserve Ellis's ordered letter trail.
+- [x] Save earned/retired/read records separately. Retire known legacy fishing/road milestones without payout or fake album entries; observe new rock clearances from zero when old history is unknown.
+- [x] Add optional Today/Album discovery cards, saved read acknowledgment, an unread count, and EN/VI text with shared eligibility.
+- [x] Run the current rules, pace and test build: **211 tests pass**, steady **school day 3 / clinic day 3**, **986,313 bytes** first-load test code.
+- [x] All component browser suites pass after targeted fixture corrections; **28/28** main smoke checks pass. Both-language profiles/discoveries, import/reset/recovery, legacy saves, phone fit and rendering budgets are covered. Reviewed the phone screenshots in both languages.
+- [x] Complete the independent code review and fix malformed imports, stale autosaves and cross-tab profile selection. Production build: **985,234 bytes** first-load code; the local test server is stopped.
+- [ ] Publish the reviewed changes through a PR. This implementation is on `codex/dialogue-review`, **not yet live**.
+
+## Following passes — still planned
+
+1. Persistent contextual advice cards: opportunity/blocker selection, deferral, stale-topic retirement, bread/corn-bread blockers, and truthful item-use cards. Discovery unread/read memories are implemented; the full advice lifecycle is not.
+2. Covered land, purchase previews, one usable revealed parcel and one discovery accessible without purchasing land.
+3. One learned capability and one useful larger repair project, introducing project-only energy and free recovery.
+4. Meadow/dairy, additional recipes, school activities and vehicles as individually selected releases, with final IDs and asset requests defined before production art.
 
 AR-002 and the old v0.5 label do not automatically select the next release. Keep the existing school targets (casual ≤10 days, steady 3–4, keen ≥2) and required family access intact while evaluating optional expansion.

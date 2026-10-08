@@ -89,6 +89,7 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
+| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | requested |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -172,7 +173,55 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 - What: a few hero crops and fruits get tiny faces, sleepy while growing and awake and smiling when ripe, seen only up
   close, never sad, with a setting to turn them off. The pattern comes from My Dear Farm; the art is our own.
 
+### AR-009: Small discovery keepsakes and icons
+- Status: requested · Priority: P1 · For: introductory discoveries · Asked by: user / logic lane, 2026-10-08
+- Scope: [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md). First delivery is assets and registration only,
+  on `art/discovery-props` in the art worktree. Codex owns rules, saves, UI behavior, story and English/Vietnamese
+  content on `codex/dialogue-review`. AR-001 remains done; this request does not approve AR-002 through AR-008.
+- What: three small keepsakes with different readable silhouettes: a little found tin; a brass fish-shaped button
+  with a simple pond mark on its back; a small box with cloth and a smooth pebble. The street thank-you reuses the
+  existing envelope/mail and coin treatment; it does not need a fourth model.
+- Game ids: discovery `pond-tin` → asset `lucky_tin`; `pond-keepsake` → `lucky_button`;
+  `stone-keepsake` → `lucky_box`; `street-thanks` → existing mail/coin treatment.
+- Size: small handheld keepsake scale, not a placeable building and not a cell footprint; front +z, origin at base.
+  Record final dimensions in the delivery note. Each complete prop is at most 1,200 triangles.
+- Anchors: none required for the first static delivery. Do not add guessed world-location anchors.
+- Variants: one readable static presentation per keepsake. Separate opening/closing animations are outside this delivery.
+- Moves: static. Use the established warm, rich look and selective highlights; any later reveal should have a
+  restrained glint. Coordinate new visual subscriptions before touching `src/view/juice.mjs` or `src/ui/fx.mjs`.
+- Icons: `lucky_tin`, `lucky_button`, `lucky_box`, each with a matching WebP at `public/assets/icons/<id>.webp`.
+- Deliver: Blender generator/source changes, meshopt-packed GLB output, matching icons, registry entries and
+  provenance in one coherent art PR. A dedicated `discovery-props.glb` is a suitable packaging choice; record the
+  actual kit path and exact node names. Never hand-edit generated `ANCHORS`.
+- Stand-in now: existing icons only: `pond-tin` → `ui:coin`; `pond-keepsake` → `perch`;
+  `stone-keepsake` → `tool:clear`; `street-thanks` → `ui:coin`. No new placeholder files or world actors are required.
+  Art registers the new asset ids; Codex switches discovery-content icon references after integration.
+- Rules context: second successful catch pays 20 coins; tenth pays 40; second newly observed successful owned-rock
+  clear pays 30; completed broken restoration of Village Street (`road_south`) pays 20. Each is once per save,
+  at most 110 coins total. These are authored discoveries, not repeating lottery rolls. Starting coins stay 500.
+- Event contract: `discovery { id, coins, person }` plus `coins { coins, source: 'discovery', id }` for the same
+  already-accounted reward. Neither event contains a position. Here `id` is a discovery id, not a placed-object id.
+  Do not award coins, duplicate payment feedback, invent source coordinates, or spawn all props into the world.
+- Notes: the fish button is a local pond keepsake; it does not advance the sluice/letter mystery. The full logic
+  and profile scope is recorded in [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md). Art can proceed with
+  models and icons while Codex completes the UI integration and verification.
+
 ## Notes between lanes
+
+- 2026-10-08, logic verification: the AR-001 fruit test now checks fruit, leaf and glint shapes emitted by the pick action itself. Its former threshold of 20 particles depended on unrelated particles: one normal tree emits 19. No art handlers, particle values, models or colours changed. The orchard migration check now expects save version 6; discovery money is checked separately from ordinary fish income.
+
+- 2026-10-08, logic lane, **AR-009 handoff**: the user requested three discovery keepsakes and matching icons on
+  `art/discovery-props`. First delivery is assets/registration only; no new writer is reserved for `juice.mjs` or
+  `fx.mjs`. Before a later effect subscription, record the named functions, active writer and committed handoff
+  revision here. Codex is active on `codex/dialogue-review` for discovery eligibility/accounting, independent save
+  profiles, UI and English/Vietnamese. Current source includes main `a1607de`, merged as `7e126fb`; AR-001's done
+  status and every earlier art note below are preserved. New discovery work is not represented as already merged
+  or deployed. Refer to `CLAUDE-DISCOVERY-HANDOFF.md` for the exact first delivery and event contract.
+- 2026-10-08, logic lane, review handoff **`b03c38c`**: `PeopleView.visit` carries the visit number and `sayVisit`
+  re-evaluates dialogue eligibility against the farm when the visitor actually speaks, once per visit. Preserve
+  this behavior when making later actor/effect changes. Persisted heart/charm news now stores numeric `threshold`
+  separately from timestamp `at`; live events keep their existing threshold in `at`. Do not treat a saved news
+  timestamp as a heart/charm threshold or restore the older stale visitor line behavior.
 
 - 2026-10-08, logic lane **handoff complete**, commit **`20e5f5b`**, PR #1: the additive contract below is implemented
   and covered by rules and English/Vietnamese phone tests. `main.mjs` now plays `pop` for picking fruit and `cheer`

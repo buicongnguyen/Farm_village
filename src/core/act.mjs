@@ -24,18 +24,19 @@ import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
 import { actions as condition, tickCondition } from './condition.mjs';
 import { actions as testmode } from './testmode.mjs';
+import { actions as discoveries, normalizeDiscoveries, afterDiscoveries } from './discoveries.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
 export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins,
-  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode };
+  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries };
 
 function context(s, now) {
   const events = [];
   return {
-    s, now, events,
+    s, now, events, discoveryBefore: normalizeDiscoveries(s),
     emit: (type, data = {}) => events.push({ type, ...data }),
     fail: (reason, params) => ({ ok: false, reason, params }),
   };
@@ -48,7 +49,7 @@ export function act(s, action, payload = {}, now = Date.now()) {
   const ctx = context(s, now), step = s.projects.step;
   const out = handler(ctx, payload ?? {}) ?? {};
   if (out.ok === false) return { ...out, events: [] };
-  advance(ctx); tickCart(ctx); afterAction(ctx);
+  advance(ctx); tickCart(ctx); afterAction(ctx); afterDiscoveries(ctx);
   // a finished project step cannot be undone: undoing its building would refund the price and keep the step done
   if (s.projects.step !== step) s.undo = [];
   s.lastSeen = Math.max(s.lastSeen, now);
@@ -60,12 +61,13 @@ export function tick(s, now = Date.now()) {
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
   tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now);
   return { events: ctx.events };
 }
 /** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */
-const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter', 'repaired', 'neighbourRepair', 'houseUpgraded']);
+const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter', 'repaired', 'neighbourRepair', 'houseUpgraded', 'discovery']);
 // "First times" for the album (DESIGN 13): the moment each first happened.
 const FIRSTS = { harvested: 'harvest', collected: 'egg', orderFilled: 'order', familyArrived: 'family', traded: 'trade', produced: 'product',
   picked: 'fruit', gifted: 'gift', wishGranted: 'wish', cartSent: 'cart', heartScene: 'heartScene', letter: 'letter' };
@@ -74,6 +76,7 @@ function remember(s, events, now) {
     const k = FIRSTS[e.type]; if (k && !(s.firsts ??= {})[k]) s.firsts[k] = now;
     if (e.type === 'projectDone') (s.firsts ??= {})[`project:${e.id}`] ??= now;
     if (e.type === 'heartScene') (s.firsts ??= {})[`heart:${e.person}:${e.at}`] ??= now;   // the album's heart-scene pages
+    if (e.type === 'discovery') (s.firsts ??= {})[`discovery:${e.id}`] ??= now;
   }
   for (const e of events) if (NEWS.has(e.type)) {
     // Live heart/charm events use at for their threshold; news keeps at as its saved date.

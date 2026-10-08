@@ -4,9 +4,34 @@ import { VI_JUICE } from './vi-juice.mjs';
 import { VI_CAST } from './vi-cast.mjs';
 import { VI_PLAY } from './vi-play.mjs';
 import { VI_UI } from './vi-ui.mjs';
+import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_PROFILES,
+  'Lucky discoveries': 'Những khám phá may mắn',
+  'Lucky discovery': 'Một khám phá may mắn',
+  'Lucky find: {name}': 'Bất ngờ may mắn: {name}',
+  'New discovery': 'Vừa khám phá',
+  'In your album': 'Đã lưu trong album',
+  '{coins} coins found': 'Tìm được {coins} xu',
+  'Already added to your coins': 'Đã cộng vào số xu của bạn',
+  'Keep exploring': 'Khám phá tiếp nào',
+  'Lucky find! {name} · +{coins} coins': 'May mắn quá! {name} · +{coins} xu',
+  'Read about {name}': 'Xem câu chuyện về {name}',
+  'Nothing discovered yet': 'Chưa tìm thấy món này',
+  'A little tin from the pond': 'Chiếc hộp thiếc dưới ao',
+  'On your second catch, a little tin comes up beside the fish. There are twenty coins tucked inside.': 'Ở lần câu được cá thứ hai, bạn kéo lên một chiếc hộp thiếc nhỏ cùng với chú cá. Bên trong có hai mươi xu.',
+  'A fish and a tiny treasure! Can we keep the tin for our good finds?': 'Vừa có cá, vừa có kho báu nhỏ xíu! Nhà mình giữ chiếc hộp để cất những món hay hay được không?',
+  'The fish on the button': 'Chú cá trên chiếc cúc áo',
+  'Your tenth catch brings up a cloth pouch with forty coins and a brass button shaped like a fish. A tiny pond is engraved on its back: a keepsake of someone who loved this spot.': 'Ở lần câu được cá thứ mười, bạn kéo lên một túi vải chứa bốn mươi xu và chiếc cúc áo bằng đồng hình con cá. Mặt sau khắc một cái ao bé xíu: kỷ vật của người từng yêu góc ao này.',
+  'Someone liked sitting by this pond as much as we do, love. Let us keep their little fish in our album.': 'Có người cũng thích ngồi bên ao như nhà mình đấy, mình ơi. Mình cất chú cá nhỏ này vào album kỷ niệm nhé.',
+  'A keepsake beneath a stone': 'Kỷ vật dưới tảng đá',
+  'As you lift a rock from your land, you find a small box with thirty coins and a smooth pebble wrapped in cloth.': 'Khi nhấc một tảng đá trên đất nhà mình, bạn tìm thấy chiếc hộp nhỏ chứa ba mươi xu và một viên sỏi nhẵn bọc trong vải.',
+  'Someone kept a little piece of this place, love. Now there is room for something of ours to grow here.': 'Có người đã cất giữ một kỷ niệm nhỏ của nơi này đấy, mình ơi. Giờ nhà mình có thêm chỗ trồng cây rồi.',
+  'A thank-you for Village Street': 'Lời cảm ơn vì con đường làng',
+  'Village Street is restored. Gus leaves twenty coins by your gate with a short note thanking you for making the way easier for everyone.': 'Đường Làng đã được sửa xong. Gus để hai mươi xu bên cổng cùng mẩu giấy cảm ơn bạn đã giúp mọi người đi lại dễ dàng hơn.',
+  'The cart rolled right through. Did not lose a single loaf. Good work, that.': 'Xe hàng đi qua êm ru. Chẳng rơi chiếc bánh nào. Cháu làm tốt đấy.',
   'Earn a little more XP before undoing this build': 'Kiếm thêm một chút kinh nghiệm trước khi hoàn tác việc xây dựng này',
   // ── Interface ──
   'Farm Village': 'Làng Nông Trại',
