@@ -232,6 +232,7 @@ for (const lang of ['en', 'vi']) {
     });
     await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
     await page.evaluate(() => { clearInterval(farm.game.timer); farm.closeCards(); farm.panels.show('today'); });
+    await page.locator('.panel[data-kind="today"] div.today').waitFor({ state: 'visible' });
     const rows = await page.locator('.today .news li').allTextContents();
     expect(rows.length === 5, 'saved news rows disappeared');
     for (const [index, count] of [[0, 6], [1, 3]]) {

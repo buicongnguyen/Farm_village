@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { newGame } from '../src/core/state.mjs';
+import { newGame, SAVE_VERSION } from '../src/core/state.mjs';
 import { xpFor } from '../src/core/levels.mjs';
 import { canPlace, touch } from '../src/core/grid.mjs';
 import { stepIndex } from '../src/core/projects.mjs';
@@ -154,6 +154,7 @@ try {
 for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
   await run('parallel trays collect independently and keep purchased capacity after reload', lang, width, async (page, start) => {
     await page.evaluate(id => farm.panels.show('production', id), factory);
+    await panel(page).locator('[data-tray]').first().waitFor();
     expect((await panel(page).innerText()).includes(tr(lang, 'Each tray starts its own batch immediately. Finished goods wait here until collected.')), 'missing localized tray explanation');
     await produce(page, 'instant_noodles'); await produce(page, 'noodles');
     const first = (await jobs(page)).queue;
@@ -186,8 +187,9 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
 
   await run('old serial batches retain their schedule beside a new parallel tray', lang, width, async (page, start) => {
     await page.evaluate(id => farm.panels.show('production', id), factory);
+    await panel(page).locator('[data-tray]').first().waitFor();
     const old = (await jobs(page)).queue;
-    expect(await page.evaluate(() => farm.game.s.version) === 10, 'old save was not migrated');
+    expect(await page.evaluate(() => farm.game.s.version) === SAVE_VERSION, 'old save was not migrated');
     expect(old[0].doneAt === start + 120000 && old[1].doneAt === start + 180000 && old[1].startedAt === start + 120000, 'migration changed legacy serial timing');
     expect((await panel(page).innerText()).includes(tr(lang, 'Earlier saved batches keep their original schedule. New batches start immediately.')), 'legacy schedule explanation missing');
     expect((await panel(page).locator('[data-tray="1"]').innerText()).includes(tr(lang, 'Starts in {time}').replace('{time}', '2m 00s')), 'future legacy tray does not show when it starts');

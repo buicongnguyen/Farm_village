@@ -2,7 +2,7 @@
 
 Implementation: 2026-10-09, `codex/learning-garden-school`, from deployed main `e05c800` (PR #26).
 Claude's AR-011/AR-012 delivery `7cba0e4` (PR #27) is integrated locally at `b1896f5`.
-The release PR will record exact-head CI, Pages deployment and production verification.
+[PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) records exact-head CI, Pages deployment and production verification.
 
 ## What the player can do
 
@@ -92,4 +92,19 @@ ordinary play, world taps, strawberry growth, lazy-load failures and filled-farm
 acceptance script uses visible UI and normal per-profile saves without the test hook, in EN/VI at 390/1280 px with
 130% text. Existing production/shop/civic and optional-discovery acceptance are retained.
 
-Final measured counts and deployment links will be recorded after combined testing.
+Combined validation:
+
+- **389 native tests pass**; `npm run sim` and pace assertions remain green, steady school/clinic day 3.
+- **All 28 component browser suites verified**, including 25 new feature checks across the five new suites.
+  The initial full run passed 24 suites. Four older suites assumed synchronous panel rendering or save version 10;
+  their assertions now wait for actual content/use `SAVE_VERSION`, and the affected suites pass again.
+- **28/28 smoke checks pass**, including 390 px Vietnamese panels, slider stability and a 2.97-second first scene in
+  the simulated 4G-phone check. One original slider assertion also needed to await the loaded control.
+- New strawberry/bench filled-farm measurements peak at **93 draws / 253,830 triangles**, under 120 / 300,000.
+  Existing orchard, cast, civic and world budget suites pass, including the hospital tier at all sampled zooms.
+- First-load code: **1,074,687 bytes test / 1,073,842 bytes production** (limit 1,100,000).
+- Chrome phone/desktop screenshots were reviewed for the garden memories, bench stages, classroom controls and
+  hospital model. The optional WebKit binary is unavailable on this machine; Safari was not verified in this pass.
+- **12/12 local production contexts pass**: four learning/school, four business/civic and four existing optional
+  discovery/food flows. They use normal UI/autosave with no `window.farm`, isolated profiles, both languages and both
+  viewport sizes at 130% text. The release PR records the subsequent live verification and deployment links.

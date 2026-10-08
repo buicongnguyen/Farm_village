@@ -69,6 +69,8 @@ async function badge(page, count) {
 }
 async function showMemories(page, kind) {
   await page.evaluate(kind => { farm.closeCards(); farm.panels.show(kind); }, kind);
+  // Sheets load on first use. Wait for the real body before asserting either present or absent memories.
+  await page.locator(`.panel[data-kind="${kind}"] div.${kind}`).waitFor({ state: 'visible' });
   return page.locator('.' + kind + ' .discovery-memory');
 }
 async function readMemory(page, lang, id, kind) {

@@ -47,6 +47,7 @@ for (const lang of ['en','vi']) for (const viewport of [{ width: 390, height: 84
     const page = await ctx.newPage(), errors = []; page.on('pageerror', e => errors.push(e.message));
     await page.goto(url + '?new&restore'); await prepare(page);
     await page.evaluate(() => farm.panels.show('today'));
+  await page.locator('.panel[data-kind="today"] div.today').waitFor({ state: 'visible' });
     expect(await page.locator('.exploration-entry').count() === 0, 'unfinished first order exposes the trail');
     // Deliver the real tutorial order with the actual button and starter wheat.
     const id = await page.evaluate(() => { farm.panels.show('orders'); return farm.state().orders.cards.find(c => c.story).id; });
@@ -72,6 +73,7 @@ for (const lang of ['en','vi']) for (const viewport of [{ width: 390, height: 84
       }, EXPLORATION_SITES[step.location]);
       if (step.id !== 'share') await page.screenshot({ path: join(shots, 'world-' + step.id + '-' + lang + '-' + viewport.width + '.png') });
       await page.mouse.click(position.x, position.y);
+      await page.locator('.exploration-trail').waitFor({ state: 'visible' });
       expect(await page.locator('.exploration-trail').isVisible(), 'world prop did not open its trail');
       expect(await page.evaluate(() => farm.state().exploration.steps.length) === countBeforeTap, 'world tap granted progress without inspection');
       await page.locator(`[data-do="inspectExploration"][data-step="${step.id}"]`).click();
@@ -149,6 +151,7 @@ await check('distant discovery props do not capture normal pond fishing taps', {
       return farm.cellToScreen(dock.x,dock.z);
     }, {dock:POND_DOCK,span});
     await page.mouse.click(target.x,target.y);
+    await page.locator('.panel[data-kind="pond"] [data-do="castLine"]').first().waitFor({ state: 'visible' });
     expect(await page.locator('[data-do="castLine"]').first().isVisible(), 'distant prop stole pond control at span ' + span);
     expect(await page.locator('.exploration-trail').count() === 0, 'dock tap opened picnic trail');
   }
@@ -178,6 +181,7 @@ await check('unread counts, real farmhouse entry and legacy favour arrival', { w
   // The real house radial exposes the optional interaction without replacing repair/upgrade actions.
   await page.evaluate(() => { const r = farm.radial; const m = r.houseMenu(); r.open({ x: 24, z: 62 }, 195, 350, m.buttons, m.info, {}); });
   await page.locator('[data-act="explorePorch"]').click();
+  await page.locator('.exploration-trail').waitFor({ state: 'visible' });
   expect(await page.locator('.exploration-trail').isVisible(), 'farmhouse entry failed');
   // A milestone requested behind another story card stays unread until it is visible; double activation queues once.
   await page.evaluate(() => {
