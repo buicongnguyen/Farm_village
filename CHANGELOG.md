@@ -1,5 +1,14 @@
 # Changelog
 
+## Icon render v2 — art lane (2026-10-08, PR preview)
+
+- **Every icon re-rendered with richer light:** all 92 icons now come from a Cycles rig with a warm key from the top
+  left of the picture, a soft fill and rim, a low warm sky and a hidden bounce floor, so goods, buildings and people have
+  painted depth instead of a flat, pale look. Glossy fruit and eggs, matte sacks and bread.
+- **Icons keep their edge in small chips:** a round outline about 7 px at 256 replaces the thin 2 px ring.
+- **Consistent framing:** camera presets per kind of icon (goods, dishes, tokens, tools, fish, buildings) and more room
+  around goods. The research and the remaining item-model plan are in `docs/REFERENCE-NONGTRAI.md`.
+
 ## Reference pass: opening composition and item art — art lane (2026-10-08, PR preview)
 
 - **A first picture of home:** the restored village opens on the home farm, at full detail. A wide screen shows the

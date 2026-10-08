@@ -100,3 +100,10 @@ MIT) is a build tool only, not a dependency of the game.
 - No new models in the game: the farmhouse forecourt is ground colour, two planters in the merged plaza mesh, and
   the existing bench.
 - Before and after: `docs/reference-pass/`.
+
+## Icon render v2
+
+- All 92 icons re-rendered by `art/blender/render_icons.py` (Cycles, camera-relative area lights, a warm gradient world,
+  a hidden bounce floor, per-icon `rough`/`metal`, camera `preset`s) and `icon_post.py` (a round 2.8 % outline). Same
+  sources as before; no new third-party art. `farm-kit.glb`: the pond's water discs moved 4 and 8 mm apart (no change
+  to node counts or bounds).
