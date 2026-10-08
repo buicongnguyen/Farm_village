@@ -1,8 +1,8 @@
 # Farm profiles and the first lucky discoveries
 
-Prepared 2026-10-08. Implemented on `codex/dialogue-review`; this document does not mean the PR is deployed.
+Prepared 2026-10-08. **Live through [PR #4](https://github.com/buicongnguyen/Farm_village/pull/4) at `ab6b230`.** [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed.
 
-This is the next playable slice of the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md). It adds three visible farm profiles and four small discoveries to the existing village. Covered land, persistent business advice, learned skills, project energy, school interiors and the meadow remain later work.
+This release of the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) adds three visible farm profiles and four small discoveries to the existing village. [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) implements persistent business/blocker/activity advice, retained milestone memories and Claude's AR-009 icon integration. Merging into main triggers deployment; the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) records the production result. Covered land, learned skills, project energy, school interiors and the meadow remain later work; the playable story still ends at chapter 5. See the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md) for further design evaluation.
 
 ## Three independent farms
 
@@ -29,7 +29,7 @@ English and Vietnamese select the same discovery IDs, conditions, rewards and re
 
 ## Continuing an older farm
 
-Save version 6 initializes discovery state without giving a pile of missed rewards on load. Known fishing milestones already passed and a street already restored are retired without money, album entries, or unread notices. A still-broken street and future catch milestones remain eligible.
+The profile/discovery release introduced save version 6, which initializes discovery state without giving a pile of missed rewards on load. The advice implementation advances to version 7 while preserving these discovery records. Known fishing milestones already passed and a street already restored are retired without money, album entries, or unread notices. A still-broken street and future catch milestones remain eligible.
 
 Old clearing totals include weeds and cannot prove how many rocks the player cleared. Therefore old farms begin counting newly observed successful owned-rock clearances from zero. The stone story deliberately says a box was found while lifting a rock, without claiming it was the second rock the player ever cleared. Fresh profiles can experience all four finds.
 
@@ -39,15 +39,15 @@ Old clearing totals include weeds and cannot prove how many rocks the player cle
 - Saved fields: `discoveries.catches`, `rocks`, `claimed`, `retired`, `read`; first-time markers also retain earned IDs. Counters stop at the last relevant milestone.
 - Successful grants emit `discovery {id, coins, person}` and `coins {coins, source: 'discovery', id}`. No world-position field is promised. Reading emits no additional payment.
 - Refused actions do not advance counters or create discovery state. Failed catches, weeds, unowned land, partial repairs and ordinary cosmetic maintenance do not qualify.
-- Existing icons are stand-ins. No new Blender binaries or art-owned palette/effect files were changed. Claude's scoped **AR-009** request is in [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md).
+- PR #4 used stand-in icons. The PR #6 integration uses Claude's **AR-009** WebP icons `lucky_tin`, `lucky_button` and `lucky_box` in discovery cards, Today/Album entries and notifications; the street thank-you retains the existing envelope/coin treatment. Current discovery views do not load `discovery-props.glb`: it is a packed, registered asset available for a future 3D presentation. The logic integration changes no art-owned source or effect appearance. The scoped request is in [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md).
 
 ## Acceptance checks
 
 Rules tests cover exact thresholds, repeat/refused actions, additive money accounting, migrations, read state, save isolation, backup handling and storage failures. Browser tests use actual Cast/Reel, Clear, Repair, profile, import and reset controls in English and Vietnamese. They check the 500-coin start, all four finds, the 110-coin budget, optional cards, numeric badges, reloads, legacy imports, phone fit and recovery.
 
-Final validation results are recorded in CHANGELOG.md and CODEX-TASKS.md. The existing school pace, first-load code and phone rendering budgets still apply.
+Delivery validation is recorded in CHANGELOG.md and CODEX-TASKS.md: 229 combined-tree native tests, all pace targets and 17 advice-build component browser suites pass. Smoke checks: **28/28 passed on the advice build**. AR-009 integration checks: **English/Vietnamese advice and discovery suites passed again after integration; 12 keepsake cards passed on phone/desktop in both languages (fit, exact 256 px icons, no extra payment, no GLB request and no errors)**. Final first-load code is **1,005,608 bytes** for the test build and **1,004,534 bytes** for production. The existing school pace, first-load code and phone rendering budgets still apply.
 
-## How to try it after this PR is deployed
+## How to try it in the live game
 
 1. Open the cottage profile button and start an empty Farm 2 or Farm 3; the original farm stays in its slot.
 2. Catch two fish to find the little tin. Continue to ten for the brass fish button.

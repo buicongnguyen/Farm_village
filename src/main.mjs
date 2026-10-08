@@ -88,6 +88,17 @@ panels = new Panels(app, game, hud, {
     else { build.cat = BUILDINGS[at].cat; build.start(at); }
   },
   onSave: handleSave,
+  // Advice points to the exact placed building and previews its repair without paying for it.
+  onAdviceTarget: ({ id }) => {
+    const p = game.s.placed[id]; if (!p) return;
+    if (build.open) build.close(); radial.hide();
+    const [w, d] = footprint(p.kind, p.rot), cell = { x: p.x, z: p.z };
+    flyTo((p.x + w / 2) * CELL, (p.z + d / 2) * CELL);
+    if (levelOf(game.s, id) > 0 || game.s.repairing?.[id]) {
+      const { buttons, info } = radial.repairMenu(id, BUILDINGS[p.kind]);
+      radial.open(cell, innerWidth / 2, innerHeight / 2, buttons, info, { id });
+    }
+  },
   // a wish's Build button: the catalogue on that decoration
   onBuildKind: kind => { if (!BUILDINGS[kind]) return; build.cat = BUILDINGS[kind].cat; build.start(kind); },
   onPhoto: () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })),

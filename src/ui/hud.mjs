@@ -20,7 +20,7 @@ import * as barn from '../core/barn.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild } from '../core/projects.mjs';
 import { unread } from '../core/bonds.mjs';
 import { unreadDiscoveries } from '../core/discoveries.mjs';
-import { cartHere } from '../core/cart.mjs';
+import { unreadAdvice } from '../core/advice.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -68,7 +68,7 @@ export class Hud {
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.refuse(r.reason, r.params); for (const e of r.events ?? []) this.event(e); });
     onLanguageChange(() => this.update());
-    this.update(); setInterval(() => { this.refreshNext(); this.refreshStatus(); }, 1000);
+    this.update(); setInterval(() => { this.refreshNext(); this.refreshStatus(); this.refreshTodayMessages(); }, 1000);
   }
   update() {
     const s = this.game.s, p = progress(s), q = sel => this.el.querySelector(sel);
@@ -92,10 +92,7 @@ export class Hud {
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
-    const discoveries = unreadDiscoveries(s), todayBadge = q('[data-act="today"] .badge');
-    todayBadge.textContent = discoveries || ''; todayBadge.classList.toggle('dot', !discoveries);
-    todayBadge.hidden = !discoveries && !!s.today.claimed && !cartHere(s);
-    if (discoveries) q('[data-act="today"]').hidden = false;
+    this.refreshTodayMessages();
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
     q('[data-act="projects"] .badge').hidden = !canWork;
     const mail = unread(s), mailBtn = q('[data-act="mail"]');
@@ -104,6 +101,14 @@ export class Hud {
     cap.textContent = `${used}/${s.barn.cap}`; cap.classList.toggle('full', used >= s.barn.cap * 0.9);
     if (used > this.barnUsed) this.pulse(cap, 'bounce');
     this.barnUsed = used;
+  }
+  /** A completed timer can change a topic without a resource event; keep the unread count current too. */
+  refreshTodayMessages() {
+    const messages = unreadDiscoveries(this.game.s) + unreadAdvice(this.game.s, this.game.now);
+    const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
+    badge.textContent = messages || ''; badge.classList.remove('dot'); badge.hidden = !messages;
+    button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));
+    if (messages) button.hidden = false;
   }
   /** Roll the coin counter from what it shows to `to` (about 0.9 s), with a pulse. */
   rollCoins(to) {
@@ -209,5 +214,5 @@ export class Hud {
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */
-  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && unreadDiscoveries(this.game.s)); } }
+  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && (unreadDiscoveries(this.game.s) + unreadAdvice(this.game.s, this.game.now))); } }
 }

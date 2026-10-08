@@ -151,7 +151,7 @@ test('legacy migration retires passed fishing and street milestones without coin
 
 test('legacy unfinished milestones remain earnable, while old completion evidence and earned records survive imports', () => {
   let s = fresh(); s.version = 4; s.story.chapter = 5; s.fishing.caught = 1; delete s.discoveries;
-  s = unpack(pack(s)); assert.equal(s.story.chapter, 4); assert.equal(s.version, 6);
+  s = unpack(pack(s)); assert.equal(s.story.chapter, 4); assert.equal(s.version, SAVE_VERSION);
   assert.equal(events(catchFish(s))[0]?.id, 'pond-tin');
   must(s, 'repair', { id: 'road_south' });
   s = unpack(pack(s)); assert.equal(events(tick(s, T0 + REPAIR.broken.ms))[0]?.id, 'street-thanks');

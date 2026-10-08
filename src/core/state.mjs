@@ -6,8 +6,9 @@ import { applyRestore } from './restore.mjs';
 import { normalizeFruitStand } from './orchard.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { newDiscoveries, normalizeDiscoveries } from './discoveries.mjs';
+import { newAdvice, normalizeAdvice } from './advice-state.mjs';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -36,6 +37,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
     album: { fish: {}, fruit: {} },          // collections: what has been caught and picked
     discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
+    advice: newAdvice(),                    // stable read/deferred contexts and bounded celebration records, never rendered text
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
     truck: { level: 1, away: false, backAt: 0, load: [], coins: 0 },   // the delivery truck (market.mjs)
     today: { day: '', giftDay: 0, seen: true, away: null, days: 0 },   // days: game days visited (the streak garden)
@@ -94,6 +96,8 @@ export function migrate(save) {
   }
   // v5 → v6: discoveries keep prior milestones retired; normalization never pays or invents earned album entries.
   if (save.version < 6) save.version = 6;
+  // v6 → v7: acknowledge advice across sessions; normalization retires already-passed legacy celebrations.
+  if (save.version < 7) save.version = 7;
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -113,5 +117,6 @@ export function withDefaults(s) {
   s.village.milestones ??= []; s.village.decor ??= [];
   for (const b of Object.values(s.people)) b.scenes ??= [];
   s.discoveries = normalizeDiscoveries(s);
+  s.advice = normalizeAdvice(s);
   return s;
 }

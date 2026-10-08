@@ -6,8 +6,10 @@ import { join } from 'node:path';
 import { LETTERS } from '../src/content/letters.mjs';
 import { sceneFor } from '../src/core/bonds.mjs';
 import { commentFor } from '../src/core/neighbours.mjs';
-import { JUNE_TIPS, FAMILIES, NEIGHBOURS, VILLAGERS } from '../src/content/people.mjs';
+import { FAMILIES, NEIGHBOURS, VILLAGERS } from '../src/content/people.mjs';
 import { VI } from '../src/i18n/vi.mjs';
+import { ADVICE_TOPICS } from '../src/content/advice.mjs';
+import { CHATTER } from '../src/content/chatter.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'farm-village-logic'); mkdirSync(shots, { recursive: true });
@@ -104,11 +106,20 @@ for (const lang of ['en', 'vi']) {
     const lines = await page.evaluate(() => {
       const g = farm.game, p = farm.people, june = p.walkers.get('june'), you = p.walkers.get('you'), ada = p.walkers.get('ada');
       june.indoors = you.indoors = ada.indoors = false;
-      const bed = Object.keys(g.s.placed).find(id => g.s.placed[id].kind === 'bed');
-      if (!bed) throw Error('no fixture bed');
-      g.s.beds[bed] = { crop: 'wheat', doneAt: g.now - 1 };
-      p.talk(june); const advice = june.bubble?.textContent, firstTopic = p.juneTopic;
+      g.s.barn.items.wheat = 10;
       g.s.orders.cards = [{ id: 'chat-order', from: 'ada', need: { wheat: 1 }, coins: 5, xp: 1 }];
+      g.s.orders.pending = Array(4).fill(g.now + 86400000);
+      g.s.advice = { read: [], deferred: [], celebrated: {}, retired: [] };
+      const before = g.s.coins;
+      p.lastAction = performance.now() - p.idleTipMs - 1; p.tipAt = -Infinity;
+      farm.panels.show('settings');
+      const unread = JSON.stringify(g.s.advice.read);
+      p.maybeTip();
+      if (JSON.stringify(g.s.advice.read) !== unread) throw Error('idle advice was marked read behind Settings');
+      farm.panels.close();
+      p.maybeTip(); const advice = june.bubble?.textContent, firstTopic = p.juneTopic;
+      if (!g.s.advice.read.includes('order-ready:order/chat-order')) throw Error('June did not acknowledge her advice in the save');
+      if (g.s.coins !== before || g.s.orders.cards.length !== 1) throw Error('June delivered or rewarded an order while speaking');
       p.talk(ada); if (farm.panels.open?.kind === 'orders') throw Error('an order replaced conversation');
       if (!ada.bubble?.textContent) throw Error('Ada said nothing');
       const adaLines = [];
@@ -118,14 +129,25 @@ for (const lang of ['en', 'vi']) {
       p.talk(june); const next = june.bubble?.textContent, nextTopic = p.juneTopic;
       return { advice, next, firstTopic, nextTopic, adaLines };
     });
-    expect(lines.advice.includes(tr(lang, JUNE_TIPS.harvest)), 'June did not offer the ready harvest');
-    expect(lines.firstTopic === 'harvest', 'wrong first advice topic');
-    expect(lines.nextTopic !== lines.firstTopic && !!JUNE_TIPS[lines.nextTopic], 'consecutive taps repeated the same topic');
-    expect(lines.next?.includes(tr(lang, JUNE_TIPS[lines.nextTopic])), 'next advice did not render its selected topic');
+    expect(lines.advice.includes(tr(lang, ADVICE_TOPICS['order-ready'].line)), 'June did not offer the actual ready order');
+    expect(lines.firstTopic === 'order-ready', 'wrong first advice topic');
+    expect(lines.nextTopic === 'chat', 'acknowledged business advice repeated instead of social chatter');
+    expect(Object.values(CHATTER).flatMap(part => part.grown).some(text => lines.next?.includes(tr(lang, text))), 'June did not fall back to social conversation');
     const ada = VILLAGERS.find(p => p.id === 'ada');
     expect(new Set(lines.adaLines).size === 6, 'Ada repeated before her own pool was exhausted');
     for (const line of lines.adaLines) expect(ada.idle.some(text => line.includes(tr(lang, text))), 'Ada used generic chatter');
     await page.screenshot({ path: join(shots, 'advice-' + lang + '.png') });
+    await page.evaluate(() => window.__fvSave());
+    await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+    await page.waitForFunction(() => farm.people.walkers.has('june'));
+    const restored = await page.evaluate(() => {
+      clearInterval(farm.game.timer);
+      const june = farm.people.walkers.get('june'); june.indoors = false;
+      farm.people.talk(june);
+      return { topic: farm.people.juneTopic, read: farm.state().advice.read };
+    });
+    expect(restored.read.includes('order-ready:order/chat-order'), 'June forgot her acknowledged advice after reload');
+    expect(restored.topic === 'chat', 'June repeated the same business suggestion after reload');
     expect(!errors.length, errors.join(' | '));
   });
   await check('Bo notices the reopened school and visiting neighbours use real farm facts (' + lang + ')', async ctx => {
