@@ -16,6 +16,16 @@ Implemented on `codex/dialogue-review`; **not yet live**. The branch includes li
 
 - **Logic lane:** consolidated the design and evaluated research, prepared the scoped Claude AR-001 handoff and Codex task list, and aligned the shared rules with the user's project-only energy decision. Clarified shared effect ownership, coherent asset delivery, and integration checks before a production merge. The user subsequently authorized the first logic pass below; larger expansion systems remain planned.
 
+## Art lane: lucky-discovery keepsakes (AR-009, art PR, not released)
+
+- **Keepsake props and icons:** three small original Blender keepsakes in a new kit, `discovery-props.glb`, that loads
+  only when a discovery shows one: `lucky_tin` (the pond tin), `lucky_button` (the brass fish button with a pond
+  engraved on its back, against its cloth pouch) and `lucky_box` (the trinket box with a smooth pebble on ribbon-tied
+  cloth). Each is handheld size and under 1,200 triangles, with a matching 256 px icon and a restrained golden glint.
+  Registered in `KITS['discovery-props']` and a `keepsakes` icon list; the logic lane switches its stand-in discovery
+  icons. `street-thanks` needs no new art: it keeps the existing `mail` envelope glyph and coin. No new loads for
+  players: `farm-kit.glb` and `decor.glb` are unchanged. Comparison images in `docs/discovery-props/`.
+
 ## 0.4.0 — The orchard (live 2026-10-08, PRs #1 and #2)
 
 - **Look pass (AR-001, art lane):** a deeper, calmer lawn with paler warm paths and darker path edges; a cool daytime fill against the warm sun; a green dusk instead of olive; turquoise water; stronger orchard greens. Fruit picking gets its own burst, sound and "+n"; a golden carp gets a gold ring and star fountain. Coins fly to the wallet only when money is paid: takings waiting at a stall or the fruit stand just glint there. Coin markers get a dark backing and a warm glint. Comparison images in `docs/look-pass/`.

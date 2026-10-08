@@ -67,6 +67,7 @@ replaced) and `dropped`.
 | Kit (`public/assets/models/`) | What is in it |
 |---|---|
 | `farm-kit.glb` (ours) | Crops in three growth stages (wheat, carrot, corn, pumpkin, strawberry); coop, cow barn, feed mill (+ `feed_mill_sails`), bakery, fruit stand, kennel, pond, truck, order board, bench, lamp, picket set; trees `cute_round`, `cute_pine`, `cute_blossom`, `cute_apple`, `cute_peach`, `cute_cherry` (each fruit tree also `_bare`) |
+| `discovery-props.glb` (ours) | Keepsakes `lucky_tin`, `lucky_button`, `lucky_box` (AR-009): handheld presentation pieces, not placed on the map |
 | `decor.glb` (ours) | `plank_bridge`, `fountain`, `bunting`, `banner`, `sale_sign`, `scaffold`, `window_box`, `door_lantern`, `flowerpots`, `doormat`, `path_stones`, `obstacle_bush`, `obstacle_stump`, `obstacle_log` |
 | `props.glb` (Starline) | `scarecrow`, `haybale`, `sacks`, `crate`, `barrel`, `cart`, `signpost`, `postbox`, `street_lamp`, `flowerpot`, `laundry_line`, `beehive_branch` |
 | `nature.glb` (Starline) | `lilypads`, `reeds`, stepping stones, rocks, flowers, `hydrangea`, bushes, `grass_tuft`, broadleaf, maple, sakura and chestnut trees |
@@ -89,7 +90,7 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
-| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | requested |
+| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | delivered (PR #5, awaiting logic-lane check) |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -174,7 +175,8 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   close, never sad, with a setting to turn them off. The pattern comes from My Dear Farm; the art is our own.
 
 ### AR-009: Small discovery keepsakes and icons
-- Status: requested · Priority: P1 · For: introductory discoveries · Asked by: user / logic lane, 2026-10-08
+- Status: delivered (PR #5, awaiting logic-lane check; delivery note in "Notes between lanes") · Priority: P1 ·
+  For: introductory discoveries · Asked by: user / logic lane, 2026-10-08
 - Scope: [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md). First delivery is assets and registration only,
   on `art/discovery-props` in the art worktree. Codex owns rules, saves, UI behavior, story and English/Vietnamese
   content on `codex/dialogue-review`. AR-001 remains done; this request does not approve AR-002 through AR-008.
@@ -231,6 +233,40 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   `variant` (or null), not dialogue text, for save-safe scene selection. All 175 rules tests, component browser suites,
   28 smoke checks and both builds pass. Production first load is 967,982 bytes. Claude can consume these events on
   its art branch; visual handler ownership remains with Claude. Review AR-001 in play before a production merge.
+
+- 2026-10-08, art lane, **AR-009 delivered**: [PR #5](https://github.com/buicongnguyen/Farm_village/pull/5),
+  branch `art/discovery-props` at `33c4df6`, merged with `origin/main` `ab6b230` (PR #4). Built to
+  `docs/CLAUDE-DISCOVERY-HANDOFF.md`.
+  - Source: `art/blender/build_farm_kit.py`, section "lucky finds (AR-009)" (new colours `cloth`, `clothd`, `clothl`,
+    `pebble`); icon jobs in `art/blender/icons.json`. Blender 4.5.9 LTS, vertex colours, packed with
+    `art/blender/pack.mjs` (meshopt). `farm-kit.glb` and `decor.glb` are byte-identical to `main`. Provenance:
+    `docs/ASSETS.md`, "AR-009 lucky finds".
+  - Kit: **`public/assets/models/discovery-props.glb`** (25.6 KB), nodes `lucky_tin`, `lucky_button`, `lucky_box`, one
+    static mesh each. Nothing loads it yet: no world placement, no footprint, no `KIND_MODELS` entry; load it with
+    `loadKit('discovery-props')` when a card or reveal needs a model. Front faces +z, origin at the base centre, metres.
+  - `lucky_tin`: 1,076 triangles, 0.183 × 0.205 × 0.140 m (w × d × h, lid included): a teal tin with a cream label and
+    red fish, brass rims, the lid leaning behind, two coins, a puddle and a notched lily pad beside it.
+  - `lucky_button`: 1,032 triangles, 0.159 × 0.161 × 0.132 m: a brass fish button with a four-hole centre, an eye and
+    the glint, leaning on a soft blue cloth pouch with a loose red drawstring. The tiny pond (ring, pool and ripple) is
+    engraved on the button's back, which faces the pouch in this pose.
+  - `lucky_box`: 816 triangles, 0.194 × 0.132 × 0.148 m: a wooden trinket box with a teal lining and one brass clasp, a
+    smooth slate pebble (with the glint) on cream cloth tied with a red ribbon, a crumb of earth beside it.
+  - Icons: `public/assets/icons/lucky_tin.webp`, `lucky_button.webp`, `lucky_box.webp` (256 px, transparent).
+  - Registered: `src/view/kinds.mjs` `KITS['discovery-props']`; `src/content/icons.mjs` `ICON_IDS.keepsakes`.
+    `tests/assets.test.mjs`: one check (≤ 1,200 triangles, handheld size, base origin, icon present, never placed).
+  - Screenshots: `docs/discovery-props/` (stand-in vs new icons at 160 px and actual 48 px on dark and light panels; a
+    close-up render of the three props).
+  - `street-thanks`: no fourth asset. The existing treatment is the `mail` envelope glyph (`iconHtml('mail')`,
+    `src/ui/icon.mjs`) with the `ui:coin` coin; there is no rendered envelope WebP. Which one its card shows is the
+    logic lane's choice.
+  - Checked on the merged tree: `npm test` 212/212; `npm run build:test` first-load code 986,420 of 1,100,000 bytes;
+    every kit meshopt-packed (`tests/assets.test.mjs`); all 16 browser suites (with the new discoveries and profiles
+    suites and the phone-budget checks) and `tests/browser.mjs` 28/28 pass on port 5242. Scene budgets (≤ 120 draws,
+    ≤ 300,000 triangles at every zoom) are unchanged because no scene loads the new kit.
+  - No changes to `juice.mjs`, `fx.mjs`, `discoveries.mjs`, triggers, rewards, saves, dialogue or UI.
+  - For the logic lane: switch the three stand-in icons in `DISCOVERIES` after integration (`ui:coin` → `lucky_tin`,
+    `perch` → `lucky_button`, `tool:clear` → `lucky_box`) and check the cards on phone and PC in both languages. A
+    later reveal or glint needs the shared-function handoff the brief describes.
 
 - 2026-10-08, logic lane **active** after the user's start instruction: Codex owns the small conversation-selection
   changes in `src/view/people-view.mjs`, mailbox/heart-card behavior in `src/ui/bonds-panels.mjs`, core event metadata,

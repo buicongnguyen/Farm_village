@@ -13,6 +13,7 @@ the npm packages in `package.json` and the Nunito font (SIL Open Font License, `
 | `hero-tall.glb`, `hero-girl-tall.glb`, `hero-tiny.glb`, `hero-girl-tiny.glb` | Willowmere `public/assets/models/` (from Zoo Garden) | Copied unchanged; villagers and neighbours |
 | `farm-kit.glb` | New: `art/blender/build_farm_kit.py` with Willowmere's `style.py` | Crops in three stages (wheat, carrot, corn, pumpkin, strawberry; authored `_mid` levels), feed mill + `feed_mill_sails`, bakery, coop with yard, cow barn, picket fence set, bench, lamp, order board, bed rim; anchor empties (AAA pass). Fixer pass: wheat re-authored as a dense golden stand (ripe 752 → 244 triangles near, 162 → 88 middle; sprouts bigger and greener), leaner corn, carrot and pumpkin middle levels, the cow barn's back and gable walls dressed (stable door, shuttered windows, loft hatch; two more window anchors) |
 | `decor.glb` | New: `art/blender/build_farm_kit.py` (AAA pass) | Plank bridge, fountain, bunting, banner, For-sale sign, scaffold, window box, door lantern, flowerpots, doormat, path stones, obstacle bush / stump / log |
+| `discovery-props.glb` | New: `art/blender/build_farm_kit.py` (AR-009) | Keepsakes `lucky_tin`, `lucky_button`, `lucky_box`: handheld, loaded only when a discovery shows one |
 | `props.glb` | Starline (`3D_game_scene`, at 42424c7) `public/models/*.glb`, made by its `art/blender/build_props.py` | Scarecrow, haybale, sacks, crate, barrel, cart, signpost, postbox, street lamp, flowerpot, laundry line, beehive branch; joined into vertex-colour roots by `art/blender/extract_kit.py` (`art/blender/kits/props.json`), colours boosted 1.1–1.15, decimated `_mid` levels |
 | `nature.glb` | Starline at 42424c7 `public/models/*.glb`, made by its `art/blender/build_nature.py` | Lily pads, reeds, stepping stones, rocks, flowers, hydrangea, bushes, grass tuft, broadleaf, maple, sakura, chestnut and peach trees (Starline `-lod` copies as `_mid`); `tree_peach_bare` (fruit node dropped), `tree_apple` / `tree_apple_bare` (peach recoloured red, leaves deeper green); colours boosted (`art/blender/kits/nature.json`) |
 | `rural-extra.glb` | Willowmere `public/assets/models/rural.glb` (working copy at 6390128) | Silo, home_t0 / t2 / t3, picket and rail fence, round hay bale, tractor, pond dock, stump; vertex-colour roots (`art/blender/kits/rural-extra.json`) |
@@ -31,7 +32,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 | Files | Source | Notes |
 |---|---|---|
-| 73 WebP icons, 256 px | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
+| 92 WebP icons: 88 rendered at 256 px from `icons.json`, plus the four 160 px Willowmere fish icons listed under v0.3b | New: `art/blender/render_icons.py` and `icon_post.py`, ported from Starline's scripts of the same names (at 42424c7) | Job list `art/blender/icons.json`. Goods from `art/blender/build_items.py` (new); buildings and decorations from our kits; tools: Starline `hammer.glb`, our shovel, sickle, glove and Starline crate; portraits: Starline `villager-man/woman/kid.glb`, `hana.glb`, `mika.glb`, `genzo.glb` (Starline `build_characters.py`), recoloured per person. Willowmere's and Starline's icon sheets were used only as a visual reference |
 
 ## Added in v0.3b
 `farm-kit.glb` gained `truck` and `pond` (our own Blender pieces, `art/blender/build_farm_kit.py`). Icons `perch`, `carp`, `catfish`, `goldfish` are copied from Willowmere (`3d_farmer_fish_sell/public/assets/icons/fish/fish_perch|carp|catfish|golden.webp`); `round_tree`, `pine_tree` are rendered from Willowmere's `scenery.glb` (`tree_round`, `tree_pine`); `market`, `pond`, `truck` icons from our own kit.
@@ -44,7 +45,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 | Script | What it does |
 |---|---|
-| `build_farm_kit.py` | farm-kit.glb, decor.glb and `anchors-farm-kit.json` |
+| `build_farm_kit.py` | farm-kit.glb, decor.glb, discovery-props.glb and `anchors-farm-kit.json` |
 | `extract_kit.py` | kits from other GLBs as vertex-colour roots (spec files in `kits/`), or the legacy keep-these-roots mode |
 | `anchors.mjs` | writes `ANCHORS` into `src/view/kinds.mjs` (farm-kit anchors, plus window points of the cottages and the farmhouse found from their glass faces) |
 | `pack.mjs` | meshopt compression with gltfpack |
@@ -69,3 +70,15 @@ MIT) is a build tool only, not a dependency of the game.
 - `clinic`: the existing `hospital` root in `town.glb`, originally authored by Willowmere's town generator; reused at a 4 × 3-cell footprint. No third-party asset added.
 - Icons `cherry`, `cherry_tree`, `fruit_stand`, `kennel`, `clinic`: `art/blender/render_icons.py` jobs in `icons.json`, rendered from the roots above. `person-hazel`: the existing Starline villager-woman portrait with grey hair and a light coat, using the same generator and recorded source path.
 - Chapter 5 reuses the existing clinic, petition and festival-poster story panels as the chapter's history; its text and ending are new.
+
+## AR-009 lucky finds
+
+- `discovery-props.glb`: original `lucky_tin` (a teal tin with a cream label and red fish, brass rims, its lid, two
+  coins, a puddle and a notched lily pad), `lucky_button` (a brass fish button with a four-hole centre and a tiny pond
+  engraved on its back, against a soft blue cloth pouch) and `lucky_box` (a wooden trinket box with a teal lining and a
+  slate pebble on ribbon-tied cloth). Made in `art/blender/build_farm_kit.py` with the existing vertex-colour helpers at a
+  0.5 m working size and written at handheld size (× 0.3); Blender 4.5.9 LTS; packed with `art/blender/pack.mjs`.
+  No third-party asset or reference-game art used.
+- Icons `lucky_tin`, `lucky_button`, `lucky_box`: `art/blender/render_icons.py` jobs in `icons.json`
+  (`raw:discovery-props`).
+- Comparison images: `docs/discovery-props/`.
