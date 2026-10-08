@@ -866,6 +866,25 @@ def obstacle_log():
 piece('obstacle_log', obstacle_log(), decor)
 
 
+
+# small lakeside shops (user idea): a kiosk with a striped awning, a counter of goods and a little plank deck in front
+# where people stand to buy; front +z (the deck side faces the water)
+def kiosk(awn, goods):
+    p = [bx('deck', 2.4, 1.2, .12, 0, .9, 0, 'woodl', bev=.02), bx('base', 2.0, 1.4, .2, 0, -.2, 0, 'stone', bev=.03),
+         bx('body', 1.8, 1.2, 1.1, 0, -.25, .2, 'cream', bev=.04), bx('counter', 2.0, .4, .12, 0, .38, 1.0, 'wood', bev=.02),
+         bx('back', 1.8, .12, 1.2, 0, -.85, 1.3, 'wood', bev=.02)]
+    for x in (-.88, .88):
+        p.append(bx('post', .1, .1, 1.5, x, .5, .2, 'woodd'))
+    for i in range(6):
+        p.append(bx('awning', .36, 1.5, .1, -.9 + .36 * i + .18, -.05, 2.05, awn if i % 2 == 0 else 'white', rot=0))
+    for i in range(5):
+        p.append(ball('good', .11, -.6 + i * .3, .38, 1.18, goods[i % len(goods)], sub=1))
+    p.append(bx('sign', 1.0, .06, .32, 0, .62, 1.7, awn, bev=.02))
+    return p
+piece('lake_kiosk_fish', kiosk('teal', ['water', 'sky', 'waterl']), decor)
+piece('lake_kiosk_flowers', kiosk('pink', ['pink', 'sun', 'violet', 'red']), decor)
+piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred']), decor)
+
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():
     """Juice press (2 x 2 cells): an open timber shed with an orange awning, a big wooden screw press, barrels and fruit

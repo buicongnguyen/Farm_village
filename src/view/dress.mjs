@@ -274,6 +274,15 @@ async function dressVillage(world, game) {
     // a bench at the south edge of the farmhouse forecourt, between its planters
     ['home-bench', { model: 'deco_bench', x: ((W.HOME_YARD.x0 + W.HOME_YARD.x1 + 1) / 2) * CELL, z: (W.HOME_YARD.z1 + 0.6) * CELL, rot: Math.PI }],
   ];
+  // little shops along the village pond's north and south shores, facing the water, each with a deck to stand on
+  // (decor models load late: placed when they are in)
+  const shops = [['lake_kiosk_fish', W.POND.x0 + 0.5, W.POND.z0 - 1.6, 0], ['lake_kiosk_snacks', W.POND.x1 - 0.5, W.POND.z0 - 1.6, 0],
+    ['lake_kiosk_flowers', W.POND.x0 + 0.5, W.POND.z1 + 2.6, Math.PI], ['lake_kiosk_fish', W.POND.x1 - 0.5, W.POND.z1 + 2.6, Math.PI]];
+  const placeShops = (tries = 0) => {
+    if (!shops.every(([m]) => world.batches.has(m))) { if (tries < 60) setTimeout(() => placeShops(tries + 1), 500); return; }
+    shops.forEach(([model, x, z, rot], i) => world.batches.set(`lake-shop${i}`, { model, x: x * CELL, z: z * CELL, rot }));
+  };
+  placeShops();
   // the verge between the farm and the village road: shade trees and lamp posts, alternating
   for (let x = 34, k = 0; x < 96; x += 6, k++) {
     if (k % 2) items.push([`verge-lamp${k}`, { model: 'deco_lamp', x: (x + 0.5) * CELL, z: 89.4 * CELL, rot: 0 }]);
