@@ -97,7 +97,6 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ### AR-001: Look pass: colour, light, gold, celebrations
 - Status: delivered (PR from `art/look-pass`, not merged; see `docs/look-pass/README.md`) · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
-- Status: requested (scoped handoff) · Priority: P1 · For: first look/feedback pass · Confirmed by: logic lane for user handoff, 2026-10-08
 - Scope: `docs/CLAUDE-HANDOFF.md` and the consolidated plan section 6 take precedence over the original proposed
   treatment below. No requirement to reserve gold solely for rewards, prohibit red errors, use universal outlines,
   or add scene-wide light flashes. Other asset requests are not automatically approved by this request.

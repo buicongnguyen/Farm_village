@@ -169,7 +169,7 @@ export class Juice {
       else if (e.type === 'queued') { this.b.pulse(e.building, { from: 0.9, to: 1.06, ms: 300, squash: true }); const at = this.centreOf(e.building); if (at) this.smoke(at.setY(1.5), 0.6); }
       else if (e.type === 'fed') this.grainAt(action === 'feed' ? this.lastHome : null);
       else if (e.type === 'animalArrived') { this.b.pulse(e.home, { from: 0.9, to: 1.06, ms: 300, squash: true }); this.dustAt(e.home); }
-      else if (e.type === 'fishCaught' && e.fish === 'goldfish') this.goldenCatch(e);
+      else if (e.type === 'fishCaught' && (e.rare || e.fish === 'goldfish')) this.goldenCatch(e);
       else if (e.type === 'stallSold' || e.type === 'fruitSold') this.waiting(e.type);
       else if (e.type === 'levelUp') this.celebrate();
       else if (e.type === 'projectDone') this.celebrate(true);
@@ -192,8 +192,7 @@ export class Juice {
   /** Fruit picked: the tree shakes and squashes, fruit and leaves fall, one small gold star and a few glints, a soft pick
    *  sound, and a "+n" for what really went into the barn. Restrained: it never grants or changes anything. */
   picked(list, all) {
-    const flow = pickedFlow(all), seen = new Set();
-    sfx('pop');
+    const flow = pickedFlow(all), seen = new Set();   // (the sound is routed by main.mjs)
     list.forEach((e, n) => {
       const p = this.s.placed[e.id]; if (!p) return;
       this.b.pulse(e.id, { from: 0.9, to: 1.05, ms: 300, squash: true });
@@ -224,8 +223,7 @@ export class Juice {
    *  Only the look: whether it is rare or a first is logic's to say (the event names the fish, nothing more). */
   goldenCatch(e) {
     const x = (POND.x0 + POND.x1 + 1) / 2 * CELL, z = (POND.z0 + POND.z1 + 1) / 2 * CELL;
-    sfx('coin');
-    if (!quietNow()) {
+    if (!quietNow()) {   // (the sound is routed by main.mjs: a cheer for a first rare catch)
       this.ground.spawn({ x, y: 0.1, z, life: 0.9, size: 1.2, size1: 5.5, shape: SHAPE.ring, flat: true, color: GOLD_RAMP[2], alpha: 0.9 });
       this.ground.spawn({ x, y: 0.1, z, life: 1.2, size: 0.6, size1: 4, shape: SHAPE.ring, flat: true, color: GOLD_RAMP[1], alpha: 0.7, fadeIn: 0.1 });
       for (let i = 0; i < 16; i++) {
