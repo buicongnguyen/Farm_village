@@ -4,6 +4,17 @@
 
 - Replaced the withdrawn formal-name proposal with the user-confirmed playful/home-name direction. The [revised naming plan](docs/CHARACTER-NAMING-PLAN.md) records the inspected Zoo Pet reference, language sources, and candidate English/Vietnamese/Korean/Japanese aliases for the current and planned cast. Individual names are still proposed; runtime names, saves, story behavior, and the live game are unchanged.
 
+## Reference pass: opening composition and item art — art lane (2026-10-08, PR preview)
+
+- **A first picture of home:** the restored village opens on the home farm, at full detail. A wide screen shows the
+  farmhouse, its new stone forecourt, the road, the six beds and the mill; a phone keeps all six beds clear of Ada's card.
+- **Calmer tended land, quieter wilds:** owned farm land is a calmer green with a faint plot grid; unbought land and
+  the countryside lean olive. Crops, roofs and people stand out without louder colours. No new draw calls.
+- **Farmhouse forecourt:** small warm stone tiles from the porch toward the road, joined to it by a step of path, with two
+  flower planters and a bench.
+- **Item icons:** a full wheat sheaf, a loaf and roll on a board, corn bread in a skillet, burlap feed sacks, eggs in
+  a nest, and the four fish rendered by our own icon rig. Before and after in `docs/reference-pass/`.
+
 ## The truck fleet — art lane at the user's request (2026-10-08, PR preview)
 
 - **More trucks for a growing farm:** buy a 2nd truck (800 coins, level 4) and a 3rd (2,500 coins, level 7) in the

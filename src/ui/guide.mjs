@@ -16,6 +16,10 @@ import { showBeat } from './bonds-panels.mjs';
 import { faceHtml, glyph } from './icon.mjs';
 import { sfx } from '../kit/sound.mjs';
 
+// The restored village's opening picture (cells and span in metres): a portrait phone, a wide screen. Spans stay under
+// SPAN.mid (40, view/camera.mjs) so the opening draws at full detail (fluffy crops, bed rims, rigged villagers).
+const HOME_FRAME = { tall: { x: 35.5, z: 60.5, span: 39 }, wide: { x: 29, z: 60, span: 39.5 } };
+
 export const HUD_BUTTONS = ['build', 'orders', 'barn', 'projects', 'today', 'friends'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 export class Guide {
@@ -101,11 +105,14 @@ export class Guide {
   /** After Begin: fly to the weeds, then the hand and Ada. */
   async begin() {
     const o = parcelOrigin(START_PARCEL), cam = this.world.cam;
-    // the first scene: the weeds to clear, or in the restored village the row of sown beds
+    // the first scene: the weeds to clear, or in the restored village the home farm as one picture (opening composition
+    // pass): the sown beds with the mill, the coop and the farm gate, and on a wide screen the farmhouse too. On a phone
+    // the frame sits a little below the beds, so they stay clear of Ada's card at the bottom.
     const w = this.s.mode === 'restore' ? [RESTORE.placed[0].x - o.x + 2, RESTORE.placed[0].z - o.z] : TUTORIAL_WEEDS[0];
     this.flying = true; this.update();
-    const x = (o.x + w[0] + 0.5) * CELL, z = (o.z + w[1] + 0.5) * CELL;
-    try { if (cam.flyTo) await cam.flyTo(x, z, Math.min(cam.span, 32), 1100); else cam.lookAt(x, z, Math.min(cam.span, 32)); } catch { /* the camera was taken over */ }
+    let x = (o.x + w[0] + 0.5) * CELL, z = (o.z + w[1] + 0.5) * CELL, span = Math.min(cam.span, 32);
+    if (this.s.mode === 'restore') { const f = innerHeight > innerWidth ? HOME_FRAME.tall : HOME_FRAME.wide; x = (f.x + 0.5) * CELL; z = (f.z + 0.5) * CELL; span = f.span; }
+    try { if (cam.flyTo) await cam.flyTo(x, z, span, 1100); else cam.lookAt(x, z, span); } catch { /* the camera was taken over */ }
     this.flying = false; this.update();
   }
   /** Where the marker points: a cell on the map or a HUD button. */
