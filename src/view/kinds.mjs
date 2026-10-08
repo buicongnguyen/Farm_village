@@ -65,6 +65,9 @@ export const KIND_MODELS = {
   // dressing drawn by land-view (not placeable)
   scaffold:     { kit: 'decor', node: 'scaffold', authored: true, lod: 'static', late: true },
   juice_press:  { kit: 'decor', node: 'juice_press', authored: true, lod: 'static', late: true },
+  lake_kiosk_fish: { kit: 'decor', node: 'lake_kiosk_fish', authored: true, lod: 'static', late: true },   // lakeside shops (dress.mjs)
+  lake_kiosk_flowers: { kit: 'decor', node: 'lake_kiosk_flowers', authored: true, lod: 'static', late: true },
+  lake_kiosk_snacks: { kit: 'decor', node: 'lake_kiosk_snacks', authored: true, lod: 'static', late: true },
   noodle_factory: { kit: 'decor', node: 'noodle_factory', authored: true, lod: 'static', late: true },
   window_box:   { kit: 'decor', node: 'window_box', authored: true, lod: 'static', late: true },
   door_lantern: { kit: 'decor', node: 'door_lantern', authored: true, lod: 'static', late: true },
