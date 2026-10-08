@@ -25,6 +25,8 @@ export const noise2 = (x, z) => noise(x * 0.11, z * 0.11) * 0.65 + noise(x * 0.3
 // The three grass tones (light, mid, dark) and the warm dirt that shows through in patches.
 const TONES = ['#a8d95a', '#72bd3e', '#529a38'].map(c => new THREE.Color(c));
 const DIRT = new THREE.Color('#b07c4e');
+// the wilds lean olive so tended land, flowers, people and buildings stand out against them (opening composition pass)
+const OLIVE = new THREE.Color('#7d9a3c');
 const tone = new THREE.Color();
 /** The grass tone at a point (cells): a mix of the three tones; written into out. */
 export function grassTone(x, z, out = tone) {
@@ -83,8 +85,13 @@ export class Ground {
       let edge = false;
       for (let dz = -1; dz <= 0 && !edge; dz++) for (let dx = -1; dx <= 0; dx++) if (looks[(vz + dz + 1) * W + vx + dx + 1].color !== look.color) { edge = true; break; }
       if (look.soft !== false) {
-        grassTone(gx, gz, corner); corner.sub(MID_TONE); base.add(corner);           // the look sets the mean, the noise the variation
-        if (look.wild) { const d = noise(gx * 0.21 + 91.1, gz * 0.21 - 7.7); if (d > 0.8) base.lerp(DIRT, Math.min(0.5, (d - 0.8) * 4)); }
+        grassTone(gx, gz, corner); corner.sub(MID_TONE);
+        if (look.tended) corner.multiplyScalar(0.55);                               // tended land: calmer
+        base.add(corner);                                                            // the look sets the mean, the noise the variation
+        if (look.wild) {
+          base.lerp(OLIVE, 0.16 + noise(gx * 0.07 - 3.3, gz * 0.07 + 12.9) * 0.14);
+          const d = noise(gx * 0.21 + 91.1, gz * 0.21 - 7.7); if (d > 0.8) base.lerp(DIRT, Math.min(0.5, (d - 0.8) * 4));
+        }
         if (edge) base.multiplyScalar(look.edge ?? 0.88);
       } else {
         base.offsetHSL(0, 0, (noise(gx * 0.9, gz * 0.9) - 0.5) * (look.grain ?? 0.07));
@@ -96,10 +103,13 @@ export class Ground {
     let i = 0;
     for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) {
       const look = looks[(z + 1) * W + x + 1], y = look.y ?? 0;
+      // tended land: a faint 2 × 2-cell plot grid (each cell has its own vertices, so the step stays crisp)
+      // stone tiles (the farmhouse forecourt): one tile per cell, every other one a shade darker
+      const plot = look.tended ? (((Math.floor((cx + x) / 2) + Math.floor((cz + z) / 2)) & 1) ? 1.025 : 0.975) : look.tile ? (((cx + x + cz + z) & 1) ? 1.04 : 0.93) : 1;
       const x0 = (cx + x) * CELL, z0 = (cz + z) * CELL, x1 = x0 + CELL, z1 = z0 + CELL;
       pos.set([x0, y, z0, x0, y, z1, x1, y, z1, x0, y, z0, x1, y, z1, x1, y, z0], i);
       const vs = [x, z, x, z + 1, x + 1, z + 1, x, z, x + 1, z + 1, x + 1, z];
-      for (let k = 0; k < 6; k++) { const c = cornerColor(look, vs[k * 2], vs[k * 2 + 1]); col[i + k * 3] = c.r; col[i + k * 3 + 1] = c.g; col[i + k * 3 + 2] = c.b; nor[i + k * 3 + 1] = 1; }
+      for (let k = 0; k < 6; k++) { const c = cornerColor(look, vs[k * 2], vs[k * 2 + 1]); col[i + k * 3] = c.r * plot; col[i + k * 3 + 1] = c.g * plot; col[i + k * 3 + 2] = c.b * plot; nor[i + k * 3 + 1] = 1; }
       i += 18;
     }
     let mesh = this.meshes.get(key);

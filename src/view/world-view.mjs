@@ -11,11 +11,12 @@ import * as W from '../content/world.mjs';
 // Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
 // value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
 export const GROUND_COLORS = {
-  grass: '#72bd3e', meadow: '#84c846', wildMeadow: '#68ae39', path: '#dfbd87', road: '#d6ad78', tilled: '#7a4a2a',
-  water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e',
+  grass: '#6db446', meadow: '#74b44a', wildMeadow: '#6aa83a', path: '#dfbd87', road: '#d6ad78', tilled: '#7a4a2a',
+  water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e', yard: '#e2c99c',
 };
-const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza]);
-const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.7, [GROUND_COLORS.road]: 0.74, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86 };
+
+const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza, GROUND_COLORS.yard]);
+const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.7, [GROUND_COLORS.road]: 0.74, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86, [GROUND_COLORS.yard]: 0.8 };
 
 /** Fixed scenery models, by kit: [name in kit, our name, size, kind]. */
 const SCENERY = [
@@ -62,7 +63,11 @@ export class WorldView {
   fixedLook(x, z) {
     if (W.isBrook(x, z)) return { color: GROUND_COLORS.bank };   // the water itself is the brook mesh
     if (W.isRoad(x, z)) return { color: GROUND_COLORS.road };
-    if (W.inFarm(x, z)) return { color: !this.owned || this.owned(W.parcelOf(x, z)) ? GROUND_COLORS.meadow : GROUND_COLORS.wildMeadow };
+    // the farmhouse forecourt: warm stone tiles from the porch to the road, in line with the path over to the farm
+    const Y = W.HOME_YARD; if (x >= Y.x0 && x <= Y.x1 && z >= Y.z0 && z <= Y.z1) return { color: GROUND_COLORS.yard, grain: 0.05, tile: true };
+    // owned farm land is tended: calmer than the wild, with a faint plot grid (ground.mjs `tended`); land not yet bought
+    // stays the rougher wild meadow
+    if (W.inFarm(x, z)) return !this.owned || this.owned(W.parcelOf(x, z)) ? { color: GROUND_COLORS.meadow, tended: true } : { color: GROUND_COLORS.wildMeadow, wild: true };
     if (x >= W.PLAZA.x0 && x <= W.PLAZA.x1 && z >= W.PLAZA.z0 && z <= W.PLAZA.z1) return { color: GROUND_COLORS.plaza, grain: 0.16 };
     return { color: GROUND_COLORS.grass, wild: !W.inVillage(x, z) && !W.nearHome(x, z) };
   }

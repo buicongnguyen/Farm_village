@@ -243,6 +243,13 @@ async function dressVillage(world, game) {
     B.addGeometry(merge([part(new THREE.CylinderGeometry(0.55, 0.45, 0.45, 8), '#b0664a', x, 0.22, z)]));
     for (let k = 0; k < 6; k++) flower({ x: x + (rand() - 0.5) * 0.6, y: 0.42, z: z + (rand() - 0.5) * 0.6, c: pick(FLOWER_COLORS), s: 0.9 }, B);
   }
+  // the farmhouse forecourt's two planters (the same merged mesh: no extra draw)
+  const Y = W.HOME_YARD;
+  for (const cx of [Y.x0 + 0.35, Y.x1 + 0.65]) {
+    const x = cx * CELL, z = (Y.z1 + 0.6) * CELL;
+    B.addGeometry(merge([part(new THREE.CylinderGeometry(0.5, 0.4, 0.42, 8), '#b0664a', x, 0.21, z)]));
+    for (let k = 0; k < 5; k++) flower({ x: x + (rand() - 0.5) * 0.55, y: 0.4, z: z + (rand() - 0.5) * 0.55, c: pick(FLOWER_COLORS), s: 0.9 }, B);
+  }
   const cobbles = new THREE.Mesh(B.build(), decorMaterial()); cobbles.name = 'plaza'; world.scene.add(cobbles);
   // the well, benches and lamps arrive once the farm's own models are in (they must not slow the first scene)
   await new Promise(r => setTimeout(r, 1200));
@@ -256,6 +263,8 @@ async function dressVillage(world, game) {
     ['plaza-bench3', { model: 'deco_bench', x: W.WELL.x * CELL, z: (P.z1 + 0.4) * CELL, rot: Math.PI }],
     ['plaza-lamp1', { model: 'deco_lamp', x: (P.x0 + 0.35) * CELL, z: (W.WELL.z - 1.6) * CELL, rot: 0 }],
     ['plaza-lamp2', { model: 'deco_lamp', x: (P.x1 + 0.65) * CELL, z: (W.WELL.z + 1.6) * CELL, rot: 0 }],
+    // a bench on the farmhouse forecourt, between the planters, looking at the porch
+    ['home-bench', { model: 'deco_bench', x: ((W.HOME_YARD.x0 + W.HOME_YARD.x1 + 1) / 2) * CELL, z: (W.HOME_YARD.z1 + 0.6) * CELL, rot: Math.PI }],
   ];
   // the verge between the farm and the village road: shade trees and lamp posts, alternating
   for (let x = 34, k = 0; x < 96; x += 6, k++) {
