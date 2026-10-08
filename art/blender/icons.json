@@ -774,5 +774,32 @@
    "Villager shirt": "#EBF2E4",
    "Villager trousers": "#567A6F"
   }
+ },
+ {
+  "id": "lucky_tin",
+  "src": "raw:discovery-props",
+  "root": "lucky_tin",
+  "view": [
+   -30,
+   32
+  ]
+ },
+ {
+  "id": "lucky_button",
+  "src": "raw:discovery-props",
+  "root": "lucky_button",
+  "view": [
+   -30,
+   32
+  ]
+ },
+ {
+  "id": "lucky_box",
+  "src": "raw:discovery-props",
+  "root": "lucky_box",
+  "view": [
+   -30,
+   32
+  ]
  }
 ]

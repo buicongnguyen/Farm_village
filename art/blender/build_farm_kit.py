@@ -3,7 +3,8 @@ the small charm pieces (TECH-PLAN 5, AAA pass).
 
 Run:  blender --background --factory-startup --python art/blender/build_farm_kit.py
 Writes public/assets/models/farm-kit.glb (first wave: crops, buildings, rims, fences) and decor.glb (loaded after
-the first frame: bridge, fountain, bunting, banner, For-sale sign, scaffold, cottage dressing, obstacles), prints
+the first frame: bridge, fountain, bunting, banner, For-sale sign, scaffold, cottage dressing, obstacles) and
+discovery-props.glb (the lucky-find keepsakes, loaded only when a discovery shows one), prints
 each piece's triangles and size, and writes art/blender/anchors-farm-kit.json for art/blender/anchors.mjs.
 
 Contract (glTF, Y up, front faces +Z, origin = ground centre, metres, scale 1). Every root is one mesh with vertex
@@ -14,10 +15,12 @@ Anchors are empties named <piece>.<label>[.<n>] (chimney, sails, door, window, l
 import sys, os, math, random, json
 sys.path.insert(0, os.path.dirname(__file__))
 from style import *
+from mathutils import Matrix
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'assets', 'models', 'farm-kit.glb')
 OUT_DECOR = os.path.join(ROOT, 'public', 'assets', 'models', 'decor.glb')
+OUT_DISCOVERY = os.path.join(ROOT, 'public', 'assets', 'models', 'discovery-props.glb')
 ANCHOR_JSON = os.path.join(os.path.dirname(__file__), 'anchors-farm-kit.json')
 reset_scene()
 C = {}
@@ -37,6 +40,8 @@ for n, c in {
         'pumpkin': '#FF7A1A', 'pumpkind': '#E85F10', 'pumpkinl': '#FF9A3D', 'pgreen': '#9CCB3B', 'stem': '#6E8F2A', 'flower': '#FFD23F',
         'berry': '#E8335A', 'berryl': '#FF5C7A', 'bloom': '#FFFDF6', 'soil': '#7A4A2A', 'soill': '#93603A', 'soild': '#5E3720',
         'rim': '#9C6236', 'riml': '#B87A45',
+        # keepsakes (AR-009)
+        'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
         }.items():
     C[n] = mat('FK ' + n, c, .55)
 
@@ -75,7 +80,7 @@ def roof_rows(w, d, h, x, y, z, mt, mt2, rows=5, over=.22, thick=.09):
     p[-1].location = (x, -y, z + h + .03)
     return p
 
-pieces, decor, anchors = [], [], {}
+pieces, decor, discovery, anchors = [], [], [], {}
 def piece(name, parts, into=None, tint=None):
     (into if into is not None else pieces).append((name, parts, tint))
 
@@ -780,6 +785,130 @@ def obstacle_log():
     return p
 piece('obstacle_log', obstacle_log(), decor)
 
+# =================================================================== lucky finds (AR-009)
+# One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads
+# until the logic lane shows one (no world placement, no footprint). Modelled at about 0.5 m for comfortable numbers,
+# then scaled to a small handheld size (HANDHELD) when the kit is written; icons frame them either way. Warm painted
+# colours; brass and gold only on rims, the button, one clasp and two coins in the tin (the story's coins are counted
+# in the card, not piled on the props), plus one small four-point glint on each subject: keepsakes, not treasure.
+def glint(x, y, z, r=.07, mt='lampglow'):
+    """A small upright four-point sparkle facing the front."""
+    pts = [(math.cos(k * math.pi / 4 + math.pi / 2) * (r if k % 2 == 0 else r * .28),
+            math.sin(k * math.pi / 4 + math.pi / 2) * (r if k % 2 == 0 else r * .28)) for k in range(8)]
+    return extrude_outline('glint', pts, .012, (x, -y, z), C[mt], bev=0)
+def coin(x, y, z, tilt=0., r=.075):
+    return [cl('coin', r, .024, x, y, z, 'gold', verts=12, rot=(tilt, 0, 0)), cl('coinface', r * .7, .028, x, y, z - .002, 'sun', verts=12, rot=(tilt, 0, 0))]
+def tilted(tilt, y0, z0, dy, dz):
+    """Plan (y, z) of a point on a face tilted back by `tilt` about x through (y0, z0): dy along the face's depth, dz up it."""
+    return y0 + dy * math.cos(tilt) - dz * math.sin(tilt), z0 + dy * math.sin(tilt) + dz * math.cos(tilt)
+
+def lucky_tin():
+    """A little round tin the pond gave up: teal paint, a wide cream label with a red fish, brass rims, the lid leaning
+    on its back, two of its coins showing, a puddle and a notched lily pad beside it and two drops of pond water on its rim."""
+    p = [cl('tin', .22, .15, 0, 0, 0, 'teal', verts=18),
+         cl('label', .224, .08, 0, 0, .035, 'cream', verts=18),
+         cl('rim', .228, .022, 0, 0, .135, 'hayd', verts=18),
+         cl('inside', .205, .012, 0, 0, .152, 'teald', verts=18),
+         cl('foot', .215, .02, 0, 0, 0, 'teald', verts=18)]
+    fish = [(.055, 0), (.02, .024), (-.025, .017), (-.055, .032), (-.044, 0), (-.055, -.032), (-.025, -.017), (.02, -.024)]
+    p.append(extrude_outline('labelfish', fish, .01, (0, -.226, .075), C['red'], bev=0))   # on the front of the label
+    p += coin(-.04, .01, .158, tilt=.12, r=.065) + coin(.05, -.03, .17, tilt=-.15, r=.065)
+    # the lid, standing almost upright against the back of the tin; a little red fish painted on its cream boss
+    t, ly, lz = 1.25, .3, .23   # Blender coords of the lid's centre; its face looks along (0, -sin t, cos t)
+    ax = lambda d: (0, ly - math.sin(t) * d, lz + math.cos(t) * d)
+    for name, r, h, mt, verts, out in (('lid', .235, .05, 'teal', 18, 0), ('lidrim', .242, .02, 'hayd', 18, 0), ('lidboss', .11, .016, 'cream', 14, .03)):
+        p.append(cyl(name, r, h, ax(out), C[mt], verts=verts, bev=0, seg=1, rot=(t, 0, 0)))
+    p.append(extrude_outline('lidfish', fish, .008, ax(.04), C['red'], rot=(t + math.pi / 2, 0, 0), bev=0))
+    # pond water: a flat puddle and a lily pad at the front left, two smooth drops on the rim
+    p.append(ball('puddle', .08, -.24, .16, .004, 'waterl', sub=2, sc=(1.7, 1.2, .08)))
+    pad = [(0, 0)] + [(math.cos(a) * .085, math.sin(a) * .085) for a in (.45 + k * (math.tau - .9) / 11 for k in range(12))]
+    p.append(extrude_outline('lilypad', pad, .014, (-.29, -.2, .015), C['leaf'], rot=(math.pi / 2, 0, 0), bev=0))   # notch cut in
+    for x, y in ((-.15, .1), (.14, .12)):
+        p.append(ball('drop', .016, x, y, .166, 'waterl', sub=2, sc=(1, 1, 1.25)))
+    p.append(glint(-.17, .1, .36))
+    return p
+piece('lucky_tin', lucky_tin(), discovery)
+
+def fish_outline(L=.17, H=.1, n=12):
+    """A plump fish in profile, head toward +x: an elliptical body and a notched tail."""
+    pts = [(math.cos(math.radians(-145 + 290 * k / n)) * L, math.sin(math.radians(-145 + 290 * k / n)) * H) for k in range(n + 1)]
+    return pts + [(-L * 1.55, H * 1.05), (-L * 1.25, 0), (-L * 1.55, -H * 1.05)]
+
+def lucky_button():
+    """A brass button shaped like a fish, propped against the soft blue cloth pouch it came in, the pouch's red
+    drawstring loose. The button has a bright rim, a darker brass face, an eye and a
+    four-hole centre, so it reads as a button and not as a coin or a biscuit; a tiny pond is engraved on its back."""
+    p = [ball('pouch', .2, 0, -.05, .17, 'cloth', sub=2, sc=(1.05, 1, .85)),
+         cl('neck', .085, .08, 0, -.05, .29, 'clothd', verts=10, rt=.06),
+         cl('ruffle', .1, .07, 0, -.05, .36, 'clothl', verts=10, rt=.13),
+         cl('tie', .09, .03, 0, -.05, .31, 'red', verts=10),
+         st((.07, .03, .32), (.21, .09, .25), .012, 'red', sides=4),
+         st((.21, .09, .25), (.25, .13, .12), .012, 'red', sides=4),
+         st((.25, .13, .12), (.31, .10, .01), .012, 'red', sides=4),
+         st((.04, .03, .32), (-.08, .1, .23), .012, 'red', sides=4),
+         ball('knot', .026, .06, .03, .32, 'redd', sub=1)]
+    for k in range(5):   # cloth folds
+        a = k * math.tau / 5 + .4
+        p.append(ball('fold', .07, math.cos(a) * .17, -.05 + math.sin(a) * .17, .14, 'clothd', sub=1, sc=(.5, .5, 1.4)))
+    p.append(cl('mouth', .09, .01, 0, -.05, .43, 'clothd', verts=10))   # the open neck of the pouch
+    # The button leans against the front of the pouch, lying on its side (head toward +x), tilted back 0.35 rad.
+    t, y0, z0 = .35, .2, .09
+    body = fish_outline(L=.14, H=.085)
+    p.append(extrude_outline('button', body, .035, (0, -y0, z0), C['gold'], rot=(-t, 0, 0), bev=.008))
+    p.append(extrude_outline('buttonface', [(x * .84, z * .8) for x, z in body], .045, (0, -y0, z0), C['hayd'], rot=(-t, 0, 0), bev=0))
+    def on(x, z, out=.025):   # plan point on the button's front face
+        y, zz = tilted(t, y0, z0, out, z)
+        return (x, y, zz)
+    face = (math.pi / 2 - t, 0, 0)   # a cylinder lying on the button's face
+    x, y, z = on(.09, .03); p.append(ball('eye', .016, x, y, z, 'wooddd', sub=1))
+    # a classic four-hole button centre: a pale raised ring with four dark thread holes, so it reads as a button
+    x, y, z = on(-.03, -.004, .024); p.append(cyl('holering', .046, .008, (x, -y, z), C['sun'], verts=12, bev=0, seg=1, rot=face))
+    x, y, z = on(-.03, -.004, .027); p.append(cyl('holeface', .036, .006, (x, -y, z), C['hayd'], verts=12, bev=0, seg=1, rot=face))
+    for hx, hz in ((-.016, .014), (.016, .014), (-.016, -.018), (.016, -.018)):
+        x, y, z = on(-.03 + hx, -.004 + hz * .9, .03); p.append(cyl('hole', .009, .006, (x, -y, z), C['wooddd'], verts=6, bev=0, seg=1, rot=face))
+    # the back: a tiny pond engraved in the brass (a dark ring, a brass pool and a two-stroke ripple)
+    back = lambda x, z, out: on(x, z, -out)
+    x, y, z = back(-.01, 0, .021); p.append(cyl('pondmarkring', .045, .006, (x, -y, z), C['woodd'], verts=12, bev=0, seg=1, rot=face))
+    x, y, z = back(-.01, 0, .025); p.append(cyl('pondmark', .036, .006, (x, -y, z), C['hayd'], verts=12, bev=0, seg=1, rot=face))
+    for dx, dz in ((-.022, .008), (.004, -.01)):
+        x, y, z = back(-.01 + dx, dz, .029); p.append(box('ripple', (.026, .004, .006), (x, -y, z), C['woodd'], bev=0, seg=1, rot=(-t, 0, 0)))
+    p.append(glint(.17, .28, .24))   # on the button, the subject
+    return p
+piece('lucky_button', lucky_button(), discovery)
+
+def lucky_box():
+    """A small trinket box from under a cleared rock: warm wood with darker wooden corners and one brass clasp, a teal
+    lining, the lid open on its back hinge, a smooth slate pebble on a cream cloth tied with a red ribbon, and a crumb of
+    earth beside it."""
+    W, D, H = .38, .3, .17
+    p = [bx('base', W, D, H, 0, 0, 0, 'wood', bev=.015),
+         bx('lining', W - .05, D - .05, .012, 0, 0, H - .006, 'teal', bev=0),
+         bx('trim', W + .012, D + .012, .025, 0, 0, H - .03, 'woodd', bev=.006),
+         bx('skirt', W + .02, D + .02, .025, 0, 0, 0, 'woodd', bev=.006)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p.append(bx('corner', .045, .045, .05, sx * (W / 2 - .012), sy * (D / 2 - .012), .006, 'wooddd', bev=.008))
+    p.append(bx('clasp', .06, .02, .06, 0, D / 2 + .005, H - .08, 'gold', bev=.006))
+    p.append(ball('claspnub', .013, 0, D / 2 + .018, H - .05, 'hayd', sub=1))
+    # The lid: hinged along the back top edge, swung open just past upright (leaning back by 0.2 rad).
+    t, hy, hz = .2, -D / 2, H
+    def lid(dy, dz):   # plan (y, z): dy from the hinge up the open lid, dz out of its inner face (toward the viewer)
+        return tilted(t, hy, hz, dz, dy)
+    y, z = lid(D / 2 + .01, -.025); p.append(box('lid', (W + .02, .05, D + .02), (0, -y, z), C['woodl'], bev=.012, seg=1, rot=(-t, 0, 0)))
+    y, z = lid(D / 2, .002); p.append(box('lidlining', (W - .04, .006, D - .04), (0, -y, z), C['teald'], bev=0, seg=1, rot=(-t, 0, 0)))
+    # the cloth, tied with a red ribbon, and the pebble resting on it
+    p.append(ball('cloth', .12, -.03, .02, H, 'cream', sub=2, sc=(1.3, 1.05, .4)))
+    for k in range(3):
+        p.append(lf((-.03, .02, H + .02), .9 + k * 2.1, .15, .13, 'cream', lift=.03, droop=-.01))
+    p.append(bx('ribbon', .03, .26, .05, -.03, .02, H - .01, 'red', bev=.005))
+    p.append(ball('bow', .022, -.03, .15, H + .03, 'redd', sub=1, sc=(1.6, .8, 1)))
+    p.append(ball('pebble', .085, -.03, .03, H + .065, 'pebble', sub=2, sc=(1.4, 1, .5)))
+    p.append(ball('pebblesheen', .022, -.065, .055, H + .1, 'stonel', sub=1, sc=(1.6, 1, .4)))
+    p.append(ball('soil', .05, -.36, .02, .004, 'soill', sub=2, sc=(1.8, 1.4, .3)))   # a crumb of earth from under the rock
+    p.append(glint(-.12, .06, .34))   # on the pebble, the subject
+    return p
+piece('lucky_box', lucky_box(), discovery)
+
 # =================================================================== orchard (v0.4)
 def cherry_tree(ripe=True):
     p = cute('cherry', 'leafw', 'blossoml', 'leafwd')
@@ -871,5 +1000,15 @@ for o in dobjs:
     if o.name in anchors:
         out[o.name] = anchor_out(o, anchors[o.name])
 print(f'wrote {OUT_DECOR} ({packed(dobjs, OUT_DECOR)} bytes)')
+# the discovery keepsakes, scaled from their 0.5 m working size to a small handheld size
+HANDHELD = .3
+kobjs = build(discovery)
+for o in kobjs:
+    o.data.transform(Matrix.Scale(HANDHELD, 4)); o.data.update()
+bpy.context.view_layer.update()
+for o in kobjs:
+    d = o.dimensions
+    print(f'{o.name} (handheld): {d.x:.3f} x {d.y:.3f} x {d.z:.3f} m (w x d x h)')
+print(f'wrote {OUT_DISCOVERY} ({packed(kobjs, OUT_DISCOVERY)} bytes)')
 json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
 print('anchors', ANCHOR_JSON)

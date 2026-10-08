@@ -77,6 +77,20 @@ test('every good, building and tool has an icon whose file exists', () => {
   assert.equal(files.length, Object.keys(ICONS).length, 'every icon file is listed in ICONS');
 });
 
+test('the lucky-find keepsakes (AR-009): handheld pieces within the prop budget, standing on the ground, each with its icon', () => {
+  const j = kit('discovery-props');
+  assert.deepEqual(KITS['discovery-props'], ICON_IDS.keepsakes);
+  for (const n of ICON_IDS.keepsakes) {
+    const t = roots('discovery-props')[n]?.triangles;
+    assert.ok(t > 0 && t <= 1200, `${n}: ${t} triangles (prop budget 1,200)`);
+    const node = j.nodes.find(x => x.name === n), pos = j.accessors[j.meshes[node.mesh].primitives[0].attributes.POSITION];
+    const s = node.scale ?? [1, 1, 1], size = pos.max.map((v, i) => (v - pos.min[i]) * s[i]);
+    assert.ok(Math.max(...size) <= 0.3 && Math.min(...size) >= 0.05, `${n}: ${size.map(v => v.toFixed(3)).join(' x ')} m is not handheld`);
+    assert.ok(Math.abs(pos.min[1] * s[1] + (node.translation?.[1] ?? 0)) < 0.01, `${n}: origin should be at its base`);
+    assert.ok(existsSync(new URL(ICONS[n].replace('./', ''), PUBLIC)), `${n}: ${ICONS[n]} is missing`);
+  }
+  for (const n of ICON_IDS.keepsakes) assert.ok(!KITS.decor.includes(n) && !Object.values(KIND_MODELS).some(m => m.node === n), `${n} is a presentation piece, never placed`);
+});
 test('pieces stay within their triangle budgets: ripe crop 1,500, prop 1,200, building 8,000 (animal 2,000, tree 3,500)', () => {
   const over = [];
   for (const [name, spec] of Object.entries(KIND_MODELS)) {
