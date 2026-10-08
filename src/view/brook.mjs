@@ -20,7 +20,7 @@ const slope = xm => (brookCentre(xm + 0.05) - brookCentre(xm - 0.05)) / 0.1;
 export const POND_SHAPE = { x: (POND.x0 + POND.x1 + 1) / 2 * CELL, z: (POND.z0 + POND.z1 + 1) / 2 * CELL, rx: (POND.x1 - POND.x0 + 1) * CELL / 2 + 0.3, rz: (POND.z1 - POND.z0 + 1) * CELL / 2 + 0.3 };
 
 const WATER = {
-  day: { deep: '#216778', shallow: '#3fb8c0', foam: '#f4fbff', glint: '#d9fbff' },
+  day: { deep: '#1474b8', shallow: '#3ccbe0', foam: '#f4fbff', glint: '#e6fdff' },   // vivid pass: deep blue to turquoise
   night: { deep: '#0a1424', shallow: '#13294a', foam: '#3a5a86', glint: '#6f8fc4' },
 };
 const lin = c => new THREE.Color(c);
