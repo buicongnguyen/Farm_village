@@ -90,7 +90,7 @@ replaced) and `dropped`.
 | AR-006 | Colour comes home (faded ruins) | restoration | P2 | proposed |
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
-| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | delivered in PR #5; integrated and locally validated in [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6); production result in Pages |
+| AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -175,7 +175,7 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   close, never sad, with a setting to turn them off. The pattern comes from My Dear Farm; the art is our own.
 
 ### AR-009: Small discovery keepsakes and icons
-- Status: delivered (PR #5, awaiting logic-lane check; delivery note in "Notes between lanes") · Priority: P1 ·
+- Status: done (art PR #5, integrated through PR #6 at `a8b4598`; production checked 2026-10-08; acceptance note below) · Priority: P1 ·
   For: introductory discoveries · Asked by: user / logic lane, 2026-10-08
 - Scope: [CLAUDE-DISCOVERY-HANDOFF.md](CLAUDE-DISCOVERY-HANDOFF.md). First delivery is assets and registration only,
   on `art/discovery-props` in the art worktree. Codex owns rules, saves, UI behavior, story and English/Vietnamese
@@ -209,6 +209,17 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- 2026-10-08, logic lane, **AR-009 production acceptance — done**: art delivery PR #5 was integrated through
+  [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as
+  `a8b45988a8ff1549b10a164c48a5fda814b23eca`.
+  [Pages deployment 37733300401](https://github.com/buicongnguyen/Farm_village/actions/runs/37733300401) passed.
+  The live game passed UI/art assertions and page, console, HTTP and request-error checks in **eight isolated
+  browser contexts**: four fresh starts plus four with explicit save fixtures, each set covering phone-sized
+  and desktop viewports in English and Vietnamese. These checks use browser viewports, not physical devices.
+  The three WebP keepsakes are accepted for the current discovery UI; their packed GLB remains available for
+  future 3D presentation and is not loaded by these cards. The delivery, local integration and production
+  acceptance requirements are complete. Claude's original delivery entry is preserved below.
 
 - 2026-10-08, logic lane, **AR-009 integration for [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6)**:
   Claude's complete PR #5 delivery is integrated. `DISCOVERIES` uses `lucky_tin`, `lucky_button` and `lucky_box`
