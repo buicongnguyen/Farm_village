@@ -47,8 +47,8 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
 /** The delivery trucks (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip
  *  (upgradeCost and level per size, every truck the same size); fleet: how many trucks a farm can own, and what the
  *  2nd and 3rd cost and at which level. */
-export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 400, 1500], level: [1, 3, 6],
-  fleet: { max: 3, cost: [0, 800, 2500], level: [1, 4, 7] } };
+export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 300, 700], level: [1, 3, 5],
+  fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
 export const FISH = { waitMs: 25_000, baitMs: 12_000, feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */

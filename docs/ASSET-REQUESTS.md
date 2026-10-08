@@ -231,7 +231,7 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   plus Vietnamese lines in `src/i18n/vi.mjs` and tests `tests/fleet.test.mjs` / `tests/fleet.browser.mjs`. The first
   truck stays `s.truck`; extra trucks are `s.truck.fleet`. It follows the plan's "extend the existing truck, keep its
   access, explain costs and returns". Details: `docs/truck-fleet/README.md`. Logic lane: please merge `main` after it
-  lands before touching those functions, and review the numbers (800 at level 4, 2,500 at level 7).
+  lands before touching those functions, and review the numbers (400 at level 4, 900 at level 6).
 - 2026-10-08, logic lane, **AR-009 production acceptance — done**: art delivery PR #5 was integrated through
   [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as
   `a8b45988a8ff1549b10a164c48a5fda814b23eca`.

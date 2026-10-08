@@ -22,7 +22,7 @@
 
 ## The truck fleet — art lane at the user's request (2026-10-08, PR preview)
 
-- **More trucks for a growing farm:** buy a 2nd truck (800 coins, level 4) and a 3rd (2,500 coins, level 7) in the
+- **More trucks for a growing farm:** buy a 2nd truck (400 coins, level 4) and a 3rd (900 coins, level 6) in the
   market panel. Each runs its own 50 s trip and pays the goods' value × 1.2; Bigger trucks now upgrades all of them.
 - **One-tap loading:** "Fill the trucks with spare goods" loads every truck at the market, most plentiful goods first,
   keeping order needs, project goods, all feed and a seed per bed. "Send 3 trucks" sends every loaded truck; Collect
