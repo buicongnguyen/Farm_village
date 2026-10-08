@@ -5,7 +5,8 @@ Ported from Starline's art/blender/render_icons.py and icon_post.py (same lights
   blender -b --factory-startup --python art/blender/render_icons.py -- [art/blender/icons.json] [ids...] [--size 256] [--ss 2]
 
 The job file lists {"id", "src", "root"?, "view"?: [azimuth, elevation], "recolor"?: {material: "#hex"}, "drop"?: [...],
-"portrait"?: true, "group"?: [{"src", "recolor", "x"}], "spin"?: degrees}. Sources:
+"portrait"?: true, "group"?: [{"src", "recolor", "x"}], "spin"?: degrees, "roll"?: degrees (turns the picture in the
+icon square so a long subject, a fish, lies on the diagonal and fills it), "margin"?: framing factor}. Sources:
   "raw:<kit>"      the raw (unpacked) export of one of our kits in the temp folder (run build_farm_kit.py,
                    build_items.py and extract_kit.py first: they leave fv-raw-<kit>.glb there)
   "<repo>/<path>"  a GLB in a sibling repository (Starline's characters and tools)
@@ -13,7 +14,7 @@ Writes public/assets/icons/<id>.webp, then runs icon_post.py with the system Pyt
 files and the review sheets (art-icons.png, at 160 px and 48 px, on dark and light panels) in the temp folder.
 """
 import bpy, os, sys, json, math, subprocess, tempfile
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -177,6 +178,7 @@ def render(job):
     cam = bpy.data.objects.new('cam', cam_data); s.collection.objects.link(cam)
     cam.location = c + d * R * 3
     cam.rotation_euler = (-d).to_track_quat('-Z', 'Y').to_euler()
+    if job.get('roll'): cam.rotation_euler = (cam.rotation_euler.to_matrix().to_4x4() @ Matrix.Rotation(math.radians(job['roll']), 4, 'Z')).to_euler()
     bpy.context.view_layer.update()
     inv = cam.matrix_world.inverted()
     cs = [inv @ p for p in pts]

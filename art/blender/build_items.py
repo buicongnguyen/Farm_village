@@ -20,7 +20,11 @@ C = {n: mat('IT ' + n, c, .5) for n, c in {
     'frost': '#FFFDF6', 'cake': '#E8A35A', 'caked': '#B87333', 'plate': '#FFFDF6', 'platerim': '#9FD3F0', 'gold': '#F5B21E',
     'goldl': '#FFD866', 'goldd': '#C98A10', 'star': '#FFC83A', 'starl': '#FFE680', 'heart': '#FF4F7B', 'heartl': '#FF8FA8',
     'iron': '#B9C0CC', 'irond': '#5B6477', 'wood': '#C77A3A', 'woodd': '#8A4B25', 'glove': '#F2C14E', 'gloved': '#D99A2B',
-    'piecrust': '#E8A35A', 'piecrustd': '#C47B3A', 'filling': '#C2412E', 'egg': '#FFF4DC', 'milk': '#FFFDF6', 'cap': '#35B6F2'}.items()}
+    'piecrust': '#E8A35A', 'piecrustd': '#C47B3A', 'filling': '#C2412E', 'egg': '#FFF4DC', 'milk': '#FFFDF6', 'cap': '#35B6F2',
+    # item pass (docs/ITEM-ART.md): brighter straw, burlap, a skillet, a nest, label colours
+    'wstalk': '#E9B84A', 'wheatg': '#F0A020', 'burlap': '#E2C08A', 'burlapd': '#B8915A', 'burlapl': '#F2D9A8', 'label1': '#E8573F',
+    'label2': '#2F9FD8', 'pellet': '#7A9A3A', 'skillet': '#3A3D4A', 'skilletl': '#5B6477', 'crumb': '#FFD86A', 'board': '#C98A4A',
+    'boardd': '#9C6236', 'flour': '#FFF8EA', 'straw': '#E8C46A', 'strawd': '#C9A040', 'eggb': '#F2C89A'}.items()}
 
 def P(name, r, loc, mt, sub=2, sc=None):
     return ico(name, r, loc, C[mt], subdiv=sub, scale=sc)
@@ -29,19 +33,25 @@ items = []
 def item(name, parts):
     items.append((name, parts))
 
-# wheat sheaf: a bundle of stalks tied with twine, ears fanned at the top
+# wheat sheaf (item pass): a full bundle of bright stalks tied with a red twine bow, the ears fanned wide at the top so
+# the sheaf reads as gold at 48 px, not as a dark brush
 def sheaf():
     p = []
-    rnd = random.Random(3)
-    for i in range(13):
-        a = i / 13 * math.tau
-        r = .05 + .04 * (i % 3)
-        lean = (math.cos(a) * .28, math.sin(a) * .28)
-        top = (math.cos(a) * r + lean[0] * .55, math.sin(a) * r + lean[1] * .55, .95)
-        p.append(stalk('st', (math.cos(a) * r * .6, math.sin(a) * r * .6, 0), top, .02, C['wheatd'], sides=4))
-        p.append(spindle('ear', .055, .3, top, C['wheatl' if i % 3 == 0 else 'wheat'], sides=5, lean=(lean[0] * .9, lean[1] * .9)))
-    p.append(cyl('tie', .13, .08, (0, 0, .42), C['twine'], verts=12, bev=0))
-    p.append(cyl('bundle', .1, .5, (0, 0, .25), C['wheatd'], verts=10, bev=0, radius_top=.11))
+    n = 23
+    for i in range(n):
+        a = i * 2.39996
+        k = (i + .5) / n
+        r = .2 * math.sqrt(k)
+        top = (math.cos(a) * r * 1.9, math.sin(a) * r * 1.9, .98 + .07 * math.sin(i * 1.7))
+        p.append(stalk('st', (math.cos(a) * r * .4, math.sin(a) * r * .4, .05), (top[0] * .92, top[1] * .92, top[2] - .12), .024, C['wstalk'], sides=4))
+        p.append(spindle('ear', .085, .4, top, C['wheatl' if i % 4 == 0 else 'wheatg' if i % 5 == 0 else 'wheat'], sides=6,
+                         lean=(math.cos(a) * r * .9, math.sin(a) * r * .9)))
+    p.append(cyl('bundle', .15, .6, (0, 0, .3), C['wstalk'], verts=14, bev=0, radius_top=.13))
+    p.append(cyl('cutends', .155, .03, (0, 0, .015), C['wheatd'], verts=14, bev=0))
+    p.append(torus('tie', .16, .04, (0, 0, .46), C['twine'], major_segs=14, minor_segs=6))
+    for sx in (-1, 1):
+        p.append(P('bow', .07, (sx * .1, -.15, .48), 'twine', sub=1, sc=(1.4, .5, .8)))
+    p.append(stalk('tail', (0, -.16, .45), (.05, -.2, .25), .02, C['twine'], sides=4))
     return p
 item('item_wheat', sheaf())
 
@@ -102,28 +112,60 @@ def fruit(name, mt, mtd, lf=True):
 item('item_apple', fruit('apple', 'apple', 'appled'))
 item('item_peach', fruit('peach', 'peach', 'peachl'))
 
-def sack(grain, kern, band):
-    p = [sphere('sack', .42, (0, 0, .38), C['sack'], segs=16, rings=10, scale=(1.05, .85, .95)), cyl('neck', .16, .16, (0, 0, .78), C['sackd'], verts=10, bev=0, radius_top=.24),
-         cyl('band', .405, .14, (0, 0, .36), C[band], verts=16, bev=0, radius_top=.4),
-         cyl('grain', .23, .05, (0, 0, .87), C[grain], verts=10, bev=0), torus('tie', .16, .03, (0, 0, .74), C['twine'], major_segs=12, minor_segs=5)]
-    for i in range(7):
+def sack(grain, kern, label, emblem):
+    """A burlap feed sack (item pass): a soft square bag, its top rolled open on a heap of feed, a coloured label on the
+    front with an emblem, a few grains spilled at its foot. Reads as a sack, not a jar."""
+    p = [box('sack', (.82, .6, .78), (0, 0, .39), C['burlap'], bev=.17, seg=3),
+         box('seam', (.84, .62, .07), (0, 0, .07), C['burlapd'], bev=.03, seg=1)]
+    rim = torus('rim', .33, .08, (0, 0, .8), C['burlapl'], major_segs=16, minor_segs=6); rim.scale = (1.15, .85, 1); p.append(rim)
+    p.append(sphere('heap', .32, (0, 0, .8), C[grain], segs=14, rings=8, scale=(1.12, .82, .5)))
+    rnd = random.Random(7)
+    for i in range(14):
+        a = rnd.uniform(0, math.tau); r = rnd.uniform(0, .27)
+        p.append(P('k', .045, (math.cos(a) * r * 1.1, math.sin(a) * r * .8, .9 + (.27 - r) * .35), kern, sub=0))
+    p.append(box('label', (.46, .04, .34), (0, -.31, .4), C[label], bev=.03, seg=1))
+    p.append(box('labelin', (.36, .045, .24), (0, -.315, .4), C['cream'], bev=.02, seg=1))
+    p += emblem
+    for i in range(8):
         a = i * 2.4
-        p.append(P('k', .05, (.45 + math.cos(a) * .12, -.25 + math.sin(a) * .12, .04), kern, sub=0))
+        p.append(P('spill', .05, (.38 + math.cos(a) * .14, -.42 + math.sin(a) * .1, .04), kern, sub=0))
     return p
-item('chicken_feed', sack('feedg', 'feedg', 'twine'))
-item('cow_feed', sack('corng', 'leafd', 'cap'))
+egg_mark = [P('mark', .085, (0, -.34, .4), 'egg', sub=2, sc=(.85, .3, 1.1))]
+leaf_mark = [P('mark', .09, (0, -.34, .4), 'leaf', sub=1, sc=(1.3, .3, .7)), P('mark2', .05, (.05, -.345, .44), 'leafl', sub=1, sc=(1.2, .3, .6))]
+item('chicken_feed', sack('feedg', 'feedg', 'label1', egg_mark))
+item('cow_feed', sack('pellet', 'pellet', 'label2', leaf_mark))
 
-def loaf(mt, mtd, scale=(1.5, .85, .7)):
-    p = [sphere('loaf', .4, (0, 0, .3), C[mt], segs=16, rings=10, scale=scale)]
+def loaf():
+    """Bread (item pass): a crusty scored loaf and a round roll on a little bread board: three deep scores show the pale
+    crumb, a dusting of flour on top, a darker base so the loaf sits on the board."""
+    p = [box('board', (1.35, .8, .07), (0, 0, .035), C['board'], bev=.03, seg=1),
+         cyl('handle', .1, .07, (.75, 0, .035), C['board'], verts=10, bev=.02),
+         sphere('base', .4, (-.08, .02, .2), C['breadd'], segs=16, rings=10, scale=(1.55, .9, .45)),
+         sphere('loaf', .4, (-.08, .02, .3), C['bread'], segs=16, rings=10, scale=(1.5, .86, .68))]
     for i in range(3):
-        p.append(box('cut', (.09, .42, .05), (-.25 + i * .25, 0, .5), C['breadl'], bev=.02, seg=1, rot=(-.15, 0, .55)))
+        p.append(box('score', (.08, .46, .07), (-.36 + i * .26, .02, .55), C['breadl'], bev=.03, seg=1, rot=(-.12, 0, .6)))
+    rnd = random.Random(5)
+    for i in range(10):
+        p.append(P('flour', .022, (rnd.uniform(-.5, .35), rnd.uniform(-.15, .2), .57 + rnd.uniform(0, .03)), 'flour', sub=0))
+    p.append(sphere('roll', .2, (.42, -.2, .2), C['bread'], segs=12, rings=8, scale=(1, 1, .8)))
+    p.append(box('rollcut', (.05, .22, .04), (.42, -.2, .35), C['breadl'], bev=.02, seg=1, rot=(0, 0, .3)))
     return p
-item('bread', loaf('bread', 'breadd'))
+item('bread', loaf())
 def cornbread():
-    p = [box('cb', (.9, .7, .36), (0, 0, .18), C['cornbread'], bev=.08, seg=2), box('cbtop', (.86, .66, .06), (0, 0, .37), C['cornbreadd'], bev=.03, seg=1)]
-    for i in range(6):
-        p.append(P('k', .04, (-.3 + (i % 3) * .3, -.15 + (i // 3) * .3, .41), 'corn', sub=0))
-    p.append(cyl('butter', .12, .07, (.1, .05, .43), C['wheatl'], verts=4, bev=.01, rot=(0, 0, .5)))
+    """Corn bread (item pass): golden corn bread baked in a cast-iron skillet and cut in wedges, one wedge lifted out,
+    a pat of butter melting on top."""
+    p = [cyl('pan', .58, .18, (0, 0, .09), C['skillet'], verts=24, bev=.03, radius_top=.62),
+         torus('panrim', .6, .035, (0, 0, .18), C['skilletl'], major_segs=24, minor_segs=4),
+         box('handle', (.28, .12, .08), (.72, 0, .15), C['skillet'], bev=.03, seg=1),
+         cyl('cb', .54, .1, (0, 0, .17), C['cornbread'], verts=24, bev=.02)]
+    for i in range(3):   # the cuts across the round
+        p.append(box('cut', (1.06, .025, .03), (0, 0, .225), C['cornbreadd'], bev=0, seg=1, rot=(0, 0, i * math.pi / 3)))
+    w = [(0, 0)] + [(math.cos(a) * .5, math.sin(a) * .5) for a in (k * math.pi / 3 / 5 for k in range(6))]
+    wedge = extrude_outline('wedge', [(x, y) for x, y in w], .12, (0, 0, 0), C['cornbread'], bev=.02)
+    wedge.rotation_euler = (math.pi / 2, 0, -.5); wedge.location = (-.35, -.62, .32); p.append(wedge)
+    p.append(box('wedgetop', (.3, .2, .03), (-.18, -.52, .39), C['crumb'], bev=.01, seg=1, rot=(0, 0, -.5)))
+    p.append(box('butter', (.2, .16, .07), (.12, .1, .27), C['wheatl'], bev=.03, seg=1, rot=(0, 0, .4)))
+    p.append(P('melt', .12, (.12, .1, .23), 'wheatl', sub=1, sc=(1.3, 1.1, .2)))
     return p
 item('corn_bread', cornbread())
 def cake():
@@ -193,7 +235,18 @@ def glove():
     return p
 item('glove', glove())
 def egg():
-    return [sphere('egg', .32, (0, 0, .42), C['egg'], segs=16, rings=12, scale=(1, 1, 1.3))]
+    """Eggs (item pass): three eggs, two cream and one brown, in a round straw nest."""
+    p = [torus('nest', .4, .15, (0, 0, .14), C['straw'], major_segs=18, minor_segs=8),
+         cyl('nestbed', .36, .1, (0, 0, .06), C['strawd'], verts=16, bev=0)]
+    rnd = random.Random(11)
+    for i in range(16):
+        a = rnd.uniform(0, math.tau); r = rnd.uniform(.32, .52)
+        b = a + rnd.uniform(.5, 1.1)
+        p.append(stalk('straw', (math.cos(a) * r, math.sin(a) * r, .2 + rnd.uniform(-.05, .08)), (math.cos(b) * r, math.sin(b) * r, .18 + rnd.uniform(-.05, .1)), .018, C['strawd' if i % 3 else 'straw'], sides=3))
+    for (x, y, z, mt, tilt) in ((-.15, .06, .34, 'egg', .25), (.17, .1, .33, 'eggb', -.3), (0, -.14, .32, 'egg', .1)):
+        e = sphere('egg', .2, (x, y, z), C[mt], segs=14, rings=10, scale=(1, 1, 1.3)); e.rotation_euler = (tilt, tilt * .5, 0); p.append(e)
+    p.append(P('shine', .045, (-.2, -.06, .48), 'cream', sub=1, sc=(1, .6, 1.4)))
+    return p
 item('item_egg', egg())
 
 objs = []

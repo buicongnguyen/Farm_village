@@ -56,7 +56,11 @@
  {
   "id": "corn_bread",
   "src": "raw:items",
-  "root": "corn_bread"
+  "root": "corn_bread",
+  "view": [
+   -30,
+   52
+  ]
  },
  {
   "id": "carrot_cake",
@@ -801,5 +805,58 @@
    -30,
    32
   ]
+ },
+ {
+  "id": "perch",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_perch",
+  "view": [
+   -90,
+   28
+  ],
+  "roll": 38,
+  "margin": 1.02
+ },
+ {
+  "id": "carp",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_carp",
+  "view": [
+   -65,
+   32
+  ],
+  "recolor": {
+   "Fish carp back": "#B4561A",
+   "Fish carp bronze": "#D9782A"
+  },
+  "roll": 38,
+  "margin": 1.02
+ },
+ {
+  "id": "catfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_catfish",
+  "view": [
+   -65,
+   32
+  ],
+  "recolor": {
+   "Fish catfish body": "#8C6F52",
+   "Fish catfish fin": "#6E5440",
+   "Fish catfish spots": "#5E4632"
+  },
+  "roll": 38,
+  "margin": 1.02
+ },
+ {
+  "id": "goldfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_golden",
+  "view": [
+   -90,
+   28
+  ],
+  "roll": 24,
+  "margin": 1.04
  }
 ]
