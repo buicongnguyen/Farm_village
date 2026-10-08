@@ -243,6 +243,23 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-09, art lane, **AR-011 and AR-012 delivered** on `art/ar011-012` (from main `e05c800`; PR below):
+  - AR-011 icons: `police.webp` (town.glb `police`), `company.webp` (town.glb `company`) replace the placeholder copies;
+    new `hospital.webp`. Model: `decor.glb` node **`hospital`** (1,448 triangles, about 9.2 × 6.0 m with the ambulance
+    bay; building body 7.6 × 5.2 m inside the 4 × 3 footprint, front +z, door at the front centre like the clinic),
+    registered as `KIND_MODELS['clinic:hospital']` (late decor kit). Not selected yet: when `s.growth.hospitalAt` is set,
+    draw the clinic with `clinic:hospital` instead of `clinic` (Codex: `modelFor`/LandView, as agreed). No anchors.
+  - AR-012 icons: `hen`, `cow` (from `public/assets/models/rigged/chicken.glb` / `cow.glb`, the world's own models),
+    `ui:today`, `ui:projects` (decor `scaffold`), `ui:mail`, `tool:demolish`, `ui:harvest_all`; ids in
+    `ICON_IDS.animals` and `ICON_IDS.menu`.
+  - Small variants: **every** icon (117) at 64 px in `public/assets/icons/sm/<same file name>`; data map
+    `SMALL_ICONS` (id → url) in `src/content/icons.mjs`; generator `art/blender/icon_small.py`; test in
+    `tests/assets.test.mjs`. Codex selects them for mini/mark/seed/status images.
+  - Look tokens in `src/style.css`: `--token-bg`, `--token-ring` (`-ok`, `-short`), `.token`, `.btn.go` (blue,
+    navigate), `.badge.ready` (green, actionable). Red stays the existing `.badge` for unread news.
+  - Not done (optional follow-ups): worker/manager outfits, brand seals `brand_brook`/`brand_sunshine`/`brand_clover`.
+  - Checks: npm test 356/356; art, world, review browser suites; first-load code +287 bytes (1,096,548).
+
 - 2026-10-08, art lane, **icon render v2** (`art/icons-v2`): all 92 icons re-rendered with a new light rig and a 7 px
   round outline; ids, files and sizes unchanged, so no code change. Requests for the logic lane from the comparison,
   for when you choose (details in `docs/REFERENCE-NONGTRAI.md` section 5): (1) a one-line `iconHtml` change to load

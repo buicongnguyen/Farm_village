@@ -365,6 +365,52 @@ def noodle_cup():
             P('egg', .1, (-.12, -.08, .64), 'egg', sub=1, sc=(1, 1, .4)), P('herb', .06, (.12, -.12, .63), 'leaf', sub=1, sc=(1, 1, .3))]
 item('item_instant_noodles', noodle_cup())
 
+def almanac():
+    """Today (ui:today): a tear-off wall almanac with a red header, a big day page and a sunflower tucked in."""
+    p = [box('board', (.8, .1, 1.0), (0, 0, .5), C['wood'], bev=.04, seg=1), box('header', (.82, .12, .25), (0, 0, .92), C['apple'], bev=.04, seg=1),
+         box('page', (.7, .04, .62), (0, -.07, .45), C['cream'], bev=.02, seg=1), box('page2', (.7, .03, .6), (.02, -.04, .44), C['sack'], bev=.02, seg=1)]
+    for x in (-.2, 0, .2):
+        p.append(cyl('ring', .04, .06, (x, -.06, 1.05), C['irond'], verts=8, bev=0, rot=(math.pi / 2, 0, 0)))
+    p += [box('num1', (.08, .03, .3), (-.1, -.1, .45), C['twine'], bev=.01, seg=1), box('num2', (.2, .03, .07), (.08, -.1, .58), C['twine'], bev=.01, seg=1),
+          box('num3', (.2, .03, .07), (.08, -.1, .45), C['twine'], bev=.01, seg=1), box('num4', (.2, .03, .07), (.08, -.1, .32), C['twine'], bev=.01, seg=1)]
+    for i in range(10):
+        a = i / 10 * math.tau
+        p.append(P('petal', .07, (.38 + math.cos(a) * .1, -.14, .15 + math.sin(a) * .1), 'gold', sub=1, sc=(1, .3, 1)))
+    p.append(P('core', .06, (.38, -.16, .15), 'woodd', sub=1, sc=(1, .4, 1)))
+    return p
+item('ui_today', almanac())
+def postbox():
+    """Mail (ui:mail): a red postbox on a post with an envelope peeking out of the slot."""
+    return [cyl('post', .06, .6, (0, 0, .3), C['wood'], verts=8, bev=0), box('box', (.55, .4, .42), (0, 0, .8), C['apple'], bev=.08, seg=2),
+            cyl('roof', .2, .55, (0, 0, 1.01), C['appled'], verts=12, bev=0, rot=(0, math.pi / 2, 0)), box('slot', (.3, .02, .05), (0, -.21, .85), C['irond'], bev=0, seg=1),
+            box('envelope', (.32, .02, .2), (0, -.24, .92), C['cream'], bev=.01, seg=1, rot=(.25, 0, 0)), box('seal', (.07, .025, .07), (0, -.26, .9), C['apple'], bev=.01, seg=1, rot=(.25, 0, 0)),
+            box('flag', (.04, .2, .18), (.3, 0, .92), C['gold'], bev=.01, seg=1)]
+item('ui_mail', postbox())
+def crowbar():
+    """Demolish (tool:demolish): a red crowbar over a split plank (never a mallet)."""
+    p = [box('plank1', (.9, .22, .1), (-.15, 0, .3), C['wstalk'], bev=.03, seg=1, rot=(0, .3, .2)), box('plank2', (.5, .22, .1), (.45, .05, .2), C['wood'], bev=.03, seg=1, rot=(0, -.4, -.3))]
+    p.append(stalk('bar', (-.45, -.1, .05), (.45, -.1, .95), .05, C['apple'], sides=6))
+    p.append(stalk('hook', (.45, -.1, .95), (.6, -.1, .85), .05, C['apple'], sides=6))
+    p.append(stalk('claw', (-.45, -.1, .05), (-.55, -.1, .12), .045, C['iron'], sides=6))
+    for x, z in ((.05, .5), (.2, .42)):
+        p.append(P('splinter', .04, (x, -.05, z), 'wstalk', sub=0, sc=(1, .4, 2)))
+    return p
+item('tool_demolish', crowbar())
+def harvest_basket():
+    """Harvest all (ui:harvest_all): a woven basket heaped with wheat, a carrot, corn and a little pumpkin."""
+    p = [cyl('basket', .45, .38, (0, 0, .19), C['wood'], verts=16, bev=.03, radius_top=.52), torus('rim', .5, .05, (0, 0, .38), C['wstalk'], major_segs=16, minor_segs=5)]
+    for k in range(3):
+        p.append(torus('weave', .47 + k * .015, .015, (0, 0, .1 + k * .1), C['woodd'], major_segs=16, minor_segs=3))
+    p.append(stalk('handle', (-.45, 0, .38), (0, 0, .95), .04, C['wstalk'], sides=5)); p.append(stalk('handle2', (0, 0, .95), (.45, 0, .38), .04, C['wstalk'], sides=5))
+    for i in range(6):
+        a = i * 1.05
+        p.append(stalk('ws', (-.15, .1, .4), (-.2 + math.cos(a) * .12, .1 + math.sin(a) * .08, .78), .02, C['wstalk'], sides=3))
+        p.append(P('ear', .05, (-.2 + math.cos(a) * .12, .1 + math.sin(a) * .08, .8), 'wheat', sub=1, sc=(1, 1, 1.8)))
+    p += [P('pumpkin', .16, (.18, -.12, .48), 'pumpkin', sub=2, sc=(1.1, 1.1, .8)), P('corn', .08, (.0, -.2, .5), 'corn', sub=2, sc=(1, 1, 2.2)),
+          cone('carrot', .07, .4, (-.25, -.15, .52), C['carrot'], verts=8, rot=(1.2, 0, .5))]
+    return p
+item('ui_harvest_all', harvest_basket())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

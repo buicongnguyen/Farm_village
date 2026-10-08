@@ -77,6 +77,11 @@ test('every good, building and tool has an icon whose file exists', () => {
   assert.equal(files.length, Object.keys(ICONS).length, 'every icon file is listed in ICONS');
 });
 
+test('every icon has its 64 px small variant under assets/icons/sm (AR-012)', async () => {
+  const { SMALL_ICONS } = await import('../src/content/icons.mjs');
+  for (const [id, url] of Object.entries(SMALL_ICONS)) assert.ok(existsSync(new URL(url.replace('./', ''), PUBLIC)), `${id}: ${url} is missing`);
+  assert.equal(Object.keys(SMALL_ICONS).length, Object.keys(ICONS).length);
+});
 test('the lucky-find keepsakes (AR-009): handheld pieces within the prop budget, standing on the ground, each with its icon', () => {
   const j = kit('discovery-props');
   assert.deepEqual(KITS['discovery-props'], ICON_IDS.keepsakes);

@@ -14,6 +14,8 @@ export const KIND_MODELS = {
   fruit_stand: { kit: 'farm-kit', node: 'fruit_stand', authored: true, lod: 'static' },
   kennel: { kit: 'farm-kit', node: 'kennel', authored: true, lod: 'static' },
   clinic: { kit: 'town', node: 'hospital', width: 7.8, lod: 'static', late: true },
+  // AR-011: the clinic's hospital upgrade (s.growth.hospitalAt); same 4 x 3 footprint, door at the front centre. Codex selects it.
+  'clinic:hospital': { kit: 'decor', node: 'hospital', authored: true, lod: 'static', late: true },
   police: { kit: 'town', node: 'police', width: 6, lod: 'static', late: true }, // existing model, stand-in for AR-011
   company: { kit: 'town', node: 'company', width: 8, lod: 'static', late: true }, // existing model, stand-in for AR-011
   stall:     { kit: 'market-stall', node: 'market-stall', width: 3.8, lod: 'static' },

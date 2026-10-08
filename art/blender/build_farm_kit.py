@@ -885,6 +885,38 @@ piece('lake_kiosk_fish', kiosk('teal', ['water', 'sky', 'waterl']), decor)
 piece('lake_kiosk_flowers', kiosk('pink', ['pink', 'sun', 'violet', 'red']), decor)
 piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred']), decor)
 
+
+# =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
+def hospital():
+    """The village hospital: a two-storey cream building with a teal roof, a big red-cross sign, a covered entrance at the
+    front centre (the clinic's doorway), rows of windows, a little ambulance bay and flower beds. 8 x 6 m footprint."""
+    W, D = 7.6, 5.2
+    p = [bx('plinth', W + .3, D + .3, .25, 0, 0, 0, 'stoned', bev=.04), bx('ground', W, D, 2.6, 0, 0, .25, 'plaster', bev=.06),
+         bx('band', W + .1, D + .1, .2, 0, 0, 2.85, 'teal', bev=.03), bx('upper', W - .6, D - .4, 2.2, 0, -.1, 3.05, 'cream', bev=.06),
+         bx('roofslab', W - .3, D - .1, .25, 0, -.1, 5.25, 'teald', bev=.06), bx('roofcap', W - 1.4, D - 1.2, .5, 0, -.1, 5.5, 'teal', bev=.12)]
+    # the red cross sign over the entrance
+    p += [bx('signbg', 1.5, .12, 1.5, 0, D / 2 - .15, 3.5, 'white', bev=.06), bx('crossv', .32, .16, 1.1, 0, D / 2 - .1, 3.7, 'red', bev=.03),
+          bx('crossh', 1.1, .16, .32, 0, D / 2 - .1, 4.09, 'red', bev=.03)]
+    # entrance canopy and doors, front centre
+    p += [bx('canopy', 2.6, 1.4, .18, 0, D / 2 + .6, 2.5, 'teal', bev=.04), bx('door', 1.5, .1, 2.0, 0, D / 2 + .02, .25, 'glass', bev=.03),
+          bx('doorframe', 1.7, .12, .15, 0, D / 2 + .03, 2.25, 'white', bev=.02)]
+    for x in (-1.2, 1.2):
+        p.append(cl('pillar', .1, 2.3, x, D / 2 + 1.2, .25, 'white', verts=8))
+    # windows: ground floor either side of the door, a full row upstairs
+    for x in (-2.8, -1.9, 1.9, 2.8):
+        p.append(bx('win', .6, .1, .9, x, D / 2 + .02, 1.1, 'glass', bev=.03))
+    for x in (-2.6, -1.6, -.6, .6, 1.6, 2.6):
+        p.append(bx('win2', .6, .1, .8, x, D / 2 - .4 + .02 - .2 + .4, 3.6, 'glassd', bev=.03))
+    # ambulance bay (a parked little white van) and flower beds
+    p += [bx('van', 1.2, 2.0, .9, W / 2 + .8, .6, .25, 'white', bev=.12), bx('vancab', 1.1, .7, .6, W / 2 + .8, 1.25, 1.1, 'white', bev=.1),
+          bx('vanstripe', 1.22, 2.02, .14, W / 2 + .8, .6, .7, 'red', bev=.02), bx('vanwin', 1.0, .05, .35, W / 2 + .8, 1.62, 1.2, 'glass', bev=.02)]
+    for x in (-2.6, 2.6):
+        p.append(bx('bed', 1.4, .5, .25, x, D / 2 + .5, .0, 'soil', bev=.04))
+        for k in range(4):
+            p.append(ball('fl', .12, x - .5 + k * .33, D / 2 + .5, .32, ('pink', 'sun', 'red', 'white')[k], sub=1))
+    return p
+piece('hospital', hospital(), decor)
+
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():
     """Juice press (2 x 2 cells): an open timber shed with an orange awning, a big wooden screw press, barrels and fruit
