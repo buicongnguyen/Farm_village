@@ -10,8 +10,9 @@ const TOOLS = ['tool:clear', 'tool:harvest', 'tool:move', 'tool:store', 'tool:bu
 const UI = ['ui:coin', 'ui:xp', 'ui:heart', 'ui:barn', 'ui:orders'];
 const PEOPLE = ['person:hazel', 'person:ada', 'person:cora', 'person:pip', 'person:minh', 'person:lan', 'person:bo', 'person:grace', 'person:sam', 'person:zara', 'person:elin', 'person:olaf', 'person:marisol', 'person:tomas', 'person:pia', 'person:june', 'person:mai', 'person:gus'];
 const KEEPSAKES = ['lucky_tin', 'lucky_button', 'lucky_box'];
+const TRAIL = ['trail_picnic_ribbon'];   // the old-object discovery trail (AR-010)
 const FAMILIES = ['family:tran', 'family:okafor', 'family:lindqvist', 'family:reyes'];
-export const ICON_IDS = { goods: GOODS, buildings: BUILDINGS, tools: TOOLS, ui: UI, people: PEOPLE, families: FAMILIES, keepsakes: KEEPSAKES };
-export const ICONS = Object.fromEntries([...GOODS, ...BUILDINGS, ...TOOLS, ...UI, ...PEOPLE, ...FAMILIES, ...KEEPSAKES].map(id => [id, `${BASE}${id.replace(':', '-')}.webp`]));
+export const ICON_IDS = { goods: GOODS, buildings: BUILDINGS, tools: TOOLS, ui: UI, people: PEOPLE, families: FAMILIES, keepsakes: KEEPSAKES, trail: TRAIL };
+export const ICONS = Object.fromEntries([...GOODS, ...BUILDINGS, ...TOOLS, ...UI, ...PEOPLE, ...FAMILIES, ...KEEPSAKES, ...TRAIL].map(id => [id, `${BASE}${id.replace(':', '-')}.webp`]));
 /** The icon URL for an id, or null. A person's id may be given with or without the 'person:' prefix. */
 export const iconUrl = id => ICONS[id] ?? ICONS[`person:${id}`] ?? null;

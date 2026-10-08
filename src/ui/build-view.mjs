@@ -8,7 +8,7 @@ import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL } from '../content/world.mjs';
 import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
 import { mayBuild } from '../core/projects.mjs';
-import { priceOf } from '../core/build.mjs';
+import { placementPrice } from '../core/build.mjs';
 import { CLEAR } from '../content/economy.mjs';
 import { charmPreview } from '../core/homes.mjs';
 import { sfx } from '../kit/sound.mjs';
@@ -62,7 +62,7 @@ export class BuildView {
   render() {
     const s = this.game.s, cats = CATEGORIES.map(c => `<button data-cat="${c.id}" class="tab${c.id === this.cat ? ' on' : ''}">${t(c.name)}</button>`).join('');
     const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat).map(([kind, d]) => {
-      const may = mayBuild(s, kind), level = s.level < d.level, price = priceOf(s, kind), stored = s.stored?.[kind] ?? 0;
+      const may = mayBuild(s, kind), level = s.level < d.level, price = placementPrice(s, kind), stored = d.edge ? 0 : s.stored?.[kind] ?? 0;
       const locked = level || !may.ok;
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
       return `<button class="card${kind === this.kind ? ' on' : ''}${locked ? ' locked' : ''}${stored ? ' stored' : ''}" data-kind="${kind}" ${locked ? 'aria-disabled="true"' : ''}>${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small>${stored ? `<i class="badge">${stored}</i>` : ''}</button>`;
@@ -114,7 +114,7 @@ export class BuildView {
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
       : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building to take it down for part of its price')
-      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(priceOf(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, tParams(c.params)) : t('Tap where it should go');
+      : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(placementPrice(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, tParams(c.params)) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
       <button class="round small" data-bar="undo" aria-label="${t('Undo')}">${glyph('undo', 'g')}</button>

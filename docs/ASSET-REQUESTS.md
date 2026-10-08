@@ -91,6 +91,7 @@ replaced) and `dropped`.
 | AR-007 | Tết set | update for late January 2027 | P3 | proposed |
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 | AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
+| AR-010 | Old-object picnic discovery trail props | optional exploration | P1 | integrated and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18); includes Claude's PR #13 delivery and runtime wiring |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
@@ -382,3 +383,22 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   effects; pick and rare-catch sounds now come only from `main.mjs` (art removed its duplicates, `448502d`). At the user's
   request PR #1 and PR #2 were merged into `main` (`32e3a62`) and deployed; production loads on phone and PC with no errors
   and serves the new colours and effects. AR-001 is done. Logic lane: merge `origin/main` into your next branch first.
+
+### AR-010: Old-object picnic discovery trail
+
+- Status: delivered in [PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) (`6f312aa`); integrated and validated with the logic in PR #18 · Priority: P1 · Asked by: user / logic lane, 2026-10-08.
+- Scope and delivery contract: [Claude discovery-trail handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md). One optional farmhouse → pond → family memory trail. The requested assets are delivered; existing menus remain available while world integration is validated.
+- Art delivered: `exploration-props.glb` with `trail_porch_box_closed`, `trail_porch_box_open`, `trail_pond_cache_closed`, `trail_pond_cache_open`, `trail_picnic_ribbon`, plus `trail_picnic_ribbon.webp`. The keepsake is a pink butterfly-shaped ribbon; English/Vietnamese text matches the pink ribbon and the child sees a tiny butterfly. Provenance and dimensions remain in [ASSETS.md](ASSETS.md). Art delivery adds no world placement or reward logic.
+- Logic: Codex owns the rules, saved stage/read state, one-time flowerpot reward, bilingual dialogue, UI and integration. No additional coins; existing 110-coin finds unchanged.
+
+### Coordination note — 2026-10-08, AR-010
+
+- Baseline: PR #9 at `f80ceb0`; integrated into the Codex branch at `208167c`. Codex is the active writer for `src/main.mjs`, `src/ui/**`, the new exploration content/core/i18n modules, state/action wiring and tests. Claude owns new Blender/model/icon files and only their registration rows in `src/view/kinds.mjs` / `src/content/icons.mjs`. Neither lane edits shared world placement or effects for this delivery; integration will name the exact view functions after the art PR is ready. The current live farmhouse forecourt and pond are retained.
+
+### Integration follow-up — 2026-10-08, AR-010 delivered
+
+- This note supersedes only the original AR-010 waiting-for-art/placement reservation above. Main `e8f09a5` and Claude's PR #13 delivery `6f312aa` are merged into the Codex integration branch at `94d1b8e`. Newer main icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth-plan changes are preserved.
+- **Active writer: Codex (root coordinating its logic agents)** owns `src/view/exploration-view.mjs` and `src/content/exploration-sites.mjs` for staged loading, visibility and picking, plus `src/main.mjs` boot and canvas-tap routing through `world.exploration.pick()`. The existing farmhouse radial menu remains; no new radial edits are needed for this integration. Codex also owns the existing exploration rules/UI and bilingual prose/icon binding. At most one closed/open model is visible per site; unavailable future sites have no pick target. Object taps open explicit controls and never spend resources or grant a reward themselves.
+- Claude retains ownership of palettes, lighting, effect appearance, generators, icons and models. No Blender script, generator, model or icon edits are part of the Codex integration; those files arrived only through the additive art/main merges. The existing farmhouse/pond treatment is retained.
+- Intended interactions: porch box after the first delivered order, pond tin only after its clue, and the pink butterfly ribbon in the earned memory before returning to Ada. Today/Album/menu routes stay available. The delivered ribbon icon is used by the final memory; its standalone GLB node remains available but is not placed without a credible site anchor. This is the small picnic trail, not covered-land ownership or an energy project.
+- **Integrated validation passed:** 261 native tests, pace targets, 19 component suites, 28/28 smoke checks and all 8 final discovery checks. Four local production acceptance contexts passed in EN/VI phone/desktop viewports. Actual staged taps, saved/read/reward behavior, hidden future targets, optional load failure, free gift placement, ordinary dock taps and phone/PC budgets were checked. Following the last factory-content merge at `0668734`, native/pace, discovery/art/orchard, 28 smoke and four local production checks passed again; the full 19-suite run preceded that merge. First-load production code is 1,024,378 bytes. [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) records final CI, Pages deployment and live acceptance; it includes PR #13's art history, so the asset and logic ship together.

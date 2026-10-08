@@ -26,6 +26,7 @@ import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
 import { roadSegmentAt } from '../content/world.mjs';
+import { explorationStatus } from '../core/exploration.mjs';
 
 const near = (cell, spot, r) => Math.abs(cell.x - spot.x) <= r && Math.abs(cell.z - spot.z) <= r;
 const nearCart = cell => cell.x >= CART_SPOT.x - 1 && cell.x <= CART_SPOT.x + CART_SPOT.w && cell.z >= CART_SPOT.z - 1 && cell.z <= CART_SPOT.z + CART_SPOT.d;
@@ -79,6 +80,7 @@ export class Radial {
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
   houseMenu() {
     const s = this.s, lv = s.house?.level ?? 1, buttons = [];
+    if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
     let info = `${t('Your farmhouse')} · ${t('Level {level}', { level: lv })}`;
     if (levelOf(s, 'house') > 0 || isRepairing(s, 'house')) { const m = this.repairMenu('house'); buttons.push(...m.buttons); info = m.info; }
     if (lv < HOUSE.levels && levelOf(s, 'house') < 3 && !isRepairing(s, 'house')) {
@@ -208,6 +210,7 @@ export class Radial {
     else if (d.act === 'pick') g.do('pick', { id });
     else if (d.act === 'repair') g.do('repair', { id: d.id });
     else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
+    else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
     else if (d.act === 'open') { const l = this.last; if (l) this.tap(l.cell, l.x, l.y, { open: true }); }
     else if (d.act === 'buyParcel') {
       const r = g.do('buyParcel', { parcel: d.parcel });

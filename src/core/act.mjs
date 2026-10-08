@@ -26,13 +26,14 @@ import { actions as condition, tickCondition } from './condition.mjs';
 import { actions as testmode } from './testmode.mjs';
 import { actions as discoveries, normalizeDiscoveries, afterDiscoveries } from './discoveries.mjs';
 import { actions as advice, normalizeAdvice, afterAdvice } from './advice.mjs';
+import { actions as exploration } from './exploration.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
 export const ACTIONS = { ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins,
-  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice };
+  ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration };
 
 function context(s, now) {
   const events = [];
@@ -68,7 +69,7 @@ export function tick(s, now = Date.now()) {
   return { events: ctx.events };
 }
 /** Village news for the Today board (DESIGN 14): the latest notable events, newest first. */
-const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter', 'repaired', 'neighbourRepair', 'houseUpgraded', 'discovery']);
+const NEWS = new Set(['projectDone', 'familyArrived', 'neighbourVisit', 'traded', 'levelUp', 'heartScene', 'wishGranted', 'cartSent', 'charmMilestone', 'letter', 'repaired', 'neighbourRepair', 'houseUpgraded', 'discovery', 'explorationStep']);
 // "First times" for the album (DESIGN 13): the moment each first happened.
 const FIRSTS = { harvested: 'harvest', collected: 'egg', orderFilled: 'order', familyArrived: 'family', traded: 'trade', produced: 'product',
   picked: 'fruit', gifted: 'gift', wishGranted: 'wish', cartSent: 'cart', heartScene: 'heartScene', letter: 'letter' };
@@ -78,6 +79,7 @@ function remember(s, events, now) {
     if (e.type === 'projectDone') (s.firsts ??= {})[`project:${e.id}`] ??= now;
     if (e.type === 'heartScene') (s.firsts ??= {})[`heart:${e.person}:${e.at}`] ??= now;   // the album's heart-scene pages
     if (e.type === 'discovery') (s.firsts ??= {})[`discovery:${e.id}`] ??= now;
+    if (e.type === 'explorationStep') (s.firsts ??= {})[`exploration:${e.step}`] ??= now;
   }
   for (const e of events) if (NEWS.has(e.type)) {
     // Live heart/charm events use at for their threshold; news keeps at as its saved date.

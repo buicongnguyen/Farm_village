@@ -1,251 +1,134 @@
-# Hollowbrook character naming plan
+# Hollowbrook: playful names in each language
 
-Status: **editorial proposal for review, 2026-10-08**. No runtime names, identifiers, saves, dialogue, translations, or assets are changed by this document. The existing story remains authoritative until an implementation pass adopts an approved name set. This proposal responds to the user's request for appealing, distinctive names, explicitly replacing **Pip** and avoiding an interchangeable collection of short, generic names.
+Status: **naming direction confirmed; individual names proposed, 2026-10-08**. The user confirmed that names should be playful and fun, and that affectionate home names are welcome. Each language may use a different native name for the same character. The previous Althea/Oswin/Sylvie/Tavi proposal and its formal-name rules are withdrawn. This document does not change or deploy runtime names.
 
-The recommended central family is **Althea, Oswin, Sylvie, and Tavi**. The four resident households retain their surnames and existing story roles. Elin and Marisol remain because their names already give their characters clear identities. Distinctiveness here is an editorial judgment about this ensemble, not a claim about population frequency or a name's origin.
+## 1. The direction the user chose
 
-## 1. Naming direction
+Aim for the feeling of meeting friendly neighbours in a storybook village. A name should be easy to say, easy to remember, and pleasant in repeated conversation. Familiar foods, plants, weather, sounds, and affectionate nicknames suit this game. Full legal names are unnecessary. Avoid making names unusual merely to make them rare.
 
-Use names that feel like people the player could remember after a brief meeting. Adults may have fuller names; children need names that work naturally in short, excited sentences. Mix lengths and rhythms so the cast does not sound like a list of interchangeable two- or three-letter nicknames.
+Use three separate pieces:
 
-The proposed set follows these rules:
+- **Short name:** the everyday identity, such as Bắp, Sóc, Cốm, or Mơ.
+- **Relationship or job:** the appropriate label in context, such as Bà Mận, Chú Mộc, or Bác sĩ Sen.
+- **Occasional description:** an introduction or album caption that reveals a trait, such as “Sóc — chân chạy của xóm.” Do not repeat the description in every speech bubble.
 
-- **Pip is retired as a visible character name.** The internal ID can stay `pip` for compatibility.
-- Keep each established household recognizable. Retain Tran/Trần, Okafor, Lindqvist, and Reyes; change given names without rewriting family history or inventing nationalities.
-- Preserve cultural cues already present in names. The Vietnamese-rooted proposals use their diacritics in both English and Vietnamese. Existing surnames suggest cultural connections; they do not establish citizenship, birthplace, ethnicity, or a complete biography.
-- Give frequently interacting characters different first sounds and word shapes. The player family, children, neighbours, and clinic staff receive particular attention. Absolute uniqueness of initial letters across the entire future cast is unnecessary; distinguish people the player meets together.
-- Avoid names of prominent reference-game characters where a direct collision would weaken this game's identity. **Sam and Gus** already overlap with Stardew Valley and are replaced. Complete the external reference-cast check before accepting the set; this draft does not claim exhaustive clearance.
-- Take inspiration from reference games' readable ensembles and consistent naming systems, not their signature names, catchphrases, or biographies.
-- Distinguish a person's name, relationship title, and role. A doctor has a name and a localized title; a child does not need a family relationship invented to justify a role label.
-- Keep the player-created name. The protagonist stays silent and is addressed through the established relationship rules.
-- Use one agreed name sheet for English text, Vietnamese text, story documentation, asset captions, and UI. Do not let a dialogue translation silently rename somebody.
+These are localized aliases, not literal translations or transliterations. Changing language changes the display name, not the person, family, memories, personality, progress, or rewards. The player's chosen name stays exactly as entered.
 
-The animal names remain a separate, intentional register: simple names a child could plausibly give a friend. Their clarity and recurring pairings are useful. The human cast carries the larger distinctiveness pass.
+## 2. What the Zoo Pet reference actually shows
 
-### What the reference games suggest
+The supplied `zoo-pet.shop` address did not resolve during this review. The user's local reference notes identify [Zoo Pet at zoo-pet.store](https://zoo-pet.store/), which redirected in the browser to its [public CDN](https://d173ysgpwor2n4.cloudfront.net/). The page title was Zoo Pet. The currently served [public game client](https://d173ysgpwor2n4.cloudfront.net/assets/index-B1RlJtWd.js) was inspected on 2026-10-08.
 
-The following comparisons were checked on 2026-10-08. The game facts are sourced; the lessons for Hollowbrook are **design judgments**, not evidence that a particular name increases retention or appeals to every age group.
+Verified examples from that client: **Bác Cú**, **Củ Cải Cười**, **Gà Mái Cục Tác**, **Bò Sữa Mộng Mơ**, and **Cừu Mây Bông**. The adviser is named in story UI; the other examples are crop or creature labels. These are not a verified human-neighbour cast or names taken from online players.
 
-| Reference | Verified pattern | Lesson for this cast |
-|---|---|---|
-| Hay Day | Greg has a recurring identity and his farm hosts calendar-event gift boxes. [Supercell: Greg](https://support.supercell.com/hay-day/en/articles/greg.html) | An ordinary name can become memorable through repeated useful encounters. Our more distinctive names still need helpful actions, jokes and remembered history. Renaming alone cannot fix repetitive conversation. |
-| Stardew Valley | The cast mixes short familiar names such as Sam and Gus with names such as Maru, Demetrius and Krobus. Villagers have individual routines and gift preferences. [Villagers, official wiki](https://wiki.stardewvalley.net/Villagers) | Vary sound and length across the ensemble. Avoid our current Sam/Gus overlap as an editorial choice, while retaining strong existing names such as Marisol. Give every person something recognizable to do. |
-| Animal Crossing: New Horizons | Nintendo's guidance associates Isabelle with island advice and Tom Nook with arranging bridges and inclines. [Play Nintendo tips](https://play.nintendo.com/news-tips/tips-tricks/animal-crossing-new-horizons-discover-tips/) | Pair names with stable roles the player learns through play. Coralie belongs to the school; Leandro helps with repairs; Sylvie offers useful farm advice. Avoid making every character sound like the same task board. |
+The useful pattern is a familiar word with a little personality, movement, sound, or affectionate address. Applying that pattern to Hollowbrook is an editorial recommendation. This inspection does not establish that particular names improve retention, nor does it justify copying Zoo Pet's full catalogue, dialogue, code, or art.
 
-The proposed names avoid the specific named characters above and the current Stardew villagers listed in that source. This is a targeted reference check, not a claim that no game anywhere has ever used one of these names. Do not force awkward spellings merely to seek universal uniqueness.
+### Supporting language research
 
-For adults and children playing side by side, first introductions should show **name + recognizable role**, then use the name consistently. Longer names may wrap; do not automatically shorten Quang Minh to Minh or Beatrix to Bea and reintroduce the ambiguity this plan removes. Test the names aloud with readers of both languages before the final cast is adopted.
+- **Vietnamese:** [Huggies' home-name guide](https://www.huggies.com.vn/dat-ten-cho-be/ten-duoc-yeu-thich/ten-o-nha-cho-be) includes food and nature names such as Mơ, Mận, Bắp, Cốm, and Mít. It supports this familiar naming style; it is an editorial guide, not population research. Applying a warm nature nickname to an older fictional villager is our own choice.
+- **English:** [Nameberry's Chip entry](https://nameberry.com/name/chip) documents an established nickname form. The English set below mixes familiar short names with deliberate storybook nicknames such as Maple, Oak, and Bramble. Those creative choices are not claimed to be common legal names or names statistically preferred by players.
+- **Korean:** NAMEChart records [하루](https://www.namechart.kr/name/하루) for both boys and girls and [미소](https://www.namechart.kr/name/미소) as an established personal name. These are usage references, not a cuteness ranking. [The National Institute of Korean Language](https://krdict.korean.go.kr/eng/dicSearch/SearchView?ParaWordNo=59246&nation=eng) also documents 미소 as the word for a smile. Short local aliases can work without inventing surnames or hanja meanings.
+- **Japanese:** [Benesse/Tamahiyo's 2025 name survey](https://st.benesse.ne.jp/ninshin/name/) includes ひなた among readings used by both boys and girls. [Anicom's dog-name survey](https://www.anicom-sompo.co.jp/news-release/2025/20241030/) supports food-style pet names such as こむぎ and きなこ. Names below use readable kana; they do not assert a particular kanji spelling or meaning.
 
-## 2. Current humans: complete inventory and recommended set
+The individual assignments below are **creative proposals informed by those patterns**, not a list copied from any one source. Korean and Japanese need a native-speaker dialogue review before those full language editions ship.
 
-There are **19 named current humans**, including the grandfather who is present only through letters, plus the player. IDs below are existing implementation identifiers and remain stable under the proposal.
+## 3. Proposed current cast
 
-| Stable ID | Current display | Proposed display | Household and established role | Naming/story notes |
+The IDs are existing identities, not words the player should see. Relationship labels in this table are display examples; dialogue must adapt them to the listener. In particular, the player's child calls Ada and Ellis **cụ** in Vietnamese, even when their player-facing cards use bà/ông.
+
+| Stable ID | Existing role | English | Vietnamese | Korean | Japanese |
+|---|---|---|---|---|---|
+| `ada` | Grandmother and guide | Granny Maple | Bà Mận | 순이 할머니 | はなばあちゃん |
+| `ellis` | Grandfather; letters from upriver | Grandpa Oak | Ông Quế | 덕수 할아버지 | げんじいちゃん |
+| `june` | Partner and farm adviser | Rosie | Mơ | 미소 | こはる |
+| `pip` | Player’s curious child | Sunny | Bắp | 하루 | ひなた |
+| `minh` | Carpenter | Chip | Chú Mộc | 뚝딱 | とんとん |
+| `lan` | Cook and baker | Honey | Cô Bột | 달콤 | あんず |
+| `bo` | Schoolboy; frogs and races | Hopper | Sóc | 폴짝 | けろ |
+| `grace` | Vet | Clover | Cô Bông | 포근 | なごみ |
+| `sam` | Postman | Dash | Chú Gió | 총총 | ふみ |
+| `zara` | Bookish schoolgirl | Dot | Cốm | 별이 | しおり |
+| `elin` | Painter | Poppy | Chị Nắng | 노을 | いろは |
+| `olaf` | Retired sailor | Skipper | Ông Buồm | 바다 | なぎ |
+| `marisol` | Nurse and clinic organizer | Bonnie | Cô Trà | 다정 | ほのか |
+| `tomas` | Mechanic | Rusty | Chú Đinh | 튼튼 | くるり |
+| `pia` | Young neighbour; counts everything | Tilly | Su Su | 콩콩 | まめ |
+| `cora` | Teacher | Winnie | Cô Mầm | 새싹 | わかば |
+| `hazel` | Elder doctor | Dr Fern | Bác sĩ Sen | 온기 선생님 | すみれ先生 |
+| `mai` | Neighbour; ducks and tea | Daisy | Chị Na | 도란 | ゆず |
+| `gus` | Grumbling, kind-hearted baker | Bramble | Bác Khoai | 누룽지 | だいふく |
+
+Several aliases are intentionally whimsical character handles: Korean 뚝딱 and 폴짝, for example, and Japanese とんとん and くるり. They are not presented as common legal human names. Family warmth comes from how people speak and behave as well as their names.
+
+The home family in Vietnamese would be **Bà Mận, Ông Quế, Mơ, and Bắp**. The school children would be **Bắp, Sóc, Cốm, and Su Su**. This gives the children distinct sounds and avoids replacing Pip with another formal, unfamiliar name.
+
+Each existing household keeps its stable identity and membership: `tran`, `okafor`, `lindqvist`, and `reyes`. Do not infer new ethnicity, nationality, marriage, or parentage from a localized alias. Where a household caption needs localization, a friendly label based on a member's name is possible, such as “Nhà chú Mộc” / “Chip's family”; treat that as display text, not a change to the saved family ID or established family history.
+
+## 4. Named animal proposals
+
+| Existing identity | English | Vietnamese | Korean | Japanese |
 |---|---|---|---|---|
-| `ada` | Ada | **Althea** | Player's grandmother; Ellis's wife; village guide and baker | Full, warm name for the village keeper. No surname is established. Preserve her memories, practical voice, and relationship to the player. |
-| `ellis` | Ellis | **Oswin** | Player's grandfather; Ada's husband; away fishing upriver | Distinct from Althea and the younger family. Remains letters-only in the current game. His English signature changes from `-E` to `-O`. |
-| `june` | June | **Sylvie** | Player's partner; practical, calm, teasing; helper and adviser | Keeps an adult identity beyond a month-name association. Her Vietnamese self-reference must change wherever she calls herself June. |
-| `pip` | Pip | **Tavi** | Player's child; curious observer, helper, animal namer | Mandatory replacement. Short enough for school scenes and speech bubbles, with a clear shape beside the other children. Do not invent a longer legal name or new gender/history. |
-| `minh` | Minh | **Quang Minh** | Tran family; carpenter; Bo's father | Retains Minh within a fuller given-name form. English and Vietnamese both display Quang Minh. |
-| `lan` | Lan | **Thanh Lan** | Tran family; cook/baker; Bo's mother | Retains Lan within a fuller given-name form. Her mother's bread and Althea's recipe book stay central to her story. |
-| `bo` | Bo | **Bảo Lâm** | Tran family; boy, 7; frogs, races, school desk | Replaces the very short name with a distinct given-name form. Rewrite the `B-O. Two letters` desk joke; a text replacement alone is insufficient. |
-| `grace` | Grace | **Ifeoma** | Okafor family; vet; Sam's wife; Zara's mother | Preserves the household's existing cultural naming cues without assigning a nationality. Brisk, kind, dry humour stays. |
-| `sam` | Sam | **Chike** | Okafor family; postman raised in Hollowbrook; future driver | Removes a prominent reference-cast overlap. Keep his red-bicycle memory, long route home, and undelivered-letter arc. |
-| `zara` | Zara | **Nkiru** | Okafor family; girl, 8; reader and science enthusiast | A distinct child name within the household and ensemble. Update the joined-up-writing letter and signature. |
-| `elin` | Elin | **Elin** | Lindqvist family; painter | Retain. The existing name is readable and distinctive within this cast. Her exact relationship to Olaf is not specified. |
-| `olaf` | Olaf | **Rorik** | Lindqvist family; retired sailor; elder | Distinguishes the sailor while retaining the household's broad naming cues. Do not label him Elin's husband or father without a separate story decision. |
-| `marisol` | Marisol | **Marisol** | Reyes family; nurse; clinic organizer; Hazel's former student | Retain. A strong existing identity connected to her organized voice and petition. |
-| `tomas` | Tomas | **Leandro** | Reyes family; mechanic; Pia's father | Fuller name with a different rhythm from Marisol and Paloma. His mechanical curiosity and sluice discovery remain intact. |
-| `pia` | Pia | **Paloma** | Reyes family; girl, 5; enthusiastic counter | Distinct from the other children. The review has corrected the unsupported role label `Little sister` to **Young neighbour**, without inventing a sibling. |
-| `cora` | Cora | **Coralie** | Teacher; arrives with the school | An expanded, recognizable name that fits a bright, dry voice. Keep the school relationship and timing. |
-| `hazel` | Dr Hazel | **Dr Vesper** | Elder doctor; returns from the coast with the clinic | Retains the existing `Dr + name` display convention. Do not invent a surname or assume Vesper is a family name. She remains the doctor; Marisol the nurse; Ifeoma the vet. |
-| `mai` | Mai | **Hải Yến** | Lotus Farm neighbour; ducks, tea, barter | Fuller Vietnamese-rooted given-name form. No surname or nationality is established. Her grandmother's trading history with Althea stays. |
-| `gus` | Gus | **Bramwell** | Old Mill Farm neighbour; grumbling baker; festival rescuer | Removes a prominent reference-cast overlap and gives the older neighbour a fuller identity. Keep warmth beneath the grumbling; do not turn the name into a villain cue. |
-| `you` | You / player choice | **Player choice** | Silent protagonist | Preserve `settings.playerName`, the existing choice of player figure, and the localized fallback. Do not supply a fixed canonical personal or family name. |
+| Farm dog (`dog`, currently Biscuit) | Biscuit | Đậu; introduce as Cún Đậu | 보리 | こむぎ |
+| First named hen (currently Cloud) | Cloud | Mây | 구름 | ふわり |
+| Second named hen (currently Drizzle) | Drizzle | Mưa | 이슬 | しずく |
+| Schoolboy's frog (currently Captain) | Captain | Thuyền Trưởng | 대장 | たいちょう |
+| Planned barn cat (currently Miso) | Miso | Mít; introduce as Mèo Mít | 두부 | きなこ |
 
-Household labels remain **The Tran family / Gia đình Trần**, **The Okafor family / Gia đình Okafor**, **The Lindqvist family / Gia đình Lindqvist**, and **The Reyes family / Gia đình Reyes**. Their internal family IDs remain `tran`, `okafor`, `lindqvist`, and `reyes`.
+Hen and frog aliases are editorial adaptations. The gentle pair remains recognizable without requiring identical literal meanings in all four languages. There is no dog/hen name reuse. The Korean partner alias 미소 and English cat name Miso belong to different language editions; the Korean cat is 두부, so they do not collide within one edition.
 
-Suggested ensemble checks before approval:
+The cat's future gameplay is not implemented by naming it. Other livestock and wildlife need no individual personal names in this pass. Species/product labels remain separate: a hen called Mây still produces ordinary eggs.
 
-- The family at home: **Althea, Oswin, Sylvie, Tavi**.
-- School friends: **Tavi, Bảo Lâm, Nkiru, Paloma**, taught by **Coralie**.
-- Clinic: **Marisol, Ifeoma, Dr Vesper**.
-- Workshop and village repairs: **Quang Minh, Leandro, Rorik**.
-- Visiting growers: **Hải Yến, Bramwell**, followed later by the future neighbours below.
+## 5. Later cast: plan before introduction
 
-These groupings are reading checks, not new clubs, mechanics, or story events.
+The later roadmap already mentions Hugo (baker), Pearl (officer), Bea (office manager), Priya (neighbouring grower), two twins, Mr Albright (businessman), and Nana Tuyết (Pine Ridge keeper). Their old planning labels are not approved replacements for this playful set.
 
-### Optional central-family alternatives
+| Existing planning label and role | English | Vietnamese | Korean | Japanese |
+|---|---|---|---|---|
+| Hugo — baker | Muffin | Mạch | 호두 | こっぺ |
+| Pearl — officer | Pepper | Tiêu | 반짝 | ぴかり |
+| Bea — office manager | Penny | Hạt Dẻ | 차곡 | つむぎ |
+| Priya — orchard neighbour | Peach | Đào | 살구 | みかん |
+| First twin — individual identity pending | Pebble | Dâu | 누리 | そら |
+| Second twin — individual identity pending | Sprig | Dừa | 마루 | あおい |
+| Mr Albright — businessman | Mr Buttons | Ông Nút | 단추 | ひのき |
+| Nana Tuyết — elder keeper | Granny Snow | Bà Tuyết | 매실 할머니 | うめばあちゃん |
 
-Use the recommended quartet as one set. Alternatives below are review options only, not nicknames to mix into dialogue.
+Future names are optional proposals, not shipped people or authored introductions. The twins need two distinct person IDs when implemented; do not infer their age, gender, pronouns, or personality from these aliases. Elin and Olaf's exact kinship also remains unspecified. Nana is an affectionate title, not a newly invented relationship to the player. Other unauthored households should be named only when their role and first meeting are written.
 
-| Role | Recommended | One alternative | Editorial difference |
-|---|---|---|---|
-| Grandmother | Althea | **Aveline** | A softer, more flowing sound; keep the same practical character. |
-| Grandfather | Oswin | **Ansel** | More clipped and direct; would change the letter signature to `-A`. |
-| Partner | Sylvie | **Delphine** | Longer and more formal; phone-width check becomes more important. |
-| Child | Tavi | **Fenn** | More compact and earthy; requires the same complete retirement of Pip. |
+## 6. How names support the happy story
 
-Any chosen alternative must pass the same reference-cast and ensemble checks. Do not offer a second complete cast alongside this plan; settle the central family, then maintain one canonical table.
+Keep the short name stable. Let actual actions and dialogue make the person memorable. Descriptions should celebrate useful habits rather than belittle a character's appearance, age, ability, or circumstances.
 
-## 3. Planned humans, including both twins
+Examples for a future writing pass, **not implemented dialogue**:
 
-These are **proposed names for future characters**, not claims that their chapters, dialogue, relationships, or mechanics are implemented. Current JOURNEY explicitly leaves Priya and the twins' identities and first meetings unfinished. Older DESIGN provides farm and surname cues; these remain useful context but do not override the master plan.
+- **Bắp — người tìm kho báu tí hon.** “Con thấy gì lấp lánh bên kia kìa!” Only use an exploration hint when a real discoverable object is available; do not promise a coin reward for every action.
+- **Sóc — chân chạy của xóm.** A race or frog observation can reinforce the nickname without making every line about speed.
+- **Cốm — bạn nhỏ mê sách.** Give the child concrete observations and questions, not adult economic advice.
+- **Chú Mộc — người giữ hộp đinh.** Practical repair suggestions must check the available project and materials.
+- **Cún Đậu — đội trưởng đuổi quạ.** The description fits the dog's existing kennel role.
+- **Bà Mận — bếp bánh luôn ấm.** Keep her practical care, family memories, and specific connection to the oven.
 
-| Current planning name | Proposed display | Existing/planned ID status | Established proposed role and limits |
-|---|---|---|---|
-| Hugo | **Florian** | No current person ID | Baker who arrives with the market; a later dairy request. Keep his bakery role distinct from Thanh Lan's family cooking and future hired work. |
-| Pearl | **Solveig** | No current person ID | Officer who reopens the police post and reads the old reports. No family or nationality is established. |
-| Bea | **Beatrix** | No current person ID | Company-office manager and later adviser. The full name replaces the abbreviated display; do not alternate Bea/Beatrix without an explicit nickname rule. |
-| Priya | **Kavitha** | `priya` already used for a sign/backdrop; no current people record | Future neighbouring grower. Older DESIGN associates Hilltop Orchard, fruit, honey, and a calm voice. Preserve those as planning cues, not a claim of shipped content. |
-| The Nguyen twins: first individual | **Duy An** | `twins` currently identifies the shared future sign/backdrop | One of two future growers from the same holding. Older DESIGN supplies Nguyen/Nguyễn and Brookside. Individual role, age, pronouns, and introduction are still to be authored. |
-| The Nguyen twins: second individual | **Linh Chi** | No individual person ID yet | Give each twin a separate person ID when implemented. Distinct names support separate identities; do not assign personality or gender solely from the names. |
-| Mr Albright | **Mr Wetherby** | No current person ID | Flour-company businessman; first name remains unspecified. The opening sound is distinct from Coralie and Kavitha. He is capable of learning, not a designated villain. The business-choice design is separate from naming. |
-| Nana Tuyết | **Nana Tuyết** | No current person ID | Retain the distinctive existing name. Pine Ridge keeper and Althea's old school friend. Nana is an affectionate title, not evidence that she is related to the player. |
+Useful business advice, discoveries, and congratulations still use the existing shared game facts and stable topic IDs. Nicknames do not justify repeated generic jokes, premature story spoilers, invented lucky rewards, or a second advice system. English and Vietnamese must remain equally adaptive.
 
-The twins' English household label can remain **The Nguyen twins** for continuity with the existing family-label convention; Vietnamese uses **cặp song sinh nhà Nguyễn**. Their individual given names retain accents identically in both languages. Full legal-name order is unnecessary for the current UI; establish it separately if a later scene genuinely needs it.
+## 7. Implementation plan after the individual set is settled
 
-Future Pine Ridge households, other residents needed for later household counts, and the player's absent parent do not yet have authored identities. Do not fill these gaps with extra names merely to complete a list. The master plan defers the absent-parent addition.
+1. **One identity registry.** Store localized short names by stable character ID, with separate relationship/profession formatting. Prepare `en`, `vi`, `ko`, and `ja` values. English and Vietnamese are currently the complete UI languages; a Korean/Japanese name table alone must not expose a half-translated language option.
+2. **Explicit authored references.** Use identity tokens in new source content, resolved through the selected locale. Do not globally replace words in rendered strings: “Mai” can mean tomorrow in Vietnamese, and the player's text must remain untouched.
+3. **All display paths.** Cover chapter cards, speech, tutorial headers, order senders and text, arrivals, letters/signatures, heart scenes, wishes, family labels, advice/news, neighbour signs, kennel labels, and animal introductions. Keep professions, proper names, and kinship separate.
+4. **Rewrite name-dependent jokes.** The old B-O desk joke needs a new short scene, not a blind substitution. Grandfather's initials/signature and partner self-reference need deliberate localized wording. Preserve scene order and the same underlying story facts.
+5. **Compatible old text.** Old `orders.cards[].line` and `wishes.list[].text` can contain complete English sentences with former names. Use a narrow exact-source compatibility map at rendering or load time. Preserve goods, prices, sender IDs, progress, thresholds, and completion flags. Never reroll orders, reset mail, or pay rewards as part of a rename.
+6. **Save and art stability.** Keep person/family IDs, three-profile isolation, history IDs, discovery state, model filenames, and portrait icon IDs unchanged. Source-rig names are provenance, not extra game characters. Logic owns naming text; any actually embedded image lettering belongs to Claude's art lane.
+7. **Speaker review.** Preserve bà–cháu, ông–cháu, child con/cụ, other children's cháu, and each neighbour's established relationship rules. The partner can refer to herself by the new Vietnamese alias and address the player as mình. In future Korean/Japanese child dialogue, preserve the great-grandparent relationship too (증조할머니/증조할아버지; ひいばあちゃん/ひいじいちゃん), rather than substituting player-facing grandparent labels everywhere. The elder doctor remains distinct from the nurse and vet.
+8. **Meaningful checks.** Test name resolution in four locales and fallback behavior, literal player input, old-save order/wish rendering, locale switches without story/reward changes, and references across all supported UI surfaces. Check duplicate names within each edition. Run existing translation, story/pronoun, rules, and simulation tests plus the required build/browser suites for the eventual code pass.
+9. **Phone and release review.** Inspect 390 px chapter cards, dialogue, orders, mail, and family labels in English and Vietnamese. Check Korean/Japanese glyphs in the prepared name fixtures without advertising complete UI support. Work on `codex/*`, integrate current main, and deliver through a PR; do not push directly to main.
 
-## 4. Named animals
+## 8. Current delivery status
 
-The recommended animal set retains the five canonical names. They already have distinct referents and child-readable roles; keeping them also preserves the recent correction of the conflicting hen names. No character should share the dog's name.
+- [x] Confirmed the user's preference for playful, fun home names and independent names per language.
+- [x] Inspected the reachable Zoo Pet reference and separated observed names from our proposals.
+- [x] Researched local naming patterns and prepared the revised candidate sheet.
+- [ ] Settle individual names after the user reviews the proposed style and cast.
+- [ ] Implement localized name resolution and authored story updates.
+- [ ] Complete save-compatibility, pronoun, bilingual browser, and phone-layout checks.
+- [ ] Commit/review/deploy the eventual runtime change and verify the live names.
 
-| Canonical animal | Recommended name | Implementation identity | English / Vietnamese rule |
-|---|---|---|---|
-| Farm dog | **Biscuit** | Walker ID `dog`; kennel building kind `kennel` | **Biscuit** in both languages, including kennel labels, dialogue, and mail. |
-| First hen | **Cloud** | No dedicated named-person ID; first hen reaction | **Cloud / Mây**. This is an intentionally translated descriptive pet name. |
-| Second hen | **Drizzle** | No dedicated named-person ID; second hen reaction | **Drizzle / Mưa Phùn**. Keep the weather-name pairing with Cloud. |
-| Bảo Lâm's frog | **Captain** | Mentioned in dialogue; no separate actor | **Captain / Thuyền Trưởng**. Keep the child's earnest title. |
-| Future barn cat | **Miso** | Planned name in roadmap; existing decorative cat asset | **Miso** in both languages. Naming the planned cat does not implement its barn role. |
-
-**Pancake is obsolete**, not an additional canonical animal. The review identified unused translations describing hens named Pancake and Biscuit; current English content establishes Cloud and Drizzle. Those unused keys are removed in the review follow-up rather than made part of the story. Mail stores a letter ID and resolves current content, so these retired keys are not needed to preserve old letters.
-
-The teddy, horse, other livestock, ducks, geese, fish, and wildlife have no individual canonical names. A child says the pond fish share a name, but that name is never supplied; do not invent it in this pass.
-
-## 5. English and Vietnamese identity sheet
-
-Human personal names refer to the same people in both languages. Relationship words and professional titles adapt to the speaker and listener. The renaming pass must preserve the story facts in both versions, not just substitute labels in the English source.
-
-| Character(s) | Established Vietnamese relationship rule after rename |
-|---|---|
-| Althea | **bà – cháu**; player role label remains **Bà nội**; the established tutorial response remains **Cháu biết rồi ạ**. |
-| Oswin | **ông – cháu**; remains away upriver in current content. Review each letter's localized sign-off deliberately instead of mechanically appending `-O`. |
-| Sylvie | Refers to herself as **Sylvie** and addresses the player **mình**. |
-| Tavi | Uses **con**. Calls Althea and Oswin **cụ**, reflecting that they are the child's great-grandparents. English Granny/Grandpa remains the established affectionate convention unless separately rewritten. |
-| Quang Minh, Chike, Leandro | **chú – cháu**. |
-| Thanh Lan, Ifeoma, Marisol, Coralie | **cô – cháu**. Coralie calls pupils **các em**. |
-| Bảo Lâm, Nkiru, Paloma | **cháu**, preserving the distinction from the player's own child. |
-| Elin, Hải Yến | **chị – em**. |
-| Rorik | **ông – cháu**. |
-| Bramwell | **bác – cháu**. |
-| Dr Vesper | **bà – cháu** toward the player. Marisol calls her former teacher **cô** and herself **em**; Althea addresses Vesper as a fellow elder. |
-
-Future characters need their own speaker/listener rules before implementation. Do not infer Vietnamese pronouns for the twins, Kavitha, or other future people from their proposed names alone.
-
-Names may receive appropriate relationship prefixes in Vietnamese display text: for example **Bà Althea**, **Cô Coralie**, **Bác Bramwell**, and **Bác sĩ Vesper**. These prefixes do not change the canonical name. Keep existing place translations, especially **Hollowbrook / Thung Suối**, outside the character rename scope.
-
-Name-dependent lines need authored replacements:
-
-- The desk scene must reflect Bảo Lâm's new name without the old two-letter spelling joke. Keep the joke about a proud carpenter spending all night on a small personal detail.
-- Nkiru's letter should still show the child's pride in writing her name, with the same age and factual content in both languages.
-- The grandfather's English letter signature must match Oswin; retain the localized letter style rather than assuming every Vietnamese letter includes a signature today.
-- Tavi's self-introduction to a hen, the recipe-book inheritance line, Brook Club lines, school play, and family references all use the new names.
-- Titles, apostrophes, capitalization, diacritics, and names embedded inside complete sentences must be reviewed together.
-
-## 6. Confirmed content follow-ups
-
-These are existing inconsistencies or unresolved facts found during the inventory. Record their treatment in the eventual implementation PR.
-
-| Finding | Required treatment |
-|---|---|
-| Pia's former role was `Little sister`, but no sibling is identified | Corrected in the review to **Young neighbour / Cô bé hàng xóm**; no name or family-history change. |
-| `vi-cast.mjs` retained an unused Pancake hen reaction | Removed in the review after auditing callers; preserve the canonical Cloud/Drizzle sequence. |
-| `vi.mjs` retained a superseded letter describing Pancake and Biscuit as hens | Removed in the review; saved mail resolves its stable ID to current text. |
-| The story test preserved Pancake as a proper name | Replaced by canonical animal-name coverage in the review. |
-| Elin and Olaf share a household, but their exact kinship is unspecified | Preserve this uncertainty for Elin/Rorik; a rename must not turn them into spouses or parent/child. |
-| Hazel uses `Dr` before her name, without a documented surname distinction | Preserve the display convention for Dr Vesper; avoid claiming a full legal name. |
-| Priya and twins have map IDs but no implemented people records | Preserve existing sign IDs; label all proposed identity work as future. |
-| Twins are grouped in old planning text | Give them individual names and later separate authored voices, while retaining the shared holding identity. |
-| Several names also occur in older research or asset provenance | Update active story-facing guidance, but do not rewrite factual provenance as if source assets were originally named after the new cast. |
-
-## 7. Technical implementation plan
-
-This section describes a later authorized implementation. This document alone makes no runtime changes.
-
-### 7.1 Keep identity separate from display
-
-Preserve existing internal person IDs, family IDs, event IDs, letter IDs, beat IDs, asset IDs, and building kinds. For example, `pip` may display **Tavi**, `gus` may display **Bramwell**, and `ellis-1` remains the same letter after Oswin signs it. This avoids resetting friendships, replaying rewards, or orphaning save data.
-
-Existing ID references include:
-
-- `s.people`, family assignments in `s.homes`, and `s.neighbours`.
-- Order senders, gift statistics such as `stats.liked.sam`, wishes, mail senders, heart-scene history, and saved news event payloads.
-- Letter prerequisite chains such as `ellis-1` through `ellis-8`, and beats such as `biscuit-home` and `okafors-coming`.
-- Walker identities, helper events, appearance maps, speaking rules, portrait references, and the future `priya`/`twins` signs.
-
-If a later engineering task chooses semantic IDs, it must be a separately reviewed migration with a complete old-to-new mapping. That migration is unnecessary for this naming change.
-
-### 7.2 Update every visible source, not just `name`
-
-Audit at least:
-
-- `src/content/people.mjs`: display names, orders, idle remarks, self-introductions, family references, advice.
-- `src/content/story.mjs`, `hearts.mjs`, `letters.mjs`, `chatter.mjs`, and `journey.mjs`: chapter prose, speakers' text, signatures, captions, wishes, future roadmap labels.
-- Other content labels containing people or pets, including `buildings.mjs`.
-- UI literals in `src/ui/guide.mjs`, `hud.mjs`, `panels.mjs`, and the name lookup/rendering paths in bonds panels.
-- `src/view/people-view.mjs`: the `FAMILY_NAMES` fallback and any hard-coded visible names. Keep behaviour IDs and palette keys stable.
-- `src/i18n/vi.mjs` and contributing dictionaries such as `vi-cast.mjs`: complete exact-English keys and Vietnamese values, including inherited/stale entries and translated parameters.
-- Story bible, journey, master plan, task list, art brief, and active asset requests so the two lanes use one cast sheet.
-
-Where practical, route labels through the existing people data instead of adding another hard-coded name table. A broader localization architecture rewrite is outside this task.
-
-### 7.3 Handle old saves that contain literal text
-
-Stable IDs protect relationships and progress, but they do **not** update every already-saved visible sentence. Current save data stores:
-
-- `orders.cards[].line`: the English source sentence selected when an order was created.
-- `wishes.list[].text`: the chosen wish sentence, which can mention another character.
-
-Create an explicit mapping from old canonical source sentences to their new versions, and normalize these supported persisted fields on load. Keep the order's sender ID, goods, amount, reward, timing, and completion state unchanged. Keep each wish's home, person, kind, and done flag unchanged. Do not regenerate cards, reroll wishes, reset letters, or grant story rewards during a text migration.
-
-Mail content is looked up from its stable letter ID, and heart scenes are looked up from person/threshold/variant metadata; preserve those identifiers so they naturally render current names. Review saved news payloads for any exceptional literal text before claiming full coverage. Do not perform unrestricted string replacement over arbitrary saves or the player's chosen name.
-
-Keep compatibility for old imported saves as well as the current browser save and backup. Decide whether retired translation keys are removed immediately or kept briefly for compatibility; either choice must have a documented caller and a test, not accidental duplicate lore.
-
-### 7.4 Assets and lane coordination
-
-Portrait icons use stable `person:<id>` and `family:<id>` identities. Shared rigs are generic models. A name-only pass should not rename `.glb` or `.webp` files, change character appearance, or rebuild binary assets.
-
-`hana.glb` is the source rig currently used for Ada/Althea, not a second Hollowbrook character. Preserve its factual provenance. Review story pictures and captions for visible lettering; only actual text embedded in an image would need an art-lane follow-up. Do not presume that such lettering exists without inspecting it.
-
-Logic owns content, UI behavior, Vietnamese, and compatibility. Art owns any required image or model edits under AGENTS.md. A new name does not itself authorize a visual redesign or a new model.
-
-### 7.5 Verification and acceptance
-
-Verify meaningful outcomes:
-
-1. Every current and planned named character appears exactly once in the approved identity sheet, including both twins and the five named animals.
-2. The home family, children, clinic staff, and neighbours are easy to distinguish when their names are read aloud and displayed together.
-3. English and Vietnamese preserve relationships, ages, arrivals, story order, and the same named individuals. Diacritics render correctly.
-4. New-game UI contains no retired visible human names. Remaining occurrences are deliberate stable identifiers, historical provenance, migration source strings, or tests of compatibility.
-5. An old save containing an order and wish with a retired name loads with new display text and unchanged economic values, completion states, bonds, mail-read flags, and scene rewards.
-6. Existing story, translation-coverage, pronoun, rules, and simulation checks pass. Follow the repository's required build and browser checks for the implementation scope.
-7. Inspect phone dialogue, chapter cards, order cards, mail, neighbour labels, and family labels at 390 px in English and Vietnamese. Fuller names must wrap without covering actions or overflowing bubbles.
-8. Ensure known reference-cast collisions were checked against official sources before adopting the set. A shared ordinary name is not automatically copying, but prominent avoidable collisions should be considered deliberately.
-9. Add implementation notes to CHANGELOG and the journey status only when the runtime pass actually happens. Do not mark this proposal as shipped.
-
-## 8. Source notes
-
-Repository evidence for this draft:
-
-- [Story bible](STORY.md): cast, pronouns, relationships, animal names, chapter boundary, and story rules.
-- [Journey](JOURNEY.md): proposed later cast, Nana Tuyết, the businessman, future cat, and the twins' unsettled status.
-- [Master implementation plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md): current decision precedence, deferred family expansion, language rules, and future story scope.
-- [Older design](DESIGN.md): Hilltop Orchard, Brookside, and Nguyen-twins naming cues; use as context, not as current implementation status.
-- `src/content/people.mjs`, `story.mjs`, `hearts.mjs`, `letters.mjs`, and `journey.mjs`: implemented names and name-dependent wording.
-- `src/core/state.mjs`, `orders.mjs`, `bonds.mjs`, `src/kit/save.mjs`, and `src/view/people-view.mjs`: saved identity/text and display paths.
-- `src/i18n/vi.mjs`, `vi-cast.mjs`, and `tests/story.test.mjs`: localized proper-name rules and the stale Pancake remnants.
-- [Cast provenance](assets/cast-provenance.md): source-rig names and existing animal assets.
-
-Official reference-game sources are linked in section 1. This proposal makes no claims about name rarity, meaning, etymology, or exhaustive reference-game uniqueness. The review's small consistency fixes do not constitute acceptance or implementation of the proposed human names.
+No character rename has been deployed by this planning update. [STORY.md](STORY.md) still documents the live cast and pronouns until the implementation pass updates it coherently.

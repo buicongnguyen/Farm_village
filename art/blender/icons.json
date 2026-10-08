@@ -948,6 +948,13 @@
   "preset": "building"
  },
  {
+  "id": "trail_picnic_ribbon",
+  "src": "raw:exploration-props",
+  "root": "trail_picnic_ribbon",
+  "preset": "goods",
+  "rough": 0.6
+ },
+ {
   "id": "apple_juice",
   "src": "raw:items",
   "root": "item_apple_juice",

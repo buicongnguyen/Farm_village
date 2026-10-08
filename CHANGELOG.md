@@ -1,5 +1,18 @@
 # Changelog
 
+## A picnic discovery trail and story-order fixes (2026-10-08)
+
+- After the first delivered order, explore the farmhouse porch, follow a note to the pond, and bring a picnic ribbon home. Three optional English/Vietnamese scenes form one happy family memory; completing it grants one flowerpot in storage. Start from Today or the farmhouse's **Explore the porch** menu.
+- Save version 8 keeps each farm's steps and read state, with durable completion markers. Reading, replaying, reloads and migration never grant another flowerpot. Only earned unread memories contribute to the Today badge; queued cards are acknowledged when visible.
+- Personal favours now wait for the requesting household to arrive. Old premature requests remain saved and return after arrival without blocking three usable goal slots.
+- Stored and rebuild-credit placement previews reflect the actual charge, so the earned flowerpot is visibly free to place.
+- **AR-010 integrated:** Claude's PR #13 models and pink ribbon icon are connected to saved progression in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18). The porch box appears after the first order; its clue reveals the pond cache. World taps open explicit controls, state changes swap the models, and optional download failure leaves menus usable. Close-up targets remain finger-friendly; distant targets preserve ordinary fishing taps.
+- **Validation:** the combined AR-010/logic tree passed 261 native tests, pace targets, all 19 component browser suites and 28/28 smoke checks. All 8 discovery checks passed after the final tap-target correction; four English/Vietnamese phone/desktop contexts passed local production acceptance. After the final factory merge, native/pace, discovery/art/orchard checks, all 28 smoke checks and four local production contexts passed again. The full 19-suite run preceded that final content merge. First-load code: 1,025,453 bytes test / 1,024,378 bytes production. [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) records deployment/live acceptance. Covered land, skills/project energy and later chapters remain planned; see [delivery and story review](docs/DISCOVERY-TRAIL.md).
+
+## Playful local names — proposal only (2026-10-08)
+
+- Replaced the withdrawn formal-name proposal with the user-confirmed playful/home-name direction. The [revised naming plan](docs/CHARACTER-NAMING-PLAN.md) records the inspected Zoo Pet reference, language sources, and candidate English/Vietnamese/Korean/Japanese aliases for the current and planned cast. Individual names are still proposed; runtime names, saves, story behavior, and the live game are unchanged.
+
 ## Food factories: juice press and noodle factory (2026-10-08)
 
 - **Juice press** (level 6, 600): apple juice (40), carrot juice (26), orange juice (70). **Noodle factory** (level 8, 1,200): noodles (2 for 4 wheat + 1 egg, 30 each) and instant noodles (95). The same farm goods, worth 2–3× after processing. Models, product icons and Vietnamese names.

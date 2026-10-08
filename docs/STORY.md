@@ -110,6 +110,15 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | 8 | Work for everyone | Ten households. The company office reopens, and Bea runs it. | With Ellis's notes, the village buys the water rights back from the office's first big contract. The sluice opens and the mill wheel turns again. |
 | 9 | The village sings again | The festival stage is rebuilt. | Gus tells the truth: a storm knocked over the lanterns he was minding, and the stage burned. Ada's undelivered letter (in Sam's scene) thanked him for saving the children that night. Gus lights the first new lantern. |
 
+### Optional picnic memory
+
+`src/content/exploration.mjs` adds a three-step trail after the first order: a porch note, a ribbon in a pondside tin,
+and a family recollection back home. Ada once took the picnic basket to the pond while the bread stayed at home.
+Pip volunteers to carry the bread next time; June brings the blanket. Completion grants one stored flowerpot.
+Steps and acknowledgment are saved independently of chapters and letters. This trail does not reveal a sluice key,
+bring Ellis home, or advance chapter 6. Its English and Vietnamese follow the same progression and use the current
+runtime cast names; the playful naming sheet is still a proposal. The Vietnamese lines live in `vi-exploration.mjs`.
+
 ## 5. Data and schemas (shared with the play and ui packages)
 
 - `story.mjs`: `VILLAGE_NAME`. `CHAPTERS[]` = `{ id, title, subtitle, icon, text, ada, panels: [{ img, caption }], when(s), teaser? }`.

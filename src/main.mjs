@@ -27,6 +27,9 @@ import { LevelUp } from './ui/levelup.mjs';
 import { autosave, save, pack, unpack, erase, activeProfile, profileId, inspectProfile, selectProfile } from './kit/save.mjs';
 import { renderProfiles } from './ui/profiles-panel.mjs';
 import { watchDiscoveries } from './ui/discovery-panels.mjs';
+import { watchExploration } from './ui/exploration-panels.mjs';
+import { ExplorationView } from './view/exploration-view.mjs';
+import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
@@ -87,6 +90,14 @@ panels = new Panels(app, game, hud, {
     if (id) { const p = game.s.placed[id]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); if (BUILDINGS[at].produces && levelOf(game.s, id) < 3) panels.show('production', id); }
     else { build.cat = BUILDINGS[at].cat; build.start(at); }
   },
+  onExplorePlace: place => {
+    if (!['porch', 'pond'].includes(place)) return;
+    if (build.open) build.close(); radial.hide();
+    world.exploration?.ensureLoaded();
+    const spot = EXPLORATION_SITES[place];
+    flyTo(spot.x * CELL, spot.z * CELL, Math.min(world.cam.span, 38));
+    panels.show('exploration', place);
+  },
   onSave: handleSave,
   // Advice points to the exact placed building and previews its repair without paying for it.
   onAdviceTarget: ({ id }) => {
@@ -121,7 +132,12 @@ world.cam.attach(canvas, {
   onTap: (x, y) => {
     const cell = world.cellAt(x, y);
     if (build.open) build.tap(cell);
-    else { panels.close(); radial.tap(cell, x, y); }
+    else {
+      panels.close();
+      const place = world.exploration?.pick(x, y);
+      if (place) { radial.hide(); panels.show('exploration', place); }
+      else radial.tap(cell, x, y);
+    }
   },
 });
 canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !e.buttons && build.open) build.hover(world.cellAt(e.clientX, e.clientY)); });
@@ -162,6 +178,8 @@ new CartView(world, game);
 new Critters(world, game);
 new Daylight(world, game);
 watchDiscoveries(game, hud);
+watchExploration(game, hud);
+world.exploration = new ExplorationView(world, game);
 game.start();
 applySettings();
 saveSession = autosave(game, profile);

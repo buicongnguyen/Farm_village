@@ -21,6 +21,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT = os.path.join(ROOT, 'public', 'assets', 'models', 'farm-kit.glb')
 OUT_DECOR = os.path.join(ROOT, 'public', 'assets', 'models', 'decor.glb')
 OUT_DISCOVERY = os.path.join(ROOT, 'public', 'assets', 'models', 'discovery-props.glb')
+OUT_EXPLORATION = os.path.join(ROOT, 'public', 'assets', 'models', 'exploration-props.glb')
 ANCHOR_JSON = os.path.join(os.path.dirname(__file__), 'anchors-farm-kit.json')
 reset_scene()
 C = {}
@@ -82,7 +83,7 @@ def roof_rows(w, d, h, x, y, z, mt, mt2, rows=5, over=.22, thick=.09):
     p[-1].location = (x, -y, z + h + .03)
     return p
 
-pieces, decor, discovery, anchors = [], [], [], {}
+pieces, decor, discovery, exploration, anchors = [], [], [], [], {}
 def piece(name, parts, into=None, tint=None):
     (into if into is not None else pieces).append((name, parts, tint))
 
@@ -1040,6 +1041,66 @@ def lucky_box():
     return p
 piece('lucky_box', lucky_box(), discovery)
 
+
+# =================================================================== discovery trail (AR-010)
+# An optional old-object trail (docs/CLAUDE-DISCOVERY-TRAIL-HANDOFF.md): an old box by the forecourt bench, a little cache
+# beside the pond dock, a faded picnic ribbon. World size (they stand on the ground by the bench and the dock), origin at
+# the base centre, front +z; one state of each is shown at a time (closed / open). Kit: exploration-props.glb.
+def porch_box(open_):
+    """An old, friendly wooden box: weathered planks, rope handles, iron corners; open, a folded note inside."""
+    W, D, H = .62, .42, .3
+    p = [bx('body', W, D, H, 0, 0, 0, 'woodl', bev=.02), bx('band', W + .01, D + .01, .05, 0, 0, .06, 'woodd', bev=.01),
+         bx('base', W + .03, D + .03, .03, 0, 0, 0, 'wooddd', bev=.01)]
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p.append(bx('corner', .05, .05, .06, sx * (W / 2 - .01), sy * (D / 2 - .01), H - .06, 'iron', bev=.008))
+        p.append(st((sx * (W / 2 + .01), -.08, H * .6), (sx * (W / 2 + .05), 0, H * .45), .018, 'sack', sides=4))
+        p.append(st((sx * (W / 2 + .05), 0, H * .45), (sx * (W / 2 + .01), .08, H * .6), .018, 'sack', sides=4))
+    if open_:
+        t, hy, hz = .25, -D / 2, H
+        y, z = tilted(t, hy, hz, -.022, D / 2); p.append(box('lid', (W + .02, .045, D + .02), (0, -y, z), C['wood'], bev=.015, seg=1, rot=(-t, 0, 0)))
+        p.append(bx('inside', W - .05, D - .05, .01, 0, 0, H - .02, 'wooddd', bev=0))
+        p.append(bx('note', .16, .11, .015, .06, .04, H - .01, 'paper', bev=.004, rot=.3))
+        p.append(bx('notefold', .16, .02, .016, .06, -.01, H - .006, 'cream', bev=0, rot=.3))
+    else:
+        p.append(bx('lid', W + .02, D + .02, .05, 0, 0, H, 'wood', bev=.015))
+        p.append(bx('clasp', .07, .02, .07, 0, D / 2 + .01, H - .05, 'iron', bev=.006))
+    return p
+piece('trail_porch_box_closed', porch_box(False), exploration)
+piece('trail_porch_box_open', porch_box(True), exploration)
+
+def pond_cache(open_):
+    """A little weathered tin on dry ground, a tuft of reeds and ivy at its side; open, the ribbon peeks out."""
+    p = [cl('tin', .17, .16, 0, 0, 0, 'teald', verts=14), cl('band', .172, .04, 0, 0, .06, 'rim', verts=14),
+         cl('rust', .175, .02, 0, 0, 0, 'woodd', verts=14), ball('earth', .3, 0, 0, 0, 'soill', sub=2, sc=(1.4, 1.2, .12))]
+    for k, (x, y) in enumerate(((-.2, -.1), (-.24, .05), (-.17, .12))):
+        p.append(st((x, y, 0), (x - .04, y + .02, .32 + k * .06), .014, 'leaf', sides=3))
+    p.append(lf((.15, .1, .02), .4, .16, .1, 'leafwd', lift=.05, droop=.02))
+    p.append(lf((.18, -.05, .02), -.5, .14, .09, 'leaf', lift=.04, droop=.02))
+    if open_:
+        p.append(cl('lid', .18, .03, .26, .02, .0, 'teal', verts=14, rot=(.2, -.3, 0)))
+        p.append(bx('ribbon', .05, .26, .012, 0, -.02, .17, 'pink', bev=.004, rot=.4))
+        p.append(st((.05, .1, .17), (.12, .2, .03), .012, 'pink', sides=3))
+    else:
+        p.append(cl('lid', .18, .04, 0, 0, .16, 'teal', verts=14))
+        p.append(cl('knob', .04, .03, 0, 0, .2, 'rim', verts=8))
+    return p
+piece('trail_pond_cache_closed', pond_cache(False), exploration)
+piece('trail_pond_cache_open', pond_cache(True), exploration)
+
+def picnic_ribbon():
+    """A faded picnic ribbon: a soft pink bow with two tails and a little checked tag, worn but cared for (no lettering)."""
+    p = []
+    for sx in (-1, 1):
+        p.append(ball('loop', .09, sx * .1, 0, .12, 'pink', sub=2, sc=(1.3, .45, .9)))
+        p.append(st((sx * .02, 0, .1), (sx * .12, -.03, -.08), .022, 'pink', sides=4))
+        p.append(st((sx * .12, -.03, -.08), (sx * .14, -.04, -.16), .02, 'blossomd', sides=4))
+    p.append(ball('knot', .045, 0, -.02, .11, 'blossomd', sub=2, sc=(1, .7, 1)))
+    p.append(bx('tag', .07, .015, .07, .03, -.05, -.02, 'cream', bev=.006, rot=.2))
+    p.append(bx('check', .03, .016, .03, .02, -.055, -.005, 'red', bev=0, rot=.2))
+    for o in p: o.location.z += .2   # the tails' tips rest on the ground (base pivot)
+    return p
+piece('trail_picnic_ribbon', picnic_ribbon(), exploration)
 # =================================================================== orchard (v0.4)
 def cherry_tree(ripe=True):
     p = cute('cherry', 'leafw', 'blossoml', 'leafwd')
@@ -1141,5 +1202,7 @@ for o in kobjs:
     d = o.dimensions
     print(f'{o.name} (handheld): {d.x:.3f} x {d.y:.3f} x {d.z:.3f} m (w x d x h)')
 print(f'wrote {OUT_DISCOVERY} ({packed(kobjs, OUT_DISCOVERY)} bytes)')
+xobjs = build(exploration)   # the discovery trail (AR-010), world size
+print(f'wrote {OUT_EXPLORATION} ({packed(xobjs, OUT_EXPLORATION)} bytes)')
 json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
 print('anchors', ANCHOR_JSON)
