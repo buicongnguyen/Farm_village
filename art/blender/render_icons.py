@@ -212,7 +212,8 @@ def render(job):
                 o.rotation_euler.z += math.radians(job['spin'])
         bpy.context.view_layer.update()
     job = {**PRESETS.get(job.get('preset', ''), {}), **job}
-    surface(meshes, job.get('rough', .55), job.get('metal', 0.0))
+    raw = job['src'].startswith('raw:')   # sibling-repo models keep their authored gloss and metal unless the job says
+    surface(meshes, job.get('rough', .55 if raw else None), job.get('metal', 0.0 if raw else None))
     portrait = job.get('portrait')
     az, el = job.get('view', [0, 6] if portrait else [-35, 28])
     az, el = math.radians(az), math.radians(el)
@@ -224,6 +225,7 @@ def render(job):
         pts.extend(ev.matrix_world @ v.co for v in me.vertices)
         ev.to_mesh_clear()
     lo = Vector([min(p[k] for p in pts) for k in range(3)]); hi = Vector([max(p[k] for p in pts) for k in range(3)])
+    ground = lo.z   # the floor goes under the whole subject, not at a portrait's crop line
     if portrait:   # head and shoulders: the top part of the figure(s)
         cut = hi.z - (hi.z - lo.z) * job.get('crop', .36)
         pts = [p for p in pts if p.z >= cut]
@@ -247,13 +249,13 @@ def render(job):
     # key, a soft warm fill at 25 %, a rim at 35 %; and a floor out of the camera's sight for warm bounce and contact shade
     right, up, back = cam.matrix_world.col[0].xyz.normalized(), cam.matrix_world.col[1].xyz.normalized(), d.normalized()
     Rr = max(1e-3, max(w, h))
-    for vec, dist, sz, k, col in (((-.8, .9, 1.0), 2.2, 3.0, 1.0, (1, .93, .82)), ((1.0, .1, .8), 2.5, 4.0, .25, (1, .97, .92)),
+    for vec, dist, sz, k, col in (((-.8, .9, 1.0), 2.2, 3.0, 1.0, (1, .93, .82)), ((1.0, .1, .8), 2.5, 4.0, .25, (.82, .9, 1.0)),
                                   ((.5, .8, -1.0), 2.2, 1.0, .35, (1, .92, .80))):
         v = (right * vec[0] + up * vec[1] + back * vec[2]).normalized()
-        area(c + v * dist * Rr, c, sz * Rr, KEY * (1.35 if portrait else 1.0) * k * (dist * Rr) ** 2, col)   # faces a little brighter
-    bpy.ops.mesh.primitive_plane_add(size=8 * Rr, location=(c.x, c.y, lo.z - .001))
+        area(c + v * dist * Rr, c, sz * Rr, KEY * (1.1 if portrait else 1.0) * k * (dist * Rr) ** 2, col)   # faces a little brighter
+    bpy.ops.mesh.primitive_plane_add(size=8 * Rr, location=(c.x, c.y, ground - .001))
     floor = bpy.context.active_object; fm = bpy.data.materials.new('bounce'); fm.use_nodes = True
-    fb = next(n for n in fm.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'); fb.inputs['Base Color'].default_value = linear('#E8B070'); fb.inputs['Roughness'].default_value = 1
+    fb = next(n for n in fm.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'); fb.inputs['Base Color'].default_value = linear('#E6D3B8'); fb.inputs['Roughness'].default_value = 1
     floor.data.materials.append(fm)
     try:
         floor.visible_camera = False
@@ -276,7 +278,7 @@ for job in jobs:
         print('SKIP', job['id'], e)
 post = os.path.join(HERE, 'icon_post.py')
 jf = os.path.join(TMP, 'job.json')
-json.dump({'raw': raw, 'size': size, 'out': OUT, 'glow': {}, 'preview': tempfile.gettempdir()}, open(jf, 'w'))
+json.dump({'outline': {j['id']: j['outline'] for j in jobs if 'outline' in j}, 'raw': raw, 'size': size, 'out': OUT, 'glow': {}, 'preview': tempfile.gettempdir()}, open(jf, 'w'))
 r = subprocess.run(['python', post, jf], capture_output=True, text=True)
 print(r.stdout[-3000:], r.stderr[-3000:])
 print('ICONS', len(raw))
