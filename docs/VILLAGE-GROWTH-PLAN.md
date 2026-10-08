@@ -14,6 +14,7 @@ space) stay cheap. The big money goes to civic buildings and their upgrades, whi
 | 2. Premium crops | 7–10 | **healing herb** (45, 15 min, level 7), **ginseng** (120, 40 min, level 9) | the school (restored), clinic upgrades | **this PR** (crops, models, icons) |
 | 3. Services | 10–14 | herbal remedies made from herbs (an apothecary recipe), school-trained helpers | **hospital** (clinic upgrade), **police station** | planned |
 | 3b. Food factories | 12–16 | **processing the same farm goods for more profit**: a noodle factory (wheat + egg → instant noodles), a snack factory (corn, potato-style crops → chips; fruit → dried fruit), later a herbal tea packer (herb → tea) | the shop buildings below; each factory has upgrades for more slots | planned (user idea, 2026-10-08) |
+| 4a. Company | 15–18 | branded factory goods, bulk contracts from shops and other towns (delivered by truck) | staff, more factories, the village's big buildings | planned (user idea, 2026-10-08) |
 | 4. Shops | 14–18 | shop takings: supermarket and department store sell your goods at a markup | **supermarket**, **department store** | planned |
 | 5. Town | 18–24 | rent from apartments | **tall buildings** (apartments), **paved streets with cars** | planned |
 | 6. Leisure | 24+ | visitors' spending | **entertainment**: park and playground, cinema, fair | planned |
@@ -40,3 +41,21 @@ taps, so they suit a player who checks in now and then; their real role is high-
 stages 3–4.
 
 See `PRODUCT-CHAINS.md` for what each farm good can be processed into, and the factory ladder.
+
+## Stage 4a: the company (user idea, 2026-10-08)
+
+Unlocked once the player owns two or three factories.
+
+1. **Company office.** Build it in the village (the existing `company` model in `town.glb`) and name the company.
+   Upgrades (2–3 levels) add staff slots, more contracts at once and more factories.
+2. **Hiring villagers.** People become workers or managers, each keeping their own story and lines:
+   - a **worker** in a factory makes it faster or keeps it running while the player is away;
+   - a **manager** restocks a factory's ingredients from the barn automatically.
+3. **Products and contracts.** Factory goods carry the company's brand (for example "Hollowbrook Noodles").
+   The supermarket, department store and other towns send bulk contracts that pay more than single orders;
+   the trucks deliver them.
+4. **Giving back.** Company profits pay for the hospital, tall buildings and roads, so the village visibly grows
+   because of the player's company (the "farmer to billionaire" goal).
+
+Lanes: art makes the office and its upgrade tiers, worker outfits, branded product icons and the factory buildings;
+logic makes hiring, contracts, staff effects, balance and Vietnamese text.
