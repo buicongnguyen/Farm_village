@@ -6,7 +6,7 @@ import { STEPS } from '../content/projects.mjs';
 import { FAMILIES, NEIGHBOURS } from '../content/people.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { BUILDINGS, COTTAGE_LEVELS } from '../content/buildings.mjs';
-import { RENT, CHARM_MILESTONES } from '../content/economy.mjs';
+import { RENT, BONDS, CHARM_MILESTONES } from '../content/economy.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild, madeAt } from '../core/projects.mjs';
 import { charmOf, rentPerHour, rentWaiting, needsOf } from '../core/homes.mjs';
 import { levelOf, isRepairing } from '../core/working.mjs';
@@ -22,6 +22,13 @@ const neighbour = id => t(NEIGHBOURS.find(n => n.id === id)?.name ?? '');
 const giftText = g => g.coins ? `${coinMark()} ${num(g.coins)}` : g.goods ? Object.entries(g.goods).map(([id, n]) => `${goodIcon(id, 'mini')} ×${n}`).join(' ')
   : Object.entries(g.stored).map(([k, n]) => `${iconHtml(k, '', 'mini')} ${t(BUILDINGS[k].name)} ×${n}`).join(' ');
 const milestone = at => CHARM_MILESTONES.find(m => m.at === at);
+/** Old news overwrote the scene threshold with its date. Recover only an unambiguous album match. */
+function heartThreshold(e, s) {
+  if (BONDS.scenes.includes(e.threshold)) return e.threshold;
+  if (BONDS.scenes.includes(e.at)) return e.at;   // a live event passed directly by a caller
+  const matches = BONDS.scenes.filter(at => s?.firsts?.[`heart:${e.person}:${at}`] === e.at);
+  return matches.length === 1 ? matches[0] : null;
+}
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
   repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
@@ -32,10 +39,17 @@ export const NEWS = {
   neighbourVisit: e => `${faceHtml(e.id, 'mini-face')} ${t('{name} visited and helped your crops', { name: neighbour(e.id) })}`,
   traded: e => `${faceHtml(e.id, 'mini-face')} ${t('You traded with {name}', { name: neighbour(e.id) })}`,
   levelUp: e => `${glyph('star', 'g')} ${t('Level {level}!', { level: e.level })}`,
-  heartScene: e => `${glyph('heart', 'g')} ${t('{name} and you: {count} hearts', { name: nameOf(e.person), count: e.at })}`,
+  heartScene: (e, s) => {
+    const count = heartThreshold(e, s), name = nameOf(e.person);
+    return `${glyph('heart', 'g')} ${count == null ? `${t('Heart scene')} · ${name}` : t('{name} and you: {count} hearts', { name, count })}`;
+  },
   wishGranted: e => `${glyph('charm', 'g')} ${t('You granted {name}\'s wish: {item}', { name: nameOf(e.person), item: t(BUILDINGS[e.kind]?.name ?? e.kind) })}`,
   cartSent: e => `${glyph('cart', 'g')} ${t('Market cart takings: {coins} coins', { coins: num(e.coins ?? 0) })}${e.decor && BUILDINGS[e.decor] ? ` · ${iconHtml(e.decor, '', 'mini')}` : ''}`,
-  charmMilestone: e => `${glyph('charm', 'g')} ${t('Village charm {charm}: {name} goes up', { charm: e.at, name: t(milestone(e.at)?.name ?? e.decor) })}`,
+  charmMilestone: e => {
+    // Legacy news still identifies the milestone by its decoration even though at is a timestamp.
+    const reached = milestone(e.threshold ?? e.at) ?? CHARM_MILESTONES.find(m => m.decor === e.decor);
+    return `${glyph('charm', 'g')} ${t('Village charm {charm}: {name} goes up', { charm: reached?.at ?? e.charm, name: t(reached?.name ?? e.decor) })}`;
+  },
   letter: e => `${glyph('mail', 'g')} ${t('A letter came from {name}', { name: nameOf(e.from) })}`,
 };
 
@@ -61,7 +75,7 @@ export function renderToday(s, now) {
     ${wishes.length ? `<h3>${t("Today's wishes")}</h3>${wishes.map(x => wishLine(s, x.home)).join('')}` : ''}
     ${step ? `<h3>${t('Next project')}</h3><button class="next-project" data-do="projects">${glyph('projects', 'g')} ${t(step.name)} <small>${stepReady(s, now).ok ? t('Ready to start') : t('Not open yet')}</small></button>` : ''}
     ${trades ? `<h3>${t('Trades')}</h3>${trades}` : ''}
-    ${s.news?.length ? `<h3>${t('Village news')}</h3><ul class="news">${s.news.slice(0, 5).map(e => NEWS[e.type] ? `<li>${NEWS[e.type](e)}</li>` : '').join('')}</ul>` : ''}
+    ${s.news?.length ? `<h3>${t('Village news')}</h3><ul class="news">${s.news.slice(0, 5).map(e => NEWS[e.type] ? `<li>${NEWS[e.type](e, s)}</li>` : '').join('')}</ul>` : ''}
   </div>`;
 }
 

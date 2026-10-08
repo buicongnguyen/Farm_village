@@ -219,7 +219,7 @@ export const VI = {
   'June': 'June', 'Pip': 'Pip', 'Ellis': 'Ông Ellis',
   'Carpenter': 'Thợ mộc', 'Cook': 'Đầu bếp', 'Schoolboy': 'Cậu học trò', 'Vet': 'Bác sĩ thú y', 'Postman': 'Người đưa thư',
   'Schoolgirl': 'Cô học trò', 'Painter': 'Họa sĩ', 'Retired sailor': 'Thủy thủ về hưu', 'Nurse': 'Y tá', 'Mechanic': 'Thợ máy',
-  'Little sister': 'Em gái nhỏ', 'Your grandmother': 'Bà nội', 'Your grandfather': 'Ông nội', 'Your partner': 'Bạn đời', 'Your child': 'Con của bạn',
+  'Little sister': 'Em gái nhỏ', 'Young neighbour': 'Cô bé hàng xóm', 'Your grandmother': 'Bà nội', 'Your grandfather': 'Ông nội', 'Your partner': 'Bạn đời', 'Your child': 'Con của bạn',
   'Teacher': 'Cô giáo', 'Neighbour': 'Hàng xóm',
   'Lotus Farm': 'Trang trại Hoa Sen', 'Old Mill Farm': 'Trang trại Cối Xay Cũ',
   'A good house starts with a straight beam and a kind neighbour.': 'Một ngôi nhà tốt bắt đầu từ cây xà thẳng và người hàng xóm tử tế.',
@@ -492,7 +492,6 @@ export const VI = {
   // ── Letters ──
   "Sorry I was not at the gate. Gone fishing upriver. Back when the fish say so. Mind Ada's knees and the hens' feelings. -E": 'Ông xin lỗi vì không ra cổng đón cháu. Ông lên thượng nguồn câu cá. Khi nào cá cho phép thì ông về. Nhớ để ý đầu gối bà Ada và tâm trạng lũ gà. -E',
   'You sold your first wheat today. I watched from the window and cried into the teapot. Silly old thing. Love, Ada': 'Hôm nay cháu bán được mẻ lúa mì đầu tiên. Bà đứng bên cửa sổ nhìn, nước mắt rơi cả vào ấm trà. Bà già này mít ướt quá. Thương cháu, bà Ada',
-  'Welcome to the valley! Those two hens were Pancake and Biscuit, but I hear Pip renamed them. Quite right. Come to Lotus Farm for tea! Love, Mai': 'Chào mừng em đến thung lũng! Hai con gà ấy vốn tên là Pancake và Biscuit, nhưng nghe nói Pip đổi tên rồi. Đổi thế là phải. Qua trang trại Hoa Sen uống trà nhé! Thương em, Mai',
   'To the new farmer. Your fence is crooked. Your wheat is fine. Do not let it go to your head. -Gus': 'Gửi người nông dân mới. Hàng rào của cháu xiêu vẹo. Lúa mì của cháu được. Đừng có mà vênh mặt. -Gus',
   'The fish upriver are thin this year, and the brook runs lower than it should. Someone has been busy at the old sluice. I am looking into it. Tell Ada I am eating properly. -E': 'Năm nay cá trên thượng nguồn gầy lắm, nước suối cũng thấp hơn bình thường. Có ai đó đã động tay vào cửa cống cũ. Ông đang tìm hiểu. Nhắn bà Ada là ông vẫn ăn uống đầy đủ. -E',
   'I sat on the porch tonight and listened to children laughing on Brook Lane. Ellis would say I have gone soft. He would be right. Love, Ada': 'Tối nay bà ngồi ngoài hiên nghe trẻ con cười đùa trên ngõ Suối. Ông Ellis sẽ bảo bà mềm lòng rồi. Ông nói đúng. Thương cháu, bà Ada',

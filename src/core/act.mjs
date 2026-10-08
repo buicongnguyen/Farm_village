@@ -75,7 +75,11 @@ function remember(s, events, now) {
     if (e.type === 'projectDone') (s.firsts ??= {})[`project:${e.id}`] ??= now;
     if (e.type === 'heartScene') (s.firsts ??= {})[`heart:${e.person}:${e.at}`] ??= now;   // the album's heart-scene pages
   }
-  for (const e of events) if (NEWS.has(e.type)) (s.news ??= []).unshift({ ...e, at: now });
+  for (const e of events) if (NEWS.has(e.type)) {
+    // Live heart/charm events use at for their threshold; news keeps at as its saved date.
+    const threshold = e.type === 'heartScene' || e.type === 'charmMilestone' ? { threshold: e.at } : {};
+    (s.news ??= []).unshift({ ...e, ...threshold, at: now });
+  }
   if (s.news?.length > 12) s.news.length = 12;
 }
 function guardClock(s, now) {

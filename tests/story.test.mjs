@@ -154,16 +154,32 @@ test('each speaker keeps their Vietnamese pronouns', () => {
   assert.ok(bc >= TUTORIAL.length / 2, `only ${bc} of Ada's tutorial lines say bà/cháu`);
 });
 
-test('one Vietnamese name for Hollowbrook, proper names stay unchanged, and the feed mill is a cối xay cám', () => {
+test('one Vietnamese name for Hollowbrook, consistent animal names, and the feed mill is a cối xay cám', () => {
   assert.equal(VI.Hollowbrook, 'Thung Suối');
   for (const [en, vi] of Object.entries(VI)) {
     if (/Hollowbrook/i.test(en)) assert.ok(/Thung Suối/i.test(vi), `Hollowbrook: ${vi}`);
     if (/feed mill/i.test(en)) assert.ok(/cối xay cám/i.test(vi), `feed mill: ${vi}`);
-    for (const name of ['Biscuit', 'Pancake']) if (en.includes(name)) assert.ok(vi.includes(name), `${name}: ${vi}`);
+    for (const [name, translated] of [['Biscuit', 'Biscuit'], ['Cloud', 'Mây'], ['Drizzle', 'Mưa Phùn'], ['Captain', 'Thuyền Trưởng']]) {
+      if (en.includes(name)) assert.ok(vi.includes(translated), `${name} must be ${translated}: ${vi}`);
+    }
     if (/\bBo\b/.test(en)) assert.ok(!/\bBơ\b/u.test(vi) && /\bBo\b/.test(vi), `Bo: ${vi}`);
   }
   assert.equal(VI['Your grandmother'], 'Bà nội');
   assert.equal(VI['I know how'], 'Cháu biết rồi ạ');
+});
+
+test('Pip names the first hens Cloud and Drizzle throughout their English and Vietnamese story', () => {
+  const hens = PEOPLE.pip.says.animalArrived;
+  assert.match(hens.first, /\bCloud\b/);
+  assert.match(hens.lines[0], /\bDrizzle\b/);
+  const later = [CHAPTERS.find(c => c.id === 2).text, LETTERS.find(l => l.id === 'mai-1').text,
+    HEART_SCENES.mai[9].lines.find(l => l.who === 'pip').text];
+  for (const en of later) {
+    assert.match(en, /Cloud and Drizzle/);
+    assert.ok(VI[en].includes('Mây') && VI[en].includes('Mưa Phùn'), en);
+    assert.doesNotMatch(en, /Biscuit|Pancake/, 'the dog or an obsolete name replaced the hens');
+  }
+  assert.ok(!Object.keys(VI).some(en => en.includes('Pancake')), 'obsolete hen dialogue remains in the translation table');
 });
 
 test('shared chatter avoids incompatible family pronouns', () => {
