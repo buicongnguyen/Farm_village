@@ -70,6 +70,11 @@ The gaps this plan closes (from the evaluation of 2026-10-07):
 Each stage has one clear goal on screen, one new kind of fun, and one story chapter. Levels are targets for the
 economy simulation (`npm run sim`), not promises.
 
+Future cast proposals: **Priya** is a grower from a neighbouring farm, and **the twins** are two growers from another
+valley holding. Their names, voices and first-meeting scenes must be settled before implementation. Introduce each
+through an actual visit before any later co-operative dialogue assumes the player knows them; these are not current
+residents or available mechanics.
+
 | Stage | Levels | Goal on screen | What opens | The new fun |
 |---|---|---|---|---|
 | **1. Homecoming** (done) | 1–4 | "Bring the farm back" | Repairs, wheat, carrot, corn, hens, feed mill, bakery, village pond, market truck, first families | Fixing what is broken; first money |
@@ -194,10 +199,16 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Logic-lane coordination, 2026-10-08: the [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md),
+[Claude art brief](CLAUDE-HANDOFF.md), and [Codex task list](CODEX-TASKS.md) are recorded. The user authorized the first
+logic pass: contextual dialogue, ordered clues, truthful school/clinic scenes, cherry goals and collection-event
+contracts are implemented on the v0.4 PR branch. Larger expansion systems remain planned. Claude's AR-001 art pass
+is separate; neither branch is merged into production by this work.
+
 | Stage | Status |
 |---|---|
 | 1. Homecoming | done (v0.3) |
-| 2. The orchard | done (v0.4; code, logic and Vietnamese review fixes in PR) |
+| 2. The orchard | implemented in PR #1; logic/story/Vietnamese follow-up complete, awaiting review and art integration |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
