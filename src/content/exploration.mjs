@@ -11,9 +11,9 @@ export const EXPLORATION_STEPS = [
     ] },
   { id: 'pond', title: 'The ribbon in the tin', location: 'pond', label: 'Open the pondside tin',
     text: 'Beside the pond dock, a little tin is tucked among the reeds.',
-    story: 'Inside lies a faded yellow ribbon, neatly folded and still dry.',
+    story: 'Inside lies a faded pink ribbon, neatly folded and still dry.',
     lines: [
-      { who: 'pip', text: 'It looks like a little piece of sunshine!' },
+      { who: 'pip', text: 'It looks like a tiny butterfly!' },
       { who: 'june', text: 'Let us take it back to Ada, love. She might remember its picnic.' },
       { who: 'pip', text: 'And maybe what they had for pudding!' },
     ] },

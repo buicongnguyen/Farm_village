@@ -7,7 +7,7 @@ import { nameOf } from './bonds-panels.mjs';
 import { showModal } from './modal.mjs';
 
 const pendingMemories = new WeakMap();
-const iconFor = step => step === 'porch' ? 'lucky_box' : step === 'pond' ? 'lucky_tin' : 'flowerpot';
+const iconFor = step => step === 'porch' ? 'lucky_box' : step === 'pond' ? 'lucky_tin' : 'trail_picnic_ribbon';
 const placeLabel = place => t(place === 'pond' ? 'Visit the pond dock' : 'Visit the farmhouse porch');
 const go = place => `<button class="btn wide" data-do="explorationPlace" data-place="${place}">${placeLabel(place)}</button>`;
 

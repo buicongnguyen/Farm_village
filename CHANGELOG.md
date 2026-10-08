@@ -6,7 +6,8 @@
 - Save version 8 keeps each farm's steps and read state, with durable completion markers. Reading, replaying, reloads and migration never grant another flowerpot. Only earned unread memories contribute to the Today badge; queued cards are acknowledged when visible.
 - Personal favours now wait for the requesting household to arrive. Old premature requests remain saved and return after arrival without blocking three usable goal slots.
 - Stored and rebuild-credit placement previews reflect the actual charge, so the earned flowerpot is visibly free to place.
-- The trail uses existing scenery and icons. Claude's separately scoped AR-010 box/tin/ribbon props are pending integration. Covered-land progression, skills/project energy and later chapters remain planned. See [delivery and story review](docs/DISCOVERY-TRAIL.md) for scope, validation and the art handoff.
+- **AR-010 delivered, integration in progress:** Claude's [PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) (`6f312aa`) supplies the staged box/tin models and pink butterfly-shaped picnic ribbon/icon. Codex is connecting explicit world-object taps, closed/open states and hidden future clues while retaining menu access.
+- **Current baseline and validation:** main `e8f09a5` (newer icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth plans) and AR-010 were merged at `94d1b8e`. The earlier 261 native / 19 component / 28 smoke checks passed before this main/art merge; final combined validation and deployment remain pending. Covered-land progression, skills/project energy and later chapters remain planned. See [delivery and story review](docs/DISCOVERY-TRAIL.md) for scope and acceptance status.
 
 ## Playful local names — proposal only (2026-10-08)
 

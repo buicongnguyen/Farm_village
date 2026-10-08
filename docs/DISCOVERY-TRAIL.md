@@ -1,12 +1,16 @@
 # Old-object discovery trail: delivery and story review
 
-Date: 2026-10-08. Status: **logic implemented; release validation recorded below**. Claude is preparing AR-010 art separately. This document distinguishes existing live discoveries, this new slice, and the larger unimplemented exploration plan.
+Date: 2026-10-08. Status: **logic implemented; AR-010 art delivered in PR #13 and world integration in progress**. The current combined tree has not completed final validation or release. This document distinguishes existing live discoveries, this new slice, and the larger unimplemented exploration plan.
 
 ## What Claude delivered
 
 [PR #8](https://github.com/buicongnguyen/Farm_village/pull/8) added the working truck fleet. [PR #9](https://github.com/buicongnguyen/Farm_village/pull/9), merged as `f80ceb0`, improved the opening camera, farmhouse forecourt, owned/wild ground distinction, and ten item icons. Its [Pages workflow](https://github.com/buicongnguyen/Farm_village/actions/runs/37743276366) passed. The opening work changes presentation and camera behaviour; it adds no new treasure rules, story chapter, or energy/skill system. The forecourt bench is existing scenery. Existing locked parcels already have dressing and purchase controls; recolouring them did not implement a new exploration/reveal progression.
 
 The new home setting is a useful story anchor. It gives us a recognizable place for a clue to begin and for a family story to end. Claude's ten revised icons improve the identity of products, but a broader icon pass remains separate.
+
+## Current integration baseline
+
+Main advanced to `e8f09a5` with newer icons, lower truck prices, healing herb/ginseng, orange/coconut/willow content, and additional growth plans. Codex merged that baseline and Claude's [AR-010 PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) (`6f312aa`) into its integration branch at `94d1b8e`. Claude delivered the five-node packed exploration kit and ribbon icon; asset creation is complete. Staged placement, picking, and the pink butterfly-shaped ribbon's English/Vietnamese text and card icon are being connected now. This merge is not a claim that the combined gameplay or rendering checks have passed.
 
 ## Is the luck and exploration plan already implemented?
 
@@ -19,7 +23,7 @@ The new home setting is a useful story anchor. It gives us a recognizable place 
 | First completed restoration of Village Street (`road_south`) | Live: a thank-you and 20 coins |
 | Discovery toast, Today badge, cards and Album memories | Live; milestone rewards total at most 110 coins per save |
 | Connected farmhouse → pond → family-memory trail | Implemented in this logic slice; final validation/release recorded below |
-| Visible clickable old box/tin models and staged reveals | AR-010 art requested; not placed in the world by this logic slice |
+| Visible clickable old box/tin models and staged reveals | AR-010 delivered in PR #13; staged world taps/loading are being integrated and still need combined validation |
 | Discover/purchase land with new covered-area states and meaningful revealed places | Planned; existing land purchase and scenery dressing are only the baseline |
 | Selectively cut scenery trees to open routes | Planned; ordinary scenery trees are not currently removable obstacles |
 | Major vehicle restoration, skill learning and project-only energy | Planned; the existing delivery trucks are already functional |
@@ -31,15 +35,15 @@ The four original coin finds are designed milestones, not random drops. They do 
 
 After the first order is delivered on a restored farm, an optional trail appears in Today. The farmhouse's existing tap menu also offers **Explore the porch**. It never replaces repair or upgrade actions.
 
-1. **Farmhouse porch:** inspect an old box through the exploration panel. A folded note points to a tin beside the pond dock. Ada and the child exchange a small joke about remembering the bread.
-2. **Village pond:** follow the navigation button and inspect the tin. A faded yellow ribbon recalls a picnic basket. The family suggests taking it home; this is not an Ellis letter or a sluice key.
+1. **Farmhouse porch:** once the first order is delivered, the closed box becomes visible beside the bench. Its world tap opens an explicit inspection control; the existing Today and farmhouse menu routes remain available. Inspecting changes the box to its open state, and a folded note points to a tin beside the pond dock. Ada and the child exchange a small joke about remembering the bread.
+2. **Village pond:** only after the porch clue does the closed tin become visible on dry ground by the dock. Tap it or follow the navigation button, then explicitly inspect it. The tin opens to reveal a faded pink, butterfly-shaped picnic ribbon, matching the delivered model and icon. The family suggests taking it home; this is not an Ellis letter or a sluice key.
 3. **Back at the farmhouse:** share the ribbon with Ada. She remembers carrying an empty bread basket all the way to the pond. The child volunteers to bring the bread next time; the partner takes care of the blanket.
 
 Completing the final step grants **one existing flowerpot storage credit**, with no direct coin or XP prize. The catalogue's normal placement preview uses that credit. Standard decoration rules still apply afterward. The original 110-coin discovery budget, school/clinic progression, and normal farming remain unchanged.
 
-Each earned step becomes a replayable memory. Current-stage hints change after the action; future steps are not all disclosed at once. Navigation only moves the camera and opens a panel; inspection is an explicit action. No energy, materials, purchase, waiting timer, random roll, or rare item is required.
+Each earned step becomes a replayable memory. Current-stage hints change after the action; future props remain hidden and unpickable until their clue is available, with only one closed/open state displayed at each site. Navigation and world-object taps only open the relevant controls; inspection is an explicit action. No energy, materials, purchase, waiting timer, random roll, or rare item is required. These staged world interactions are the current integration contract, pending the combined checks below.
 
-**Current visual scope:** this slice is playable using the existing farmhouse/pond, interaction menus, character portraits, and AR-009 icons. It does not claim that the new box and tin already appear as independently clickable 3D models. Claude's AR-010 props will be integrated after their separate PR is reviewed. [The handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md) states ownership and asset names.
+**Current visual scope:** the existing menus and replayable story cards remain the fallback while Codex connects the delivered AR-010 world box/tin states and `trail_picnic_ribbon` icon. The intended result is an inspectable box/tin at the currently available place, not an always-visible display of future clues. The final memory uses the delivered ribbon icon; the standalone ribbon GLB remains available but is not placed without a credible world anchor. Claude's palette, models, icon artwork, and generator output are preserved. [The handoff](CLAUDE-DISCOVERY-TRAIL-HANDOFF.md) records the original request; the current integration ownership is in [ASSET-REQUESTS.md](ASSET-REQUESTS.md).
 
 The prose uses the current runtime names Ada, June and Pip. The [playful naming sheet](CHARACTER-NAMING-PLAN.md) remains a proposal; this feature does not silently adopt unreviewed names. All new UI and story text has authored Vietnamese, with the same facts and progression as English.
 
@@ -74,9 +78,8 @@ The first following exploration release should implement **one covered place wit
 
 ## Validation and delivery
 
-- Native suite: 258 tests passed; new trail rules, integrated order/action/save coverage, Vietnamese text and speaker checks included.
-- Simulation: all native pace targets passed; `npm run sim` steady profile reaches school and clinic on day 3.
-- Test build: 1,019,792 bytes of first-load code, below 1,100,000.
-- New browser checks: 5/5 passed, including English/Vietnamese at 390 px and 1280 px, real order/inspection controls, save/replay, one-time reward, shared unread count, queued-card acknowledgment, duplicate activation and legacy favour visibility after arrival.
-- All 19 component browser suites and 28/28 smoke checks passed. A final stored-gift price-preview correction is being checked before release.
-- Art delivery: AR-010 pending. The test build is not a production deployment.
+**Historical, before main `e8f09a5` and AR-010 were merged:** 261 native tests, all 19 component browser suites, and 28/28 smoke checks passed on the earlier logic-only tree. Its pace targets passed; the steady simulation reached school and clinic on day 3. These results cover the menus, trail rules/save/read lifecycle, favour-arrival fix and stored-price preview at that earlier revision. They do not validate the newer crops, trees, truck tuning, icons or staged world props.
+
+**Current combined tree: validation pending.** Re-run the native suite, simulation, test build, all component browser suites and smoke checks after the integration settles. Check actual box/tin taps, hidden future objects and pick targets, closed/open state changes, the ribbon icon and both-language prose, reload/profile isolation, one-time reward accounting, free stored-gift placement, reduced motion, first-load size, and phone/PC draw and triangle budgets.
+
+AR-010 is delivered and being integrated, not waiting for asset creation. Production release/deployment is not recorded as complete here.

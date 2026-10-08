@@ -28,9 +28,11 @@ import { autosave, save, pack, unpack, erase, activeProfile, profileId, inspectP
 import { renderProfiles } from './ui/profiles-panel.mjs';
 import { watchDiscoveries } from './ui/discovery-panels.mjs';
 import { watchExploration } from './ui/exploration-panels.mjs';
+import { ExplorationView } from './view/exploration-view.mjs';
+import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, loadVietnamese } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK, FARMHOUSE } from './content/world.mjs';
+import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
@@ -91,7 +93,8 @@ panels = new Panels(app, game, hud, {
   onExplorePlace: place => {
     if (!['porch', 'pond'].includes(place)) return;
     if (build.open) build.close(); radial.hide();
-    const spot = place === 'pond' ? POND_DOCK : FARMHOUSE;
+    world.exploration?.ensureLoaded();
+    const spot = EXPLORATION_SITES[place];
     flyTo(spot.x * CELL, spot.z * CELL, Math.min(world.cam.span, 38));
     panels.show('exploration', place);
   },
@@ -129,7 +132,12 @@ world.cam.attach(canvas, {
   onTap: (x, y) => {
     const cell = world.cellAt(x, y);
     if (build.open) build.tap(cell);
-    else { panels.close(); radial.tap(cell, x, y); }
+    else {
+      panels.close();
+      const place = world.exploration?.pick(x, y);
+      if (place) { radial.hide(); panels.show('exploration', place); }
+      else radial.tap(cell, x, y);
+    }
   },
 });
 canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !e.buttons && build.open) build.hover(world.cellAt(e.clientX, e.clientY)); });
@@ -171,6 +179,7 @@ new Critters(world, game);
 new Daylight(world, game);
 watchDiscoveries(game, hud);
 watchExploration(game, hud);
+world.exploration = new ExplorationView(world, game);
 game.start();
 applySettings();
 saveSession = autosave(game, profile);

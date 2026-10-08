@@ -209,6 +209,8 @@ The live profile/discovery slice supplies three local farms and four one-time di
 
 The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed states, truthful production and business guidance, and three one-time celebration memories. Previews spend no resources; save version 7 preserves old farms. Validation: 229 native tests on the combined advice/art tree and all pace targets pass, steady school/clinic day 3; all 17 component browser suites passed on the advice build. Smoke checks: **28/28 passed on the advice build**. Final first-load code: **1,005,608 bytes** test / **1,004,534 bytes** production. AR-009 integration checks: **English/Vietnamese advice and discovery suites passed again after integration; 12 keepsake cards passed on phone/desktop in both languages (fit, exact 256 px icons, no extra payment, no GLB request and no errors)**. Cards use the new WebP keepsake icons; the registered GLB is not loaded by current discovery views. This is an interface/progression follow-up within the existing chapters 1–5, not completion of the later stages. Covered land, skills/project energy, school activities and meadow progression remain planned. See the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md) for further design evaluation.
 
+Current picnic integration baseline: main `e8f09a5` includes newer icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth plans. AR-010 asset creation is complete. The earlier 261-native / 19-component / 28-smoke results predate this main/art integration and do not certify the current tree. Covered land, project-only energy and later chapter rows below remain separate planned work.
+
 | Stage | Status |
 |---|---|
 | 1. Homecoming | done (v0.3) |
@@ -216,7 +218,7 @@ The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
 | Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
-| Cross-stage follow-up: picnic discovery trail | Three-step optional porch/pond memory, stored flowerpot reward and arrival-gated favours implemented; [validation and scope](DISCOVERY-TRAIL.md). AR-010 world props await separate integration. |
+| Cross-stage follow-up: picnic discovery trail | Logic implemented; AR-010 art delivered in [PR #13](https://github.com/buicongnguyen/Farm_village/pull/13) and staged box/tin world taps plus pink butterfly-ribbon icon are being integrated. Main `e8f09a5` and art `6f312aa` merged at `94d1b8e`; combined validation/release pending. [Scope and historical checks](DISCOVERY-TRAIL.md). |
 | 3. The meadow | not started |
 | 4. Down to the river | not started |
 | 5. A village to be proud of | not started |
