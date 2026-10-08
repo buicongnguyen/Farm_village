@@ -21,11 +21,12 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 REPOS = os.path.abspath(os.path.join(ROOT, '..'))
 TMP = os.path.join(tempfile.gettempdir(), 'fv-icons-raw')
 args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
-size, ss, job_file, only = 256, 2, os.path.join(HERE, 'icons.json'), []
+size, ss, job_file, only, engine = 256, 2, os.path.join(HERE, 'icons.json'), [], 'cycles'
 i = 0
 while i < len(args):
     if args[i] == '--size': size = int(args[i + 1]); i += 2
     elif args[i] == '--ss': ss = int(args[i + 1]); i += 2
+    elif args[i] == '--engine': engine = args[i + 1]; i += 2
     elif args[i].endswith('.json'): job_file = args[i] if os.path.isabs(args[i]) else os.path.join(ROOT, args[i]); i += 1
     else: only.append(args[i]); i += 1
 OUT = os.path.join(ROOT, 'public', 'assets', 'icons')
@@ -47,15 +48,27 @@ def linear(hexc):
 def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     s = bpy.context.scene
-    try:
-        s.render.engine = 'BLENDER_EEVEE_NEXT'
-    except TypeError:
-        s.render.engine = 'BLENDER_EEVEE'
-    try:
-        s.eevee.taa_render_samples = 48
-        s.eevee.use_shadows = True
-    except Exception:
-        pass
+    # Icon render v2 (docs/REFERENCE-NONGTRAI.md, R1): Cycles for the final pass, for soft contact shadows and real
+    # occlusion in the crevices, so icons have the value range of a painted icon; EEVEE (--engine eevee) for quick drafts
+    if engine == 'cycles':
+        s.render.engine = 'CYCLES'
+        s.cycles.samples = 96
+        s.cycles.use_adaptive_sampling = True
+        s.cycles.use_denoising = True
+        try:
+            s.cycles.denoiser = 'OPENIMAGEDENOISE'
+        except TypeError:
+            pass
+        s.cycles.max_bounces = 4
+    else:
+        try:
+            s.render.engine = 'BLENDER_EEVEE_NEXT'
+        except TypeError:
+            s.render.engine = 'BLENDER_EEVEE'
+        try:
+            s.eevee.taa_render_samples = 48
+        except Exception:
+            pass
     s.view_settings.view_transform = 'Standard'
     s.view_settings.look = 'None'
     s.render.film_transparent = True
@@ -64,9 +77,15 @@ def reset():
     s.render.image_settings.color_mode = 'RGBA'
     s.world = bpy.data.worlds.new('w')
     s.world.use_nodes = True
-    bg = next(n for n in s.world.node_tree.nodes if n.type == 'BACKGROUND')
-    bg.inputs[0].default_value = (.58, .52, .46, 1)
-    bg.inputs[1].default_value = .8
+    # a warm gradient sky at a low strength (v1 used a flat .8 fill, which flattened the values): warm earth below, cream above
+    nt = s.world.node_tree
+    bg = next(n for n in nt.nodes if n.type == 'BACKGROUND')
+    tc, sep, ramp = nt.nodes.new('ShaderNodeTexCoord'), nt.nodes.new('ShaderNodeSeparateXYZ'), nt.nodes.new('ShaderNodeValToRGB')
+    nt.links.new(tc.outputs['Generated'], sep.inputs[0]); nt.links.new(sep.outputs['Z'], ramp.inputs[0])
+    ramp.color_ramp.elements[0].position, ramp.color_ramp.elements[1].position = .35, .65
+    ramp.color_ramp.elements[0].color, ramp.color_ramp.elements[1].color = linear('#C98A50'), linear('#FFF3DC')
+    nt.links.new(ramp.outputs['Color'], bg.inputs[0])
+    bg.inputs[1].default_value = .3
     return s
 
 
@@ -140,6 +159,40 @@ def import_piece(src, root=None, drop=(), table=None, x=0.0):
     return meshes
 
 
+def area(loc, target, size_m, energy, color):
+    data = bpy.data.lights.new('area', 'AREA'); data.energy = energy; data.color = color; data.size = size_m
+    o = bpy.data.objects.new('area', data); bpy.context.scene.collection.objects.link(o)
+    o.location = loc; o.rotation_euler = (Vector(target) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
+    return o
+
+
+def surface(meshes, rough=None, metal=None):
+    """Per-job surface (R1.5): roughness and metalness on every material of the icon's meshes."""
+    seen = set()
+    for o in meshes:
+        for m in o.data.materials:
+            if not m or m.name in seen or not m.use_nodes:
+                continue
+            seen.add(m.name)
+            b = next((n for n in m.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None)
+            if b is None:
+                continue
+            if rough is not None: b.inputs['Roughness'].default_value = rough
+            if metal is not None: b.inputs['Metallic'].default_value = metal
+
+
+# Camera presets (R5): a job's own keys override them. Buildings, decorations and portraits keep their tuned views.
+PRESETS = {
+    'goods': {'view': [-40, 32], 'margin': 1.18},
+    'dish': {'view': [-35, 40], 'margin': 1.18},
+    'token': {'view': [-20, 12], 'margin': 1.15},
+    'tool': {'margin': 1.15},
+    'fish': {'view': [-65, 30], 'roll': 38, 'margin': 1.12},
+    'building': {'margin': 1.10},
+}
+KEY = 18.0   # key light strength factor (energy = KEY * distance^2): painted depth without blowing out bright goods
+
+
 def sun(direction, energy, color, angle=6):
     data = bpy.data.lights.new('sun', 'SUN'); data.energy = energy; data.color = color; data.angle = math.radians(angle)
     o = bpy.data.objects.new('sun', data); bpy.context.scene.collection.objects.link(o)
@@ -158,6 +211,8 @@ def render(job):
             if o.parent is None:
                 o.rotation_euler.z += math.radians(job['spin'])
         bpy.context.view_layer.update()
+    job = {**PRESETS.get(job.get('preset', ''), {}), **job}
+    surface(meshes, job.get('rough', .55), job.get('metal', 0.0))
     portrait = job.get('portrait')
     az, el = job.get('view', [0, 6] if portrait else [-35, 28])
     az, el = math.radians(az), math.radians(el)
@@ -188,9 +243,22 @@ def render(job):
     cam_data.ortho_scale = max(w, h) * job.get('margin', 1.1)
     cam_data.clip_end = R * 10
     s.camera = cam
-    sun((-.6, -.7, .8), 3.4, (1.0, .9, .76))
-    sun((.9, -.4, .2), 1.0, (.62, .74, 1.0))
-    sun((.3, 1.0, .5), 3.0, (1.0, .92, .78), angle=3)
+    # the light rig in the camera's basis (after roll), so light always comes from the top left of the picture: a big warm
+    # key, a soft warm fill at 25 %, a rim at 35 %; and a floor out of the camera's sight for warm bounce and contact shade
+    right, up, back = cam.matrix_world.col[0].xyz.normalized(), cam.matrix_world.col[1].xyz.normalized(), d.normalized()
+    Rr = max(1e-3, max(w, h))
+    for vec, dist, sz, k, col in (((-.8, .9, 1.0), 2.2, 3.0, 1.0, (1, .93, .82)), ((1.0, .1, .8), 2.5, 4.0, .25, (1, .97, .92)),
+                                  ((.5, .8, -1.0), 2.2, 1.0, .35, (1, .92, .80))):
+        v = (right * vec[0] + up * vec[1] + back * vec[2]).normalized()
+        area(c + v * dist * Rr, c, sz * Rr, KEY * (1.35 if portrait else 1.0) * k * (dist * Rr) ** 2, col)   # faces a little brighter
+    bpy.ops.mesh.primitive_plane_add(size=8 * Rr, location=(c.x, c.y, lo.z - .001))
+    floor = bpy.context.active_object; fm = bpy.data.materials.new('bounce'); fm.use_nodes = True
+    fb = next(n for n in fm.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'); fb.inputs['Base Color'].default_value = linear('#E8B070'); fb.inputs['Roughness'].default_value = 1
+    floor.data.materials.append(fm)
+    try:
+        floor.visible_camera = False
+    except AttributeError:
+        floor.hide_render = engine != 'cycles'
     path = os.path.join(TMP, job['id'].replace(':', '__') + '.png')
     s.render.filepath = path
     bpy.ops.render.render(write_still=True)

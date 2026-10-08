@@ -540,7 +540,8 @@ anchors['truck'] = {'light': [(-.55, 2.44, .98), (.55, 2.44, .98)]}
 # =================================================================== the fish pond (v0.3b): a stone-ringed pond with reeds and a little plank dock, 4 x 3 cells (8 x 6 m)
 def pond():
     p = [cl('bank', 3.5, .16, 0, 0, 0, 'stoned', verts=22, rt=3.5), cl('bank2', 2.4, .16, -.2, 1.5, 0, 'stoned', verts=18), cl('bank3', 2.3, .16, .5, -1.5, 0, 'stoned', verts=18),
-         cl('water', 3.3, .12, 0, 0, .12, 'water', verts=22), cl('water2', 2.2, .12, -.2, 1.5, .12, 'water', verts=18), cl('water3', 2.1, .12, .5, -1.5, .12, 'water', verts=18)]
+         # the three water discs a few millimetres apart: coincident tops shadow each other to black in Cycles (icon renders)
+         cl('water', 3.3, .12, 0, 0, .12, 'water', verts=22), cl('water2', 2.2, .12, -.2, 1.5, .124, 'water', verts=18), cl('water3', 2.1, .12, .5, -1.5, .128, 'water', verts=18)]
     for i in range(14):
         a = i / 14 * math.tau; r = 3.5 + .2 * math.sin(i * 2.3)
         p.append(ball('rock', .3 + .08 * (i % 3), math.cos(a) * r, math.sin(a) * (r * .82), .22, 'stone' if i % 2 else 'stonel', sc=(1, 1, .7)))

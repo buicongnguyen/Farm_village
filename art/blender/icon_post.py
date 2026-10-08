@@ -1,5 +1,6 @@
 """Post-process icon renders (system Python + PIL), ported from Starline's art/blender/icon_post.py: premultiplied
-downsample, a light unsharp mask, a thin dark outline so icons read at 48 px, lossless WebP output, and review sheets.
+downsample, a light unsharp mask, a round dark outline (2.8 % of the size) so icons read at chip sizes, WebP output,
+and review sheets.
 
 python art/blender/icon_post.py <job.json>   (written by render_icons.py)
 Icon ids with ':' (tool:build, person:ada) are saved as tool-build.webp, person-ada.webp.
@@ -16,7 +17,9 @@ for name, path in job['raw'].items():
     small = im.convert('RGBa').resize((size, size), Image.LANCZOS).convert('RGBA')
     small = small.filter(ImageFilter.UnsharpMask(radius=1.0, percent=55, threshold=2))
     alpha = small.split()[3]
-    ring = alpha.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(.7)).point(lambda v: int(min(255, v * 1.1)))
+    # a round outline about 2.8 % of the icon wide (7 px at 256), so it still reads at chip sizes (v1: a 2 px square ring)
+    px = max(2, round(size * .028))
+    ring = alpha.filter(ImageFilter.GaussianBlur(px * .5)).point(lambda v: int(min(255, v * 10))).filter(ImageFilter.GaussianBlur(.8))
     base = Image.new('RGBA', (size, size), OUTLINE + (0,))
     base.putalpha(ring)
     icon = Image.alpha_composite(base, small)
