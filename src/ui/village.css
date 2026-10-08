@@ -82,9 +82,9 @@ body:has(.modal.strict) :is(.hud, .guide, .pointer, .bubbles, .radial) { opacity
 body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }
 
 /* Orchard roadmap, including large-text phone layouts. */
-.journey-goal { padding: 14px; border: 2px solid #70482f; border-radius: 16px; background: #f5edc8; }
+.journey-goal { padding: 14px; border: 3px solid var(--edge); border-radius: 16px; background: var(--panel-bg); box-shadow: 0 3px 0 var(--edge-dark); }
 .journey-goal h3 { margin: 6px 0; } .journey-goal p { margin: 8px 0 0; }
-.journey-goal progress { width: 100%; accent-color: #4f9b50; margin-top: 8px; }
+.journey-goal progress { width: 100%; accent-color: var(--leaf); margin-top: 8px; }
 .journey-milestones { list-style: none; padding: 0; } .journey-milestones li { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
 .journey-milestones .done { color: #367541; }
 .journey-unlock { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #c8b58e; }

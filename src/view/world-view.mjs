@@ -11,11 +11,11 @@ import * as W from '../content/world.mjs';
 // Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
 // value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
 export const GROUND_COLORS = {
-  grass: '#74d043', meadow: '#8ee052', wildMeadow: '#6cc63e', path: '#f0c070', road: '#e6ab62', tilled: '#7a4a2a',
-  water: '#2f86c4', bank: '#d8bf86', plaza: '#cfae7c', weeds: '#7ac545', rock: '#74d043',
+  grass: '#72bd3e', meadow: '#84c846', wildMeadow: '#68ae39', path: '#dfbd87', road: '#d6ad78', tilled: '#7a4a2a',
+  water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e',
 };
 const HARD = new Set([GROUND_COLORS.path, GROUND_COLORS.road, GROUND_COLORS.tilled, GROUND_COLORS.water, GROUND_COLORS.bank, GROUND_COLORS.plaza]);
-const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.8, [GROUND_COLORS.road]: 0.82, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86 };
+const EDGE = { [GROUND_COLORS.tilled]: 0.7, [GROUND_COLORS.path]: 0.7, [GROUND_COLORS.road]: 0.74, [GROUND_COLORS.bank]: 0.94, [GROUND_COLORS.plaza]: 0.86 };
 
 /** Fixed scenery models, by kit: [name in kit, our name, size, kind]. */
 const SCENERY = [

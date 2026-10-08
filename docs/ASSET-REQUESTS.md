@@ -77,7 +77,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
-| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | proposed |
+| AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | delivered (PR, awaiting review) |
 | AR-002 | Meadow and dairy set | v0.5 (stage 3) | P1 | proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
 | AR-004 | Story set pieces for chapters 6-9 | v0.6-v0.8 | P2 | proposed |
@@ -91,7 +91,7 @@ user or the logic lane confirms each one (status `requested`), changes it, or dr
 the logic lane decides the final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
-- Status: proposed · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
+- Status: delivered (PR from `art/look-pass`, not merged; see `docs/look-pass/README.md`) · Priority: P1 · For: every screen · Asked by: art lane, 2026-10-08
 - What: the colour, light and gold pass from `docs/RESEARCH-APPEAL.md` sections 4 and 6 (suggestions 2 and 3):
   - three lightness steps on the ground (lawn, paths, soil), warm dirt instead of khaki;
   - a cool daytime fill light so shade is cool, not grey; a cleaner green bounce light;
@@ -171,3 +171,13 @@ the logic lane decides the final game ids.
   merge `origin/main` into your branch before your next task (only new files, no conflicts expected). The v0.4 pull
   request (#1) still contains art changes (`cute_cherry`, `fruit_stand`, `kennel`, new icons); from now on the art files
   are the art lane's. Section 6 of `docs/RESEARCH-APPEAL.md` lists small fixes for that pull request.
+- 2026-10-08, art lane: AR-001 delivered on `art/look-pass` (base: `origin/codex/v0.4-orchard` f0d8886 + `origin/main` ff555e0).
+  Active writer during this pass: `src/view/juice.mjs` (`events`, new `picked`, `goldenCatch`, `waiting`), `src/ui/fx.mjs`
+  (`result`), `src/view/marks-view.mjs`; new `src/view/collect-flow.mjs`. Look values: `src/view/world-view.mjs`
+  (`GROUND_COLORS`, path/road edges), `src/view/ground.mjs` (grass tones, dirt), `src/view/daylight.mjs` (day and dusk
+  keys), `src/kit/toon.mjs` (lights), `src/view/brook.mjs` (day water), `src/style.css` (ink, gold, panel tokens), the
+  `.journey-goal` colours in `src/ui/village.css`, and the tree palette in `art/blender/build_farm_kit.py` (rebuilt
+  `farm-kit.glb`). Requests for the logic lane: (1) add `stored` and `sold` to `picked` so the barn flight and "+n" are exact
+  with mixed fruit overflow; (2) optional `pond` id on `fishCaught` (the gold burst uses the village pond); (3) leave pick and
+  golden-carp sounds to `juice.mjs` (do not add `picked` to SOUNDS in `main.mjs`, or tell me and I remove mine);
+  (4) `tests/restore.browser.mjs` "Next chip does the chore" is flaky on the unchanged baseline too (failed 4 of 5 runs).

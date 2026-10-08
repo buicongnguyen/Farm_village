@@ -3,12 +3,12 @@
    day, solid enough to read at night. Mario Kart 8 colour, not pastel. */
 @font-face { font-family: 'Nunito'; src: url('../public/assets/nunito.woff2') format('woff2'); font-weight: 200 1000; font-display: swap; }
 :root {
-  --ink: #4a2a12; --ink-2: #7a5634; --paper: #fff6df; --paper-2: #ffe7b8; --paper-3: #fffbf1;
+  --ink: #392919; --ink-2: #6e5030; --paper: #fff6df; --paper-2: #ffe7b8; --paper-3: #fffbf1;
   --edge: #8a5a2b; --edge-dark: #5e3a18; --line: #e6c591;
-  --leaf: #4fc12c; --leaf-hi: #9df06a; --leaf-dark: #2b7d16; --sun: #ffc93c; --gold: #f2b21c; --gold-dark: #b47a06;
+  --leaf: #4fc12c; --leaf-hi: #9df06a; --leaf-dark: #2b7d16; --sun: #ffc93c; --gold: #e8aa24; --gold-hi: #ffe18a; --gold-dark: #956020;
   --orange: #ff9426; --orange-hi: #ffcd5e; --orange-dark: #c25f0a; --berry: #ef3f5c; --sky: #2f95ea; --sky-dark: #1b64a8;
   --shadow: 0 4px 0 #0000002e, 0 8px 16px #00000026; --radius: 20px; --tap: 52px;
-  --panel-bg: linear-gradient(#fffbf0, #fff0d4);
+  --panel-bg: linear-gradient(#fff8e6, #fff0cf);
   --panel-shadow: 0 6px 0 var(--edge-dark), 0 14px 28px #0000004d, inset 0 2px 0 #fff;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }

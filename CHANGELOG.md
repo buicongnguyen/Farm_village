@@ -2,6 +2,8 @@
 
 ## 0.4.0 — The orchard (2026-10-08, PR preview)
 
+- **Look pass (AR-001, art lane):** a deeper, calmer lawn with paler warm paths and darker path edges; a cool daytime fill against the warm sun; a green dusk instead of olive; turquoise water; stronger orchard greens. Fruit picking gets its own burst, sound and "+n"; a golden carp gets a gold ring and star fountain. Coins fly to the wallet only when money is paid: takings waiting at a stall or the fruit stand just glint there. Coin markers get a dark backing and a warm glint. Comparison images in `docs/look-pass/`.
+
 - **Vietnamese review:** corrected misleading actions, item names, crop counts, idioms and family forms of address across the interface, tutorials, letters and heart scenes. Biscuit keeps one name; clinic, charm and garden terms agree across panels; adult avatar choices say Nam/Nữ. The market cart label now agrees with its next-day return.
 - **Localized rendering:** project locks translate their project names, repair status translates the full sentence before shortening it, and tapping visitors fills their dialogue placeholders. Hourly rent uses Vietnamese decimal commas. Repair news now names repaired roads and the farmhouse without crashing the Today panel.
 - **Language checks:** added restoration, roadmap goals, quests, shared chatter and Pip's fallback reactions to translation/voice coverage, kept tutorial emphasis balanced, and added phone checks for the corrected dynamic text. Production smoke checks exercise both languages on phone and desktop.
