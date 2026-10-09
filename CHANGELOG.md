@@ -1,5 +1,12 @@
 # Changelog
 
+## Public pond access — 2026-10-09
+
+- The village dock has a permanent public footpath from the west road, including on existing saves. No land purchase, road construction or payment is needed.
+- Player, family and villager outings reach the dock itself and can return home. Routes respect buildings, covered land, rocks, animal pens, water and fences; a changed obstacle triggers a detour or cancels the trip safely.
+- Fishing casts happen only after the player arrives. New chores, nightfall, unreachable shores and moved/stored ponds clear pending actions; built ponds use an accessible shore and the correct facing direction.
+- Integrates and reviews Claude's route foundation from PR #33. Palette, models, profiles, saved progress and gameplay rewards are unchanged. Validation and release record: [POND-ACCESS-FIX.md](docs/POND-ACCESS-FIX.md).
+
 ## Korean and Japanese editions — 2026-10-09
 
 - Complete Korean and Japanese catalogs cover the current interface, adaptive advice, chapters, letters, ingredient guidance, discoveries, civic projects and school games. Each uses its local cast names and preserves the same story facts, requirements and rewards.

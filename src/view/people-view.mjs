@@ -7,7 +7,7 @@
 // goes home. Tap a person to hear their line.
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
 import { kennelOf } from '../core/orchard.mjs';
-import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, isBrook, inFarm, nearHome, VILLAGE, POND_DOCK } from '../content/world.mjs';
+import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
@@ -15,6 +15,7 @@ import { adviceCards, adviceOf } from '../core/advice.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
+import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { t, tParams, onLanguageChange } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
@@ -118,18 +119,9 @@ export class PeopleView {
     for (let r = 0; r < 12; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (walkable(this.s, x + dx, z + dz)) return [x + dx, z + dz];
     return null;
   }
-  /** Shortest walk over path and road cells (breadth-first), as a list of cells; [] if unreachable. */
-  route(from, to) {
-    const s = this.s, a = this.nearestWalkable(...from), b = this.nearestWalkable(...to); if (!a || !b) return [];
-    const key = (x, z) => z * N + x, prev = new Map([[key(...a), -1]]), queue = [a];
-    for (let i = 0; i < queue.length; i++) {
-      const [x, z] = queue[i]; if (x === b[0] && z === b[1]) break;
-      for (const [nx, nz] of [[x + 1, z], [x - 1, z], [x, z + 1], [x, z - 1]]) { const k = key(nx, nz); if (prev.has(k) || !walkable(s, nx, nz)) continue; prev.set(k, key(x, z)); queue.push([nx, nz]); }
-    }
-    if (!prev.has(key(...b))) return [];
-    const out = []; for (let k = key(...b); k !== -1; k = prev.get(k)) out.push([k % N, Math.floor(k / N)]);
-    return out.reverse();
-  }
+  /** The cheapest walk to a place (core/walk.mjs): roads first, across grass to places off the road (the pond dock,
+   *  benches, project sites), round buildings, pens, fences and water. [] if there is truly no way there. */
+  route(from, to, exact = false) { return findRoute(this.s, from, to, { blocked: this.penCells(), exact }); }
   cellOf(w) { return [Math.floor(w.x / CELL), Math.floor(w.z / CELL)]; }
   /** Where the current project is being worked on: the ruin it rebuilds, or a plot in the village. */
   site() {
@@ -149,7 +141,7 @@ export class PeopleView {
       return [this.route(here, r < 0.5 ? [ORDER_BOARD.x, ORDER_BOARD.z] : w.home), { act: r < 0.3 ? 'sweep' : 'idle', time: 5 + Math.random() * 6 }];
     }
     if (w.work && r < 0.6) return [this.route(here, w.home), { act: 'idle', time: 6 + Math.random() * 6 }];
-    if (!w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [POND_DOCK.x, POND_DOCK.z]), { act: 'fish', time: 18 + Math.random() * 12, face: [POND_DOCK.x - 3, POND_DOCK.z] }];   // fishing folk sit by the village pond   // fishing folk sit by the pond
+    if (!w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [POND_DOCK.x, POND_DOCK.z]), { act: 'fish', time: 18 + Math.random() * 12, face: [POND_DOCK.x - 3, POND_DOCK.z] }];   // fishing folk sit by the village pond
     const site = this.site();
     if (site && !w.kid && r < 0.22) return [this.route(here, site), { act: 'hammer', time: 10 + Math.random() * 10, face: site }];
     const bench = Object.values(s.placed).filter(p => p.kind === 'bench');
@@ -164,19 +156,9 @@ export class PeopleView {
     return [this.route(here, spots[Math.floor(Math.random() * spots.length)]), { act: w.kid && Math.random() < 0.3 ? 'play' : 'idle', time: 3 + Math.random() * 6 }];
   }
   // ── The family walks freely on the home ground and the farm (not through buildings, pens, fences or water). ──
-  canStand(x, z) {
-    const s = this.s, cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
-    if (cx < 0 || cz < 0 || cx >= N || cz >= N || isBrook(cx, cz) || !(inFarm(cx, cz) || nearHome(cx, cz) || cellType(s, cx, cz) === 'road')) return false;
-    const id = occupant(s, cx, cz); if (id && s.placed[id]?.kind !== 'bed' && s.placed[id]?.kind !== 'path') return false;
-    if (cx >= FARMHOUSE.x - 3 && cx <= FARMHOUSE.x + 2 && cz >= FARMHOUSE.z - 3 && cz <= FARMHOUSE.z + 3) return false;   // the farmhouse itself
-    return !this.penCells().has(`${cx},${cz}`);
-  }
+  canStand(x, z) { return !!stepCost(this.s, Math.floor(x / CELL), Math.floor(z / CELL), this.penCells()); }
   crossesFence(x0, z0, x1, z1) {
-    const s = this.s, a = [Math.floor(x0 / CELL), Math.floor(z0 / CELL)], b = [Math.floor(x1 / CELL), Math.floor(z1 / CELL)];
-    if (a[0] === b[0] && a[1] === b[1]) return false;
-    if (b[1] < a[1] && s.fences[`${a[0]},${a[1]},n`]) return true; if (b[1] > a[1] && s.fences[`${b[0]},${b[1]},n`]) return true;
-    if (b[0] < a[0] && s.fences[`${a[0]},${a[1]},w`]) return true; if (b[0] > a[0] && s.fences[`${b[0]},${b[1]},w`]) return true;
-    return false;
+    return fenceBetween(this.s, [Math.floor(x0 / CELL), Math.floor(z0 / CELL)], [Math.floor(x1 / CELL), Math.floor(z1 / CELL)]);
   }
   penCells() {
     const key = `${Object.keys(this.s.fences).length}|${Object.keys(this.s.animals).length}`;
@@ -214,23 +196,51 @@ export class PeopleView {
     if ((this.greetClock += dt) > 0.5) { this.greetClock = 0; this.greet(); }
     this.placeBubbles();
   }
-  /** Follow the route; returns true while walking. */
-  follow(w, dt, speed) {
+  /** Cancel a journey and its pending action together, including a fishing cast. */
+  cancelTrip(w) {
+    w.route = []; w.goal = null; w.target = null; w.todo = null; w.onArrive = null;
+    w.fishing = false; w.fishFace = null; w.fishPond = null; w.orderedFishing = false; w.carry = false;
+    w.clipFor = null; w.faceTo = null; w.clip = 'Idle'; w.wait = 0.5;
+  }
+  checkPond(w) {
+    if (!w.fishPond) return true;
+    const [id, x, z] = w.fishPond, p = this.s.placed[id];
+    if (p?.kind === 'pond' && p.x === x && p.z === z) return true;
+    this.cancelTrip(w); return false;
+  }
+  /** Follow legal cells; replan if the player changes a building or fence during the walk. */
+  follow(w, dt, speed, clip = 'Walk') {
     if (!w.route.length) return false;
-    const [cx, cz] = w.route[0], tx = (cx + 0.5) * CELL, tz = (cz + 0.5) * CELL, dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), step = speed * dt;
+    let next = w.route[0];
+    const here = this.cellOf(w), clear = c => !!stepCost(this.s, ...c, this.penCells()) && !fenceBetween(this.s, here, c);
+    if (!clear(next)) {
+      const route = this.route(here, w.route.at(-1), true);
+      // A newly blocked starting cell is allowed only as an exit, never as a destination.
+      if (route.length && !clear(route[0])) route.shift();
+      if (!route.length) { this.cancelTrip(w); return true; }
+      w.route = route; next = route[0];
+    }
+    const [cx, cz] = next, tx = (cx + 0.5) * CELL, tz = (cz + 0.5) * CELL, dx = tx - w.x, dz = tz - w.z, d = Math.hypot(dx, dz), step = speed * dt;
     if (d <= step) { w.x = tx; w.z = tz; w.route.shift(); } else { w.x += dx / d * step; w.z += dz / d * step; this.turnTo(w, Math.atan2(dx, dz), dt); }
-    this.walking(w, speed, w.carry ? 'CarryWalk' : 'Walk');
+    this.walking(w, speed, w.carry ? 'CarryWalk' : clip);
     if (!w.route.length) w.carry = false;
     return true;
   }
   walking(w, speed, clip = 'Walk') { const r = RIGS[w.body]; w.clip = clip; w.speed = clip === 'Run' ? speed / (r.run ?? r.walk * 2.6) : clip === 'Walk' || clip === 'CarryWalk' ? Math.max(0.4, speed / r.walk) : 1; }
   turnTo(w, want, dt, rate = 8) { const turn = ((want - w.rot) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; w.rot += Math.max(-dt * rate, Math.min(dt * rate, turn)); }
   liveVillager(w, dt, night) {
+    if (!this.checkPond(w)) return;
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
     // At dusk, leave the unfinished errand and walk straight home.
-    if (night && !w.visitor && !w.goingHome) { w.goingHome = true; w.route = this.route(this.cellOf(w), w.home); w.todo = null; w.carry = false; w.act = 'home'; }
+    if (night && !w.visitor && !w.goingHome) { this.cancelTrip(w); w.goingHome = true; w.route = this.route(this.cellOf(w), w.home); w.todo = null; w.carry = false; w.act = 'home'; }
     const speed = (w.kid ? 1.55 : 1.45) * (night ? 1.5 : 1);   // hurrying home after dark
     if (this.follow(w, dt, speed)) { w.indoors = false; return; }
+    if (w.orderedFishing) {
+      if (w.todo) this.arrive(w);
+      if ((w.wait -= dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
+      w.orderedFishing = false; w.fishPond = null;
+      if (w.visitor) { w.stage = 'leaving'; w.route = this.route(this.cellOf(w), w.home); return; }
+    }
     if (w.visitor) {
       if ((w.wait -= dt) > 0) { this.doing(w, w.stage === 'talking' ? 'Talk' : 'Idle', dt); return; }
       if (w.stage === 'coming') { w.stage = 'talking'; w.wait = 5; this.sayVisit(w); this.once(w, 'Wave', 1.2); return; }
@@ -266,7 +276,7 @@ export class PeopleView {
   once(w, clip, secs) { w.subject.once = { clip }; w.once = clip; w.onceUntil = this.time + secs; }
   /** Two people who meet stop, face each other, wave and chat for a moment. */
   greet() {
-    const list = [...this.walkers.values()].filter(w => !w.pet && !w.indoors && !w.visitor && w.route.length && this.time > (w.greetedAt ?? -99) + 40);
+    const list = [...this.walkers.values()].filter(w => !w.pet && !w.player && !w.family && !w.orderedFishing && !w.fishing && w.todo?.act !== 'fish' && !w.indoors && !w.visitor && w.route.length && this.time > (w.greetedAt ?? -99) + 40);   // a chat never cancels a trip you sent someone on
     for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
       const a = list[i], b = list[j]; if (Math.hypot(a.x - b.x, a.z - b.z) > 2.6 || Math.random() > 0.5) continue;
       for (const [p, q] of [[a, b], [b, a]]) { p.greetedAt = this.time; p.route = []; p.wait = 3.5; p.clipFor = 'Talk'; p.faceTo = Math.atan2(q.x - p.x, q.z - p.z); p.todo = null; }
@@ -276,56 +286,79 @@ export class PeopleView {
   }
   /** Send someone fishing: to the village pond's dock (or a built pond); you cast a line when you get there. */
   sendFishing(w, pond) {
-    const spot = pond ? [pond.x + 4, pond.z + 2] : [POND_DOCK.x, POND_DOCK.z], face = pond ? [pond.x + 1, pond.z + 2] : [POND_DOCK.x - 3, POND_DOCK.z];
-    const at = [(spot[0] + 0.5) * CELL, (spot[1] + 0.5) * CELL];
-    if (w.player) { w.goal = at; w.stay = 60; w.onArrive = () => { if (!this.s.fishing?.line) this.game.do('castLine'); w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z); w.clipFor = 'Sit'; w.wait = 20; }; }
-    else if (w.family) { w.target = at; w.wait = 0; w.fishing = true; }
-    else { w.route = this.route(this.cellOf(w), spot); w.todo = { act: 'fish', time: 40, face }; w.wait = 0; }
+    if (!w || w.pet || w.indoors) return false;
+    this.cancelTrip(w);
+    const face = pond ? [pond.x + 1.5, pond.z + 1.5] : [POND_DOCK.x - 3, POND_DOCK.z];
+    // A built pond can have a blocked shore; try its other sides, never an arbitrary nearby road.
+    const shores = pond ? [[pond.x + 4, pond.z + 2], [pond.x + 2, pond.z + 4], [pond.x - 1, pond.z + 2], [pond.x + 2, pond.z - 1]] : [[POND_DOCK.x, POND_DOCK.z]];
+    let route = [];
+    for (const spot of shores) { route = this.route(this.cellOf(w), spot, true); if (route.length) break; }
+    if (!route.length) return false;
+    const at = route.at(-1).map(v => (v + 0.5) * CELL);
+    w.route = route; w.wait = 0; w.orderedFishing = true; w.goingHome = false;
+    if (pond) w.fishPond = [Object.keys(this.s.placed).find(id => this.s.placed[id] === pond), pond.x, pond.z];
+    if (w.player) {
+      w.goal = at; w.stay = 60;
+      w.onArrive = () => {
+        if (!this.s.fishing?.line) this.game.do('castLine');
+        w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z);
+        w.clipFor = 'Sit'; w.wait = 20; w.orderedFishing = false;
+      };
+    } else if (w.family) { w.target = at; w.fishing = true; w.fishFace = face; }
+    else w.todo = { act: 'fish', time: 40, face };
     if (!w.player) this.say(w, t('Off to the pond!'), 2500);
+    return true;
   }
-  // ── You: the main character walks to whatever you tap and does the chore there (the rules act at once; this is the show) ──
-  playerGo(cell) { const w = this.walkers.get('you'); if (!w || w.indoors) return; w.goal = [(cell.x + 0.5) * CELL, (cell.z + 0.5) * CELL]; w.stay = 6; }
+  // Rules act at once; the player walks to a reachable place beside the selected chore.
+  playerGo(cell) {
+    const w = this.walkers.get('you'); if (!w || w.indoors) return false;
+    this.cancelTrip(w);
+    const route = this.route(this.cellOf(w), [cell.x, cell.z]);
+    if (!route.length) return false;
+    w.route = route; w.goal = route.at(-1).map(v => (v + 0.5) * CELL); w.stay = 6;
+    return true;
+  }
   livePlayer(w, dt, night) {
-    if (night) { w.indoors = true; w.goal = null; return; }
+    if (!this.checkPond(w)) return;
+    if (night) { this.cancelTrip(w); w.indoors = true; return; }
     if (w.indoors) { w.indoors = false; const [x, z] = this.familySpot('you'); w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
     if (w.goal) {
-      const dx = w.goal[0] - w.x, dz = w.goal[1] - w.z, d = Math.hypot(dx, dz), speed = 2.6;
-      if (d < 1.3) { w.goal = null; if (w.onArrive) { const f = w.onArrive; w.onArrive = null; f(); return; } w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6; return; }
-      this.turnTo(w, Math.atan2(dx, dz), dt, 10);
-      const step = Math.min(d - 1.2, speed * dt), nx = w.x + Math.sin(w.rot) * step, nz = w.z + Math.cos(w.rot) * step;
-      if (this.canStand(nx, nz) && !this.crossesFence(w.x, w.z, nx, nz)) { w.x = nx; w.z = nz; w.blocked = 0; this.walking(w, speed, 'Run'); return; }
-      if ((w.blocked = (w.blocked ?? 0) + dt) > 0.5) { w.blocked = 0; const gx = w.goal[0] - Math.sin(w.rot) * 1.6, gz = w.goal[1] - Math.cos(w.rot) * 1.6; if (this.canStand(gx, gz)) { w.x = gx; w.z = gz; } w.goal = null; }   // no way round: step over
-      w.clip = 'Idle'; return;
+      if (this.follow(w, dt, 2.6, 'Run')) return;
+      if (Math.hypot(w.goal[0] - w.x, w.goal[1] - w.z) > 0.2) { this.cancelTrip(w); return; }
+      w.goal = null;
+      if (w.onArrive) { const f = w.onArrive; w.onArrive = null; f(); return; }
+      w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6;
     }
-    if ((w.wait = (w.wait ?? 0) - dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
-    w.clipFor = null; w.clip = 'Idle'; w.speed = 1;
-    if ((w.stay = (w.stay ?? 0) - dt) < 0 && Math.hypot(w.x - (FARMHOUSE.x + 4.5) * CELL, w.z - FARMHOUSE.z * CELL) > 6 * CELL) { const [x, z] = this.familySpot('you'); w.goal = [(x + 0.5) * CELL, (z + 0.5) * CELL]; w.stay = 20; }   // drift back home
+    if ((w.wait = (w.wait ?? 0) - dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
+    w.fishPond = null; w.clipFor = null; w.clip = 'Idle'; w.speed = 1;
+    if ((w.stay = (w.stay ?? 0) - dt) < 0 && Math.hypot(w.x - (FARMHOUSE.x + 4.5) * CELL, w.z - FARMHOUSE.z * CELL) > 6 * CELL) {
+      const [x, z] = this.familySpot('you'); this.playerGo({ x, z }); w.stay = 20;
+    }
   }
-  // ── The family ──
+  // Family outings and their journey home use the same safe routes as villagers.
   liveFamily(w, dt, night) {
-    if (night) { w.indoors = true; w.route = []; return; }
+    if (!this.checkPond(w)) return;
+    if (night) { this.cancelTrip(w); w.indoors = true; return; }
     if (w.indoors) { w.indoors = false; const [x, z] = this.familySpot(w.id); w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
     if (w.target) {
-      const dx = w.target[0] - w.x, dz = w.target[1] - w.z, d = Math.hypot(dx, dz), speed = w.id === 'pip' ? 1.6 : 1.3;
-      if (d < 0.2 && w.fishing) { w.target = null; w.fishing = false; w.wait = 30; w.clipFor = 'Sit'; w.faceTo = Math.atan2((POND_DOCK.x - 2.5) * CELL - w.x, (POND_DOCK.z + 0.5) * CELL - w.z); return; }
-      if (d < 0.2) { w.target = null; w.wait = 3 + Math.random() * 6; w.clipFor = w.id === 'pip' && Math.random() < 0.3 ? 'Wave' : w.id === 'june' && Math.random() < 0.5 ? 'Sweep' : 'Idle'; }
-      else {
-        this.turnTo(w, Math.atan2(dx, dz), dt);
-        const step = Math.min(d, speed * dt), nx = w.x + Math.sin(w.rot) * step, nz = w.z + Math.cos(w.rot) * step;
-        if (this.canStand(nx, nz) && !this.crossesFence(w.x, w.z, nx, nz)) { w.x = nx; w.z = nz; this.walking(w, speed); return; }
-        if ((w.blocked = (w.blocked ?? 0) + dt) > 0.6) { w.blocked = 0; w.target = null; w.wait = 0.5; }
-        w.clip = 'Idle'; return;
-      }
+      if (this.follow(w, dt, w.id === 'pip' ? 1.6 : 1.3)) return;
+      if (Math.hypot(w.target[0] - w.x, w.target[1] - w.z) > 0.2) { this.cancelTrip(w); return; }
+      w.target = null;
+      if (w.fishing) {
+        const face = w.fishFace; w.fishing = false; w.fishFace = null; w.orderedFishing = false;
+        w.wait = 30; w.clipFor = 'Sit'; w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z);
+      } else { w.wait = 3 + Math.random() * 6; w.clipFor = w.id === 'pip' && Math.random() < 0.3 ? 'Wave' : w.id === 'june' && Math.random() < 0.5 ? 'Sweep' : 'Idle'; }
     }
-    if ((w.wait -= dt) > 0) { w.clip = w.clipFor ?? 'Idle'; w.speed = 1; return; }
-    const [x, z] = this.familySpot(w.id); w.target = [(x + 0.2 + Math.random() * 0.6) * CELL, (z + 0.2 + Math.random() * 0.6) * CELL];
+    if ((w.wait -= dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
+    w.fishPond = null;
+    const spot = this.familySpot(w.id), route = this.route(this.cellOf(w), spot);
+    w.route = route; w.clipFor = null; w.faceTo = null;
+    if (route.length) w.target = route.at(-1).map(v => (v + 0.5) * CELL);
+    else { w.wait = 2; w.clip = 'Idle'; }
   }
-  dogCanStand(x, z) {
-    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
-    return this.canStand(x, z) || (cx >= VILLAGE.x0 && cx <= VILLAGE.x1 && cz >= VILLAGE.z0 && cz <= VILLAGE.z1 && !occupant(this.s, cx, cz) && !this.penCells().has(`${cx},${cz}`));
-  }
+  dogCanStand(x, z) { return this.canStand(x, z); }
   /** Rest outside the kennel's front, or another free neighbouring cell if the garden blocks it. */
   dogRestSpot(kennel) {
     const offsets = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,-1],[-1,1]];

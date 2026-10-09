@@ -63,6 +63,7 @@ export class WorldView {
   fixedLook(x, z) {
     if (W.isBrook(x, z)) return { color: GROUND_COLORS.bank };   // the water itself is the brook mesh
     if (W.isRoad(x, z)) return { color: GROUND_COLORS.road, cobble: true };
+    if (W.isPondPath(x, z)) return { color: GROUND_COLORS.path };
     // the farmhouse forecourt: the grout under its stone tiles (dress.mjs draws the tiles), and one step of path from it
     // to the road in line with the path over to the farm
     const Y = W.HOME_YARD; if (x >= Y.x0 && x <= Y.x1 && z >= Y.z0 && z <= Y.z1) return { color: GROUND_COLORS.yard, grain: 0.04 };
