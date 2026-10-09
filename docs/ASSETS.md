@@ -121,6 +121,7 @@ MIT) is a build tool only, not a dependency of the game.
 
 - `decor.glb` `hospital`: original Blender model in `art/blender/build_farm_kit.py` (the clinic's upgrade tier).
 - `decor.glb` `potting_bench_overgrown`, `potting_bench_repaired`, `potting_bench_done`: original Blender models in `art/blender/build_farm_kit.py` (AR-013).
+- `interior-farmhouse.glb` + `interior-farmhouse.json` (AR-015): original Blender models in `art/blender/build_farm_kit.py` (`interior_kit`): the farmhouse room shell, six furniture props and their `_mid` copies, anchor empties and the room metadata. Sofa seat fitted to the measured Sit clip of `villager-man` / `villager-woman`. Previews in `docs/ar015/`.
 - Icons `police`, `company`: rendered from Willowmere's `town.glb` (the user's own project), replacing copied placeholders.
 - Icons `hen`, `cow`: rendered from this repository's `public/assets/models/rigged/chicken.glb` and `cow.glb`
   (render_icons.py `self:` sources). `ui:today`, `ui:mail`, `tool:demolish`, `ui:harvest_all`: original models in

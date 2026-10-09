@@ -2,7 +2,7 @@
 
 ### AR-015: Farmhouse interior for Explore mode — requested 2026-10-09
 
-- **Status:** requested · **Priority:** P1 · **Asked by:** user/Codex. This is an art contract and design handoff;
+- **Status:** delivered by Claude on `art/farmhouse-interior` (2026-10-09); waiting for Codex's asset check. See the delivery notes at the end of this section. · **Priority:** P1 · **Asked by:** user/Codex. This is an art contract and design handoff;
   Explore gameplay is not implemented by this document. Claude owns modeling and the look; Codex will own controls,
   navigation, rules, saves, activities and localization in a later implementation pass.
 - **Read with:** [EXPLORE-MODE.md](EXPLORE-MODE.md). Follow the [HUD standard proposed in PR #41](https://github.com/buicongnguyen/Farm_village/pull/41).
@@ -103,6 +103,16 @@ transforms exactly once. Keep decoration and chairs inside their stated collider
 - Deliver one coherent art PR with generator, packed GLB, metadata, measured dimensions/triangles/bytes, full/mid
   anchor checks, screenshots at 390 px and desktop, and a collision/anchor overlay with the existing avatar rig.
   No runtime interior entry, economy or new activities should ship from the art lane. Codex checks the asset before integration.
+
+#### AR-015 delivery notes (Claude, 2026-10-09)
+
+- **Files:** `public/assets/models/interior-farmhouse.glb` (packed, ~66 KB) and `interior-farmhouse.json` (schemaVersion 1, ~6.4 KB), built by `interior_kit()` in `art/blender/build_farm_kit.py`. Not registered in KINDS or any eager list.
+- **Budgets (measured):** shell 1,092 triangles; full room 3,836 (≤16k); mid room 1,260 (≤8k); largest prop 616 (kitchen; ≤1.2k). 22 roots (11 full + 11 mid), so one active LOD is 11 static draws (≤16). One white vertex-colour material, no textures, lights or rigs.
+- **Built-in checks** (the generator fails if any of these breaks): every prop's vertices, after its placement and yaw, lie inside its contract collider; nothing enters the entrance corridor; per-prop, shell and room triangle budgets; full and mid `interact`/`focus` anchors match exactly.
+- **Seat:** the Sit clip was measured on the rigs the way `skinned.mjs` draws them (skinned meshes only; the rig files' unskinned `Icosphere` helper excluded; scale from the Idle height; feet lifted to the floor). At 1.8 m the hips rest at 0.459 m (man) and 0.433 m (woman), 4 cm behind and 1 cm in front of the root, with the feet 5–7 cm above the floor. The cushion top is 0.46 m. `farmhouse_sofa.seat` is the actor root at floor height, room `(-2.991, 0, -0.6)`, facing `+x`. Per-rig values are under `seats[0].measured`; for another actor height, scale the shares.
+- **Door against the exterior** (`docs/ar015/porch-approach.webp`): in Willowmere's `home_t1` as drawn (9 m, centred, yaw +π/2 at (45,125)), the porch floor spans world x 46.85–49.32 and z 123.01–126.99 at 0.68 m height. The front door is in the house wall at x ≈ 47.0, centred on z = 125.0. The provisional approach (51, 0, 125), facing west, lines up with the door: it is 1.7 m in front of the porch edge, at the foot of the steps. A walk-in can go up the steps to about (47.6, 0.68, 125), or fade at the approach. The exterior asset is not edited.
+- **Previews:** `docs/ar015/room-390.webp` (phone), `room-desktop.webp`, `room-mid.webp` (mid LOD) and `room-overlay.webp`. The overlay shows colliders in red, colliders + 0.3 m in pink, avatar-centre bounds in cyan, the entrance corridor in yellow, interaction stands, entry (green) and exit (blue). It also shows the villager-man rig at 1.8 m standing on the entry and seated at the seat pose. All are rendered from the contract camera `(9,10,11)` → `(0,0.6,0)`, orthographic, with the front and right walls hidden and a 10 % margin.
+- **Zones** in the metadata are placement and dialogue labels only: `home_living` (sofa, shelf), `home_kitchen` (table, counter), `home_study` (desk; the wardrobe is listed with it).
 
 ### Active logic handoff — pond fishing interaction (2026-10-09)
 
