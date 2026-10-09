@@ -2,8 +2,9 @@
 .badge { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; border-radius: 11px; background: linear-gradient(#ff6b7f, var(--berry)); color: #fff; border: 2px solid #fff;
   font: 1000 12px/18px 'Nunito', sans-serif; font-style: normal; padding: 0 5px; text-align: center; box-shadow: 0 2px 0 #9c1f35; }
 .badge[hidden] { display: none; }
-.badge.cap { background: linear-gradient(#8fd060, #5a9a33); box-shadow: 0 2px 0 #36651b; font-size: 11px; right: -14px; top: auto; bottom: -6px; white-space: nowrap; }
-.badge.cap.full { background: linear-gradient(#ff6b7f, var(--berry)); box-shadow: 0 2px 0 #9c1f35; }
+/* The barn's fill is status, not a badge: neutral cream, amber when nearly full (red is only for unread news). */
+.badge.cap { background: linear-gradient(#fffdf6, #f3e3c3); color: #5a3410; border-color: #c99a5a; box-shadow: 0 2px 0 #a8743a; font-size: 11px; right: -14px; top: auto; bottom: -6px; white-space: nowrap; }
+.badge.cap.full { background: linear-gradient(#ffd866, #ffb92e); color: #5a3410; border-color: #fff; box-shadow: 0 2px 0 #b8741a; }
 .badge.cap.bounce { animation: bounce .45s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes bounce { 35% { transform: translateY(-6px) scale(1.15); } }
 
