@@ -1,0 +1,23 @@
+/* Layout only: reuse the shared art-lane tokens and button meanings. Loaded with Explore. */
+body.explore-active .hud-tools, body.explore-active .hud-right, body.explore-active .next-chip,
+body.explore-active .guide, body.explore-active .pointer, body.explore-active .bubbles,
+body.explore-active .hud-status, body.explore-active .village-name, body.explore-active [data-act="turn"] { display: none !important; }
+.explore-ui { position: fixed; inset: 0; pointer-events: none; z-index: 9; }
+body.panel-open .explore-ui, body:has(.modal) .explore-ui { visibility: hidden; }
+.explore-heading { position: absolute; top: max(70px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); font-weight: bold; padding: 6px 14px; border-radius: 20px; background: var(--paper); }
+.explore-controls { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(94%, 550px); pointer-events: auto; text-align: center; padding: 10px; border-radius: 18px; background: var(--paper); box-sizing: border-box; }
+.explore-controls p { margin: 0 0 8px; font-size: .9em; }
+.explore-actions { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.explore-ui .btn { min-height: 44px; min-width: 44px; white-space: normal; }
+.explore-controls small { display: block; margin-top: 6px; }
+.explore-card { position: absolute; top: 18%; left: 50%; transform: translateX(-50%); width: min(90%, 480px); max-height: 50%; overflow: auto; padding: 18px; box-sizing: border-box; pointer-events: auto; background: var(--panel-bg); border: 3px solid var(--edge); border-radius: var(--radius); }
+.explore-card h2 { margin-top: 0; }
+.explore-card .btn { margin: 4px; }
+.explore-card[data-object="sofa"] { top: auto; bottom: 92px; max-height: 35%; }
+@media (max-height: 520px) { .explore-card[data-object="sofa"] { left: auto; right: 16px; transform: none; width: 42%; top: 70px; bottom: auto; max-height: calc(100% - 162px); } }
+.explore-stick { position: absolute; left: max(20px, env(safe-area-inset-left)); bottom: 235px; display: grid; grid-template-columns: repeat(3, 44px); gap: 3px; pointer-events: auto; touch-action: none; }
+.explore-stick [data-move="up"] { grid-column: 2; }
+.explore-stick [data-move="left"] { grid-column: 1; grid-row: 2; }
+.explore-stick [data-move="down"] { grid-column: 2; grid-row: 2; }
+.explore-stick [data-move="right"] { grid-column: 3; grid-row: 2; }
+@media (pointer: coarse) { .explore-controls small { display: none; } }

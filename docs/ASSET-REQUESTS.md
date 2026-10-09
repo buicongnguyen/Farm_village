@@ -287,7 +287,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
-| AR-015 | Farmhouse cutaway interior, furniture and navigation anchors | Explore mode design / first interior | P1 | requested; exact room/object contract at the top of this file; gameplay implementation later |
+| AR-015 | Farmhouse cutaway interior, furniture and navigation anchors | Explore mode / first interior | P1 | done: PR #43 merged at `9d08f6e`; logic integration/validation in [PR #45](https://github.com/buicongnguyen/Farm_village/pull/45), 10 draws / ≤11,302 triangles; later furniture activities remain planned |
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | done (live 2026-10-08) |
 | AR-002 | Meadow and dairy set | next separate gameplay release | P1 | first delivery requested; exact IDs in MEADOW-DAIRY-SCOPE.md; cat/deed/region work still proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
@@ -421,6 +421,10 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- **Explore handoff, 2026-10-09:** gameplay through `1732c88`, release [PR #45](https://github.com/buicongnguyen/Farm_village/pull/45). AR-015 stands, colliders, both LOD anchors, measured sofa pose and porch approach passed integration. Phone/desktop, all four languages, both rigs, safe reloads and late-load cancellation are covered. Production first-load code is **1,098,843 bytes** (only 1,157 bytes spare; test build has 318 bytes spare). Keep future optional rules/views lazy. The shared-file reservation below ends when PR #45 merges; no art source, binary or look values changed. Kitchen/table/desk/wardrobe and other interiors remain future logic, with no new art requested by this slice.
+
+- **2026-10-09 active writer — Codex, `codex/explore-home`, base `9d08f6e`:** PR #43 passed packed-GLB, full/mid anchor/triangle checks, 494 native tests and startup build; merged before integration. Codex owns the lazy Explore controller, farmhouse radial entry, the player direct-control guard in PeopleView and a render-scene override in WorldView. Existing art/look values and binaries remain unchanged. First slice uses the sofa and memory shelf only; other furniture is dressing. Three.js strips dots from loaded node names; anchor checks account for that. Final handoff commit and phone checks will be recorded here.
 
 - 2026-10-09, **active writer: Codex, `codex/pond-access`**, integrating Claude PR #33 at `635c457`. Scope: `PeopleView` route/arrival/cancellation behavior; `WorldView.fixedLook` draws the public pond path with the existing path token; `dress.planWilds` keeps that corridor clear. Core route data and regression tests are coordinated by Codex. No palette, model, icon or Blender changes. Gameplay handoff: `bff1c69`; validation/release in PR #37, which ends this reservation.
 
