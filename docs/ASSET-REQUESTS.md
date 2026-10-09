@@ -1,5 +1,13 @@
 # Asset requests
 
+### Active logic handoff — clearer guidance and delivered art (2026-10-09)
+
+- Codex owns `codex/clearer-guidance-art`, from deployed main `027ec20`. This pass finishes the compact HUD/status layout and contextual guidance to existing discoveries, garden repairs and school activities; it does not add new reward sources or meadow gameplay.
+- Shared behavior reservations: `src/view/learning-view.mjs` (AR-013 stage selection and late loading), HUD/UI layout and advice navigation, plus hospital footprint/neighbor-placement tests. Claude retains all palette, lighting, model design and icon ownership.
+- PR #29 (`f52860f`) and PR #30 (`a56c93e`) share a generated `decor.glb`. Their generator changes combine cleanly. Following the user's forwarded integration instruction, Codex will rebuild and pack the combined output without changing either model design; no binary-side conflict choice will discard a delivery.
+- AR-013 maps saved repair stages **0 → overgrown, 1/2 → repaired, 3 → done**. Its three art states do not reduce the three paid repair actions. Existing stand-ins remain only while the late kit loads.
+- This note supersedes older active reservations below. Current release checks and remaining meadow scope will be recorded with this PR; optional outfits/brand seals remain separate.
+
 ### Active logic handoff — learning, garden and school (2026-10-09)
 
 This is the current writer reservation; older active-handoff paragraphs below are retained as release history.
@@ -16,6 +24,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 - Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
 - The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
 - Deliver packed GLB nodes and provenance on an `art/*` branch. Agree exact node IDs and the stage-to-model map with Codex before changing the runtime view. This request follows the already assigned AR-011/AR-012; no need to pause those.
+- Delivered by Claude (branch `art/potting-bench`): `decor.glb` nodes `potting_bench_overgrown` (532 tris, 2.24 × 1.22 m), `potting_bench_repaired` (600 tris, 2.20 × 1.09 m, the faded strawberry label lies on the top) and `potting_bench_done` (836 tris, 2.20 × 1.00 m, seed trays, potted strawberry, watering can). Origin at the base centre, front +z, registered in `src/view/kinds.mjs` (decor, late). Proposed map: stage 0 → overgrown, 1 → repaired, 2 → done; the runtime view is Codex's.
 
 ### AR-011: Civic/company art — requested 2026-10-09
 
