@@ -85,6 +85,12 @@ export function planWilds() {
     const z = brookCentre(xm) + side * (6.4 + rand() * 1.4), cx = Math.floor(xm / CELL), cz = Math.floor(z / CELL);
     if (!W.isRoad(cx, cz) && !W.inFarm(cx, cz) && !W.nearHome(cx, cz)) out.flowers.push({ x: xm, z, c: pick(FLOWER_COLORS), s: 0.9 + rand() * 0.3 });
   }
+  // Clear the public dock approach after planning, preserving seeded scenery everywhere else.
+  const p = W.POND_PATH;
+  for (const [kind, items] of Object.entries(out)) out[kind] = items.filter(t => {
+    const margin = kind === 'trees' ? 2.3 * t.s : kind === 'bushes' ? 1.1 * t.s : kind === 'rocks' ? t.s : 0.6;
+    return t.x + margin < p.x0 * CELL || t.x - margin > (p.x1 + 1) * CELL || t.z + margin < p.z0 * CELL || t.z - margin > (p.z1 + 1) * CELL;
+  });
   return out;
 }
 

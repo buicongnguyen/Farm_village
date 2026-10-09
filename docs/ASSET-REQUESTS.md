@@ -1,5 +1,10 @@
 # Asset requests
 
+### Active logic handoff — public pond access (2026-10-09)
+
+- Codex owns `codex/pond-access`, integrating Claude PR #33 at `635c457` from released main `58c6677`. Shared behavior edits are `PeopleView` journeys, `WorldView.fixedLook` for the public path, and `dress.planWilds` to clear that corridor. This supersedes the earlier note that walk-route work was still available.
+- Existing path colours and assets are reused; no art-lane binaries, palette or Blender changes are requested. [Scope and release checks](POND-ACCESS-FIX.md). Reservation ends at the validated release commit.
+
 ### Release handoff — Korean and Japanese editions (2026-10-09)
 
 - Codex owns `codex/korean-japanese`, based on deployed main `15c5738` (PR #34), for complete language catalogs, lazy locale loading, menu/settings options, formatting and language/save/layout tests. Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
@@ -295,6 +300,8 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- 2026-10-09, **active writer: Codex, `codex/pond-access`**, integrating Claude PR #33 at `635c457`. Scope: `PeopleView` route/arrival/cancellation behavior; `WorldView.fixedLook` draws the public pond path with the existing path token; `dress.planWilds` keeps that corridor clear. Core route data and regression tests are coordinated by Codex. No palette, model, icon or Blender changes. Handoff commit: pending validation.
 
 Historical log: the dated ownership and waiting-for-art notes below describe their original releases. They do not reserve files now; the active reservation and current request statuses at the top of this file take precedence.
 
