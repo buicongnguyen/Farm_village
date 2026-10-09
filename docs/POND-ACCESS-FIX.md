@@ -23,6 +23,7 @@ Validation:
 - Startup code: production 1,093,471 bytes; test build 1,094,316 bytes, both below 1,100,000. Phone rendering and first-load timing checks pass.
 - Browser coverage uses Chrome on phone-sized and desktop viewports. The optional Safari/WebKit checks could not run because its local runtime is unavailable.
 - Hook-free production acceptance passes in English on a 390 px phone and Vietnamese on a 1280 px desktop: ordinary controls select the player, the real-time walk ends with an automatic cast, land/coins/structures remain unchanged, and the line survives reload. The fixture includes the first day's normal garden decoration before comparing journey accounting.
+- The repeatable public-build script covers Vietnamese desktop. The English phone run passed and has a captured screenshot, but its spawn-position selection scan was unreliable and is excluded from that script; repeatable phone regression uses the visible-character browser suite instead.
 - Publication verification is recorded in [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37).
 
 Release source: `codex/pond-access`, gameplay commit `bff1c69`. [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37) records final-head CI, Pages deployment and live verification. It preserves the history of Claude PR #33; the tree pack in PR #32 is outside this change.
