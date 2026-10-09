@@ -7,16 +7,18 @@ import { LETTERS } from '../src/content/letters.mjs';
 import { sceneFor } from '../src/core/bonds.mjs';
 import { commentFor } from '../src/core/neighbours.mjs';
 import { FAMILIES, NEIGHBOURS, VILLAGERS } from '../src/content/people.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { CHATTER } from '../src/content/chatter.mjs';
+import { personName } from '../src/content/character-names.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'farm-village-logic'); mkdirSync(shots, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 let failures = 0;
 async function check(name, fn) {
   let ctx;
@@ -236,10 +238,10 @@ for (const lang of ['en', 'vi']) {
     const rows = await page.locator('.today .news li').allTextContents();
     expect(rows.length === 5, 'saved news rows disappeared');
     for (const [index, count] of [[0, 6], [1, 3]]) {
-      const expected = tr(lang, '{name} and you: {count} hearts').replace('{name}', 'Lan').replace('{count}', count);
+      const expected = tr(lang, '{name} and you: {count} hearts', { name: personName('lan', lang), count });
       expect(rows[index].includes(expected), 'heart threshold was replaced by its date: ' + JSON.stringify(rows));
     }
-    expect(rows[2].includes(tr(lang, 'Heart scene')) && rows[2].includes('Ada'), 'legacy scene fallback missing');
+    expect(rows[2].includes(tr(lang, 'Heart scene')) && rows[2].includes(personName('ada', lang)), 'legacy scene fallback missing');
     for (const [index, charm, name] of [[3, 20, 'Village banner'], [4, 8, 'Bunting']]) {
       const expected = tr(lang, 'Village charm {charm}: {name} goes up').replace('{charm}', charm).replace('{name}', tr(lang, name));
       expect(rows[index].includes(expected), 'wrong charm milestone');

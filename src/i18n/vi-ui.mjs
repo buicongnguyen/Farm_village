@@ -8,7 +8,7 @@ export const VI_UI = {
   'One gift a day each. A gift they love counts four times.': 'Mỗi ngày, bạn có thể tặng mỗi người một món quà. Quà đúng sở thích giúp tăng tình cảm gấp bốn lần.',
   'Your neighbours will appear here as Hollowbrook fills up.': 'Hàng xóm sẽ xuất hiện ở đây khi Thung Suối dần đông vui trở lại.',
   'Rent from your cottages': 'Tiền cho thuê nhà', 'From {name}': 'Từ {name}',
-  'No letters yet. Ada says the post is slow up here.': 'Chưa có thư nào. Bà Ada bảo thư gửi lên đây thường đến chậm lắm.',
+  'No letters yet. {person:ada:short} says the post is slow up here.': 'Chưa có thư nào. Bà {person:ada:short} bảo thư gửi lên đây thường đến chậm lắm.',
   'Recipe: {name}': 'Công thức: {name}', 'Heart scene': 'Khoảnh khắc thân thiết', 'A new family': 'Một gia đình mới',
   'Meanwhile in {village}': 'Trong khi đó ở {village}', 'A letter': 'Một lá thư',
   'A letter from {name} is in the mailbox': 'Có thư của {name} trong hộp thư', '{name} loves it!': '{name} thích lắm!',

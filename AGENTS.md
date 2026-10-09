@@ -90,7 +90,8 @@ the PR or an integration branch before a production merge; verify production aft
 - **Both languages adapt:** select dialogue/advice from the same game facts and stable topic IDs before translating.
   English and Vietnamese must share prerequisites, priorities, rewards and repetition rules. Language changes must
   not reset story progress or make rewards claimable again. Cover both languages before/after relevant milestones.
-  Character display-name proposals live in `docs/CHARACTER-NAMING-PLAN.md`; keep internal character/save/art IDs stable.
+  Localized names live in `src/content/character-names.mjs`; use the explicit identity references described in
+  `docs/LOCALIZED-CAST.md`. Keep internal character/save/art IDs stable. Korean/Japanese aliases do not add full UI languages.
 - **Cozy rules:** nothing is lost, wilts, spoils or leaves while the player is away; no paid currency; no lines that
   make the player feel guilty for being away; pets and animals never suffer if ignored. The user's confirmed energy
   scope (2026-10-08) permits a generous bar for larger optional exploration/repair projects only. Ordinary farming,

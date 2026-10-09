@@ -139,7 +139,7 @@ export class Radial {
     else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
     else if (p?.kind === 'clinic') { this.hide(); this.panels.show('clinic', id); return; }
     else if (def?.civicSite) { this.hide(); this.panels.show('villageGrowth'); return; }
-    else if (def?.pet) info = t('Biscuit watches the beds and chases crows. No upkeep needed.');
+    else if (def?.pet) info = t('{pet:dog:short} watches the beds and chases crows. No upkeep needed.');
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
     else if (def?.pond) { this.hide(); this.panels.show('pond'); return; }

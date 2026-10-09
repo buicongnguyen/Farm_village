@@ -17,6 +17,7 @@ import { SCHOOL_MEMORY } from '../src/content/school-activity.mjs';
 import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { BUILDINGS } from '../src/content/buildings.mjs';
 import { RECIPES } from '../src/content/goods.mjs';
+import { personName, petName, familyName, resolveNames } from '../src/content/character-names.mjs';
 import { VI } from '../src/i18n/vi.mjs';
 import { game, tutorial } from './helpers.mjs';
 
@@ -99,21 +100,23 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
     const params = REMARK_FACTS[r.fact]?.(s); assert.ok(params, `${n.id}: ${r.fact} does not apply`);
     assert.equal(Object.keys(params).sort().join(), names(r.text), `${n.id}: ${r.text}`);
   }
-  assert.deepEqual(REMARK_FACTS.family(s), { family: 'The Okafor family' });
+  assert.equal(resolveNames(REMARK_FACTS.family(s).family, 'vi'), familyName('okafor', 'vi'));
   assert.equal(REMARK_FACTS.hens(game()), null);
   const arc = NEIGHBOURS.find(n => n.id === 'gus').arc;
-  assert.deepEqual(arc.map(a => a.visit), [1, 2, 3]); assert.match(arc[2].text, /Ada taught me to bake/);
+  assert.deepEqual(arc.map(a => a.visit), [1, 2, 3]);
+  assert.ok(resolveNames(arc[2].text, 'en').includes(personName('ada', 'en', 'short')));
+  assert.match(resolveNames(arc[2].text, 'en'), /taught me to bake/);
 });
 
 test('chapters: one opening card, three chapter ends with an Ada beat, then the clinic chapter ending', () => {
   assert.deepEqual(CHAPTERS.map(c => c.id), [1, 2, 3, 4, 5]);
-  assert.ok(CHAPTERS.every(c => c.ada && c.panels.length <= 3 && c.text.length <= 340), 'a card is too long for a phone');
+  assert.ok(CHAPTERS.every(c => c.ada && c.panels.length <= 3 && resolveNames(c.text, 'en').length <= 340), 'a card is too long for a phone');
   assert.ok(!CHAPTERS.some(c => c.teaser));
   assert.match(CHAPTERS[0].text, /The key is under the seed tin\. Bring Hollowbrook home\./);
   assert.ok(!JSON.stringify(CHAPTERS).includes('by the brook'), 'the cottage is on Brook Lane');
   assert.ok(CHAPTERS[0].when(game()) && !CHAPTERS[1].when(game()));
   assert.equal(new Set(BEATS.map(b => b.id)).size, BEATS.length);
-  assert.ok(TUTORIAL.every(st => st.text.length <= 170 && st.text.includes('<b>')), 'tutorial steps keep their bold verbs and fit the guide card');
+  assert.ok(TUTORIAL.every(st => resolveNames(st.text, 'en').length <= 170 && st.text.includes('<b>')), 'tutorial steps keep their bold verbs and fit the guide card');
   assert.equal(VILLAGE_NAME, 'Hollowbrook');
 });
 
@@ -154,12 +157,13 @@ const linesBy = () => {
 test('each speaker keeps their Vietnamese pronouns', () => {
   const wrong = [];
   for (const [id, lines] of Object.entries(linesBy())) for (const en of lines) {
-    const vi = VI[en]; if (!vi) continue;   // coverage is checked in i18n.test.mjs
+    const translated = VI[en]; if (!translated) continue;   // coverage is checked in i18n.test.mjs
+    const vi = resolveNames(translated, 'vi');
     for (const w of NEVER[id]) if (has(unquoted(vi), w)) wrong.push(`${id} says "${w}": ${vi}`);
   }
   assert.deepEqual(wrong, []);
   // Ada speaks as bà to cháu: most of her tutorial lines say so (the others use neither pronoun)
-  const bc = TUTORIAL.filter(st => has(VI[st.text], 'cháu') || has(VI[st.text], 'bà')).length;
+  const bc = TUTORIAL.filter(st => has(resolveNames(VI[st.text], 'vi'), 'cháu') || has(resolveNames(VI[st.text], 'vi'), 'bà')).length;
   assert.ok(bc >= TUTORIAL.length / 2, `only ${bc} of Ada's tutorial lines say bà/cháu`);
 });
 
@@ -168,25 +172,28 @@ test('one Vietnamese name for Hollowbrook, consistent animal names, and the feed
   for (const [en, vi] of Object.entries(VI)) {
     if (/Hollowbrook/i.test(en)) assert.ok(/Thung Suối/i.test(vi), `Hollowbrook: ${vi}`);
     if (/feed mill/i.test(en)) assert.ok(/cối xay cám/i.test(vi), `feed mill: ${vi}`);
-    for (const [name, translated] of [['Biscuit', 'Biscuit'], ['Cloud', 'Mây'], ['Drizzle', 'Mưa Phùn'], ['Captain', 'Thuyền Trưởng']]) {
-      if (en.includes(name)) assert.ok(vi.includes(translated), `${name} must be ${translated}: ${vi}`);
-    }
-    if (/\bBo\b/.test(en)) assert.ok(!/\bBơ\b/u.test(vi) && /\bBo\b/.test(vi), `Bo: ${vi}`);
+    const rendered = resolveNames(vi, 'vi');
+    for (const id of ['dog', 'hen_cloud', 'hen_drizzle', 'frog_captain', 'cat'])
+      if (en.includes(`{pet:${id}:`)) assert.ok(rendered.includes(petName(id, 'vi', 'short')), `${id}: ${rendered}`);
+    if (en.includes('{person:bo:')) assert.ok(rendered.includes(personName('bo', 'vi', 'short')), `bo: ${rendered}`);
   }
   assert.equal(VI['Your grandmother'], 'Bà nội');
   assert.equal(VI['I know how'], 'Cháu biết rồi ạ');
 });
 
-test('Pip names the first hens Cloud and Drizzle throughout their English and Vietnamese story', () => {
+test('the child names the same two hens throughout both language editions, without reusing the dog name', () => {
   const hens = PEOPLE.pip.says.animalArrived;
-  assert.match(hens.first, /\bCloud\b/);
-  assert.match(hens.lines[0], /\bDrizzle\b/);
+  assert.ok(hens.first.includes('{pet:hen_cloud:'));
+  assert.ok(hens.lines[0].includes('{pet:hen_drizzle:'));
   const later = [CHAPTERS.find(c => c.id === 2).text, LETTERS.find(l => l.id === 'mai-1').text,
     HEART_SCENES.mai[9].lines.find(l => l.who === 'pip').text];
   for (const en of later) {
-    assert.match(en, /Cloud and Drizzle/);
-    assert.ok(VI[en].includes('Mây') && VI[en].includes('Mưa Phùn'), en);
-    assert.doesNotMatch(en, /Biscuit|Pancake/, 'the dog or an obsolete name replaced the hens');
+    for (const lang of ['en', 'vi']) {
+      const text = resolveNames(lang === 'vi' ? VI[en] : en, lang);
+      assert.ok(text.includes(petName('hen_cloud', lang, 'short')) && text.includes(petName('hen_drizzle', lang, 'short')), `${lang}: ${text}`);
+      assert.ok(!text.includes(petName('dog', lang, 'short')), 'the dog name replaced a hen');
+    }
+    assert.doesNotMatch(en, /\{pet:dog:|Pancake/, 'the dog or an obsolete name replaced the hens');
   }
   assert.ok(!Object.keys(VI).some(en => en.includes('Pancake')), 'obsolete hen dialogue remains in the translation table');
 });
@@ -196,7 +203,7 @@ test('shared chatter avoids incompatible family pronouns', () => {
   // Rephrase shared lines naturally without choosing the wrong family relationship for any of their speakers.
   for (const [age, banned] of [['kid', ['tôi', 'em', 'anh chị', 'cháu', 'con']], ['grown', ['tôi', 'anh chị', ...YOU_BAN]]]) {
     for (const en of Object.values(CHATTER).flatMap(part => part[age])) {
-      const vi = unquoted(VI[en]);
+      const vi = unquoted(resolveNames(VI[en], 'vi'));
       for (const word of banned) {
         // con is also the animal classifier: only prohibit it as the subject before a verb.
         if (word === 'con') assert.doesNotMatch(vi, /(?:^|[.!?]\s*)con (?:đã|sẽ|muốn|thấy|nghe|tìm|đếm|đang|có|không)\b/iu, en);

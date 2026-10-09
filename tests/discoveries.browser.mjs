@@ -6,14 +6,15 @@ import { join } from 'node:path';
 import { DISCOVERIES } from '../src/content/discoveries.mjs';
 import { unreadAdvice } from '../src/core/advice.mjs';
 import { unreadDiscoveries } from '../src/core/discoveries.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'farm-village-discoveries'); mkdirSync(shots, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 let failures = 0;
 async function check(name, fn) {
   let ctx;

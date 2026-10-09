@@ -8,6 +8,7 @@ import { newSchool, normalizeSchool, schoolQuestions } from '../src/core/school-
 import { SCHOOL_ACTIVITY, SCHOOL_MEMORY } from '../src/content/school-activity.mjs';
 import { VI_SCHOOL_ACTIVITY as VI } from '../src/i18n/vi-school-activity.mjs';
 import { renderSchool, renderSchoolEntry, renderSchoolMemory } from '../src/ui/school-activity-panel.mjs';
+import { personName, resolveNames } from '../src/content/character-names.mjs';
 
 const NOW = 1_800_000_000_000;
 function ready() {
@@ -32,7 +33,8 @@ const complete = s => { let result; for (let i = 0; i < 3; i++) result = answer(
 
 test('school play waits for Cora’s read introduction and a real working school, while reads are pure', () => {
   const s = ready(), before = structuredClone(s); schoolStatus(s); normalizeSchool(s); unreadSchool(s); assert.deepEqual(s, before);
-  s.story.chapter = 3; assert.match(refused(s, 'startSchoolActivity', { difficulty: 'simple' }).reason, /Cora/);
+  s.story.chapter = 3;
+  assert.ok(resolveNames(refused(s, 'startSchoolActivity', { difficulty: 'simple' }).reason, 'en').includes(personName('cora', 'en', 'short')));
   s.story.chapter = 4; s.counts.school = 1; delete s.placed.classroom; refused(s, 'startSchoolActivity', { difficulty: 'simple' });
   s.placed.classroom = { kind: 'school' }; s.cond.classroom = { level: 3 }; refused(s, 'startSchoolActivity', { difficulty: 'simple' });
   delete s.cond.classroom; s.repairing.classroom = { doneAt: NOW - 1 }; refused(s, 'startSchoolActivity', { difficulty: 'simple' });
@@ -146,10 +148,10 @@ test('classroom content and UI have Vietnamese coverage and preserve friendly sp
   const globalVI = (await import('../src/i18n/vi.mjs')).VI;
   for (const source of strings) assert.ok(VI[source] || globalVI[source], source);
   for (const [en, vi] of Object.entries(VI)) assert.deepEqual([...en.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort(), [...vi.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort(), en);
-  const byPerson = Object.fromEntries(SCHOOL_MEMORY.lines.map(line => [line.who, VI[line.text]]));
+  const byPerson = Object.fromEntries(SCHOOL_MEMORY.lines.map(line => [line.who, resolveNames(VI[line.text], 'vi')]));
   assert.match(byPerson.cora, /Cô/); assert.doesNotMatch(byPerson.cora, /\btôi\b/u);
   assert.match(byPerson.pip, /Con/); assert.doesNotMatch(byPerson.pip, /\btôi\b/u);
-  assert.match(byPerson.june, /June/); assert.match(byPerson.june, /mình/);
+  assert.ok(byPerson.june.includes(personName('june', 'vi', 'short'))); assert.match(byPerson.june, /mình/);
 });
 
 test('changing language translates the same saved classroom puzzle without resetting its answer or retry', async () => {
@@ -158,11 +160,11 @@ test('changing language translates the same saved classroom puzzle without reset
   const before = structuredClone(s), question = schoolStatus(s).question;
   try {
     await setLanguage('vi'); const vietnamese = renderSchool(s);
-    assert.ok(vietnamese.includes(VI[SCHOOL_ACTIVITY.title]));
+    assert.ok(vietnamese.includes(resolveNames(VI[SCHOOL_ACTIVITY.title], 'vi')));
     assert.ok(vietnamese.includes(VI['Let’s have another look. There is plenty of time.']));
     assert.ok(vietnamese.includes(`data-school-question="${question.id}"`));
     await setLanguage('en'); const english = renderSchool(s);
-    assert.ok(english.includes(SCHOOL_ACTIVITY.title)); assert.ok(english.includes(question.id));
+    assert.ok(english.includes(resolveNames(SCHOOL_ACTIVITY.title, 'en'))); assert.ok(english.includes(question.id));
     assert.deepEqual(s, before); assert.deepEqual(schoolStatus(s).question, question);
   } finally { await setLanguage('en'); }
 });

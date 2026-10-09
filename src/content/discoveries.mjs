@@ -14,7 +14,7 @@ export const DISCOVERIES = [
     line: 'Someone kept a little piece of this place, love. Now there is room for something of ours to grow here.',
     trigger: { kind: 'rocks', at: 2 } },
   { id: 'street-thanks', title: 'A thank-you for Village Street', coins: 20, icon: 'ui:coin', person: 'gus',
-    text: 'Village Street is restored. Gus leaves twenty coins by your gate with a short note thanking you for making the way easier for everyone.',
+    text: 'Village Street is restored. {person:gus:short} leaves twenty coins by your gate with a short note thanking you for making the way easier for everyone.',
     line: 'The cart rolled right through. Did not lose a single loaf. Good work, that.',
     trigger: { kind: 'restoration', id: 'road_south' } },
 ];

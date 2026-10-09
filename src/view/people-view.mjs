@@ -15,7 +15,7 @@ import { adviceCards, adviceOf } from '../core/advice.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
-import { t, tParams } from '../kit/i18n.mjs';
+import { t, tParams, onLanguageChange } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
@@ -26,7 +26,7 @@ const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
-const FAMILY_NAMES = { june: 'June', pip: 'Pip', dog: 'Biscuit', you: 'You' };
+const FAMILY_NAMES = { june: '{person:june:display}', pip: '{person:pip:display}', dog: '{pet:dog:display}', you: 'You' };
 const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo']);   // villagers who like to fish
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
@@ -55,6 +55,10 @@ export class PeopleView {
     Object.assign(this, { world, game, walkers: new Map(), clock: 0, time: 0, greetClock: 0, lastAction: performance.now(), tipAt: -Infinity, idleTipMs: 120000, pipAt: -99 });
     this.cast = castOf(world);
     this.bubbles = document.createElement('div'); this.bubbles.className = 'bubbles'; root.appendChild(this.bubbles);
+    onLanguageChange(() => {
+      this.bubbles.replaceChildren();
+      for (const w of this.walkers.values()) { w.bubble = null; w.bubbleUntil = 0; }
+    });
     world.onFrame((dt, now) => this.frame(dt, now));
     game.on((r, action) => {
       if (action === 'load' || r.events?.some(e => PEN_CHANGES.has(e.type))) this.pens = null;
@@ -456,7 +460,7 @@ export class PeopleView {
     for (const w of this.walkers.values()) { if (w.indoors) continue; const p = this.screenOf(w, RIGS[w.body].height * 0.5); const d = Math.hypot(p.x - x, p.y - y); if (d < bestD) { best = w; bestD = d; } }
     return best;
   }
-  nameOf(w) { if (w.player) return this.s.settings?.playerName || t('You'); const who = PEOPLE[w.person ?? w.id]; return who ? t(who.name) : FAMILY_NAMES[w.id] ?? ''; }
+  nameOf(w) { if (w.player) return this.s.settings?.playerName || t('You'); const who = PEOPLE[w.person ?? w.id]; return who ? t(who.name) : t(FAMILY_NAMES[w.id] ?? ''); }
   say(w, text, ms = 5000) {
     w.bubble?.remove();
     const el = document.createElement('div'); el.className = 'bubble';

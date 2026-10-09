@@ -9,6 +9,9 @@ import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
 import { pack } from '../src/kit/save.mjs';
 import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+import { personName } from '../src/content/character-names.mjs';
+await loadVietnamese();
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-compact-hud'); mkdirSync(shots, { recursive: true });
@@ -96,7 +99,7 @@ export async function runCompactHud(testMode) {
         if (testMode) await page.evaluate(lines => {
           farm.hud.el.querySelector('.toasts').replaceChildren();
           lines.forEach(line => farm.hud.toast(line, 'info', { icon: 'ui:mail' }));
-        }, ['Cora', 'Marisol'].map(name => (lang === 'vi' ? VI['A letter from {name} is in the mailbox'] : 'A letter from {name} is in the mailbox').replace('{name}', lang === 'vi' ? VI[name] ?? name : name)));
+        }, ['cora', 'marisol'].map(id => tIn(lang, 'A letter from {name} is in the mailbox', { name: personName(id, lang) })));
         await bounds(page);
         expect(await page.locator('.hud .next-copy').evaluate(el => el.getBoundingClientRect().height <= parseFloat(getComputedStyle(el).lineHeight) * 3 + 1), 'Next hint wraps into more than three lines');
         expect(await page.locator('.hud .hud-tracker').count() === 1, 'missing unified roadmap tracker');

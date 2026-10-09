@@ -1,6 +1,6 @@
 // The first classroom game is optional, untimed, and independent of farm goods and money.
 export const SCHOOL_ACTIVITY = {
-  title: 'Cora’s basket game',
+  title: '{person:cora:short}’s basket game',
   goods: ['carrot', 'apple', 'corn', 'pumpkin', 'cherry', 'orange'],
   difficulties: { simple: 'A little counting', challenge: 'A basket challenge' },
   questions: {

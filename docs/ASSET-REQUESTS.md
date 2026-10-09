@@ -1,5 +1,11 @@
 # Asset requests
 
+### Active logic handoff — localized cast (2026-10-09)
+
+- Codex owns `codex/localized-cast`, from deployed main `7cccfbf`. The user requested implementation of the playful native names in `CHARACTER-NAMING-PLAN.md`.
+- Logic owns the four-language identity registry, authored English/Vietnamese references, exact old-save text compatibility, name UI paths and tests. Shared view reservation: `PeopleView.nameOf()`/name labels and clearing transient speech on a language change in `src/view/people-view.mjs`; player-entered names, model IDs and art files remain unchanged. The modal viewport constraint in `src/ui/village.css` is a layout-only fix for 130% text; colours remain art-owned.
+- This supersedes the completed PR #31 edit reservations below. Claude can continue AR-002 from its separate exact asset contract; this pass requests no models, icons, palette or lighting changes. [Local verification](LOCALIZED-CAST.md) is complete (417 native, 32 browser suites, 28 smoke, 14 production contexts); the release PR records deployment/live checks. After merging, these view reservations are released. Read the identity-reference contract before adding named dialogue.
+
 ### Release handoff — clearer guidance and delivered art (2026-10-09)
 
 - Codex owns `codex/clearer-guidance-art`, from deployed main `027ec20`, for [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), currently implemented and validated. This pass finishes the compact HUD/status layout and contextual guidance to existing discoveries, garden repairs and school activities; it does not add new reward sources or meadow gameplay.

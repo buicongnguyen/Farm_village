@@ -33,8 +33,10 @@ const fits = (page, sel, { scrolls = false } = {}) => page.evaluate(([sel, scrol
   return bad.join('; ');
 }, [sel, scrolls]);
 import { CHAPTERS } from '../src/content/story.mjs';
-import { VI } from '../src/i18n/vi.mjs';
-const tr = (lang, en) => lang === 'vi' ? VI[en] ?? en : en;
+import { personName } from '../src/content/character-names.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+await loadVietnamese();
+const tr = tIn;
 
 for (const lang of ['en', 'vi']) {
   await check(`chapter cards 1–5 fit a phone (${lang})`, async () => {
@@ -50,7 +52,7 @@ for (const lang of ['en', 'vi']) {
       // the card as the guide draws it today, then with Ada's line added (the ui package's chapter-card hook): both must fit
       let bad = await fits(page, '.modal .card-modal'); expect(!bad, `chapter ${n}: ${bad}`);
       await page.evaluate(([who, line]) => document.querySelector('.modal .chapter [data-close]').insertAdjacentHTML('beforebegin',
-        `<p class="ada" style="font-style:italic"><b>${who}:</b> “${line}”</p>`), [tr(lang, 'Ada'), tr(lang, CHAPTERS[n - 1].ada)]);
+        `<p class="ada" style="font-style:italic"><b>${who}:</b> “${line}”</p>`), [personName('ada', lang), tr(lang, CHAPTERS[n - 1].ada)]);
       bad = await fits(page, '.modal .card-modal'); expect(!bad, `chapter ${n} with Ada's line: ${bad}`);
       await page.screenshot({ path: join(SHOTS, `story-ch${n}-${lang}.png`) });
       await page.click('.modal [data-close]');

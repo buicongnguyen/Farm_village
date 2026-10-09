@@ -9,7 +9,7 @@ export const LAND_BRANCH = {
   reward: { decor: 'bench', count: 1 },
   discovery: {
     id: 'planting-marker', title: 'A little sun in the soil',
-    story: 'Under the leaves is an old planting marker with a little sun carved into it. Ada has kept a bench for this corner; it is now in your storage.',
+    story: 'Under the leaves is an old planting marker with a little sun carved into it. {person:ada:short} has kept a bench for this corner; it is now in your storage.',
     lines: [
       { who: 'ada', text: 'I grew marigolds beside my vegetables. There was always room for something cheerful.' },
       { who: 'pip', text: 'Can we leave a tiny seat for a beetle?' },

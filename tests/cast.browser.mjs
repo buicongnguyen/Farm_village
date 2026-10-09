@@ -3,6 +3,7 @@
 // SHOTS_DIR (default test-results/cast/).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { personName } from '../src/content/character-names.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const SHOTS = (process.env.SHOTS_DIR ?? 'test-results/cast').replace(/\/?$/, '/'); mkdirSync(SHOTS, { recursive: true });
 const gpu = process.env.GPU !== '0';
@@ -101,7 +102,7 @@ await check('June and Pip are by the farmhouse after the tutorial, and Pip speak
     const g = farm.game; g.s.coins = 500; g.do('clear', { x: 34, z: 59 }); g.do('place', { kind: 'bed', x: 34, z: 59 });
     const id = Object.keys(g.s.placed).find(k => g.s.placed[k].kind === 'bed'); g.do('plant', { id, crop: 'wheat' }); g.s.beds[id].doneAt = g.now - 1; g.do('harvest', { id });
   });
-  await until(page, () => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith('Pip')), null, 5000);
+  await until(page, name => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith(name)), personName('pip'), 5000);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
@@ -133,7 +134,7 @@ await check('walkers swing their legs at normal zoom, and a still walker stands 
 await check('June gives a tip when the player seems stuck', async () => {
   const { ctx, page } = await open('pc');
   await page.evaluate(() => { farm.people.idleTipMs = 1500; });
-  await until(page, () => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith('June')), null, 8000);
+  await until(page, name => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith(name)), personName('june'), 8000);
   await ctx.close();
 });
 

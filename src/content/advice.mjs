@@ -17,7 +17,7 @@ export const ADVICE_TOPICS = {
   'picnic-share': {
     contexts: ['picnic/share'], type: 'activity', person: 'june', icon: 'trail_picnic_ribbon',
     title: 'Bring the ribbon home',
-    line: 'We found the ribbon, love. Let us show Ada and hear the rest of her picnic story.',
+    line: 'We found the ribbon, love. Let us show {person:ada:short} and hear the rest of her picnic story.',
     reason: 'The ribbon is already found. Sharing it at the farmhouse is the last free step of this little trail.',
   },
   'clearing-inspect': {
@@ -35,8 +35,8 @@ export const ADVICE_TOPICS = {
   'garden-lesson': {
     contexts: ['garden/lesson'], type: 'activity', person: 'june', icon: 'tool:build',
     title: 'A little repair to learn',
-    line: 'Minh can show us how to mend the old potting bench, love. His lesson is free, and we can try again whenever we like.',
-    reason: 'You have met Minh. Two practical questions teach Garden repairs; no coins, farm XP or project energy are spent on the lesson.',
+    line: '{person:minh:short} can show us how to mend the old potting bench, love. His lesson is free, and we can try again whenever we like.',
+    reason: 'You have met {person:minh:short}. Two practical questions teach Garden repairs; no coins, farm XP or project energy are spent on the lesson.',
   },
   'garden-work': {
     contexts: ['garden/uncover', 'garden/brace', 'garden/trays'], type: 'opportunity', person: 'june', icon: 'tool:build',
@@ -59,8 +59,8 @@ export const ADVICE_TOPICS = {
   'school-baskets': {
     contexts: ['school/baskets'], type: 'activity', person: 'june', icon: 'school',
     title: 'A basket game at school',
-    line: 'Cora has picture baskets to count, love. We can try a game together or carry on with the one we started.',
-    reason: 'The school is open and Cora has arrived. This untimed game is free, uses no barn goods or energy, and saves an unfinished round.',
+    line: '{person:cora:short} has picture baskets to count, love. We can try a game together or carry on with the one we started.',
+    reason: 'The school is open and {person:cora:short} has arrived. This untimed game is free, uses no barn goods or energy, and saves an unfinished round.',
   },
   'pond-curiosity': {
     contexts: ['pond/curiosity'], type: 'activity', person: 'june', icon: 'pond',
@@ -179,7 +179,7 @@ export const ADVICE_TOPICS = {
   'first-bread': {
     type: 'celebration', person: 'ada', icon: 'bread',
     title: 'Our first loaf from the oven',
-    line: 'Your first loaf from the oven, dear! Ellis always claimed the end piece. Shall we save it for him?',
+    line: 'Your first loaf from the oven, dear! {person:ellis:short} always claimed the end piece. Shall we save it for him?',
     reason: 'You collected the first bread made on this farm. A small beginning worth remembering.',
   },
   'school-open': {

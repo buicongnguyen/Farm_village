@@ -4,7 +4,7 @@ export const VI_LAND = {
   'Room for beds, fruit trees or a quiet garden. You choose what grows here.': 'Có chỗ làm luống rau, trồng cây ăn quả hoặc một góc vườn yên tĩnh. Mình thích trồng gì thì chọn nhé.',
   'Something small is tucked among the leaves near an old planting marker.': 'Giữa đám lá có một vật nho nhỏ, cạnh chiếc thẻ đánh dấu luống cây cũ.',
   'A little sun in the soil': 'Một mặt trời nhỏ giữa vườn',
-  'Under the leaves is an old planting marker with a little sun carved into it. Ada has kept a bench for this corner; it is now in your storage.': 'Dưới đám lá là chiếc thẻ đánh dấu luống cây cũ, có khắc một mặt trời nhỏ. Bà Ada dành sẵn một chiếc ghế dài cho góc vườn này; ghế đã được cất trong kho.',
+  'Under the leaves is an old planting marker with a little sun carved into it. {person:ada:short} has kept a bench for this corner; it is now in your storage.': 'Dưới đám lá là chiếc thẻ đánh dấu luống cây cũ, có khắc một mặt trời nhỏ. Bà {person:ada:short} dành sẵn một chiếc ghế dài cho góc vườn này; ghế đã được cất trong kho.',
   'I grew marigolds beside my vegetables. There was always room for something cheerful.': 'Ngày trước bà trồng vạn thọ cạnh luống rau. Lúc nào cũng chừa một góc cho hoa nở vui mắt.',
   'Can we leave a tiny seat for a beetle?': 'Nhà mình chừa một chỗ ngồi bé xíu cho bọ cánh cứng được không ạ?',
   'A little garden and room to grow, love. We can choose what goes here.': 'Có thêm một góc vườn để vun trồng rồi, mình nhỉ. Cả nhà cùng chọn xem nên trồng gì nhé.',
