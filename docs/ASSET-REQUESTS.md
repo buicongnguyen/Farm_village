@@ -1,5 +1,108 @@
 # Asset requests
 
+### AR-015: Farmhouse interior for Explore mode — requested 2026-10-09
+
+- **Status:** requested · **Priority:** P1 · **Asked by:** user/Codex. This is an art contract and design handoff;
+  Explore gameplay is not implemented by this document. Claude owns modeling and the look; Codex will own controls,
+  navigation, rules, saves, activities and localization in a later implementation pass.
+- **Read with:** [EXPLORE-MODE.md](EXPLORE-MODE.md). Follow the [HUD standard proposed in PR #41](https://github.com/buicongnguyen/Farm_village/pull/41).
+  PRs #39–#41 are open at this handoff; do not assume their source has merged. This request adds no permanent HUD button.
+- **First room:** stable room ID `farmhouse_main`, fixed exterior site `farmhouse` (not a new placed building).
+  One ground-floor, open-plan cutaway, **8 × 6 m**, with three connected visual zones listed below. No bedroom,
+  bathroom, upstairs, additional house interiors or new exterior model in this delivery.
+- **Style:** the existing richer, warm farmhouse palette, clear furniture silhouettes and welcoming lived-in details.
+  No words, character names or instructions baked into textures/meshes. Keep play surfaces recognizable at phone size.
+
+#### Rooms / zones
+
+| Room ID | Zone ID | What belongs here | Scope |
+|---|---|---|---|
+| `farmhouse_main` | `home_living` | Sofa and family memory shelf on the left | Required first delivery |
+| `farmhouse_main` | `home_kitchen` | Dining table and kitchen counter toward the back/right | Required first delivery |
+| `farmhouse_main` | `home_study` | Small desk and wardrobe | Required first delivery |
+| — | Bedroom, bathroom, upper floor | Later separate rooms if approved | Do not model yet |
+
+Zones are labels for placement and dialogue, not separate loading screens or invisible walls.
+
+#### Interactable objects and exact IDs
+
+The following identifiers are **reserved**, not existing runtime features. Use the same string for the top-level
+GLB prop node and future interaction ID. Coordinates below are room-local metres, Y up, floor Y=0. Prop geometry
+is authored around its own base centre; root transforms stay identity. The metadata supplies these placement/yaw
+transforms exactly once. Keep decoration and chairs inside their stated collider.
+
+| Object / ID | Future behavior owned by Codex | Placement `(x,z)` / yaw | Room-space collider `x ; z` | Interaction stand `(x,z)` |
+|---|---|---|---|---|
+| `farmhouse_sofa` | Sit; optionally use the existing free project-rest action when eligible | `(-3.15,-0.60)` / `+π/2` | `[-3.65,-2.65] ; [-1.80,0.60]` | `(-2.00,-0.60)` |
+| `farmhouse_wardrobe` | Open current appearance choices; no new clothing inventory | `(3.20,1.50)` / `-π/2` | `[2.75,3.65] ; [0.65,2.35]` | `(2.10,1.50)` |
+| `farmhouse_table` | Untimed illustrated seed-packet activity; contextual family conversation | `(0.25,-0.30)` / `0` | `[-0.75,1.25] ; [-1.25,0.65]` | `(0.25,1.35)` |
+| `farmhouse_kitchen` | Inspect a recipe book using current recipe/source information; no second cooking queue | `(2.45,-2.25)` / `0` | `[1.25,3.65] ; [-2.70,-1.80]` | `(2.40,-1.10)` |
+| `farmhouse_desk` | Open current Village ideas / planning journal | `(-1.40,-2.25)` / `0` | `[-2.20,-0.60] ; [-2.70,-1.80]` | `(-1.40,-1.10)` |
+| `farmhouse_memory_shelf` | Existing album and one optional family-drawing discovery | `(-3.15,1.775)` / `+π/2` | `[-3.65,-2.65] ; [1.25,2.30]` | `(-2.00,1.775)` |
+| `farmhouse_exit` | Return to the validated exterior porch | Door centre `(0,3)` | An opening, not a furniture collider | `(0,2.45)` |
+
+- Include a small unlettered recipe book in the kitchen, plain illustrated packets on the table and a partly tucked
+  drawing/photo at the shelf. They are details within those props, not additional tiny tap targets or inventory goods.
+- Sofa, wardrobe and shelf face inward after their listed yaw; remaining props face local +z. No new animations or
+  moving doors required. Open/closed drawer stages and new character outfits are outside this first delivery.
+
+#### Door, camera and navigation contract
+
+- Room bounds: X `[-4,4]`, Z `[-3,3]`; walls height 2.8 m, thickness 0.15 m extending inward. Entry is on **+z**, opening
+  X `[-0.8,0.8]`, clear height at least 2.1 m, threshold no higher than 0.05 m. No stairs or ceiling collision.
+- Entry spawn `(0,0,2.15)`, facing −z; exit stand `(0,0,2.45)`. Keep entrance corridor X `[-0.65,0.65]`,
+  Z `[1.15,2.70]` empty. Physical passages must be at least 1.2 m wide before subtracting avatar clearance;
+  test a 0.30 m radius / 1.8 m tall avatar. The 1.50 m table–wardrobe gap leaves 0.90 m of avatar-centre space.
+- Raw inner floor bounds X `[-3.85,3.85]`, Z `[-2.85,2.85]`. Permitted **avatar-centre** bounds after a single
+  0.30 m inset are X `[-3.55,3.55]`, Z `[-2.55,2.55]`, minus furniture AABBs expanded by 0.30 m. Do not inset
+  those centre bounds again. Hidden walls keep collision; preserve the front door opening. Entry/exit stands remain valid.
+  Codex owns finer interior navigation (approximately 0.5 m cells); the outdoor 2 m grid must not be reused inside.
+  Interaction stands remain exact authored points, with a final swept approach segment; do not round them into grid centres.
+- Fixed orthographic camera looks from +x/+z: suggested camera anchor `(9,10,11)`, target `(0,0.6,0)`.
+  Frame the room in the remaining viewport with a 10% margin. The **front and right walls hide**, while their
+  collision remains. No user camera rotation inside this first room; exterior rotation is restored on exit.
+- Exterior approach is **provisional** HOME_YARD cell `(25,62)` → world `(51,0,125)`, facing west. Existing house
+  centre is `(45,0,125)`, exterior yaw `+π/2`; current art has no generated door anchor. Supply a preview showing
+  the intended entrance against the existing exterior so Codex can validate the porch point. Do not silently edit
+  the exterior asset or use the house centre as a walk destination. Door alignment is an integration acceptance gate.
+
+#### Files, anchors, budgets and delivery
+
+- Separate packed kit: `public/assets/models/interior-farmhouse.glb`, generated by `art/blender/build_farm_kit.py`
+  (a helper is fine), packed through `art/blender/pack.mjs`, with provenance in `docs/ASSETS.md`.
+- Shell top-level nodes: `farmhouse_interior_floor`, `farmhouse_interior_back`, `farmhouse_interior_left`,
+  `farmhouse_interior_front`, `farmhouse_interior_right`; the six prop roots above; matching `_mid` variants.
+  Keep wall parts separate. Do not hide all nodes under a container that the existing kit loader cannot expose.
+- Floor empties: `farmhouse_interior_floor.entry`, `.exit`, `.camera`, `.camera_target`. Each prop has
+  `<prop-id>.interact` and `<prop-id>.focus`. Metadata records room-space positions; transforms apply once.
+  Floor `.entry` is the spawn `(0,0,2.15)` and `.exit` is the stand `(0,0,2.45)`; doorway plane `(0,0,3)` is
+  separate metadata. `farmhouse_exit` is a semantic interaction, not a seventh furniture mesh. Mid anchors use
+  `<prop-id>_mid.interact/.focus` and `farmhouse_interior_floor_mid.entry/.exit/.camera/.camera_target`, avoiding
+  duplicate names; compare their transformed positions against the corresponding full anchors.
+  The sofa additionally needs `farmhouse_sofa.seat` and `seatFacing`, fitted to the existing player man/woman Sit
+  rig: this is the actor-root pose that seats the body on the cushion, not the approach point. `.interact` is also
+  the safe standing return point. Include the measured seat pose in metadata; do not guess its height from the cushion.
+  Prop empties are prop-local; compare them with room-space metadata after the placement/yaw transform. Shell roots
+  share room origin `(0,0,0)`. Full/mid anchors must agree. Runtime must preserve metres (`center:false`, no automatic recentering/scaling).
+- Art-owned companion `public/assets/models/interior-farmhouse.json`, `schemaVersion: 1`, contains `roomId`,
+  `bounds`, `meshes` (node, position, yaw, midNode), `colliders`, `interactions` (id, stand, focus), `entry`,
+  `exit`, `camera`, `hiddenWalls` and `seats`. No costs, dialogue, unlocks or executable rules in asset metadata.
+  Units are metres, Y-up, yaw in radians. Arrays `position`, `stand`, `focus`, camera vectors and seat poses are
+  `[x,y,z]`; colliders use room-space `min:[x,z]`, `max:[x,z]` (do not transform them a second time). Specify:
+  `entry:{anchor,position,facing}`, `exit:{id,anchor,stand,doorway:{centre,width,height}}`,
+  `camera:{position,target,padding:0.1}`, `hiddenWalls:{full:[nodeIds],mid:[nodeIds]}`,
+  `seats:[{id,node,position,facing,returnStand}]`. All vectors except mesh-local GLB empties are room-space.
+- Lazy-load only on requested entry; **do not register this in eager world/KINDS loading lists**. No new textures,
+  lights, post-processing, rigs or icons. Reuse existing people and UI icons; never substitute an unrelated new icon.
+- Shell combined ≤8k triangles; each prop ≤1.2k; complete static room ≤16k full / ≤8k mid and ≤16 static draws.
+  Use one white material with vertex colours (`COLOR_0`). Render full **or** mid nodes; draw budgets measure one
+  active static room, never both LOD copies together.
+  Targets: packed kit ≤350 KB and metadata ≤16 KB. Whole scene hard caps remain 120 draws / 300k triangles;
+  first-load code remains ≤1.1 MB. These are acceptance budgets, not a reason to load outdoor scenery behind the room.
+- Deliver one coherent art PR with generator, packed GLB, metadata, measured dimensions/triangles/bytes, full/mid
+  anchor checks, screenshots at 390 px and desktop, and a collision/anchor overlay with the existing avatar rig.
+  No runtime interior entry, economy or new activities should ship from the art lane. Codex checks the asset before integration.
+
 ### Active logic handoff — pond fishing interaction (2026-10-09)
 
 - Codex owns `codex/pond-fishing`, from PR #37/main `f6b3049`. The user requested removal of the floating pond dock, separate seats, visible casting, and a timing minigame. For this requested visual fix, Codex removes only the pond planks/posts in `brook.propsGeometry` and adds simple fishing tackle in a new `src/view/fishing-view.mjs`; the river bridge, existing palettes, lighting, models/icons and Blender sources remain art-owned.
@@ -173,6 +276,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
+| AR-015 | Farmhouse cutaway interior, furniture and navigation anchors | Explore mode design / first interior | P1 | requested; exact room/object contract at the top of this file; gameplay implementation later |
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | done (live 2026-10-08) |
 | AR-002 | Meadow and dairy set | next separate gameplay release | P1 | first delivery requested; exact IDs in MEADOW-DAIRY-SCOPE.md; cat/deed/region work still proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |

@@ -1,5 +1,10 @@
 # Changelog
 
+## Explore mode design and farmhouse art contract — 2026-10-09
+
+- Added a design-only plan for direct character controls, farmhouse entry/exit, small indoor activities, profile saves, HUD behavior and English/Vietnamese copy. Explore gameplay is not implemented by this update.
+- Requested AR-015: one 8 × 6 m cutaway farmhouse room, three open zones, six named interactive props, and explicit camera/door/navigation metadata. Claude owns the art; later logic implementation starts from [EXPLORE-MODE.md](docs/EXPLORE-MODE.md).
+
 ## Fishing from the bank — 2026-10-09
 
 - Removed the floating platform at the village pond. A clear public bank has one player spot and two spaced visitor spots; reservations prevent people walking to the same seat. Built ponds also reserve separate reachable shores.

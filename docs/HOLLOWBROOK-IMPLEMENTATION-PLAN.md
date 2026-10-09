@@ -521,7 +521,9 @@ School Lane and Civic Row already exist. Village Street starts damaged; School L
 
 Learn basic farm capabilities before the school opens. Otherwise school-required bread could depend on attending a school that requires bread to reopen. Cora's teaching begins after her arrival. A simple optional pre-opening family activity can preview the learning interest without pretending the full classroom is available.
 
-First interior scope: one usable classroom, one replayable activity, clear return to the village. Candidate activities include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
+Updated user decision, 2026-10-09: the first Explore interior is the farmhouse, with a design-only handoff and Claude's AR-015 art contract. [EXPLORE-MODE.md](EXPLORE-MODE.md) specifies direct controls, the cutaway room, safe entry/exit, small activities, saves and English/Vietnamese copy. Gameplay implementation remains a later pass. This replaces the earlier classroom-first order.
+
+The school follows the farmhouse with one usable classroom, the existing replayable picture-basket activity, and a clear return to the village. Further candidates include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
 
 The first completion can give a modest keepsake and a specific Cora/child reaction. Repeat contests should be enjoyable without repeatedly paying the existing 1,500-coin school festival reward. Budget any new rewards explicitly.
 

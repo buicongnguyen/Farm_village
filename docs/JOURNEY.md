@@ -260,7 +260,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 3. The meadow | Gameplay not started; first goat/dairy art delivery requested with exact IDs in [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md). Cat, land deeds and the larger region remain separate proposals. |
 | Cross-stage follow-up: clearer guidance and delivered art | Implemented and validated for PR #31: compact HUD, contextual discovery/repair/school advice, hospital footprint fix and three potting-bench art states. 407 native tests, pace, 31 component suites, 28 smoke checks and 16 local production contexts pass; the PR records publication/live checks. [Scope and checks](CLEARER-GUIDANCE-AND-ART.md). Meadow gameplay remains separate; its first art contract is [scoped](MEADOW-DAIRY-SCOPE.md). |
 | 4. Down to the river | not started |
-| 5. A village to be proud of | not started |
+| 5. A village to be proud of | Explore mode design and AR-015 farmhouse art contract prepared; gameplay not started. [Controls, interiors, activities, saves and bilingual copy](EXPLORE-MODE.md). Farmhouse is the first room, school follows; this does not complete the stage. |
 | 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
