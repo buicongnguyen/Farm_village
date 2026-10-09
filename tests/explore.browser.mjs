@@ -63,11 +63,14 @@ try {
     // Screen directions and release work on the optional touch controls too.
     await page.locator('[data-explore="controls"]').click();
     const down = page.locator('[data-move="down"]'), b = await down.boundingBox();
+    const heldFrom = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
     if (width === 390) {
       const cdp = await context.newCDPSession(page);
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b.x + b.width / 2, y: b.y + b.height / 2 }] });
-      await page.waitForTimeout(200); await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await cdp.detach();
-    } else { await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.waitForTimeout(200); await page.mouse.up(); }
+      await page.waitForTimeout(500); await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await cdp.detach();
+    } else { await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.waitForTimeout(500); await page.mouse.up(); }
+    const heldTo = await page.evaluate(() => farm.world.exploreMode.session.p);
+    assert.ok(Math.hypot(heldTo[0] - heldFrom[0], heldTo[1] - heldFrom[1]) > .5, 'held direction stopped when the nearby action changed');
     assert.deepEqual(await page.evaluate(() => farm.world.exploreMode.stick), [0,0]);
     await page.locator('[data-explore="outside"]').click();
     await page.waitForFunction(() => !farm.world.exploreMode.inside, null, { timeout: 20000 });

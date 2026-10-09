@@ -172,11 +172,13 @@ class ExploreMode {
   }
   render() {
     if (!this.active) return;
+    // Do not replace a captured direction button when the nearest-object label changes mid-hold.
+    if (Math.hypot(...this.stick) && !this.busy) { this.renderPending = true; return; }
     const active = document.activeElement?.dataset.explore;
     const loading = this.loading ? t('Opening the farmhouse…') : this.error ? t('Could not open the farmhouse. Please try again.') : '';
     const nearest = this.nearest(), control = exploreState(this.state).controls;
     let card = '';
-    if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'go')}${button('back', 'Back', 'ghost')}`;
+    if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
     if (this.card === 'sofa') {
       const l = learningStatus(this.state, this.game.now);
       card = `<h2>${esc(t('A quiet moment at home'))}</h2><p>${esc(t('Put your feet up. The farm can wait a moment.'))}</p>`;
@@ -186,9 +188,9 @@ class ExploreMode {
     }
     const label = nearest === 'door' ? 'Go inside' : HOME_OBJECTS[nearest]?.label;
     const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore'))}</div>${card ? `<div class="explore-card" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
-      <div class="explore-controls"><p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : 'Walk to the door, then choose Go inside.')))}</p>
+      <div class="explore-controls">${card ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${button('interact', label ?? 'Walk closer to interact', 'primary', !label)}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
-      <div class="explore-actions">${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading ? button('controls', control === 'tap' ? 'Use movement buttons' : 'Use tap controls', 'ghost') : ''}</div>
+      <div class="explore-actions">${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use movement buttons' : 'Use tap controls', 'ghost') : ''}</div>
       ${!loading && !card ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>
       ${!loading && !card && control === 'joystick' ? `<div class="explore-stick" role="group" aria-label="${esc(t('Movement controls'))}">${[['up','↑','Move up'],['left','←','Move left'],['down','↓','Move down'],['right','→','Move right']].map(([id,symbol,label]) => `<button type="button" class="btn" data-move="${id}" aria-label="${esc(t(label))}">${symbol}</button>`).join('')}</div>` : ''}`;
     if (this.html === html) return;
@@ -197,7 +199,7 @@ class ExploreMode {
     this.el.querySelectorAll('[data-move]').forEach(b => {
       const vectors = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
       b.addEventListener('pointerdown', e => { e.preventDefault(); this.target = null; this.exitOnArrival = false; this.stick = vectors[b.dataset.move]; b.setPointerCapture(e.pointerId); });
-      for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(event, () => { this.stick = [0, 0]; });
+      for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(event, () => { this.stick = [0, 0]; if (this.renderPending) { this.renderPending = false; this.render(); } });
     });
     if (active) this.el.querySelector(`[data-explore="${active}"]`)?.focus({ preventScroll: true });
   }
