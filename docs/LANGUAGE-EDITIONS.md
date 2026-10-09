@@ -52,7 +52,9 @@ placement only; the art lane's colours, bubble appearance and font-size settings
 
 ## Verification and publication
 
-Implementation and local validation are complete. Publication and live verification are recorded in the release PR.
+Implementation, deployment and live validation are complete. [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35)
+merged at `ceef19c`; its [final-head CI](https://github.com/buicongnguyen/Farm_village/actions/runs/37889514665) and
+[Pages deployment](https://github.com/buicongnguyen/Farm_village/actions/runs/37889562390) passed.
 
 - **428 native tests** and `npm run sim` pass. School/clinic pace is unchanged; the steady profile reaches both on day 3.
 - All **34 component suites** pass across the full run, corrected orchard rerun and added speech suite. After the
@@ -72,6 +74,11 @@ Implementation and local validation are complete. Publication and live verificat
   retains the translated-heading assertion and checks the switch back to English.
 - **54/54 local production contexts** pass: loading/recovery (18), names/story (12), HUD (16) and garden/school (8),
   all through public menus without a debug hook. Production first-load code is **1,093,080 / 1,100,000 bytes**.
+- **46/46 targeted live contexts** pass: loading/recovery (18), names/story (12) and HUD (16). All 35 published JS/CSS
+  files, including the three lazy language catalogs, exactly match the tested build by SHA-256. The initial live
+  loader run exposed a Playwright cleanup race after ten passing cases: an intercepted response was disposed while
+  its handler was still reading it. The harness now drains active route handlers before closing the context; all
+  18 cases passed on rerun. Active request errors remain failures. This follow-up changes no game files.
 
 Browser checks use Chrome with isolated stores and phone/desktop viewports; this does not claim testing on a physical iPhone or
 Safari. Independent human Korean/Japanese literary review also remains outside the checks completed here.

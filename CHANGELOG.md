@@ -7,6 +7,7 @@
 - Typing a name with Korean/Japanese composition survives background farm updates. Player-entered text, existing saves, all three profiles, progress and economy stay compatible.
 - Villager speech uses actual screen bounds at enlarged text sizes, keeping translated bubbles within phone edges.
 - Validation: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 local production contexts pass. Production first-load code is 1,093,080 bytes. [Scope and verification](docs/LANGUAGE-EDITIONS.md). Independent human native-speaker editing remains a future quality pass.
+- Live through PR #35 (`ceef19c`): CI, Pages and 46 live acceptance contexts pass. The post-deploy test harness drains intercepted requests before closing their browser context, fixing a cleanup race without changing game code.
 
 ## Localized playful cast — 2026-10-09
 
