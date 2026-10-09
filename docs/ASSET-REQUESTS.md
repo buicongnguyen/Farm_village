@@ -16,6 +16,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 - Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
 - The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
 - Deliver packed GLB nodes and provenance on an `art/*` branch. Agree exact node IDs and the stage-to-model map with Codex before changing the runtime view. This request follows the already assigned AR-011/AR-012; no need to pause those.
+- Delivered by Claude (branch `art/potting-bench`): `decor.glb` nodes `potting_bench_overgrown` (532 tris, 2.24 × 1.22 m), `potting_bench_repaired` (600 tris, 2.20 × 1.09 m, the faded strawberry label lies on the top) and `potting_bench_done` (836 tris, 2.20 × 1.00 m, seed trays, potted strawberry, watering can). Origin at the base centre, front +z, registered in `src/view/kinds.mjs` (decor, late). Proposed map: stage 0 → overgrown, 1 → repaired, 2 → done; the runtime view is Codex's.
 
 ### AR-011: Civic/company art — requested 2026-10-09
 

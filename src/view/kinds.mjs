@@ -15,6 +15,10 @@ export const KIND_MODELS = {
   kennel: { kit: 'farm-kit', node: 'kennel', authored: true, lod: 'static' },
   clinic: { kit: 'town', node: 'hospital', width: 7.8, lod: 'static', late: true },
   // AR-011: the clinic's hospital upgrade (s.growth.hospitalAt); same 4 x 3 footprint, door at the front centre. Codex selects it.
+  // AR-013: the old potting bench's three stages (fixed site, learning-site.mjs); Codex maps stage -> model
+  potting_bench_overgrown: { kit: 'decor', node: 'potting_bench_overgrown', authored: true, lod: 'static', late: true },
+  potting_bench_repaired: { kit: 'decor', node: 'potting_bench_repaired', authored: true, lod: 'static', late: true },
+  potting_bench_done: { kit: 'decor', node: 'potting_bench_done', authored: true, lod: 'static', late: true },
   'clinic:hospital': { kit: 'decor', node: 'hospital', authored: true, lod: 'static', late: true },
   police: { kit: 'town', node: 'police', width: 6, lod: 'static', late: true }, // existing model, stand-in for AR-011
   company: { kit: 'town', node: 'company', width: 8, lod: 'static', late: true }, // existing model, stand-in for AR-011
