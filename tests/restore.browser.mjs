@@ -167,10 +167,19 @@ await check('the village pond: fish pictures swim in it; tap it, cast a line, re
   await page.waitForTimeout(2500);
   await page.waitForFunction(() => farm.pondFish.count >= 7, null, { timeout: 15000 }).catch(() => {});
   expect(await page.evaluate(() => farm.pondFish.count) >= 7, 'no fish swim in the village pond');
-  await tap(page, 15, 42);   // the village pond by the farmhouse await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
+  await tap(page, 15, 42);   // the village pond by the farmhouse
+  await page.waitForSelector('[data-do="castLine"]:not([disabled])', { state: 'visible', timeout: 5000 });
   await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
-  await page.evaluate(() => { const p = farm.people, w = p.walkers.get('you'); p.cancelTrip(w); Object.assign(w, { x: 37, z: 85, indoors: false, once: null, stay: 9999 }); });
-  await page.evaluate(() => document.querySelector('[data-do="castLine"]').click());
+  await page.evaluate(() => {
+    const p = farm.people;
+    // This smoke case needs a free bank. Reservation/crowding behavior has its own pond-fishing suite.
+    // Family members otherwise choose random outings near the camera and can occupy the staged player's spot.
+    for (const w of p.walkers.values()) {
+      p.cancelTrip(w); Object.assign(w, { x: 59, z: 131, indoors: false, once: 'Idle', onceUntil: p.time + 9999 });
+    }
+    Object.assign(p.walkers.get('you'), { x: 37, z: 85, once: null, stay: 9999 }); farm.panels.render();
+  });
+  await page.locator('[data-do="castLine"]:not([data-bait])').click();
   await page.waitForFunction(() => !!farm.state().fishing.line);
   expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
   await page.evaluate(() => farm.setClockOffset(100_000)); await page.waitForTimeout(1500);
