@@ -133,7 +133,7 @@ export class WorldView {
         for (const f of this.frameListeners) f(dt, now);
         this.govern(dt);
         this.ground.flush(); this.batches.flush();
-        this.renderer.render(this.scene, this.cam.camera);
+        this.renderer.render(this.presentation?.scene ?? this.scene, this.presentation?.camera ?? this.cam.camera);
       }
       requestAnimationFrame(loop);
     };

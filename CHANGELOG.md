@@ -1,5 +1,13 @@
 # Changelog
 
+## Explore: first playable farmhouse — 2026-10-09
+
+- Integrated Claude's AR-015 cutaway room after packed-model, geometry, anchor and budget checks; art PR #43 was merged first.
+- Tapping the farmhouse offers **Go inside**. Walk to its public porch, confirm entry, then use tap-to-walk, arrows/WASD or optional movement buttons. Furniture and walls block movement; Go outside walks to the exit, and Farm view provides a safe return.
+- Sit on the sofa for a quiet moment, optionally using the existing free project-rest timer. Read Bắp/Sunny's garden drawing at the memory shelf, replay it, or open the existing album. The memory is saved once with no additional coins or XP.
+- Explore rules/view code, room metadata and models load only on request. English, Vietnamese, Korean and Japanese share the same rules. Reload/profile changes clear transient room/input state; saved memories and control preference remain per farm.
+- This slice does not add other interiors, seed-packet activities, wardrobe actions or furniture placement. See [Explore mode](docs/EXPLORE-MODE.md#implemented-first-slice--2026-10-09).
+
 ## Explore mode design and farmhouse art contract — 2026-10-09
 
 - Added a design-only plan for direct character controls, farmhouse entry/exit, small indoor activities, profile saves, HUD behavior and English/Vietnamese copy. Explore gameplay is not implemented by this update.
