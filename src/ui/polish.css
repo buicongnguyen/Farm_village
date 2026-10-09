@@ -227,3 +227,17 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 .plan-step img, .plan-step .icon { width: 18px; height: 18px; }
 .toast.tappable { pointer-events: auto; cursor: pointer; text-decoration: underline dotted; }
 button.village-name { border: 0; cursor: pointer; }
+
+/* Tidy order board: fewer rows per card. Name and hearts share a line, smaller faces and plan steps, and the saying is
+   dropped on phones (the card already shows who, what and the reward). Ready orders are sorted first (panel-renderers). */
+.order .who-name { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+.order .who-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order button.good { padding: 2px 4px; min-width: 50px; min-height: 0; gap: 0; }
+.order .item-token { width: 34px; height: 34px; }
+.order .item-token img.mini { width: 28px; height: 28px; }
+.order .reward img, .order .reward svg { width: 22px; height: 22px; }
+.order .who .face, .order .who img.face { width: 32px; height: 32px; }
+.order .who b { font-size: 15px; }
+.order-plan .plan-step { font-size: 12px; padding: 1px 6px; min-height: 0; }
+.order-plan .plan-step img { width: 18px; height: 18px; }
+@media (max-width: 560px) { .order .line { display: none; } }

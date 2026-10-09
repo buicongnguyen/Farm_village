@@ -11,7 +11,9 @@ const name = good => t(GOODS[good]?.name ?? 'Unknown good');
 export function goodHelpButton(good, needed = 1) {
   if (typeof good !== 'string' || !Object.hasOwn(GOODS, good)) return '';
   const count = Number.isFinite(needed) && needed > 0 ? Math.ceil(needed) : 1;
-  return `<button class="btn go small-btn good-help-link" data-do="goodHelp" data-good="${esc(good)}" data-needed="${count}">${goodIcon(good, 'mini')} ${esc(t('Find {good}', { good: name(good) }))}</button>`;
+  // A hint, not an action: small blue link text with a question mark (style.css .hint-link), so it never competes with the
+  // panel's real buttons. It opens where the good comes from.
+  return `<button class="hint-link good-help-link" data-do="goodHelp" data-good="${esc(good)}" data-needed="${count}"><span class="hint-q" aria-hidden="true">?</span>${esc(t('Find {good}', { good: name(good) }))}</button>`;
 }
 
 function sourceText(source) {
