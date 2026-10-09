@@ -215,3 +215,9 @@ body.panel-open .hud .toasts { top: calc(100vh - var(--sheet-h) * var(--hud-text
 .main-menu .logo { font-size: 2.2rem; margin-bottom: 10px; }
 .main-menu .menu-lang { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 6px 0 14px; }
 .main-menu .profile-list { text-align: left; }
+
+/* Pond timing layout reuses the game's existing palette; controls stay in place while the marker moves. */
+.fishing-meter { position: relative; height: 38px; margin: 12px 8px 18px; border: 3px solid var(--edge); border-radius: 12px; background: var(--paper-2); }
+.fishing-band { position: absolute; top: 0; bottom: 0; background: var(--leaf); border-inline: 2px solid var(--leaf-dark); }
+.fishing-marker { position: absolute; top: -6px; bottom: -6px; width: 6px; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--paper); border-radius: 4px; }
+[data-reel-feedback]:empty { display: none; }

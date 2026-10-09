@@ -58,10 +58,11 @@ for (const id of ['you', 'june', 'minh']) test(`${id}: a saved opening farm reac
   const f = fixture(id), { s, view, w, casts } = f, before = { coins: s.coins, parcels: s.parcels, cells: [...s.cells], placed: structuredClone(s.placed) };
   assert.equal(view.sendFishing(w), true); assert.equal(casts.length, 0, 'cast before reaching water');
   advance(f, () => sitting(w));
-  assert.ok(at(w, dock), 'sat on the road instead of the dock');
+  assert.ok(at(w, w.fishSpot), 'sat on the road instead of the reserved fishing spot');
   assert.equal(casts.length, id === 'you' ? 1 : 0, 'only the player casts a line');
   if (casts.length) assert.deepEqual(casts[0], center(dock), 'cast before arriving at the actual dock');
   assert.deepEqual({ coins: s.coins, parcels: s.parcels, cells: [...s.cells], placed: s.placed }, before, 'trip changed land, costs, or structures');
+  if (w.player) assert.ok(act(s, 'reelIn', { steady: true }, s.fishing.line.doneAt).ok, 'finish the catch before returning home');
   w.wait = 0; w.stay = -1;
   advance(f, () => at(w, home) && (id === 'minh' ? w.indoors : !w.goal && !w.target), { night: id === 'minh' });
   assert.equal(casts.length, id === 'you' ? 1 : 0, 'returning home cast a second line');
@@ -87,7 +88,7 @@ for (const id of ['you', 'june', 'minh']) test(`${id}: a new fence on a planned 
   const f = fixture(id), { s, view, w } = f; view.sendFishing(w);
   const a = w.route[0], b = w.route[1]; assert.ok(b, 'trip has no second step');
   s.fences[b[0] === a[0] ? `${a[0]},${Math.max(a[1], b[1])},n` : `${Math.max(a[0], b[0])},${a[1]},w`] = 'fence';
-  advance(f, () => sitting(w)); assert.ok(at(w, dock));
+  advance(f, () => sitting(w)); assert.ok(at(w, w.fishSpot));
 });
 
 for (const id of ['you', 'june', 'minh']) test(`${id}: closing every route during a trip cancels without teleporting or pretending to fish`, () => {
@@ -142,7 +143,7 @@ test('storing a pond while a family member rests ends the fishing pose', () => {
 test('an incoming visitor can finish a requested fishing trip before walking back to their signpost', () => {
   const f = fixture('minh'); Object.assign(f.w, { id: 'visit:gus', visitor: true, stage: 'coming' });
   let dropped = false; f.view.drop = () => { dropped = true; };
-  assert.equal(f.view.sendFishing(f.w), true); advance(f, () => sitting(f.w)); assert.ok(at(f.w, dock));
+  assert.equal(f.view.sendFishing(f.w), true); advance(f, () => sitting(f.w)); assert.ok(at(f.w, f.w.fishSpot));
   f.w.wait = 0; advance(f, () => dropped); assert.ok(at(f.w, home)); assert.equal(f.casts.length, 0);
 });
 

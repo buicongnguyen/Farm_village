@@ -49,9 +49,10 @@ try {
         await click(pond);
         const start = await page.evaluate(id => {
           const w = farm.people.walkers.get(id); w.once = null;
-          return { route: w.route.length, end: w.route.at(-1), selected: farm.people.selected?.id, line: !!farm.state().fishing.line };
+          return { route: w.route.length, end: w.route.at(-1), spot: w.fishSpot, selected: farm.people.selected?.id, line: !!farm.state().fishing.line };
         }, id);
-        expect(start.route > 1 && JSON.stringify(start.end) === '[18,42]', `${id}: did not receive a route to the dock: ${JSON.stringify(start)}`);
+        expect(start.route > 1 && start.spot?.[0] === 18 && [40, 42, 44].includes(start.spot[1]) && JSON.stringify(start.end) === JSON.stringify(start.spot), `${id}: did not receive an exact route to its fishing place: ${JSON.stringify(start)}`);
+        expect(id === 'you' ? start.spot[1] === 42 : start.spot[1] !== 42, `${id}: the player's central fishing place was not reserved`);
         expect(!start.selected, 'the pond tap did not consume the selected actor');
         if (id === 'you') expect(!start.line, 'player cast while still on the road');
         const arrived = await page.evaluate(id => {
@@ -64,15 +65,15 @@ try {
             if (w.clipFor === 'Sit' && !w.goal && !w.target && !w.todo && !w.route.length) break;
           }
           w.subject.x = w.x; w.subject.z = w.z; w.subject.rot = w.rot; w.subject.clip = 'Sit'; w.clip = 'Sit'; w.wait = 9999;
-          return { x: w.x, z: w.z, clip: w.clipFor, steps, jumps, line: !!farm.state().fishing.line };
+          return { x: w.x, z: w.z, spot: w.fishSpot, clip: w.clipFor, steps, jumps, line: !!farm.state().fishing.line };
         }, id);
-        expect(arrived.steps < 2400 && arrived.clip === 'Sit' && Math.hypot(arrived.x - 37, arrived.z - 85) < .05 && !arrived.jumps, `${id}: failed arrival ${JSON.stringify(arrived)}`);
+        expect(arrived.steps < 2400 && arrived.clip === 'Sit' && Math.hypot(arrived.x - (start.spot[0] + .5) * 2, arrived.z - (start.spot[1] + .5) * 2) < .05 && !arrived.jumps, `${id}: failed arrival ${JSON.stringify(arrived)}`);
         expect(arrived.line, `${id}: expected player's line after arriving at dock`);
         await page.waitForFunction(id => {
           const w = farm.people.walkers.get(id), actor = w.subject.actor;
           return actor?.root.visible && actor.mesh.visible && actor.mesh.geometry.attributes.position.count > 0
             // Hana has no authored Sit clip; verify the rig's real fallback while logical fishing remains Sit.
-            && w.clipFor === 'Sit' && actor.clip === actor.rig.clipFor('Sit') && Math.hypot(actor.root.position.x - 37, actor.root.position.z - 85) < .05;
+            && w.clipFor === 'Sit' && actor.clip === actor.rig.clipFor('Sit') && w.fishSpot && Math.hypot(actor.root.position.x - (w.fishSpot[0] + .5) * 2, actor.root.position.z - (w.fishSpot[1] + .5) * 2) < .05;
         }, id, { timeout: 15000 }).catch(async error => {
           const state = await page.evaluate(id => {
             const w = farm.people.walkers.get(id), a = w.subject.actor;

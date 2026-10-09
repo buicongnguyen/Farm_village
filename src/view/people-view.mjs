@@ -7,7 +7,7 @@
 // goes home. Tap a person to hear their line.
 // Everyone is a cast subject (skinned.mjs): Starline's rigged villagers, animated near the camera, baked further away.
 import { kennelOf } from '../core/orchard.mjs';
-import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK } from '../content/world.mjs';
+import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK, POND_FISHING_SPOTS } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
@@ -63,6 +63,7 @@ export class PeopleView {
     world.onFrame((dt, now) => this.frame(dt, now));
     game.on((r, action) => {
       if (action === 'load' || r.events?.some(e => PEN_CHANGES.has(e.type))) this.pens = null;
+      if (action === 'load') { this.restoreFishingPending = true; for (const w of this.walkers.values()) this.cancelTrip(w); }
       if (action && action !== 'tick' && action !== 'test' && action !== 'load') this.lastAction = performance.now();
       for (const e of r.events ?? []) this.react(e);
     });
@@ -91,13 +92,19 @@ export class PeopleView {
       const start = r.family ? this.familySpot(r.id) : r.home;
       this.add({ ...r, x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL });
     }
+    const you = this.walkers.get('you');
+    if (this.restoreFishingPending !== false && you && !you.indoors && !isNight(this.s, this.game.now)) {
+      this.restoreFishingPending = false;
+      const line = this.s.fishing?.line, pond = this.s.placed[line?.pond];
+      if (line) this.sendFishing(you, pond?.kind === 'pond' ? pond : null, { cast: false });
+    }
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
     w.subject = this.cast.add({ rig: w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     this.walkers.set(w.id, w); return w;
   }
-  drop(w) { w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
+  drop(w) { this.releaseFishing(w); w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
   /** A neighbour walks in from their signpost to the order board and says something about the farm. */
   visit(id, comment, params, visitNumber) {
     const sign = NEIGHBOUR_SIGNS.find(n => n.id === id); if (!sign) return;
@@ -121,7 +128,33 @@ export class PeopleView {
   }
   /** The cheapest walk to a place (core/walk.mjs): roads first, across grass to places off the road (the pond dock,
    *  benches, project sites), round buildings, pens, fences and water. [] if there is truly no way there. */
-  route(from, to, exact = false) { return findRoute(this.s, from, to, { blocked: this.penCells(), exact }); }
+  route(from, to, exact = false, walker = null) { return findRoute(this.s, from, to, { blocked: this.walkingBlocks(walker), exact }); }
+  /** Reserved fishing places stay clear while their owners approach or sit. Ordinary seated actors count too. */
+  walkingBlocks(walker) {
+    const blocked = new Set(this.penCells());
+    for (const other of this.walkers.values()) if (other !== walker && !other.indoors) {
+      if (other.fishSpot) blocked.add(other.fishSpot.join(','));
+      if (other.clipFor === 'Sit') blocked.add(this.cellOf(other).join(','));
+    }
+    return blocked;
+  }
+  releaseFishing(w) { w.fishSpot = null; w.fishFace = null; w.fishPond = null; }
+  /** Choose and reserve one reachable shore before anyone starts walking; reservations live only in the view. */
+  fishingRoute(w, pond) {
+    let spots = pond ? [[pond.x + 4, pond.z + 2], [pond.x + 2, pond.z + 4], [pond.x - 1, pond.z + 2], [pond.x + 2, pond.z - 1]] : POND_FISHING_SPOTS;
+    if (!pond) spots = w.player ? spots.slice(0, 1) : spots.slice(1);   // the player's line has its own centre place
+    for (const spot of spots) {
+      const occupied = [...this.walkers.values()].some(other => other !== w && !other.indoors &&
+        ((other.fishSpot && Math.hypot(other.fishSpot[0] - spot[0], other.fishSpot[1] - spot[1]) * CELL < 1.5)
+          || Math.hypot(other.x - (spot[0] + .5) * CELL, other.z - (spot[1] + .5) * CELL) < 1.5));
+      if (occupied) continue;
+      const route = this.route(this.cellOf(w), spot, true, w); if (!route.length) continue;
+      w.fishSpot = [...spot]; w.fishFace = pond ? [pond.x + 1.5, pond.z + 1.5] : [POND_DOCK.x - 3, spot[1]];
+      w.fishPond = pond ? [Object.keys(this.s.placed).find(id => this.s.placed[id] === pond), pond.x, pond.z] : null;
+      return route;
+    }
+    return [];
+  }
   cellOf(w) { return [Math.floor(w.x / CELL), Math.floor(w.z / CELL)]; }
   /** Where the current project is being worked on: the ruin it rebuilds, or a plot in the village. */
   site() {
@@ -141,7 +174,10 @@ export class PeopleView {
       return [this.route(here, r < 0.5 ? [ORDER_BOARD.x, ORDER_BOARD.z] : w.home), { act: r < 0.3 ? 'sweep' : 'idle', time: 5 + Math.random() * 6 }];
     }
     if (w.work && r < 0.6) return [this.route(here, w.home), { act: 'idle', time: 6 + Math.random() * 6 }];
-    if (!w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) return [this.route(here, [POND_DOCK.x, POND_DOCK.z]), { act: 'fish', time: 18 + Math.random() * 12, face: [POND_DOCK.x - 3, POND_DOCK.z] }];   // fishing folk sit by the village pond
+    if (!w.kid && FISHERS.has(w.person ?? w.id) && r < 0.5) {
+      const route = this.fishingRoute(w, null);
+      if (route.length) return [route, { act: 'fish', time: 18 + Math.random() * 12, face: w.fishFace }];
+    }
     const site = this.site();
     if (site && !w.kid && r < 0.22) return [this.route(here, site), { act: 'hammer', time: 10 + Math.random() * 10, face: site }];
     const bench = Object.values(s.placed).filter(p => p.kind === 'bench');
@@ -199,7 +235,7 @@ export class PeopleView {
   /** Cancel a journey and its pending action together, including a fishing cast. */
   cancelTrip(w) {
     w.route = []; w.goal = null; w.target = null; w.todo = null; w.onArrive = null;
-    w.fishing = false; w.fishFace = null; w.fishPond = null; w.orderedFishing = false; w.carry = false;
+    this.releaseFishing(w); w.fishing = false; w.orderedFishing = false; w.carry = false;
     w.clipFor = null; w.faceTo = null; w.clip = 'Idle'; w.wait = 0.5;
   }
   checkPond(w) {
@@ -212,9 +248,9 @@ export class PeopleView {
   follow(w, dt, speed, clip = 'Walk') {
     if (!w.route.length) return false;
     let next = w.route[0];
-    const here = this.cellOf(w), clear = c => !!stepCost(this.s, ...c, this.penCells()) && !fenceBetween(this.s, here, c);
+    const here = this.cellOf(w), blocked = this.walkingBlocks(w), clear = c => !!stepCost(this.s, ...c, blocked) && !fenceBetween(this.s, here, c);
     if (!clear(next)) {
-      const route = this.route(here, w.route.at(-1), true);
+      const route = this.route(here, w.route.at(-1), true, w);
       // A newly blocked starting cell is allowed only as an exit, never as a destination.
       if (route.length && !clear(route[0])) route.shift();
       if (!route.length) { this.cancelTrip(w); return true; }
@@ -238,7 +274,7 @@ export class PeopleView {
     if (w.orderedFishing) {
       if (w.todo) this.arrive(w);
       if ((w.wait -= dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
-      w.orderedFishing = false; w.fishPond = null;
+      w.orderedFishing = false; this.releaseFishing(w);
       if (w.visitor) { w.stage = 'leaving'; w.route = this.route(this.cellOf(w), w.home); return; }
     }
     if (w.visitor) {
@@ -255,6 +291,7 @@ export class PeopleView {
     if (w.goingHome) { w.goingHome = false; w.indoors = false; w.wait = Math.random() * 4; }
     if (w.todo) this.arrive(w);
     if ((w.wait -= dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
+    this.releaseFishing(w);
     const [route, todo] = this.pickErrand(w);
     w.route = route; w.todo = route.length ? todo : null; w.clipFor = null; w.faceTo = null;
     if (!route.length) { w.wait = 2; w.clipFor = 'Idle'; }
@@ -285,22 +322,20 @@ export class PeopleView {
     }
   }
   /** Send someone fishing: to the village pond's dock (or a built pond); you cast a line when you get there. */
-  sendFishing(w, pond) {
+  sendFishing(w, pond, { bait = false, cast = true } = {}) {
     if (!w || w.pet || w.indoors) return false;
+    if (w.player && this.s.fishing?.line) {
+      const saved = this.s.placed[this.s.fishing.line.pond]; pond = saved?.kind === 'pond' ? saved : null;
+    }
     this.cancelTrip(w);
-    const face = pond ? [pond.x + 1.5, pond.z + 1.5] : [POND_DOCK.x - 3, POND_DOCK.z];
-    // A built pond can have a blocked shore; try its other sides, never an arbitrary nearby road.
-    const shores = pond ? [[pond.x + 4, pond.z + 2], [pond.x + 2, pond.z + 4], [pond.x - 1, pond.z + 2], [pond.x + 2, pond.z - 1]] : [[POND_DOCK.x, POND_DOCK.z]];
-    let route = [];
-    for (const spot of shores) { route = this.route(this.cellOf(w), spot, true); if (route.length) break; }
+    const route = this.fishingRoute(w, pond);
     if (!route.length) return false;
-    const at = route.at(-1).map(v => (v + 0.5) * CELL);
+    const at = route.at(-1).map(v => (v + 0.5) * CELL), face = w.fishFace;
     w.route = route; w.wait = 0; w.orderedFishing = true; w.goingHome = false;
-    if (pond) w.fishPond = [Object.keys(this.s.placed).find(id => this.s.placed[id] === pond), pond.x, pond.z];
     if (w.player) {
       w.goal = at; w.stay = 60;
       w.onArrive = () => {
-        if (!this.s.fishing?.line) this.game.do('castLine');
+        if (cast && !this.s.fishing?.line) this.game.do('castLine', { bait, ...(w.fishPond ? { pond: w.fishPond[0] } : {}) });
         w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z);
         w.clipFor = 'Sit'; w.wait = 20; w.orderedFishing = false;
       };
@@ -330,8 +365,9 @@ export class PeopleView {
       if (w.onArrive) { const f = w.onArrive; w.onArrive = null; f(); return; }
       w.clipFor = ['Sweep', 'Hammer', 'Wave'][Math.floor(Math.random() * 3)]; w.wait = 1.6;
     }
+    if (w.fishSpot && this.s.fishing?.line) { this.doing(w, 'Sit', dt); return; }
     if ((w.wait = (w.wait ?? 0) - dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
-    w.fishPond = null; w.clipFor = null; w.clip = 'Idle'; w.speed = 1;
+    this.releaseFishing(w); w.clipFor = null; w.clip = 'Idle'; w.speed = 1;
     if ((w.stay = (w.stay ?? 0) - dt) < 0 && Math.hypot(w.x - (FARMHOUSE.x + 4.5) * CELL, w.z - FARMHOUSE.z * CELL) > 6 * CELL) {
       const [x, z] = this.familySpot('you'); this.playerGo({ x, z }); w.stay = 20;
     }
@@ -347,12 +383,12 @@ export class PeopleView {
       if (Math.hypot(w.target[0] - w.x, w.target[1] - w.z) > 0.2) { this.cancelTrip(w); return; }
       w.target = null;
       if (w.fishing) {
-        const face = w.fishFace; w.fishing = false; w.fishFace = null; w.orderedFishing = false;
+        const face = w.fishFace; w.fishing = false; w.orderedFishing = false;
         w.wait = 30; w.clipFor = 'Sit'; w.faceTo = Math.atan2((face[0] + 0.5) * CELL - w.x, (face[1] + 0.5) * CELL - w.z);
       } else { w.wait = 3 + Math.random() * 6; w.clipFor = w.id === 'pip' && Math.random() < 0.3 ? 'Wave' : w.id === 'june' && Math.random() < 0.5 ? 'Sweep' : 'Idle'; }
     }
     if ((w.wait -= dt) > 0) { this.doing(w, w.clipFor ?? 'Idle', dt); return; }
-    w.fishPond = null;
+    this.releaseFishing(w);
     const spot = this.familySpot(w.id), route = this.route(this.cellOf(w), spot);
     w.route = route; w.clipFor = null; w.faceTo = null;
     if (route.length) w.target = route.at(-1).map(v => (v + 0.5) * CELL);
@@ -443,8 +479,8 @@ export class PeopleView {
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);
     if (e.type === 'familyArrived') setTimeout(() => { for (const w of this.walkers.values()) if (FAMILIES.find(f => f.id === e.family)?.people.some(p => p.id === w.id)) this.once(w, 'Wave', 1.5); }, 1500);
-    if (e.type === 'orderFilled') { const w = this.walkers.get(e.from); if (w && !w.family && !w.indoors) { w.route = this.route(this.cellOf(w), [ORDER_BOARD.x, ORDER_BOARD.z]); w.todo = { act: 'idle', time: 1, carryHome: true }; w.wait = 0; } }
-    if (e.type === 'delivered') { const site = this.site(), w = [...this.walkers.values()].find(x => !x.family && !x.kid && !x.visitor && !x.indoors && x.id !== 'ada'); if (site && w) { w.route = this.route(this.cellOf(w), site); w.todo = { act: 'hammer', time: 20, face: site }; } }
+    if (e.type === 'orderFilled') { const w = this.walkers.get(e.from); if (w && !w.family && !w.indoors) { this.cancelTrip(w); w.route = this.route(this.cellOf(w), [ORDER_BOARD.x, ORDER_BOARD.z]); w.todo = { act: 'idle', time: 1, carryHome: true }; w.wait = 0; } }
+    if (e.type === 'delivered') { const site = this.site(), w = [...this.walkers.values()].find(x => !x.family && !x.kid && !x.visitor && !x.indoors && x.id !== 'ada'); if (site && w) { this.cancelTrip(w); w.route = this.route(this.cellOf(w), site); w.todo = { act: 'hammer', time: 20, face: site }; } }
     this.pipSays(e);
   }
   pipSays(e) {

@@ -247,7 +247,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | Stage | Status |
 |---|---|
 | Cross-stage follow-up: Korean/Japanese editions | Live through [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35) (`ceef19c`): 428 native tests, pace, 34 component suites, 28 smoke checks, 54 local production contexts and 46 live contexts pass; CI and Pages passed. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
-| 1. Homecoming | done (v0.3); public pond access follow-up in [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37): permanent free footpath, exact dock arrival and safe return/cancellation. 465 native tests, pace, 35 component suites and 28 smoke checks pass. [Validation and release](POND-ACCESS-FIX.md). |
+| 1. Homecoming | done (v0.3); public access is live through [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37). Fishing follow-up validated for [PR #42](https://github.com/buicongnguyen/Farm_village/pull/42): floating platform removed, separate reserved places, visible tackle and no-loss timing challenge; 494 native tests, pace, 36 component suites and 28 smoke checks pass. [Fishing scope and release](POND-FISHING.md). |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
@@ -260,7 +260,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 3. The meadow | Gameplay not started; first goat/dairy art delivery requested with exact IDs in [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md). Cat, land deeds and the larger region remain separate proposals. |
 | Cross-stage follow-up: clearer guidance and delivered art | Implemented and validated for PR #31: compact HUD, contextual discovery/repair/school advice, hospital footprint fix and three potting-bench art states. 407 native tests, pace, 31 component suites, 28 smoke checks and 16 local production contexts pass; the PR records publication/live checks. [Scope and checks](CLEARER-GUIDANCE-AND-ART.md). Meadow gameplay remains separate; its first art contract is [scoped](MEADOW-DAIRY-SCOPE.md). |
 | 4. Down to the river | not started |
-| 5. A village to be proud of | not started |
+| 5. A village to be proud of | Explore mode design and AR-015 farmhouse art contract prepared; gameplay not started. [Controls, interiors, activities, saves and bilingual copy](EXPLORE-MODE.md). Farmhouse is the first room, school follows; this does not complete the stage. |
 | 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |

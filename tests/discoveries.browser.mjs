@@ -47,14 +47,20 @@ async function open(ctx, lang) {
   return { page, errors };
 }
 async function catchOne(page) {
-  await page.evaluate(() => { farm.closeCards(); farm.panels.show('pond'); });
+  await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
+  await page.evaluate(() => {
+    farm.closeCards(); farm.game.s.settings.daylight = 'always'; const p = farm.people, w = p.walkers.get('you');
+    p.cancelTrip(w); Object.assign(w, { x: 37, z: 85, indoors: false, once: null, stay: 9999 });
+    farm.panels.show('pond');
+  });
   await page.click('.panel [data-do="castLine"]:not([data-bait])');
+  await page.waitForFunction(() => !!farm.state().fishing.line);
   await page.evaluate(() => {
     const g = farm.game, at = g.s.fishing.line?.doneAt;
     if (!at) throw Error('Cast button did not start a line');
     g.clock = () => at; g.tick(); farm.panels.render();
   });
-  await page.click('.panel [data-do="reelIn"]');
+  await page.click('.panel [data-do="reelIn"][data-steady="1"]');
 }
 async function badge(page, count) {
   // Capture facts and DOM together: June may acknowledge an idea between separate browser calls.
