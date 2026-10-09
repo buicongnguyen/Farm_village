@@ -40,5 +40,20 @@ Claude can replace the simple tackle later while preserving the seat and input c
 
 ## Validation and release
 
-In progress: rules tests, pacing, all component browser suites, smoke checks, production checks, PR CI, Pages and
-live verification. The final release record will replace this paragraph after those checks complete.
+- 494 native tests pass, including timing accounting, seat lifecycle, saved lines, actual tackle geometry and picking.
+  Pacing is unchanged: steady school day 3; the complete pace tests pass.
+- All 36 component browser suites and 28 smoke checks pass on the integrated release source. The initial interrupted
+  run exposed discovery fixtures that used the player before asynchronous creation; those fixtures now wait for the
+  real actor. A complete fresh run passed after the fix and after integrating main's HUD PR #38.
+- Dedicated fishing checks pass in English/Vietnamese at 390 px and Korean/Japanese at desktop size, including
+  enlarged text, real actor/pond/float taps, separate seats, visible tackle, no platform, timing miss/retry/reload,
+  identical gentle catches, preserved keyboard focus after fees/inventory changes and stale built-pond refusal.
+- Startup code: test build **1,098,529 bytes**; production **1,097,684 bytes**, under 1,100,000. Full-farm phone
+  rendering remains within 120 draws / 300k triangles across the browser suites' zoom checks.
+- Browser coverage uses Chrome. The optional WebKit run remains unavailable because the local runtime is absent.
+- Hook-free production acceptance passes in Vietnamese desktop: actual player/pond taps, normal walking and casting,
+  reload, the timing interface, gentle collection of the original seeded fish, and a second reload with no repeated
+  reward. [PR #42](https://github.com/buicongnguyen/Farm_village/pull/42) records CI, Pages and live verification.
+
+Gameplay handoff: `c646f22`; later commits integrate HUD PR #38, strengthen browser regressions and document the
+user's separately requested Explore design. Explore has **no runtime implementation** in this release.

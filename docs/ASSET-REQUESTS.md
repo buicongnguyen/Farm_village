@@ -79,7 +79,8 @@ transforms exactly once. Keep decoration and chairs inside their stated collider
   separate metadata. `farmhouse_exit` is a semantic interaction, not a seventh furniture mesh. Mid anchors use
   `<prop-id>_mid.interact/.focus` and `farmhouse_interior_floor_mid.entry/.exit/.camera/.camera_target`, avoiding
   duplicate names; compare their transformed positions against the corresponding full anchors.
-  The sofa additionally needs `farmhouse_sofa.seat` and `seatFacing`, fitted to the existing player man/woman Sit
+  The sofa additionally needs `farmhouse_sofa.seat` (and `farmhouse_sofa_mid.seat`) with its facing direction,
+  recorded as `seats[].facing`, fitted to the existing player man/woman Sit
   rig: this is the actor-root pose that seats the body on the cushion, not the approach point. `.interact` is also
   the safe standing return point. Include the measured seat pose in metadata; do not guess its height from the cushion.
   Prop empties are prop-local; compare them with room-space metadata after the placement/yaw transform. Shell roots
@@ -107,7 +108,7 @@ transforms exactly once. Keep decoration and chairs inside their stated collider
 
 - Codex owns `codex/pond-fishing`, from PR #37/main `f6b3049`. The user requested removal of the floating pond dock, separate seats, visible casting, and a timing minigame. For this requested visual fix, Codex removes only the pond planks/posts in `brook.propsGeometry` and adds simple fishing tackle in a new `src/view/fishing-view.mjs`; the river bridge, existing palettes, lighting, models/icons and Blender sources remain art-owned.
 - Shared behavior scope: `PeopleView` fishing reservations/arrival, public shore data, `radial.tap`/`main.mjs` pond interaction wiring, and pond-panel controls. Core timing rules, translations in all four editions, and tests are coordinated by Codex. Missed timing taps never lose fish/bait or charge again; the accessible gentle-reel option earns the same catch.
-- Handoff commit pending verification. This reservation ends when the release PR merges. No binary assets requested for this bounded fix; Claude can style dedicated tackle later against the final behavior contract.
+- Gameplay handoff is `c646f22`; [PR #42](https://github.com/buicongnguyen/Farm_village/pull/42) records final validation and publication. This reservation ends when that PR merges. No binary assets requested for this bounded fix; Claude can style dedicated tackle later against the final behavior contract.
 
 ### Active logic handoff — public pond access (2026-10-09)
 

@@ -194,7 +194,7 @@ IDs, duplicate assignments, finite timestamps and allowed states, and reuse the 
   room/building IDs plus validated anchors.
 - Save on activity changes, discovered/read memories, preference/appearance changes, and existing autosave/pagehide
   paths. A failed save keeps the current session playable and shows the existing save warning; do not erase a profile.
-- Three profiles remain isolated. Switching/importing/reseting profiles invalidates pending transitions and input,
+- Three profiles remain isolated. Switching/importing/resetting profiles invalidates pending transitions and input,
   then reloads through existing safeguards. Language changes never restart a round or re-award a memory.
 - Offline production, rest and waiting fish follow existing rules. No visitor leaves permanently, crop spoils or
   interior activity fails because the player was absent. Entry/exit/reload itself grants no rewards.
