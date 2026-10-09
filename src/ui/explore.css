@@ -13,6 +13,8 @@ body.panel-open .explore-ui, body:has(.modal) .explore-ui { visibility: hidden; 
 .explore-card { position: absolute; top: 18%; left: 50%; transform: translateX(-50%); width: min(90%, 480px); max-height: 50%; overflow: auto; padding: 18px; box-sizing: border-box; pointer-events: auto; background: var(--panel-bg); border: 3px solid var(--edge); border-radius: var(--radius); }
 .explore-card h2 { margin-top: 0; }
 .explore-card .btn { margin: 4px; }
+.explore-card[data-object="sofa"] { top: auto; bottom: 92px; max-height: 35%; }
+@media (max-height: 520px) { .explore-card[data-object="sofa"] { left: auto; right: 16px; transform: none; width: 42%; top: 70px; bottom: auto; max-height: calc(100% - 162px); } }
 .explore-stick { position: absolute; left: max(20px, env(safe-area-inset-left)); bottom: 235px; display: grid; grid-template-columns: repeat(3, 44px); gap: 3px; pointer-events: auto; touch-action: none; }
 .explore-stick [data-move="up"] { grid-column: 2; }
 .explore-stick [data-move="left"] { grid-column: 1; grid-row: 2; }

@@ -187,7 +187,7 @@ class ExploreMode {
       card += button('stand', 'Stand up', 'ghost');
     }
     const label = nearest === 'door' ? 'Go inside' : HOME_OBJECTS[nearest]?.label;
-    const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore'))}</div>${card ? `<div class="explore-card" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
+    const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore'))}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
       <div class="explore-controls">${card ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${button('interact', label ?? 'Walk closer to interact', 'primary', !label)}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       <div class="explore-actions">${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use movement buttons' : 'Use tap controls', 'ghost') : ''}</div>

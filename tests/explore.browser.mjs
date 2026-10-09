@@ -59,7 +59,12 @@ try {
     await page.locator('[data-explore="back"]').click();
     await page.locator('[data-explore="interact"]').click();
     assert.deepEqual(await page.evaluate(() => farm.state().explore.memories), memory, 'replay changed the earned memory');
-    await page.locator('[data-explore="back"]').click();
+    await page.locator('[data-explore="album"]').click();
+    await page.locator('.panel[data-kind="album"]:not([hidden])').waitFor();
+    const paused = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
+    await page.keyboard.down('ArrowRight'); await page.waitForTimeout(100); await page.keyboard.up('ArrowRight');
+    assert.deepEqual(await page.evaluate(() => farm.world.exploreMode.session.p), paused, 'a sheet did not pause direct input');
+    await page.locator('.panel [data-do="close"]').click();
     // Screen directions and release work on the optional touch controls too.
     await page.locator('[data-explore="controls"]').click();
     const down = page.locator('[data-move="down"]'), b = await down.boundingBox();
@@ -81,7 +86,7 @@ try {
     await page.locator('[data-explore="close"]').click();
     assert.equal(await page.evaluate(() => farm.people.walkers.get('you').controlled), false);
     assert.ok(await page.locator('.hud-tools').isVisible());
-    await page.evaluate(() => { localStorage.setItem('farm-village:save:1', JSON.stringify({ ...farm.state(), cells: farm.state().cells.join('') })); });
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('farm-village:save:1')).explore?.memories?.home_garden_drawing?.discoveredAt);
     await page.goto(url); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
     assert.deepEqual(await page.evaluate(() => farm.state().explore.memories), memory);
     assert.equal(await page.evaluate(() => !!farm.world.presentation), false, 'reload retained an indoor scene');
