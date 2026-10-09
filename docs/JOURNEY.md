@@ -205,7 +205,7 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
-Current naming follow-up, 2026-10-09: `codex/localized-cast` implements the current cast's independent English and
+Current naming follow-up, 2026-10-09: [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34), `codex/localized-cast`, implements the current cast's independent English and
 Vietnamese aliases, explicit story references and old-save text compatibility. **Implemented and locally validated**;
 see [LOCALIZED-CAST.md](LOCALIZED-CAST.md) for checks and release handoff. Korean/Japanese names are prepared aliases only. This does not
 introduce later characters, add language-menu options or complete any remaining roadmap stage.
