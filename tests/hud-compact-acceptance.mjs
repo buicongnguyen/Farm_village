@@ -8,10 +8,10 @@ import { xpFor } from '../src/core/levels.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
-import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+import { LANGUAGES, loadLanguage, tIn } from '../src/kit/i18n.mjs';
 import { personName } from '../src/content/character-names.mjs';
-await loadVietnamese();
+await Promise.all(LANGUAGES.map(({ id }) => loadLanguage(id)));
+const LOCALES = LANGUAGES.map(({ id }) => id);
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-compact-hud'); mkdirSync(shots, { recursive: true });
@@ -66,6 +66,12 @@ async function bounds(page) {
         if (Math.min(r.right, q.right) - Math.max(r.left, q.left) > 1 && Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top) > 1) return `toast covers ${el.dataset.act ?? el.dataset.status ?? el.textContent}`;
       }
     }
+    // Incidental public villager speech must also fit enlarged text; no test hook is needed to inspect it.
+    for (const bubble of [...document.querySelectorAll('.bubbles .bubble')].filter(visible)) {
+      const r = bubble.getBoundingClientRect();
+      const range = document.createRange(); range.selectNodeContents(bubble); const text = range.getBoundingClientRect();
+      if (r.left < -1 || r.right > innerWidth + 1 || r.top < -1 || r.bottom > innerHeight + 1 || text.left < r.left - 1 || text.right > r.right + 1 || text.top < r.top - 1 || text.bottom > r.bottom + 1) return `cut speech: ${bubble.textContent} ${JSON.stringify(r.toJSON())}`;
+    }
     return document.documentElement.scrollWidth > innerWidth + 1 ? 'document overflow' : '';
   });
   expect(!bad, bad);
@@ -74,7 +80,7 @@ export async function runCompactHud(testMode) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0' ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
   let failed = 0, checks = 0;
   try {
-    for (const lang of ['en', 'vi']) for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 844 }, { width: 844, height: 390 }, { width: 900, height: 510 }]) {
+    for (const lang of LOCALES) for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 844 }, { width: 844, height: 390 }, { width: 900, height: 510 }]) {
       checks++; const context = await browser.newContext({ viewport, isMobile: viewport.width < 900, hasTouch: viewport.width < 900, reducedMotion: 'reduce' });
       try {
         const s = fixture();
@@ -109,7 +115,7 @@ export async function runCompactHud(testMode) {
         expect(goalBadge === '1', `goal readiness is not on its button: ${goalBadge}`);
         for (const id of ['today', 'projects', 'mail', 'barn', 'orders', 'build', 'friends']) expect((await page.locator(`.hud [data-act="${id}"] .hud-label`).innerText()).length > 0, `${id} has no visible label`);
         const today = await page.locator('.hud [data-act="today"] .hud-label').innerText();
-        expect(today === (lang === 'vi' ? VI.Today : 'Today'), 'button label does not follow language');
+        expect(today === tIn(lang, 'Today'), 'button label does not follow language');
         const statusImg = page.locator('.hud [data-status="market"] img');
         expect((await statusImg.getAttribute('src')).includes('/icons/sm/'), 'status chip does not use small art');
         await page.locator('.hud [data-status="pond"]').focus();
@@ -117,6 +123,7 @@ export async function runCompactHud(testMode) {
         const focused = await page.locator('.hud [data-status="pond"]').evaluate(el => ({ kept: el === document.activeElement,
           active: document.activeElement?.outerHTML?.slice(0, 160), visible: el.checkVisibility(), modal: !!document.querySelector('.modal'), panel: document.querySelector('.panel:not([hidden])')?.dataset.kind }));
         expect(focused.kept, `timer refresh removed keyboard focus: ${JSON.stringify(focused)}`);
+        await bounds(page);
         await page.screenshot({ path: join(shots, `${testMode ? 'test' : 'production'}-${lang}-${viewport.width}.png`) });
         for (const [selector, kind, content] of [['[data-act="village"]', 'roadmap', '.journey'], ['[data-status="quests"]', 'quests', '.goal'], ['[data-status="market"]', 'market', '.truck-row'], ['[data-status="pond"]', 'pond', '.goods-grid']]) {
           await page.locator(`.hud ${selector}`).click();

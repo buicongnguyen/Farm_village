@@ -33,15 +33,16 @@ export class Panels {
     document.addEventListener('visibilitychange', () => { if (!document.hidden && this.open && !this.holding()) this.render(); });
     // timers count down: only the panels that show a countdown redraw on the clock (a redraw replaces every control, which
     // would cut off a slider being dragged in Settings)
-    setInterval(() => { if (this.open && !document.hidden && !STILL.has(this.open.kind) && !this.holding()) this.render(); }, 1000);
+    // A deferred language refresh also finishes after editing ends, even when Settings has no game events.
+    setInterval(() => { if (this.open && !document.hidden && (this.languageRefresh || !STILL.has(this.open.kind)) && !this.holding()) this.render(); }, 1000);
   }
   show(kind, arg) {
     const fresh = this.open?.kind !== kind || this.open?.arg !== arg;
     this.open = { kind, arg }; this.el.hidden = false; this.el.dataset.kind = kind; this.render();
     if (fresh) { sfx('page'); this.el.scrollTop = 0; this.el.classList.remove('pop'); void this.el.offsetWidth; this.el.classList.add('pop'); }
   }
-  /** Is a control being held (a slider mid-drag)? Redrawing now would drop it. */
-  holding() { return !!this.el.querySelector('input:active'); }
+  /** Preserve a held slider or an active name/IME composition when background farm events arrive. */
+  holding() { return !!this.el.querySelector('input:active, input[data-name]:focus'); }
   close() { this.open = null; this.el.hidden = true; this.lift(); }
   /** Keep the HUD buttons above the sheet while it is open. */
   lift() {
@@ -166,7 +167,7 @@ export class Panels {
     else if (d.do === 'wishBuild') { this.close(); this.onBuildKind?.(d.kind); }
     else if (d.do === 'test') this.onTest?.(d.test);
     else if (d.do === 'photo') { this.close(); this.onPhoto?.(); }
-    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => this.render(), () => this.hud?.toast(t('Could not load Vietnamese. Check your connection.'), 'warn')); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
+    else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => { if (this.holding()) this.languageRefresh = true; else this.render(); }, () => this.hud?.toast(t('Could not load this language. Check your connection.'), 'warn')); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
     else if (d.do === 'export' || d.do === 'newGame' || d.do === 'profile' || d.do === 'resetProfile') this.onSave?.(d.do, d.n);
   }
   /** The sheet's header: the panel's icon on a ribbon, its title and a close button (and Back for the gift picker). */
@@ -176,6 +177,7 @@ export class Panels {
   }
   render() {
     if (!this.open) return;
+    this.languageRefresh = false;
     if (this.renderer) { this.renderer.renderPanel.call(this); return; }
     this.el.innerHTML = this.head(t('Opening…'), 'projects') + `<div class="panel-body"><p class="hint">${t(this.renderError ? 'Could not open this panel. Save your farm and reopen the game to try again.' : 'Opening…')}</p>${this.renderError ? `<button class="btn wide" data-do="retryPanel">${t('Save and reopen')}</button>` : ''}</div>`;
     this.lift();

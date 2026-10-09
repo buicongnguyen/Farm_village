@@ -177,8 +177,11 @@ await check('settings: text size, language and day and night from the settings p
   await page.click('[data-key="daylight"][data-value="always"]');
   expect(await page.evaluate(() => farm.state().settings.daylight) === 'always', 'daylight not saved');
   await page.click('[data-key="lang"][data-value="vi"]');
+  await page.waitForFunction(() => document.documentElement.lang === 'vi');
   expect((await page.textContent('.panel-head h2')).includes('Cài đặt'), 'language not switched');
   await page.click('[data-key="lang"][data-value="en"]');
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
+  expect(await page.textContent('.panel-head h2') === 'Settings', 'English settings did not return');
   await ctx.close();
 });
 

@@ -3,7 +3,7 @@
 // Toasts: the same message within 3 s bumps the one on screen instead of stacking, at most two show at once, and
 // refusals that share a lock (params.lock: level, project, goods, max, garden) merge into one toast with a padlock.
 // The coin counter rolls up to its new value with a pulse; the barn badge bounces when goods land.
-import { t, tParams, num, getLanguage, setLanguage, onLanguageChange } from '../kit/i18n.mjs';
+import { t, tParams, num, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { journeyOf } from '../core/journey.mjs';
@@ -64,7 +64,7 @@ export class Hud {
       if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
-      if (act === 'lang') setLanguage(getLanguage() === 'vi' ? 'en' : 'vi').catch(() => this.toast(t('Could not load Vietnamese. Check your connection.'), 'warn'));
+      if (act === 'lang') setLanguage(LANGUAGES[(LANGUAGES.findIndex(lang => lang.id === getLanguage()) + 1) % LANGUAGES.length].id).catch(() => this.toast(t('Could not load this language. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
       if (['orders', 'barn', 'today', 'projects', 'album', 'settings', 'profiles', 'friends', 'mail'].includes(act)) onPanel?.(act);
     });
@@ -89,7 +89,7 @@ export class Hud {
     q('.tracker-goal').textContent = goal;
     q('[data-hud="coins"]').setAttribute('aria-label', `${t('Coins')}: ${num(s.coins)}`);
     q('[data-hud="coins"]').title = num(s.coins);
-    q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
+    q('[data-act="lang"]').textContent = LANGUAGES[(LANGUAGES.findIndex(lang => lang.id === getLanguage()) + 1) % LANGUAGES.length].id.toUpperCase();
     // farm profiles are chosen on the main menu (main.mjs) only
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };

@@ -36,13 +36,23 @@
 })();
 </script>
 <script>
-// The game could not start (a file failed twice): say so in both languages (the Vietnamese lines may not be loaded yet)
+// The game could not start: its catalog may be unavailable, so keep this small recovery message self-contained.
 // and offer a reload, instead of leaving the splash up for ever.
 window.__fvBootError = function () {
   var b = document.getElementById('boot'); if (!b || b.querySelector('.boot-error')) return;
-  var vi = /^vi/.test((function () { try { return localStorage.getItem('farm-village.language') || ''; } catch (e) { return ''; } })() || navigator.language || '');
+  var saved = (function () { try { return localStorage.getItem('farm-village.language') || ''; } catch (e) { return ''; } })();
+  var messages = {
+    en: ['The farm could not load. Check your connection.', 'Try again'],
+    vi: ['Không tải được trò chơi. Hãy kiểm tra kết nối mạng.', 'Thử lại'],
+    ko: ['농장을 불러올 수 없어요. 인터넷 연결을 확인해 주세요.', '다시 시도'],
+    ja: ['農場を読み込めませんでした。通信状況を確認してください。', 'もう一度']
+  };
+  var requested = (navigator.languages || [navigator.language]).map(function (lang) { return String(lang).toLowerCase().split('-')[0]; });
+  var language = Object.prototype.hasOwnProperty.call(messages, saved) ? saved : requested.find(function (lang) { return Object.prototype.hasOwnProperty.call(messages, lang); }) || 'en';
+  var text = messages[language];
+  document.documentElement.lang = language;
   var d = document.createElement('div'); d.className = 'boot-error';
-  d.innerHTML = '<p>' + (vi ? 'Không tải được trò chơi. Hãy kiểm tra kết nối mạng.' : 'The farm could not load. Check your connection.') + '</p><button type="button">' + (vi ? 'Thử lại' : 'Try again') + '</button>';
+  d.innerHTML = '<p>' + text[0] + '</p><button type="button">' + text[1] + '</button>';
   d.querySelector('button').onclick = function () { location.reload(); };
   var l = b.querySelector('.loading'); if (l) l.replaceWith(d); else b.appendChild(d);
 };

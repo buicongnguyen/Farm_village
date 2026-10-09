@@ -1,5 +1,10 @@
 # Hollowbrook — consolidated implementation plan
 
+Current language follow-up, 2026-10-09: `codex/korean-japanese` adds complete Korean/Japanese editions for the current
+game, with four-language menus, independent catalog downloads and unchanged progression. See
+[LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for implementation and verification. Meadow/dairy, later cast and later
+chapters remain separate gameplay tasks. The naming-only descriptions below record the scope of PR #34.
+
 Current naming follow-up, 2026-10-09: `codex/localized-cast` implements independent English/Vietnamese names for the
 current cast, named pets and households, with explicit story references and old-save text compatibility.
 **Implemented and locally validated**; checks and release handoff are in [LOCALIZED-CAST.md](LOCALIZED-CAST.md). Korean/Japanese aliases

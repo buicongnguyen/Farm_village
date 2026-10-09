@@ -40,7 +40,7 @@ async function fits(page,sel){return page.evaluate(sel=>{
 },sel);}
 for(const lang of ['en','vi']) await check('roadmap: goal and exactly three unlocks fit a phone ('+lang+')',async()=>{
  const {ctx,page,errors}=await open(lang);
- await page.click('[data-act="village"]');await page.waitForSelector('.sheet[data-kind="roadmap"]');
+ await page.click('[data-act="village"]');await page.waitForSelector('.sheet[data-kind="roadmap"] .journey');
  expect(await page.locator('.journey-unlock').count()===3,'not three unlocks');expect(await fits(page,'.sheet.panel'),'roadmap overflow');
  await page.evaluate(()=>{farm.game.do('testUnlockAll');farm.closeCards();});
  expect(await page.getAttribute('.journey','data-stage')==='homecoming','levels skipped the Homecoming deeds');

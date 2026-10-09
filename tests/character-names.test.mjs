@@ -96,8 +96,7 @@ test('translation expands authored identities before parameters so player-suppli
       assert.equal(t('Mai wrote a completely new private sentence about Pip.'), 'Mai wrote a completely new private sentence about Pip.');
     }
     await setLanguage('vi');
-    await setLanguage('ko'); assert.equal(getLanguage(), 'vi', 'prepared names must not expose an untranslated Korean game');
-    await setLanguage('ja'); assert.equal(getLanguage(), 'vi', 'prepared names must not expose an untranslated Japanese game');
+    await setLanguage('fr'); assert.equal(getLanguage(), 'vi', 'unsupported language changed the current edition');
   } finally { await setLanguage('en'); }
 });
 

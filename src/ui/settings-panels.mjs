@@ -1,6 +1,6 @@
 // Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section (TEST_MODE only:
 // esbuild drops it from public builds) with the play package's helpers.
-import { t, getLanguage } from '../kit/i18n.mjs';
+import { t, getLanguage, getLocale, LANGUAGES } from '../kit/i18n.mjs';
 import { CHAPTERS } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { FAMILIES } from '../content/people.mjs';
@@ -10,14 +10,14 @@ import { renderDiscoveries } from './discovery-panels.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
 import { FISH_TABLE, FRUITS } from '../content/goods.mjs';
 
-const choice = (key, value, current, label) => `<button class="tab${current === value ? ' on' : ''}" data-do="setting" data-key="${key}" data-value="${value}">${label}</button>`;
+const choice = (key, value, current, label) => `<button class="tab${current === value ? ' on' : ''}" data-do="setting" data-key="${key}" data-value="${value}" aria-pressed="${current === value}"${key === 'lang' ? ` lang="${value}"` : ''}>${label}</button>`;
 const esc = value => String(value ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['step', 'Next tutorial step'], ['hour', 'Clock +1 hour'], ['day', 'Clock +1 day']];
 export function renderSettings(s, profile) {
   const st = s.settings;
   return `<div class="settings">
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
-    <div class="set-row"><b>${t('Language')}</b><div class="tabs">${choice('lang', 'en', getLanguage(), 'English')}${choice('lang', 'vi', getLanguage(), 'Tiếng Việt')}</div></div>
+    <div class="set-row"><b>${t('Language')}</b><div class="tabs">${LANGUAGES.map(lang => choice('lang', lang.id, getLanguage(), lang.label)).join('')}</div></div>
     <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${esc(st.playerName)}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>
     <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
@@ -37,7 +37,7 @@ export function renderSettings(s, profile) {
 /** A chapter's picture for the album: its first story panel, or its symbol while the picture loads or is missing. */
 const chapterArt = ch => ch.panels?.[0] ? `<img class="chapter-art" src="${ch.panels[0].img}" alt="" loading="lazy" onerror="this.remove()">` : '';
 export function renderAlbum(s) {
-  const when = at => new Date(at).toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-GB', { day: 'numeric', month: 'short' });
+  const when = at => new Date(at).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
   const firsts = [['harvest', 'wheat', 'First harvest'], ['order', 'ui:orders', 'First order filled'], ['product', 'bread', 'First thing made'], ['egg', 'egg', 'First egg'],
     ['fruit', 'apple', 'First fruit picked'], ['family', 'cottage', 'First family moved in'], ['trade', 'gift', 'First trade with a neighbour'], ['gift', 'ui:heart', 'First gift given'],
     ['wish', 'charm', 'First wish granted'], ['letter', 'mail', 'First letter'], ['cart', 'cart', 'First market cart sent']].filter(([k]) => s.firsts?.[k]);
