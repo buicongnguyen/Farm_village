@@ -247,7 +247,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | Stage | Status |
 |---|---|
 | Cross-stage follow-up: Korean/Japanese editions | Live through [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35) (`ceef19c`): 428 native tests, pace, 34 component suites, 28 smoke checks, 54 local production contexts and 46 live contexts pass; CI and Pages passed. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
-| 1. Homecoming | done (v0.3); public pond access follow-up in [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37): permanent free footpath, exact dock arrival and safe return/cancellation. 465 native tests, pace, 35 component suites and 28 smoke checks pass. [Validation and release](POND-ACCESS-FIX.md). |
+| 1. Homecoming | done (v0.3); public pond access is live through [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37). Follow-up implemented, under validation: floating platform removed, separate reserved fishing places, visible rod/line/float and optional no-loss timing challenge. [Fishing scope and release](POND-FISHING.md); [earlier access checks](POND-ACCESS-FIX.md). |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |

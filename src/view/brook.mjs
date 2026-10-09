@@ -2,10 +2,10 @@
 // out across the hills; the pond in the woods is the same water. A cheap shader paints deep to shallow across the
 // channel, sine highlights drifting downstream and foam at the banks, and at night turns black-blue. Everything else is
 // one merged, vertex-coloured mesh: the wet sandy bank, bank stones, swaying reeds, lily pads, the plank bridge where
-// the road crosses, stepping stones north of the farm and the pond's dock. Ducks paddle on the pond (one instanced draw).
+// the road crosses and stepping stones north of the farm. Ducks paddle on the pond (one instanced draw).
 // Draws: water 1, props 1, ducks 1. Triangles: about 6k in all.
 import * as THREE from 'three';
-import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, POND_DOCK, ROADS, inVillage, nearHome } from '../content/world.mjs';
+import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, ROADS, inVillage, nearHome } from '../content/world.mjs';
 import { HAZE, MAP, merge, part, swayByHeight, decorMaterial } from './backdrop.mjs';
 import { grassTone, MID_TONE, noise, wildTint } from './ground.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
@@ -149,7 +149,7 @@ function bankGeometry() {
   return ni;
 }
 
-/** Stones, reeds and lily pads along the brook and round the pond; the bridge, the stepping stones and the dock. */
+/** Stones, reeds and lily pads along the brook and round the pond; the river bridge and stepping stones. */
 function propsGeometry() {
   const parts = [], rock = new THREE.OctahedronGeometry(1, 0), box = new THREE.BoxGeometry(1, 1, 1), pad = new THREE.CircleGeometry(1, 7, 0.4, Math.PI * 2 - 0.5).rotateX(-Math.PI / 2);
   const reedBlade = new THREE.ConeGeometry(0.11, 1, 3, 1, true).translate(0, 0.5, 0), cattail = new THREE.CylinderGeometry(0.09, 0.09, 0.32, 4, 1, true);
@@ -176,10 +176,10 @@ function propsGeometry() {
     else if (roll < 0.74) { const [px, pz] = at(side * (WATER_HALF + 0.2 + rand() * 1.1)); reeds(px, pz, 1.1 + rand() * 0.6); }
     else { const [px, pz] = at(side * (1.2 + rand() * 1.5)); lily(px, pz, 0.38 + rand() * 0.22); if (rand() < 0.6) { const [qx, qz] = at(side * (1 + rand() * 1.4)); lily(qx + 0.8, qz, 0.3 + rand() * 0.15); } }
   }
-  // the pond: reeds and stones round the rim (not at the dock), lily pads on the water
+  // the pond: reeds and stones round the rim (leaving the fishing bank clear), lily pads on the water
   const P = POND_SHAPE;
   for (let s = 0; s < 22; s++) {
-    const a = s / 22 * Math.PI * 2 + rand() * 0.2; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < 0.5) continue;   // east side: the dock
+    const a = s / 22 * Math.PI * 2 + rand() * 0.2; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < 0.5) continue;   // east side: the fishing bank
     const r = 1.0 + rand() * 0.12, px = P.x + Math.cos(a) * P.rx * r, pz = P.z + Math.sin(a) * P.rz * r;
     if (s % 3 === 0) stone(px, pz, 0.35 + rand() * 0.35); else reeds(px, pz, 1.0 + rand() * 0.7);
   }
@@ -196,11 +196,6 @@ function propsGeometry() {
       for (let s = -2; s < 2; s++) { const a = s * L / 2, b = a + L / 2, ya = arch(a) + 0.82, yb = arch(b) + 0.82; const rail = part(box, '#9b6a3c', sx, (ya + yb) / 2, zc + (a + b) / 2, 0, 0.14, 0.12, L / 2 + 0.1); rail.applyMatrix4(new THREE.Matrix4().makeTranslation(-sx, -(ya + yb) / 2, -(zc + (a + b) / 2)).premultiply(new THREE.Matrix4().makeRotationX(-Math.atan2(yb - ya, L / 2))).premultiply(new THREE.Matrix4().makeTranslation(sx, (ya + yb) / 2, zc + (a + b) / 2))); parts.push(rail); }
     }
     for (const sz of [-1, 1]) for (const sx of [x0 + 0.3, x1 - 0.3]) parts.push(part(box, '#6e4a2c', sx, 0.1, zc + sz * (WATER_HALF - 0.3), 0, 0.35, 0.5, 0.35));
-  }
-  // the pond's dock: planks out over the water on posts
-  { const dx = POND_DOCK.x * CELL + 0.6, dz = (POND_DOCK.z + 0.5) * CELL;
-    for (let i = 0; i < 7; i++) parts.push(part(box, i % 2 ? '#c08850' : '#b07a45', dx - i * 0.62, 0.32, dz, 0, 0.56, 0.12, 1.7));
-    for (const [ox, oz] of [[-0.6, -0.8], [-0.6, 0.8], [-3.8, -0.8], [-3.8, 0.8]]) parts.push(part(box, '#6e4a2c', dx + ox, 0.25, dz + oz, 0, 0.18, 0.7, 0.18));
   }
   return merge(parts);
 }

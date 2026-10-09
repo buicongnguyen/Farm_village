@@ -137,8 +137,12 @@ export class Panels {
     else if (d.do === 'claimWeekly') g.do('claimWeekly');
     else if (d.do === 'hurry') g.do('hurry', { id: this.open.arg });
     else if (d.do === 'sellGood') g.do('sellGood', { good: d.good, n: d.all ? undefined : 1 });
-    else if (d.do === 'castLine') g.do('castLine', { bait: d.bait === '1' });
-    else if (d.do === 'reelIn') g.do('reelIn');
+    else if (d.do === 'castLine') { if (this.onFishCast) { this.onFishCast(d.bait === '1'); this.render(); } else g.do('castLine', { bait: d.bait === '1' }); }
+    else if (d.do === 'reelIn') {
+      const r = g.do(d.start === '1' ? 'startReeling' : 'reelIn', { steady: d.steady === '1' });
+      const feedback = this.el.querySelector('[data-reel-feedback]'); if (feedback) feedback.textContent = r.ok ? '' : t(r.reason);
+      if (r.ok && d.start === '1') this.el.querySelector('[data-do="reelIn"]:not([data-steady]):not([data-start])')?.focus();
+    }
     else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');
     else if (d.do === 'fillTruck') g.do('fillTruck');

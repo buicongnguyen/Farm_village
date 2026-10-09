@@ -1,5 +1,11 @@
 # Asset requests
 
+### Active logic handoff — pond fishing interaction (2026-10-09)
+
+- Codex owns `codex/pond-fishing`, from PR #37/main `f6b3049`. The user requested removal of the floating pond dock, separate seats, visible casting, and a timing minigame. For this requested visual fix, Codex removes only the pond planks/posts in `brook.propsGeometry` and adds simple fishing tackle in a new `src/view/fishing-view.mjs`; the river bridge, existing palettes, lighting, models/icons and Blender sources remain art-owned.
+- Shared behavior scope: `PeopleView` fishing reservations/arrival, public shore data, `radial.tap`/`main.mjs` pond interaction wiring, and pond-panel controls. Core timing rules, translations in all four editions, and tests are coordinated by Codex. Missed timing taps never lose fish/bait or charge again; the accessible gentle-reel option earns the same catch.
+- Handoff commit pending verification. This reservation ends when the release PR merges. No binary assets requested for this bounded fix; Claude can style dedicated tackle later against the final behavior contract.
+
 ### Active logic handoff — public pond access (2026-10-09)
 
 - Codex owns `codex/pond-access`, integrating Claude PR #33 at `635c457` from released main `58c6677`. Shared behavior edits are `PeopleView` journeys, `WorldView.fixedLook` for the public path, and `dress.planWilds` to clear that corridor. This supersedes the earlier note that walk-route work was still available.

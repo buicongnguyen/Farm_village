@@ -47,7 +47,7 @@ import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
-const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs')]);
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs')]);
 await languageReady;   // load the selected edition before drawing its first text
 document.title = t('Farm Village');
 onLanguageChange(() => { document.title = t('Farm Village'); });
@@ -250,6 +250,8 @@ world.cam.attach(canvas, {
     if (build.open) build.tap(cell);
     else {
       panels.close();
+      const float = world.fishingView?.pick(x, y);
+      if (float) { if (radial.people) radial.people.selected = null; radial.hide(); radial.armed = null; radial.tool.hidden = true; panels.show('pond', float.pond ?? undefined); return; }
       const place = world.exploration?.pick(x, y);
       const shop = !place && pickShop(world, x, y);
       if (place) { radial.hide(); panels.show('exploration', place); }
@@ -288,9 +290,20 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
-const [{ LifeView }, { PeopleView }, { Critters }, { Juice }] = await living;
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
+world.fishingView = new FishingView(world, game, people);
+panels.fishingWalk = () => { const player = people.walkers.get('you'); return !!(player?.orderedFishing && player?.goal); };
+panels.onFishCast = bait => {
+  if (panels.fishingWalk()) return;
+  const player = people.walkers.get('you'), id = panels.open?.arg, pond = id && game.s.placed[id];
+  if (id != null && pond?.kind !== 'pond') { hud.toast(t('This fishing spot is no longer here.'), 'info'); return; }
+  if (!player || !people.sendFishing(player, pond?.kind === 'pond' ? pond : null, { bait })) {
+    hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info'); return;
+  }
+  hud.toast(t('Walking to the fishing spot.'), 'info'); panels.render();
+};
 hud.onShowWay = at => panels.onShowWay?.(at);   // the Next chip's "go there"
 radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
 new Juice(world, game, app);

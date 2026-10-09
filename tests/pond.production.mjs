@@ -8,6 +8,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { newGame } from '../src/core/state.mjs';
 import { tick } from '../src/core/act.mjs';
+import { pick as fishFor } from '../src/core/fishing.mjs';
 import { pack } from '../src/kit/save.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
@@ -18,7 +19,7 @@ function fixture() {
   const now = Date.now(), s = newGame(now, 4242, { restore: true });
   tick(s, now); // include the ordinary first-day garden flower before comparing trip accounting
   s.story.chapter = 5; s.story.tutorial = 999; s.story.beats = BEATS.map(b => b.id);
-  s.settings.daylight = 'always'; s.settings.reducedMotion = true; s.settings.playerName = 'Pond Walker';
+  s.settings.daylight = 'always'; s.settings.reducedMotion = false; s.settings.playerName = 'Pond Walker';
   s.today.seen = true; s.today.claimed = true;
   s.orders.cards = []; s.orders.pending = Array(8).fill(now + 86400000);
   s.neighbours = Object.fromEntries(NEIGHBOURS.map(n => [n.id, { day: '9999-12-31', visits: [], visited: 0, total: 0, friendship: 0, trade: null }]));
@@ -50,7 +51,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true,
 let failures = 0;
 try {
   for (const [lang, width] of [['vi', 1280]]) {
-    const height = 844, context = await browser.newContext({ viewport: { width, height }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'reduce' });
+    const height = 844, context = await browser.newContext({ viewport: { width, height }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'no-preference' });
     try {
       const initial = fixture();
       await context.addInitScript(({ lang, save }) => {
@@ -104,7 +105,8 @@ try {
       if (!selected && shots) await page.screenshot({ path: join(shots, `pond-production-selection-${lang}-${width}.png`) });
       expect(selected, 'could not select the rendered player by tapping their home position');
       await pan(32, 84); await click(cam.project(31, 85));
-      expect(!await page.locator('.panel:not([hidden]) [data-do="castLine"]').count(), 'pond opened its normal panel instead of accepting the selected player');
+      await page.locator('.panel[data-kind="pond"]:not([hidden])').waitFor({ state: 'visible' });
+      expect(await page.locator('.panel[data-kind="pond"]:not([hidden])').count(), 'fishing controls were hidden after sending the player');
       expect(await page.evaluate(() => !JSON.parse(localStorage.getItem('farm-village:save:1')).fishing.line), 'cast before walking to the dock');
       await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('farm-village:save:1'))?.fishing.line, null, { timeout: 120000 });
       const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
@@ -113,8 +115,27 @@ try {
       if (shots) await page.screenshot({ path: join(shots, `pond-production-${lang}-${width}.png`) });
       await page.reload(); await enter();
       expect(await page.evaluate(() => !!JSON.parse(localStorage.getItem('farm-village:save:1'))?.fishing.line), 'the auto-cast line did not survive reload');
+      await page.locator('.hud [data-status="pond"]').click();
+      const pondPanel = page.locator('.panel[data-kind="pond"]:not([hidden])');
+      await pondPanel.locator('[data-do="reelIn"][data-start="1"]').waitFor({ state: 'visible', timeout: 45000 });
+      await pondPanel.locator('[data-do="reelIn"][data-start="1"]').click();
+      await pondPanel.locator('.fishing-meter').waitFor({ state: 'visible' });
+      expect(await pondPanel.locator('[data-do="reelIn"]:not([data-start]):not([data-steady])').isVisible(), 'starting the challenge did not reveal its timing control');
+      if (shots) await page.screenshot({ path: join(shots, `pond-production-timing-${lang}-${width}.png`) });
+      const expectedFish = fishFor(saved.fishing.line.seed, saved.fishing.line.bait);
+      await pondPanel.locator('[data-do="reelIn"][data-steady="1"]').click();
+      await page.waitForFunction(caught => {
+        const s = JSON.parse(localStorage.getItem('farm-village:save:1'));
+        return !s?.fishing.line && s?.fishing.caught === caught + 1;
+      }, saved.fishing.caught, { timeout: 15000 });
+      const caught = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
+      expect((caught.barn.items[expectedFish] ?? 0) === (saved.barn.items[expectedFish] ?? 0) + 1 && caught.stats.fished === (saved.stats.fished ?? 0) + 1, 'the public controls did not catch exactly the original seeded fish');
+      expect(!await pondPanel.locator('[data-do="reelIn"]').count(), 'completed line still exposes a collection button');
+      await page.reload(); await enter();
+      const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
+      expect(!persisted.fishing.line && persisted.fishing.caught === caught.fishing.caught && JSON.stringify(persisted.barn.items) === JSON.stringify(caught.barn.items) && persisted.coins === caught.coins, 'reloading repeated the catch or its reward');
       expect(!errors.length, errors.join('\n'));
-      console.log(`ok   production: tap player, walk to public pond, auto-cast and reload ${lang} ${width}`);
+      console.log(`ok   production: tap player, walk/cast, reload, timing control, gentle catch and single reward ${lang} ${width}`);
     } catch (error) { failures++; console.log(`FAIL production pond ${lang} ${width}\n${error.stack}`); }
     finally { await context.close(); }
   }

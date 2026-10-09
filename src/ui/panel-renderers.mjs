@@ -12,7 +12,6 @@ import { fruitPrice } from '../core/orchard.mjs';
 import { planFor, STEP_TEXT } from '../core/plan.mjs';
 import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
 import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
-import { FISH_TABLE } from '../content/goods.mjs';
 import { truckOf, trucksOf, loadUnits, loadValue, capacity, roomIn, truckCoins, nextTruck, spareForTrucks, blocked as blockedWhy } from '../core/market.mjs';
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
@@ -36,6 +35,7 @@ import { renderSchool, renderSchoolMemory, renderSchoolEntry } from './school-ac
 import { schoolStatus } from '../core/school-activity.mjs';
 import { SCHOOL_ACTIVITY } from '../content/school-activity.mjs';
 import { modalOpen } from './modal.mjs';
+import { renderPond, refreshPond, mountPond } from './pond-panel.mjs';
 
 const goodsLine = (s, need, honour = true, help = true) => Object.entries(need).map(([g, n]) => {
   const have = barn.free(s, g, honour), ok = have >= n;
@@ -50,6 +50,11 @@ const HEAD_ICONS = { exploration: 'lucky_box', advice: 'ui:heart', profiles: 'co
 export function renderPanel() {
     const s = this.game.s, o = this.open; if (!o) return;
     queueMicrotask(() => this.lift());
+    if (o.kind === 'pond' && refreshPond(this)) return;
+    // Fees or inventory can change mid-reel. A required redraw must keep the same keyboard control focused.
+    const focused = document.activeElement;
+    const pondFocus = o.kind === 'pond' && this.el.querySelector('[data-pond]') && this.el.contains(focused)
+      && focused.matches('button[data-do]') ? { ...focused.dataset } : null;
     const now = this.game.now;
     const contract = contractStatus(s, now);
     const growthRecord = normalizeGrowth(s);
@@ -148,14 +153,7 @@ export function renderPanel() {
           <button class="btn orange small-btn" data-do="claimWeekly" ${!s.weekly?.claimed && wp >= w.n ? '' : 'disabled'}>${s.weekly?.claimed ? t('Done') : t('Claim')}</button></div>
         <p class="hint">${t('Goals finished')}: ${num(qs.done)}</p>`;
     } else if (o.kind === 'pond') {
-      const f = s.fishing ?? { line: null, coins: 0, caught: 0, feeAt: 0 }, line = f.line, left = line ? Math.max(0, line.doneAt - now) : 0, bait = barn.free(s, 'chicken_feed') > 0, fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0);
-      const status = !line ? t('No line in the water') : left > 0 ? `${t('Waiting for a bite')} · ${shortTime(left)}` : t('A fish is biting!');
-      body = `${renderExplorationEntry(s, { location: 'pond' })}<p class="hint">${t('Cast a line and wait. Fishing villagers sit here and leave a little money.')}</p><p class="hint"><b>${status}</b></p>
-        ${line && left <= 0 ? `<button class="btn primary wide" data-do="reelIn">${glyph('plus', 'g')} ${t('Reel in')}</button>` : ''}
-        ${!line ? `<button class="btn orange wide" data-do="castLine">${t('Cast a line')}</button><button class="btn ghost wide" data-do="castLine" data-bait="1" ${bait ? '' : 'disabled'}>${iconHtml('chicken_feed', '', 'mini')} ${t('Cast with bait')} (${t('chicken feed')})</button>` : ''}
-        ${f.coins ? `<button class="btn primary wide" data-do="collectFees">${t('Collect {coins} coins', { coins: num(f.coins) })}</button>` : ''}
-        <div class="goods-grid">${fish.map(x => `<div class="good-tile">${goodIcon(x.id)}<b>${num(s.barn.items[x.id])}</b><small>${t(x.name)} · ${coinMark()} ${x.value}</small></div>`).join('')}</div>
-        <p class="hint">${t('Sell fish with the market truck, or keep them for friends.')} (${num(f.caught)} ${t('caught')})</p>`;
+      body = renderPond(s, now, { walking: !!this.fishingWalk?.() });
     } else if (o.kind === 'market') {
       // The trucks (core/market.mjs): one row each, then fill / send / collect for all of them at once. A tapped good
       // goes on the first truck at the market with room.
@@ -195,6 +193,10 @@ export function renderPanel() {
     if (['today', 'clinic', 'album'].includes(o.kind)) body = growthEntry + body;
     if (['today', 'projects', 'album'].includes(o.kind)) body = renderLearningEntry(s, now, { album: o.kind === 'album' }) + renderSchoolEntry(s, now, { album: o.kind === 'album' }) + body;
     this.el.innerHTML = this.head(title, icon) + `<div class="panel-body">${body}</div>`;
+    if (o.kind === 'pond') mountPond(this);
+    if (pondFocus) [...this.el.querySelectorAll('button[data-do]')].find(button => !button.disabled
+      && Object.keys(button.dataset).length === Object.keys(pondFocus).length
+      && Object.entries(pondFocus).every(([key, value]) => button.dataset[key] === value))?.focus({ preventScroll: true });
     if (postponedOpen && o.kind === 'today') { const details = this.el.querySelector('.advice-deferred'); if (details) details.open = true; }
     if (futureOpen && o.kind === 'contracts') { const details = this.el.querySelector('.contract-future'); if (details) details.open = true; }
     for (const id of growthOpen) { const details = this.el.querySelector(`[data-growth-detail="${id}"]`); if (details) details.open = true; }
