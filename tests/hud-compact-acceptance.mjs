@@ -23,7 +23,10 @@ function fixture() {
   s.neighbours = Object.fromEntries(NEIGHBOURS.map(n => [n.id, { day: '9999-12-31', visits: [], visited: 0, total: 0, friendship: 0, trade: null }]));
   const home = Object.keys(s.placed).find(id => s.placed[id].kind === 'cottage');
   s.homes[home] = { family: 'tran', arrived: true, arrivesAt: now - 7200000, level: 0, rentFrom: now - 3600000 };
-  s.quests.list = [{ id: 'hud-goal', t: 'harvest', n: 2, base: 0, coins: 20, xp: 1 }]; s.stats.harvested = 2;
+  // Fill all goal slots so boot does not generate a date-dependent, already-fillable favour.
+  s.quests.list = [{ id: 'hud-goal', t: 'harvest', n: 2, base: 0, coins: 20, xp: 1 },
+    { id: 'hud-orders', t: 'orders', n: 1000, base: 0, coins: 20, xp: 1 },
+    { id: 'hud-fish', t: 'fish', n: 1000, base: 0, coins: 20, xp: 1 }]; s.stats.harvested = 2;
   s.orders.cards = [{ id: 'hud-order', from: 'ada', need: { wheat: 2 }, coins: 10, xp: 1 }]; s.orders.pending = Array(8).fill(now + 86400000);
   s.fishing = { line: { doneAt: now + 120000, seed: 123, bait: false }, coins: 0, caught: 0, feeAt: now + 86400000 };
   s.truck = { level: 1, coins: 0, away: true, backAt: now + 180000, load: [{ good: 'wheat', n: 2 }], fleet: [] };
@@ -79,7 +82,15 @@ export async function runCompactHud(testMode) {
         if (testMode) {
           await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
           await page.evaluate(() => { farm.skipIntro(); farm.closeCards(); farm.panels.close(); });
-        } else { await page.locator('.main-menu [data-do="profile"][data-n="1"]').click(); expect(await page.evaluate(() => !window.farm), 'production exposes debug hook'); }
+        } else {
+          await page.locator('.main-menu [data-do="profile"][data-n="1"]').click();
+          // HUD DOM is created before scenery loads and game.start() opens the daily board.
+          // Wait for the public guide initialization, then dismiss that real board as a player does.
+          await page.locator('.guide').waitFor({ state: 'attached', timeout: 60000 });
+          const daily = page.locator('.panel[data-kind="today"]:not([hidden])');
+          if (await daily.isVisible()) await daily.locator('.panel-head [data-do="close"]').click();
+          expect(await page.evaluate(() => !window.farm), 'production exposes debug hook');
+        }
         await page.locator('.hud [data-status="market"]').waitFor({ timeout: 60000 });
         await page.evaluate(() => document.fonts.ready);
         if (testMode) await page.evaluate(lines => {
@@ -91,7 +102,8 @@ export async function runCompactHud(testMode) {
         expect(await page.locator('.hud .hud-tracker').count() === 1, 'missing unified roadmap tracker');
         expect(await page.locator('.hud [data-status="roadmap"], .hud [data-status="projects"], .hud [data-status="orders"]').count() === 0, 'duplicate status rows remain');
         expect(await page.locator('.hud .status-row').count() === 4, 'lost a compact activity route');
-        expect(await page.locator('.hud [data-status="quests"] .badge.ready').innerText() === '1', 'goal readiness is not on its button');
+        const goalBadge = await page.locator('.hud [data-status="quests"] .badge.ready').innerText();
+        expect(goalBadge === '1', `goal readiness is not on its button: ${goalBadge}`);
         for (const id of ['today', 'projects', 'mail', 'barn', 'orders', 'build', 'friends']) expect((await page.locator(`.hud [data-act="${id}"] .hud-label`).innerText()).length > 0, `${id} has no visible label`);
         const today = await page.locator('.hud [data-act="today"] .hud-label').innerText();
         expect(today === (lang === 'vi' ? VI.Today : 'Today'), 'button label does not follow language');
@@ -99,7 +111,9 @@ export async function runCompactHud(testMode) {
         expect((await statusImg.getAttribute('src')).includes('/icons/sm/'), 'status chip does not use small art');
         await page.locator('.hud [data-status="pond"]').focus();
         await page.waitForTimeout(1200);
-        expect(await page.locator('.hud [data-status="pond"]').evaluate(el => el === document.activeElement), 'timer refresh removed keyboard focus');
+        const focused = await page.locator('.hud [data-status="pond"]').evaluate(el => ({ kept: el === document.activeElement,
+          active: document.activeElement?.outerHTML?.slice(0, 160), visible: el.checkVisibility(), modal: !!document.querySelector('.modal'), panel: document.querySelector('.panel:not([hidden])')?.dataset.kind }));
+        expect(focused.kept, `timer refresh removed keyboard focus: ${JSON.stringify(focused)}`);
         await page.screenshot({ path: join(shots, `${testMode ? 'test' : 'production'}-${lang}-${viewport.width}.png`) });
         for (const [selector, kind, content] of [['[data-act="village"]', 'roadmap', '.journey'], ['[data-status="quests"]', 'quests', '.goal'], ['[data-status="market"]', 'market', '.truck-row'], ['[data-status="pond"]', 'pond', '.goods-grid']]) {
           await page.locator(`.hud ${selector}`).click();

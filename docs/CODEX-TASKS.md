@@ -2,9 +2,11 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
-Current pass, 2026-10-09: `codex/clearer-guidance-art` implements compact HUD/status layout, bilingual contextual invitations to existing discoveries/repairs/school, and Claude's hospital-fit/AR-013 delivery. [Release scope](CLEARER-GUIDANCE-AND-ART.md). The [next meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) fixes the first art IDs while keeping its gameplay and tuning in a separate release. Earlier "next delivery" paragraphs below are historical.
+Current pass, 2026-10-09: `codex/clearer-guidance-art` implements compact HUD/status layout, bilingual contextual invitations to existing discoveries/repairs/school, and Claude's hospital-fit/AR-013 delivery. [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) is implemented and validated; see the [release scope](CLEARER-GUIDANCE-AND-ART.md). The [next meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) fixes the first art IDs while keeping its gameplay and tuning in a separate release. Earlier release paragraphs and their test counts below are historical.
 
-Next logic delivery, 2026-10-09: `codex/learning-garden-school` implements the first permanent lesson, useful bench repair, project-only energy/free recovery, strawberry planting and a replayable classroom activity. Claude's AR-011/AR-012 PR #27 is integrated for combined checks. [Scope, costs and acceptance](LEARNING-GARDEN-SCHOOL.md); publication is recorded by the release PR. PR #26's previous production/civic slice is already deployed at `e05c800`.
+Previous release, [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28), deployed at `027ec20`: `codex/learning-garden-school` added the first permanent lesson, useful bench repair, project-only energy/free recovery, strawberry planting and a replayable classroom activity. It included Claude's AR-011/AR-012 PR #27. [Scope, costs and acceptance](LEARNING-GARDEN-SCHOOL.md). PR #26's earlier production/civic slice deployed at `e05c800`.
+
+The following two baseline paragraphs preserve the preceding releases' checks and branch references; they are not the current validation record.
 
 Current status, 2026-10-09: the picnic trail/AR-010 shipped in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18), and ingredient guidance, the first covered plot and Lan's food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24). The `codex/production-village-growth` slice is implemented and validated: parallel trays, working shop customers and bounded civic/company progression, starting from `4377129` and integrating main `1add9a4`. **355 native tests, all 23 component browser suites, 28 smoke checks and eight production contexts pass; pace targets remain green.** The release PR records CI, Pages deployment and live verification. See [the current scope](PRODUCTION-AND-VILLAGE-GROWTH.md). Earlier release checklists retain their own historical test counts.
 
@@ -127,7 +129,7 @@ The [delivery report](DISCOVERY-TRAIL.md) records completed integration and vali
 
 See [the delivery report](GUIDANCE-LAND-FOOD-DELIVERY.md) for the bounded scope and [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) for final regression/deployment results. This completes comparison recommendations 2, 4 and 5 using the existing factory chain. The separate company slice below follows that release.
 
-## Current pass — parallel production, shops and civic/company growth
+## Historical completed release — parallel production, shops and civic/company growth (PR #26)
 
 - [x] Reconcile Claude's handoff against main `4377129`: PR #23 item art, PR #18 trail integration and PR #24 guidance/food story already exist. Preserve the unrelated mobile work in the original checkout.
 - [x] Give every production tray independent start/completion/collection, retain ready batches until collection, and preserve legacy serial schedules in save version 10. Align hurry, clock recovery, ingredient advice and worker duration previews with the real rules.
@@ -151,8 +153,7 @@ chapters 6 onward, Pearl/Bea's introductions and the water/festival resolution a
 1. Additional playful/welcome scenes and selected character interactions beyond the shipped contextual advice and ingredient help.
 2. Further covered regions, selective scenery clearing and useful restoration activities beyond the first optional paid plot and existing free picnic trail.
 3. More skills and useful restoration projects after the first garden-repair lesson/bench and project-only energy pass described above.
-4. Meadow/dairy, additional recipes, further school activities and vehicles as separate releases, with final IDs and asset requests defined before production art. The first picture-basket classroom game is implemented in the current pass.
-5. AR-013 dedicated potting-bench stages, plus optional staff/brand art. AR-011's dedicated civic icons and hospital tier are in the current integration; neither completes future civic tiers.
-6. Finish a compact HUD/status-stack layout after the current AR-012 menu pictures, delivered small-icon URLs and semantic button integration. The complete HUD redesign remains separate work.
+4. First goat/dairy gameplay following [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md): AR-002's first art delivery is requested with exact IDs; gameplay and final tuning belong to a separate release. Additional recipes, school activities and vehicles remain later work. The first picture-basket classroom game shipped in PR #28.
+5. Optional staff/brand art and later civic tiers. AR-011's first civic icons/hospital tier shipped in PR #28; the hospital-fit correction, AR-013 bench art and compact AR-012 HUD are implemented in PR #31 with completed validation, not new future commissions.
 
-AR-002 and the old v0.5 label do not automatically select the next release. Keep the existing school targets (casual ≤10 days, steady 3–4, keen ≥2) and required family access intact while evaluating optional expansion.
+The narrowed AR-002 first delivery is the next scoped art request; the old v0.5 label does not commission its broader cat/deed/region proposal. Keep the existing school targets (casual ≤10 days, steady 3–4, keen ≥2) and required family access intact while evaluating optional expansion.

@@ -42,6 +42,11 @@ function fixture() {
 }
 async function enter(page) {
   await page.locator('.main-menu [data-do="profile"][data-n="1"]').click();
+  // HUD markup precedes game.start(); wait for the public startup UI before interacting.
+  await page.locator('.guide').waitFor({ state: 'attached', timeout: 60000 });
+  // The startup Today sheet can be open already; its responsive layout deliberately hides the side HUD.
+  const daily = page.locator('.panel[data-kind="today"]:not([hidden])');
+  if (await daily.count()) await daily.locator('.panel-head [data-do="close"]').click();
   await page.locator('.hud [data-act="today"]').waitFor({ state: 'visible', timeout: 60000 });
   expect(await page.evaluate(() => typeof window.farm === 'undefined'), 'production build exposes the test hook');
 }
@@ -91,7 +96,7 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
     await preview(page, 'school-baskets', lang, '.panel[data-kind="schoolActivity"] [data-do="schoolStart"][data-difficulty="simple"]');
     await preview(page, 'picnic-porch', lang, '.panel[data-kind="exploration"] [data-do="inspectExploration"]');
     await defer(page, 'garden-lesson', lang);
-    await page.waitForFunction(() => JSON.parse(localStorage.getItem('farm-village:save:1'))?.advice?.deferred?.includes('garden-lesson:garden/lesson'));
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('farm-village:save:1'))?.advice?.deferred?.includes('garden-lesson:garden/lesson'), null, { timeout: 15000 });
     await page.reload(); await enter(page); await today(page);
     await panel(page).locator('.advice-deferred summary').click();
     await panel(page).locator('.advice-deferred [data-id="garden-lesson"]').click();

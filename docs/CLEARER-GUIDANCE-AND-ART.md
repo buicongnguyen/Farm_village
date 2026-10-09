@@ -50,10 +50,26 @@ Save version 11 remains compatible: this release adds only finite read/defer top
 
 ## Release verification
 
-Current verification and the eventual PR record must distinguish completed checks from planned checks. Required:
-native rules/translation/story/assets, pace, all component browser suites and main smoke tests, production builds,
-EN/VI phone/desktop with 130% text, hospital neighbors/rotations, bench stages/reload/late loading, pure advice
-previews, and live acceptance after deployment. Preserve the 120-draw / 300k-triangle / 1.1 MB startup limits.
+Completed on the combined implementation:
+
+- `npm test`: **407/407**, including rules, translations, story, decoded model bounds and advice history.
+- `npm run sim` and native pace tests: pass; steady school and clinic remain day 3.
+- Test build, **all 31 component browser suites**, and **28/28 main smoke checks**: pass.
+- Coverage includes EN/VI phone/desktop and two landscape sizes at 130% text, hospital neighbors/rotations,
+  bench stages/reload/late loading, and advice previews that cannot spend resources or select passing villagers.
+- Phone render limits remain **120 draws / 300,000 triangles** across the measured zooms. The combined orchard
+  fixture peaks at 118 draws / 287,812 triangles; the hospital and repaired bench also pass their dedicated checks.
+- First-load code: **1,084,628 bytes test / 1,083,777 bytes production**, below the 1,100,000-byte cap.
+
+- Production acceptance: **16/16 contexts** pass without `window.farm`: eight compact-HUD layouts, four guidance
+  flows and four garden/school flows. They cover both languages, real startup/panel controls, saved postponements,
+  explicit payment, zero-energy play and reloads. Test startup waits for game initialization before exercising the
+  HUD, and supplies deterministic goals so the current date cannot change its expected ready count.
+
+[PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) records final CI, publication and live verification
+after the authorized merge. Browser checks use Chromium with simulated
+phone/desktop viewports, not physical devices. The optional WebKit run is unavailable on this machine;
+these results do not claim Safari coverage.
 
 ## Next art and logic work
 

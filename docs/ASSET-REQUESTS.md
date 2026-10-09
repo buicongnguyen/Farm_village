@@ -1,16 +1,16 @@
 # Asset requests
 
-### Active logic handoff — clearer guidance and delivered art (2026-10-09)
+### Release handoff — clearer guidance and delivered art (2026-10-09)
 
-- Codex owns `codex/clearer-guidance-art`, from deployed main `027ec20`. This pass finishes the compact HUD/status layout and contextual guidance to existing discoveries, garden repairs and school activities; it does not add new reward sources or meadow gameplay.
+- Codex owns `codex/clearer-guidance-art`, from deployed main `027ec20`, for [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), currently implemented and validated. This pass finishes the compact HUD/status layout and contextual guidance to existing discoveries, garden repairs and school activities; it does not add new reward sources or meadow gameplay.
 - Shared behavior reservations: `src/view/learning-view.mjs` (AR-013 stage selection and late loading), HUD/UI layout and advice navigation, plus hospital footprint/neighbor-placement tests. Claude retains all palette, lighting, model design and icon ownership.
-- PR #29 (`f52860f`) and PR #30 (`a56c93e`) share a generated `decor.glb`. Their generator changes combine cleanly. Following the user's forwarded integration instruction, Codex will rebuild and pack the combined output without changing either model design; no binary-side conflict choice will discard a delivery.
+- PR #29 (`f52860f`) and PR #30 (`a56c93e`) share a generated `decor.glb`. Their generator changes combined cleanly. Following the user's forwarded integration instruction, Codex rebuilt and packed the combined output in `807f803` without changing either model design; both deliveries are retained.
 - AR-013 maps saved repair stages **0 → overgrown, 1/2 → repaired, 3 → done**. Its three art states do not reduce the three paid repair actions. Existing stand-ins remain only while the late kit loads.
-- This note supersedes older active reservations below. Current release checks and remaining meadow scope will be recorded with this PR; optional outfits/brand seals remain separate.
+- This note supersedes older active reservations below. Validation is complete: 407 native tests, pace, 31 component suites, 28 smoke checks and 16 local production contexts pass. PR #31 records CI, deployment and live acceptance; these shared edit reservations end with its merge. Optional outfits/brand seals remain separate.
 
-### Active logic handoff — learning, garden and school (2026-10-09)
+### Historical logic handoff — learning, garden and school (PR #28, 2026-10-09)
 
-This is the current writer reservation; older active-handoff paragraphs below are retained as release history.
+The notes below preserve PR #28's ownership and validation record. These reservations ended with that release; the current writer reservation is at the top of this file.
 
 - Codex owns `codex/learning-garden-school`, starting from deployed main `e05c800` (PR #26). The next slice adds one practical garden-repair skill, a three-phase potting-bench project, project-only energy/free home rest, strawberries using the existing crop/icon art, and a replayable school counting activity. Existing farming, repairs and story requirements retain their gates.
 - Active shared behavior: Codex owns `src/main.mjs`, the new `src/view/learning-view.mjs` and `src/content/learning-site.mjs` for staged reuse/picking of a small project beside the farmhouse. It sits inside the existing fixed house footprint, so it claims no buildable land and changes no player's terrain. Codex also owns `src/ui/**` layout/controls and lazy panel extraction. Claude retains all colors, lighting, models, icon rendering and effects; AR-011/AR-012 remain his art work.
@@ -25,7 +25,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 - Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
 - The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
 - Deliver packed GLB nodes and provenance on an `art/*` branch. Agree exact node IDs and the stage-to-model map with Codex before changing the runtime view. This request follows the already assigned AR-011/AR-012; no need to pause those.
-- Delivered by Claude (branch `art/potting-bench`): `decor.glb` nodes `potting_bench_overgrown` (532 tris, 2.24 × 1.22 m), `potting_bench_repaired` (600 tris, 2.20 × 1.09 m, the faded strawberry label lies on the top) and `potting_bench_done` (836 tris, 2.20 × 1.00 m, seed trays, potted strawberry, watering can). Origin at the base centre, front +z, registered in `src/view/kinds.mjs` (decor, late). Proposed map: stage 0 → overgrown, 1 → repaired, 2 → done; the runtime view is Codex's.
+- Delivered by Claude (branch `art/potting-bench`): `decor.glb` nodes `potting_bench_overgrown` (532 tris, 2.24 × 1.22 m), `potting_bench_repaired` (600 tris, 2.20 × 1.09 m, the faded strawberry label lies on the top) and `potting_bench_done` (836 tris, 2.20 × 1.00 m, seed trays, potted strawberry, watering can). Origin at the base centre, front +z, registered in `src/view/kinds.mjs` (decor, late). Integrated map by completed repair count: 0 → overgrown, 1/2 → repaired, 3 → done; the runtime view is Codex's.
 
 ### AR-011: Civic/company art — requested 2026-10-09
 
@@ -42,7 +42,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 
 ### AR-012: Menu pictures and small tokens — requested 2026-10-09
 
-- Current status: delivered pictures, all 117 small variants and semantic classes are live through PR #28. Compact HUD/status layout is implemented in the current follow-up and undergoing phone/desktop verification. The original request details below are retained as history.
+- Current status: delivered pictures, all 117 small variants and semantic classes are live through PR #28. Compact HUD/status layout is implemented in the current follow-up and validated on phone/desktop. The original request details below are retained as history.
 
 - Deliver `hen`, `cow`, `ui:today`, `ui:projects`, `ui:mail`, `tool:demolish`, `ui:harvest_all` with registrations and provenance in one art PR. Existing SVG or home-building fallbacks stay until then.
 - Deliver small WebP files in `public/assets/icons/sm/` using the **same filename mapping** as the corresponding normal icon (`ui-coin.webp`, etc.), ideally a complete set for `ICONS`. Include the two new civic IDs or explicitly list unavailable small variants.
@@ -51,7 +51,9 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 - Keep green for committing a positive action, blue for navigation, and red for genuinely unread news as agreed. The exact palette, contrast and appearance are Claude's pass. Do not label available-but-unread-less content as new merely to show a red badge.
 - Marker atlas and world crop/fruit readability remain a separate art delivery; Codex will coordinate any marker behavior only after the atlas layout is explicit.
 
-### Active logic handoff — 2026-10-09
+### Historical logic handoff — production and civic growth (PR #26, 2026-10-09)
+
+The paragraphs below are the release's original ownership, asset-wait and validation record, not current edit reservations or outstanding first-delivery requests. PR #28 subsequently integrated AR-011/AR-012; current follow-up work is listed above.
 
 Codex is the active writer on `codex/production-village-growth`, based on main `4377129` (PR #24). Guidance and AR-010 are already live; this pass owns parallel production/save compatibility, obtainable orders, useful kiosk/plaza offers, and the first optional civic/company rules. Shared behavior ownership: `src/main.mjs` tap routing, `src/ui/**` controls/layout, and small existing civic-model registration/visibility hooks. Existing building appearances, palettes, lights, particles and binary authorship remain Claude's. The two new civic icons are authorized placeholder copies under AGENTS.md section 3, recorded in AR-011 below. The original checkout's unfinished mobile work stays untouched in its checkout. The final PR will record integration and verification.
 
@@ -137,7 +139,8 @@ replaced) and `dropped`.
 | `town.glb` (Willowmere) | Houses `house_gable`, `house_front`, `house_tall`, `house_hip`, `house_round`; `school`, `hospital`, `police`, `company` |
 | `fish.glb` (Willowmere) | 19 fish (`fish_perch`, `fish_carp`, `fish_catfish`, `fish_golden`, `fish_koi`, `fish_eel` and more), `boot`, `bobber`, `lily_pad`, `lily_flower`, `reeds` |
 | Rigged, animated (`src/view/skinned.mjs`) | hen, cow, pig, goat, sheep, duck, dog, cat, crow, rabbit; villager man, woman and kid; Hana (Ada) |
-| Unused so far | the strawberry crop models and icon (there is no strawberry good yet), the `oink` sound |
+| Strawberry assets | Existing crop models and icon are used by the garden-repair unlock shipped in PR #28; no replacement asset is requested |
+| Unused so far | the `oink` sound |
 
 ## Queue
 
@@ -154,8 +157,8 @@ replaced) and `dropped`.
 | AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
 | AR-010 | Old-object picnic discovery trail props | optional exploration | P1 | integrated and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18); includes Claude's PR #13 delivery and runtime wiring |
 | AR-011 | Civic/company first tier and later upgrade art | hospital, police, office and labels | P1 | first delivery live in PR #28; PR #29 footprint correction integrated for current checks; outfits/seals remain proposed |
-| AR-012 | Menu icons, small variants and semantic UI tokens | art/UI integration | P1 | delivered art live in PR #28; compact HUD follow-up in validation |
-| AR-013 | Three potting-bench art stages | garden project | P1 | PR #30 delivered; runtime integration and footprint tests pass; combined release in validation |
+| AR-012 | Menu icons, small variants and semantic UI tokens | art/UI integration | P1 | delivered art live in PR #28; compact HUD follow-up implemented and validated |
+| AR-013 | Three potting-bench art stages | garden project | P1 | PR #30 delivered; runtime integration and footprint tests pass; combined release implemented and validated |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
 AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; AR-002 now has a narrowed first request, and AR-003–AR-008 remain proposed. The user or logic lane
@@ -276,6 +279,8 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+Historical log: the dated ownership and waiting-for-art notes below describe their original releases. They do not reserve files now; the active reservation and current request statuses at the top of this file take precedence.
 
 - 2026-10-09, art lane, **hospital fit** (`art/hospital-fit`): `decor.glb/hospital` now stays inside the 8 × 6 m footprint, entrance canopy and ambulance bay included (bounds x −3.9…3.9 m, z −2.9…2.9 m, origin at the centre, base on the ground). Door and canopy at the front centre (+z); ambulance bay on the right inside the footprint. ID `clinic:hospital` unchanged; 1,340 triangles. Icon and small icon re-rendered.
 - 2026-10-09, art lane, **AR-011 and AR-012 delivered** on `art/ar011-012` (from main `e05c800`; PR below):
@@ -475,17 +480,17 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 - Art delivered: `exploration-props.glb` with `trail_porch_box_closed`, `trail_porch_box_open`, `trail_pond_cache_closed`, `trail_pond_cache_open`, `trail_picnic_ribbon`, plus `trail_picnic_ribbon.webp`. The keepsake is a pink butterfly-shaped ribbon; English/Vietnamese text matches the pink ribbon and the child sees a tiny butterfly. Provenance and dimensions remain in [ASSETS.md](ASSETS.md). Art delivery adds no world placement or reward logic.
 - Logic: Codex owns the rules, saved stage/read state, one-time flowerpot reward, bilingual dialogue, UI and integration. No additional coins; existing 110-coin finds unchanged.
 
-### Coordination note — 2026-10-08, AR-010
+### Historical coordination note — 2026-10-08, AR-010
 
 - Baseline: PR #9 at `f80ceb0`; integrated into the Codex branch at `208167c`. Codex is the active writer for `src/main.mjs`, `src/ui/**`, the new exploration content/core/i18n modules, state/action wiring and tests. Claude owns new Blender/model/icon files and only their registration rows in `src/view/kinds.mjs` / `src/content/icons.mjs`. Neither lane edits shared world placement or effects for this delivery; integration will name the exact view functions after the art PR is ready. The current live farmhouse forecourt and pond are retained.
 
-### Coordination — guidance, land and food requests (2026-10-08)
+### Historical coordination — guidance, land and food requests (2026-10-08)
 
 - Active writer: Codex on `codex/guidance-land-contracts`, starting from main `312fbe1`. The isolated logic worktree preserves unrelated unfinished mobile edits in the original checkout. Codex owns new ingredient-help, land-discovery and food-request rules/content/UI, state/action wiring, and tests.
 - Shared view behavior: Codex owns incidental speech suppression in `src/view/people-view.mjs`, staged reuse of existing land models in a new view module, and their input routing in `src/main.mjs`. Existing palettes, lighting, model geometry, icon rendering and effect appearance remain with Claude. No binary assets are requested for this slice.
 - The existing optional picnic props are already integrated through PR #18. This pass adds one paid parcel's usable clearing and optional keepsake, plus optional connected food requests; company hiring, later chapters, bakery parallel slots and the lighthouse are outside this delivery. Final handoff commit and validation will be recorded with the PR.
 
-### Integration follow-up — 2026-10-08, AR-010 delivered
+### Historical integration follow-up — 2026-10-08, AR-010 delivered
 
 - This note supersedes only the original AR-010 waiting-for-art/placement reservation above. Main `e8f09a5` and Claude's PR #13 delivery `6f312aa` are merged into the Codex integration branch at `94d1b8e`. Newer main icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth-plan changes are preserved.
 - **Active writer: Codex (root coordinating its logic agents)** owns `src/view/exploration-view.mjs` and `src/content/exploration-sites.mjs` for staged loading, visibility and picking, plus `src/main.mjs` boot and canvas-tap routing through `world.exploration.pick()`. The existing farmhouse radial menu remains; no new radial edits are needed for this integration. Codex also owns the existing exploration rules/UI and bilingual prose/icon binding. At most one closed/open model is visible per site; unavailable future sites have no pick target. Object taps open explicit controls and never spend resources or grant a reward themselves.
