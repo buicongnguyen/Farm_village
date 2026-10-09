@@ -4,7 +4,7 @@ export const STAGES = [
     milestones: [{ name: 'Repair the feed mill and coop', test: 'farm' }, { name: 'Welcome the first family', test: 'family' }] },
   { id: 'orchard', name: 'The orchard', goal: 'Plant an orchard', level: 4, version: '0.4',
     milestones: [{ name: 'Pick nine cherries', test: 'cherries' }, { name: 'Build a fruit stand', test: 'stand' },
-      { name: 'Give Biscuit a kennel', test: 'kennel' }, { name: 'Reopen the clinic', test: 'clinic' }] },
+      { name: 'Give {pet:dog:short} a kennel', test: 'kennel' }, { name: 'Reopen the clinic', test: 'clinic' }] },
   { id: 'meadow', name: 'The meadow', goal: 'Buy the east meadow', level: 6, version: '0.5', planned: true },
   { id: 'river', name: 'Down to the river', goal: 'Reach the river', level: 9, version: '0.6', planned: true },
   { id: 'village', name: 'A village to be proud of', goal: 'Make Hollowbrook a home', level: 13, version: '0.7', planned: true },
@@ -14,9 +14,9 @@ export const STAGES = [
 ];
 export const JOURNEY_UNLOCKS = [
   { name: 'Cherry tree', level: 4, kind: 'cherry_tree' }, { name: 'Fruit stand', level: 4, kind: 'fruit_stand' },
-  { name: "Biscuit's kennel", level: 5, kind: 'kennel' }, { name: 'School', level: 6, kind: 'school' },
+  { name: "{pet:dog:short}'s kennel", level: 5, kind: 'kennel' }, { name: 'School', level: 6, kind: 'school' },
   { name: 'Clinic', level: 6, kind: 'clinic' },
   { name: 'East meadow and land deeds', level: 6, version: '0.5', planned: true },
   { name: 'Goats and the dairy', level: 8, version: '0.5', planned: true },
-  { name: 'Miso and the barn', level: 8, version: '0.5', planned: true },
+  { name: '{pet:cat:short} and the barn', level: 8, version: '0.5', planned: true },
 ];

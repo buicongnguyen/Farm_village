@@ -12,12 +12,13 @@ import { REPAIR_LESSON, LEARNING_MEMORIES } from '../src/content/learning.mjs';
 import { SCHOOL_MEMORY } from '../src/content/school-activity.mjs';
 import { schoolQuestions } from '../src/core/school-state.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-learning'); mkdirSync(shots, { recursive: true });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 const panel = page => page.locator('.panel:not([hidden])');
 const saved = page => page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
 function fixture() {

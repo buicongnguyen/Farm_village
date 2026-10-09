@@ -64,7 +64,7 @@ export class Guide {
     const key = `${this.index}|${t(step.text)}`;
     if (this.el.hidden || this.key !== key) {
       this.key = key; this.el.classList.remove('expanded');
-      this.el.innerHTML = `${faceHtml('ada', 'face')}<div class="say"><b>${t('Ada')}</b><p>${t(step.text)}</p>
+      this.el.innerHTML = `${faceHtml('ada', 'face')}<div class="say"><b>${t('{person:ada:display}')}</b><p>${t(step.text)}</p>
         <div class="guide-buttons">${step.last ? `<button class="btn primary" data-g="skip">${t('Got it')}</button>` : `<button class="btn" data-g="next">${t('I know how')}</button><button class="btn ghost" data-g="skip">${t('Skip tutorial')}</button>`}</div></div>`;
       if (this.el.hidden) { this.el.hidden = false; this.el.classList.remove('enter'); void this.el.offsetWidth; this.el.classList.add('enter'); }
     }
@@ -93,7 +93,7 @@ export class Guide {
       ${panels.length > 1 ? `<div class="dots">${panels.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}</div>` : '';
     return `<div class="chapter">${strip}<small>${t('Chapter {n}', { n: ch.id })}${ch.teaser ? ` · ${t('Coming soon')}` : ''}</small><h2>${t(ch.title)}</h2><p class="sub">${t(ch.subtitle)}</p>
       ${ch.id === 1 ? `<div class="ribbon">${t(VILLAGE_NAME)}</div>` : ''}<p>${t(ch.text)}</p>
-      ${ch.ada ? `<p class="ada">${faceHtml('ada', 'mini-face')}<span><b>${t('Ada')}:</b> “${esc(t(ch.ada))}”</span></p>` : ''}
+      ${ch.ada ? `<p class="ada">${faceHtml('ada', 'mini-face')}<span><b>${t('{person:ada:display}')}:</b> “${esc(t(ch.ada))}”</span></p>` : ''}
       <button class="btn primary big" data-close>${ch.id === 1 ? t('Begin') : t('Continue')}</button></div>`;
   }
   /** The story panels crossfade every few seconds (not with reduced motion); a missing picture has already dropped out. */

@@ -6,13 +6,14 @@ import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
 import { N } from '../src/content/world.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 import { pack } from '../src/kit/save.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const fixed = Object.entries(ADVICE_TOPICS).flatMap(([id, topic]) => (topic.contexts ?? []).map(context => `${id}:${context}`));
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 let failures = 0;
@@ -64,7 +65,7 @@ async function openIdea(page, id, lang, focus = true) {
   const content = await detail.textContent();
   expect(content.includes(tr(lang, ADVICE_TOPICS[id].title)), `wrong localized title for ${id}`);
   // For lines without parameters this also verifies June's exact, language-specific voice.
-  if (!ADVICE_TOPICS[id].line.includes('{')) expect(content.includes(tr(lang, ADVICE_TOPICS[id].line)), `wrong speaker line for ${id}`);
+  if (!/\{\w+\}/.test(tr(lang, ADVICE_TOPICS[id].line))) expect(content.includes(tr(lang, ADVICE_TOPICS[id].line)), `wrong speaker line for ${id}`);
   expect(await page.evaluate(() => [...document.querySelectorAll('.panel:not([hidden])')].every(el => el.scrollWidth <= el.clientWidth + 2)
     && document.documentElement.scrollWidth <= innerWidth), `overflow at 130% text for ${id}`);
 }

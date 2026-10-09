@@ -63,7 +63,7 @@ export function renderMail(s, now) {
   const when = at => new Date(at).toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-GB', { day: 'numeric', month: 'short' });
   return `${rent ? `<div class="rent-row">${glyph('mail', 'g big')}<div><b>${t('Rent from your cottages')}</b><small>${coinMark()} ${num(rent)}</small></div><button class="btn primary" data-do="collectRent">${t('Collect')}</button></div>` : ''}
     <div class="letters">${mail.map(m => `<button class="letter-row ${m.read ? '' : 'new'}" data-do="readLetter" data-id="${m.id}">${faceHtml(m.from)}<span class="lr-text"><b>${t('From {name}', { name: nameOf(m.from) })}</b><small>${!m.read && letterPrerequisite(s, m.id) ? t('Read the earlier letter first') : when(m.at)}</small></span>${m.read ? '' : `<i class="badge">${t('New')}</i>`}</button>`).join('')
-      || `<p class="empty">${t('No letters yet. Ada says the post is slow up here.')}</p>`}</div>`;
+      || `<p class="empty">${t('No letters yet. {person:ada:short} says the post is slow up here.')}</p>`}</div>`;
 }
 export const unreadCount = unread;
 

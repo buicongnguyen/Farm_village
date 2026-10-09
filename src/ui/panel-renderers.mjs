@@ -98,7 +98,7 @@ export function renderPanel() {
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'clinic') {
       if (growthRecord.hospitalAt !== null) { title = t('Our little hospital'); icon = 'hospital'; }
-      body = `<div class="clinic-staff">${iconHtml(growthRecord.hospitalAt !== null ? 'hospital' : 'clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('Dr Hazel is the doctor, Marisol is the nurse, and Grace cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for Ellis.')}</p><button class="btn go wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+      body = `<div class="clinic-staff">${iconHtml(growthRecord.hospitalAt !== null ? 'hospital' : 'clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('{person:hazel:display} is the doctor, {person:marisol:short} is the nurse, and {person:grace:short} cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for {person:ellis:short}.')}</p><button class="btn go wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
     }
     else if (o.kind === 'fruit_stand') {
       const st = s.fruitStand, spare = Object.entries(s.barn.items).filter(([g]) => GOODS[g]?.kind === 'fruit' && barn.free(s, g) > 0);

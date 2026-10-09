@@ -4,6 +4,7 @@
 // "Try again", and one failed download of the Vietnamese lines never breaks the language button.
 // npm run build:test; node scripts/serve-dist.mjs 5286; GAME_URL=http://127.0.0.1:5286/ node tests/review.browser.mjs
 import { chromium } from 'playwright';
+import { personName } from '../src/content/character-names.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/', SHOTS = process.env.SHOTS;
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const PHONE = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true };
@@ -121,16 +122,16 @@ await check('phone: speech bubbles stay inside the screen at both edges', async 
   const { ctx, page, errors } = await open();
   await page.evaluate(() => farm.game.do('setting', { key: 'daylight', value: 'always' }));
   await page.waitForFunction(() => [...farm.people.walkers.values()].some(w => !w.indoors));
-  const out = await page.evaluate(async () => {
+  const out = await page.evaluate(async line => {
     const pv = farm.people, w = [...pv.walkers.values()][0]; if (!w) return 'no walkers';
     const res = [];
     for (const dx of [-60, 60]) {
-      farm.view(30, (w.x ?? 0) + dx, w.z ?? 0); pv.say(w, 'Granny Ada says Grandpa talks to fish. Is that true? Can fish talk back?', 3000);
+      farm.view(30, (w.x ?? 0) + dx, w.z ?? 0); pv.say(w, line, 3000);
       await new Promise(r => setTimeout(r, 200)); pv.placeBubbles();
       const r = w.bubble.getBoundingClientRect(); res.push([Math.round(r.left), Math.round(r.right)]);
     }
     return res;
-  });
+  }, `${personName('ada')} says Grandpa talks to fish. Is that true? Can fish talk back?`);
   expect(Array.isArray(out), out);
   for (const [l, r] of out) expect(l >= 0 && r <= 390, `a bubble spans ${l}..${r} on a 390 px screen`);
   expect(!errors.length, errors.join('\n'));

@@ -3,6 +3,8 @@
 // Vietnamese line (the coverage rule from Willowmere's scripts/vi-coverage.mjs).
 // The Vietnamese lines (about 85 KB) are their own chunk: loaded at boot for a Vietnamese reader (languageReady), and on
 // the first switch to Vietnamese for everyone else. Until they are in, t() gives the English.
+import { resolveNames } from '../content/character-names.mjs';
+import { LEGACY_NAME_TEXT } from '../content/legacy-name-text.mjs';
 let VI = null, viLoading = null;
 // A failed download is not cached: the next call tries again. The browser remembers a module URL that failed, so the
 // retry asks for the same chunk with a fresh query (Chrome names the URL in the error; elsewhere it simply tries again).
@@ -44,12 +46,19 @@ export const languageReady = (language === 'vi' ? loadVietnamese().catch(() => {
 export const onLanguageChange = f => (listeners.add(f), () => listeners.delete(f));
 
 const fill = (text, params) => params ? text.replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m)) : text;
+function render(lang, text, params) {
+  // Old saves keep their original authored sentences and IDs; only their display key changes.
+  const key = Object.hasOwn(LEGACY_NAME_TEXT, text) ? LEGACY_NAME_TEXT[text] : text;
+  const translated = lang === 'vi' ? VI?.[key] ?? key : key;
+  // Resolve names before inserting arbitrary parameter values (including the player's chosen name).
+  return fill(resolveNames(translated, lang), params);
+}
 /** Translate an English string (with {placeholders}) into the current language. */
-export const t = (text, params) => fill(language === 'vi' ? VI?.[text] ?? text : text, params);
+export const t = (text, params) => render(language, text, params);
 /** Translate content names nested in a message's parameters (leave counts as numbers). */
 export const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 /** Same, for a fixed language (tests, saves). */
-export const tIn = (lang, text, params) => fill(lang === 'vi' ? VI?.[text] ?? text : text, params);   // vi once loaded
+export const tIn = (lang, text, params) => render(lang, text, params);   // vi once loaded
 /** Format numbers with local separators; whole numbers by default, fixed decimals for rates. */
 export const num = (n, digits = 0) => {
   const locale = language === 'vi' ? 'vi-VN' : 'en-US';

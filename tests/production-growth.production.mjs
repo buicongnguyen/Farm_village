@@ -14,13 +14,14 @@ import { HOSPITAL_MEMORY, BULK_REQUESTS } from '../src/content/village-growth.mj
 import { TRUCK } from '../src/content/economy.mjs';
 import { SHOP_WAIT_MS } from '../src/content/shops.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-growth-production'); mkdirSync(shots, { recursive: true });
 const label = new URL(URL_).hostname.replace(/[^a-zA-Z0-9.-]/g, '-');
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 
 function fixture() {
   const now = Date.now(), s = newGame(now, 98747, { restore: true }), o = parcelOrigin(START_PARCEL);

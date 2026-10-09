@@ -1,5 +1,12 @@
 # Changelog
 
+## Localized playful cast — 2026-10-09
+
+- English and Vietnamese now use the selected local aliases in speaker labels, story references, letters, family labels and named-animal text. Vietnamese keeps relationship titles and each speaker's pronouns; the desk-name joke and signatures work with the new names.
+- Explicit identity references preserve player-entered text and ordinary words. Exact compatibility entries render old saved order/wish sentences with current names without changing their goods, payments or progress.
+- Language switches clear earlier speech/toasts and translate delayed visitor messages when shown. Imported player-name entities stay literal in Settings. Story cards and Friends remain readable on phones at 130% text.
+- Korean/Japanese name mappings are prepared for the current cast; full UI translations remain separate work. Save/profile IDs and all art assets stay compatible. [Scope and verification](docs/LOCALIZED-CAST.md).
+
 ## Clearer guidance and restoration art — implemented and validated (2026-10-09)
 
 - One roadmap tracker and compact status chips reduce duplicate HUD entries; labelled menu buttons, larger touch targets and stable timer controls improve phone use with enlarged text.

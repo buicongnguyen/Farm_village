@@ -11,11 +11,11 @@ export const CONTRACTS = [
     id: 'picnic-drinks', title: 'Something bright to pour', person: 'lan', icon: 'carrot_juice', level: 6,
     need: { carrot_juice: 2 }, coins: 70,
     line: 'Shall we plan a little picnic? Two bottles of carrot juice would be a lovely start.',
-    ribbonLine: 'Ada showed me the picnic ribbon you found. Shall we fill a basket to go with it? Two bottles of carrot juice would be a lovely start.',
+    ribbonLine: '{person:ada:short} showed me the picnic ribbon you found. Shall we fill a basket to go with it? Two bottles of carrot juice would be a lovely start.',
     method: 'Grow carrots, then make carrot juice at a working juice press.',
     memory: {
       title: 'The first bottles in the basket',
-      text: 'Lan packs the two bottles of carrot juice and leaves room for the rest of the picnic menu.',
+      text: '{person:lan:short} packs the two bottles of carrot juice and leaves room for the rest of the picnic menu.',
       lines: [
         { who: 'lan', text: 'Such a cheerful colour! The first two bottles are packed.' },
         { who: 'pip', text: 'They look like bottled sunshine!' },
@@ -30,11 +30,11 @@ export const CONTRACTS = [
     method: 'Grow wheat, gather eggs from fed hens, and make two batches of noodles at a working noodle factory.',
     memory: {
       title: 'Noodles worth gathering for',
-      text: 'Four portions of noodles join the picnic menu. Lan brings the bowls, and Pip counts the chopsticks.',
+      text: 'Four portions of noodles join the picnic menu. {person:lan:short} brings the bowls, and {person:pip:short} counts the chopsticks.',
       lines: [
         { who: 'lan', text: 'Four portions, all ready. I will bring my favourite bowls.' },
         { who: 'pip', text: 'Two chopsticks each! I counted them in pairs.' },
-        { who: 'june', text: 'That will help us share them out, Pip.' },
+        { who: 'june', text: 'That will help us share them out, {person:pip:short}.' },
       ],
     },
   },
@@ -45,7 +45,7 @@ export const CONTRACTS = [
     method: 'Use fresh noodles and carrots to make instant noodles. Make the extra carrot juice separately at the juice press.',
     memory: {
       title: 'Everyone brought something',
-      text: 'Beside the pond, Lan sets out the noodles and carrot juice. June spreads the blanket, and Pip gives everyone a cup. The picnic they planned is finally here.',
+      text: 'Beside the pond, {person:lan:short} sets out the noodles and carrot juice. {person:june:short} spreads the blanket, and {person:pip:short} gives everyone a cup. The picnic they planned is finally here.',
       lines: [
         { who: 'lan', text: 'Fresh noodles, noodle cups, and carrot juice. What a lovely meal we made together.' },
         { who: 'pip', text: 'Everybody has a cup! Now I can sit down too.' },

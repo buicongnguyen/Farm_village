@@ -2,7 +2,13 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
-Current pass, 2026-10-09: `codex/clearer-guidance-art` implements compact HUD/status layout, bilingual contextual invitations to existing discoveries/repairs/school, and Claude's hospital-fit/AR-013 delivery. [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) is implemented and validated; see the [release scope](CLEARER-GUIDANCE-AND-ART.md). The [next meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) fixes the first art IDs while keeping its gameplay and tuning in a separate release. Earlier release paragraphs and their test counts below are historical.
+Current naming follow-up, 2026-10-09: `codex/localized-cast` implements the current English/Vietnamese aliases,
+explicit authored references, localized signatures and exact old-order/wish compatibility. Local verification is
+complete; [LOCALIZED-CAST.md](LOCALIZED-CAST.md) records the checks and release handoff. Korean/Japanese aliases are prepared data,
+not complete language editions. Later cast introductions, meadow/dairy gameplay and the wider roadmap remain
+separate tasks; the existing people, family IDs, progression and rewards are preserved.
+
+Previous pass, 2026-10-09: `codex/clearer-guidance-art` implements compact HUD/status layout, bilingual contextual invitations to existing discoveries/repairs/school, and Claude's hospital-fit/AR-013 delivery. [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) is implemented and validated; see the [release scope](CLEARER-GUIDANCE-AND-ART.md). The [next meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) fixes the first art IDs while keeping its gameplay and tuning in a separate release. Earlier release paragraphs and their test counts below are historical.
 
 Previous release, [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28), deployed at `027ec20`: `codex/learning-garden-school` added the first permanent lesson, useful bench repair, project-only energy/free recovery, strawberry planting and a replayable classroom activity. It included Claude's AR-011/AR-012 PR #27. [Scope, costs and acceptance](LEARNING-GARDEN-SCHOOL.md). PR #26's earlier production/civic slice deployed at `e05c800`.
 

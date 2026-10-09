@@ -2,7 +2,7 @@ import { isWorking } from './working.mjs';
 import { normalizeSchool, schoolDifficulty, schoolQuestions, schoolSignature, schoolNextRound, schoolCompletedCount } from './school-state.mjs';
 
 const stamp = v => Number.isSafeInteger(v) && v >= 0;
-const reason = s => (s.story?.chapter ?? 0) < 4 ? 'Meet Cora in the school-opening story first'
+const reason = s => (s.story?.chapter ?? 0) < 4 ? 'Meet {person:cora:short} in the school-opening story first'
   : !Object.keys(s.placed ?? {}).some(id => s.placed[id]?.kind === 'school' && isWorking(s, id)) ? 'Restore the school before playing the basket game' : null;
 
 export function schoolStatus(s, now) {

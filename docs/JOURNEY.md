@@ -205,6 +205,11 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Current naming follow-up, 2026-10-09: [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34), `codex/localized-cast`, implements the current cast's independent English and
+Vietnamese aliases, explicit story references and old-save text compatibility. **Implemented and locally validated**;
+see [LOCALIZED-CAST.md](LOCALIZED-CAST.md) for checks and release handoff. Korean/Japanese names are prepared aliases only. This does not
+introduce later characters, add language-menu options or complete any remaining roadmap stage.
+
 Current follow-up, 2026-10-09: [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) is implemented and validated for compact HUD/contextual guidance, the hospital footprint correction and AR-013 bench art. [Scope](CLEARER-GUIDANCE-AND-ART.md). PR #28 already shipped garden learning, project-only energy/free rest, strawberries, school baskets and AR-011/AR-012's first delivery. The [first goat/dairy contract](MEADOW-DAIRY-SCOPE.md) is separately scoped; its gameplay is not part of PR #31.
 
 Historical PR #26 validation record, 2026-10-09: [parallel trays, village shops and civic/company growth](PRODUCTION-AND-VILLAGE-GROWTH.md)
@@ -239,7 +244,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
-| Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
+| Cross-stage follow-up: playful localized names | Implemented and validated on `codex/localized-cast`: 417 native tests, pace, 32 component suites, 28 smoke checks and 14 production contexts pass. [Scope and release handoff](LOCALIZED-CAST.md). Current English/Vietnamese cast, pets and household labels use explicit identity references; old orders/wishes keep their saved facts. Korean/Japanese aliases are prepared data only; later cast, full translations and the wider roadmap remain separate work. |
 | Cross-stage follow-up: picnic discovery trail | Live through [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md). |
 | Cross-stage follow-up: guidance, covered land and food story | Live through [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24): truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
 | Cross-stage follow-up: parallel trays and useful shops | Implemented and validated: independent trays with legacy timing, obtainable orders, lake/plaza customers and held-stock-safe quotes. Combined validation: 355 native, pace, 23 component suites, 28 smoke checks and eight production contexts. Release PR records deployment/live verification. |

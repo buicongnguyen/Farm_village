@@ -46,7 +46,7 @@ export function tickLearning(ctx) {
 }
 export const actions = {
   inspectLearning(ctx) {
-    if (!eligible(ctx.s, ctx.now)) return ctx.fail('Meet Minh after the first family arrives');
+    if (!eligible(ctx.s, ctx.now)) return ctx.fail('Meet {person:minh:short} after the first family arrives');
     if (!learningStamp(ctx.now)) return ctx.fail('The project clock is unavailable');
     const l = normalizeLearning(ctx.s);
     if (l.introducedAt !== null) return ctx.fail('This repair lesson is already open');
@@ -55,7 +55,7 @@ export const actions = {
   },
   answerRepairLesson(ctx, { question, choice }) {
     const l = normalizeLearning(ctx.s), q = REPAIR_LESSON[l.lessonIndex];
-    if (!eligible(ctx.s, ctx.now)) return ctx.fail('Meet Minh after the first family arrives');
+    if (!eligible(ctx.s, ctx.now)) return ctx.fail('Meet {person:minh:short} after the first family arrives');
     if (!learningStamp(ctx.now)) return ctx.fail('The project clock is unavailable');
     if (l.introducedAt === null || l.learnedAt !== null || !q || q.id !== question) return ctx.fail('Follow the next repair question');
     if (!q.choices.some(c => c.id === choice)) return ctx.fail('Choose one of the lesson answers');

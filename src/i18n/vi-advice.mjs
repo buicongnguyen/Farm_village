@@ -64,7 +64,7 @@ export const VI_ADVICE = {
   'Can we go fishing? I want to see what comes up this time!': 'Nhà mình đi câu được không? Con muốn xem lần này câu được gì!',
   'The pond is open for a new cast. Bait is optional, and the other jobs can wait.': 'Ao đã sẵn sàng cho lượt câu mới. Không có mồi vẫn câu được, còn những việc khác có thể để sau.',
   'Our first loaf from the oven': 'Mẻ bánh mì đầu tiên của nhà mình',
-  'Your first loaf from the oven, dear! Ellis always claimed the end piece. Shall we save it for him?': 'Bánh mì đầu tiên cháu tự nướng đấy! Ông Ellis lúc nào cũng xí phần đầu bánh. Bà cháu mình để dành cho ông nhé?',
+  'Your first loaf from the oven, dear! {person:ellis:short} always claimed the end piece. Shall we save it for him?': 'Bánh mì đầu tiên cháu tự nướng đấy! Ông {person:ellis:short} lúc nào cũng xí phần đầu bánh. Bà cháu mình để dành cho ông nhé?',
   'You collected the first bread made on this farm. A small beginning worth remembering.': 'Bạn đã nhận mẻ bánh mì đầu tiên làm ở trang trại. Một khởi đầu nho nhỏ, đáng để nhớ.',
   'A classroom full of possibility': 'Lớp học lại mở cửa',
   'A bell and a classroom, all ready again. Thank you. Now the children have a school to come to.': 'Có chuông, có lớp học, mọi thứ đã sẵn sàng trở lại. Cô cảm ơn cháu. Giờ các em đã có trường để đến rồi.',
