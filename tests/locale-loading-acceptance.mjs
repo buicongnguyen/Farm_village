@@ -40,14 +40,19 @@ export async function runLocaleLoadingAcceptance() {
   let failures = 0, checks = 0;
   async function run(name, fn, locale = 'en-US') {
     checks++; const context = await browser.newContext({ locale, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, timezoneId: 'Asia/Seoul' });
+    let page;
     try {
-      const page = await context.newPage(), errors = []; page.setDefaultTimeout(15000);
+      page = await context.newPage(); const errors = []; page.setDefaultTimeout(15000);
       page.on('pageerror', e => errors.push(e.message));
       await fn(page, context);
       expect(!errors.length, errors.join('\n'));
       console.log(`ok   locale loading: ${name}`);
     } catch (e) { failures++; console.log(`FAIL locale loading: ${name}\n${e.stack}`); }
-    finally { await context.close(); }
+    finally {
+      // Live requests may still be reading a routed response when the scenario finishes.
+      // Drain handlers before disposing their responses; active request errors remain failures.
+      try { await page?.unrouteAll({ behavior: 'wait' }); } finally { await context.close(); }
+    }
   }
   try {
     for (const { id, locale } of LANGUAGES) await run(`browser ${locale} selects complete ${id} menu`, async (page, context) => {

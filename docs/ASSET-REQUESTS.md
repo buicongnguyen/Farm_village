@@ -1,13 +1,14 @@
 # Asset requests
 
-### Active logic handoff — Korean and Japanese editions (2026-10-09)
+### Release handoff — Korean and Japanese editions (2026-10-09)
 
 - Codex owns `codex/korean-japanese`, based on deployed main `15c5738` (PR #34), for complete language catalogs, lazy locale loading, menu/settings options, formatting and language/save/layout tests. Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
 - Work is confined to logic, interface text/layout, documentation and tests. Character/save/model IDs and gameplay numbers stay fixed. Existing art, palette, lighting, wordmark and assets remain Claude's; this requests no binaries or new art. CJK text uses the existing system-font fallback, subject to actual rendered-font and phone checks.
-- Phone review found that CSS text zoom also enlarged speech coordinates. Codex is the active writer for `PeopleView.placeBubbles()` on this branch, correcting coordinate conversion and viewport bounds only; bubble colours, typography and effects remain unchanged. This shared-function reservation ends with the language release.
-- PR #34's shared-view reservation has ended. Only the new `placeBubbles()` correction above is reserved; the rest of `PeopleView`, AR-002, the tree pack and walk-route work are free for their owners. The meadow/dairy gameplay contract remains the next gameplay slice.
+- Phone review found that CSS text zoom also enlarged speech coordinates. Codex corrected `PeopleView.placeBubbles()` coordinate conversion and viewport bounds only; bubble colours, typography and effects remain unchanged. This shared-function reservation ended when PR #35 merged.
+- The PR #34 and PR #35 shared-view reservations have ended. AR-002, the tree pack and walk-route work are free for their owners. The meadow/dairy gameplay contract remains the next gameplay slice.
 - Each catalog must cover the complete current English source inventory, including mobile help and adaptive story. The language options ship together with validated catalogs; naming aliases alone do not constitute an edition. See [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for scope and validation.
 - Local validation is complete: 428 native tests, pace, all 34 component suites, 28 smoke checks and 54 production contexts pass; production first-load code is 1,093,080 bytes. Follow the release PR for CI, Pages and live acceptance. New on-screen text now needs all three translated catalogs; `AGENTS.md` and the catalog tests enforce that shared maintenance contract.
+- PR #35 deployed successfully at `ceef19c`; all 35 published code/style files match the tested build and 46 targeted live contexts pass. The post-deploy test cleanup fix waits for intercepted downloads before closing a browser context; it changes no game code. [Verification record](LANGUAGE-EDITIONS.md).
 
 ### Active logic handoff — localized cast (2026-10-09)
 

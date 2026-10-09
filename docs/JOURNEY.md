@@ -246,7 +246,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 
 | Stage | Status |
 |---|---|
-| Cross-stage follow-up: Korean/Japanese editions | Implemented and locally validated on `codex/korean-japanese`: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 production contexts pass. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
+| Cross-stage follow-up: Korean/Japanese editions | Live through [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35) (`ceef19c`): 428 native tests, pace, 34 component suites, 28 smoke checks, 54 local production contexts and 46 live contexts pass; CI and Pages passed. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
 | 1. Homecoming | done (v0.3) |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
