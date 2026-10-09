@@ -1,5 +1,12 @@
 # Changelog
 
+## Clearer guidance and restoration art — 2026-10-09
+
+- One roadmap tracker and compact status chips reduce duplicate HUD entries; labelled menu buttons, larger touch targets and stable timer controls improve phone use with enlarged text.
+- Contextual English/Vietnamese ideas lead to existing picnic clues, land inspection, garden work/free rest, school games and gentle fishing/stone/street opportunities. Reading or following an idea spends nothing; read/deferred topics persist and old business reminders make room for new activities.
+- Integrates Claude's hospital footprint correction (PR #29) and all three potting-bench models (PR #30), rebuilding their shared decor kit from the combined Blender source. Hospital bounds cover all rotations and adjacent placements; bench art preserves all three repair steps and handles late loading.
+- Existing saves, opening coins and lucky rewards are preserved. The next meadow/dairy art and logic contract is documented separately; its gameplay is not part of this release. See [delivery details](docs/CLEARER-GUIDANCE-AND-ART.md).
+
 ## Garden repairs, strawberries and school baskets — implemented and validated (2026-10-09)
 
 - Minh's optional practical lesson leads to a three-step potting-bench restoration, two saved family memories and strawberries at level 4. The project costs 80 coins and 50 energy; its 100-point reserve recovers while away or through a free 30-second rest. Everyday farming, cooking, fishing, sales and normal repairs remain available at zero energy.

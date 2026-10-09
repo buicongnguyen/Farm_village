@@ -8,10 +8,8 @@ import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
 import { journeyOf } from '../core/journey.mjs';
 import { nextTask } from '../core/next.mjs';
-import { rentWaiting } from '../core/homes.mjs';
-import { questsOf, ready as questReady } from '../core/quests.mjs';
 import { shortTime } from '../core/clock.mjs';
-import { trucksOf, truckCoins } from '../core/market.mjs';
+import { hudStatus } from './hud-status.mjs';
 import { FISH_TABLE, GOODS } from '../content/goods.mjs';
 const FISH_NAMES = Object.fromEntries(FISH_TABLE.map(f => [f.id, f.name]));
 import { thingName } from './repair-ui.mjs';
@@ -30,7 +28,6 @@ import { unreadSchool } from '../core/school-activity.mjs';
 import { unreadAdvice } from '../core/advice.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
-import { STEPS } from '../content/projects.mjs';
 import { RUIN_NAMES } from '../content/world.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
@@ -43,7 +40,7 @@ export class Hud {
     this.el.innerHTML = `
       <div class="hud-top"><div class="hud-stats"><div class="level" data-hud="level"><svg viewBox="0 0 36 36"><circle class="ring-bg" cx="18" cy="18" r="15"/><circle class="ring" cx="18" cy="18" r="15" pathLength="100"/></svg><b></b></div>
         <div class="pill coins" data-hud="coins">${iconHtml('ui:coin', '', 'pill-icon')}<b></b></div></div>
-        <button class="village-name" data-act="village" data-hud="village"></button>
+        <button class="village-name hud-tracker" data-act="village" data-hud="village"><span class="tracker-name"></span><span class="tracker-goal"></span></button>
         <div class="hud-status" data-hud="status"></div></div>
       <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
@@ -74,6 +71,8 @@ export class Hud {
     root.appendChild(this.el);
     game.on(r => { this.update(); if (!r.ok && r.reason) this.refuse(r.reason, r.params); for (const e of r.events ?? []) this.event(e); });
     onLanguageChange(() => this.update());
+    window.addEventListener('resize', () => this.refreshStatus());
+    new MutationObserver(() => this.refreshStatus()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     this.update(); setInterval(() => { this.refreshNext(); this.refreshStatus(); this.refreshTodayMessages(); }, 1000);
   }
   update() {
@@ -83,18 +82,31 @@ export class Hud {
     if (s.level !== this.level) { this.level = s.level; this.pulse(q('[data-hud="level"]')); }
     this.rollCoins(s.coins);
     const journey = journeyOf(s);
-    q('[data-hud="village"]').setAttribute('aria-label', t('Roadmap'));
-    q('[data-hud="village"]').title = t(journey.stage.goal);
-    q('[data-hud="village"]').textContent = `${t(VILLAGE_NAME)} · ${t(journey.stage.name)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;   // how far the village is restored; a tap opens the projects
+    const goal = `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;
+    q('[data-hud="village"]').setAttribute('aria-label', `${t('Roadmap')}: ${t(journey.stage.name)} · ${goal}`);
+    q('[data-hud="village"]').title = `${t(journey.stage.name)} · ${goal}`;
+    q('.tracker-name').textContent = t(VILLAGE_NAME);
+    q('.tracker-goal').textContent = goal;
+    q('[data-hud="coins"]').setAttribute('aria-label', `${t('Coins')}: ${num(s.coins)}`);
+    q('[data-hud="coins"]').title = num(s.coins);
     q('[data-act="lang"]').textContent = getLanguage() === 'vi' ? 'EN' : 'VI';
     // farm profiles are chosen on the main menu (main.mjs) only
     const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
-    for (const [act, text] of Object.entries(label)) q(`[data-act="${act}"]`)?.setAttribute('aria-label', t(text));
+    for (const [act, text] of Object.entries(label)) {
+      const button = q(`[data-act="${act}"]`); if (!button) continue;
+      button.setAttribute('aria-label', t(text)); button.title = t(text);
+      if (button.closest('.hud-right, .hud-tools') && act !== 'lang') {
+        let caption = button.querySelector('.hud-label');
+        if (!caption) { caption = document.createElement('span'); caption.className = 'hud-label'; caption.setAttribute('aria-hidden', 'true'); button.appendChild(caption); }
+        caption.textContent = t(act === 'projects' ? 'Projects' : act === 'orders' ? 'Orders' : text);
+      }
+    }
     this.refreshStatus();
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
     badge.textContent = can || ''; badge.hidden = !can;
+    q('[data-act="orders"]').setAttribute('aria-label', `${t('Order board')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`);
     this.refreshTodayMessages();
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
     q('[data-act="projects"] .badge').hidden = !canWork;
@@ -195,31 +207,29 @@ export class Hud {
     setTimeout(check, 2600);
     return el;
   }
-  setMode(mode) { this.el.dataset.mode = mode; }
-  /** The status stack at the top left: the goal, the order board, rent, the truck and the pond, each a tap away. */
+  setMode(mode) { this.el.dataset.mode = mode; this.refreshStatus(); }
+  /** Compact destinations; updating a timer preserves the focused button instead of rebuilding the whole stack. */
   refreshStatus() {
-    const s = this.game.s, now = this.game.now, box = this.el.querySelector('[data-hud="status"]'), rows = [];
-    const journey = journeyOf(s);
-    rows.push({ act: 'roadmap', ic: iconHtml('ui:projects', '', 'mini'), text: `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}` });
-    const step = currentStep(s);
-    if (step) rows.push({ act: 'projects', ic: iconHtml('ui:projects', '', 'mini'), text: s.mode === 'restore' && step.restore ? t(step.restore).split('.')[0] : t(step.name) });
-    const qs = questsOf(s), qr = qs.list.filter(q => questReady(s, q)).length; rows.push({ act: 'quests', ic: iconHtml('ui:xp', '', 'mini'), text: `${t('Goals')}: ${qs.list.length}${qr ? ` · ${qr} ${t('ready')}` : ''}`, hot: qr > 0 });
-    const can = fillable(s); rows.push({ act: 'orders', ic: iconHtml('ui:orders', '', 'mini'), text: `${t('Orders')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`, hot: can > 0 });
-    const rent = rentWaiting(s, now); if (rent >= 5) rows.push({ act: 'rent', ic: iconHtml('ui:coin', '', 'mini'), text: `${t('Rent')}: ${num(rent)}`, hot: true });
-    // the trucks: takings to collect first, otherwise the next one home (and how many are on the road)
-    const units = s.truck ? trucksOf(s) : [], away = units.filter(u => u.away), takings = s.truck ? truckCoins(s) : 0;
-    if (takings) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t(units.length > 1 ? 'Trucks' : 'Truck')}: +${num(takings)}`, hot: true });
-    else if (away.length) rows.push({ act: 'market', ic: iconHtml('truck', '', 'mini'), text: `${t(units.length > 1 ? 'Trucks' : 'Truck')}: ${away.length > 1 ? `${away.length} · ` : ''}${shortTime(Math.max(0, Math.min(...away.map(u => u.backAt)) - now))}` });
-    const line = s.fishing?.line; if (line) rows.push({ act: 'pond', ic: iconHtml('perch', '', 'mini'), text: line.doneAt <= now ? t('A fish is biting!') : `${t('Fishing')}: ${shortTime(line.doneAt - now)}`, hot: line.doneAt <= now });
-    const html = rows.map(r => `<button class="status-row${r.hot ? ' hot' : ''}" data-status="${r.act}">${r.ic}<span>${r.text}</span></button>`).join('');
-    if (box.dataset.html !== html) { box.innerHTML = html; box.dataset.html = html; }
+    const box = this.el.querySelector('[data-hud="status"]'), rows = hudStatus(this.game.s, this.game.now);
+    for (const old of [...box.children]) if (!rows.some(r => r.act === old.dataset.status)) old.remove();
+    for (const row of rows) {
+      let button = box.querySelector(`[data-status="${row.act}"]`);
+      if (!button) { button = document.createElement('button'); button.dataset.status = row.act; button.innerHTML = `${iconHtml(row.icon, '', 'mini')}<span class="status-copy"><b></b><small></small></span><i class="badge ready" hidden></i>`; box.appendChild(button); }
+      const detail = row.coins != null ? `+${num(row.coins)}` : row.ms != null ? row.hot ? t('ready') : `${row.count > 1 ? `${row.count} · ` : ''}${shortTime(row.ms)}` : num(row.count);
+      const label = `${t(row.label)}: ${detail}${row.ready ? ` · ${row.ready} ${t('ready')}` : ''}`;
+      button.className = `status-row${row.hot || row.ready ? ' hot' : ''}`;
+      button.querySelector('b').textContent = t(row.label); button.querySelector('small').textContent = detail;
+      const badge = button.querySelector('.badge'); badge.textContent = row.ready || ''; badge.hidden = !row.ready;
+      button.setAttribute('aria-label', label); button.title = row.act === 'pond' && row.hot ? t('A fish is biting!') : label;
+    }
+    this.el.style.setProperty('--hud-stack-bottom', `${Math.ceil(this.el.querySelector('.hud-top').getBoundingClientRect().bottom)}px`);
   }
   /** The chip with the one most useful thing to do now; a tap goes there. */
   refreshNext() {
     const chip = this.el.querySelector('[data-act="next"]'), n = nextTask(this.game.s, this.game.now), s = this.game.s;
     chip.hidden = !n || s.story?.tutorial < 3 && s.mode === 'restore' || document.body.classList.contains('panel-open');
     if (!n) return; this.nextTask = n;
-    const ic = n.icon === 'wrench' ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b> ${t(n.key, n.params ? { ...n.params, good: t(GOODS[n.params.good]?.name ?? n.params.good) } : undefined)}`;
+    const ic = n.icon === 'wrench' ? glyph(n.icon, 'g') : iconHtml(n.icon, '', 'mini'), html = `${ic} <b>${t('Next')}:</b><span class="next-copy">${t(n.key, n.params ? { ...n.params, good: t(GOODS[n.params.good]?.name ?? n.params.good) } : undefined)}</span>`;
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */

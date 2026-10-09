@@ -571,8 +571,12 @@ lesson, a useful potting-bench project with generous project-only energy/free re
 replayable classroom activity. It integrates AR-011's hospital tier and AR-012's menu/small-icon delivery. Its release
 PR records combined checks and deployment; later phase outcomes are still separate work.
 
-**Separate remaining work:** AR-013 dedicated bench art, further skill branches, the compact HUD/status-stack layout,
-meadow/dairy, broader regions, more school activities, useful vehicle restoration and later chapters. Pearl/Bea's
+**Current follow-up in validation:** [clearer guidance and delivered art](CLEARER-GUIDANCE-AND-ART.md) integrates
+AR-013, the hospital footprint correction, compact HUD/status layout and contextual invitations to existing activities.
+The [meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) supplies first-delivery art IDs and proposed prices for a separate release.
+
+**Separate remaining work:** further skill branches, meadow/dairy gameplay, broader regions, more school activities,
+useful vehicle restoration and later chapters. Pearl/Bea's
 introductions, Ellis's permanent return, the water-rights repair sequence and the visible festival are not completed
 by optional company contracts. Later rows, especially phase 7, are groups of separate releases, not one PR or a size
 estimate.

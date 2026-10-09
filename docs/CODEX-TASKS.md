@@ -2,6 +2,8 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
+Current pass, 2026-10-09: `codex/clearer-guidance-art` implements compact HUD/status layout, bilingual contextual invitations to existing discoveries/repairs/school, and Claude's hospital-fit/AR-013 delivery. [Release scope](CLEARER-GUIDANCE-AND-ART.md). The [next meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) fixes the first art IDs while keeping its gameplay and tuning in a separate release. Earlier "next delivery" paragraphs below are historical.
+
 Next logic delivery, 2026-10-09: `codex/learning-garden-school` implements the first permanent lesson, useful bench repair, project-only energy/free recovery, strawberry planting and a replayable classroom activity. Claude's AR-011/AR-012 PR #27 is integrated for combined checks. [Scope, costs and acceptance](LEARNING-GARDEN-SCHOOL.md); publication is recorded by the release PR. PR #26's previous production/civic slice is already deployed at `e05c800`.
 
 Current status, 2026-10-09: the picnic trail/AR-010 shipped in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18), and ingredient guidance, the first covered plot and Lan's food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24). The `codex/production-village-growth` slice is implemented and validated: parallel trays, working shop customers and bounded civic/company progression, starting from `4377129` and integrating main `1add9a4`. **355 native tests, all 23 component browser suites, 28 smoke checks and eight production contexts pass; pace targets remain green.** The release PR records CI, Pages deployment and live verification. See [the current scope](PRODUCTION-AND-VILLAGE-GROWTH.md). Earlier release checklists retain their own historical test counts.

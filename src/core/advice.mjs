@@ -11,6 +11,7 @@ import { mayBuild, projectCost } from './projects.mjs';
 import { recipeOpen, collectableJobs } from './production.mjs';
 import { isWorking } from './working.mjs';
 import { canPlace, doorCell, roadReach } from './grid.mjs';
+import { followupAdvice } from './advice-followup.mjs';
 
 import { newAdvice, normalizeAdvice, ADVICE_CELEBRATIONS as celebrations } from './advice-state.mjs';
 export { newAdvice, normalizeAdvice };
@@ -129,8 +130,13 @@ function candidates(s, now) {
         result.push(topic('stand-invest', 'fruit-stand', { cost, good: GOODS[fruit].name, extra, sales: Math.ceil(cost / extra) }, { kind: 'catalogue', buildingKind: 'fruit_stand', ...spot })); }
     }
   }
+  // Keep urgent order/source and income guidance first. Among optional activities, an unread idea can take the
+  // place of one already heard; a read card stays reachable and does not become new again after time or reload.
+  const saved = normalizeAdvice(s), followups = followupAdvice(s, now);
+  followups.sort((a, b) => Number(saved.read.includes(keyOf(a))) - Number(saved.read.includes(keyOf(b))));
+  result.push(...followups);
   // The village pond is always accessible, and an unbaited cast is free even with a full barn (fish sell overflow).
-  if (!s.fishing?.line) result.push(topic('fishing-break', 'pond', {}, { kind: 'pond' }));
+  if (!s.fishing?.line && !followups.some(c => c.id === 'pond-curiosity')) result.push(topic('fishing-break', 'pond', {}, { kind: 'pond' }));
   return result;
 }
 
@@ -150,6 +156,10 @@ export function earnedCelebrations(s) {
 export function adviceCards(s, now = s.lastSeen ?? Date.now(), { includeDeferred = false } = {}) {
   const saved = normalizeAdvice(s), current = candidates(s, now).map(card => ({ ...card,
     read: saved.read.includes(keyOf(card)), deferred: saved.deferred.includes(keyOf(card)) }));
+  // Keep the best order first, even after reading its source help. Other already-read ideas can give way to a
+  // fresh optional branch. Unread income keeps its original priority; three old stand cards cannot bury a lesson.
+  const priority = card => card.context.startsWith('order/') ? -1 : Number(card.read);
+  current.sort((a, b) => priority(a) - priority(b));
   const visible = [], groups = new Set();
   for (const card of current) {
     const group = card.context.startsWith('order/') ? 'order' : card.id;

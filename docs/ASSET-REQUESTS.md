@@ -20,6 +20,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 
 ### AR-013: Old potting bench — requested 2026-10-09
 
+- Current status: delivered in PR #30 (`a56c93e`); integrated with the hospital correction in `807f803`. Runtime stages, late loading and save/phone checks are part of [the current release](CLEARER-GUIDANCE-AND-ART.md).
 - Gameplay project ID: `potting_bench`; this is a fixed optional project, not a purchasable building. Position/placement contract is in `src/content/learning-site.mjs`. Target envelope: about 2.4 m wide × 1.4 m deep, preserving the farmhouse walkway and neighboring resting bench.
 - Three visual states: old frame partly covered in weeds, uncovered/repaired frame, completed potting bench with seed trays. Codex uses the existing `bench`, `weeds2` and `flowerpot` models as temporary stand-ins; no new binary assets are written by logic. Retain a clear accessible tap target at the same position.
 - The completion unlocks strawberry planting with the existing strawberry crop models and icon. The earlier uncovering finds a saved old strawberry label; it grants a memory, not cash or free crops. Optional label artwork must match that story.
@@ -28,7 +29,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 
 ### AR-011: Civic/company art — requested 2026-10-09
 
-- Current status: first civic icon/hospital-tier delivery received from Claude in PR #27; logic integration is under combined validation in `codex/learning-garden-school`. The placeholder descriptions below record the original request. Worker outfits and brand seals have not been delivered.
+- Current status: first civic icons/hospital tier are live through PR #28, including PR #27. PR #29 (`f52860f`) corrects the complete footprint and is integrated in the current release; decoded geometry/neighbor checks pass. The placeholder descriptions below record the original request. Worker outfits and brand seals have not been delivered.
 
 - Runtime IDs stay `clinic`, `police`, `company`; every footprint is **4 × 3 cells** at its existing civic-row anchor. The clinic's `s.growth.hospitalAt` stamp indicates the hospital upgrade. No child workers or new character identities are introduced.
 - Current stand-ins: `clinic` uses `town.glb/hospital` at width 7.8; `police` uses `town.glb/police` at width 6; `company` uses `town.glb/company` at width 8. Dedicated richer first-tier art may replace these registrations together with packed models. Do not edit the generated ANCHORS block manually.
@@ -41,7 +42,7 @@ This is the current writer reservation; older active-handoff paragraphs below ar
 
 ### AR-012: Menu pictures and small tokens — requested 2026-10-09
 
-- Current status: Claude delivered the requested menu/animal pictures, all 117 small variants and look tokens in PR #27. Logic URL selection, menu binding, ready/unread badges and source-button classes are integrated for combined checks. The full compact HUD/status-stack layout is a later task.
+- Current status: delivered pictures, all 117 small variants and semantic classes are live through PR #28. Compact HUD/status layout is implemented in the current follow-up and undergoing phone/desktop verification. The original request details below are retained as history.
 
 - Deliver `hen`, `cow`, `ui:today`, `ui:projects`, `ui:mail`, `tool:demolish`, `ui:harvest_all` with registrations and provenance in one art PR. Existing SVG or home-building fallbacks stay until then.
 - Deliver small WebP files in `public/assets/icons/sm/` using the **same filename mapping** as the corresponding normal icon (`ui-coin.webp`, etc.), ideally a complete set for `ICONS`. Include the two new civic IDs or explicitly list unavailable small variants.
@@ -143,7 +144,7 @@ replaced) and `dropped`.
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | done (live 2026-10-08) |
-| AR-002 | Meadow and dairy set | v0.5 (stage 3) | P1 | proposed |
+| AR-002 | Meadow and dairy set | next separate gameplay release | P1 | first delivery requested; exact IDs in MEADOW-DAIRY-SCOPE.md; cat/deed/region work still proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
 | AR-004 | Story set pieces for chapters 6-9 | v0.6-v0.8 | P2 | proposed |
 | AR-005 | Ellis on screen | the sluice payoff | P2 | proposed |
@@ -152,11 +153,12 @@ replaced) and `dropped`.
 | AR-008 | Small happy faces on a few crops and fruit | optional charm | P3 | proposed, needs the user's yes |
 | AR-009 | Small discovery keepsakes and icons | introductory discoveries | P1 | done: art PR #5, integration PR #6 (`a8b4598`); production checked 2026-10-08 |
 | AR-010 | Old-object picnic discovery trail props | optional exploration | P1 | integrated and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18); includes Claude's PR #13 delivery and runtime wiring |
-| AR-011 | Civic/company first tier and later upgrade art | hospital, police, office and labels | P1 | requested; existing town models reused, police/company icons are placeholders |
-| AR-012 | Menu icons, small variants and semantic UI tokens | next art/UI integration | P1 | requested; current full-size URLs remain in use |
+| AR-011 | Civic/company first tier and later upgrade art | hospital, police, office and labels | P1 | first delivery live in PR #28; PR #29 footprint correction integrated for current checks; outfits/seals remain proposed |
+| AR-012 | Menu icons, small variants and semantic UI tokens | art/UI integration | P1 | delivered art live in PR #28; compact HUD follow-up in validation |
+| AR-013 | Three potting-bench art stages | garden project | P1 | PR #30 delivered; runtime integration and footprint tests pass; combined release in validation |
 
 Requests AR-001 to AR-008 originated as art-lane proposals, drawn from `docs/JOURNEY.md` and `docs/RESEARCH-APPEAL.md`.
-AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; the others remain proposed. The user or logic lane
+AR-001 was built with the scope in `docs/CLAUDE-HANDOFF.md` and is live; AR-002 now has a narrowed first request, and AR-003–AR-008 remain proposed. The user or logic lane
 confirms each separately, changes it, or drops it. Ids and sizes are suggestions: logic decides final game ids.
 
 ### AR-001: Look pass: colour, light, gold, celebrations
@@ -180,7 +182,9 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   effect, emit an event and add a line here.
 
 ### AR-002: Meadow and dairy set (stage 3)
-- Status: proposed · Priority: P1 · For: v0.5 · Asked by: art lane, 2026-10-08
+- Status: **first delivery requested** (2026-10-09); later region/cat/deed pieces remain proposed. See [the scoped contract](MEADOW-DAIRY-SCOPE.md).
+- Confirmed first-delivery IDs: `goat_barn`, `dairy`, existing rig `goat`, goods `goat_feed`, `goat_milk`, `cheese`, `butter`; matching normal/64 px icons. Buildings fit inside x ±2.9 m / z ±1.9 m, with front-centre doors. Reuse the existing goat rig after checking its clips. No meadow runtime is included in the current interface release.
+- The original broader proposal below is retained for context; its cat, mouse, land-deed and regional-detail work is not part of the first commission.
 - What: what the meadow stage needs, following `docs/JOURNEY.md` (goats at level 8 with a dairy; Miso the cat keeps mice
   out of the barn; land deeds).
 - Game ids (suggested): buildings `goat_barn`, `dairy`, `cat_basket`; goods `goat_milk`, `cheese`, `butter`; an icon for

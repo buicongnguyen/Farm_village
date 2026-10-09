@@ -37,7 +37,7 @@ import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, loadVietnamese, getLanguage, setLanguage } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK } from './content/world.mjs';
+import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
@@ -162,12 +162,23 @@ panels = new Panels(app, game, hud, {
     if (target.repair) {
       const { buttons, info } = radial.repairMenu(target.id, BUILDINGS[p.kind]);
       radial.open(cell, innerWidth / 2, innerHeight * 0.45, buttons, info, { id: target.id });
-    } else radial.tap(cell, innerWidth / 2, innerHeight * 0.45, { open: true });
+    } else radial.tap(cell, innerWidth / 2, innerHeight * 0.45, { open: true, preview: true });
   },
   // Advice points to the exact placed building and previews its repair without paying for it.
-  onAdviceTarget: ({ id }) => {
+  onAdviceTarget: ({ kind, id, x, z }) => {
+    if (build.open) build.close(); radial.hide(); radial.armed = null; radial.tool.hidden = true;
+    if (kind === 'cell') {
+      flyTo((x + .5) * CELL, (z + .5) * CELL, Math.min(world.cam.span, 38));
+      radial.tap({ x, z }, innerWidth / 2, innerHeight * .45, { open: true, preview: true }); return;
+    }
+    if (kind === 'repair') {
+      const road = ROAD_SEGMENTS.find(r => r.id === id); if (!road) return;
+      const cell = { x: Math.floor((road.x0 + road.x1) / 2), z: road.z0 };
+      flyTo((cell.x + .5) * CELL, (cell.z + .5) * CELL, Math.min(world.cam.span, 38));
+      const { buttons, info } = radial.repairMenu(id);
+      radial.open(cell, innerWidth / 2, innerHeight * .45, buttons, info, { id }); return;
+    }
     const p = game.s.placed[id]; if (!p) return;
-    if (build.open) build.close(); radial.hide();
     const [w, d] = footprint(p.kind, p.rot), cell = { x: p.x, z: p.z };
     flyTo((p.x + w / 2) * CELL, (p.z + d / 2) * CELL);
     if (levelOf(game.s, id) > 0 || game.s.repairing?.[id]) {
