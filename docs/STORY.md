@@ -1,8 +1,9 @@
 # Hollowbrook: the story bible
 
 This file is the reference for anyone who writes a line for Farm Village. It covers the cast, how each person talks in
-English and Vietnamese, the arcs, the chapter plan and the data that carries the story. The text lives in
-`src/content/story.mjs`, `people.mjs`, `hearts.mjs` and `letters.mjs`, and the Vietnamese lives in `src/i18n/vi.mjs`.
+English, Vietnamese, Korean and Japanese, the arcs, the chapter plan and the data that carries the story. The text lives in
+`src/content/story.mjs`, `people.mjs`, `hearts.mjs` and `letters.mjs`; translated catalogs start at
+`src/i18n/vi.mjs`, `ko.mjs` and `ja.mjs`. All editions share the same eligibility, scene order and saved progress.
 `tests/story.test.mjs` checks the rules below. `tests/story.browser.mjs` checks that the cards fit a 390 px phone.
 
 ## 1. The premise
@@ -28,8 +29,19 @@ The Vietnamese pronoun pair is "how they refer to themselves – how they addres
 wrong forms per speaker (for example *tôi* or *bạn* used as "you"). The narrator on chapter cards uses *bạn*.
 
 The permanent IDs below identify the same people in every profile and language. The alias registry in
-`src/content/character-names.mjs` contains English, Vietnamese, Korean and Japanese forms. Only English and Vietnamese
-are full interface languages. Korean/Japanese aliases are prepared data, pending native dialogue review.
+`src/content/character-names.mjs` contains English, Vietnamese, Korean and Japanese forms. Complete catalogs and
+selectable editions are described in [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md), including the limits of editorial
+review. Use explicit identity references rather than writing a translated name into a new source key.
+
+For Korean, use warm conversational language appropriate to each speaker; do not mechanically insert English
+pronouns. The partner can use 자기야 without assuming the player's gender. Children use concrete, playful speech;
+Sunny calls the elders 증조할머니/증조할아버지, while the player's labels use 할머니/할아버지. Rephrase around dynamic
+names or goods when their final sound would make a fixed particle incorrect.
+
+For Japanese, use readable everyday wording and kana aliases. Keep each speaker's warmth or gentle grumbling,
+without forcing a gendered player address. Sunny calls the elders ひいばあちゃん/ひいじいちゃん; do not copy the
+player-facing grandparent label into the child's dialogue. Translate counters and instructions naturally, preserving
+every amount, requirement and story fact. The village is こもれびの里; the Korean village name is 개울마을.
 
 | Stable ID | English / Vietnamese display | Role and voice | Vietnamese pair |
 |---|---|---|---|

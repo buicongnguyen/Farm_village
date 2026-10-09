@@ -1,5 +1,8 @@
 # Localized character names
 
+Follow-up: [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) adds full Korean and Japanese catalogs and selectable editions.
+The naming-only scope and verification below describe PR #34, before that follow-up.
+
 Implementation: 2026-10-09, `codex/localized-cast`, from deployed main `7cccfbf`.
 The user requested implementation of the playful cast in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md).
 Release: [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34), which records CI, Pages deployment and live acceptance.

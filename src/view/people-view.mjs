@@ -501,19 +501,22 @@ export class PeopleView {
     this.bubbles.hidden = !!document.querySelector('.panel:not([hidden]), .modal');
     // Ada's guide card is drawn over the bubbles' layer: a bubble that would sit behind it rises above its top edge
     const guide = document.querySelector('.guide:not([hidden])')?.getBoundingClientRect();
+    const scale = Number.parseFloat(getComputedStyle(this.bubbles).zoom) || 1;
     for (const w of this.walkers.values()) {
       if (!w.bubble) continue;
       if (now > w.bubbleUntil) { w.bubble.remove(); w.bubble = null; continue; }
-      const p = this.screenOf(w, RIGS[w.body].height + 0.3), m = 70;
+      const p = this.screenOf(w, RIGS[w.body].height + 0.3);
       // clamp by the bubble's real width, so it never runs off either edge; the tail still points at the speaker.
       // A bubble whose speaker is off screen stays at the screen edge, so the line is never lost.
-      const hw = (w.bubble.offsetWidth || 160) / 2 + 8, hh = w.bubble.offsetHeight || 40;
+      const rect = w.bubble.getBoundingClientRect(), hw = (rect.width || 160) / 2 + 8, hh = rect.height || 40;
       const x = Math.min(innerWidth - hw, Math.max(hw, p.x));
-      let y = Math.min(innerHeight - 60, Math.max(m + 40, p.y));
-      if (guide && guide.width && x + hw > guide.left && x - hw < guide.right && y > guide.top - 6 && y - hh < guide.bottom) y = Math.max(hh + 50, guide.top - 12);
+      const bottom = Math.max(hh + 8, innerHeight - 60);
+      let y = Math.min(bottom, Math.max(110, hh + 8, p.y));
+      if (guide && guide.width && x + hw > guide.left && x - hw < guide.right && y > guide.top - 6 && y - hh < guide.bottom) y = Math.min(bottom, Math.max(hh + 50, guide.top - 12));
       const tail = Math.max(-hw + 22, Math.min(hw - 22, p.x - x));
-      w.bubble.style.setProperty('--tail', `${tail.toFixed(0)}px`);
-      w.bubble.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+      w.bubble.style.setProperty('--tail', `${(tail / scale).toFixed(0)}px`);
+      // Projection and DOM bounds use viewport pixels; CSS zoom also scales translations, so undo it here.
+      w.bubble.style.transform = `translate(${x / scale}px, ${y / scale}px) translate(-50%, -100%)`;
     }
   }
 }

@@ -205,6 +205,11 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Current language follow-up, 2026-10-09: complete Korean/Japanese editions are implemented on `codex/korean-japanese`.
+All four menus, catalogs, local names, dates and number formats share the same saved farms and story logic.
+[LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) records verification and release status. This does not complete any
+new gameplay stage; the preceding naming-only scope below belongs to PR #34.
+
 Current naming follow-up, 2026-10-09: [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34), `codex/localized-cast`, implements the current cast's independent English and
 Vietnamese aliases, explicit story references and old-save text compatibility. **Implemented and locally validated**;
 see [LOCALIZED-CAST.md](LOCALIZED-CAST.md) for checks and release handoff. Korean/Japanese names are prepared aliases only. This does not
@@ -240,6 +245,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 
 | Stage | Status |
 |---|---|
+| Cross-stage follow-up: Korean/Japanese editions | Implemented and locally validated on `codex/korean-japanese`: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 production contexts pass. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
 | 1. Homecoming | done (v0.3) |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |

@@ -2,6 +2,11 @@
 
 Prepared: 2026-10-08 (Asia/Seoul).
 
+Current language follow-up, 2026-10-09: `codex/korean-japanese` completes the current game's Korean/Japanese catalogs,
+four-language menus and formatting, lazy downloads and failure recovery. Coverage, language-independent saves and
+progress, CJK name composition and phone layouts are checked in [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md).
+Meadow/dairy and the later gameplay roadmap remain the next gameplay work. Earlier naming-only scope is historical.
+
 Current naming follow-up, 2026-10-09: `codex/localized-cast` implements the current English/Vietnamese aliases,
 explicit authored references, localized signatures and exact old-order/wish compatibility. Local verification is
 complete; [LOCALIZED-CAST.md](LOCALIZED-CAST.md) records the checks and release handoff. Korean/Japanese aliases are prepared data,

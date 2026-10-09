@@ -1,7 +1,7 @@
 // Exercise real named UI and old saved prose on both the instrumented and public builds.
 import './tz.mjs';
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { newGame } from '../src/core/state.mjs';
@@ -13,10 +13,11 @@ import { LETTERS } from '../src/content/letters.mjs';
 import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { RUINS } from '../src/content/world.mjs';
 import { personName, petName, familyName } from '../src/content/character-names.mjs';
-import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+import { LANGUAGES, getLocale, loadLanguage, tIn } from '../src/kit/i18n.mjs';
 import { pack } from '../src/kit/save.mjs';
 
-await loadVietnamese();
+await Promise.all(LANGUAGES.map(({ id }) => loadLanguage(id)));
+const LOCALES = LANGUAGES.map(({ id }) => id);
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-localized-names'); mkdirSync(shots, { recursive: true });
 const expect = (ok, message) => { if (!ok) throw Error(message); };
@@ -66,6 +67,16 @@ async function open(page, kind, content) {
 async function enter(page, testMode) {
   if (testMode) await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
   else {
+    await page.locator('.main-menu [data-lang]').first().waitFor();
+    const language = await page.locator('html').getAttribute('lang');
+    expect(JSON.stringify(await page.locator('.main-menu [data-lang]').evaluateAll(buttons => buttons.map(button => button.dataset.lang))) === JSON.stringify(LOCALES), 'public menu language choices differ from complete editions');
+    const choices = await page.locator('.main-menu [data-lang]').evaluateAll(buttons => buttons.map(button => [button.dataset.lang, button.lang, button.textContent, button.getAttribute('aria-pressed')]));
+    expect(JSON.stringify(choices) === JSON.stringify(LANGUAGES.map(({ id, label }) => [id, id, label, String(id === language)])), 'public menu native labels or language accessibility state is wrong');
+    expect((await page.locator('.main-menu').innerText()).includes(tIn(language, 'Choose your farm')), 'public menu did not translate');
+    expect(await page.locator('.main-menu-card').evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'language choices or profiles overflow public menu');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
+    const date = new Intl.DateTimeFormat(getLocale(language), { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(saved.lastSeen));
+    expect((await page.locator('.main-menu [data-profile-id="1"]').innerText()).includes(date), 'profile date ignores selected edition');
     await page.locator('.main-menu [data-do="profile"][data-n="1"]').click();
     await page.locator('.guide').waitFor({ state: 'attached', timeout: 60000 });
     expect(await page.evaluate(() => !window.farm), 'public build exposes a debug hook');
@@ -96,9 +107,33 @@ async function snapshot(page) {
 async function changeLanguage(page, language) {
   await open(page, 'settings', '.settings');
   expect(await panel(page).locator('[data-name]').inputValue() === PLAYER, 'player input was translated');
-  expect(await panel(page).locator('[data-key="lang"]').count() === 2, 'names-only Korean/Japanese became incomplete UI choices');
+  expect(await panel(page).locator('[data-key="lang"]').count() === LANGUAGES.length, 'language choices are missing or duplicated');
   await panel(page).locator(`[data-key="lang"][data-value="${language}"]`).click();
   await page.waitForFunction(lang => document.documentElement.lang === lang, language);
+  const choices = await panel(page).locator('[data-key="lang"]').evaluateAll(buttons => buttons.map(button => [button.dataset.value, button.lang, button.textContent, button.getAttribute('aria-pressed')]));
+  expect(JSON.stringify(choices) === JSON.stringify(LANGUAGES.map(({ id, label }) => [id, id, label, String(id === language)])), 'Settings native language labels or pressed state is wrong');
+  expect(await panel(page).locator('.panel-head h2').innerText() === tIn(language, 'Settings'), 'Settings heading did not translate');
+  expect(await page.locator('.hud [data-hud="coins"] b').innerText() === new Intl.NumberFormat(getLocale(language)).format(1000), 'coin separators ignore selected edition');
+}
+async function textSizes(page) {
+  for (const value of ['1', '1.15', '1.3']) {
+    await panel(page).locator(`[data-key="textSize"][data-value="${value}"]`).click();
+    await page.waitForFunction(value => document.body.dataset.text === value, value);
+    await fit(page, `Settings text ${value}`);
+  }
+}
+async function renderedCjk(page, language, prefix) {
+  if (!['ko', 'ja'].includes(language)) return;
+  await page.evaluate(() => document.fonts.ready);
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
+    const { root } = await cdp.send('DOM.getDocument');
+    const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: '.friend .who > b' });
+    const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+    expect(fonts.some(font => font.glyphCount > 0 && !/LastResort|Nunito|Times New Roman/i.test(font.familyName)), `${language}: no rendered CJK font for the visible name`);
+    appendFileSync(join(shots, 'rendered-fonts.jsonl'), JSON.stringify({ prefix, language, fonts }) + '\n');
+  } finally { await cdp.detach(); }
 }
 async function namedSurfaces(page, language, prefix) {
   await open(page, 'orders', '[data-order-id="legacy-names"]');
@@ -108,6 +143,13 @@ async function namedSurfaces(page, language, prefix) {
   expect((await panel(page).locator('[data-order-id="legacy-mechanic"] .line').innerText()).includes(personName('gus', language, 'short')), 'legacy mechanic order did not resolve its neighbour');
   expect(await panel(page).locator('[data-order-id="custom-names"] .line').innerText() === CUSTOM, 'unknown saved text underwent global name replacement');
   await fit(page, 'orders'); await page.screenshot({ path: join(shots, `${prefix}-orders-${language}.png`) });
+  await panel(page).locator('[data-order-id="legacy-mechanic"] .needs [data-do="goodHelp"]').click();
+  await panel(page).locator('.good-help').waitFor();
+  expect((await panel(page).innerText()).includes(tIn(language, 'Where to get it')), 'missing-ingredient help did not translate');
+  expect(await panel(page).locator('[data-do="goodHelpSource"]').innerText() === tIn(language, 'Show the source'), 'source action did not translate');
+  await fit(page, 'ingredient help');
+  await panel(page).locator('[data-do="goodHelpBack"]').click();
+  await panel(page).locator('[data-order-id="legacy-mechanic"]').waitFor();
 
   await open(page, 'today', '.wish');
   expect(await panel(page).locator('.wish b').first().innerText() === personName('bo', language), 'legacy wish speaker missing');
@@ -123,10 +165,14 @@ async function namedSurfaces(page, language, prefix) {
     const row = panel(page).locator('.friend').filter({ has: page.locator(`[data-person="${id}"]`) });
     expect(await row.locator('.who > b').innerText() === personName(id, language), `friend alias ${id}`);
   }
+  await renderedCjk(page, language, prefix);
   await fit(page, 'friends'); await page.screenshot({ path: join(shots, `${prefix}-friends-${language}.png`) });
 
   await open(page, 'mail', '.letters');
   for (const id of ['ellis-1', 'mai-1']) {
+    const at = await page.evaluate(id => JSON.parse(localStorage.getItem('farm-village:save:1')).mail.find(letter => letter.id === id).at, id);
+    const date = new Intl.DateTimeFormat(getLocale(language), { day: 'numeric', month: 'short' }).format(new Date(at));
+    expect(await panel(page).locator(`[data-do="readLetter"][data-id="${id}"] .lr-text small`).innerText() === date, 'letter date ignores selected edition');
     await panel(page).locator(`[data-do="readLetter"][data-id="${id}"]`).click();
     const letter = LETTERS.find(l => l.id === id);
     await page.locator('.modal .letter').waitFor();
@@ -158,12 +204,20 @@ async function namedSurfaces(page, language, prefix) {
   await open(page, 'village', '.journey');
   expect((await panel(page).innerText()).includes(petName('dog', language, 'short')), 'kennel roadmap still uses old pet label');
   await fit(page, 'roadmap');
+
+  await open(page, 'settings', '.settings'); await panel(page).locator('[data-do="photo"]').click();
+  await page.locator('.photo .stamp small').waitFor();
+  const photographedAt = await page.evaluate(() => new Date().getTime());
+  const stamp = new Intl.DateTimeFormat(getLocale(language), { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(photographedAt));
+  expect(await page.locator('.photo .stamp small').innerText() === stamp, 'photo stamp ignores selected edition');
+  expect(await page.locator('.photo .stamp').evaluate(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1; }), 'localized photo date overflows');
+  await page.locator('.photo [data-p="close"]').click();
 }
 
 // A language change dismisses the old presentation; a queued visitor uses the locale at delivery.
 // Only setup uses the test hook. Switching languages goes through the same Settings controls as public play.
 async function transientLocales(page, language) {
-  const other = language === 'en' ? 'vi' : 'en';
+  const other = LOCALES[(LOCALES.indexOf(language) + 1) % LOCALES.length];
   await open(page, 'settings', '.settings');
   const setup = await page.evaluate(line => {
     const walker = farm.people.walkers.get('ada');
@@ -188,11 +242,41 @@ async function transientLocales(page, language) {
   expect(!(await page.locator('.toast .msg').allTextContents()).some(text => text.startsWith(personName('mai', other) + ':')), 'delayed visitor kept the name from the previous language');
 }
 
+async function composedName(page, language) {
+  await open(page, 'settings', '.settings');
+  await panel(page).locator('[data-name]').focus();
+  const kept = await page.evaluate(async () => {
+    const input = document.querySelector('.settings [data-name]');
+    input.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true, data: '' }));
+    input.value = '하'; input.setSelectionRange(1, 1);
+    input.dispatchEvent(new InputEvent('input', { bubbles: true, data: '하', inputType: 'insertCompositionText', isComposing: true }));
+    const before = farm.game.s.settings.playerName;
+    farm.game.emit({ ok: true, events: [{ type: 'tick' }] }, 'test-background');
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const preserved = document.querySelector('.settings [data-name]') === input && input.isConnected && document.activeElement === input && input.value === '하' && input.selectionStart === 1;
+    const unchanged = farm.game.s.settings.playerName === before;
+    input.value = '하루ひなた';
+    input.dispatchEvent(new CompositionEvent('compositionend', { bubbles: true, data: input.value }));
+    input.dispatchEvent(new InputEvent('input', { bubbles: true, data: input.value, inputType: 'insertText' }));
+    input.dispatchEvent(new Event('change', { bubbles: true })); input.blur();
+    return { preserved, unchanged, committed: farm.game.s.settings.playerName };
+  });
+  expect(kept.preserved, 'background farm event replaced a focused CJK composition or its caret');
+  expect(kept.unchanged, 'unfinished CJK composition was saved prematurely');
+  expect(kept.committed === '하루ひなた', 'finished CJK name was not accepted literally');
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('farm-village:save:1')).settings.playerName === '하루ひなた');
+  await panel(page).locator(`[data-key="lang"][data-value="${language === 'ko' ? 'ja' : 'ko'}"]`).click();
+  expect(await panel(page).locator('[data-name]').inputValue() === '하루ひなた', 'language switch translated a player-entered CJK name');
+  await panel(page).locator(`[data-key="lang"][data-value="${language}"]`).click();
+  await panel(page).locator('[data-name]').fill(PLAYER); await panel(page).locator('[data-name]').blur();
+  await page.waitForFunction(name => JSON.parse(localStorage.getItem('farm-village:save:1')).settings.playerName === name, PLAYER);
+}
+
 export async function runNamesAcceptance(testMode) {
   const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0' ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
   let failures = 0, checks = 0;
   try {
-    for (const language of ['en', 'vi']) for (const width of [390, 1280]) {
+    for (const language of LOCALES) for (const width of [390, 1280]) {
       checks++; const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'reduce', timezoneId: 'Asia/Seoul' });
       try {
         const s = fixture(), other = pack(newGame(s.createdAt, 92881, { restore: true })), prefix = `${testMode ? 'test' : 'production'}-${language}-${width}`;
@@ -210,15 +294,18 @@ export async function runNamesAcceptance(testMode) {
         await open(page, 'settings', '.settings');
         await panel(page).locator('[data-name]').fill(PLAYER); await panel(page).locator('[data-name]').blur();
         const before = await snapshot(page);
-        for (const lang of [language, language === 'en' ? 'vi' : 'en', language]) {
+        for (const lang of [language, ...LOCALES.filter(id => id !== language), language]) {
           await changeLanguage(page, lang); expect(await snapshot(page) === before, 'language switch changed saved progress or rewards');
-          await namedSurfaces(page, lang, prefix);
+          // Every edition has its own phone/desktop context. Walk full screens before and after the round trip;
+          // intermediate selections still check actual translated Settings, formatting and immutable progress.
+          if (lang === language) { await textSizes(page); await namedSurfaces(page, lang, prefix); }
           expect(await snapshot(page) === before, 'viewing localized identities changed saved progress or rewards');
         }
         const old = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
         expect(old.orders.cards[0].line === OLD_ORDER && old.wishes.list[0].text === OLD_WISH, 'renaming rewrote old saved prose');
         expect(old.settings.playerName === PLAYER, 'player name changed');
         for (const slot of ['2', '3']) expect(await page.evaluate(slot => localStorage.getItem(`farm-village:save:${slot}`), slot) === other, `rename touched farm ${slot}`);
+        if (testMode && ['ko', 'ja'].includes(language)) await composedName(page, language);
         if (testMode) { await transientLocales(page, language); expect(await snapshot(page) === before, 'transient relocalization changed saved progress'); }
         await page.reload(); await enter(page, testMode); await open(page, 'orders', '[data-order-id="legacy-names"]');
         expect((await panel(page).locator('[data-order-id="legacy-names"] .line').innerText()).includes(personName('pip', language, 'short')), 'localized legacy line lost after reload');
@@ -228,7 +315,7 @@ export async function runNamesAcceptance(testMode) {
       } catch (e) { failures++; console.log(`FAIL names (${language}, ${width})\n     ${e.stack}`); }
       finally { await context.close(); }
     }
-    for (const language of ['en', 'vi']) {
+    for (const language of LOCALES) {
       checks++; const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce', timezoneId: 'Asia/Seoul' });
       try {
         const s = newGame(Date.now(), 93811, { restore: true }); s.settings.textSize = 1.3; s.settings.reducedMotion = true;

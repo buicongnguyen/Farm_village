@@ -1,5 +1,9 @@
 # Hollowbrook: playful names in each language
 
+Edition follow-up, 2026-10-09: [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) records complete Korean/Japanese translation
+and runtime support. The original naming-only implementation steps below describe PR #34. Independent human
+native-speaker editing is recommended as a later quality pass; no such review is claimed by this implementation.
+
 Status: **current cast selected for implementation, 2026-10-09**. The user explicitly requested the runtime change; [LOCALIZED-CAST.md](LOCALIZED-CAST.md) records its implementation and verification. The user confirmed that names should be playful and fun, and that affectionate home names are welcome. Each language may use a different native name for the same character. The previous Althea/Oswin/Sylvie/Tavi proposal and its formal-name rules are withdrawn. The current cast below is the implementation contract; the later cast remains proposed.
 
 ## 1. The direction the user chose
@@ -29,7 +33,7 @@ The useful pattern is a familiar word with a little personality, movement, sound
 - **Korean:** NAMEChart records [하루](https://www.namechart.kr/name/하루) for both boys and girls and [미소](https://www.namechart.kr/name/미소) as an established personal name. These are usage references, not a cuteness ranking. [The National Institute of Korean Language](https://krdict.korean.go.kr/eng/dicSearch/SearchView?ParaWordNo=59246&nation=eng) also documents 미소 as the word for a smile. Short local aliases can work without inventing surnames or hanja meanings.
 - **Japanese:** [Benesse/Tamahiyo's 2025 name survey](https://st.benesse.ne.jp/ninshin/name/) includes ひなた among readings used by both boys and girls. [Anicom's dog-name survey](https://www.anicom-sompo.co.jp/news-release/2025/20241030/) supports food-style pet names such as こむぎ and きなこ. Names below use readable kana; they do not assert a particular kanji spelling or meaning.
 
-The individual assignments below are **creative proposals informed by those patterns**, not a list copied from any one source. Korean and Japanese need a native-speaker dialogue review before those full language editions ship.
+The individual assignments below are **creative proposals informed by those patterns**, not a list copied from any one source. Korean and Japanese benefit from independent native-speaker dialogue review; the edition follow-up documents the editorial and automated checks actually completed.
 
 ## 3. Selected current cast
 

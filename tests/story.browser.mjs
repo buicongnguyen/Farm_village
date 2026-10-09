@@ -1,5 +1,5 @@
-// Story suite (docs/STORY.md): every chapter card, Ada's guide card and three order cards fit a 390 px phone in English
-// and Vietnamese, with nothing cut off. Screenshots (story-*.png) go to SHOTS_DIR (default: the system temp folder).
+// Story suite (docs/STORY.md): every chapter card, the guide and three order cards fit a 390 px phone in all four
+// editions, with nothing cut off. Screenshots (story-*.png) go to SHOTS_DIR (default: the system temp folder).
 // Run after `npm run build:test` and serving dist: GAME_URL=http://127.0.0.1:5274/ node tests/story.browser.mjs
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -34,11 +34,12 @@ const fits = (page, sel, { scrolls = false } = {}) => page.evaluate(([sel, scrol
 }, [sel, scrolls]);
 import { CHAPTERS } from '../src/content/story.mjs';
 import { personName } from '../src/content/character-names.mjs';
-import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
-await loadVietnamese();
+import { LANGUAGES, loadLanguage, tIn } from '../src/kit/i18n.mjs';
+await Promise.all(LANGUAGES.map(({ id }) => loadLanguage(id)));
+const LOCALES = LANGUAGES.map(({ id }) => id);
 const tr = tIn;
 
-for (const lang of ['en', 'vi']) {
+for (const lang of LOCALES) {
   await check(`chapter cards 1–5 fit a phone (${lang})`, async () => {
     const { ctx, page } = await open(lang);
     for (let n = 1; n <= 5; n++) {

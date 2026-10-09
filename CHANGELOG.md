@@ -1,5 +1,13 @@
 # Changelog
 
+## Korean and Japanese editions — 2026-10-09
+
+- Complete Korean and Japanese catalogs cover the current interface, adaptive advice, chapters, letters, ingredient guidance, discoveries, civic projects and school games. Each uses its local cast names and preserves the same story facts, requirements and rewards.
+- Startup and Settings offer four languages, with saved/browser preferences, localized dates and numbers, and independently loaded catalogs. Failed or superseded switches keep the current edition usable; boot recovery works before the main game loads.
+- Typing a name with Korean/Japanese composition survives background farm updates. Player-entered text, existing saves, all three profiles, progress and economy stay compatible.
+- Villager speech uses actual screen bounds at enlarged text sizes, keeping translated bubbles within phone edges.
+- Validation: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 local production contexts pass. Production first-load code is 1,093,080 bytes. [Scope and verification](docs/LANGUAGE-EDITIONS.md). Independent human native-speaker editing remains a future quality pass.
+
 ## Localized playful cast — 2026-10-09
 
 - English and Vietnamese now use the selected local aliases in speaker labels, story references, letters, family labels and named-animal text. Vietnamese keeps relationship titles and each speaker's pronouns; the desk-name joke and signatures work with the new names.
