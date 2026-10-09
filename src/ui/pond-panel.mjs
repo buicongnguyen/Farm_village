@@ -18,7 +18,7 @@ export function renderPond(s, now, { walking = false } = {}) {
     <p class="hint">${t('Cast a line and wait for the float to bob. Then reel in your fish.')}</p>
     <p class="hint"><b data-fishing-status></b></p>
     ${state === 'empty' ? `<button class="btn primary wide" data-do="castLine" ${walking ? 'disabled' : ''}>${t('Cast a line')}</button><button class="btn ghost wide" data-do="castLine" data-bait="1" ${bait && !walking ? '' : 'disabled'}>${iconHtml('chicken_feed', '', 'mini')} ${t('Cast with bait')} (${t('chicken feed')})</button>` : ''}
-    ${state === 'ready' && !calm ? `<button class="btn primary wide" data-do="reelIn" data-start="1">${t('Reel in')}</button>` : ''}
+    ${state === 'ready' && !calm ? `<p class="hint">${t('A fish is biting! Sit at the water and use the round Reel button: strike on the bite, then hold to reel.')}</p>` : ''}
     ${state === 'reeling' && !calm ? `<p id="reel-help" class="hint">${t('Press Reel now while the marker is inside the green band. There is no rush: it keeps coming back.')}</p>
       <div class="fishing-meter" aria-hidden="true"><i class="fishing-band" style="left:${REEL_TIMING.from * 100}%;width:${(REEL_TIMING.to - REEL_TIMING.from) * 100}%"></i><i class="fishing-marker"></i></div>
       <button class="btn primary wide" data-do="reelIn" aria-describedby="reel-help">${t('Reel now')}</button><p class="hint" role="status" aria-live="polite" data-reel-feedback></p>` : ''}

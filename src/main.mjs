@@ -47,7 +47,7 @@ import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
-const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs')]);
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs'), import('./view/fishing-play.mjs')]);
 await languageReady;   // load the selected edition before drawing its first text
 document.title = t('Farm Village');
 onLanguageChange(() => { document.title = t('Farm Village'); });
@@ -290,10 +290,11 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
-const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }] = await living;
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }, { FishingPlay }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
 world.fishingView = new FishingView(world, game, people);
+world.fishingPlay = new FishingPlay({ game, people, hud, view: world.fishingView });   // the bite, strike and hold-to-reel (cute_game's feel)
 panels.fishingWalk = () => { const player = people.walkers.get('you'); return !!(player?.orderedFishing && player?.goal); };
 panels.onFishCast = bait => {
   if (panels.fishingWalk()) return;
@@ -302,7 +303,7 @@ panels.onFishCast = bait => {
   if (!player || !people.sendFishing(player, pond?.kind === 'pond' ? pond : null, { bait })) {
     hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info'); return;
   }
-  hud.toast(t('Walking to the fishing spot.'), 'info'); panels.render();
+  hud.toast(t('Walking to the fishing spot.'), 'info'); panels.close();   // watch the cast; the Reel button takes over at the water
 };
 hud.onShowWay = at => panels.onShowWay?.(at);   // the Next chip's "go there"
 radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
