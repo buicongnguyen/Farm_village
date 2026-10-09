@@ -888,32 +888,33 @@ piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred
 
 # =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
 def hospital():
-    """The village hospital: a two-storey cream building with a teal roof, a big red-cross sign, a covered entrance at the
-    front centre (the clinic's doorway), rows of windows, a little ambulance bay and flower beds. 8 x 6 m footprint."""
-    W, D = 7.6, 5.2
-    p = [bx('plinth', W + .3, D + .3, .25, 0, 0, 0, 'stoned', bev=.04), bx('ground', W, D, 2.6, 0, 0, .25, 'plaster', bev=.06),
-         bx('band', W + .1, D + .1, .2, 0, 0, 2.85, 'teal', bev=.03), bx('upper', W - .6, D - .4, 2.2, 0, -.1, 3.05, 'cream', bev=.06),
-         bx('roofslab', W - .3, D - .1, .25, 0, -.1, 5.25, 'teald', bev=.06), bx('roofcap', W - 1.4, D - 1.2, .5, 0, -.1, 5.5, 'teal', bev=.12)]
-    # the red cross sign over the entrance
-    p += [bx('signbg', 1.5, .12, 1.5, 0, D / 2 - .15, 3.5, 'white', bev=.06), bx('crossv', .32, .16, 1.1, 0, D / 2 - .1, 3.7, 'red', bev=.03),
-          bx('crossh', 1.1, .16, .32, 0, D / 2 - .1, 4.09, 'red', bev=.03)]
-    # entrance canopy and doors, front centre
-    p += [bx('canopy', 2.6, 1.4, .18, 0, D / 2 + .6, 2.5, 'teal', bev=.04), bx('door', 1.5, .1, 2.0, 0, D / 2 + .02, .25, 'glass', bev=.03),
-          bx('doorframe', 1.7, .12, .15, 0, D / 2 + .03, 2.25, 'white', bev=.02)]
-    for x in (-1.2, 1.2):
-        p.append(cl('pillar', .1, 2.3, x, D / 2 + 1.2, .25, 'white', verts=8))
-    # windows: ground floor either side of the door, a full row upstairs
-    for x in (-2.8, -1.9, 1.9, 2.8):
-        p.append(bx('win', .6, .1, .9, x, D / 2 + .02, 1.1, 'glass', bev=.03))
-    for x in (-2.6, -1.6, -.6, .6, 1.6, 2.6):
-        p.append(bx('win2', .6, .1, .8, x, D / 2 - .4 + .02 - .2 + .4, 3.6, 'glassd', bev=.03))
-    # ambulance bay (a parked little white van) and flower beds
-    p += [bx('van', 1.2, 2.0, .9, W / 2 + .8, .6, .25, 'white', bev=.12), bx('vancab', 1.1, .7, .6, W / 2 + .8, 1.25, 1.1, 'white', bev=.1),
-          bx('vanstripe', 1.22, 2.02, .14, W / 2 + .8, .6, .7, 'red', bev=.02), bx('vanwin', 1.0, .05, .35, W / 2 + .8, 1.62, 1.2, 'glass', bev=.02)]
-    for x in (-2.6, 2.6):
-        p.append(bx('bed', 1.4, .5, .25, x, D / 2 + .5, .0, 'soil', bev=.04))
+    """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,
+    a covered entrance at the front centre (the clinic's doorway), an ambulance bay on the right and flower beds along
+    the front. Everything stays inside the 8 x 6 m (4 x 3 cell) footprint; the base fills it, so the origin is its centre."""
+    p = [bx('plinth', 7.8, 5.8, .2, 0, 0, 0, 'stonel', bev=.04),
+         bx('ground', 5.6, 3.8, 2.6, -.9, -.8, .2, 'plaster', bev=.06), bx('band', 5.7, 3.9, .2, -.9, -.8, 2.8, 'teal', bev=.03),
+         bx('upper', 5.0, 3.2, 2.1, -.9, -.95, 3.0, 'cream', bev=.06), bx('roofslab', 5.3, 3.5, .25, -.9, -.95, 5.1, 'teald', bev=.06),
+         bx('roofcap', 4.0, 2.2, .45, -.9, -.95, 5.35, 'teal', bev=.12)]
+    # the red cross sign on the upper front, over the entrance
+    p += [bx('signbg', 1.3, .12, 1.3, 0, .68, 3.4, 'white', bev=.06), bx('crossv', .28, .16, .95, 0, .72, 3.57, 'red', bev=.03),
+          bx('crossh', .95, .16, .28, 0, .72, 3.9, 'red', bev=.03)]
+    # entrance at the front centre: glass doors, a teal canopy on two white pillars
+    p += [bx('door', 1.4, .1, 2.0, 0, 1.12, .2, 'glass', bev=.03), bx('doorframe', 1.6, .12, .15, 0, 1.13, 2.2, 'white', bev=.02),
+          bx('canopy', 2.6, 1.3, .16, 0, 1.75, 2.45, 'teal', bev=.04), bx('step', 2.0, .6, .08, 0, 1.5, .2, 'stone', bev=.02)]
+    for x in (-1.1, 1.1):
+        p.append(cl('pillar', .09, 2.25, x, 2.25, .2, 'white', verts=8))
+    for x in (-3.0, -2.1, -1.2):
+        p.append(bx('win', .55, .1, .85, x, 1.12, 1.1, 'glass', bev=.03))
+    for x in (-3.0, -2.1, 1.1):
+        p.append(bx('win2', .55, .1, .75, x, .67, 3.6, 'glassd', bev=.03))
+    # ambulance bay on the right: painted bay lines and a small white van with a red stripe
+    p += [bx('bayl', .08, 2.6, .02, 2.25, -.5, .2, 'white', bev=0), bx('bayr', .08, 2.6, .02, 3.65, -.5, .2, 'white', bev=0),
+          bx('van', 1.05, 1.9, .85, 2.95, -.7, .22, 'white', bev=.12), bx('vancab', .98, .65, .55, 2.95, -.05, 1.0, 'white', bev=.1),
+          bx('vanstripe', 1.07, 1.92, .13, 2.95, -.7, .62, 'red', bev=.02), bx('vanwin', .9, .05, .32, 2.95, .3, 1.1, 'glass', bev=.02)]
+    for x in (-2.9, 2.9):
+        p.append(bx('bed', 1.4, .5, .22, x, 2.5, .2, 'soil', bev=.04))
         for k in range(4):
-            p.append(ball('fl', .12, x - .5 + k * .33, D / 2 + .5, .32, ('pink', 'sun', 'red', 'white')[k], sub=1))
+            p.append(ball('fl', .11, x - .5 + k * .33, 2.5, .5, ('pink', 'sun', 'red', 'white')[k], sub=1))
     return p
 piece('hospital', hospital(), decor)
 

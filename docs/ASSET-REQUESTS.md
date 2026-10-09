@@ -264,6 +264,7 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
+- 2026-10-09, art lane, **hospital fit** (`art/hospital-fit`): `decor.glb/hospital` now stays inside the 8 × 6 m footprint, entrance canopy and ambulance bay included (bounds x −3.9…3.9 m, z −2.9…2.9 m, origin at the centre, base on the ground). Door and canopy at the front centre (+z); ambulance bay on the right inside the footprint. ID `clinic:hospital` unchanged; 1,340 triangles. Icon and small icon re-rendered.
 - 2026-10-09, art lane, **AR-011 and AR-012 delivered** on `art/ar011-012` (from main `e05c800`; PR below):
   - AR-011 icons: `police.webp` (town.glb `police`), `company.webp` (town.glb `company`) replace the placeholder copies;
     new `hospital.webp`. Model: `decor.glb` node **`hospital`** (1,448 triangles, about 9.2 × 6.0 m with the ambulance
