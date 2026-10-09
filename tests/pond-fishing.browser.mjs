@@ -126,6 +126,21 @@ try {
       await reel.focus();
       await page.evaluate(() => { farm.game.tick(); farm.panels.render(); });
       expect(await reel.evaluate(el => el === document.activeElement), 'timer redraw lost the focused timing button');
+      const refreshed = await page.evaluate(() => {
+        const s = farm.state(), session = s.fishing.line.reeling.startedAt, seed = s.fishing.line.seed;
+        s.fishing.coins = 5; s.barn.items.perch = (s.barn.items.perch ?? 0) + 1;
+        farm.game.emit({ ok: true, events: [{ type: 'fishFee', coins: 5 }] }, 'tick');
+        return { session, seed, stock: s.barn.items.perch };
+      });
+      expect(await reel.evaluate(el => el === document.activeElement), 'fee/inventory redraw lost the focused timing button');
+      expect(await sheet(page).locator('[data-do="collectFees"]').isVisible(), 'new fishing fees did not appear during the challenge');
+      const perchTile = sheet(page).locator('.good-tile').filter({ has: page.locator('img[src*="/perch.webp"]') });
+      expect(await perchTile.locator('b').textContent() === String(refreshed.stock), 'inventory redraw did not show the new fish');
+      const steady = sheet(page).locator('[data-do="reelIn"][data-steady="1"]'); await steady.focus();
+      await page.evaluate(() => { farm.state().fishing.coins = 6; farm.panels.render(); });
+      expect(await steady.evaluate(el => el === document.activeElement), 'fee redraw lost the focused gentle-reel control');
+      expect(await page.evaluate(({ session, seed }) => farm.state().fishing.line.reeling.startedAt === session && farm.state().fishing.line.seed === seed, refreshed), 'fee/inventory redraw restarted the challenge');
+      await reel.focus();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && [...document.querySelectorAll('.panel:not([hidden])')].every(el => el.scrollWidth <= el.clientWidth + 1)), 'fishing controls overflow the viewport');
       if (shots) await page.screenshot({ path: join(shots, `fishing-timing-${lang}-${width}.png`) });
 
@@ -158,6 +173,24 @@ try {
       const expected = fishFor(calmLine.seed, calmLine.bait), stock = await page.evaluate(fish => farm.state().barn.items[fish] ?? 0, expected);
       await sheet(page).locator('[data-do="reelIn"][data-steady="1"]').click();
       expect(await page.evaluate(({ fish, stock, caught }) => (farm.state().barn.items[fish] ?? 0) === stock + 1 && farm.state().fishing.caught === caught + 2, { fish: expected, stock, caught: caughtBefore }), 'gentle fishing changed the seeded fish or granted the wrong count');
+
+      // A built pond can disappear while its sheet is open; never silently redirect that Cast to the public pond.
+      await page.evaluate(() => {
+        farm.closeCards(); const g = farm.game; g.s.level = Math.max(g.s.level, 2); g.s.coins += 500;
+        const placed = g.do('place', { kind: 'pond', x: 41, z: 59 });
+        if (!placed.ok) throw Error('pond fixture placement: ' + placed.reason);
+        farm.panels.show('pond', placed.id);
+        const stored = g.do('store', { id: placed.id }); if (!stored.ok) throw Error('pond fixture storage: ' + stored.reason);
+        farm.closeCards();
+      });
+      const idlePlayer = await page.evaluate(() => {
+        const p = farm.people, w = p.walkers.get('you'); p.cancelTrip(w); w.stay = 9999;
+        return JSON.stringify({ line: farm.state().fishing.line, goal: w.goal, spot: w.fishSpot });
+      });
+      await sheet(page).locator('[data-do="castLine"]:not([data-bait])').click();
+      expect(await page.evaluate(before => {
+        const w = farm.people.walkers.get('you'); return JSON.stringify({ line: farm.state().fishing.line, goal: w.goal, spot: w.fishSpot }) === before;
+      }, idlePlayer), 'stale built-pond sheet redirected its Cast to the public pond');
       expect(!errors.length, errors.join('\n'));
       console.log(`ok   fishing places, rods/float taps, timing/retry/save and gentle option ${lang} ${width}`);
     } catch (error) { failed++; console.log(`FAIL pond fishing ${lang} ${width}\n${error.stack}`); }
