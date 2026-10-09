@@ -1,6 +1,7 @@
 # Korean and Japanese editions
 
 Started 2026-10-09 on `codex/korean-japanese`, following the localized-name release (PR #34).
+Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35), which tracks CI, Pages deployment and live acceptance.
 The user requested the next work after that release. This pass completes the two remaining language editions;
 meadow/dairy and the later gameplay roadmap remain separate releases.
 

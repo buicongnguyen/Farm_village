@@ -206,6 +206,7 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 ## Status
 
 Current language follow-up, 2026-10-09: complete Korean/Japanese editions are implemented on `codex/korean-japanese`.
+Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
 All four menus, catalogs, local names, dates and number formats share the same saved farms and story logic.
 [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) records verification and release status. This does not complete any
 new gameplay stage; the preceding naming-only scope below belongs to PR #34.

@@ -2,7 +2,7 @@
 
 ### Active logic handoff — Korean and Japanese editions (2026-10-09)
 
-- Codex owns `codex/korean-japanese`, based on deployed main `15c5738` (PR #34), for complete language catalogs, lazy locale loading, menu/settings options, formatting and language/save/layout tests.
+- Codex owns `codex/korean-japanese`, based on deployed main `15c5738` (PR #34), for complete language catalogs, lazy locale loading, menu/settings options, formatting and language/save/layout tests. Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
 - Work is confined to logic, interface text/layout, documentation and tests. Character/save/model IDs and gameplay numbers stay fixed. Existing art, palette, lighting, wordmark and assets remain Claude's; this requests no binaries or new art. CJK text uses the existing system-font fallback, subject to actual rendered-font and phone checks.
 - Phone review found that CSS text zoom also enlarged speech coordinates. Codex is the active writer for `PeopleView.placeBubbles()` on this branch, correcting coordinate conversion and viewport bounds only; bubble colours, typography and effects remain unchanged. This shared-function reservation ends with the language release.
 - PR #34's shared-view reservation has ended. Only the new `placeBubbles()` correction above is reserved; the rest of `PeopleView`, AR-002, the tree pack and walk-route work are free for their owners. The meadow/dairy gameplay contract remains the next gameplay slice.
