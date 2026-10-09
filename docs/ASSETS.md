@@ -120,6 +120,7 @@ MIT) is a build tool only, not a dependency of the game.
 ## AR-011 / AR-012 (2026-10-09)
 
 - `decor.glb` `hospital`: original Blender model in `art/blender/build_farm_kit.py` (the clinic's upgrade tier).
+- `decor.glb` `potting_bench_overgrown`, `potting_bench_repaired`, `potting_bench_done`: original Blender models in `art/blender/build_farm_kit.py` (AR-013).
 - Icons `police`, `company`: rendered from Willowmere's `town.glb` (the user's own project), replacing copied placeholders.
 - Icons `hen`, `cow`: rendered from this repository's `public/assets/models/rigged/chicken.glb` and `cow.glb`
   (render_icons.py `self:` sources). `ui:today`, `ui:mail`, `tool:demolish`, `ui:harvest_all`: original models in

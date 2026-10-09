@@ -61,14 +61,14 @@ async function fits(page, selector) {
 
 await check('Vietnamese boot, restored project status and nested build locks', async page => {
   expect(await page.getAttribute('html', 'lang') === 'vi', 'Vietnamese boot did not set document language');
-  // This restore instruction has two sentences. Translate the complete key before taking the first sentence.
-  const index = STEPS.findIndex(s => s.id === 'cottage1'), step = STEPS[index];
+  // The duplicate project row is now a single village/roadmap tracker; retain translated goal coverage.
+  const index = STEPS.findIndex(s => s.id === 'cottage1');
   await page.evaluate(index => {
     farm.game.s.projects.step = index; farm.game.s.level = 10; farm.hud.update();
   }, index);
-  const status = (await page.textContent('[data-status="projects"] > span:last-child')).trim();
-  expect(status === vi(step.restore).split('.')[0], `Restore status was not translated: ${status}`);
-  expect(!status.includes(step.restore.split('.')[0]), 'English restore instruction leaked into the HUD');
+  const status = (await page.textContent('.hud .tracker-goal')).trim();
+  expect(status.includes(vi('Bring the farm back')), `Roadmap goal was not translated: ${status}`);
+  expect(!status.includes('Bring the farm back'), 'English roadmap goal leaked into the HUD');
   await page.click('[data-act="build"]');
   await page.click('.sheet.build [data-cat="projects"]');
   const school = STEPS.find(s => s.id === 'school');

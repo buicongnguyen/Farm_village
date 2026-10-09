@@ -888,34 +888,86 @@ piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred
 
 # =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
 def hospital():
-    """The village hospital: a two-storey cream building with a teal roof, a big red-cross sign, a covered entrance at the
-    front centre (the clinic's doorway), rows of windows, a little ambulance bay and flower beds. 8 x 6 m footprint."""
-    W, D = 7.6, 5.2
-    p = [bx('plinth', W + .3, D + .3, .25, 0, 0, 0, 'stoned', bev=.04), bx('ground', W, D, 2.6, 0, 0, .25, 'plaster', bev=.06),
-         bx('band', W + .1, D + .1, .2, 0, 0, 2.85, 'teal', bev=.03), bx('upper', W - .6, D - .4, 2.2, 0, -.1, 3.05, 'cream', bev=.06),
-         bx('roofslab', W - .3, D - .1, .25, 0, -.1, 5.25, 'teald', bev=.06), bx('roofcap', W - 1.4, D - 1.2, .5, 0, -.1, 5.5, 'teal', bev=.12)]
-    # the red cross sign over the entrance
-    p += [bx('signbg', 1.5, .12, 1.5, 0, D / 2 - .15, 3.5, 'white', bev=.06), bx('crossv', .32, .16, 1.1, 0, D / 2 - .1, 3.7, 'red', bev=.03),
-          bx('crossh', 1.1, .16, .32, 0, D / 2 - .1, 4.09, 'red', bev=.03)]
-    # entrance canopy and doors, front centre
-    p += [bx('canopy', 2.6, 1.4, .18, 0, D / 2 + .6, 2.5, 'teal', bev=.04), bx('door', 1.5, .1, 2.0, 0, D / 2 + .02, .25, 'glass', bev=.03),
-          bx('doorframe', 1.7, .12, .15, 0, D / 2 + .03, 2.25, 'white', bev=.02)]
-    for x in (-1.2, 1.2):
-        p.append(cl('pillar', .1, 2.3, x, D / 2 + 1.2, .25, 'white', verts=8))
-    # windows: ground floor either side of the door, a full row upstairs
-    for x in (-2.8, -1.9, 1.9, 2.8):
-        p.append(bx('win', .6, .1, .9, x, D / 2 + .02, 1.1, 'glass', bev=.03))
-    for x in (-2.6, -1.6, -.6, .6, 1.6, 2.6):
-        p.append(bx('win2', .6, .1, .8, x, D / 2 - .4 + .02 - .2 + .4, 3.6, 'glassd', bev=.03))
-    # ambulance bay (a parked little white van) and flower beds
-    p += [bx('van', 1.2, 2.0, .9, W / 2 + .8, .6, .25, 'white', bev=.12), bx('vancab', 1.1, .7, .6, W / 2 + .8, 1.25, 1.1, 'white', bev=.1),
-          bx('vanstripe', 1.22, 2.02, .14, W / 2 + .8, .6, .7, 'red', bev=.02), bx('vanwin', 1.0, .05, .35, W / 2 + .8, 1.62, 1.2, 'glass', bev=.02)]
-    for x in (-2.6, 2.6):
-        p.append(bx('bed', 1.4, .5, .25, x, D / 2 + .5, .0, 'soil', bev=.04))
+    """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,
+    a covered entrance at the front centre (the clinic's doorway), an ambulance bay on the right and flower beds along
+    the front. Everything stays inside the 8 x 6 m (4 x 3 cell) footprint; the base fills it, so the origin is its centre."""
+    p = [bx('plinth', 7.8, 5.8, .2, 0, 0, 0, 'stonel', bev=.04),
+         bx('ground', 5.6, 3.8, 2.6, -.9, -.8, .2, 'plaster', bev=.06), bx('band', 5.7, 3.9, .2, -.9, -.8, 2.8, 'teal', bev=.03),
+         bx('upper', 5.0, 3.2, 2.1, -.9, -.95, 3.0, 'cream', bev=.06), bx('roofslab', 5.3, 3.5, .25, -.9, -.95, 5.1, 'teald', bev=.06),
+         bx('roofcap', 4.0, 2.2, .45, -.9, -.95, 5.35, 'teal', bev=.12)]
+    # the red cross sign on the upper front, over the entrance
+    p += [bx('signbg', 1.3, .12, 1.3, 0, .68, 3.4, 'white', bev=.06), bx('crossv', .28, .16, .95, 0, .72, 3.57, 'red', bev=.03),
+          bx('crossh', .95, .16, .28, 0, .72, 3.9, 'red', bev=.03)]
+    # entrance at the front centre: glass doors, a teal canopy on two white pillars
+    p += [bx('door', 1.4, .1, 2.0, 0, 1.12, .2, 'glass', bev=.03), bx('doorframe', 1.6, .12, .15, 0, 1.13, 2.2, 'white', bev=.02),
+          bx('canopy', 2.6, 1.3, .16, 0, 1.75, 2.45, 'teal', bev=.04), bx('step', 2.0, .6, .08, 0, 1.5, .2, 'stone', bev=.02)]
+    for x in (-1.1, 1.1):
+        p.append(cl('pillar', .09, 2.25, x, 2.25, .2, 'white', verts=8))
+    for x in (-3.0, -2.1, -1.2):
+        p.append(bx('win', .55, .1, .85, x, 1.12, 1.1, 'glass', bev=.03))
+    for x in (-3.0, -2.1, 1.1):
+        p.append(bx('win2', .55, .1, .75, x, .67, 3.6, 'glassd', bev=.03))
+    # ambulance bay on the right: painted bay lines and a small white van with a red stripe
+    p += [bx('bayl', .08, 2.6, .02, 2.25, -.5, .2, 'white', bev=0), bx('bayr', .08, 2.6, .02, 3.65, -.5, .2, 'white', bev=0),
+          bx('van', 1.05, 1.9, .85, 2.95, -.7, .22, 'white', bev=.12), bx('vancab', .98, .65, .55, 2.95, -.05, 1.0, 'white', bev=.1),
+          bx('vanstripe', 1.07, 1.92, .13, 2.95, -.7, .62, 'red', bev=.02), bx('vanwin', .9, .05, .32, 2.95, .3, 1.1, 'glass', bev=.02)]
+    for x in (-2.9, 2.9):
+        p.append(bx('bed', 1.4, .5, .22, x, 2.5, .2, 'soil', bev=.04))
         for k in range(4):
-            p.append(ball('fl', .12, x - .5 + k * .33, D / 2 + .5, .32, ('pink', 'sun', 'red', 'white')[k], sub=1))
+            p.append(ball('fl', .11, x - .5 + k * .33, 2.5, .5, ('pink', 'sun', 'red', 'white')[k], sub=1))
     return p
 piece('hospital', hospital(), decor)
+
+
+# =================================================================== the old potting bench (AR-013): three stages
+# Fixed optional project by the farmhouse (src/content/learning-site.mjs). About 2.4 x 1.4 m, origin at the base centre,
+# front +z. Stage 0 overgrown, stage 1 uncovered and mended (the faded strawberry label lies on it), stage 2 finished.
+def potting_bench(stage):
+    W, D = 2.2, 1.0
+    old = stage == 0
+    wood, dark = ('woodd', 'wooddd') if old else ('wood', 'woodd')
+    p = []
+    for x in (-W / 2 + .08, W / 2 - .08):
+        for y in (-D / 2 + .08, D / 2 - .08):
+            tilt = .12 if old and x > 0 and y > 0 else 0
+            p.append(bx('leg', .1, .1, .9 - tilt, x, y, 0, dark, bev=.01))
+    p.append(bx('top', W, D, .08, 0, 0, .9 if not old else .86, wood, bev=.02, rot=.04 if old else 0))
+    p.append(bx('shelf', W - .2, D - .2, .05, 0, 0, .3, dark, bev=.01))
+    p.append(bx('backboard', W, .08, .55, 0, -D / 2 + .04, .98, wood, bev=.02))
+    if not old:
+        p.append(bx('rail', W - .3, .05, .05, 0, -D / 2 + .1, 1.35, 'iron', bev=0))
+        for x in (-.6, -.2, .3):
+            p.append(cl('hook', .02, .08, x, -D / 2 + .1, 1.25, 'iron', verts=4))
+        p.append(bx('trowel', .05, .25, .04, -.6, -D / 2 + .13, 1.05, 'iron', bev=.01))
+    if stage == 0:   # weeds and long grass over the frame, a broken plank on the ground
+        for k in range(14):
+            a = k * 2.4; r = .2 + (k % 4) * .22
+            x, y = math.cos(a) * r, math.sin(a) * r * .3
+            up = math.pi / 2 if k % 2 else -math.pi / 2   # blades lean along the bench, not out of its envelope
+            p.append(lf((x, y, 0), (0 if x < 0 else math.pi) + (k % 3 - 1) * .3, .32 + (k % 3) * .08, .13, 'leaf' if k % 2 else 'leafwd', lift=.55, droop=.05))
+        for x in (-.7, .5):
+            p.append(ball('clump', .26, x, .3, .1, 'leafwd', sub=1, sc=(1.2, .9, .7)))
+        p.append(bx('plank', .8, .16, .05, .5, .5, 0, 'woodd', bev=.01, rot=.25))
+        p.append(cl('oldpot', .14, .2, -.6, 0, .34, 'brickd', verts=8, rt=.17))
+    if stage >= 1:   # mended: clean pots on the shelf
+        for i, x in enumerate((-.7, -.35, 0, .35)):
+            p.append(cl('pot', .11, .16, x, .05, .35, 'brick', verts=8, rt=.14))
+    if stage == 1:   # the saved old strawberry label lies on the top
+        p += [bx('label', .2, .06, .02, .3, .2, .94, 'paper', bev=.005, rot=.4), bx('labelberry', .06, .03, .022, .26, .21, .945, 'berry', bev=0, rot=.4),
+              bx('stake', .03, .22, .02, .38, .2, .94, 'woodl', bev=0, rot=.4)]
+        p.append(ball('leafbits', .1, -.8, .5, .02, 'leafwd', sub=1, sc=(1.5, 1, .3)))
+    if stage == 2:   # finished: seed trays of seedlings, a strawberry plant in a pot, a watering can
+        for i, x in enumerate((-.55, .15)):
+            p.append(bx('tray', .6, .4, .08, x, .1, .98, 'charcoal', bev=.01))
+            for k in range(6):
+                p.append(lf((x - .2 + (k % 3) * .2, .02 + (k // 3) * .18, 1.06), k * 1.3, .1, .06, 'leafl', lift=.08, droop=.0))
+        p += [cl('bigpot', .16, .22, .7, .1, .98, 'brick', verts=10, rt=.2), ball('plant', .18, .7, .1, 1.3, 'leaf', sub=1, sc=(1, 1, .7)),
+              ball('berry1', .05, .78, .22, 1.24, 'berry', sub=1), ball('berry2', .045, .62, .2, 1.22, 'berryl', sub=1)]
+        p += [cl('can', .13, .22, -.75, .35, 0, 'teal', verts=10), st((-.62, .35, .16), (-.45, .35, .26), .02, 'teal', sides=4)]
+    return p
+piece('potting_bench_overgrown', potting_bench(0), decor)
+piece('potting_bench_repaired', potting_bench(1), decor)
+piece('potting_bench_done', potting_bench(2), decor)
 
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():

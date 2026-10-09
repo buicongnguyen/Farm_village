@@ -50,25 +50,43 @@ async function check(name, width, options, fn) {
   try {
     const s = fixture(options);
     context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'reduce' });
+    let releaseDecor;
+    if (options.deferDecor) {
+      const blocked = new Promise(resolve => { releaseDecor = resolve; });
+      await context.route('**/assets/models/decor.glb', async route => { await blocked; await route.continue(); });
+    }
     await context.addInitScript(({ save, now }) => {
-      localStorage.setItem('farm-village.language', 'en'); localStorage.setItem('farm-village:profile', '1');
-      localStorage.setItem('farm-village:save:1', save); sessionStorage.setItem('learning-world-clock', String(now));
+      if (!sessionStorage.getItem('learning-world-seeded')) {
+        sessionStorage.setItem('learning-world-seeded', '1');
+        localStorage.setItem('farm-village.language', 'en'); localStorage.setItem('farm-village:profile', '1');
+        localStorage.setItem('farm-village:save:1', save); sessionStorage.setItem('learning-world-clock', String(now));
+      }
       Date.now = () => Number(sessionStorage.getItem('learning-world-clock'));
     }, { save: pack(s), now: s.createdAt });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400 && !/favicon/.test(r.url())) errors.push(`${r.status()} ${r.url()}`); });
-    await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
-    await page.evaluate(() => {
-      clearInterval(farm.game.timer); farm.game.clock = () => Date.now();
-      farm.skipIntro(); farm.closeCards(); farm.panels.close(); farm.radial.hide();
-    });
-    await page.waitForFunction(() => farm.world.learning && farm.world.batches.has('flowerpot'));
-    await fn(page, s);
+    await page.goto(URL_); await prepare(page);
+    if (!options.deferDecor) await artReady(page);
+    await fn(page, s, releaseDecor);
     expect(!errors.length, errors.join('\n')); console.log(`ok   ${name} ${width}`);
   } catch (e) { failures++; console.log(`FAIL ${name} ${width}\n${e.stack}`); }
   finally { await context?.close(); }
 }
+
+async function prepare(page) {
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => {
+    clearInterval(farm.game.timer); farm.game.clock = () => Date.now();
+    farm.skipIntro(); farm.closeCards(); farm.panels.close(); farm.radial.hide();
+  });
+}
+const artReady = page => page.waitForFunction(() => {
+  if (!farm.world.learning || !['potting_bench_overgrown', 'potting_bench_repaired', 'potting_bench_done'].every(id => farm.world.batches.has(id))) return false;
+  if (!farm.world.learning.visible) return true;
+  const count = farm.state().learning.steps.length, expected = count >= 3 ? 'potting_bench_done' : count ? 'potting_bench_repaired' : 'potting_bench_overgrown';
+  return farm.world.batches.items.get('learning:frame')?.model === expected;
+});
 
 async function tapCell(page, x, z) {
   await page.evaluate(([x, z]) => {
@@ -82,7 +100,7 @@ async function tapCell(page, x, z) {
   await page.mouse.click(point.x, point.y);
 }
 const benchItems = page => page.evaluate(() => Object.fromEntries(['frame', 'cover', 'trays'].map(id =>
-  [id, farm.world.batches.items.has(`learning:${id}`)])));
+  [id, farm.world.batches.items.get(`learning:${id}`)?.model ?? null])));
 const mapState = page => page.evaluate(() => JSON.stringify({ cells: farm.state().cells, parcels: farm.state().parcels, placed: farm.state().placed }));
 async function photo(page, name) { await page.screenshot({ path: join(shots, name) }); }
 
@@ -109,17 +127,20 @@ try {
       await page.locator('.radial:not([hidden]) [data-act="plant"][data-crop="wheat"]').waitFor();
       expect(await page.locator('.radial [data-act="plant"][data-crop="strawberry"]').count() === 0, 'strawberries offered before learning');
       const mapBefore = await mapState(page);
-      let parts = await benchItems(page); expect(parts.frame && parts.cover && !parts.trays, `wrong covered stage: ${JSON.stringify(parts)}`);
+      let parts = await benchItems(page); expect(parts.frame === 'potting_bench_overgrown' && !parts.cover && !parts.trays, `wrong covered stage: ${JSON.stringify(parts)}`);
+      await page.evaluate(site => { farm.radial.hide(); farm.view(24, site.worldX, site.worldZ); }, LEARNING_SITE);
+      await photo(page, `bench-overgrown-${width}.png`);
       await tapCell(page, LEARNING_SITE.x, LEARNING_SITE.z);
       await panel(page).locator('[data-do="inspectLearning"]').click();
       for (const q of REPAIR_LESSON) await panel(page).locator(`[data-do="answerRepairLesson"][data-question="${q.id}"][data-choice="${q.answer}"]`).click();
       await panel(page).locator('[data-do="workGardenProject"][data-step="uncover"]').click();
-      parts = await benchItems(page); expect(parts.frame && !parts.cover && !parts.trays, `wrong uncovered stage: ${JSON.stringify(parts)}`);
+      parts = await benchItems(page); expect(parts.frame === 'potting_bench_repaired' && !parts.cover && !parts.trays, `wrong uncovered stage: ${JSON.stringify(parts)}`);
       await page.evaluate(() => farm.panels.close()); await photo(page, `bench-uncovered-${width}.png`);
       await tapCell(page, LEARNING_SITE.x, LEARNING_SITE.z);
       await panel(page).locator('[data-do="workGardenProject"][data-step="brace"]').click();
+      parts = await benchItems(page); expect(parts.frame === 'potting_bench_repaired' && !parts.cover && !parts.trays, 'second repair step did not retain the repaired model');
       await panel(page).locator('[data-do="workGardenProject"][data-step="trays"]').click();
-      parts = await benchItems(page); expect(parts.frame && !parts.cover && parts.trays, `wrong complete stage: ${JSON.stringify(parts)}`);
+      parts = await benchItems(page); expect(parts.frame === 'potting_bench_done' && !parts.cover && !parts.trays, `wrong complete stage: ${JSON.stringify(parts)}`);
       expect(await mapState(page) === mapBefore, 'bench phases bought land, changed terrain or occupied player building cells');
       expect(await page.evaluate(() => farm.state().coins) === initial.coins - 80, 'project total or hidden discovery payment changed');
       const refused = await page.evaluate(({ x, z }) => {
@@ -128,6 +149,10 @@ try {
       }, LEARNING_SITE);
       expect(!refused.ok && refused.unchanged, 'the reserved farmhouse lot became a free building plot');
       await page.evaluate(() => farm.panels.close()); await photo(page, `bench-complete-${width}.png`);
+      const completed = await page.evaluate(() => JSON.stringify({ learning: farm.state().learning, coins: farm.state().coins, stored: farm.state().stored }));
+      await page.evaluate(() => window.__fvSave()); await page.reload(); await prepare(page); await artReady(page);
+      expect((await benchItems(page)).frame === 'potting_bench_done', 'reload lost the completed art stage');
+      expect(await page.evaluate(value => JSON.stringify({ learning: farm.state().learning, coins: farm.state().coins, stored: farm.state().stored }) === value, completed), 'loading art changed project progress or rewarded it again');
 
       // Zero is deliberate test data. All ordinary actions below use their actual UI and rule handlers.
       await page.evaluate(() => {
@@ -177,7 +202,7 @@ try {
         return { n, strawberries };
       });
       expect(size.n > 2000 && size.strawberries > 300, `mixed crop fixture too small: ${JSON.stringify(size)}`);
-      expect((await benchItems(page)).trays, 'filled-farm sync lost the completed bench');
+      expect((await benchItems(page)).frame === 'potting_bench_done', 'filled-farm sync lost the completed bench');
       for (const [name, x, z] of [['bench', LEARNING_SITE.worldX, LEARNING_SITE.worldZ], ['farm', 128, 112]]) {
         for (const span of [24, 40, 90, 140, 220]) {
           const info = await page.evaluate(async ([span, x, z]) => {
@@ -191,6 +216,23 @@ try {
       await photo(page, `mixed-farm-${width}.png`);
     });
   }
+  await check('a late decor download replaces stand-ins at the current repair stage without replaying work', 390, { deferDecor: true }, async (page, initial, releaseDecor) => {
+    let parts = await benchItems(page); expect(parts.frame === 'bench' && parts.cover === 'weeds2', 'first-frame fallback absent');
+    await tapCell(page, LEARNING_SITE.x, LEARNING_SITE.z);
+    await panel(page).locator('[data-do="inspectLearning"]').click();
+    for (const q of REPAIR_LESSON) await panel(page).locator(`[data-do="answerRepairLesson"][data-question="${q.id}"][data-choice="${q.answer}"]`).click();
+    await panel(page).locator('[data-do="workGardenProject"][data-step="uncover"]').click();
+    parts = await benchItems(page); expect(parts.frame === 'bench' && !parts.cover && !parts.trays, 'fallback did not follow paid repair progress');
+    const before = await page.evaluate(() => JSON.stringify({ learning: farm.state().learning, coins: farm.state().coins, stored: farm.state().stored }));
+    releaseDecor(); await artReady(page);
+    await page.waitForFunction(() => farm.world.batches.items.get('learning:frame')?.model === 'potting_bench_repaired');
+    parts = await benchItems(page); expect(!parts.cover && !parts.trays, 'late model left duplicate fallback parts');
+    expect(await page.evaluate(value => JSON.stringify({ learning: farm.state().learning, coins: farm.state().coins, stored: farm.state().stored }) === value, before), 'asset delivery altered progress or paid a reward');
+    expect(await page.evaluate(() => farm.state().coins) === initial.coins - 20, 'uncover cost changed while waiting for art');
+    await page.evaluate(() => farm.panels.close()); await tapCell(page, LEARNING_SITE.x, LEARNING_SITE.z);
+    await panel(page).locator('[data-do="workGardenProject"][data-step="brace"]').waitFor();
+    await photo(page, 'bench-late-model-phone.png');
+  });
 } finally { await browser.close(); }
 console.log(`${checks - failures}/${checks} learning world checks passed; screenshots: ${shots}`);
 process.exitCode = failures ? 1 : 0;

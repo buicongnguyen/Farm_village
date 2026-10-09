@@ -44,10 +44,16 @@ async function waitSaved(page, path, value) {
   }, { path, value }, { timeout: 15000 });
 }
 async function enter(page, testMode) {
-  if (!testMode) await page.locator('.main-menu [data-do="profile"][data-n="1"]').click();
-  await page.locator('.hud [data-act="projects"]').waitFor({ state: 'visible', timeout: 60000 });
   if (testMode) await page.waitForFunction(() => window.farm?.ready);
-  else expect(await page.evaluate(() => typeof window.farm === 'undefined'), 'public build exposes test hook');
+  else {
+    await page.locator('.main-menu [data-do="profile"][data-n="1"]').click();
+    // The HUD exists before the models and game.start() finish loading.
+    await page.locator('.guide').waitFor({ state: 'attached', timeout: 60000 });
+    const daily = page.locator('.panel[data-kind="today"]:not([hidden])');
+    if (await daily.isVisible()) await daily.locator('.panel-head [data-do="close"]').click();
+    expect(await page.evaluate(() => typeof window.farm === 'undefined'), 'public build exposes test hook');
+  }
+  await page.locator('.hud [data-act="projects"]').waitFor({ state: 'visible', timeout: 60000 });
 }
 async function open(page, activity = 'learning') {
   const close = panel(page).locator('.panel-head [data-do="close"]'); if (await close.count()) await close.click();

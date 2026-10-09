@@ -98,13 +98,14 @@ export class Radial {
     this.last = { cell, x, y };
     const s = this.s, now = this.game.now;
     let id = occupant(s, cell.x, cell.z);
-    const animal = !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
-    if (id) this.people?.playerGo?.(cell);   // you walk over to what you tapped
+    // Advice/source links refer to a world cell, not the actor under their temporary screen coordinates.
+    const animal = !opts.preview && !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
+    if (id && !opts.preview) this.people?.playerGo?.(cell);   // you walk over to what you tapped
     // a plain tap on an empty bed always opens the seed menu, so the crop can be changed; only a drag (or a harvest sweep) uses the armed tool
-    if (id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
+    if (!opts.preview && id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
     // a person picked a moment ago, then a pond: they walk there and fish (you cast a line when you get there)
     const pondHere = isPond(cell.x, cell.z) || near(cell, POND_DOCK, 1) || (id && s.placed[id]?.kind === 'pond');
-    const sel = this.people?.selected;
+    const sel = !opts.preview && this.people?.selected;
     if (pondHere && sel && performance.now() < (this.people.selectedUntil ?? 0)) { this.hide(); this.people.sendFishing(sel, id && s.placed[id]?.kind === 'pond' ? s.placed[id] : null); this.people.selected = null; return; }
     if (pondHere && !id) { this.hide(); this.panels.show('pond'); return; }
     const ruin = !id && ruinAt(cell.x, cell.z);
@@ -115,7 +116,7 @@ export class Radial {
       if (!tidied(s, ruin.kind)) ruinButtons.push({ act: 'tidyRuin', kind: ruin.kind, icon: glyph('sprout', 'ic'), label: `${coinMark()}${TIDY.coins}`, disabled: s.coins < TIDY.coins });
       return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
-    const who = !id && this.people?.pick(x, y);
+    const who = !opts.preview && !id && this.people?.pick(x, y);
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '', land = null;
