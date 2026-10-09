@@ -18,6 +18,28 @@ The notes below preserve PR #28's ownership and validation record. These reserva
 - AR-011/AR-012 integration: Claude's PR #27 (`7cba0e4`) is merged locally at `b1896f5` for combined testing. Codex is the active writer for `LandView.model()`/`apply()` in `src/view/land-view.mjs` to select/redraw the saved hospital tier, and for UI icon URL selection, menu IDs and semantic classes. Generators, registrations, binaries and Claude's color tokens are retained from his art commit. AR-013 remains a separate requested model; optional worker outfits and brand seals are still future art.
 - Combined native, component-browser and smoke validation passed. All 117 advertised small files are verified as 64 px WebP; real menu requests, hospital upgrade/reload/wear and phone budgets pass. [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) records the exact release head, production acceptance and deployment; it includes PR #27's art history. This completes the requested first AR-011/AR-012 integration, with the later compact HUD layout and optional outfits/seals still separate.
 
+### AR-014: Tree pack 2, unlocked gradually — delivered by Claude 2026-10-09 (`art/tree-pack-2`)
+
+- The user asked for more tree types that **appear gradually, so the player is not flooded with new things**. All 11 are drawn now, but the catalogue should open them one or two per chapter, in this order. Levels are a proposal: logic (Codex) owns `buildings.mjs`, `goods.mjs`, levels, prices and story.
+
+| Level | Chapter | Kind (proposed id) | Type | `decor.glb` node(s) | Tris (ripe / bare) |
+|---|---|---|---|---|---|
+| 7 | The meadow | `maple` | charm | `tree2_maple` | 496 |
+| 9 | Down to the river | `birch` | charm | `tree2_birch` | 418 |
+| 11 | Down to the river | `lemon_tree` → `lemon` | fruit | `tree2_lemon`, `tree2_lemon_bare` | 656 / 456 |
+| 13 | A village to be proud of | `cypress` | charm | `tree2_cypress` | 420 |
+| 15 | A village to be proud of | `plum_tree` → `plum` | fruit | `tree2_plum`, `tree2_plum_bare` | 676 / 456 |
+| 19 | Hollowbrook Farm Co. | `mango_tree` → `mango` | fruit | `tree2_mango`, `tree2_mango_bare` | 664 / 456 |
+| 22 | Hollowbrook Farm Co. | `grape_arbor` → `grape` (vine, 1 cell) | fruit | `tree2_grape`, `tree2_grape_bare` | 1,264 / 696 |
+| 26 | Over the hills | `fir` | charm | `tree2_fir` | 600 |
+| 28 | Over the hills | `longan_tree` → `longan` | fruit | `tree2_longan`, `tree2_longan_bare` | 960 / 456 |
+| 31 | Over the hills | `lychee_tree` → `lychee` | fruit | `tree2_lychee`, `tree2_lychee_bare` | 960 / 456 |
+| 35 | The valley of plenty | `great_oak` (2 × 2 cells, one per farm, rope swing) | landmark | `tree2_oak` | 674 |
+
+- Pacing suggestions for logic: show only the next locked tree as a teaser, not all of them; introduce each one through a villager line or chapter beat (for example Granny Ada's plum jam in `hearts.mjs` for the plum); no more than one new tree per level-up.
+- Registered in `src/view/kinds.mjs` (decor kit, `late: true`, `lod: 'tree'`; the arbour is `static`), with `:bare` twins for the six fruit trees after picking. Icons (256 px + `sm/` 64 px): the 11 kind ids and the six fruit goods `lemon`, `plum`, `mango`, `grape`, `longan`, `lychee`. Fruit goods fit the juice press, jam kitchen and dryer chains in `docs/PRODUCT-CHAINS.md`.
+- Origin at the trunk base, front +z. Footprints: 1 cell except the great oak (canopy ≈ 6.5 m, intended for 2 × 2 cells). Nothing loads on the first frame.
+
 ### AR-013: Old potting bench — requested 2026-10-09
 
 - Current status: delivered in PR #30 (`a56c93e`); integrated with the hospital correction in `807f803`. Runtime stages, late loading and save/phone checks are part of [the current release](CLEARER-GUIDANCE-AND-ART.md).

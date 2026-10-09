@@ -45,6 +45,11 @@ for n, c in {
         'herb': '#6FA86A', 'herbl': '#9CCB8A', 'herbd': '#4E7E4A', 'root': '#F2D9A8',
         # keepsakes (AR-009)
         'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
+        # tree pack 2 (later trees, one or two per chapter)
+        'maple': '#F0502A', 'maplel': '#FF9A2E', 'mapled': '#C8322A', 'birch': '#F4F1E6', 'birchm': '#3A3D4A', 'birchleaf': '#B8E04A',
+        'birchleafl': '#DCF07A', 'cypress': '#2E7A4A', 'cypressl': '#4E9E5A', 'fir': '#1F6E58', 'firl': '#36907A', 'oak': '#5C9E3A',
+        'oakl': '#86C24A', 'oakd': '#3E7A30', 'lemon': '#FFE23A', 'plum': '#7A3AA8', 'pluml': '#A45ED0', 'mango': '#FFB22E',
+        'mangor': '#FF6A3A', 'grape': '#6A3AA8', 'grapel': '#9A62D8', 'longan': '#D8B070', 'lychee': '#F0425E', 'rope': '#E8C88A',
         }.items():
     C[n] = mat('FK ' + n, c, .55)
 
@@ -968,6 +973,162 @@ def potting_bench(stage):
 piece('potting_bench_overgrown', potting_bench(0), decor)
 piece('potting_bench_repaired', potting_bench(1), decor)
 piece('potting_bench_done', potting_bench(2), decor)
+
+# =================================================================== tree pack 2: the later trees (one or two per chapter)
+# Charm: maple (meadow), birch (river), cypress (village), fir (hills), great oak (valley landmark, 2 x 2 cells).
+# Fruit (each with a _bare twin after picking): lemon, plum, mango, grape arbour, longan, lychee.
+# Origin at the trunk base, front +z. Late decor.glb, so nothing here adds to the first load.
+def hang(x, y, z, mt, n=5, r=.09, mt2=None):
+    """A hanging bunch of small round fruit (longan, lychee, grapes): rows that narrow toward the bottom."""
+    p, k = [], 0
+    for row, m in enumerate((3, 2, 1) if n <= 6 else (4, 3, 2, 1)):
+        for j in range(m):
+            a = j / m * math.tau + row * .7; rr = r * .9 * (m > 1)
+            p.append(ball('fr', r, x + math.cos(a) * rr, y + math.sin(a) * rr, z - row * r * 1.5, mt if (k % 3 or not mt2) else mt2, sub=0)); k += 1
+    return p
+def fruit_on(n, mt, r, out, z0=2.4, dz=.8, mt2=None, sc=None, start=.4):
+    """Fruit dotted round the outside of a cute canopy (on it, never inside it)."""
+    p = []
+    for i in range(n):
+        a = i / n * math.tau + start; rr = (1.55 + .25 * (i % 2)) * out; z = z0 + dz * ((i * 3) % 4) / 3
+        p.append(ball('fruit', r, math.cos(a) * rr * .8, math.sin(a) * rr * .8, z, mt2 if mt2 and i % 3 == 0 else mt, sub=1, sc=sc))
+    return p
+
+def maple():
+    """Maple (charm, the meadow chapter): a cute round tree in fiery red, orange and gold, a few leaves on the grass."""
+    p = cute('m', 'maple', 'maplel', 'mapled')
+    for i in range(5):
+        a = i * 1.3; r = 1.0 + .3 * (i % 3)
+        p.append(lf((math.cos(a) * r, math.sin(a) * r, .02), a * 2, .22, .16, 'maplel' if i % 2 else 'maple', lift=0, droop=0))
+    return p
+piece('tree2_maple', maple(), decor)
+
+def birch():
+    """Birch (charm, by the river): a slim white trunk with dark marks, a tall light lime-gold canopy."""
+    p = [cl('trunk', .24, 3.4, 0, 0, 0, 'birch', verts=8, rt=.17)]
+    for i, z in enumerate((.6, 1.1, 1.7, 2.3, 2.9)):
+        p.append(bx('mark', .2, .05, .06, .02 * (i % 2), .2 - .02 * i, z, 'birchm', bev=0, rot=i * 1.7))
+    p.append(st((0, 0, 2.6), (.6, .1, 3.2), .07, 'birch', sides=5))
+    for x, y, z, r, mt in ((0, 0, 4.0, 1.1, 'birchleaf'), (.4, .2, 3.3, .85, 'birchleafl'), (-.35, -.15, 3.4, .85, 'birchleaf'),
+                           (.05, .05, 4.8, .75, 'birchleafl')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1, 1, 1.15)))
+    return p
+piece('tree2_birch', birch(), decor)
+
+def cypress():
+    """Cypress (charm, the village chapter): a tall narrow column of deep green, for lining lanes and the square."""
+    p = [cl('trunk', .18, .6, 0, 0, 0, 'woodd', verts=6, rt=.14)]
+    for i, (r, z) in enumerate(((.62, 1.2), (.7, 2.0), (.62, 2.9), (.48, 3.7), (.3, 4.4))):
+        p.append(ball('col', r, 0, 0, z, 'cypress' if i % 2 == 0 else 'cypressl', sub=2, sc=(1, 1, 1.5)))
+    return p
+piece('tree2_cypress', cypress(), decor)
+
+def fir():
+    """Fir (charm, over the hills to Pine Ridge): taller and bluer than the round pine, six drooping tiers."""
+    p = [cl('trunk', .32, 1.0, 0, 0, 0, 'woodd', verts=8, rt=.26)]
+    for i in range(6):
+        r = 1.75 - i * .26; z = .8 + i * .95
+        p.append(cl('tier', r, 1.25, 0, 0, z, 'fir' if i % 2 == 0 else 'firl', verts=12, rt=r * .22, bev=.25))
+    p.append(cone_tip())
+    return p
+def cone_tip():
+    return ball('tip', .28, 0, 0, 7.1, 'firl', sub=1, sc=(1, 1, 1.6))
+piece('tree2_fir', fir(), decor)
+
+def great_oak():
+    """The great oak (the valley landmark, 2 x 2 cells, one per farm): a thick flared trunk, a wide layered canopy and
+    a rope swing on the front branch."""
+    p = [cl('trunk', .75, 3.0, 0, 0, 0, 'woodd', verts=10, rt=.55), cl('flare', 1.05, .4, 0, 0, 0, 'wooddd', verts=10, rt=.75)]
+    for a in (0, 2.1, 4.2):
+        p.append(st((math.cos(a) * .7, math.sin(a) * .7, .15), (math.cos(a) * 1.3, math.sin(a) * 1.3, 0), .2, 'woodd', sides=5, rt=.08))
+    p += [st((0, 0, 2.6), (1.6, .4, 3.6), .22, 'woodd', sides=6, rt=.14), st((0, 0, 2.6), (-1.5, -.3, 3.7), .22, 'woodd', sides=6, rt=.14),
+          st((.1, .1, 2.6), (.2, 1.6, 3.2), .2, 'woodd', sides=6, rt=.13)]
+    for x, y, z, r, mt in ((0, 0, 4.6, 2.0, 'oak'), (1.8, .4, 4.0, 1.5, 'oakl'), (-1.8, -.3, 4.1, 1.5, 'oak'), (.2, -1.6, 4.2, 1.4, 'oakd'),
+                           (.1, 1.5, 4.0, 1.3, 'oakl'), (.3, .2, 5.7, 1.4, 'oakl')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1, 1, .85)))
+    for x in (-.35, .35):   # the swing hangs from the front branch
+        p.append(st((x, 1.45, 3.1), (x, 1.45, .55), .025, 'rope', sides=3))
+    p.append(bx('seat', .9, .3, .07, 0, 1.45, .5, 'wood', bev=.02))
+    return p
+piece('tree2_oak', great_oak(), decor)
+
+def lemon(ripe=True):
+    """Lemon tree (fruit): a compact glossy dark tree with bright oval lemons, a little smaller than the orange."""
+    p = cute('l', 'leafwd', 'leafw', 'leafdd')
+    if ripe: p += fruit_on(10, 'lemon', .22, 1.3, sc=(1, 1, 1.35))
+    return p
+piece('tree2_lemon', lemon(), decor)
+piece('tree2_lemon_bare', lemon(False), decor)
+
+def plum(ripe=True):
+    """Plum tree (fruit; Granny Ada's terrible jam): a fresh green canopy hung with deep purple plums."""
+    p = cute('pl', 'leafwl', 'leafw', 'leafwd')
+    if ripe: p += fruit_on(11, 'plum', .23, 1.3, mt2='pluml')
+    return p
+piece('tree2_plum', plum(), decor)
+piece('tree2_plum_bare', plum(False), decor)
+
+def mango(ripe=True):
+    """Mango tree (fruit): a big dense dark dome, long mangoes blushing orange-red hanging on short stalks."""
+    p = [cl('trunk', .45, 2.2, 0, 0, 0, 'wood', verts=8, rt=.32), cl('root', .65, .25, 0, 0, 0, 'woodd', verts=8, rt=.45)]
+    for x, y, z, r, mt in ((0, 0, 3.4, 1.9, 'leafwd'), (1.1, .3, 2.9, 1.2, 'leafw'), (-1.1, .2, 2.9, 1.2, 'leafwd'), (.1, 1.0, 2.8, 1.1, 'leafw'),
+                           (0, -.1, 4.4, 1.1, 'leafw')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1.1, 1.1, .8)))
+    if ripe:
+        for i in range(8):
+            a = i / 8 * math.tau + .2; rr = 2.25 + .15 * (i % 2); z = 1.95 + .3 * (i % 3)
+            x, y = math.cos(a) * rr, math.sin(a) * rr
+            p.append(st((x * .95, y * .95, z + .35), (x, y, z + .12), .02, 'stem', sides=3))
+            p.append(ball('mango', .2, x, y, z, 'mango' if i % 2 else 'mangor', sub=1, sc=(.85, .85, 1.4)))
+    return p
+piece('tree2_mango', mango(), decor)
+piece('tree2_mango_bare', mango(False), decor)
+
+def grape_arbor(ripe=True):
+    """Grape arbour (fruit vine, 1 cell): a little wooden pergola roofed with vine leaves, purple bunches hanging inside."""
+    p = []
+    for x in (-.8, .8):
+        for y in (-.8, .8):
+            p.append(bx('post', .18, .18, 2.3, x, y, 0, 'wood', bev=.02))
+    for y in (-.8, .8):
+        p.append(bx('beam', 2.0, .12, .14, 0, y, 2.3, 'woodd', bev=.02))
+    for i in range(5):
+        p.append(bx('slat', .1, 2.0, .08, -.8 + i * .4, 0, 2.44, 'wood', bev=.01))
+    for i, (x, y) in enumerate(((-.5, -.5), (.4, -.6), (-.6, .4), (.5, .5), (0, 0), (0, -.8), (0, .8), (-.85, 0), (.85, 0))):
+        p.append(ball('vine', .55, x, y, 2.6, 'leafw' if i % 2 else 'leafwl', sub=1, sc=(1, 1, .45)))
+    for x in (-.8, .8):   # the vine climbs the front posts
+        for k, z in enumerate((.7, 1.3, 1.9)):
+            p.append(ball('climb', .2, x + (.06 if k % 2 else -.06), .85, z, 'leafw' if k % 2 else 'leafwl', sub=1))
+    if ripe:
+        for x, y in ((-.45, 1.0), (.4, 1.0), (-1.0, .2), (1.0, -.1)):   # on the outer edges, where the camera sees them
+            p += hang(x, y, 2.3, 'grape', n=6, r=.11, mt2='grapel')
+    return p
+piece('tree2_grape', grape_arbor(), decor)
+piece('tree2_grape_bare', grape_arbor(False), decor)
+
+def longan(ripe=True):
+    """Longan tree (fruit, the hills chapter): a wide dark canopy with tan bunches of small round longans."""
+    p = cute('lg', 'leafdd', 'leafwd', 'pinew')
+    if ripe:
+        for i in range(4):
+            a = i / 4 * math.tau + .3; rr = 2.05
+            p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
+            p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'longan', n=6, r=.13)
+    return p
+piece('tree2_longan', longan(), decor)
+piece('tree2_longan_bare', longan(False), decor)
+
+def lychee(ripe=True):
+    """Lychee tree (fruit, the hills chapter): a bright green canopy with clusters of rosy-red lychees."""
+    p = cute('ly', 'leafw', 'leafwl', 'leafdd')
+    if ripe:
+        for i in range(4):
+            a = i / 4 * math.tau + .8; rr = 2.05
+            p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
+            p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'lychee', n=6, r=.13, mt2='berry')
+    return p
+piece('tree2_lychee', lychee(), decor)
+piece('tree2_lychee_bare', lychee(False), decor)
 
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():

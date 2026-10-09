@@ -26,7 +26,11 @@ C = {n: mat('IT ' + n, c, .5) for n, c in {
     'label2': '#FFD23F', 'pellet': '#7A9A3A', 'burlapo': '#A8A65A', 'burlapod': '#7E7C3E', 'burlapol': '#C8C47E', 'hen': '#E8573F', 'cow': '#3A3D4A', 'skillet': '#3A3D4A', 'skilletl': '#5B6477', 'crumb': '#FFD86A', 'board': '#C98A4A',
     'boardd': '#7A4A28', 'flour': '#FFF8EA', 'straw': '#C99A3A', 'strawd': '#8A5A22', 'eggb': '#E9A868', 'eggb2': '#D98C4A',
     'crustl': '#E39A48', 'eggw': '#FFF1D8', 'dish': '#1FB5B0', 'dishd': '#14857F', 'frostw': '#FFF4DC', 'xpblue': '#2F95EA', 'xpbluel': '#8FD0FF',
-    'fruitpeachr': '#FF6A5A', 'orangefd': '#E8771A', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878'}.items()}
+    'fruitpeachr': '#FF6A5A', 'orangefd': '#E8771A', 'violet': '#9B6BFF', 'orangef': '#FF9A1F', 'root': '#F2D9A8', 'rootd': '#C9A878',
+    # tree pack 2 fruit
+    'lemon': '#FFE23A', 'lemonl': '#FFF6A8', 'plum': '#7A3AA8', 'pluml': '#C7A0F0', 'mango': '#FFB22E', 'mangor': '#FF6A3A',
+    'grape': '#6A3AA8', 'grapel': '#9A62D8', 'longan': '#D8B070', 'longand': '#B8904E', 'lychee': '#F0425E', 'lycheed': '#C82E4A',
+    'lycheew': '#FFF8EE'}.items()}
 
 def P(name, r, loc, mt, sub=2, sc=None):
     return ico(name, r, loc, C[mt], subdiv=sub, scale=sc)
@@ -410,6 +414,58 @@ def harvest_basket():
           cone('carrot', .07, .4, (-.25, -.15, .52), C['carrot'], verts=8, rot=(1.2, 0, .5))]
     return p
 item('ui_harvest_all', harvest_basket())
+
+# tree pack 2 fruit (goods icons): lemon, plum, mango, a grape bunch, a longan sprig, a lychee sprig
+def lemon_fruit():
+    """A lemon: a bright oval with pointed ends, a gloss dot and a leaf."""
+    o = sphere('f', .34, (-.12, 0, .34), C['lemon'], segs=18, rings=12, scale=(1.35, 1, 1))
+    p = [o, P('tipl', .08, (-.6, 0, .34), 'lemon', sub=1), P('tipr', .08, (.36, 0, .34), 'lemon', sub=1),
+         P('shine', .07, (-.3, -.3, .5), 'lemonl', sub=1, sc=(1.4, .5, 1))]
+    p.append(leaf('lf', (-.2, 0, .66), .4, .34, .16, C['leaf'], lift=.05, droop=-.03))
+    return p
+item('item_lemon', lemon_fruit())
+def plum_fruit():
+    """Two plums: deep purple with a soft bloom highlight and a crease, one stalk and leaf."""
+    p = []
+    for x, s in ((-.18, 1), (.26, .85)):
+        o = sphere('f', .3 * s, (x, 0, .3 * s), C['plum'], segs=18, rings=12)
+        p += [o, P('bloom', .06 * s, (x - .1, -.24 * s, .4 * s), 'pluml', sub=1, sc=(1, .5, 1.5))]
+    p += [cyl('stem', .025, .16, (-.18, 0, .64), C['woodd'], verts=6, bev=0, rot=(.3, 0, 0)), leaf('lf', (-.18, 0, .66), .8, .3, .14, C['leaf'], lift=.05, droop=-.03)]
+    return p
+item('item_plum', plum_fruit())
+def mango_fruit():
+    """A mango: a fat kidney shape blushing from gold to orange-red, short stalk and a long leaf."""
+    o = sphere('f', .34, (0, 0, .32), C['mango'], segs=18, rings=12, scale=(1.4, .95, 1))
+    for v in o.data.vertices:
+        v.co.z += .06 * (v.co.x / .34) ** 2 * (1 if v.co.z > 0 else -1)
+    p = [o, sphere('blush', .33, (.1, -.01, .33), C['mangor'], segs=18, rings=12, scale=(1.3, .96, 1.0)), cyl('stem', .03, .12, (-.4, 0, .5), C['woodd'], verts=6, bev=0),
+         leaf('lf', (-.4, 0, .58), 2.6, .5, .14, C['leafd'], lift=.05, droop=.05)]
+    return p
+item('item_mango', mango_fruit())
+def bunch(mt, mt2, r, rows, stem=True):
+    p = [cyl('stalk', .025, .25, (0, 0, .95), C['woodd'], verts=6, bev=0)] if stem else []
+    for row, m in enumerate(rows):
+        for j in range(m):
+            a = j / m * math.tau + row * .6; rr = r * (m - 1) * .62
+            p.append(P('b', r, (math.cos(a) * rr, math.sin(a) * rr, .9 - row * r * 1.55), mt if (row + j) % 3 else mt2, sub=2))
+    return p
+def grapes():
+    """A grape bunch: purple berries in narrowing rows, a woody stalk and a big vine leaf."""
+    return bunch('grape', 'grapel', .1, (5, 5, 4, 3, 2, 1)) + [leaf('lf', (0, 0, 1.08), .5, .4, .32, C['leaf'], lift=.05, droop=.05)]
+item('item_grape', grapes())
+def longan_sprig():
+    """A longan sprig: small tan round fruit on a branching twig, one peeled to its glassy white flesh."""
+    p = bunch('longan', 'longand', .16, (5, 4, 3, 1)) + [P('peeled', .14, (.36, -.3, .3), 'lycheew', sub=2), P('seed', .055, (.36, -.42, .33), 'woodd', sub=1)]
+    return p + [leaf('lf', (0, 0, 1.1), 2.2, .36, .14, C['leafd'], lift=.05, droop=.05)]
+item('item_longan', longan_sprig())
+def lychee_sprig():
+    """A lychee sprig: rosy-red bumpy fruit on a twig, one opened to the white flesh."""
+    p = bunch('lychee', 'lycheed', .16, (5, 4, 3, 1))
+    for o in p[1:]:
+        for v in o.data.vertices:
+            if hash((round(v.co.x, 3), round(v.co.y, 3))) % 3 == 0: v.co *= 1.06
+    return p + [P('open', .14, (.36, -.3, .3), 'lycheew', sub=2), leaf('lf', (0, 0, 1.1), 2.2, .36, .14, C['leaf'], lift=.05, droop=.05)]
+item('item_lychee', lychee_sprig())
 
 objs = []
 for name, parts in items:
