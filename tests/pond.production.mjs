@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { newGame } from '../src/core/state.mjs';
+import { tick } from '../src/core/act.mjs';
 import { pack } from '../src/kit/save.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
@@ -13,6 +14,7 @@ if (shots) mkdirSync(shots, { recursive: true });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
 function fixture() {
   const now = Date.now(), s = newGame(now, 4242, { restore: true });
+  tick(s, now); // include the ordinary first-day garden flower before comparing trip accounting
   s.story.chapter = 5; s.story.tutorial = 999; s.story.beats = BEATS.map(b => b.id);
   s.settings.daylight = 'always'; s.settings.reducedMotion = true; s.settings.playerName = 'Pond Walker';
   s.today.seen = true; s.today.claimed = true;
@@ -45,7 +47,7 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true,
   args: process.env.GPU === '0' ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 let failures = 0;
 try {
-  for (const [lang, width] of [['en', 390], ['vi', 1280]]) {
+  for (const [lang, width] of [['en', 390], ['vi', 1280]].filter(([lang]) => !process.env.POND_LANG || process.env.POND_LANG === lang)) {
     const height = 844, context = await browser.newContext({ viewport: { width, height }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'reduce' });
     try {
       const initial = fixture();
@@ -83,20 +85,29 @@ try {
       for (const close of await page.locator('.modal [data-close]').all()) if (await close.isVisible()) await close.click();
       await pan(53, 125); await key('+'); await key('+'); await key('+');
       let selected = false;
-      for (const [dx, dz] of [[4, 0], [4, 3], [3, -4], [1, 5], [4, -3]]) {
-        await click(cam.project((22 + dx + .5) * 2, (62 + dz + .5) * 2, 1.15));
-        selected = await page.locator('.toast').filter({ hasText: 'Pond Walker' }).count() > 0;
-        if (selected) break;
-        const close = page.locator('.panel:not([hidden]) .panel-head [data-do="close"]'); if (await close.count()) await close.click();
+      // The player may be taking their initial short stroll home; retry the five public home spots after it ends.
+      for (let attempt = 0; attempt < 4 && !selected; attempt++) {
+        for (const [dx, dz] of [[4, 0], [4, 3], [3, -4], [1, 5], [4, -3]]) {
+          await pan((22 + dx + .5) * 2, (62 + dz + .5) * 2);
+          const point = cam.project((22 + dx + .5) * 2, (62 + dz + .5) * 2, 1.15);
+          // A missed actor tap may open a radial menu; never mistake its purchase button for a character.
+          if (!await page.evaluate(p => document.elementFromPoint(p.x, p.y)?.tagName === 'CANVAS', point)) continue;
+          await click(point);
+          selected = await page.locator('.toast').filter({ hasText: 'Pond Walker' }).count() > 0;
+          if (selected) break;
+          const close = page.locator('.panel:not([hidden]) .panel-head [data-do="close"]'); if (await close.count()) await close.click();
+        }
+        if (!selected) await page.waitForTimeout(1500);
       }
+      if (!selected && shots) await page.screenshot({ path: join(shots, `pond-production-selection-${lang}-${width}.png`) });
       expect(selected, 'could not select the rendered player by tapping their home position');
       await pan(32, 84); await click(cam.project(31, 85));
       expect(!await page.locator('.panel:not([hidden]) [data-do="castLine"]').count(), 'pond opened its normal panel instead of accepting the selected player');
       expect(await page.evaluate(() => !JSON.parse(localStorage.getItem('farm-village:save:1')).fishing.line), 'cast before walking to the dock');
       await page.waitForFunction(() => !!JSON.parse(localStorage.getItem('farm-village:save:1'))?.fishing.line, null, { timeout: 120000 });
       const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
-      expect(saved.coins === initial.coins && JSON.stringify(saved.parcels) === JSON.stringify(initial.parcels), 'reaching the public pond cost coins or bought land');
-      expect(saved.cells === initial.cells.join('') && JSON.stringify(saved.placed) === JSON.stringify(initial.placed), 'the trip built paths or changed structures');
+      expect(saved.coins === initial.coins && JSON.stringify(saved.parcels) === JSON.stringify(initial.parcels), `reaching the public pond cost coins or bought land: ${JSON.stringify({ coins: saved.coins, expected: initial.coins, parcels: saved.parcels, beforeParcels: initial.parcels, stats: saved.stats, repairing: saved.repairing })}`);
+      expect(saved.cells === initial.cells.join('') && JSON.stringify(saved.placed) === JSON.stringify(initial.placed), `the trip built paths or changed structures: ${JSON.stringify({ cellsChanged: saved.cells !== initial.cells.join(''), extra: Object.keys(saved.placed).filter(id => !initial.placed[id]), changed: Object.keys(initial.placed).filter(id => JSON.stringify(saved.placed[id]) !== JSON.stringify(initial.placed[id])) })}`);
       if (shots) await page.screenshot({ path: join(shots, `pond-production-${lang}-${width}.png`) });
       await page.reload(); await enter();
       expect(await page.evaluate(() => !!JSON.parse(localStorage.getItem('farm-village:save:1'))?.fishing.line), 'the auto-cast line did not survive reload');

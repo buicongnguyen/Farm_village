@@ -3,7 +3,7 @@
 ### Active logic handoff — public pond access (2026-10-09)
 
 - Codex owns `codex/pond-access`, integrating Claude PR #33 at `635c457` from released main `58c6677`. Shared behavior edits are `PeopleView` journeys, `WorldView.fixedLook` for the public path, and `dress.planWilds` to clear that corridor. This supersedes the earlier note that walk-route work was still available.
-- Existing path colours and assets are reused; no art-lane binaries, palette or Blender changes are requested. [Scope and release checks](POND-ACCESS-FIX.md). Reservation ends at the validated release commit.
+- Existing path colours and assets are reused; no art-lane binaries, palette or Blender changes are requested. [Scope and release checks](POND-ACCESS-FIX.md). Gameplay handoff is `bff1c69`; this reservation ends when [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37) merges.
 
 ### Release handoff — Korean and Japanese editions (2026-10-09)
 
@@ -301,7 +301,7 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
 
 ## Notes between lanes
 
-- 2026-10-09, **active writer: Codex, `codex/pond-access`**, integrating Claude PR #33 at `635c457`. Scope: `PeopleView` route/arrival/cancellation behavior; `WorldView.fixedLook` draws the public pond path with the existing path token; `dress.planWilds` keeps that corridor clear. Core route data and regression tests are coordinated by Codex. No palette, model, icon or Blender changes. Handoff commit: pending validation.
+- 2026-10-09, **active writer: Codex, `codex/pond-access`**, integrating Claude PR #33 at `635c457`. Scope: `PeopleView` route/arrival/cancellation behavior; `WorldView.fixedLook` draws the public pond path with the existing path token; `dress.planWilds` keeps that corridor clear. Core route data and regression tests are coordinated by Codex. No palette, model, icon or Blender changes. Gameplay handoff: `bff1c69`; validation/release in PR #37, which ends this reservation.
 
 Historical log: the dated ownership and waiting-for-art notes below describe their original releases. They do not reserve files now; the active reservation and current request statuses at the top of this file take precedence.
 

@@ -71,8 +71,19 @@ try {
         await page.waitForFunction(id => {
           const w = farm.people.walkers.get(id), actor = w.subject.actor;
           return actor?.root.visible && actor.mesh.visible && actor.mesh.geometry.attributes.position.count > 0
-            && actor.clip === 'Sit' && Math.hypot(actor.root.position.x - 37, actor.root.position.z - 85) < .05;
-        }, id, { timeout: 15000 });
+            // Hana has no authored Sit clip; verify the rig's real fallback while logical fishing remains Sit.
+            && w.clipFor === 'Sit' && actor.clip === actor.rig.clipFor('Sit') && Math.hypot(actor.root.position.x - 37, actor.root.position.z - 85) < .05;
+        }, id, { timeout: 15000 }).catch(async error => {
+          const state = await page.evaluate(id => {
+            const w = farm.people.walkers.get(id), a = w.subject.actor;
+            return { id, time: farm.people.time, cam: { x: farm.world.cam.x, z: farm.world.cam.z, span: farm.world.cam.span },
+              walker: { x: w.x, z: w.z, clip: w.clip, clipFor: w.clipFor, once: w.once, onceUntil: w.onceUntil, wait: w.wait, indoors: w.indoors },
+              subject: { x: w.subject.x, z: w.subject.z, clip: w.subject.clip, hidden: w.subject.hidden },
+              actor: a && { x: a.root.position.x, z: a.root.position.z, visible: a.root.visible, mesh: a.mesh.visible, clip: a.clip, once: a.onceClip, count: a.mesh.geometry.attributes.position.count },
+              cast: farm.people.cast.stats() };
+          }, id);
+          throw Error(`${error.message}\nDock render state: ${JSON.stringify(state)}`);
+        });
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         if (shots) await page.screenshot({ path: join(shots, `pond-${lang}-${width}-${id}.png`) });
       }

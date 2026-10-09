@@ -15,6 +15,14 @@ The village pond is outside owned/buildable land. Players cannot fix a missing c
 
 Claude PR #33 is incorporated through merge commit `635c457`, preserving its history and the newer localization/bubble fixes. Codex completed public path presentation, bounded terrain access, dynamic collision checks, shore selection and lifecycle regressions.
 
-Validation so far: all 465 native tests and the pace simulation pass (steady school day 3). The test build uses 1,094,316 bytes of startup code, below the 1,100,000-byte limit. Native movement tests inspect actual positions, clips, cast timing, returns and cancelled actions; the browser check selects a character then taps the pond. Full component and smoke checks are in progress.
+Validation:
 
-Release PR, CI, Pages and live acceptance: pending.
+- All 465 native tests and the pace simulation pass (steady school day 3).
+- All 35 component browser suites pass, plus 28 smoke checks. The full run passed 34 suites; the pond test was corrected to respect Hana's existing animation fallback and passed its four-context rerun. There was no further game-code change.
+- The pond browser test taps visibly rendered player/family/villager actors, then the pond, and verifies arrival, the supported fishing pose and player-only casting. Captured English/Vietnamese phone and Korean/Japanese desktop images show actors at the dock.
+- Startup code: production 1,093,471 bytes; test build 1,094,316 bytes, both below 1,100,000. Phone rendering and first-load timing checks pass.
+- Browser coverage uses Chrome on phone-sized and desktop viewports. The optional Safari/WebKit checks could not run because its local runtime is unavailable.
+- Hook-free production acceptance passes in English on a 390 px phone and Vietnamese on a 1280 px desktop: ordinary controls select the player, the real-time walk ends with an automatic cast, land/coins/structures remain unchanged, and the line survives reload. The fixture includes the first day's normal garden decoration before comparing journey accounting.
+- Publication verification is recorded in [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37).
+
+Release source: `codex/pond-access`, gameplay commit `bff1c69`. [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37) records final-head CI, Pages deployment and live verification. It preserves the history of Claude PR #33; the tree pack in PR #32 is outside this change.
