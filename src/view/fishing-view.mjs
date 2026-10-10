@@ -125,7 +125,7 @@ export class FishingView {
       };
       if (w.player && progress >= 1 && !cast.landed) { cast.landed = true; this.splash(point.x, water, point.z, 8); }
       if (w.player && play.phase === 'fight') {   // the fish drags the float about as you reel it toward the bank
-        const pull = play.progress * .75, side = Math.sin(this.time * (play.surge ? 9 : 4)) * (play.surge ? .55 : .2) * (1 - play.progress * .6);
+        const pull = play.progress * .75, side = Math.sin(this.time * (play.surge ? 14 : 6)) * (play.surge ? .55 : .2) * (1 - play.progress * .6);
         point.x += (w.x + ux * .9 - point.x) * pull - uz * side; point.z += (w.z + uz * .9 - point.z) * pull + ux * side;
         point.y = water + .02 + (play.surge ? Math.abs(Math.sin(this.time * 9)) * .15 : 0);
         if (play.surge && Math.random() < dt * 6) this.splash(point.x, water, point.z, 3);
@@ -154,22 +154,24 @@ export class FishingView {
     const g = this.angler;
     if (g && next.length < MAX && !active.has('you')) {
       const water = g.pond.surface, has = !!line && !!g.cast, aim = g.cast ?? [g.pond.x, g.pond.z], play = has ? this.play?.state ?? {} : {};
-      const dx = aim[0] - g.x, dz = aim[1] - g.z, dist = Math.hypot(dx, dz) || 1, ux = dx / dist, uz = dz / dist;
+      const dx = aim[0] - g.x, dz = aim[1] - g.z, dist = Math.hypot(dx, dz) || 1, carried = !has && Number.isFinite(g.yaw);
+      const ux = carried ? Math.sin(g.yaw) : dx / dist, uz = carried ? Math.cos(g.yaw) : dz / dist;   // carried over the shoulder until you cast
       const progress = has ? quiet ? 1 : Math.min(1, (this.time - g.castAt) / .5) : 0;
-      const tip = { x: g.x + ux * 1.9, y: 2.25 + (has ? (1 - progress) * .5 : Math.sin(this.time * 1.6) * .03), z: g.z + uz * 1.9 };
+      const tip = has ? { x: g.x + ux * 1.9, y: 2.25 + (1 - progress) * .5, z: g.z + uz * 1.9 } : { x: g.x + uz * .5 - ux * .7, y: 2.9, z: g.z - ux * .5 - uz * .7 };   // over the shoulder
       let bob = quiet ? 0 : Math.sin(this.time * 2) * .025;
       if (!quiet && play.phase === 'nibble') bob = -.07 * (play.dart ?? 0);
       if (!quiet && play.phase === 'bite') bob = -.22 + Math.sin(this.time * 40) * .04;
       const point = { x: tip.x + (aim[0] - tip.x) * progress, y: tip.y + (water + .14 + bob - tip.y) * progress + Math.sin(progress * Math.PI) * 1.6, z: tip.z + (aim[1] - tip.z) * progress };
       if (has && progress >= 1 && !g.landed) { g.landed = true; this.splash(point.x, water, point.z, 8); }
       if (play.phase === 'fight') {
-        const pull = play.progress * .8, side = Math.sin(this.time * (play.surge ? 9 : 4)) * (play.surge ? .55 : .2) * (1 - play.progress * .6);
+        const pull = play.progress * .8, side = Math.sin(this.time * (play.surge ? 14 : 6)) * (play.surge ? .55 : .2) * (1 - play.progress * .6);
         point.x += (g.x + ux * 1.2 - point.x) * pull - uz * side; point.z += (g.z + uz * 1.2 - point.z) * pull + ux * side;
         point.y = water + .02 + (play.surge ? Math.abs(Math.sin(this.time * 9)) * .15 : 0);
         if (play.surge && Math.random() < dt * 6) this.splash(point.x, water, point.z, 3);
       }
       const index = next.length, end = has ? point : tip;
-      a.set(g.x + ux * .35, 1.0, g.z + uz * .35); b.set(tip.x, tip.y, tip.z);
+      if (has) a.set(g.x + ux * .35, 1.0, g.z + uz * .35); else a.set(g.x + uz * .34 + ux * .25, 1.05, g.z - ux * .34 + uz * .25);
+      b.set(tip.x, tip.y, tip.z);
       direction.subVectors(b, a); const length = direction.length(); rotation.setFromUnitVectors(up, direction.normalize());
       matrix.compose(a.add(b).multiplyScalar(.5), rotation, scale.set(1, length, 1)); this.rods.setMatrixAt(index, matrix);
       matrix.makeScale(has ? 1 : 0, has ? 1 : 0, has ? 1 : 0).setPosition(end.x, end.y, end.z); this.floats.setMatrixAt(index, matrix);

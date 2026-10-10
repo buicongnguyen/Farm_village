@@ -12,7 +12,7 @@ import { pick } from '../core/fishing.mjs';
 
 const KINDS = [['perch', 7, 3, 1.0], ['carp', 5, 2, 1.15], ['catfish', 3, 1, 1.2], ['golden', 2, 1, 0.85]];   // [model, in the village pond, in a built pond, length m]
 const MAX = 6, BACK_S = 12;
-const m4 = new THREE.Matrix4(), t4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qt = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+const m4 = new THREE.Matrix4(), t4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qt = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), eu = new THREE.Euler();
 const turn = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k, ease = k => k * k * (3 - 2 * k);
 
 export class PondFish {
@@ -60,7 +60,7 @@ export class PondFish {
       const n = pond ? k.small : k.big, taken = j => this.gone.some(g => g.kind === kind && g.pond === pond && g.j === j);
       let j = 0; while (j < n && taken(j)) j++;
       if (j >= n) { j = 0; this.gone = this.gone.filter(g => !(g.kind === kind && g.pond === pond && g.j === 0)); }   // the only one of its kind: it is back already
-      this.visitor = { kind, pond, j, w: 0, x: 0, z: 0, heading: 0 };
+      this.visitor = { kind, pond, j, w: 0, x: 0, z: 0, heading: 0, live: false };
     }
     return { st, f };
   }
@@ -70,7 +70,7 @@ export class PondFish {
     this.time += quiet ? dt * 0.2 : dt;
     if ((this.acc += dt) > 2) { this.acc = 0; this.list = this.ponds(); }
     const t = this.time, on = this.answer(), b = this.visitor;
-    if (b) { b.w = Math.max(0, Math.min(1, b.w + (on ? dt / 0.7 : -dt / 1.6))); if (!on && b.w <= 0) this.visitor = null; }
+    if (b) { b.w = on ? 1 : Math.max(0, b.w - dt / 1.6); if (!on && b.w <= 0) this.visitor = null; }
     this.gone = this.gone.filter(g => g.until + 1.2 > t);
     this.kinds.forEach((k, ki) => {
       let i = 0;
@@ -80,23 +80,35 @@ export class PondFish {
         const r = 0.3 + 0.62 * ((j * 37 + ki * 11) % 10) / 10;
         let x = p.x + Math.cos(a) * p.rx * r, z = p.z + Math.sin(a * 1.3) * p.rz * r;
         const dx = -Math.sin(a) * p.rx * r * speed, dz = Math.cos(a * 1.3) * 1.3 * p.rz * r * speed;
-        let heading = Math.atan2(dx, dz), wag = 7, swing = 0.5, size = 1;
+        let heading = Math.atan2(dx, dz), wag = 7, swing = 0.5, size = 1, roll = 0, lift = 0;
         const mine = b && b.kind === k.id && b.pond === pi && b.j === j ? b : null;
         if (mine) {
-          if (on) {   // toward the float from the far side; nose on it for the bite; hauled about, pulling away, in the fight
-            const { st, f } = on, fight = st.phase === 'fight', held = fight || st.phase === 'bite';
-            const away = k.nose + (held ? 0.02 : (1 - (st.approach ?? 0)) * 2.6 + 0.42 - (st.dart ?? 0) * 0.34);
-            mine.x = f.x + f.ux * away; mine.z = f.z + f.uz * away;
-            mine.heading = Math.atan2(-f.ux, -f.uz) + (fight ? Math.PI + Math.sin(t * (st.surge ? 13 : 6)) * (st.surge ? 0.7 : 0.3) : 0);
-            if (held) { wag = 22; swing = 0.8; }
-          }
-          const w = ease(mine.w); x += (mine.x - x) * w; z += (mine.z - z) * w; heading = turn(heading, mine.heading, w);
+          if (on) {   // as in Zoo Garden's drawSuitor and updateFight
+            const { st, f } = on, bx = f.x, bz = f.z;
+            if (!mine.live) Object.assign(mine, { live: true, x, z, heading, from: Math.max(1.2, Math.hypot(x - bx, z - bz)), phase: '' });
+            if (st.phase === 'bite' && mine.phase !== 'bite') this.world.fishingView.splash?.(bx, f.y, bz, 12);
+            mine.phase = st.phase;
+            if (st.phase === 'fight') {   // hooked: the float rides on the fish as it is hauled in, thrashing; it breaks the surface when it surges
+              const e = Math.min(1, dt * 6); mine.x += (bx - mine.x) * e; mine.z += (bz - mine.z) * e;
+              mine.heading = Math.atan2(f.ux, f.uz) + Math.sin(t * 12) * 0.5;   // pulling away from you
+              roll = Math.sin(t * 18) * 0.4; lift = st.surge ? Math.abs(Math.sin(t * 9)) * 0.3 : 0; wag = 26; swing = 0.6;
+            } else if (st.phase === 'bite') {   // onto the float, a little deeper, shaking
+              const e = Math.min(1, dt * 10); mine.x += (bx - mine.x) * e; mine.z += (bz - mine.z) * e;
+              mine.heading += Math.sin(t * 20) * dt * 3; lift = -0.1; wag = 22;
+            } else {   // swims in from where it was, nose to the float; nibbling, it holds half a metre off and darts in and back
+              let dx = mine.x - bx, dz = mine.z - bz; const d = Math.hypot(dx, dz) || 1; dx /= d; dz /= d;
+              const dart = st.dart ?? 0, away = st.phase === 'nibble' ? 0.5 - dart * 0.32 : Math.max(0.5, mine.from * (1 - (st.approach ?? 0)));
+              const e = Math.min(1, dt * (dart > 0.05 ? 30 : 8)); mine.x += (bx + dx * (away + k.nose) - mine.x) * e; mine.z += (bz + dz * (away + k.nose) - mine.z) * e;
+              mine.heading = turn(mine.heading, Math.atan2(-dx, -dz), Math.min(1, dt * (st.phase === 'nibble' ? 6 : 4))); wag = 10;
+            }
+          } else mine.live = false;   // let go: it drifts back to its round
+          const w = on ? 1 : ease(mine.w); x += (mine.x - x) * w; z += (mine.z - z) * w; heading = turn(heading, mine.heading, w);
         }
         const lost = this.gone.find(g => g.kind === k.id && g.pond === pi && g.j === j);
         if (lost) size = Math.max(0, Math.min(1, (t - lost.until) / 1.2));   // landed: away, then a new one grows in
         const swish = quiet ? 0 : Math.sin(t * wag + seed * 3);
-        q.setFromAxisAngle(up, heading + swish * 0.06);   // the models face +z
-        const y = p.y - k.top - 0.05 + 0.03 * Math.sin(t * 1.3 + seed);   // just under the surface
+        q.setFromEuler(eu.set(0, heading + swish * 0.06, roll, 'YXZ'));   // the models face +z
+        const y = p.y - k.top - 0.05 + lift + 0.03 * Math.sin(t * 1.3 + seed);   // just under the surface
         m4.compose(v.set(x, y, z), q, sc.setScalar(k.scale * size)); k.body.setMatrixAt(i, m4);
         if (k.tail) { qt.setFromAxisAngle(up, swish * swing); t4.compose(k.hinge, qt, sc.setScalar(1)); k.tail.setMatrixAt(i, m4.clone().multiply(t4)); }
       }

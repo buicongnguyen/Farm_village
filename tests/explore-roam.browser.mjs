@@ -309,7 +309,7 @@ await check('fishing on foot: any bank is reached, the rod comes out, a tap on t
   const { ctx, page, errors } = await open('pc');
   await page.waitForFunction(() => farm.world.fishingPlay, null, { timeout: 20000 });
   await start(page);
-  const view = () => page.evaluate(() => { const m = farm.world.exploreMode, v = farm.world.fishingView; return { rod: !!v.angler, cast: v.angler?.cast ?? null, line: !!farm.state().fishing?.line, near: m.near?.id ?? null, label: m.near?.label ?? null, pile: v.pile ? v.pile.fish.length : 0, lying: v.pile ? v.pile.fish.filter(f => f.landed).map(f => [f.o.position.x, f.o.position.y, f.o.position.z]) : [], p: m.session.p }; });
+  let at2; const view = () => page.evaluate(() => { const m = farm.world.exploreMode, v = farm.world.fishingView; return { rod: !!v.angler, cast: v.angler?.cast ?? null, line: !!farm.state().fishing?.line, near: m.near?.id ?? null, label: m.near?.label ?? null, pile: v.pile ? v.pile.fish.length : 0, lying: v.pile ? v.pile.fish.filter(f => f.landed).map(f => [f.o.position.x, f.o.position.y, f.o.position.z]) : [], p: m.session.p }; });
   await stand(page, 39, 85); await settle(page);   // the east bank, by the old fishing places
   let v = await view(); expect(v.rod && v.near === 'pond' && v.label === 'Cast a line', `at the east bank: ${JSON.stringify(v)}`);
   await stand(page, 49, 85); await settle(page); v = await view(); expect(!v.rod, 'the rod stays out far from the water');
@@ -361,6 +361,14 @@ await check('fishing on foot: any bank is reached, the rod comes out, a tap on t
   expect(v.pile === 0 && !v.rod, `walking off left the fish or the rod: ${JSON.stringify(v)}`);
   expect(await held() === 0 && await barn() === stock + 2, `packing did not bring both fish in: ${await barn() - stock}`);
   expect(await page.locator('.hud .toast').count() >= 1, 'no notice that the catch was packed');
+  // strolling round the pond never fishes by itself: the rod is carried, the line goes out only on a cast and is wound in when you walk on
+  await stand(page, 21.5, 85); await settle(page); v = await view(); expect(v.rod && !v.line && !v.cast, `the rod is not just carried at the bank: ${JSON.stringify(v)}`);
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  at2 = await page.evaluate(([x, z]) => { const p = new (farm.world.cam.camera.position.constructor)(x, 0.06, z).project(farm.world.cam.camera); return { x: (p.x + 1) * innerWidth / 2, y: (1 - p.y) * innerHeight / 2 }; }, spot);
+  await page.mouse.click(at2.x, at2.y); await page.waitForTimeout(700); v = await view(); expect(v.line && v.cast, 'could not cast after coming back');
+  await stand(page, 21.5, 87.5); await settle(page); await page.waitForTimeout(300); v = await view();
+  expect(!v.line && !v.cast, `walking along the bank left the line out: ${JSON.stringify(v)}`);
+  expect(!(await page.locator('.hud .reel-btn').isVisible()), 'the Reel button stays although the line is wound in');
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 

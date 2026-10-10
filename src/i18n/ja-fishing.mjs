@@ -31,7 +31,6 @@ export const JA_FISHING = {
   'Hold Reel to pull it in': '巻くを長押しして引き寄せよう',
   'A fish is biting! Sit at the water and use the round Reel button: strike on the bite, then hold to reel.': '魚がかかってる! 水辺に座って丸い「巻く」ボタンを使おう。アタリで押して、長押しで巻き上げ。',
   // fishing on foot from the bank
-  'Your line is in the other pond. Reel it in first.': '釣り糸は別の池にあります。先に巻き上げてね。',
   'Your fish is packed away in the barn.': '釣った魚を納屋にしまいました。',
   'Your catch is packed away: {count} fish in the barn.': '釣った魚{count}匹を納屋にしまいました。',
   'Nothing to pack': 'しまうものがありません',
