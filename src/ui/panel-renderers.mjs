@@ -227,3 +227,17 @@ function renderOrderCard(c) {
       <div class="order-row"><div class="needs">${goodsLine(s, c.need)}</div>
       <div class="order-buttons"><button class="btn primary small-btn" data-do="deliver" data-id="${c.id}" ${can ? '' : 'disabled'}>${t('Sell')}</button>${c.story ? '' : `<button class="btn ghost icon-only" data-do="discard" data-id="${c.id}" aria-label="${t('Discard')}">${glyph('trash', 'g')}</button>`}</div></div></div>`;
   }
+
+/** Barn: keep the button held and it goes on selling (after 0.4 s, eight a second) until you let go or run out. */
+export function holdToSell(el) {
+  let wait = 0, tick = 0, held = false;
+  const stop = () => { clearTimeout(wait); clearInterval(tick); wait = tick = 0; };
+  el.addEventListener('pointerdown', e => {
+    stop(); held = false;
+    const b = e.target.closest?.('[data-do="sellGood"]'); if (!b || e.button > 0) return;
+    const pick = `[data-do="sellGood"][data-good="${b.dataset.good}"]${b.dataset.n ? `[data-n="${b.dataset.n}"]` : ':not([data-n])'}`;
+    wait = setTimeout(() => { tick = setInterval(() => { const live = el.querySelector(pick); if (!live || live.disabled) stop(); else { held = true; live.click(); } }, 125); }, 400);
+  });
+  for (const type of ['pointerup', 'pointercancel', 'blur']) addEventListener(type, stop);
+  el.addEventListener('click', e => { if (held && e.isTrusted) { held = false; e.stopPropagation(); e.preventDefault(); } }, true);   // letting go is not one more sale
+}

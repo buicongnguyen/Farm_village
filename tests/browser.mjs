@@ -92,6 +92,38 @@ await check('build mode: ghost, rotate and confirm a feed mill (landscape)', asy
   expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'feed mill not placed');
   await ctx.close();
 });
+await check('build mode on a keyboard: R turns the ghost, Enter lands it, Esc cancels and then closes (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await prep(page);
+  await page.evaluate(() => { const g = farm.game; for (let i = 0; i < 6; i++) g.do('place', { kind: 'bed', x: 33 + i, z: 57 }); g.s.level = 3; g.s.xp = 100; farm.build.select('feed_mill'); });
+  await tapCell(page, 40, 64);
+  const rot = await page.evaluate(() => farm.build.rot); await page.keyboard.press('r');
+  expect(await page.evaluate(() => farm.build.rot) === (rot + 1) % 4, 'R did not turn the ghost');
+  for (let i = 0; i < 4 && !(await page.evaluate(() => farm.build.check().ok)); i++) await page.keyboard.press('r');
+  expect(await page.evaluate(() => farm.build.check().ok), 'no rotation fits');
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'Enter did not place the feed mill');
+  await page.evaluate(() => farm.build.select('feed_mill')); await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => farm.build.open && !farm.build.mode), 'Esc did not cancel the placement');
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => !farm.build.open), 'a second Esc did not close build mode');
+  expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'a key placed a second building');
+  await ctx.close();
+});
+await check('barn: holding a Sell button keeps selling until you let go; a short click still sells one (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await prep(page);
+  await page.evaluate(() => { farm.game.s.barn.items.wheat = 60; farm.panels.show('barn'); });
+  await page.waitForSelector('.good-tile[data-good="wheat"]');
+  const wheat = () => page.evaluate(() => farm.state().barn.items.wheat);
+  await page.click('.good-tile[data-good="wheat"]'); expect(await wheat() === 59, `a click sold ${60 - await wheat()}`);
+  const box = await page.locator('.good-tile[data-good="wheat"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.waitForTimeout(1500); await page.mouse.up();
+  const after = await wheat(); expect(after <= 55 && after >= 45, `holding for 1.5 s left ${after} of 59`);
+  await page.waitForTimeout(500); expect(await wheat() === after, 'it went on selling after the button was let go');
+  await page.click('.good-tile[data-good="wheat"]'); expect(await wheat() === after - 1, 'the next click did not sell one');
+  await ctx.close();
+});
 await check('build mode: move and store (pc)', async () => {
   const { ctx, page } = await open('pc');
   await prep(page);

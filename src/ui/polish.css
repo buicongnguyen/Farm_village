@@ -259,3 +259,9 @@ button.village-name { border: 0; cursor: pointer; }
 .order-plan .plan-step img { width: 18px; height: 18px; }
 @media (max-width: 560px) { .order .line { display: none; } }
 @keyframes side-in { from { transform: translateX(40px); opacity: .4; } }
+/* key hints on the place bar, for a mouse and keyboard only */
+.place-bar kbd { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .place-bar .round { position: relative; }
+  .place-bar kbd { display: block; position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); padding: 0 5px; border-radius: 6px; background: #3b2a1acc; color: #fff; font: 800 10px/14px 'Nunito', sans-serif; white-space: nowrap; pointer-events: none; }
+}

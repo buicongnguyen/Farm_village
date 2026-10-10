@@ -190,7 +190,7 @@ export class Panels {
     if (this.renderLoading || this.renderError) return;
     this.renderLoading = import('./panel-renderers.mjs').then(module => {
       this.renderLoading = null;
-      this.renderer = module; this.render();
+      this.renderer = module; module.holdToSell(this.el); this.render();
     }, () => {
       // A fresh document clears failed entry and dependency module records. Reopening is explicit and saves first.
       this.renderLoading = null;
