@@ -65,7 +65,17 @@ export const SITES = [
   // The festival stage (chapter 9): the north edge of the village square, facing the well. `ruin`: what stands there
   // until it is rebuilt (the burned platform of the old stage) instead of a sign.
   { kind: 'stage', x: 39, z: 98, rot: 0, size: [4, 2], ruin: 'stage_burned' },
+  // The cannery (chapter 11): on the meadow by the brook. `when`: only the answer to Mr Albright builds it
+  // (core/valley.mjs); no sign marks the place.
+  { kind: 'cannery', x: 55, z: 16, rot: 0, size: [5, 4], when: s => s.story?.albright === 'factory', hidden: true },
 ];
+/** The meadow by the brook, north of the lane (chapter 11): kept open (wild scatter keeps off it). Wildflowers fill it
+ *  if the player keeps it; the cannery stands in the middle of it otherwise. Cells, inclusive. */
+export const MEADOW = { x0: 54, x1: 70, z0: 16, z1: 19 };
+export const inMeadow = (x, z) => x >= MEADOW.x0 && x <= MEADOW.x1 && z >= MEADOW.z0 && z <= MEADOW.z1;
+/** While Mr Albright's offer is open: the cell he waits on (by the farm gate), where his car stands on the verge (cells,
+ *  its middle), and where three white hives stand on the kept meadow afterwards. */
+export const ALBRIGHT = { stand: [30, 63], car: { x: 31, z: 67.3, rot: 0 }, hives: [[66.3, 18.4], [67.6, 18.9], [68.8, 18.3]] };
 /** The old water mill on the brook's north bank, across the water from the lane (scenery, view/old-mill.mjs): its middle
  *  in metres, and the cells it covers (wild scatter keeps off them; nobody's land, so nothing can be built there). Its
  *  wheel hangs over the brook on the south side, facing the usual view, and turns once the sluice is open (chapter 8). */

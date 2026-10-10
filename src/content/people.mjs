@@ -56,6 +56,11 @@ export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'functio
 /** Grandpa Oak is away upriver until chapter 9 has been seen; from then on he lives at the farmhouse again. */
 export const oakHome = s => (s.story?.chapter ?? 0) >= 9;
 export const VILLAGERS = [
+  // Mr Albright, the man from the city (chapter 11): he waits at the farm gate from the end of chapter 10 until he has his
+  // answer, then goes. Polite, sure of himself, honestly puzzled that anyone would say no. Not a villain.
+  { id: 'albright', name: '{person:albright:display}', role: 'Man from the city', arrives: s => (s.story?.chapter ?? 0) >= 10 && !s.story?.albright, noOrders: true, noGifts: true,
+    line: 'A fine meadow. I have drawn something for it. Take your time: I have a flask of tea.',
+    idle: ['Take your time. The offer keeps.', 'In the city nobody stops to look at a brook. I find I have stopped.', 'It is only a meadow. And yet.'] },
   // The office manager comes with the company office (chapter 8): brisk, kind, counts everything twice. No orders, no gifts.
   { id: 'bea', name: '{person:bea:display}', role: 'Office manager', arrives: 'company', noOrders: true, noGifts: true,
     line: 'Every crate counted twice, and every one of them ours.',

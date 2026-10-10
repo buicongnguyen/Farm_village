@@ -67,6 +67,14 @@ export const RECIPES = {
   noodles:      { name: 'Noodles', at: 'noodle_factory', needs: { wheat: 4, egg: 1 }, makes: 2, timeMs: 60_000, value: 30, level: 8, icon: '🍜' },
   instant_noodles: { name: 'Instant noodles', at: 'noodle_factory', needs: { noodles: 2, carrot: 1 }, makes: 1, timeMs: 2 * MIN, value: 95, level: 9, icon: '🍲' },
 };
+// Chapter 11 (core/valley.mjs): the cannery's tins for the player who took the offer; honey (a hive needs nothing but
+// time) and honey cake for the player who kept the meadow.
+Object.assign(RECIPES, {
+  canned_corn:   { name: 'Canned corn', at: 'cannery', needs: { corn: 6 }, makes: 2, timeMs: 3 * MIN, value: 70, level: 10 },
+  canned_tomato: { name: 'Canned tomatoes', at: 'cannery', needs: { tomato: 6 }, makes: 2, timeMs: 3 * MIN, value: 62, level: 10 },
+  honey:         { name: 'Meadow honey', at: 'beehive', needs: {}, makes: 1, timeMs: 2 * MIN, value: 36, level: 10 },
+  honey_cake:    { name: 'Honey cake', at: 'bakery', needs: { honey: 2, wheat: 3, egg: 1 }, makes: 1, timeMs: 3 * MIN, value: 150, level: 10 },
+});
 // The pace switch (economy.mjs PACE): the times written above are the testing lengths; release stretches them all.
 for (const c of Object.values(CROPS)) c.growMs = paced(c.growMs);
 for (const f of Object.values(FRUITS)) { f.firstMs = paced(f.firstMs); f.regrowMs = paced(f.regrowMs); }

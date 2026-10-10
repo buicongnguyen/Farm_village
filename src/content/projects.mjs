@@ -59,6 +59,9 @@ export const STEPS = [
   // chapter 10 (docs/plan/ch10-hands-to-help.md)
   { id: 'three_hands', name: 'Three pairs of hands', text: 'The farm has outgrown one pair of hands. Hire three neighbours in Friends, and let them do thirty tasks.',
     needs: {}, panel: 'friends', done: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30, builds: [] },
+  // chapter 11 (docs/plan/ch11-the-man-from-the-city.md)
+  { id: 'albright', name: 'An answer for the man from the city', text: 'A man from the city waits at the farm gate with an offer for the brook meadow. Hear him out, and answer when you are ready.',
+    needs: {}, panel: 'offer', done: s => !!s.story?.albright, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

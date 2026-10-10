@@ -80,7 +80,7 @@ export class Juice {
       if (busy) active.add(id);
       if (this.sailsWanted(id, p)) this.sails.get(id).speed = busy ? 3.2 : 0.5;
       if (!busy || quiet) continue;
-      const smokeAt = this.anchorWorld(id, p, 'chimney');
+      const smokeAt = p.kind === 'cannery' && s.valley?.green ? null : this.anchorWorld(id, p, 'chimney');   // a green cannery has a filter on its chimney (core/valley.mjs)
       if (smokeAt && now - (this.lastSmoke.get(id) ?? 0) > 300) { this.lastSmoke.set(id, now); this.smoke(smokeAt, 1); }
       if (now - (this.lastSmoke.get(`bob:${id}`) ?? 0) > 1300) { this.lastSmoke.set(`bob:${id}`, now); this.b.pulse(id, { from: 0.97, to: 1.035, ms: 700, squash: true }); }
     }

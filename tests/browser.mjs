@@ -691,6 +691,75 @@ await check('chapter 10: hired villagers are named and seen at work, the evening
   await ctx.close();
 });
 
+// Chapter 11 (docs/plan/ch11-the-man-from-the-city.md): the one choice, played once each way.
+for (const [kind, choice] of [['pc', 'meadow'], ['phone', 'factory']]) await check(`chapter 11: Mr Albright's offer, the ${choice} answer, what it opens and the card that reads by it (${kind})`, async () => {
+  const { ctx, page, errors } = await open(kind, '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:11'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // he is at the gate with his car, his stakes stand on the meadow, and a pill says an offer is waiting
+  await page.waitForFunction(() => farm.people?.walkers?.has('albright') && farm.world.batches.items.has('meadow:stakes') && farm.world.batches.items.has('meadow:car'), null, { timeout: 40000 });
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 30000; g.s.barn.cap = 5000; });
+  await page.waitForSelector('[data-status="offer"]');
+  // the Valley panel: the beauty and its parts, and a way to the offer
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley [data-do="offer"]');
+  const before = await page.evaluate(() => ({ rank: document.querySelector('.valley-rank h3').textContent, rows: document.querySelectorAll('.valley-parts li').length, leaves: document.querySelectorAll('.valley-leaves i.on').length }));
+  expect(before.rows >= 3 && before.leaves >= 1 && before.rank.length > 2, `the valley panel: ${JSON.stringify(before)}`);
+  await page.click('.valley [data-do="offer"]'); await page.waitForSelector('.offer-modal .offer-choice');
+  expect(await page.locator('.offer-choice').count() === 2 && await page.locator('.offer-choice li').count() === 6, 'two answers, three lines each');
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}offer-${kind}.png` });
+  const fits = await page.evaluate(() => { const r = document.querySelector('.offer-modal .card-modal').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1 && r.top >= 0; });
+  expect(fits, 'the offer card runs off the screen');
+  // "Let me think" answers nothing
+  await page.click('.offer-think'); await page.waitForFunction(() => !document.querySelector('.offer-modal'));
+  expect(await page.evaluate(() => farm.state().story.albright == null), 'thinking gave an answer');
+  // from the pill: pick, go back, pick again, and say yes
+  await page.click('[data-status="offer"]'); await page.waitForSelector('.offer-choice');
+  await page.click(`[data-pick="${choice}"]`); await page.waitForSelector(`[data-answer="${choice}"]`);
+  expect((await page.textContent('.offer.sure')).includes('This cannot be changed'), 'no warning before the answer');
+  await page.click('[data-back]'); await page.waitForSelector('.offer-choice'); await page.click(`[data-pick="${choice}"]`);
+  await page.click(`[data-answer="${choice}"]`);
+  await page.waitForFunction(c => farm.state().story.albright === c, choice);
+  // the chapter card reads by the answer
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The man from the city') && card.includes(choice === 'meadow' ? 'stays a meadow' : 'brick by brick') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-11-${choice}.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 11);
+  await page.waitForTimeout(800); await page.evaluate(() => farm.closeCards());
+  // he has gone, with his car and his stakes; the meadow shows the answer
+  await page.waitForFunction(() => !farm.people.walkers.has('albright') && !farm.world.batches.items.has('meadow:car') && !farm.world.batches.items.has('meadow:stakes'), null, { timeout: 15000 });
+  expect(await page.locator('[data-status="offer"]').count() === 0, 'the pill stays after the answer');
+  if (choice === 'meadow') {
+    await page.waitForFunction(() => [...farm.world.batches.items.keys()].filter(k => k.startsWith('meadow:f')).length >= 60 && farm.world.batches.items.has('meadow:hive2'), null, { timeout: 15000 });
+    // beehives are open: one on the farm makes honey
+    const honey = await page.evaluate(() => {
+      const g = farm.game, s = g.s; let id = null;
+      for (let z = 30; z <= 85 && !id; z++) for (let x = 34; x <= 93 && !id; x++) { const r = g.do('place', { kind: 'beehive', x, z }); if (r.ok) id = r.id; }
+      if (!id) return 'no room for a hive';
+      const made = g.do('produce', { building: id, recipe: 'honey' }); g.do('testFinishTimers'); g.tick(); g.do('collectProducts', { building: id });
+      return made.ok ? s.barn.items.honey ?? 0 : made.reason;
+    });
+    expect(honey === 1, `honey: ${honey}`);
+  } else {
+    const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'cannery'));
+    expect(!!id && await page.evaluate(k => farm.world.batches.items.get(k)?.model === 'cannery', id), 'the cannery does not stand on the meadow');
+    await page.evaluate(k => farm.panels.show('production', k), id); await page.waitForSelector('.sheet.panel [data-do="produce"]');
+    expect((await page.textContent('.sheet.panel')).includes('Canned corn'), 'the cannery lists no tins');
+    // make it a green one from the Valley panel: the penalty goes, young trees stand round it
+    await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('[data-do="greenCannery"]');
+    const was = await page.evaluate(() => farm.state().coins);
+    await page.click('[data-do="greenCannery"]'); await page.waitForFunction(() => farm.state().valley?.green === true);
+    expect(await page.evaluate(() => farm.state().coins) === was - 6000, 'making it green cost something else');
+    await page.waitForFunction(() => farm.world.batches.items.has('meadow:tree0') && !document.querySelector('[data-do="greenCannery"]'), null, { timeout: 8000 });
+  }
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(61, 19, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}meadow-${choice}.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

@@ -4,7 +4,8 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve } from '../content/world.mjs';
+import { albrightOffer } from '../core/valley.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
@@ -17,10 +18,13 @@ import { TRUCK } from '../content/economy.mjs';
 import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
+// the kept meadow (chapter 11): how many flower clumps, and the young trees round a green cannery (cells from its corner)
+const MEADOW_FLOWERS = 76, GREEN_TREES = [[-0.9, 0.4], [-0.9, 2.6], [5.9, 2.9], [5.9, 0.9], [1.2, 4.4], [3.9, 4.4]];
+const frac = v => v - Math.floor(v);
 const PEN_EARTH = '#c9a46a';
 
 export class LandView {
@@ -247,6 +251,7 @@ export class LandView {
     // a fixed site (the boat dock on the brook) shows a sign from a little before its level until it is built
     for (const st of SITES) {
       const def = BUILDINGS[st.kind], [w, d] = def.size, sign = `sitesign:${st.kind}`, at = { x: (st.x + w / 2) * CELL, z: (st.z + d / 2) * CELL }, built = (s.counts[st.kind] ?? 0) > 0;
+      if (st.hidden) { b.remove(sign); continue; }   // no sign: the story builds it (the cannery)
       if (st.ruin) {   // what is left of the old one stands there from the start (the burned festival stage)
         if (!built && b.has(st.ruin)) b.set(sign, { model: st.ruin, ...at, rot: st.rot * Math.PI / 2 }); else b.remove(sign);
       } else if (!built && s.level >= def.level - 2 && b.has('sale_sign')) b.set(sign, { model: 'sale_sign', ...at, rot: 0 });
@@ -265,6 +270,27 @@ export class LandView {
       if (working) b.set(`scaffold:${r.kind}`, { model: 'scaffold', x: at.x + ox * c + oz * sn, z: at.z - ox * sn + oz * c, rot: at.rot, scale: 1.1 });
       else b.remove(`scaffold:${r.kind}`);
     }
+  }
+  /** The brook meadow (chapter 11, core/valley.mjs): Mr Albright's survey stakes on it and his car by the gate while his
+   *  offer is open; wildflowers and three white hives if the meadow was kept; young trees round the cannery once it is a
+   *  green one. Redrawn only when one of those changes (frame() asks once a second). */
+  drawMeadow() {
+    const s = this.s, b = this.world.batches, open = albrightOffer(s).open, kept = s.story?.albright === 'meadow', green = !!s.valley?.green && (s.counts.cannery ?? 0) > 0;
+    const flowers = ['flowers', 'garden_flower'].filter(m => b.has(m));
+    const key = [open, kept, green, b.has('survey_stakes'), b.has('car'), b.has('beehive'), flowers.length].join('|');
+    if (key === this.meadowKey) return; this.meadowKey = key;
+    const site = SITES.find(st => st.kind === 'cannery');
+    if (open && b.has('survey_stakes')) b.set('meadow:stakes', { model: 'survey_stakes', x: (site.x + site.size[0] / 2) * CELL, z: (site.z + site.size[1] / 2) * CELL, rot: 0 }); else b.remove('meadow:stakes');
+    if (open && b.has('car')) b.set('meadow:car', { model: 'car', x: ALBRIGHT.car.x * CELL, z: ALBRIGHT.car.z * CELL, rot: ALBRIGHT.car.rot }); else b.remove('meadow:car');
+    for (let i = 0; i < MEADOW_FLOWERS; i++) {
+      const id = `meadow:f${i}`;
+      if (!kept || !flowers.length) { b.remove(id); continue; }
+      const x = MEADOW.x0 + 0.2 + frac(i * 0.618034 + 0.13) * (MEADOW.x1 + 0.6 - MEADOW.x0), bank = Math.max(MEADOW.z0 + 0.2, brookCurve(x) + 0.5 + 2.1);   // not in the water
+      const z = bank + frac(i * 0.754877 + 0.41) * (MEADOW.z1 + 0.8 - bank), r = frac(i * 0.3719 + 0.7);
+      b.set(id, { model: flowers[i % 3 === 2 ? flowers.length - 1 : 0], x: x * CELL, z: z * CELL, rot: r * 6.28, scale: 0.85 + r * 0.5 });
+    }
+    ALBRIGHT.hives.forEach(([x, z], i) => { if (kept && b.has('beehive')) b.set(`meadow:hive${i}`, { model: 'beehive', x: x * CELL, z: z * CELL, rot: 0.35 * (i - 1) }); else b.remove(`meadow:hive${i}`); });
+    GREEN_TREES.forEach(([dx, dz], i) => { if (green && b.has('round_tree')) b.set(`meadow:tree${i}`, { model: 'round_tree', x: (site.x + dx) * CELL, z: (site.z + dz) * CELL, rot: i * 1.7, scale: 0.62 + (i % 3) * 0.07 }); else b.remove(`meadow:tree${i}`); });
   }
   /** Cottage dressing by furnish level: a doormat, then window boxes and flowerpots, then a door lantern. */
   dressCottage(id, item) {
@@ -354,7 +380,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0;
+      this.clock = 0; this.drawMeadow();
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -394,7 +420,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
@@ -405,6 +431,7 @@ export class LandView {
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') { this.drawPlaced(e.id); this.drawRuins(); }   // a rebuilt building takes its old ruin's place at once, whatever the current project is
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
       else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
+      else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);

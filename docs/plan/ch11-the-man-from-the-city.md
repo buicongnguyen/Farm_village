@@ -1,6 +1,50 @@
 # Chapter 11: The man from the city
 
-Status: not started · Depends on: chapter 10 · Size: two sessions
+Status: **done** (PR #86) · Depends on: chapter 10 · Size: two sessions
+
+## How to play it (for the owner)
+
+1. When the chapter 10 card is closed, **Mr Albright** arrives: a short scene, his motor car on the verge by the farm
+   gate, his survey stakes and drawing board on the meadow between the north lane and the brook, and a pill
+   **"An offer · waiting"** under the level.
+2. Tap the pill, or Mr Albright himself, or "An answer for the man from the city" in Village projects. The card shows
+   the two answers with three plain lines each, and **Let me think**. Nothing happens while you wait.
+3. Pick one. The card asks once more ("This cannot be changed"), then the answer stands:
+   - **Build the cannery**: it goes up on the meadow at his cost. It turns corn and tomatoes into tins that sell
+     dear. The valley loses 20 beauty until you **make the cannery green** in the Valley panel (6,000 coins: no smoke,
+     young trees round its walls).
+   - **Keep the meadow**: wildflowers fill it and three white hives appear at its edge; the valley gains 30 beauty
+     for good. **Beehives** open in the build menu (level 10, 250 coins, five at most): a hive makes **meadow honey**
+     from nothing but time, and the bakery bakes **honey cake**.
+4. The chapter 11 card reads by your answer (text, Granny Maple's line and the third picture), and a last scene
+   follows it.
+5. **The Valley panel** (from the Roadmap, or tap the meadow): the beauty score and its five ranks, part by part
+   (trees, flowers, water, the meadow and its bees, things in need of mending, smoke and noise), what would raise it
+   most, and what it pays: every order pays 2 % more for each rank.
+
+Tester (`?tester`): "Chapter 11" jumps to the offer. "Finish this chapter" keeps the meadow; play the card to choose
+the cannery.
+
+## What was built, where it differs from the plan below
+
+- `src/core/valley.mjs`: `beautyOf`, `beautyRank`, `beautyBonus`, `beautyTip`, `albrightOffer`, the actions
+  `answerAlbright` and `greenCannery`; the numbers are `BEAUTY` in `content/economy.mjs`.
+- **The offer opens as soon as chapter 10 is seen**, not at level 16 and a farm worth 60,000: at testing pace the
+  wait would only hide the chapter. The release pass can add the threshold.
+- **The cannery is not bought**: the answer builds it on its own site on the meadow (`SITES`, `hidden`, `when`), at
+  Mr Albright's cost. It has two recipes (`canned_corn`, `canned_tomato`) rather than "any three crops".
+- **A hive needs nothing near it** (the plan asked for flowers within three cells): honey takes only time.
+  `BUILDINGS.beehive.choice = 'meadow'` keeps hives for that answer (`mayBuild`).
+- Beauty parts are `trees, flowers, water, care, industry, meadow` with the caps in `BEAUTY.cap` (smaller than the
+  plan's: a played farm reaches "Lovely" with effort, "A picture postcard" only with the meadow or a green cannery).
+- **No leaf mark in the top bar**: the bar is full on a phone. The Valley panel opens from the Roadmap and from a tap
+  on the meadow. Chapter 14 (the hotel) can bring the mark with the guests.
+- The chapter card's `variants` (keyed by the answer) replace `text`, `ada` and `panels`; `ui/guide.mjs` merges them.
+- The meadow is kept clear of wild trees for every farm from the start (`MEADOW` in `content/world.mjs`), so the
+  place can be seen before anyone asks about it.
+- Models: `cannery`, `beehive`, `survey_stakes`, `car` (decor kit); items and icons for the four goods; Mr
+  Albright's portrait. He has no hat (the rig carries no props).
+- `tests/valley.test.mjs` (9), and a browser check that plays the chapter once each way.
 Story source: `JOURNEY.md` 3 (Act III), `STORY.md` 4 (row 11)
 
 ## What the player gets

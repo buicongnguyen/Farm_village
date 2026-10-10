@@ -19,7 +19,7 @@ import { onModal } from './modal.mjs';
 
 export { goodIcon };
 /** Panels with nothing to count down. */
-const STILL = new Set(['exploration', 'profiles', 'settings', 'album', 'friends', 'gift', 'mail', 'advice', 'learningMemory', 'schoolActivity', 'schoolMemory']);
+const STILL = new Set(['valley', 'exploration', 'profiles', 'settings', 'album', 'friends', 'gift', 'mail', 'advice', 'learningMemory', 'schoolActivity', 'schoolMemory']);
 export class Panels {
   constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto } = {}) {
     Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto });
@@ -136,6 +136,9 @@ export class Panels {
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
     else if (d.do === 'report') this.show('report');
+    else if (d.do === 'valley') this.show('valley');
+    else if (d.do === 'offer' || d.do === 'stepPanel' && d.panel === 'offer') { this.close(); this.onOffer?.(); }   // Mr Albright's offer is a card of its own (ui/offer.mjs)
+    else if (d.do === 'greenCannery') g.do('greenCannery');
     else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');

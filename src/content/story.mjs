@@ -74,6 +74,18 @@ export const CHAPTERS = [
     ada: 'A farm is run from the porch as much as from the field, dear. Sit down. Let me show you the sums.',
     panels: panels(10, ['Hands in the field.', 'The ovens, never cold.', 'The day, added up.']),
     when: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30 },
+  // The deed: the player answers Mr Albright (docs/plan/ch11-the-man-from-the-city.md). The card reads by the answer
+  // (`variants`, keyed by s.story.albright); the plain text is the cannery's, so every check has one to read.
+  { id: 11, title: 'The man from the city', subtitle: 'One meadow, two answers.', icon: '🎩',
+    text: 'The cannery goes up in a month, brick by brick, on the brook meadow. {person:albright:display} shakes every hand twice. The first tins leave with Hollowbrook’s name on them, and the wages are good. {person:gus:short} looks at the chimney a long time and says nothing at all.',
+    ada: 'Work is work, dear, and I will not sniff at it. But plant a tree by that wall. Plant ten.',
+    variants: {
+      meadow: { text: '{person:albright:display} folds his drawings, puzzled and polite, and drives back to the city. The brook meadow stays a meadow. By midsummer it is full of flowers, and somebody has left three white beehives at its edge. Nobody will say who. {person:gus:short} has paint on his sleeve.',
+        ada: 'He asked what a meadow is for. I said: come back at midsummer and stand in it. He might, you know.',
+        panels: [...panels(11, ['The brook meadow.', '{person:albright:short} at the gate.']), { img: 'assets/story/ch11-3m.webp', caption: 'What the valley chose.' }] },
+    },
+    panels: panels(11, ['The brook meadow.', '{person:albright:short} at the gate.', 'What the valley chose.']),
+    when: s => !!s.story.albright },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -192,6 +204,20 @@ export const BEATS = [
   { id: 'report-first', chapter: 10, when: s => (s.story.chapter ?? 0) >= 9 && (s.stats.reports ?? 0) >= 1, lines: [
     { who: 'ada', text: 'There. Every coin with a name on it. Your grandfather never believed in sums until the sums believed in him.' },
     { who: 'ellis', text: 'I heard that.' },
+  ] },
+  // ── Chapter 11 (docs/plan/ch11-the-man-from-the-city.md): the one choice. Both answers are good ones. ──
+  { id: 'albright-arrives', chapter: 11, when: s => (s.story.chapter ?? 0) >= 10 && !s.story.albright, lines: [
+    { who: 'albright', text: 'Good day. {person:albright:display}, from the city. That meadow along your brook: I would like to build a cannery on it. Good wages, good tins.' },
+    { who: 'june', text: 'It is the prettiest corner of the valley, love. And it is the most money anyone has offered us.' },
+    { who: 'gus', text: 'Hmph. I learned to swim off that bank. Not that anybody asked me.' },
+  ] },
+  { id: 'albright-factory', chapter: 11, when: s => (s.story.chapter ?? 0) >= 11 && s.story.albright === 'factory', lines: [
+    { who: 'albright', text: 'You will not regret it. And I mean to make it a handsome building. I am not a barbarian.' },
+    { who: 'tomas', text: 'I have looked at his machines. They are good machines. I would like a chimney filter on that stack, mind.' },
+  ] },
+  { id: 'albright-meadow', chapter: 11, when: s => (s.story.chapter ?? 0) >= 11 && s.story.albright === 'meadow', lines: [
+    { who: 'albright', text: 'I do not understand it. But I have seldom been refused so kindly. Good day to you all.' },
+    { who: 'pip', text: 'He forgot his hat! No, wait. He left it for the scarecrow.' },
   ] },
 ];
 

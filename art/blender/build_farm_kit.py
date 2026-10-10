@@ -993,6 +993,99 @@ def stage_burned():
     return p
 piece('stage_burned', stage_burned(), decor)
 
+def cannery():
+    """The cannery (chapter 11, if the player takes the offer): a brick hall on the brook meadow, 5 x 4 cells (everything
+    inside x +-4.9, y +-3.9), a saw-tooth roof with skylights facing the front (+y), a loading bay, and on the east side
+    a tall chimney with a sooty cap and two silver tanks. A handsome building: its owner is not a barbarian."""
+    p = []
+    W, D, H, X, Y = 7.0, 5.6, 3.2, -.7, -.4
+    F = Y + D / 2   # the front wall
+    p.append(bx('base', W + .3, D + .3, .3, X, Y, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('hall', W, D, H, X, Y, .3, 'brick', bev=.05, seg=2))
+    for i in range(5):   # pilasters along the front and a stone cornice
+        p.append(bx('pilaster', .3, .1, H, X - W / 2 + .2 + i * (W - .4) / 4, F + .03, .3, 'brickd', bev=.02))
+    p.append(bx('cornice', W + .16, D + .16, .16, X, Y, H + .22, 'stonel', bev=.03))
+    for k in range(3):   # the saw-tooth roof: three teeth, each with its glass wall to the front
+        y = Y - D / 2 + (k + .5) * D / 3
+        p.append(extrude_outline('tooth', [(-D / 6, 0), (D / 6, 0), (-D / 6, 1.0)], W + .1, (X, -y, H + .36), C['roofd' if k % 2 else 'roof'], rot=(0, 0, math.pi / 2), bev=.02))
+        p.append(bx('skylight', W - .6, .06, .62, X, y + D / 6, H + .56, 'glassd', bev=0.))
+        for i in range(5):
+            p.append(bx('skybar', .06, .08, .7, X - (W - .6) / 2 + i * (W - .6) / 4, y + D / 6 + .01, H + .52, 'white', bev=0.))
+    p += [bx('bay', 2.4, .12, 2.3, X - 1.9, F + .05, .3, 'wooddd', bev=.02), bx('baytop', 2.7, .2, .2, X - 1.9, F + .08, 2.6, 'stonel', bev=.02),
+          bx('dock', 3.0, 1.2, .5, X - 1.9, F + .7, 0, 'stone', bev=.04), bx('awning', 3.0, 1.3, .1, X - 1.9, F + .65, 2.95, 'teal', bev=.02)]
+    for i in range(4):   # planks on the bay door
+        p.append(bx('plank', .04, .04, 2.2, X - 2.8 + i * .6, F + .12, .32, 'woodd', bev=0.))
+    for x in (X + .9, X + 2.5):
+        wp, _ = window(x, F + .02, 1.5, .9, 1.0, 'front', shutters=None); p += wp
+    wp, _ = window(X + W / 2 + .02, 1.3, 1.5, .9, 1.0, 'right', shutters=None); p += wp
+    p += [bx('sign', 2.7, .1, .5, X + 1.7, F + .06, 2.72, 'cream', bev=.02), bx('signline', 2.1, .04, .1, X + 1.7, F + .12, 2.92, 'red', bev=0.)]
+    for i in range(3):   # a tin, a tin, a tin on the sign
+        p.append(cl('signtin', .1, .2, X + 1.1 + i * .6, F + .14, 2.76, 'stonel' if i != 1 else 'sun', verts=8))
+    # the east yard: the chimney at the back, banded, sooty at the top; two tanks and their pipe
+    E = X + W / 2 + 1.0
+    p += [cl('stack', .46, 5.8, E, -2.6, .3, 'brickd', verts=10, rt=.3), bx('stackbase', 1.1, 1.1, .5, E, -2.6, 0, 'stone', bev=.04),
+          cl('band', .36, .16, E, -2.6, 4.6, 'stonel', verts=10), cl('lip', .34, .22, E, -2.6, 6.1, 'charcoal', verts=10)]
+    for y in (-.9, .4):
+        p += [cl('tank', .52, 2.3, E, y, .25, 'stonel', verts=12), ball('tanktop', .52, E, y, 2.55, 'stonel', sub=1, sc=(1, 1, .45)), cl('tankband', .54, .1, E, y, 1.3, 'iron', verts=12),
+              cl('tankfoot', .56, .25, E, y, 0, 'stoned', verts=12)]
+    p += [st((E, -.9, 2.7), (E, .4, 2.7), .06, 'iron', sides=5), st((E - .5, -.25, 2.7), (X + W / 2, -.25, 2.7), .06, 'iron', sides=5), st((E, -.25, 2.7), (E - .5, -.25, 2.7), .06, 'iron', sides=5)]
+    for i in range(3):   # crates on the loading dock
+        p.append(bx('crate', .6, .5, .45, X - 2.8 + i * .75, F + .8, .5, 'woodl' if i % 2 else 'wood', bev=.02))
+    return p
+piece('cannery', cannery(), decor)
+
+def beehive():
+    """A beehive (chapter 11, for the kept meadow): two white boxes on a wooden stand under a little pitched roof, an
+    entrance slit and a landing board. One cell; about 0.9 m tall."""
+    p = [bx('stand', .62, .62, .08, 0, 0, .16, 'woodd', bev=.01)]
+    for x in (-.24, .24):
+        for y in (-.24, .24):
+            p.append(bx('leg', .08, .08, .18, x, y, 0, 'woodd', bev=0.))
+    p += [bx('box1', .56, .56, .3, 0, 0, .24, 'white', bev=.02), bx('box2', .56, .56, .26, 0, 0, .55, 'cream', bev=.02), bx('band', .58, .58, .03, 0, 0, .535, 'sun', bev=0.),
+          bx('slit', .26, .02, .04, 0, .285, .28, 'charcoal', bev=0.), bx('board', .34, .12, .03, 0, .33, .24, 'woodl', bev=0.),
+          gable('roof', .58, .58, .2, 0, 0, .81, 'teal', over=.06, bev=.01)]
+    for x, y, zz in ((.2, .36, .5), (-.25, .4, .72), (.05, .44, .95)):   # three bees about
+        p.append(ball('bee', .035, x, y, zz, 'sun', sub=0, sc=(1.4, 1, 1)))
+    return p
+piece('beehive', beehive(), decor)
+
+def survey_stakes():
+    """Mr Albright's survey of the cannery's place (chapter 11, while his offer is open): corner stakes with red ribbons,
+    string between them, and a drawing board on a stand. Covers the cannery's 10 x 8 m lot."""
+    p = []
+    X, Y = 4.7, 3.7
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p += [bx('stake', .09, .09, .9, sx * X, sy * Y, 0, 'woodl', bev=0.), bx('ribbon', .04, .3, .16, sx * X, sy * Y + .16, .7, 'red', bev=0.)]
+    for sy in (-1, 1):
+        p.append(bx('string', 2 * X, .025, .025, 0, sy * Y, .62, 'paper', bev=0.))
+    for sx in (-1, 1):
+        p.append(bx('string', .025, 2 * Y, .025, sx * X, 0, .62, 'paper', bev=0.))
+    for i in range(3):   # pegs along the front string
+        p.append(bx('peg', .07, .07, .5, -2.4 + i * 2.4, Y, 0, 'woodl', bev=0.))
+    # the drawing board: an easel with the plan of a factory pinned to it
+    p += [st((-.45, 2.2, 0), (-.3, 2.0, 1.5), .035, 'woodd', sides=4), st((.45, 2.2, 0), (.3, 2.0, 1.5), .035, 'woodd', sides=4), st((0, 1.4, 0), (0, 1.95, 1.5), .035, 'woodd', sides=4),
+          box('board', (1.2, .06, .85), (0, -2.1, 1.05), C['paper'], bev=.01, seg=1, rot=(-.18, 0, 0)), box('plan', (.8, .03, .34), (0, -2.15, .98), C['brick'], bev=0., seg=1, rot=(-.18, 0, 0)),
+          box('planstack', (.1, .03, .5), (.28, -2.16, 1.14), C['brickd'], bev=0., seg=1, rot=(-.18, 0, 0)), box('planline', (1.0, .03, .04), (0, -2.14, .76), C['sky'], bev=0., seg=1, rot=(-.18, 0, 0))]
+    return p
+piece('survey_stakes', survey_stakes(), decor)
+
+def car():
+    """Mr Albright's motor car (chapter 11): a small round saloon from the city, deep teal with a cream roof, parked on
+    the verge by the farm gate while his offer is open. Its nose points to the front (+y). About 3.4 m long."""
+    p = [bx('body', 1.5, 3.3, .62, 0, 0, .3, 'teald', bev=.16, seg=2), bx('cabin', 1.36, 1.7, .56, 0, -.25, .86, 'cream', bev=.18, seg=2),
+         bx('windscreen', 1.2, .05, .36, 0, .6, .92, 'glass', bev=.02), bx('rear', 1.2, .05, .34, 0, -1.1, .94, 'glass', bev=.02),
+         bx('bumperf', 1.56, .12, .14, 0, 1.68, .34, 'stonel', bev=.04), bx('bumperr', 1.56, .12, .14, 0, -1.68, .34, 'stonel', bev=.04),
+         bx('grille', .7, .05, .22, 0, 1.66, .56, 'stonel', bev=.02), bx('plate', .4, .03, .12, 0, -1.67, .56, 'paper', bev=0.)]
+    for sx in (-1, 1):
+        p += [bx('sideglass', .04, 1.3, .32, sx * .69, -.25, .94, 'glass', bev=.01), ball('lamp', .13, sx * .5, 1.64, .66, 'lampglow', sub=1, sc=(1, .5, 1)),
+              ball('tail', .09, sx * .55, -1.66, .62, 'red', sub=1, sc=(1, .5, 1)), bx('step', .1, 1.5, .06, sx * .78, -.1, .3, 'stonel', bev=.02)]
+        for sy in (-1.05, 1.05):
+            p += [cl('wheel', .34, .22, sx * .72, sy, .34 - .11, 'charcoal', verts=10, rot=(0, math.pi / 2, 0)), cl('hub', .16, .24, sx * .72, sy, .34 - .12, 'stonel', verts=6, rot=(0, math.pi / 2, 0)),
+                  bx('arch', .16, .86, .1, sx * .72, sy, .66, 'teal', bev=.04)]
+    return p
+piece('car', car(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

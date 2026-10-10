@@ -68,8 +68,13 @@ const PANELS = {
   'ch10-2': { hour: 15, scene: cottage('st_c1', 36, 93, 'tran') + `s.hands = { workshop: { since: 1 } }; for (const [id, p] of Object.entries(s.placed)) if (p.kind === 'bakery') delete s.cond[id];`, wait: 5000,
     then: [`{ const s = farm.state(), b = Object.values(s.placed).find(p => p.kind === 'bakery'); if (b) { ${put('lan', 'b.x + 1', 'b.z + 3')} farm.focus(b.x + 1, b.z + 1, 14); } }` + work('workshop', 'lan', 'bakery'), 5500], look: [36, 62, 14] },
   'ch10-3': { hour: 18.9, scene: `s.story.chapter = 9;`, wait: 7000, look: [25, 62, 15] },
+  // chapter 11: the offer is open from chapter 10 (survey stakes on the meadow, the car and the man at the gate); then one picture for each answer
+  'ch11-1': { hour: 9.5, scene: `s.story.chapter = 10;`, wait: 7000, look: [58, 17, 24] },
+  'ch11-2': { hour: 16.5, scene: `s.story.chapter = 10;`, wait: 7000, then: [put('albright', 30, 65), 1500], look: [31, 66, 9] },
+  'ch11-3': { hour: 10.5, scene: `s.story.chapter = 11; s.story.albright = 'factory'; s.placed.st_cannery = { kind: 'cannery', x: 55, z: 16, rot: 0 }; s.counts.cannery = 1;`, wait: 7000, look: [58, 18, 22] },
+  'ch11-3m': { hour: 10.5, scene: `s.story.chapter = 11; s.story.albright = 'meadow';`, wait: 7000, look: [63, 18, 22] },
 };
-const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
+const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });

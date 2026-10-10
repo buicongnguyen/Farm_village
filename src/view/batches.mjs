@@ -29,7 +29,7 @@ const clamp01 = k => Math.min(1, Math.max(0, k));
 const easeOut = k => 1 - (1 - k) * (1 - k), easeInOut = k => k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
 const easeBack = k => { const c = 1.9; return 1 + (c + 1) * (k - 1) ** 3 + c * (k - 1) ** 2; };
 const MAX_ANIMS = 500;           // a whole-farm reload changes thousands of crops at once: past this they just snap
-const NO_SHADOW = /^(sparkle|produce:|fence|gate|tuft|weeds$|pop:|village_bunting|bunting|plot_stakes)/;   // flags on strings and plot stakes cast no blob
+const NO_SHADOW = /^(sparkle|produce:|fence|gate|tuft|weeds$|pop:|village_bunting|bunting|plot_stakes|survey_stakes)/;   // flags on strings and plot stakes cast no blob
 
 /** Scale multipliers [xz, y] of an animation at time `now`, and whether it has finished. */
 function animScale(a, now) {
