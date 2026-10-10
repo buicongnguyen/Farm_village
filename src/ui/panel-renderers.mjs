@@ -127,8 +127,8 @@ export function renderPanel() {
     else if (o.kind === 'barn') {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
-        <button class="btn orange" data-do="upgradeBarn">${glyph('up', 'g')} ${t('Upgrade (+{step})', { step: BARN.step })} · ${coinMark()} ${num(BARN.upgradeCost(s.barn.upgrades))}</button></div>
-        <div class="goods-grid">${items.map(([g, n]) => `<button class="good-tile" data-do="sellGood" data-good="${g}" ${barn.free(s, g) ? '' : 'disabled'}>${goodIcon(g)}<b>${num(n)}</b><small>${t('Sell')} · ${coinMark()} ${GOODS[g].value}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></button>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
+        ${s.barn.cap >= BARN.max ? '' : `<button class="btn orange" data-do="upgradeBarn">${glyph('up', 'g')} ${t('Upgrade (+{step})', { step: Math.min(BARN.step, BARN.max - s.barn.cap) })} · ${coinMark()} ${num(BARN.upgradeCost(s.barn.upgrades))}</button>`}</div>
+        <div class="goods-grid">${items.map(([g, n]) => `<div class="good-cell"><button class="good-tile" data-do="sellGood" data-good="${g}" ${barn.free(s, g) ? '' : 'disabled'}>${goodIcon(g)}<b>${num(n)}</b><small>${t('Sell')} · ${coinMark()} ${GOODS[g].value}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></button>${barn.free(s, g) >= 10 ? `<button class="sell-ten" data-do="sellGood" data-good="${g}" data-n="10" aria-label="${t('Sell')} ×10">×10 · ${coinMark()} ${num(GOODS[g].value * 10)}</button>` : ''}</div>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
     } else if (o.kind === 'production') {
       const p = s.placed[o.arg]; if (!p) { this.close(); return; }
       title = t(BUILDINGS[p.kind].name); icon = p.kind;

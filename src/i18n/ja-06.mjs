@@ -14,6 +14,7 @@ export const JA_06 = {
   "{count} held": "取り置き {count}",
   "New orders are on their way.": "新しい注文が届くのを待っています。",
   "The barn is empty.": "納屋は空です。",
+  "The barn is as big as it can be": "納屋はこれ以上大きくできません",
   "The barn is full: fill orders or upgrade it": "納屋がいっぱいです。注文を届けるか、納屋を広くしましょう",
   "Market square": "市場広場",
   "Repair the market square first": "まずは市場広場を直しましょう",

@@ -590,6 +590,7 @@ Object.assign(KO, {
   "{count} held": "남겨 둔 물량 {count}개",
   "New orders are on their way.": "새 주문이 오고 있어요.",
   "The barn is empty.": "창고가 비었어요.",
+  "The barn is as big as it can be": "창고를 더 넓힐 수 없어요",
   "The barn is full: fill orders or upgrade it": "창고가 가득 찼어요. 주문을 보내거나 확장해 보세요",
   "Market square": "시장 광장",
   "Repair the market square first": "먼저 시장 광장을 고쳐 주세요",

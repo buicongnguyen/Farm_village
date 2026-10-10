@@ -138,7 +138,7 @@ export class Panels {
     else if (d.do === 'claimQuest') g.do('claimQuest', { id: d.id });
     else if (d.do === 'claimWeekly') g.do('claimWeekly');
     else if (d.do === 'hurry') g.do('hurry', { id: this.open.arg });
-    else if (d.do === 'sellGood') g.do('sellGood', { good: d.good, n: d.all ? undefined : 1 });
+    else if (d.do === 'sellGood') g.do('sellGood', { good: d.good, n: d.all ? undefined : Number(d.n) || 1 });
     else if (d.do === 'castLine') { if (this.onFishCast) { this.onFishCast(d.bait === '1'); this.render(); } else g.do('castLine', { bait: d.bait === '1' }); }
     else if (d.do === 'reelIn') {
       const r = g.do(d.start === '1' ? 'startReeling' : 'reelIn', { steady: d.steady === '1' });
