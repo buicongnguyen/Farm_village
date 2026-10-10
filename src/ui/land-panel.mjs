@@ -1,6 +1,7 @@
 // Purchase preview and the optional planting-marker memory. A preview never buys land or earns its keepsake.
 import { LAND_BRANCH } from '../content/land.mjs';
 import { CLEAR } from '../content/economy.mjs';
+import { parcelNote } from '../content/world.mjs';
 import { landBranchStatus, unreadLandDiscovery } from '../core/land-discovery.mjs';
 import { t, num } from '../kit/i18n.mjs';
 import { coinMark, iconHtml, faceHtml } from './icon.mjs';
@@ -20,7 +21,7 @@ export function renderLandEntry(s, { album = false } = {}) {
 export function renderLandPanel(s, parcel) {
   const status = landBranchStatus(s, parcel);
   if (!status.enabled) return `<p class="hint">${t('This clearing belongs to the restored village')}</p>`;
-  const preview = !status.owned ? `<p>${t(LAND_BRANCH.text)}</p><p>${t(LAND_BRANCH.purpose)}</p>
+  const preview = !status.owned ? `<p class="land-note"><b>${t(parcelNote(status.parcel))}</b></p><p>${t(LAND_BRANCH.text)}</p><p>${t(LAND_BRANCH.purpose)}</p>
     <p><b>${t('{size} × {size} cells, with a clear 4 × 4 patch included', { size: status.size })}</b></p>
     <p class="hint">${t('Other weeds and rocks use the usual clearing prices.')}
     ${t('Weeds: {weeds} coins each · Rocks: {rocks} coins each', { weeds: CLEAR.weeds, rocks: CLEAR.rock })}</p>

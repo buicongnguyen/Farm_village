@@ -109,7 +109,7 @@ test('neighbour remarks fill their placeholders from the state, and Gus has his 
 });
 
 test('chapters: one opening card, three chapter ends with an Ada beat, then the clinic chapter ending', () => {
-  assert.deepEqual(CHAPTERS.map(c => c.id), [1, 2, 3, 4, 5]);
+  assert.deepEqual(CHAPTERS.map(c => c.id), [1, 2, 3, 4, 5, 6]);
   assert.ok(CHAPTERS.every(c => c.ada && c.panels.length <= 3 && resolveNames(c.text, 'en').length <= 340), 'a card is too long for a phone');
   assert.ok(!CHAPTERS.some(c => c.teaser));
   assert.match(CHAPTERS[0].text, /The key is under the seed tin\. Bring Hollowbrook home\./);

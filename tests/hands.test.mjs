@@ -51,17 +51,18 @@ test('the field hand brings in half of the ripe beds and sows them again; the ot
   const next = away + HANDS.everyMs + 1000; tick(s, next); assert.ok(waiting() < left, 'back at the game, the hand did not go on');
 });
 
-test('the village projects go on after the clinic: juice, pond, a second truck, noodles, police, company, hospital; they lock nothing', async () => {
+test('the village projects go on after the clinic: market day, a third field, juice, pond, a second truck, noodles, police, company, hospital; they lock nothing', async () => {
   const { STEPS } = await import('../src/content/projects.mjs'), { mayBuild, currentStep } = await import('../src/core/projects.mjs');
   const ids = STEPS.map(st => st.id), after = ids.slice(ids.indexOf('clinic') + 1);
-  assert.deepEqual(after, ['juice', 'anglers', 'fleet', 'noodles', 'police', 'company', 'hospital']);
+  assert.deepEqual(after, ['market_day', 'third_field', 'juice', 'anglers', 'fleet', 'noodles', 'police', 'company', 'hospital']);
   for (const st of STEPS.slice(ids.indexOf('clinic') + 1)) assert.deepEqual(st.builds, [], `${st.id} locks a building`);
   const s = game(); s.projects.step = ids.indexOf('clinic') + 1; s.level = 20; s.coins = 99999;
-  assert.equal(currentStep(s).id, 'juice');
+  assert.equal(currentStep(s).id, 'market_day');
   assert.notEqual(mayBuild(s, 'noodle_factory').params?.lock, 'project', 'a later project locks the noodle factory');
   // steps already true are ticked off in one go; the rest wait
   s.fishing = { line: null, coins: 0, caught: 5, feeAt: 0 }; s.placed.j1 = { kind: 'juice_press', x: 40, z: 60, rot: 0 }; s.counts.juice_press = 1;
-  tick(s, T0 + 1000); assert.equal(currentStep(s).id, 'fleet');
+  tick(s, T0 + 1000); assert.equal(currentStep(s).id, 'market_day', 'the first one still open is shown');
+  s.stats.marketDays = 1; s.parcels.push('1,2', '2,2'); tick(s, T0 + 1500); assert.equal(currentStep(s).id, 'fleet');
   s.truck.fleet.push({ level: 1, away: false, backAt: 0, load: [], coins: 0 }); tick(s, T0 + 2000); assert.equal(currentStep(s).id, 'noodles');
 });
 

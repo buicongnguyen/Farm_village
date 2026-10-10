@@ -139,6 +139,9 @@ export function withDefaults(s) {
   s.settings = { ...fresh.settings, ...s.settings };
   if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger
   s.village.milestones ??= []; s.village.decor ??= [];
+  // market day (core/market-day.mjs): absent until the square holds its first one; a damaged record starts again
+  const md = s.marketDay; if (md != null) { const whole = v => v === undefined || Number.isSafeInteger(v);
+    if (typeof md !== 'object' || Array.isArray(md) || !Number.isFinite(md.shift) || md.shift < 0 || !whole(md.n) || !whole(md.sold) || !whole(md.over) || (md.good != null && typeof md.good !== 'string') || (md.next != null && typeof md.next !== 'string')) delete s.marketDay; }
   for (const b of Object.values(s.people)) b.scenes ??= [];
   s.discoveries = normalizeDiscoveries(s);
   s.advice = normalizeAdvice(s);

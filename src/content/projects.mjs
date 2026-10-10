@@ -23,15 +23,21 @@ export const STEPS = [
   { id: 'clinic', name: 'Someone to care for us', text: 'Four settled families, bread for the waiting room and cherries from the orchard: help {person:marisol:short} reopen the clinic.',
     needs: { level: 6, families: 4 }, deliver: { bread: 12, cherry: 9 }, builds: ['clinic'], done: s => working(s, 'clinic') >= 1 },
   // After the clinic the village keeps growing. These steps lock nothing (builds is empty): each names the next thing
-  // worth doing, is ticked off as soon as it is true, and `site` is the building its button takes you to.
+  // worth doing, is ticked off as soon as it is true, and `site` is the building its button takes you to (`panel`: the
+  // menu it opens, for a step that is not done by building).
   // They are a checklist kept by id (core/projects.mjs TAIL): a new one may go anywhere from here on. Never add a step
   // above this line: the steps above are kept by their position in old saves.
+  // chapter 6 (docs/plan/ch06-market-day.md): the story's next deeds come first in the checklist
+  { id: 'market_day', name: 'The first market day', text: 'The square holds a market day now and then. Sell the good of the day while it lasts: it pays double.',
+    needs: { level: 6 }, panel: 'barn', done: s => (s.stats.marketDays ?? 0) >= 1, builds: [] },
+  { id: 'third_field', name: 'A third field', text: 'The farm is ready to grow. Buy a third piece of land.',
+    needs: { level: 4 }, done: s => s.parcels.length >= 3, builds: [] },
   { id: 'juice', name: 'Fresh juice for the village', text: 'The families ask for something cool to drink. Build a juice press on the farm.',
     needs: { level: 6 }, site: 'juice_press', done: s => working(s, 'juice_press') >= 1, builds: [] },
   { id: 'anglers', name: 'A quiet day at the pond', text: 'The children want fish for supper. Land five fish at the pond.',
     needs: {}, done: s => (s.fishing?.caught ?? 0) >= 5, builds: [] },
   { id: 'fleet', name: 'A second truck for the market road', text: 'One truck cannot carry it all any more. Buy a second delivery truck.',
-    needs: { level: 7 }, done: s => (s.truck?.fleet?.length ?? 0) >= 1, builds: [] },
+    needs: { level: 7 }, panel: 'market', done: s => (s.truck?.fleet?.length ?? 0) >= 1, builds: [] },
   { id: 'noodles', name: 'Noodles for the whole street', text: 'Build a noodle factory, so there is a hot bowl for everyone.',
     needs: { level: 8 }, site: 'noodle_factory', done: s => working(s, 'noodle_factory') >= 1, builds: [] },
   { id: 'police', name: 'A police post for a safe village', text: 'The village has grown. Build a police post, so someone keeps watch at night.',

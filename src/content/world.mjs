@@ -62,6 +62,12 @@ export const ruinAt = (x, z) => RUINS.find(r => { const [w, d] = r.kind === 'sch
 export const MAILBOX = { x: 27, z: 60 };
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 
+/** What a piece of land is good for, by where it lies (shown where it is for sale). */
+export function parcelNote(id) {
+  const [px, pz] = String(id).split(',').map(Number);
+  return px === FARM.parcels - 1 ? 'East meadow: room for goats and a dairy' : pz === 0 ? 'North field: nearest the brook'
+    : pz === FARM.parcels - 1 ? 'South field: close to the village street' : 'Open field: room for anything';
+}
 export const parcelOrigin = id => { const [px, pz] = id.split(',').map(Number); return { x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL }; };
 export const parcelOf = (x, z) => {
   const px = Math.floor((x - FARM.x0) / PARCEL), pz = Math.floor((z - FARM.z0) / PARCEL);

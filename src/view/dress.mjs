@@ -12,7 +12,8 @@
 // It draws; it never changes the rules state.
 import * as THREE from 'three';
 import * as W from '../content/world.mjs';
-import { occupant } from '../core/grid.mjs';
+import { occupant, cellsOf } from '../core/grid.mjs';
+import { marketDayOf } from '../core/market-day.mjs';
 import { buyableParcels } from '../core/build.mjs';
 import { Backdrop, WIND, merge, part, decorMaterial, template, Builder } from './backdrop.mjs';
 import { Brook, brookCentre, POND_SHAPE } from './brook.mjs';
@@ -338,10 +339,25 @@ async function dressMilestones(world, game) {
       if (isNew && fresh.includes(decorId)) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 });   // a milestone just reached pops in
     }
   };
-  show();
+  // Market day (chapter 6): flags along both long sides of the market square while the day runs.
+  const marketFlags = pop => {
+    const s = game.s, day = marketDayOf(s, game.now), p = day.active ? Object.values(s.placed).find(q => q.kind === 'market') : null, want = new Map();
+    if (p && b.has('village_bunting')) {
+      const cells = cellsOf('market', p.x, p.z, p.rot ?? 0), xs = cells.map(c => c[0]), zs = cells.map(c => c[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, z0 = Math.min(...zs), z1 = Math.max(...zs) + 1, wide = x1 - x0 >= z1 - z0, n = Math.max(1, Math.round((wide ? x1 - x0 : z1 - z0) / 2));
+      for (let i = 0; i < n; i++) for (const side of [0, 1]) {
+        const along = ((wide ? x0 : z0) + (i + 0.5) * (wide ? x1 - x0 : z1 - z0) / n) * CELL, across = (side ? (wide ? z1 : x1) + 0.2 : (wide ? z0 : x0) - 0.2) * CELL;
+        want.set(`market-flags-${side}${i}`, { model: 'village_bunting', x: wide ? along : across, z: wide ? across : along, rot: wide ? 0 : Math.PI / 2 });
+      }
+    }
+    for (const id of [...b.items.keys()]) if (String(id).startsWith('market-flags-') && !want.has(id)) b.remove(id);
+    for (const [id, it] of want) { const isNew = !b.items.has(id); b.set(id, it); if (isNew && pop) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 }); }
+  };
+  show(); marketFlags(false);
   game.on(r => {
     const ev = r.events ?? [], fresh = ev.filter(e => e.type === 'charmMilestone').map(e => e.decor);
     if (fresh.length || ev.some(e => ['placed', 'moved', 'stored', 'loaded'].includes(e.type))) show(fresh);
+    if (ev.some(e => ['marketDayStarted', 'marketDayEnded', 'placed', 'moved', 'stored', 'loaded', 'repaired'].includes(e.type))) marketFlags(ev.some(e => e.type === 'marketDayStarted'));
   });
 }
 

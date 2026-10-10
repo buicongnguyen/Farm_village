@@ -53,6 +53,14 @@ button.good-tile { cursor: pointer; }
 .good-tile img.icon { width: 50px; height: 50px; }
 .good-tile b { font-size: 17px; font-weight: 1000; }
 .good-tile small { color: var(--ink-2); text-align: center; line-height: 1.15; }
+/* market day (chapter 6): the good of the day */
+.good-tile.day { border-color: #f0a020; box-shadow: 0 3px 0 #b86f10; background: linear-gradient(#fffdf2, #ffe9a8); }
+.day-badge { position: absolute; top: -9px; right: -7px; z-index: 1; min-width: 30px; padding: 1px 6px; border: 2px solid #fff; border-radius: 12px; background: #e8463c; color: #fff; font: 1000 13px/18px var(--font, inherit); font-style: normal; box-shadow: 0 2px 0 #9a2a22; transform: rotate(8deg); }
+.market-day { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.market-day span { flex: 1 1 auto; min-width: 0; }
+.market-day small { white-space: nowrap; font-weight: 800; }
+.market-day.on { border-color: #f0a020; background: linear-gradient(#fff6d6, #ffe08a); box-shadow: 0 2px 0 #b86f10; }
+.market-day img.mini { width: 28px; height: 28px; flex: none; }
 .good-tile.liked { border-color: #ff8fa6; box-shadow: 0 3px 0 #c43c5d; background: linear-gradient(#fff, #fff0f3); }
 .good-tile .love { position: absolute; top: -7px; right: -5px; width: 22px; height: 22px; }
 .queue { display: flex; gap: 8px; flex-wrap: wrap; }

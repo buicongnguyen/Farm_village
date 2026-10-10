@@ -469,6 +469,17 @@
   }
  },
  {
+  "id": "person:hugo",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#6B4A2E",
+   "Villager shirt": "#FFF4E2",
+   "Villager trousers": "#B98A4E"
+  }
+ },
+ {
   "id": "person:minh",
   "src": "3D_game_scene/public/models/villager-man.glb",
   "portrait": true,

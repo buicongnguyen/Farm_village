@@ -8,6 +8,7 @@ the same files. Anything the owner reports while testing goes to the top of "Ope
 | What | PR |
 |---|---|
 | A path laid on an old building's lot blocked its rebuild for good; the Demolish tool could not lift a path, clear a ruin or take down an old village building; the old ruin stayed drawn over a rebuilt building | #78 |
+| Village projects that are not about building (land five fish, buy a truck) said "Use build mode to finish this step" | #81 |
 | The police post and company office could not be rebuilt (disabled button, mouse dragged the preview away, hidden path step) | #66, #69, #74 |
 | "Village growth" on an old building opened the wrong panel | #73 |
 | Land beyond the second parcel was never offered | #70 |
@@ -19,7 +20,7 @@ the same files. Anything the owner reports while testing goes to the top of "Ope
 | # | What | Where | How |
 |---|---|---|---|
 | 1 | A farm started in the plain mode has no upgradable farmhouse (`s.house` is null), so farmhouse levels, the garden and the room extras never appear there | `src/core/state.mjs`, `src/core/condition.mjs` | Give every farm `s.house = { level: 1 }` on load; keep wear only for the restore mode |
-| 2 | The five new vegetables are used in no recipe and no order asks for them | `src/content/goods.mjs`, `src/core/orders.mjs` | Chapter 6 adds two market recipes; check that orders pick from every crop the player can grow |
+| 2 | The five new vegetables are used in no recipe (orders and market days do ask for them) | `src/content/goods.mjs` | Two or three recipes at the bakery or a kitchen (soup, chips, kimchi); chapter 6 added none |
 | 3 | The eleven extra trees (maple, birch, cypress, fir, great oak, lemon, plum, mango, grape arbor, longan, lychee) cannot be planted | `src/content/buildings.mjs`, `src/content/goods.mjs` (`FRUITS`) | Add catalogue entries with unlock levels one or two per chapter; icons exist |
 | 4 | No button to reset a profile | `src/ui/profiles-panel.mjs` | "Start this farm again", with a typed confirmation |
 | 5 | Hired people are not seen walking to their work | `src/view/people-view.mjs` | Done in chapter 10 |

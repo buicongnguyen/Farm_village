@@ -1,6 +1,37 @@
 # Chapter 6: Market day
 
-Status: not started · Depends on: step 0 · Size: one to two sessions · Level reach: 6
+Status: **done** (PR #81) · Depends on: step 0 · Size: one to two sessions · Level reach: 6
+
+## How to play it (for the owner)
+
+1. Your farm needs level 6 and a working market square. A farm that has both gets its **first market day at once**:
+   a notice names the good of the day, flags go up over the market square, and a "Market day" pill shows in the
+   corner with the time left. Barley the baker appears at the square.
+2. Tap the pill (or open the barn). The good of the day has a red **×2** badge. Sell some: it pays double. A truck
+   loaded with it and sent while the day runs is paid the bonus too.
+3. Own three fields (buy two For-sale parcels; each sign now says what the land is good for).
+4. The chapter 6 card appears. After it, Rusty and Dash talk about the gate upriver.
+
+To test quickly, open the game with `?tester`: Settings → Test has **Start a market day** and **Jump to chapter 6**
+(and **7**, which arranges chapter 6's deed).
+
+## What was built, where it differs from the plan below
+
+- The timetable has a `shift` (`s.marketDay.shift`), so the first market day starts when the square opens and the
+  tester's button can start the next one. The good is stamped when its day begins, so it cannot change mid-day.
+- **The next good is promised a day ahead** (`s.marketDay.next`, shown in the barn and the market panel as "Next
+  market day in 5:12 · Double coins for Pumpkin"), so the player can grow or make it in time. It differs from today's
+  when the farm makes more than one thing, and is replaced if the farm can no longer make it.
+- A truck sent by the hired driver earns the bonus, but only the player's own sale or send counts as the deed.
+- The good of the day comes from `orderable(s)` (the order board's own test of what a farm can make), without fish,
+  and worth at least 6 coins when the farm makes such a thing.
+- The two project steps go FIRST in the checklist after the clinic (they are the story's next deeds), and a step that
+  is done in a menu has a "Show me" button (`panel` in `content/projects.mjs`); the old "Use build mode" hint no
+  longer shows for steps that are not about building.
+- The third picture's caption is "The brook, upriver." (there is no gatepost in the world to show).
+- No barn "×2" for trucks is shown beyond the takings line in the market panel; no new models; one new portrait
+  (`person:hugo`).
+- Not done here, moved to the backlog (`01-small-fixes.md`): recipes that use the new vegetables.
 Story source: `STORY.md` 4 (row 6), `JOURNEY.md` 3 (Act II), `MEADOW-DAIRY-SCOPE.md` (the three dairy scenes)
 
 ## What the player gets

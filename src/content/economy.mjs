@@ -65,6 +65,10 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
  *  2nd and 3rd cost and at which level. */
 export const TRUCK = { tripMs: paced(50_000), pay: 1.2, capacity: [20, 40, 70, 110, 150, 200, 260, 330, 410, 500], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
+/** Market day (core/market-day.mjs): every everyMs the square holds one for lastsMs; the good of the day pays `bonus`
+ *  times its price, from the barn and on a truck that leaves meanwhile. From `level`, with a working market square.
+ *  minValue: the square asks for a good worth at least this when the farm makes one. */
+export const MARKET_DAY = { everyMs: paced(10 * MIN), lastsMs: paced(4 * MIN), bonus: 2, level: 6, minValue: 6 };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
 export const FISH = { waitMs: paced(25_000), baitMs: paced(12_000), footMs: paced([4500, 9000]),   // footMs: a cast made on foot from the bank bites this soon (Zoo Garden's pace)
   feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };

@@ -40,6 +40,12 @@ export const CHAPTERS = [
     ada: '{person:hazel:short} is home, and {person:ellis:short} has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.',
     panels: panels(5, ['The old clinic, shutters closed.', '{person:marisol:short} and her list.', 'Where the festival stage once stood.']),
     when: s => workingCount(s, 'clinic') > 0 && arrivedFamilies(s) >= 4 },
+  // Act II, the valley wakes (docs/plan/ch06-market-day.md). The deed: sell the good of the day on a market day, and own three fields.
+  { id: 6, title: 'Market day', subtitle: 'The square fills up again.', icon: '🧺',
+    text: 'Stalls go up on the square, under bunting nobody has seen in years. A baker called {person:hugo:short} unpacks his trays as if he had never left. {person:gus:short} sold you the field “at a fair price, and do not thank me”. Upriver, {person:tomas:short} reads the name on a gatepost: a flour company in the city.',
+    ada: 'I can smell fresh bread from my porch again. Go on, dear, buy us a loaf. A big one.',
+    panels: panels(6, ['Bunting over the square.', '{person:hugo:short} and his trays.', 'The brook, upriver.']),
+    when: s => (s.stats.marketDays ?? 0) >= 1 && s.parcels.length >= 3 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -76,6 +82,32 @@ export const BEATS = [
     { who: 'lan', text: 'Five loaves for {family:okafor}! I tied a ribbon round each one.' },
     { who: 'ada', text: 'That is how Hollowbrook used to welcome people. Bread on the doorstep.' },
     { who: 'pip', text: 'I ate the end of one. Just the end.' },
+  ] },
+  // ── Chapter 6 (docs/plan/ch06-market-day.md). The water thread moves one step; nobody has a key, and Oak is still upriver. ──
+  { id: 'gus-field', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && s.parcels.length >= 3, lines: [
+    { who: 'gus', text: 'A fair price, and not a coin less. Do not thank me. I mean it.' },
+    { who: 'june', text: 'He walked the fence twice before he signed, love. He wanted to be sure we would look after it.' },
+    { who: 'gus', text: 'Hmph. The soil is good by the old hedge. That is all I am saying.' },
+  ] },
+  { id: 'animal-corner', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && workingCount(s, 'goat_barn') > 0, lines: [
+    { who: 'grace', text: 'Goats! Good. They eat what the cows leave, and they complain less than a city poodle.' },
+    { who: 'june', text: 'A corner of their own for the animals. It is starting to feel like a real farm, love.' },
+    { who: 'pip', text: 'Can I name them? All of them? I have a list.' },
+  ] },
+  { id: 'first-butter', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && (s.stats.butterMade ?? 0) > 0, lines: [
+    { who: 'lan', text: 'Butter from your own churn! My mother said good bread needs only two things, and now you make both.' },
+    { who: 'pip', text: 'It is yellow. Why is it yellow? The milk was white.' },
+    { who: 'lan', text: 'Bring me some, dear, and I will show you what a warm loaf is for.' },
+  ] },
+  { id: 'cheese-picnic', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && (s.stats.butterMade ?? 0) > 0 && (s.stats.cheeseMade ?? 0) > 0, lines: [
+    { who: 'ada', text: 'Bread, butter and cheese. I packed that for {person:ellis:short} every time he went upriver.' },
+    { who: 'pip', text: 'I counted the plates. There is one too many.' },
+    { who: 'ada', text: 'That one stays, dear. He will want it when he comes home.' },
+  ] },
+  { id: 'flour-company', chapter: 6, when: s => (s.story.chapter ?? 0) >= 6, lines: [
+    { who: 'tomas', text: 'The gate upriver has two plates on it. One is the maker. The other is the owner: a flour company in the city.' },
+    { who: 'sam', text: 'I carried their letters as a boy! Thick envelopes, never a stamp out of place. Nobody here ever opened one.' },
+    { who: 'tomas', text: 'A gate made that well was shut on purpose. Somebody still has the papers.' },
   ] },
 ];
 

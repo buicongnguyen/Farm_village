@@ -66,7 +66,7 @@ export class Hud {
       </div>`;
     this.el.addEventListener('click', e => {
       const st = e.target.closest('[data-status]')?.dataset.status;
-      if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st); return; }
+      if (st) { if (st === 'rent') this.game.do('collectRent'); else this.onPanel?.(st === 'marketday' ? 'barn' : st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
       if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
@@ -155,6 +155,8 @@ export class Hud {
     // repairStarted: no toast (docs/HUD-STANDARD.md): the scaffolding and its timer already show it in the world.
     if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish, to: 'pond' });
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market', to: 'market' });
+    if (e.type === 'marketDayStarted') this.toast(t('Market day! Double coins for {good}', { good: t(GOODS[e.good]?.name ?? e.good) }), 'good', { icon: e.good, to: 'barn' });
+    if (e.type === 'marketDaySale' && e.first) this.toast(t('Sold on market day: double coins!'), 'good', { icon: 'ui:coin', to: 'barn' });
     if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck', to: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });
     if (e.type === 'neighbourRepair') this.toast(t('{name} mended the {thing}!', { name: t(NAMES[e.id] ?? e.id), thing: thingName(this.game.s, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') }), 'good', { icon: 'wrench' });
@@ -235,7 +237,8 @@ export class Hud {
       if (row.act === 'projects' || row.act === 'mail') button.dataset.act = row.act;   // the tutorial's hand and old links find them here
       const detail = row.text != null ? t(row.text) : row.coins != null ? `+${num(row.coins)}` : row.ms != null ? row.hot ? t('ready') : `${row.count > 1 ? `${row.count} · ` : ''}${shortTime(row.ms)}` : num(row.count);
       const label = `${t(row.label)}: ${detail}${row.ready ? ` · ${row.ready} ${t('ready')}` : ''}`;
-      button.className = `status-row${row.hot || row.ready ? ' hot' : ''}`;
+      button.className = `status-row${row.hot || row.ready || row.lit ? ' hot' : ''}`;
+      if (row.act === 'marketday' && button.dataset.icon !== row.icon) { button.dataset.icon = row.icon; button.firstElementChild.outerHTML = iconHtml(row.icon, '', 'mini'); }   // the good changes from one market day to the next
       button.querySelector('b').textContent = t(row.label); button.querySelector('small').textContent = detail;
       const badge = button.querySelector('.badge'); badge.textContent = cap9(row.ready); badge.hidden = !row.ready;
       button.setAttribute('aria-label', label); button.title = row.act === 'pond' && row.hot ? t('A fish is biting!') : label;

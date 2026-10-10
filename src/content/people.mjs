@@ -51,7 +51,13 @@ export const FAMILIES = [
 
 // Villagers who are not in a rental family. `family: true` marks your own family: they never post orders (noOrders),
 // June gives tips, Pip comments on events in speech bubbles, and Ellis is away upriver: he appears only through letters.
+/** Is this villager here yet? `arrives` is the building they come with (a kind), or a test of the farm. */
+export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'function' ? !!v.arrives(s) : (s.counts[v.arrives] ?? 0) > 0);
 export const VILLAGERS = [
+  // The baker comes with the first market day (chapter 6) and keeps a stall on the square. No orders, no gifts.
+  { id: 'hugo', name: '{person:hugo:display}', role: 'Baker', arrives: s => !!s.firsts?.marketDay, noOrders: true, noGifts: true,
+    line: 'Warm from the oven! Mind your fingers, and mind the queue.',
+    idle: ['Bread has to be up before the birds. So am I.', 'A square with no baker is only a crossroads.', 'I can smell rain in the flour. Do not ask me how.'] },
   { id: 'hazel', name: '{person:hazel:display}', role: 'Doctor', arrives: 'clinic', noOrders: true, noGifts: true,
     line: 'A nurse, a vet, and a cherry tree outside. You have given me every reason to stay.' },
   { id: 'ada', name: '{person:ada:display}', role: 'Your grandmother', line: 'Bring Hollowbrook home, dear. Start with one seed.',

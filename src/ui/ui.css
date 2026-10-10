@@ -195,6 +195,7 @@ body.panel-open .hud .toasts { bottom: auto; top: min(calc(100vh - var(--sheet-h
 }
 @media (max-height: 520px) {
   .hud .hud-top { width: min(250px, 42vw); }
+  .hud .status-row[data-status="marketday"] .status-copy b { display: none; }   /* short screens: the good's picture and the time left say it (chapter 6) */
   .hud .hud-right { gap: 10px; }
   .hud .next-chip { left: max(12px, env(safe-area-inset-left)); transform: none; bottom: max(12px, env(safe-area-inset-bottom)); max-width: 44vw; animation: none; }
   .hud[data-mode="build"] .hud-tools { bottom: 32px; right: calc(min(430px, 50vw) + 12px); }
