@@ -161,6 +161,10 @@ export class Hud {
     if (e.type === 'harvestFestivalEnded') this.toast(t('The lanterns go out. What an evening!'), 'info', { icon: 'stage' });
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
+    if (e.type === 'guestArrived' && e.first) this.toast(t('The first guests have arrived at the hotel'), 'good', { icon: 'hotel', to: 'hotel' });
+    if (e.type === 'guestArrived' && e.full && !e.first) this.toast(t('The hotel is full: every room is taken'), 'info', { icon: 'hotel', to: 'hotel', group: 'hotel-full' });
+    if (e.type === 'guestServed') this.toast(t('Breakfast is served: that guest will tip double'), 'good', { icon: e.wish, group: 'hotel-served' });
+    if (e.type === 'hotelUpgraded') this.toast(t('A new floor on the hotel: {rooms} rooms', { rooms: e.rooms }), 'good', { icon: 'hotel', to: 'hotel' });
     if (e.type === 'quayPaved') this.toast(t('The old quay is paved again: {count} lots wait along the water', { count: e.lots }), 'good', { icon: 'quay', to: 'quay' });
     if (e.type === 'familiesReturned') this.toast(t('{count} families have come back to live on the quay', { count: e.count }), 'good', { icon: 'apartment', to: 'quay' });
     if (e.type === 'cooperativeFounded') this.toast(t('The co-operative is founded! Five farms, one road to the city'), 'good', { icon: 'cooperative_board', to: 'cooperative' });

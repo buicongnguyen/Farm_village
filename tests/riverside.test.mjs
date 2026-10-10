@@ -65,7 +65,7 @@ test('paving the quay: after the towpath is open, at its level, for its price, o
   assert.equal(freeLots(s).length, 7); assert.equal(unpack(pack(s)).firsts.quay, T0);
 });
 test('a riverside building stands on a free lot and nowhere else; it is never moved, stored or taken down', () => {
-  assert.deepEqual(riversideKinds(), ['apartment']); assert.ok(house.lot && house.flats === 4 && house.max === 3);
+  assert.equal(riversideKinds()[0], 'apartment'); assert.ok(riversideKinds().every(k => BUILDINGS[k].lot && BUILDINGS[k].cat === 'projects')); assert.ok(house.lot && house.flats === 4 && house.max === 3);
   const s = farm(); must(s, 'paveQuay', {});
   assert.equal(grid.canPlace(s, 'apartment', 40, 60, 0).reason, 'It belongs on a lot on the quay'); assert.equal(act(s, 'place', { kind: 'apartment', x: 40, z: 60 }, T0).ok, false);
   assert.equal(grid.canPlace(s, 'bench', LOTS[0].x, LOTS[0].z, 0).ok, false, 'nothing else goes on a lot'); assert.equal(grid.canPlace(s, 'path', 60, 6, 0).ok, false, 'or on the quay');
@@ -117,8 +117,8 @@ test('chapter 13 closes when the first quay house stands; the roadmap has the fa
   const t = newGame(T0, 3, { restore: true }); tick(t, T0); const r = must(t, 'testJumpChapter', { chapter: 14 });
   assert.deepEqual(r.missing, []); assert.equal(t.story.chapter, 13); assert.ok(t.firsts.quay && onLot(t, 'q1') && ch.when(t)); assert.equal(returnedFamilies(t), 4);
   t.house = { level: 5 }; t.stats.cheeseMade = 1; t.album.fruit.cherry = 9; for (const kind of ['goat_barn', 'dairy', 'fruit_stand', 'kennel']) { t.placed[`x_${kind}`] = { kind, x: 2, z: 2, rot: 0 }; t.counts[kind] = 1; }
-  j = journeyOf(t); assert.ok(j.stage.id !== 'farbank' || j.done === j.total, 'the far bank stage is done for now');
+  j = journeyOf(t); assert.equal(j.stage.id, 'farbank'); assert.ok(j.milestones.filter(m => ['quay', 'quayHouse'].includes(m.test)).every(m => m.done), 'this chapter\'s two deeds are done');
   const u = farm(5); must(u, 'testFinishChapter', {}); assert.ok(ch.when(u) && u.firsts.quay);
   const v = farm(6); v.house = t.house; v.stats.cheeseMade = 1; v.album.fruit.cherry = 9; for (const kind of ['goat_barn', 'dairy', 'fruit_stand', 'kennel']) { v.placed[`x_${kind}`] = { kind, x: 2, z: 2, rot: 0 }; v.counts[kind] = 1; }
-  j = journeyOf(v); assert.equal(j.stage.id, 'farbank'); assert.deepEqual(j.milestones.map(m => m.test), ['quay', 'quayHouse']); assert.equal(j.done, 0);
+  j = journeyOf(v); assert.equal(j.stage.id, 'farbank'); assert.deepEqual(j.milestones.map(m => m.test).slice(0, 2), ['quay', 'quayHouse']); assert.equal(j.done, 0);
 });

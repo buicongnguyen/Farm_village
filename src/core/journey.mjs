@@ -29,6 +29,8 @@ const tests = {
   cooperative: s => !!s.cooperative?.founded,
   quay: s => !!s.firsts?.quay,
   quayHouse: s => (s.counts?.apartment ?? 0) >= 1,
+  hotel: s => (s.counts?.hotel ?? 0) >= 1,
+  guests10: s => (s.stats?.guests ?? 0) >= 10,
   cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {

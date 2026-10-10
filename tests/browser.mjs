@@ -871,6 +871,63 @@ await check('chapter 13: the quay is paved, a quay house is built on a lot, the 
   await ctx.close();
 });
 
+// Chapter 14 (docs/plan/ch14-rooms-with-a-view.md): the hotel is built on a lot, guests arrive, one is served
+// breakfast, the desk is collected, a floor is added, and the tenth guest closes the chapter.
+await check('chapter 14: the hotel is built on the quay, guests come, breakfast is served, the desk pays and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:14'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => farm.world.batches.items.has('quay:sign1') && !farm.world.batches.items.has('quay:sign0'), null, { timeout: 40000 });   // the quay house stands on the first lot
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 5000; });
+  // the quay's panel offers both riverside buildings on a free lot: build the hotel on the third
+  await page.evaluate(() => farm.panels.show('quay', 'q3')); await page.waitForSelector('[data-do="buildOnLot"][data-kind="hotel"]');
+  expect(await page.locator('.quay-kind').count() === 2, 'the free lot does not offer the quay house and the hotel');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}quay-hotel-lot.png` });
+  await page.click('[data-do="buildOnLot"][data-lot="q3"][data-kind="hotel"]');
+  await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'hotel' && p.lot === 'q3'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'hotel'));
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'hotel', id, { timeout: 15000 });
+  // the first guests: a tester does not wait for them
+  await page.evaluate(() => { const g = farm.game; g.tick(); g.do('testFinishTimers'); g.tick(); });
+  await page.waitForFunction(() => (farm.state().hotel?.rooms ?? []).some(Boolean));
+  await page.waitForFunction(() => farm.people.walkers.has('guest0'), null, { timeout: 15000 });
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());
+  // breakfast: the pill shows when the wish is in the barn; the panel serves it
+  const wish = await page.evaluate(() => { const s = farm.state(), g = s.hotel.rooms.find(Boolean); s.barn.items[g.wish] = (s.barn.items[g.wish] ?? 0) + 2; farm.game.tick(); return g.wish; });
+  await page.waitForSelector('[data-status="hotel"]', { timeout: 15000 });
+  await page.click('[data-status="hotel"]'); await page.waitForSelector('.hotel .rooms .room');
+  expect(await page.locator('.room').count() === 6 && await page.locator('.room.free').count() === 5, 'six rooms, one taken');
+  expect((await page.textContent('.hotel-says')).length > 12, 'the guest says nothing');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}hotel-panel.png` });
+  await page.click('.room [data-do="serveGuest"]'); await page.waitForSelector('.room.served');
+  expect(await page.evaluate(w => farm.state().barn.items[w], wish) === 1, 'one breakfast was not taken from the barn');
+  expect(await page.locator('[data-status="hotel"]').count() === 0, 'the breakfast pill stays after serving');
+  // the guest leaves and pays double tip at the desk; collect it
+  const held = await page.evaluate(() => { const g = farm.game; g.do('testFinishTimers'); g.tick(); return g.s.hotel.held; });
+  expect(held >= 120 + 2 * 40, `the desk holds ${held}`);
+  await page.waitForSelector('.hotel [data-do="collectHotel"]:not([disabled])');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.hotel [data-do="collectHotel"]'); await page.waitForFunction(c => farm.state().coins > c, coins);
+  // a floor more: nine rooms, and the taller model
+  await page.click('.hotel [data-do="upgradeHotel"]'); await page.waitForFunction(() => farm.state().hotel.level === 1);
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'hotel_t1', id, { timeout: 15000 });
+  expect(await page.locator('.room').count() === 9, 'nine rooms after the upgrade');
+  // ten guests close the chapter
+  await page.evaluate(() => farm.panels.close());
+  for (let i = 0; i < 30 && await page.evaluate(() => (farm.state().stats.guests ?? 0) < 10); i++) await page.evaluate(() => { const g = farm.game; farm.closeCards(); g.do('testFinishTimers'); g.tick(); });   // (close the scenes first: the chapter card must stay)
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Rooms with a view') && card.includes('Nana Snow') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-14-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 14);
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.panels.close(); farm.focus(64, 6, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}hotel.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

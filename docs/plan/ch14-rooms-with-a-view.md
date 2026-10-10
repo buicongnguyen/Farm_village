@@ -1,6 +1,39 @@
 # Chapter 14: Rooms with a view
 
-Status: not started · Depends on: chapter 13 · Size: one to two sessions
+Status: **done** (PR #89) · Depends on: chapter 13 · Size: one to two sessions
+
+## How to play it (for the owner)
+
+1. Open the quay (tap a free lot's sign, or the step **A hotel on the quay** in Village projects), pick a free lot and
+   build the **Hotel** (level 16, 14,000 coins): a rose house with a teal roof and a terrace on the quay.
+2. **Guests come by themselves** while a room is free: one every two minutes in a bare valley, every forty seconds in
+   a "Pretty" one, every twenty-four in "A picture postcard". A guest stays eight minutes, then pays 120 coins for the
+   room and a tip of 40 for every beauty rank and one more.
+3. Tap the hotel: its **rooms** are a row of doors. Each staying guest shows the **breakfast** they wish for (a made
+   food your farm can make) and the time left. **Serve** it from the barn and that guest tips double. A pill
+   "Breakfast · ready" shows when a wish is in the barn. Serving is never required.
+4. The coins wait **at the desk**, 4,000 at most: collect them in the panel.
+5. **Add a floor** twice: nine rooms (8,000 coins), then twelve (15,000). The building grows a storey each time.
+6. Two or three guests stroll on the quay while rooms are taken: tap one to hear what they saw from their window.
+7. With the hotel built and **ten guests** gone home content, the chapter 14 card appears.
+
+Tester (`?tester`): "Chapter 14" jumps to the quay with its first house; "Finish every timer" sends the staying
+guests on their way and brings the next to the door; "Finish this chapter" builds the hotel and counts ten guests.
+
+## What was built, where it differs from the plan below
+
+- `src/core/hotel.mjs`: `tickHotel` (guests leave and arrive in order, also over the time the game was shut),
+  `hotelOf`, `breakfastReady`, `remarkOf`, the actions `serveGuest`, `collectHotel`, `upgradeHotel`. State: `s.hotel`.
+  Numbers: `HOTEL` in `content/economy.mjs`.
+- **The tip is `tip x (1 + rank)`**, not `tip x rank`: in a bare valley a guest still tips, so serving breakfast
+  always pays something.
+- The hotel is a riverside building (`lot: true`): built from the quay's panel on any free lot.
+- Guests' remarks are content (`GUEST_REMARKS` in `content/people.mjs`, with what each needs to be true).
+- The tester's jump now also reaches the level a chapter's own deed needs (`PLAY_LEVEL` in `core/testmode.mjs`).
+- Models: `hotel`, `hotel_t1`, `hotel_t2` (two, three and four floors of rooms) with window anchors: every window is
+  lit at night, not one per taken room. Guests carry no suitcase.
+- A filled desk is told by the panel; there is no pill for it (only the breakfast pill).
+- `tests/hotel.test.mjs` (8), and a browser check that plays the chapter.
 Story source: `JOURNEY.md` 3 (Act IV), `STORY.md` 4 (row 14)
 
 ## What the player gets

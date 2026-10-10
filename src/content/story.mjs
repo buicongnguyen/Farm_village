@@ -99,6 +99,12 @@ export const CHAPTERS = [
     ada: 'I can see that lamp from my porch, dear. I did not know how much I had missed a light over there.',
     panels: panels(13, ['The old quay, paved again.', 'The first house on the far bank.', 'A lamp across the water.']),
     when: s => (s.counts.apartment ?? 0) > 0 },
+  // The deed: the hotel stands on the quay and ten guests have stayed and paid (docs/plan/ch14-rooms-with-a-view.md).
+  { id: 14, title: 'Rooms with a view', subtitle: 'They came for the quiet, and stayed for breakfast.', icon: '🛎',
+    text: 'The first guests are a couple who honeymooned here before the mill shut. They ask for the same room, and it is the only one that kept its old wallpaper. By the end of the week every key is off its hook, and {person:tuyet:display} is charging the hotel for hot water by the kettle.',
+    ada: 'Tell them breakfast is from our own oven, dear. And tell them twice: city people never believe it the first time.',
+    panels: panels(14, ['The hotel on the quay.', 'Breakfast for room three.', 'Every window lit.']),
+    when: s => (s.counts.hotel ?? 0) > 0 && (s.stats.guests ?? 0) >= 10 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -256,6 +262,15 @@ export const BEATS = [
     { who: 'tuyet', text: 'Forty-one names on my list, and I have ticked four. The rest are waiting for a roof.' },
     { who: 'sam', text: 'Give me the replies. I will carry every one, and I will take the long way so they last.' },
     { who: 'tuyet', text: 'You always did, boy. You were late with my newspaper for eleven years.' },
+  ] },
+  // ── Chapter 14 (docs/plan/ch14-rooms-with-a-view.md): the hotel and its guests. ──
+  { id: 'first-guests', chapter: 14, when: s => (s.hotel?.n ?? 0) >= 1, lines: [
+    { who: 'tuyet', text: 'Two with a suitcase between them, off the morning cart. They asked if the brook still talks at night.' },
+    { who: 'lan', text: 'Guests! I shall bake. What do people from the city eat for breakfast? Never mind. They will eat mine.' },
+  ] },
+  { id: 'full-house', chapter: 14, when: s => !!s.firsts?.fullHouse, lines: [
+    { who: 'pip', text: 'Every room has somebody in it! I counted the shoes outside the doors.' },
+    { who: 'june', text: 'A full house. The prettier we keep the valley, love, the faster the next ones come.' },
   ] },
 ];
 

@@ -74,7 +74,7 @@ class Glows {
   }
 }
 // farm buildings whose windows glow too (their doors get no porch light: only homes have one)
-const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment']);
+const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment', 'hotel']);
 const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), POOL = new THREE.Color('#ff9d3a');
 
 /** The Harvest Festival (chapter 9): the hour its evening is lit as, and its lanterns: two strings from the stage's front
@@ -103,7 +103,7 @@ export class Daylight {
     game.on(r => {
       const ev = r.events ?? [];
       if (ev.some(e => e.type === 'settingChanged' || e.type === 'loaded' || e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded')) { this.apply(); this.placeGlows(); }
-      if (ev.some(e => ['placed', 'moved', 'stored', 'loaded', 'familyArrived', 'projectDone'].includes(e.type))) this.placeGlows();
+      if (ev.some(e => ['placed', 'moved', 'stored', 'loaded', 'familyArrived', 'projectDone', 'hotelUpgraded'].includes(e.type))) this.placeGlows();
     });
     world.onLampsChanged = () => this.placeGlows();
     this.placeGlows();
