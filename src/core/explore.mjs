@@ -2,7 +2,9 @@ import { ACTIONS } from './act.mjs';
 import { levelOf, isRepairing } from './condition.mjs';
 import { actions as learning } from './learning.mjs';
 import { stepCost, fenceBetween, findRoute } from './walk.mjs';
-import { HOME_APPROACH, HOME_MEMORY } from '../content/explore.mjs';
+import { HOME_APPROACH, HOME_MEMORY, HOME_ACTIVITIES } from '../content/explore.mjs';
+import { residents, heartsOf, addHearts } from './bonds.mjs';
+import { gainXp } from './levels.mjs';
 import { roomClear, roomRoute, movePoint, xz } from './explore-navigation.mjs';
 
 // Pose, routes, and held controls are never serialized. Old saves need no eager Explore module.
@@ -10,10 +12,17 @@ const sessions = new WeakMap();
 const stamp = n => Number.isSafeInteger(n) && n >= 0;
 export function exploreState(s) {
   const e = s.explore, m = e?.memories?.[HOME_MEMORY.id];
+  const used = {}; for (const id of Object.keys(HOME_ACTIVITIES)) if (stamp(e?.used?.[id])) used[id] = e.used[id];
   return { version: 1, controls: e?.controls === 'joystick' ? 'joystick' : 'tap', introduced: e?.introduced === true,
+    used, drawings: Number.isSafeInteger(e?.drawings) ? Math.max(0, Math.min(HOME_ACTIVITIES.draw.max, e.drawings)) : 0,
     memories: stamp(m?.discoveredAt) ? { [HOME_MEMORY.id]: { discoveredAt: m.discoveredAt, readAt: stamp(m.readAt) ? Math.max(m.discoveredAt, m.readAt) : null } } : {} };
 }
 export const exploreSession = s => sessions.get(s);
+/** Milliseconds until a home activity can be done again. A clock set back can never lock it for longer than its cooldown. */
+export function homeCooldown(s, id, now) {
+  const a = HOME_ACTIVITIES[id], at = exploreState(s).used[id]; if (!a || at === undefined || !stamp(now)) return 0;
+  return Math.max(0, Math.min(a.cooldownMs, at + a.cooldownMs - now));
+}
 export const endExplore = s => sessions.delete(s);
 export const homeOpen = s => levelOf(s, 'house') < 3 && !isRepairing(s, 'house');
 const cell = p => p.map(v => Math.floor(v / 2));
@@ -95,6 +104,24 @@ export const actions = {
   restOnSofa(ctx) {
     if (!atObject(ctx.s, 'farmhouse_sofa') || !sessions.get(ctx.s).seated) return ctx.fail('Sit on the sofa first');
     return learning.restForProject(ctx);
+  },
+  /** Brew a pot in the kitchen: shared with the resident you know least (+1 heart), or a quiet cup (+XP). */
+  brewTea(ctx) {
+    if (!atObject(ctx.s, 'farmhouse_kitchen')) return ctx.fail('Walk to the kitchen first');
+    if (!stamp(ctx.now)) return ctx.fail('The project clock is unavailable');
+    if (homeCooldown(ctx.s, 'tea', ctx.now) > 0) return ctx.fail('The kettle is still warm. Try again a little later.');
+    const e = exploreState(ctx.s), a = HOME_ACTIVITIES.tea; e.used.tea = ctx.now; ctx.s.explore = e;
+    const guest = residents(ctx.s, ctx.now).map(r => r.id).filter(id => heartsOf(ctx.s, id) < 10).sort((x, y) => heartsOf(ctx.s, x) - heartsOf(ctx.s, y) || (x < y ? -1 : 1))[0];
+    if (guest) { addHearts(ctx, guest, a.hearts, 'tea'); return { guest }; }
+    gainXp(ctx, a.xp); return { xp: a.xp };
+  },
+  /** Draw in the journal at the desk: a little XP, and one more drawing for the memory shelf's count. */
+  drawInJournal(ctx) {
+    if (!atObject(ctx.s, 'farmhouse_desk')) return ctx.fail('Walk to the desk first');
+    if (!stamp(ctx.now)) return ctx.fail('The project clock is unavailable');
+    if (homeCooldown(ctx.s, 'draw', ctx.now) > 0) return ctx.fail('Your hand needs a rest. Try again a little later.');
+    const e = exploreState(ctx.s), a = HOME_ACTIVITIES.draw; e.used.draw = ctx.now; e.drawings = Math.min(a.max, e.drawings + 1); ctx.s.explore = e;
+    gainXp(ctx, a.xp); return { xp: a.xp, drawings: e.drawings };
   },
   readHomeMemory(ctx) {
     if (!atObject(ctx.s, 'farmhouse_memory_shelf')) return ctx.fail('Walk to the memory shelf first');

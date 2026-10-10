@@ -249,6 +249,46 @@ await check('zoom while roaming: the wheel, + and - and a pinch change the view 
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
+await check('at home every piece of furniture does something: tea, the journal and a drawing, the day plan, the wardrobe, the collection', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await start(page); await stand(page, 51, 125); await settle(page);
+  await page.locator('[data-explore="interact"]').click();
+  await page.waitForFunction(() => farm.world.exploreMode.inside, null, { timeout: 20000 });
+  const visit = async id => {
+    await page.evaluate(() => farm.closeCards?.());
+    await page.evaluate(id => { const m = farm.world.exploreMode, o = m.session.room.interactions.find(o => o.id === id); m.card = null; m.session.seated = false; m.session.p = [o.stand[0], o.stand[2]]; m.session.route = []; m.lastNearest = undefined; }, id);
+    await page.waitForFunction(id => farm.world.exploreMode.nearest() === id && !document.querySelector('[data-explore="interact"]')?.disabled, id, { timeout: 5000 });
+    await page.locator('[data-explore="interact"]').click();
+    await page.locator('.explore-card').waitFor({ timeout: 3000 });
+  };
+  await visit('farmhouse_kitchen');
+  await page.locator('[data-explore="tea"]').click();
+  expect(await page.evaluate(() => farm.state().explore.used.tea > 0), 'Brew tea did nothing');
+  expect(await page.locator('.explore-card [role="status"]').count() >= 1 && !await page.locator('[data-explore="tea"]').count(), 'the kitchen card does not show the tea result and its wait');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-kitchen.png` });
+  await visit('farmhouse_desk');
+  await page.locator('[data-explore="draw"]').click();
+  expect(await page.evaluate(() => farm.state().explore.drawings === 1), 'Draw in the journal did nothing');
+  await page.waitForTimeout(400); await page.evaluate(() => farm.closeCards?.());   // the drawing's XP can bring a level-up card; Explore waits behind it
+  await page.locator('[data-explore="journal"]').click();
+  await page.locator('.panel[data-kind="quests"]:not([hidden])').waitFor({ timeout: 3000 });
+  await page.evaluate(() => farm.panels.close());
+  await page.evaluate(() => { const s = farm.state(); for (const id of Object.keys(s.beds)) if (s.beds[id]) s.beds[id].doneAt = farm.game.now - 1; });
+  await visit('farmhouse_table');
+  expect(await page.locator('.explore-card li').count() >= 1, 'the day plan lists nothing with ripe crops outside');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-table.png` });
+  await visit('farmhouse_wardrobe');
+  const colour = await page.evaluate(() => farm.state().settings.playerColor ?? '#e63946');
+  await page.locator('.explore-swatches .btn:not(.on)').first().click();
+  expect(await page.evaluate(c => farm.state().settings.playerColor !== c, colour), 'the wardrobe did not change the shirt');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-wardrobe.png` });
+  await visit('farmhouse_memory_shelf');
+  expect(await page.locator('.explore-log li').count() === 4, 'the memory shelf has no collection log');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-shelf.png` });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'a home card overflows the phone');
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => !r).length;
 console.log(`\n${results.length - failed}/${results.length} roaming Explore checks passed`);
