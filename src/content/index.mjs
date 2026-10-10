@@ -8,6 +8,7 @@ export * as story from './story.mjs';
 export * as hearts from './hearts.mjs';
 export * as letters from './letters.mjs';
 export * as journey from './journey.mjs';
+export * as valley from './valley.mjs';
 export * as chatter from './chatter.mjs';
 export * as quests from './quests.mjs';
 export * as discoveries from './discoveries.mjs';

@@ -131,6 +131,17 @@ export const CHAPTERS = [
     ada: 'My mother’s ribbon is still in the drawer, dear. Now it has company.',
     panels: panels(18, ['Carts from three valleys.', 'The judging table.', 'A ribbon comes home.']),
     when: s => (s.stats?.fairs ?? 0) >= 1 && (s.fair?.ribbons ?? 0) >= 1 },
+  // The deed: a picture-postcard valley worth the green mark (docs/plan/ch19-the-green-valley.md), stamped the first
+  // time both hold (core/valley.mjs tickValley, greenAward). The card reads by the answer of chapter 11, like that chapter's own. Seeing it puts the plaque up.
+  { id: 19, title: 'The green valley', subtitle: 'The prettiest working valley in the county.', icon: '🌿',
+    text: 'The cannery has all but vanished behind its trees, and its yard has grown into an orchard. A plaque goes up at the bridge: the prettiest working valley in the county. {person:albright:display} is back, as a guest at the hotel. He stands at his window a long while, and admits the view is better than his drawings.',
+    ada: 'I told him so, dear. Twice. He wrote it down the second time.',
+    variants: {
+      meadow: { text: 'The meadow is a mile of flowers now, with a path through the middle of it. A plaque goes up at the bridge: the prettiest working valley in the county. {person:albright:display} is back, as a guest at the hotel. He walks the path twice, and admits the view is better than his drawings.',
+        panels: [...panels(19, ['The plaque at the bridge.', 'A guest at the hotel.']), { img: 'assets/story/ch19-3m.webp', caption: 'The green valley.' }] },
+    },
+    panels: panels(19, ['The plaque at the bridge.', 'A guest at the hotel.', 'The green valley.']),
+    when: s => !!s.firsts?.greenValley },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -351,6 +362,28 @@ export const BEATS = [
   { id: 'first-ribbon', chapter: 18, when: s => (s.fair?.ribbons ?? 0) >= 1, lines: [
     { who: 'june', text: 'It is going on the wall by the door, love, where the postman can see it.' },
     { who: 'pip', text: 'Next time I am growing a pumpkin so big it needs its own cart.' },
+  ] },
+  // ── Chapter 19 (docs/plan/ch19-the-green-valley.md): a line for each title the valley earns, and Mr Albright's return. ──
+  { id: 'title-going-farm', chapter: 19, when: s => !!s.firsts?.['title:100000'], lines: [
+    { who: 'bea', text: 'A hundred thousand, by my sums. The ledger has a name for that: a going farm.' },
+    { who: 'gus', text: 'I have called this valley worse. A going farm will do.' },
+  ] },
+  { id: 'title-pride', chapter: 19, when: s => !!s.firsts?.['title:1000000'], lines: [
+    { who: 'june', text: 'A million, love! They are calling us the pride of the lane.' },
+    { who: 'pip', text: 'Which lane? I want to go and stand in it.' },
+  ] },
+  { id: 'title-larder', chapter: 19, when: s => !!s.firsts?.['title:10000000'], lines: [
+    { who: 'bea', text: 'Ten million. The city papers call us the valley’s larder.' },
+    { who: 'ada', text: 'A larder wants filling every single day, dear. Do not let it go to your head.' },
+  ] },
+  { id: 'title-city', chapter: 19, when: s => !!s.firsts?.['title:100000000'], lines: [
+    { who: 'tuyet', text: 'A cousin wrote from the city. There is a shop there with our valley’s name over the door.' },
+    { who: 'gus', text: 'Known in the city. My father would have asked what the city wanted with us.' },
+  ] },
+  { id: 'albright-returns', chapter: 19, when: s => (s.story.chapter ?? 0) >= 18 && (s.counts?.hotel ?? 0) > 0 && Object.keys(s.valley?.goals ?? {}).length >= 3, lines: [
+    { who: 'albright', text: 'I have taken a room with a view of the brook. I am told there is no other kind.' },
+    { who: 'ada', text: 'And how does it look beside your drawings, {person:albright:display}?' },
+    { who: 'albright', text: 'My drawings had more chimneys. I find I do not miss them.' },
   ] },
 ];
 

@@ -1446,6 +1446,26 @@ def ribbon_board():
     return p
 piece('ribbon_board', ribbon_board(), decor)
 
+# ── Chapter 19, the green valley: the county's plaque at the bridge, and a stepping stone for the meadow's path ──
+def plaque():
+    """The county's plaque (chapter 19): a boulder with a slanted brass plate (a leaf and three lines of writing), a
+    laurel wreath round it, and flowers at its foot. About 1.5 m wide and 1.4 m tall; faces the front."""
+    p = [ball('boulder', .62, 0, 0, .5, 'stone', sub=1, sc=(1.15, .8, .95)), ball('boulder2', .36, -.62, .1, .26, 'stoned', sub=1, sc=(1.1, .9, .8)), ball('boulder3', .3, .66, .14, .22, 'stonel', sub=1, sc=(1.1, .9, .8)),
+         box('plate', (.86, .05, .56), (0, -.5, .66), C['gold'], bev=.01, seg=1, rot=(-.42, 0, 0)), box('rim', (.94, .03, .64), (0, -.47, .65), C['woodd'], bev=0., seg=1, rot=(-.42, 0, 0)),
+         ball('leafmark', .1, -.26, .56, .78, 'leafd', sub=1, sc=(1.3, .3, .8))]
+    for i, w in enumerate((.36, .5, .42)): p.append(box('line', (w, .02, .045), (.1 + (w - .5) / 2, -.535 + i * .03, .78 - i * .12), C['woodd'], bev=0., seg=1, rot=(-.42, 0, 0)))
+    for i in range(9):   # the wreath: leaves in an arch over the plate
+        a = math.pi * (.08 + .84 * i / 8)
+        p.append(ball('laurel', .13, math.cos(a) * .64, .42, .62 + math.sin(a) * .5, 'leaf' if i % 2 else 'leafl', sub=0, sc=(1.2, .5, .8)))
+    for x, y, mt in ((-.78, .5, 'sun'), (-.5, .62, 'pink'), (.56, .6, 'bloom'), (.84, .46, 'violet'), (.2, .7, 'sun')):
+        p += [cl('stalk', .02, .22, x, y, 0, 'stem', verts=4), ball('petal', .09, x, y, .26, mt, sub=0, sc=(1, 1, .6))]
+    return p
+piece('plaque', plaque(), decor)
+def path_stone():
+    """A flat stepping stone for a path through grass: pale, a little uneven, 0.8 m across."""
+    return [ball('stone', .4, 0, 0, .03, 'stonel', sub=1, sc=(1, .85, .16)), ball('chip', .16, .34, .26, .02, 'stone', sub=0, sc=(1, .9, .2))]
+piece('path_stone', path_stone(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

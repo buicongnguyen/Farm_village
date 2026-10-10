@@ -148,7 +148,9 @@ export class PeopleView {
     const quayHouse = Object.entries(s.placed).filter(([, p]) => p.kind === 'apartment').sort((a, b) => a[1].x - b[1].x)[0];
     if (quayHouse && hasArrived(s, villager('tuyet'))) { const p = quayHouse[1], door = doorCell(p.kind, p.x, p.z, p.rot); out.push({ id: 'tuyet', body: 'hana', home: [door[0] + 1, door[1]], work: true }); }
     // the man from the city waits by the farm gate until he has his answer (chapter 11)
-    if (hasArrived(s, villager('albright'))) out.push({ id: 'albright', body: 'man', home: this.nearestWalkable(...ALBRIGHT.stand) ?? ALBRIGHT.stand, work: true });
+    // and comes back as a guest once the valley is green: he stands on the quay before the hotel (chapter 19)
+    if (hasArrived(s, villager('albright'))) { const door = s.story?.albright && hotel ? doorCell(hotel.kind, hotel.x, hotel.z, hotel.rot) : null;
+      out.push({ id: 'albright', body: 'man', home: door ? [door[0] + 3, door[1] + 1] : this.nearestWalkable(...ALBRIGHT.stand) ?? ALBRIGHT.stand, work: true }); }
     return out;
   }
   sync() {

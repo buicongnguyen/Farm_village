@@ -5,6 +5,7 @@
 import { BEAUTY, VALLEY, HOTEL, RIVERSIDE, RENT, PARCELS } from '../content/economy.mjs';
 import { GOODS, ANIMALS } from '../content/goods.mjs';
 import { VALUE_TITLES } from '../content/journey.mjs';
+import { GREEN_GOALS } from '../content/valley.mjs';
 import { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived } from '../content/people.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { SITES } from '../content/world.mjs';
@@ -12,7 +13,7 @@ import { isWorking } from './working.mjs';
 import * as grid from './grid.mjs';
 
 const TREES = new Set(['round_tree', 'willow', 'pine_tree', 'tree', 'bush']);
-/** The valley's beauty: { score, rank, parts: { trees, flowers, water, care, industry, meadow } }. Pure and cheap (a count). */
+/** The valley's beauty: { score, rank, parts: { trees, flowers, water, care, industry, meadow, goals } }. Pure and cheap (a count). */
 export function beautyOf(s) {
   let trees = 0, flowers = 0, garden = 0, ponds = 0, worn = 0, works = 0, hives = 0, cannery = false, dock = false;
   for (const [id, p] of Object.entries(s.placed ?? {})) {
@@ -31,6 +32,7 @@ export function beautyOf(s) {
     care: -Math.min(BEAUTY.cap.care, worn * BEAUTY.worn),
     industry: -Math.min(BEAUTY.cap.industry, works * BEAUTY.works) - (cannery && !s.valley?.green ? BEAUTY.cannery : 0),
     meadow: (s.story?.albright === 'meadow' ? BEAUTY.meadow : 0) + Math.min(BEAUTY.cap.hives, hives * BEAUTY.hive),
+    goals: Object.keys(s.valley?.goals ?? {}).filter(id => GREEN_GOALS.some(g => g.id === id)).length * BEAUTY.goal,   // green goals reached (chapter 19): for good
   };
   const score = Math.max(0, Object.values(parts).reduce((a, b) => a + b, 0));
   return { score, rank: beautyRank(score), parts };
@@ -109,6 +111,49 @@ export function dividendOf(s, now) {
   const from = s.valley.dividendFrom ?? s.valley.founded, each = Math.round(assetsOf(s).total * VALLEY.dividend);
   const due = Math.floor(Math.max(0, now - from) / VALLEY.dividendMs), payments = Math.min(VALLEY.cap, due);
   return { each, payments, waiting: payments * each, nextAt: payments >= VALLEY.cap ? null : from + (due + 1) * VALLEY.dividendMs };
+}
+
+// ── The green valley (chapter 19, docs/plan/ch19-the-green-valley.md) ──
+//   s.valley.goals = { [goal id]: when it was first reached }     s.firsts['title:<mark>']: when the valley got that title
+const GOAL_TREES = new Set(['round_tree', 'willow', 'pine_tree', 'tree']), GOAL_FLOWERS = new Set(['flowers', 'flowerpot', 'garden_flower']), GOAL_LANES = new Set(['bench', 'lamp', 'street_lamp']);
+/** The green goals open when chapter 18 is behind. */
+export const greenOpen = s => (s.story?.chapter ?? 0) >= 18;
+const goalOf = (s, g) => s.story?.albright === 'factory' && g.factory ? { ...g, ...g.factory } : g;
+function greenCounts(s) {
+  let trees = 0, flowers = 0, ponds = 0, lanes = 0, worn = 0, hives = 0;
+  for (const [id, p] of Object.entries(s.placed ?? {})) {
+    const def = BUILDINGS[p.kind]; if (!def) continue;
+    if (def.fruit || GOAL_TREES.has(p.kind)) trees++; else if (GOAL_FLOWERS.has(p.kind)) flowers++; else if (GOAL_LANES.has(p.kind)) lanes++;
+    if (p.kind === 'pond') ponds++; else if (p.kind === 'beehive') hives++;
+    if ((s.cond?.[id]?.level ?? 0) >= 1) worn++;
+  }
+  return { trees, flowers, ponds, lanes, care: worn ? 0 : 1, choice: s.story?.albright === 'factory' ? (s.valley?.green ? 1 : 0) : hives };
+}
+/** The green goals as they stand: [{ id, name, icon, have, need, coins, done, at }]. A goal reached once stays reached. */
+export function greenProgress(s) {
+  const counts = greenCounts(s);
+  return GREEN_GOALS.map(g => { const d = goalOf(s, g), at = s.valley?.goals?.[g.id] ?? null; return { id: g.id, name: d.name, icon: d.icon, need: d.need, coins: g.coins, have: at ? d.need : Math.min(d.need, counts[g.id]), done: !!at, at }; });
+}
+/** What chapter 19 asks: a picture-postcard valley, worth the green mark. { rank, rankNeed, value, valueNeed, ok } */
+export function greenAward(s) {
+  const rank = beautyOf(s).rank, value = s.valley?.founded ? valueOf(s) : 0, rankNeed = BEAUTY.ranks.length - 1, valueNeed = VALLEY.marks.green;
+  return { rank, rankNeed, value, valueNeed, ok: rank >= rankNeed && value >= valueNeed };
+}
+/** Called by tick(): a green goal reached is stamped and paid, once; a value mark passed gives the valley its next
+ *  title, one at a time and in order; and chapter 19's deed is stamped when it first holds. */
+export function tickValley(ctx) {
+  const { s, now } = ctx; if (!greenOpen(s)) return;
+  const counts = greenCounts(s);
+  for (const g of GREEN_GOALS) {
+    if (s.valley?.goals?.[g.id] || counts[g.id] < goalOf(s, g).need) continue;
+    ((s.valley ??= {}).goals ??= {})[g.id] = now; s.coins += g.coins; s.stats.coinsEarned += g.coins;
+    ctx.emit('greenGoal', { id: g.id, name: goalOf(s, g).name, coins: g.coins });
+  }
+  if (!s.valley?.founded) return;
+  const next = VALUE_TITLES.find(x => !s.firsts?.[`title:${x.at}`]);
+  if (next && valueOf(s) >= next.at) { (s.firsts ??= {})[`title:${next.at}`] = now; ctx.emit('valleyTitle', { at: next.at, name: next.name }); }
+  // chapter 19's deed: the first time the valley is a picture postcard and worth the green mark at once
+  if (!s.firsts?.greenValley && greenAward(s).ok) { (s.firsts ??= {}).greenValley = now; ctx.emit('greenValleyReached'); }
 }
 
 /** Mr Albright's offer: open from the end of chapter 10 until it is answered. */

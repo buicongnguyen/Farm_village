@@ -138,6 +138,7 @@ export class Panels {
     else if (d.do === 'report') this.show('report');
     else if (d.do === 'valley') this.show('valley');
     else if (d.do === 'valleyValue') this.show('valleyValue');
+    else if (d.do === 'valleyGreen') this.show('valleyGreen');
     else if (d.do === 'foundValley' || d.do === 'collectDividend') g.do(d.do);
     else if (d.do === 'cooperative') this.show('cooperative');
     else if (d.do === 'hotel') this.show('hotel');
@@ -157,7 +158,7 @@ export class Panels {
     else if (d.do === 'fillCooperative') g.do('fillCooperative', { good: d.good, n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'offer' || d.do === 'stepPanel' && d.panel === 'offer') { this.close(); this.onOffer?.(); }   // Mr Albright's offer is a card of its own (ui/offer.mjs)
     else if (d.do === 'greenCannery') g.do('greenCannery');
-    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay', 'hotel', 'train', 'upriver', 'valleyValue', 'fair'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
+    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay', 'hotel', 'train', 'upriver', 'valleyValue', 'fair', 'valleyGreen'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');

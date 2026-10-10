@@ -320,3 +320,12 @@ img.fair-ribbon { width: 46px; height: 46px; flex: none; }
 .fair-places li.ours { font-weight: 900; }
 .fair-places li.ours .progress > i { background: var(--gold); }
 .fair-prizes { flex-wrap: wrap; }
+/* the green goals (chapter 19): a checklist with progress, a count and what each pays */
+.green-goals { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.green-goals li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffaf0; }
+.green-goals li.done { border-color: var(--leaf); background: linear-gradient(#fbfff5, #e9ffd9); }
+.green-goals li > div { display: grid; gap: 3px; min-width: 0; }
+.green-goals li b { font-size: 13px; line-height: 1.2; }
+.green-goals li > span { font-weight: 900; font-size: 13px; }
+.green-goals li small { display: flex; align-items: center; gap: 2px; font-weight: 800; opacity: .8; }
+.green-goals li.done small { opacity: .45; }

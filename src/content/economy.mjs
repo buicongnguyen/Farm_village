@@ -8,7 +8,7 @@ export const MIN = 60_000, HOUR = 3_600_000, DAY = 86_400_000;
 // Numbers that were eased for testing and want a second look then:
 //   crop grow times (goods.mjs; PR #66), tray count and tray costs (SLOTS; #59, #61), truck sizes (TRUCK; #66, #70),
 //   the barn limit (BARN.max; #57), parcel prices (PARCELS.cost; #70), bites on foot (FISH.footMs; #61),
-//   farmhouse costs (HOUSE; #68), hand fees and wages (HANDS; #62).
+//   farmhouse costs (HOUSE; #68), hand fees and wages (HANDS; #62), the goodwill a deed adds (VALLEY.step; chapter 19).
 const paceEnv = typeof process !== 'undefined' ? process.env?.FV_PACE : null;
 export const PACE = { mode: paceEnv === 'release' ? 'release' : 'testing', time: { testing: 1, release: 3 } };
 /** A waiting time at the current pace: a number of milliseconds, or a [from, to] pair. */
@@ -72,8 +72,11 @@ export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs:
  *  the barn at market price, buildings, land and works at cost, the herd, beauty at `beauty` coins a point) times its
  *  goodwill: x `step` for every deed done together (a market day sold on, a shared order, a train sent with a full
  *  wagon, a festival or fair held, every `guests` hotel guests), `deeds` of them at most. Every dividendMs a dividend
- *  of `dividend` of the assets is set aside; at most `cap` payments wait to be collected. */
-export const VALLEY = { found: 20000, beauty: 200, step: 1.08, deeds: 400, guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6 };
+ *  of `dividend` of the assets is set aside; at most `cap` payments wait to be collected. `marks`: the value chapter 19
+ *  asks for (with a picture-postcard valley) and the value that ends the story (chapter 20). `step` is the dial for how
+ *  long those take: at testing pace a deed adds a fifth to the valley's name, at release pace a twelfth. */
+export const VALLEY = { found: 20000, beauty: 200, step: PACE.mode === 'release' ? 1.08 : 1.2, deeds: 400, guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6,
+  marks: { green: 100_000_000, lights: 1_000_000_000 } };
 /** The valley fair (core/fair.mjs, chapter 18). Holding one takes `fee` coins and `each` of every good entered; it lasts
  *  lastsMs, and the valleys rest everyMs from its opening. A score is `base` (from the plainest good of its class to the
  *  finest) plus up to `know` for how much of the good the farm has grown, made, picked or caught (full marks at the
@@ -105,9 +108,9 @@ export const TRUCK = { tripMs: paced(50_000), pay: 1.2, capacity: [20, 40, 70, 1
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
 /** The valley's beauty (core/valley.mjs, chapter 11). Points: a tree, a garden flower, a pond (two count), the dock, the
  *  open sluice, the kept meadow, a beehive; a decoration gives its own charm. Minus: a worn thing, a working factory
- *  (`quiet` kinds do not count), the cannery until it is made green (greenCost). `cap`: the most each part can give or
+ *  (`quiet` kinds do not count), the cannery until it is made green (greenCost). `goal`: a green goal reached (chapter 19). `cap`: the most each part can give or
  *  take. `ranks`: the scores at which Pleasant, Pretty, Lovely and Postcard begin. `order`: what an order pays extra per rank. */
-export const BEAUTY = { tree: 2, garden: 0.5, pond: 6, dock: 6, sluice: 20, spring: 10, meadow: 30, hive: 2, worn: 2, works: 3, cannery: 20, greenCost: 6000,
+export const BEAUTY = { tree: 2, garden: 0.5, pond: 6, dock: 6, sluice: 20, spring: 10, meadow: 30, hive: 2, goal: 4, worn: 2, works: 3, cannery: 20, greenCost: 6000,
   quiet: ['feed_mill', 'bakery', 'stall', 'fruit_stand', 'pond', 'beehive'], cap: { trees: 60, flowers: 50, care: 20, industry: 15, hives: 10 },
   ranks: [0, 25, 50, 80, 110], order: 0.02 };
 /** The Harvest Festival (core/festival.mjs, chapter 9): the feast is `kinds` different foods, `each` of each, from the barn.

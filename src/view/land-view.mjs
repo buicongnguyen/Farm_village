@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, PLAZA, inVillage, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, PLAZA, AWARD_PLAQUE, inVillage, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { fairOf } from '../core/fair.mjs';
@@ -31,11 +31,16 @@ const FAIR_SPOTS = (() => {
   for (const [i, z] of [P.z0, P.z0 + 3, P.z0 + 6].entries()) out.push({ model: 'fair_cart', x: P.x0 - 4.5, z: z + 0.5, rot: Math.PI / 2 + (i - 1) * 0.3, cells: [[P.x0 - 5, z]] });   // a cart from each valley
   return out;
 })();
+/** Where the path through the kept meadow runs (cells): south of the brook's bank, with a slow bend. */
+const meadowPath = x => Math.max(brookCurve(x) + 3.4, MEADOW.z1 - 0.35 + Math.sin(x * 0.7) * 0.3);
 const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
 // the kept meadow (chapter 11): how many flower clumps, and the young trees round a green cannery (cells from its corner)
+// Chapter 19: once the county's plaque is up, a kept meadow has a path of stones through it and more flowers; a cannery's
+// yard has grown into an orchard (cells from the site's corner).
+const AWARD_FLOWERS = 44, AWARD_STONES = 19, AWARD_ORCHARD = [[7.2, 1.5], [8.8, 1.3], [10.4, 1.6], [7.4, 3.1], [9.0, 3.3], [10.6, 3.0], [-1.9, 1.4], [-2.1, 3.2]];
 const MEADOW_FLOWERS = 76, GREEN_TREES = [[-0.9, 0.4], [-0.9, 2.6], [5.9, 2.9], [5.9, 0.9], [1.2, 4.4], [3.9, 4.4]];
 const frac = v => v - Math.floor(v);
 const PEN_EARTH = '#c9a46a';
@@ -294,8 +299,8 @@ export class LandView {
    *  green one. Redrawn only when one of those changes (frame() asks once a second). */
   drawMeadow() {
     const s = this.s, b = this.world.batches, open = albrightOffer(s).open, kept = s.story?.albright === 'meadow', green = !!s.valley?.green && (s.counts.cannery ?? 0) > 0;
-    const flowers = ['flowers', 'garden_flower'].filter(m => b.has(m));
-    const key = [open, kept, green, b.has('survey_stakes'), b.has('car'), b.has('beehive'), flowers.length].join('|');
+    const flowers = ['flowers', 'garden_flower'].filter(m => b.has(m)), award = !!s.firsts?.award, orchard = ['apple_tree', 'cherry_tree'].filter(m => b.has(m));
+    const key = [open, kept, green, b.has('survey_stakes'), b.has('car'), b.has('beehive'), flowers.length, award, b.has('plaque'), b.has('path_stone'), orchard.length].join('|');
     if (key === this.meadowKey) return; this.meadowKey = key;
     const site = SITES.find(st => st.kind === 'cannery');
     if (open && b.has('survey_stakes')) b.set('meadow:stakes', { model: 'survey_stakes', x: (site.x + site.size[0] / 2) * CELL, z: (site.z + site.size[1] / 2) * CELL, rot: 0 }); else b.remove('meadow:stakes');
@@ -308,6 +313,20 @@ export class LandView {
       b.set(id, { model: flowers[i % 3 === 2 ? flowers.length - 1 : 0], x: x * CELL, z: z * CELL, rot: r * 6.28, scale: 0.85 + r * 0.5 });
     }
     ALBRIGHT.hives.forEach(([x, z], i) => { if (kept && b.has('beehive')) b.set(`meadow:hive${i}`, { model: 'beehive', x: x * CELL, z: z * CELL, rot: 0.35 * (i - 1) }); else b.remove(`meadow:hive${i}`); });
+    // chapter 19, after the award: the plaque at the bridge; a kept meadow thick with flowers, a path of stones through it;
+    // a cannery's yard grown into an orchard
+    if (award && b.has('plaque')) b.set('meadow:plaque', { model: 'plaque', x: AWARD_PLAQUE.x * CELL, z: AWARD_PLAQUE.z * CELL, rot: AWARD_PLAQUE.rot, scale: 1.4 }); else b.remove('meadow:plaque');
+    for (let i = 0; i < AWARD_FLOWERS; i++) {
+      const id = `meadow:g${i}`; if (!award || !kept || !flowers.length) { b.remove(id); continue; }
+      const x = MEADOW.x0 + 0.3 + frac(i * 0.7548 + 0.31) * (MEADOW.x1 + 0.4 - MEADOW.x0), bank = Math.max(MEADOW.z0 + 0.2, brookCurve(x) + 0.5 + 2.1), z = bank + frac(i * 0.5698 + 0.77) * (MEADOW.z1 + 0.8 - bank), r = frac(i * 0.4142 + 0.2);
+      if (Math.abs(z - meadowPath(x)) < 0.45) { b.remove(id); continue; }   // the path is kept clear
+      b.set(id, { model: flowers[i % 2 ? flowers.length - 1 : 0], x: x * CELL, z: z * CELL, rot: r * 6.28, scale: 0.9 + r * 0.5 });
+    }
+    for (let i = 0; i < AWARD_STONES; i++) {
+      const id = `meadow:p${i}`, x = MEADOW.x0 + 0.4 + i * (MEADOW.x1 + 0.2 - MEADOW.x0) / (AWARD_STONES - 1);
+      if (award && kept && b.has('path_stone')) b.set(id, { model: 'path_stone', x: x * CELL, z: meadowPath(x) * CELL, rot: i * 2.4, scale: 0.95 + (i % 3) * 0.12 }); else b.remove(id);
+    }
+    AWARD_ORCHARD.forEach(([dx, dz], i) => { const id = `meadow:o${i}`; if (award && !kept && (s.counts.cannery ?? 0) > 0 && orchard.length) b.set(id, { model: orchard[i % orchard.length], x: (site.x + dx) * CELL, z: (site.z + dz) * CELL, rot: i * 1.3, scale: 0.8 + (i % 3) * 0.06 }); else b.remove(id); });
     GREEN_TREES.forEach(([dx, dz], i) => { if (green && b.has('round_tree')) b.set(`meadow:tree${i}`, { model: 'round_tree', x: (site.x + dx) * CELL, z: (site.z + dz) * CELL, rot: i * 1.7, scale: 0.62 + (i % 3) * 0.07 }); else b.remove(`meadow:tree${i}`); });
   }
   /** The riverside once its quay is paved (Act IV, core/riverside.mjs): the wild scatter leaves the zone (once), a sign
@@ -502,7 +521,7 @@ export class LandView {
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') { this.drawPlaced(e.id); this.drawRuins(); }   // a rebuilt building takes its old ruin's place at once, whatever the current project is
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
       else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
-      else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
+      else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened' || e.type === 'valleyAwarded') this.drawMeadow();
       else if (e.type === 'bridgeOpened' || e.type === 'valleyFounded') this.drawCooperative();
       else if (e.type === 'quayPaved') this.drawRiverside();
       else if (e.type === 'fairHeld' || e.type === 'fairEnded' || e.type === 'valleyFounded') this.drawFair();

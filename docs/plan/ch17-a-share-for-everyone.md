@@ -12,7 +12,7 @@ Status: **done** (PR #92) · Depends on: chapter 16 · Size: one to two sessions
    (124.5K, 1.2M, 1B; 120만, 1.2억 in Korean; 120万, 1.2億 in Japanese). The Value page shows what it is made of:
    coins, goods in the barn, everything built, land, works and upgrades, the herd and the valley's beauty, times its
    **goodwill**.
-4. **Goodwill** grows by 8 % with every deed done together: a market day sold on, a shared order, a train sent with a
+4. **Goodwill** grows by a fifth at testing pace (8 % at release pace; chapter 19 set this) with every deed done together: a market day sold on, a shared order, a train sent with a
    full wagon, a festival, and every five hotel guests. That is how the value reaches the marks of the last chapters.
 5. **The dividend**: every ten minutes the company sets aside 0.2 % of the valley's assets; six payments at most can
    wait. Collect it on the Value page; a pill "Dividend" shows once half of what can wait is waiting.

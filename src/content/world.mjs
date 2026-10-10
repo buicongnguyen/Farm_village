@@ -143,6 +143,8 @@ export const nearHome = (x, z) => x >= 14 && x <= 31 && z >= 52 && z <= 80;
 export const brookCurve = x => 12 + Math.sin(x / 9) * 3;
 /** The plank bridge where the north–south road crosses the brook (cells). */
 export const BRIDGE = { x0: 28, x1: 29, z: brookZ(28.5) };
+/** The county's plaque (chapter 19): on the verge south-east of the bridge, by the dock (cells, its middle). A tap opens the green goals. */
+export const AWARD_PLAQUE = { x: 30.6, z: 15.4, rot: 0 };
 /** Stepping stones across the brook just north of the farm (cell x; z follows the brook). */
 export const STEPPING_STONES = { x: 47 };
 /** The duck pond in the woods west of the road, north of the farmhouse (cells, inclusive), and its little dock. */

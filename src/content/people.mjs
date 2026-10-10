@@ -64,7 +64,7 @@ export const VILLAGERS = [
       'A quay wants feet on it. Listen: it is coming back.', 'The brook is the same. It is the people who went away and came home.'] },
   // Mr Albright, the man from the city (chapter 11): he waits at the farm gate from the end of chapter 10 until he has his
   // answer, then goes. Polite, sure of himself, honestly puzzled that anyone would say no. Not a villain.
-  { id: 'albright', name: '{person:albright:display}', role: 'Man from the city', arrives: s => (s.story?.chapter ?? 0) >= 10 && !s.story?.albright, noOrders: true, noGifts: true,
+  { id: 'albright', name: '{person:albright:display}', role: 'Man from the city', arrives: s => (s.story?.chapter ?? 0) >= 10 && !s.story?.albright || (s.counts?.hotel ?? 0) > 0 && !!s.story?.beats?.includes('albright-returns'), noOrders: true, noGifts: true,   // waiting for his answer (chapter 11); a hotel guest (chapter 19)
     line: 'A fine meadow. I have drawn something for it. Take your time: I have a flask of tea.',
     idle: ['Take your time. The offer keeps.', 'In the city nobody stops to look at a brook. I find I have stopped.', 'It is only a meadow. And yet.'] },
   // The office manager comes with the company office (chapter 8): brisk, kind, counts everything twice. No orders, no gifts.
