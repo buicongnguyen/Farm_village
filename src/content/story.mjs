@@ -111,6 +111,13 @@ export const CHAPTERS = [
     ada: 'I counted the wagons when I was a girl, dear. I counted them tonight. Old habits keep their own time.',
     panels: panels(15, ['The halt on the quay.', 'Three wagons to fill.', 'The evening train.']),
     when: s => (s.counts.halt ?? 0) > 0 && (s.stats.trains ?? 0) >= 1 },
+  // The deed: the three stops upriver are walked (docs/plan/ch16-where-the-brook-begins.md). The end of Act IV; this
+  // chapter closes Oak's absence and opens nothing new.
+  { id: 16, title: 'Where the brook begins', subtitle: 'The long way round.', icon: '💧',
+    text: 'The spring is a wet rock under a fern, and {person:pip:short} is not impressed until {person:ellis:short} says that every drop in the mill race started there. He went upriver to learn why the water had stopped. He found the gate, and he stayed away, because he could not face coming home until it was open.',
+    ada: 'He always did take the long way round, dear. My knees stayed home, and so did I. Was the fern still there?',
+    panels: panels(16, ['The old weir.', 'The heron pool.', 'The spring.']),
+    when: s => (s.upriver?.stops?.length ?? 0) >= 3 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -290,6 +297,27 @@ export const BEATS = [
   { id: 'full-train', chapter: 15, when: s => !!s.firsts?.fullTrain, lines: [
     { who: 'bea', text: 'Three wagons, full to the roof, and every crate on my list. I counted twice. I may count again for pleasure.' },
     { who: 'ada', text: 'Hollowbrook on a railway label. Well. I shall need a better hat for the city.' },
+  ] },
+  // ── Chapter 16 (docs/plan/ch16-where-the-brook-begins.md): the walk upriver, one scene at each stop. ──
+  { id: 'upriver-ask', chapter: 16, when: s => (s.story.chapter ?? 0) >= 15, lines: [
+    { who: 'ellis', text: 'I have a mind to walk up to the spring again, now that the valley can spare me. Who is coming?' },
+    { who: 'pip', text: 'Me! How far is it? Are there frogs? I will bring a jar.' },
+    { who: 'ada', text: 'Take the child and a picnic. My knees will hear all about it afterwards.' },
+  ] },
+  { id: 'upriver-weir', chapter: 16, when: s => !!s.upriver?.stops?.includes('weir'), lines: [
+    { who: 'pip', text: 'Eleven stones! One of them wobbles. I am not saying which.' },
+    { who: 'ellis', text: 'I fished off this weir with a bent pin and that very float. I caught a boot. Twice.' },
+    { who: 'pip', text: 'The SAME boot?' },
+  ] },
+  { id: 'upriver-heron', chapter: 16, when: s => !!s.upriver?.stops?.includes('heron'), lines: [
+    { who: 'ellis', text: 'Stand still. Stiller than that. A heron does not hold with fidgeting.' },
+    { who: 'pip', text: 'I counted to forty and it did not blink. I blinked nine times.' },
+    { who: 'ellis', text: 'It was here every morning when I came up alone. Good company. It never once asked when I was going home.' },
+  ] },
+  { id: 'upriver-spring', chapter: 16, when: s => !!s.upriver?.stops?.includes('spring'), lines: [
+    { who: 'pip', text: 'That is IT? It is a wet rock.' },
+    { who: 'ellis', text: 'Every drop in the mill race began under that fern. I sat here a long while, the year the water stopped, working up the nerve to follow it down.' },
+    { who: 'pip', text: 'Then it is the BEST wet rock. Can we take some home in a bottle?' },
   ] },
 ];
 

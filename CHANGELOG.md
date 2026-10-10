@@ -1,5 +1,11 @@
 # Changelog
 
+## Chapter 16: Where the brook begins — 2026-10-11
+
+- **A walk upriver** with Grandpa Oak and Sunny, in three stops: the old weir (bring a picnic), the heron pool (land a fish at the boat dock first) and the spring (plant ten trees first). Nothing is timed.
+- Each stop plays a short scene and gives a **keepsake**: Oak's old float, a heron's feather, a bottle of spring water. The walk's panel keeps the pictures.
+- Reaching the spring makes the valley a little more beautiful for good, and closes **chapter 16**: at last, why Oak stayed away so long. Act IV is complete.
+
 ## Chapter 15: The evening train — 2026-10-11
 
 - **The railway halt**: build it on a free lot of the quay (level 17, 18,000 coins). The old rails behind the quay are relaid.

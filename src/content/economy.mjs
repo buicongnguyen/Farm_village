@@ -87,7 +87,7 @@ export const TRUCK = { tripMs: paced(50_000), pay: 1.2, capacity: [20, 40, 70, 1
  *  open sluice, the kept meadow, a beehive; a decoration gives its own charm. Minus: a worn thing, a working factory
  *  (`quiet` kinds do not count), the cannery until it is made green (greenCost). `cap`: the most each part can give or
  *  take. `ranks`: the scores at which Pleasant, Pretty, Lovely and Postcard begin. `order`: what an order pays extra per rank. */
-export const BEAUTY = { tree: 2, garden: 0.5, pond: 6, dock: 6, sluice: 20, meadow: 30, hive: 2, worn: 2, works: 3, cannery: 20, greenCost: 6000,
+export const BEAUTY = { tree: 2, garden: 0.5, pond: 6, dock: 6, sluice: 20, spring: 10, meadow: 30, hive: 2, worn: 2, works: 3, cannery: 20, greenCost: 6000,
   quiet: ['feed_mill', 'bakery', 'stall', 'fruit_stand', 'pond', 'beehive'], cap: { trees: 60, flowers: 50, care: 20, industry: 15, hives: 10 },
   ranks: [0, 25, 50, 80, 110], order: 0.02 };
 /** The Harvest Festival (core/festival.mjs, chapter 9): the feast is `kinds` different foods, `each` of each, from the barn.

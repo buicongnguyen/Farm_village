@@ -469,6 +469,24 @@
   }
  },
  {
+  "id": "oak_float",
+  "src": "raw:items",
+  "root": "oak_float",
+  "preset": "goods"
+ },
+ {
+  "id": "heron_feather",
+  "src": "raw:items",
+  "root": "heron_feather",
+  "preset": "goods"
+ },
+ {
+  "id": "spring_water",
+  "src": "raw:items",
+  "root": "spring_water",
+  "preset": "goods"
+ },
+ {
   "id": "halt",
   "src": "raw:decor",
   "root": "halt",

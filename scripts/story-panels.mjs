@@ -45,6 +45,9 @@ const hotel = `s.placed.st_hotel = { kind: 'hotel', x: 54, z: 1, rot: 0, lot: 'q
 const haltLot = `s.placed.st_halt = { kind: 'halt', x: 94, z: 1, rot: 0, lot: 'q7' }; s.counts.halt = 1;`;
 const trainHere = `s.train = { nextAt: farm.game.now + 1500000, n: 1, here: { n: 0, at: farm.game.now - 60000, until: farm.game.now + 420000,
   wagons: [{ good: 'wheat', need: 100, have: 100 }, { good: 'bread', need: 60, have: 60 }, { good: 'egg', need: 60, have: 10 }] } };`;
+// chapter 16: staging for the three stops upriver. A row of stones from (x, z) southwards, and a clump of bushes for ferns.
+const stones = (x, z, n, step, scale) => `for (let i = 0; i < ${n}; i++) farm.world.batches.set('stage:r${Math.round(x * 10)}_' + i, { model: 'rock', x: (${x} + (i % 2) * 0.22) * 2, z: (${z} + i * ${step}) * 2, rot: i * 1.3, scale: ${scale} + (i % 3) * 0.2 });`;
+const ferns = (x, z, n) => `for (let i = 0; i < ${n}; i++) farm.world.batches.set('stage:f${Math.round(x * 10)}_' + i, { model: 'bush', x: (${x} + (i % 3) * 0.7) * 2, z: (${z} + Math.floor(i / 3) * 0.6) * 2, rot: i * 2.1, scale: 0.7 + (i % 2) * 0.25 });`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -99,6 +102,10 @@ const PANELS = {
   'ch15-1': { hour: 10.5, scene: sluice + far + quayHouse + hotel + haltLot, wait: 9000, look: [97, 4, 22] },
   'ch15-2': { hour: 17.2, scene: sluice + far + quayHouse + hotel + haltLot + trainHere, wait: 9000, look: [96, 3, 22] },
   'ch15-3': { hour: 19.6, scene: sluice + far + quayHouse + hotel + haltLot + trainHere, wait: 9000, look: [92, 3.5, 34] },
+  // chapter 16: three places up the brook, west of the road, staged with stones and bushes; Oak and Sunny at each
+  'ch16-1': { hour: 11, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(14.3, 13.4, 9, 0.42, 1.25) + put('ellis', 15.2, 17.3) + put('pip', 13.2, 17.2), 1800], look: [14.2, 15.6, 11] },
+  'ch16-2': { hour: 7.6, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(7.2, 12.0, 4, 0.5, 1.6) + ferns(8.2, 11.0, 5) + put('ellis', 10.4, 16.6) + put('pip', 9.0, 16.5), 1800], look: [9.4, 14.6, 10] },
+  'ch16-3': { hour: 16.4, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(0.7, 11.6, 6, 0.36, 2.4) + ferns(0.9, 10.8, 6) + put('pip', 2.3, 15.4) + put('ellis', 3.6, 15.7), 1800], look: [2.6, 13.4, 9] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

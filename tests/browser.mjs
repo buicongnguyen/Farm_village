@@ -982,6 +982,56 @@ await check('chapter 15: the halt is built, the train comes, a wagon is filled a
   await ctx.close();
 });
 
+// Chapter 16 (docs/plan/ch16-where-the-brook-begins.md): the walk upriver, stop by stop, and the card at the spring.
+await check('chapter 16: the walk upriver is taken in three stops, each with its deed and keepsake, and the card shows (phone)', async () => {
+  const { ctx, page, errors } = await open('phone', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:16'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => !!farm.state().upriver, null, { timeout: 20000 });
+  await page.waitForTimeout(800); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 40000; g.s.barn.cap = 5000; g.s.barn.items = {}; });
+  // the panel: the first stop asks for a picnic, the others wait
+  await page.evaluate(() => farm.panels.show('upriver')); await page.waitForSelector('.upriver .stop.next');
+  expect(await page.locator('.stop').count() === 3 && await page.locator('.stop.later').count() === 2, 'three stops, two of them further up the path');
+  expect(await page.locator('[data-do="visitStop"]').isDisabled(), 'the weir without a picnic');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}upriver-start.png` });
+  await page.evaluate(() => { Object.assign(farm.state().barn.items, { bread: 3, cheese: 1, apple_juice: 2 }); farm.game.tick(); });
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"]')?.disabled);
+  await page.click('[data-do="visitStop"][data-stop="weir"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 1);
+  await page.waitForSelector('.modal', { timeout: 15000 }); expect((await page.textContent('.modal')).includes('Eleven stones'), 'the scene at the weir');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('upriver'); }); await page.waitForSelector('.stop.done');
+  expect((await page.textContent('.stop.done')).includes('old float') && await page.locator('.stop.done .keepsake img').count() === 1, 'the weir shows no keepsake');
+  // the heron pool: a fish landed at the boat dock since the weir
+  expect(await page.locator('[data-do="visitStop"][data-stop="heron"]').isDisabled(), 'the heron pool before a fish is landed');
+  await page.evaluate(() => { const s = farm.state(); s.stats.riverFish = (s.stats.riverFish ?? 0) + 1; farm.game.tick(); });
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"][data-stop="heron"]')?.disabled);
+  await page.click('[data-do="visitStop"][data-stop="heron"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 2);
+  await page.waitForSelector('.modal', { timeout: 15000 }); expect((await page.textContent('.modal')).includes('forty'), 'the scene at the heron pool');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('upriver'); }); await page.waitForSelector('[data-do="visitStop"][data-stop="spring"]');
+  // the spring: ten trees planted (really planted, on the farm)
+  const planted = await page.evaluate(() => { const g = farm.game; let n = 0; for (let z = 30; z <= 85 && n < 10; z++) for (let x = 34; x <= 93 && n < 10; x++) if (g.do('place', { kind: 'pine_tree', x, z }).ok) n++; return n; });
+  expect(planted === 10, `planted ${planted} trees`);
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"][data-stop="spring"]')?.disabled);
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}upriver-spring.png` });
+  await page.click('[data-do="visitStop"][data-stop="spring"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 3);
+  await page.evaluate(() => farm.panels.close());
+  // the scene at the spring, then the chapter card
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Where the brook begins') && card.includes('Oak') && card.includes('Sunny') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-16-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 16);
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());
+  await page.evaluate(() => farm.panels.show('upriver')); await page.waitForSelector('.upriver .stop.done');
+  expect(await page.locator('.stop.done').count() === 3 && await page.locator('.stop.done img[src*="ch16"]').count() === 3, 'the three stops keep their pictures');
+  const fits = await page.evaluate(() => [...document.querySelectorAll('.stop')].every(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1; }));
+  expect(fits, 'a stop runs off the phone screen');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}upriver-done.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

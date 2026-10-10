@@ -275,3 +275,16 @@ button.good { min-height: 44px; cursor: pointer; }
 .room .btn.small { min-height: 26px; padding: 2px 8px; font-size: 12px; }
 .room-done .g { width: 22px; height: 22px; }
 .hotel-says { margin: 6px 0; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; font-style: italic; }
+/* the walk upriver (chapter 16) */
+.upriver-who { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.upriver-who .mini-face { width: 38px; height: 38px; flex: none; border-radius: 50%; }
+.stop { margin: 8px 0; padding: 8px 10px; border: 2px solid var(--line); border-radius: 16px; background: #fffdf4; }
+.stop h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 6px; }
+.stop p { margin: 2px 0 6px; }
+.stop.done { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 10px; background: #eefbe0; border-color: #9fd36a; }
+.stop.done img { width: 132px; height: 74px; object-fit: cover; border-radius: 10px; border: 2px solid #fff; }
+.stop.later { background: #f3ead8; border-style: dashed; color: var(--ink-2); }
+.stop .keepsake { display: flex; align-items: center; gap: 6px; margin: 0; }
+.stop .keepsake img.mini { width: 30px; height: 30px; }
+.stop .req img.mini { width: 22px; height: 22px; vertical-align: -5px; }
+@media (max-width: 420px) { .stop.done { grid-template-columns: 1fr; } .stop.done img { width: 100%; height: 96px; } }

@@ -139,6 +139,7 @@ export class Radial {
       return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${!ruinStands(s, ruin.kind) ? t('Cleared, kept for the rebuild') : next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
     const who = !opts.preview && !id && this.people?.pick(x, y);
+    if (who && who.id === 'ellis' && (s.story?.chapter ?? 0) >= 15 && (s.upriver?.stops?.length ?? 0) < 3) { this.hide(); this.people.talk(who); this.panels.show('upriver'); return; }   // Grandpa Oak: the walk upriver (chapter 16)
     if (who && (who.person ?? who.id) === 'albright') { this.hide(); this.people.talk(who); this.panels.onOffer?.(); return; }   // the man from the city: his offer (chapter 11)
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor && !who.guest) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
     if (id && !opts.preview && !opts.open && s.placed[id]?.kind === 'stage') { this.hide(); this.panels.show('festival'); return; }   // the festival stage: the Harvest Festival's panel

@@ -35,3 +35,22 @@ export const PICNIC_TRAIL = {
 };
 
 export const explorationStep = id => EXPLORATION_STEPS.find(step => step.id === id) ?? null;
+
+// The walk upriver (chapter 16, core/upriver.mjs): three stops to the spring with Grandpa Oak and Sunny, in order.
+// `text`: what the stop asks for (`needs`: goods taken from the barn, fish landed at the boat dock since the stop
+// before, trees planted since the walk opened); `story`: what is found there; `keepsake`: its icon id and its name.
+// Each stop's three-line scene is a beat in content/story.mjs (upriver-<id>).
+export const UPRIVER = {
+  id: 'upriver', title: 'Where the brook begins', text: 'A walk upriver with {person:ellis:short} and {person:pip:short}, in three stops, to the spring. Nothing here is in a hurry.',
+  stops: [
+    { id: 'weir', title: 'The old weir', label: 'Walk to the old weir', needs: { goods: { bread: 3, cheese: 1, apple_juice: 2 } }, coins: 100, xp: 40, keepsake: { id: 'oak_float', name: '{person:ellis:short}’s old float' },
+      text: 'Half a day on foot. Pack a picnic for three from the barn.',
+      story: 'The weir is a row of mossy stones across the brook. Under the third one, on a rusty nail, hangs a painted cork float.' },
+    { id: 'heron', title: 'The heron pool', label: 'Walk on to the heron pool', needs: { riverFish: 1 }, coins: 150, xp: 50, keepsake: { id: 'heron_feather', name: 'A heron’s feather' },
+      text: '{person:ellis:short} says a heron only trusts people who can catch their own supper. Land a fish at the boat dock first.',
+      story: 'The heron stands so still that it might be a post. When it goes at last, it leaves one grey feather on the bank.' },
+    { id: 'spring', title: 'The spring', label: 'Climb to the spring', needs: { trees: 10 }, coins: 200, xp: 60, keepsake: { id: 'spring_water', name: 'A bottle of spring water' },
+      text: 'The spring is a long way up, and nobody goes there empty-handed. Plant ten trees in the valley, for the water to come down to.',
+      story: 'A wet rock under a fern. The water comes out no thicker than a finger, and it does not stop.' },
+  ],
+};
