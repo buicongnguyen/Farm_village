@@ -24,7 +24,8 @@ export const STAGES = [
   { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 14, version: '0.9',
     milestones: [{ name: 'Pave the old quay', test: 'quay' }, { name: 'Build a house on the quay', test: 'quayHouse' },
       { name: 'Open the hotel', test: 'hotel' }, { name: 'Welcome ten guests', test: 'guests10' },
-      { name: 'Reopen the railway halt', test: 'halt' }, { name: 'Send a wagon by train', test: 'train1' }] },
+      { name: 'Reopen the railway halt', test: 'halt' }, { name: 'Send a wagon by train', test: 'train1' },
+      { name: 'Walk to where the brook begins', test: 'upriver' }] },
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
 ];
 export const JOURNEY_UNLOCKS = [

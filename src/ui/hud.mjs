@@ -161,6 +161,7 @@ export class Hud {
     if (e.type === 'harvestFestivalEnded') this.toast(t('The lanterns go out. What an evening!'), 'info', { icon: 'stage' });
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
+    if (e.type === 'upriverStop') this.toast(t(e.complete ? 'You reached the spring where the brook begins' : 'A stop on the walk upriver, and a keepsake to bring home'), 'good', { icon: e.keepsake, to: 'upriver' });
     if (e.type === 'trainArrived') this.toast(t('The evening train is at the halt: three wagons to fill'), 'good', { icon: 'halt', to: 'train' });
     if (e.type === 'trainLeft') this.toast(e.coins > 0 ? t('The train has left: {coins} coins for what it carried', { coins: num(e.coins) }) : t('The train has left with empty wagons'), e.coins > 0 ? 'good' : 'info', { icon: 'halt', to: 'train' });
     if (e.type === 'wagonLoaded' && e.full) this.toast(t('A wagon is full: it pays best when the train leaves'), 'good', { icon: e.good, group: 'wagon-full' });

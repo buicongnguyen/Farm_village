@@ -36,6 +36,7 @@ import { renderCooperative } from './cooperative-panel.mjs';
 import { renderQuay } from './quay-panel.mjs';
 import { renderHotel } from './hotel-panel.mjs';
 import { renderTrain } from './train-panel.mjs';
+import { renderUpriver } from './upriver-panel.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
@@ -103,6 +104,7 @@ export function renderPanel() {
     }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
     else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s); }
+    else if (o.kind === 'upriver') { title = t('Where the brook begins'); icon = 'spring_water'; body = renderUpriver(s); }
     else if (o.kind === 'train') { title = t('The railway halt'); icon = 'halt'; body = renderTrain(s, now); }
     else if (o.kind === 'hotel') { title = t('The hotel'); icon = 'hotel'; body = renderHotel(s, now); }
     else if (o.kind === 'quay') { title = t('The quay'); icon = 'quay'; body = renderQuay(s, now, o.arg); }

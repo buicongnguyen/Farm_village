@@ -140,6 +140,8 @@ export class Panels {
     else if (d.do === 'cooperative') this.show('cooperative');
     else if (d.do === 'hotel') this.show('hotel');
     else if (d.do === 'train') this.show('train');
+    else if (d.do === 'upriver') this.show('upriver');
+    else if (d.do === 'visitStop') { if (g.do('visitStop', { stop: d.stop }).ok) this.close(); }   // the stop's scene plays at once (a scene waits while a panel is open)
     else if (d.do === 'loadWagon') g.do('loadWagon', { wagon: Number(d.wagon), n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'serveGuest') g.do('serveGuest', { room: Number(d.room) });
     else if (d.do === 'collectHotel' || d.do === 'upgradeHotel') g.do(d.do);
@@ -150,7 +152,7 @@ export class Panels {
     else if (d.do === 'fillCooperative') g.do('fillCooperative', { good: d.good, n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'offer' || d.do === 'stepPanel' && d.panel === 'offer') { this.close(); this.onOffer?.(); }   // Mr Albright's offer is a card of its own (ui/offer.mjs)
     else if (d.do === 'greenCannery') g.do('greenCannery');
-    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay', 'hotel', 'train'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
+    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay', 'hotel', 'train', 'upriver'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');

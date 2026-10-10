@@ -82,6 +82,9 @@ export const STEPS = [
     needs: { level: 17 }, panel: 'quay', done: s => (s.counts.halt ?? 0) >= 1, builds: [] },
   { id: 'first_train', name: 'A wagon on the evening train', text: 'The train waits a while at the halt with three wagons. Fill at least one from your barn before it leaves: a full wagon pays best of all.',
     needs: { level: 17 }, panel: 'train', done: s => (s.stats.trains ?? 0) >= 1, builds: [] },
+  // chapter 16 (docs/plan/ch16-where-the-brook-begins.md)
+  { id: 'upriver', name: 'A walk upriver', text: '{person:ellis:short} wants to walk up to the spring where the brook begins, with {person:pip:short}. Three stops, each with a small thing to do first. Nothing is in a hurry.',
+    needs: {}, panel: 'upriver', done: s => (s.upriver?.stops?.length ?? 0) >= 3, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

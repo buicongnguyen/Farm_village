@@ -1,6 +1,34 @@
 # Chapter 16: Where the brook begins
 
-Status: not started · Depends on: chapter 15 · Size: one session
+Status: **done** (PR #91) · Depends on: chapter 15 · Size: one session
+
+## How to play it (for the owner)
+
+1. When the chapter 15 card is closed, Grandpa Oak says he wants to walk up to the spring. Open **A walk upriver**
+   in Village projects, **Where the brook begins** in the Roadmap, or tap Grandpa Oak.
+2. Three stops, in order, each with a small deed first. Nothing is timed.
+   - **The old weir**: a picnic from the barn (3 bread, 1 cheese, 2 apple juice).
+   - **The heron pool**: land one fish at the boat dock after the weir.
+   - **The spring**: plant ten trees in the valley after the walk has opened.
+3. Each stop plays a short scene with Oak and Sunny and gives a **keepsake** (Oak's old float, a heron's feather, a
+   bottle of spring water), coins and experience. The panel keeps the stop's picture, what was found and the keepsake.
+4. Reaching the spring adds 10 to the valley's beauty for good, and closes **chapter 16**: why Oak stayed away.
+
+Tester (`?tester`): "Chapter 16" jumps to the open walk; "Finish this chapter" walks all three stops.
+
+## What was built, where it differs from the plan below
+
+- `src/core/upriver.mjs` and `UPRIVER` in `content/exploration.mjs`, **beside** the picnic trail rather than inside
+  it: that trail's save format is one fixed list with careful repair rules, and a second trail did not fit it.
+  State: `s.upriver = { stops, trees0, fish0 }`; the deed is `s.upriver.stops.length >= 3`.
+- "A named fish" became **any fish landed at the boat dock** since the stop before (`s.stats.riverFish`).
+- The keepsakes live in the walk's own panel; there is no separate keepsake page yet (chapter 20's album can gather
+  them).
+- The stops' pictures are staged in the game west of the brook road with stones and bushes
+  (`scripts/story-panels.mjs`), and double as the chapter card's pictures. There is no heron model: the pool is
+  shown without the bird.
+- `BEAUTY.spring` (10) is part of "Ponds and the brook" in the Valley panel.
+- `tests/upriver.test.mjs` (5), and a browser check that walks the three stops on a phone.
 Story source: `JOURNEY.md` 3 (Act IV), `STORY.md` 4 (row 16)
 
 ## What the player gets

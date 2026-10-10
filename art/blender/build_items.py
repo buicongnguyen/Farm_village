@@ -599,6 +599,31 @@ def honey_cake():
     return p
 item('honey_cake', honey_cake())
 
+# ---- chapter 16 (the walk upriver): three keepsakes
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'cork': '#D9A066', 'corkd': '#B07A44', 'floatr': '#EF3B3B', 'floatw': '#FFFDF6', 'feather': '#9FB3C8', 'featherd': '#5F7890', 'featherl': '#DCE6F0',
+    'glassb': '#9FE3F5', 'glassbd': '#5FBFE0', 'waterb': '#3FA7E8', 'fern': '#3FA54A'}.items()})
+def oak_float():
+    """Grandpa Oak's old fishing float: a painted cork, red over white, on a thin stick, with a loop of line."""
+    return [P('body', .3, (0, 0, .46), 'floatw', sub=2, sc=(1, 1, 1.25)), P('cap', .3, (0, 0, .58), 'floatr', sub=2, sc=(.98, .98, .9)), cyl('band', .3, .05, (0, 0, .46), C['corkd'], verts=16, bev=0),
+            stalk('stick', (0, 0, .02), (0, 0, 1.12), .03, C['corkd']), P('tip', .06, (0, 0, 1.14), 'floatr', sub=1),
+            torus('line', .2, .012, (.22, 0, .12), C['featherl'], major_segs=14, minor_segs=4), P('chip', .07, (.2, -.2, .5), 'cork', sub=1, sc=(1, .4, 1))]
+item('oak_float', oak_float())
+def heron_feather():
+    """A heron's feather: one long grey-blue vane on a pale quill, darker at the tip and downy at the foot, at a slant."""
+    lean = .59
+    return [stalk('quill', (-.44, 0, .03), (.38, 0, 1.22), .022, C['featherl']),
+            ico('vane', .5, (-.02, 0, .66), C['feather'], subdiv=2, scale=(.3, .045, .95), rot=(0, lean, 0)),
+            ico('vanetip', .3, (.2, 0, .98), C['featherd'], subdiv=2, scale=(.34, .05, .62), rot=(0, lean, 0)),
+            ico('down', .2, (-.27, 0, .3), C['featherl'], subdiv=1, scale=(.62, .07, .75), rot=(0, lean, 0))]
+item('heron_feather', heron_feather())
+def spring_water():
+    """A bottle of spring water: pale blue glass, a cork, a paper label with a fern, water to the shoulder."""
+    return [cyl('glass', .26, .62, (0, 0, .31), C['glassb'], verts=16, bev=.05), cyl('water', .23, .44, (0, 0, .25), C['waterb'], verts=16, bev=.02), cyl('neck', .1, .22, (0, 0, .72), C['glassb'], verts=12, bev=.02),
+            cyl('lip', .12, .05, (0, 0, .84), C['glassbd'], verts=12, bev=0), cyl('corkstop', .09, .14, (0, 0, .92), C['cork'], verts=10, bev=.02),
+            cyl('labelw', .266, .24, (0, 0, .3), C['cream'], verts=16, bev=0), P('fernleaf', .1, (0, -.27, .3), 'fern', sub=1, sc=(.5, .25, 1.4)),
+            P('drop', .07, (.36, -.12, .05), 'waterb', sub=1, sc=(1.2, 1.2, .5))]
+item('spring_water', spring_water())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

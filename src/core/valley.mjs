@@ -24,7 +24,7 @@ export function beautyOf(s) {
   const parts = {
     trees: Math.min(BEAUTY.cap.trees, trees),
     flowers: Math.min(BEAUTY.cap.flowers, Math.round(flowers + garden)),
-    water: Math.min(2, ponds) * BEAUTY.pond + (dock ? BEAUTY.dock : 0) + (s.firsts?.sluice ? BEAUTY.sluice : 0),
+    water: Math.min(2, ponds) * BEAUTY.pond + (dock ? BEAUTY.dock : 0) + (s.firsts?.sluice ? BEAUTY.sluice : 0) + (s.upriver?.stops?.includes('spring') ? BEAUTY.spring : 0),   // the spring, once it has been walked to (chapter 16)
     care: -Math.min(BEAUTY.cap.care, worn * BEAUTY.worn),
     industry: -Math.min(BEAUTY.cap.industry, works * BEAUTY.works) - (cannery && !s.valley?.green ? BEAUTY.cannery : 0),
     meadow: (s.story?.albright === 'meadow' ? BEAUTY.meadow : 0) + Math.min(BEAUTY.cap.hives, hives * BEAUTY.hive),

@@ -33,6 +33,7 @@ const tests = {
   guests10: s => (s.stats?.guests ?? 0) >= 10,
   halt: s => (s.counts?.halt ?? 0) >= 1,
   train1: s => (s.stats?.trains ?? 0) >= 1,
+  upriver: s => (s.upriver?.stops?.length ?? 0) >= 3,
   cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {
