@@ -185,7 +185,7 @@ test('strawberries require the finished bench and level four; existing crops and
   s.learning.energy = 0; s.firsts['learning:energy'] = 0;
   const coins = s.coins;
   assert.ok(call(s, 'plant', { id: 'lessonBed', crop: 'strawberry' }, NOW, farm).ok); assert.equal(s.coins, coins - 12);
-  assert.equal(s.beds.lessonBed.doneAt, NOW + 120_000); assert.equal(s.learning.energy, 0);
+  assert.equal(s.beds.lessonBed.doneAt, NOW + 85_000); assert.equal(s.learning.energy, 0);
   assert.ok(call(s, 'harvest', { id: 'lessonBed' }, NOW + 120_000, farm).ok); assert.equal(s.barn.items.strawberry, 2);
   assert.ok(call(s, 'plant', { id: 'lessonBed', crop: 'strawberry' }, NOW + 120_000, farm).ok);
   assert.equal(s.barn.items.strawberry, 1); assert.equal(s.coins, coins - 12); assert.equal(s.learning.energy, 0);

@@ -6,7 +6,7 @@ import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL, RUINS } from '../content/world.mjs';
-import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
+import { canPlace, canPlaceEdge, occupant, doorCell } from '../core/grid.mjs';
 import { mayBuild } from '../core/projects.mjs';
 import { placementPrice } from '../core/build.mjs';
 import { CLEAR } from '../content/economy.mjs';
@@ -26,13 +26,14 @@ export class BuildView {
     root.appendChild(this.bar);
     this.el.addEventListener('click', e => this.click(e));
     this.bar.addEventListener('click', e => this.click(e));
+    this.el.addEventListener('wheel', e => { const strip = e.target.closest?.('.tabs'); if (strip) strip.scrollLeft += e.deltaY || e.deltaX; }, { passive: true });   // a mouse wheel moves the tab strip sideways
     // Desktop: the ghost follows the mouse, so the keyboard lands it. Enter or Space places, R turns, Esc cancels.
     addEventListener('keydown', e => {
       if (!this.open || e.repeat || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal:not([hidden])') || e.target?.closest?.('input, textarea, select')) return;
       const k = e.key.toLowerCase(), placing = this.mode === 'place' || this.mode === 'moving';
       if (k === 'escape') this.mode ? this.cancel() : this.close();
       else if (placing && (k === 'enter' || k === ' ')) this.confirm();
-      else if (placing && k === 'r' && !QUICK(this.kind)) { this.rot = (this.rot + 1) % 4; this.refreshGhost(); }
+      else if (placing && k === 'r' && !QUICK(this.kind) && !BUILDINGS[this.kind]?.civicSite) { this.rot = (this.rot + 1) % 4; this.refreshGhost(); }
       else return;
       e.preventDefault(); e.stopPropagation(); document.activeElement?.blur?.();
     }, true);
@@ -79,7 +80,9 @@ export class BuildView {
     }).join('');
     const tools = TOOLS.map(tl => `<button class="round small tool${this.mode === tl.id ? ' on' : ''}" data-tool="${tl.id}" aria-label="${t(tl.name)}" title="${t(tl.name)}">${iconHtml(tl.icon, '', 'btn-icon')}</button>`).join('');
     const scroll = this.el.querySelector('.tabs')?.scrollLeft;
+    const tabsAt = this.el.querySelector('.tabs')?.scrollLeft ?? 0;   // the tab strip keeps its place when the sheet is redrawn
     this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${items}</div>`;
+    this.el.querySelector('.tabs').scrollLeft = tabsAt;
     // keep the chosen category in view (the tab row scrolls on a phone)
     const tabs = this.el.querySelector('.tabs'), on = tabs.querySelector('.tab.on');
     if (scroll != null) tabs.scrollLeft = scroll;
@@ -145,7 +148,7 @@ export class BuildView {
   /** Open build mode with `kind` chosen and its ghost at a suggested cell (from the projects panel). */
   start(kind, at) { if (!this.open) this.show(); this.select(kind); if (at) { this.at = at; this.refreshGhost(); } }
   /** Pointer moved over the map (mouse hover) — only moves the ghost. */
-  hover(cell) { if (!cell || (this.mode !== 'place' && this.mode !== 'moving')) return; this.at = cell; this.refreshGhost(); }
+  hover(cell) { if (!cell || (this.mode !== 'place' && this.mode !== 'moving') || BUILDINGS[this.kind]?.civicSite) return; this.at = cell; this.refreshGhost(); }   // a civic building stays on its old site
   /** A tap on the map while build mode is open. */
   tap(cell) {
     if (!cell) return;
@@ -161,12 +164,19 @@ export class BuildView {
       const id = occupant(s, cell.x, cell.z); if (id) { const p = s.placed[id]; Object.assign(this, { mode: 'moving', kind: p.kind, rot: p.rot, moving: id, at: cell }); this.refreshGhost(); }
       return;
     }
+    if (BUILDINGS[this.kind]?.civicSite) { this.confirm(); return; }   // it can only go on its old site: any tap confirms it there
     const sameSpot = this.at && this.at.x === cell.x && this.at.z === cell.z;
     this.at = cell;
     if (QUICK(this.kind) || sameSpot) this.confirm(); else this.refreshGhost();
   }
   confirm() {
-    const c = this.check(); if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
+    let c = this.check();
+    // a civic building stands on its old site: if all it lacks is the path tile at its door, lay that tile with it
+    if (!c.ok && c.reason === 'Needs a path from the door to the road' && BUILDINGS[this.kind]?.civicSite) {
+      const site = RUINS.find(r => r.kind === this.kind), [x, z] = doorCell(this.kind, site.x, site.z, site.rot);
+      if (this.game.do('place', { kind: 'path', x, z }).ok) c = this.check();
+    }
+    if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
     if (c.edge) this.game.do('placeEdge', { kind: this.kind, ...c.edge });
     else if (this.moving) { const r = this.game.do('move', { id: this.moving, x: c.a.x, z: c.a.z, rot: this.rot }); if (r.ok) { this.mode = 'move'; this.moving = null; this.kind = null; this.ghost.hide(); this.renderBar(); } return; }
     else { const r = this.game.do('place', { kind: this.kind, x: c.a.x, z: c.a.z, rot: this.rot }); if (r.ok && !QUICK(this.kind)) { this.cancel(); return; } }

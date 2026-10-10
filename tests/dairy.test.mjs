@@ -56,3 +56,43 @@ test('a goat barn holds four goats and takes only goats; cows and hens are untou
   assert.equal(act(s, 'buyAnimal', { home: 'gb' }, T0).ok, false, 'a fifth goat fitted');
   assert.equal(ANIMALS.hen.gives, 'egg'); assert.equal(ANIMALS.cow.gives, 'milk'); assert.equal(ANIMALS.cow.eats, 'cow_feed');
 });
+
+test('testing-time tuning: every crop earns at least 8 coins a minute per bed, and no crop loses money', async () => {
+  const { CROPS } = await import('../src/content/goods.mjs');
+  for (const [id, c] of Object.entries(CROPS)) {
+    const profit = c.free ? c.value * 2 : c.value, perMinute = profit / (c.growMs / 60_000);
+    assert.ok(profit > 0 && perMinute >= 8, `${id} earns ${perMinute.toFixed(1)} a minute`);
+  }
+});
+
+test('a path may cross the roadside verge, so village land joins the road; nothing else may be built there', async () => {
+  const grid = await import('../src/core/grid.mjs'), s = game(); s.coins = 999;
+  // west of the village: the road is at x 28-29, the village starts at x 32; x 30-31 is nobody's verge
+  let verge = null;
+  for (let z = 92; z < 110 && !verge; z++) for (const x of [30, 31]) if (grid.isVerge(s, x, z) && !['weeds', 'rock'].includes(grid.cellType(s, x, z))) { verge = [x, z]; break; }
+  assert.ok(verge, 'no clear verge cell beside the village road');
+  assert.equal(grid.landOf(s, ...verge), null);
+  assert.equal(grid.canPlace(s, 'path', verge[0], verge[1], 0).ok, true, grid.canPlace(s, 'path', verge[0], verge[1], 0).reason);
+  assert.equal(grid.canPlace(s, 'flowers', verge[0], verge[1], 0).ok, false, 'a flower bed on the verge');
+  assert.equal(act(s, 'place', { kind: 'path', x: verge[0], z: verge[1] }, T0).ok, true);
+  assert.equal(grid.isVerge(s, 60, 40), false, 'open country far from any road counts as verge');
+});
+
+test('thank-you notes can all be opened at once, each giving its own present once; other letters stay closed', () => {
+  const s = game(); s.barn.cap = 999;
+  s.mail = [{ id: 'thanks:ada:1', from: 'ada', at: T0 }, { id: 'thanks:gus:2', from: 'gus', at: T0 }, { id: 'thanks:ada:3', from: 'ada', at: T0, read: true }, { id: 'ellis-1', from: 'ellis', at: T0 }];
+  const before = JSON.stringify([s.coins, s.barn.items]);
+  const r = act(s, 'readThanks', {}, T0); assert.equal(r.ok, true, r.reason); assert.equal(r.count, 2);
+  assert.ok(s.mail.filter(m => m.id.startsWith('thanks:')).every(m => m.read)); assert.ok(!s.mail.find(m => m.id === 'ellis-1').read);
+  assert.notEqual(JSON.stringify([s.coins, s.barn.items]), before, 'the notes gave nothing');
+  const after = JSON.stringify([s.coins, s.barn.items]); assert.equal(act(s, 'readThanks', {}, T0).ok, false); assert.equal(JSON.stringify([s.coins, s.barn.items]), after);
+});
+
+test('the truck can be made bigger ten times over', async () => {
+  const { TRUCK } = await import('../src/content/economy.mjs');
+  assert.equal(TRUCK.capacity.length, 10); assert.equal(TRUCK.upgradeCost.length, 10); assert.equal(TRUCK.level.length, 10);
+  for (let i = 1; i < 10; i++) assert.ok(TRUCK.capacity[i] > TRUCK.capacity[i - 1] && TRUCK.upgradeCost[i] > TRUCK.upgradeCost[i - 1] && TRUCK.level[i] >= TRUCK.level[i - 1]);
+  const s = game(); s.level = 20; s.coins = 99999;
+  for (let i = 0; i < 9; i++) assert.equal(act(s, 'upgradeTruck', {}, T0).ok, true, `upgrade ${i + 2}`);
+  assert.equal(s.truck.level, 10); assert.equal(act(s, 'upgradeTruck', {}, T0).ok, false);
+});

@@ -165,6 +165,7 @@ export class Panels {
     else if (d.do === 'fillCrate') g.do('fillCrate', { crate: +d.crate });
     else if (d.do === 'sendCart') { const r = g.do('sendCart'); if (r.ok) setTimeout(() => this.open?.kind === 'cart' && this.close(), 900); }
     else if (d.do === 'readLetter') showLetter(g, d.id);
+    else if (d.do === 'readThanks') g.do('readThanks');
     else if (d.do === 'discovery') showDiscovery(g, d.id);
     else if (d.do === 'explorationPlace') { this.close(); this.onExplorePlace?.(d.place); }
     else if (d.do === 'inspectExploration') { if (g.do('inspectExploration', { step: d.step }).ok) showExplorationMemory(g, d.step); }

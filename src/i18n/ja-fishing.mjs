@@ -76,4 +76,5 @@ export const JA_FISHING = {
   'Cheese': 'チーズ',
   'Goat barn': 'ヤギ小屋',
   'Dairy': '乳製品工房',
+  'Open all {count} thank-you notes': 'お礼の手紙{count}通をまとめて開く',
 };

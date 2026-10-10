@@ -76,4 +76,5 @@ export const VI_FISHING = {
   'Cheese': 'Phô mai',
   'Goat barn': 'Chuồng dê',
   'Dairy': 'Xưởng sữa',
+  'Open all {count} thank-you notes': 'Mở cả {count} thư cảm ơn',
 };
