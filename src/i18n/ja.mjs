@@ -1,0 +1,23 @@
+// Complete Japanese locale. Each batch contains explicit authored translations.
+import { JA_00 } from './ja-00.mjs';
+import { JA_FISHING } from './ja-fishing.mjs';
+import { JA_EXPLORE } from './ja-explore.mjs';
+import { JA_01 } from './ja-01.mjs';
+import { JA_02 } from './ja-02.mjs';
+import { JA_03 } from './ja-03.mjs';
+import { JA_04 } from './ja-04.mjs';
+import { JA_05 } from './ja-05.mjs';
+import { JA_06 } from './ja-06.mjs';
+import { JA_07 } from './ja-07.mjs';
+import { JA_08 } from './ja-08.mjs';
+import { JA_09 } from './ja-09.mjs';
+import { JA_10 } from './ja-10.mjs';
+import { JA_11 } from './ja-11.mjs';
+import { JA_12 } from './ja-12.mjs';
+import { JA_13 } from './ja-13.mjs';
+import { JA_14 } from './ja-14.mjs';
+import { JA_15 } from './ja-15.mjs';
+import { JA_16 } from './ja-16.mjs';
+import { JA_17 } from './ja-17.mjs';
+export const JA = { ...JA_FISHING, ...JA_00, ...JA_01, ...JA_02, ...JA_03, ...JA_04, ...JA_05, ...JA_06, ...JA_07, ...JA_08, ...JA_09, ...JA_10, ...JA_11, ...JA_12, ...JA_13, ...JA_14, ...JA_15, ...JA_16, ...JA_17, 'Could not load this language. Check your connection.': '言語を読み込めませんでした。通信状況を確認してください。' };
+Object.assign(JA, JA_EXPLORE);

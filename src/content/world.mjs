@@ -69,6 +69,12 @@ export const STEPPING_STONES = { x: 47 };
 export const POND = { x0: 12, z0: 40, x1: 17, z1: 44 };
 export const POND_DOCK = { x: 18, z: 42, rot: Math.PI / 2 };
 export const isPond = (x, z) => x >= POND.x0 && x <= POND.x1 && z >= POND.z0 && z <= POND.z1;
+/** Public footpath from the dock to the brook road; walking here never requires buying or building on land. */
+export const POND_PATH = { x0: 18, x1: 27, z0: 42, z1: 43 };
+/** A small clear bank beside the approach, with three fishing places four metres apart. */
+export const POND_SHORE = { x0: 18, x1: 19, z0: 40, z1: 44 };
+export const POND_FISHING_SPOTS = [[18, 42], [18, 40], [18, 44]];
+export const isPondPath = (x, z) => [POND_PATH, POND_SHORE].some(p => x >= p.x0 && x <= p.x1 && z >= p.z0 && z <= p.z1);
 /** The village plaza (cells, inclusive): cobbles round the old well, between the cottage row and the ruins. */
 export const PLAZA = { x0: 38, z0: 98, x1: 43, z1: 103 };
 export const WELL = { x: 41, z: 101 };

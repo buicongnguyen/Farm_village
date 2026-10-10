@@ -5,6 +5,8 @@ import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+import { resolveNames } from '../src/content/character-names.mjs';
 import { STEPS } from '../src/content/projects.mjs';
 import { FAMILIES, NEIGHBOURS } from '../src/content/people.mjs';
 import { ROAD_SEGMENTS } from '../src/content/world.mjs';
@@ -18,9 +20,10 @@ const browser = await chromium.launch({ channel: 'chrome', headless: true, args:
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 let failed = 0;
 const expect = (ok, message) => { if (!ok) throw new Error(message); };
+await loadVietnamese();
 const vi = (key, params = {}) => {
-  expect(typeof VI[key] === 'string', `Missing Vietnamese fixture: ${key}`);
-  return VI[key].replace(/\{(\w+)\}/g, (m, k) => k in params ? String(params[k]) : m);
+  expect(typeof VI[key] === 'string' || (/^\{(?:person|pet|family):[a-z_]+(?::(?:short|display))?\}$/.test(key) && resolveNames(key, 'vi') !== key), `Missing Vietnamese fixture: ${key}`);
+  return tIn('vi', key, params);
 };
 async function open() {
   const ctx = await browser.newContext(PHONE), page = await ctx.newPage(), errors = [];

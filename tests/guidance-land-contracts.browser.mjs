@@ -11,12 +11,13 @@ import { NEIGHBOURS } from '../src/content/people.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../src/content/world.mjs';
 import { CONTRACTS } from '../src/content/contracts.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-next'); mkdirSync(shots, { recursive: true });
 const expect = (ok, message) => { if (!ok) throw Error(message); };
-const tr = (lang, en) => lang === 'vi' ? VI[en] ?? en : en;
+await loadVietnamese();
+const tr = tIn;
 const browser = await chromium.launch({ channel: 'chrome', headless: true,
   args: process.env.GPU === '0' ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 let failed = 0;

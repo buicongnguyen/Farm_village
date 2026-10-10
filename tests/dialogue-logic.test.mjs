@@ -93,7 +93,7 @@ test('Mai and Gus use every eligible remark, rotate visits, and keep the three-v
     const start = id === 'gus' ? 4 : 1;
     const visits = Array.from({ length: remarks.length }, (_, i) => commentFor(s, id, start + i));
     assert.deepEqual(new Set(visits.map(v => v.text)), new Set(info.remarks.map(r => r.text)));
-    assert.ok(visits.every(v => !v.text.includes('{family}') || v.params.family === 'The Okafor family'));
+    assert.ok(visits.every(v => !v.text.includes('{family}') || v.params.family === '{family:okafor}'));
   }
   for (let n = 1; n <= 3; n++) assert.equal(commentFor(s, 'gus', n).text, NEIGHBOURS.find(p => p.id === 'gus').arc[n - 1].text);
   assert.equal(JSON.stringify(s), before, 'comments must not advance the economy RNG or alter the save');

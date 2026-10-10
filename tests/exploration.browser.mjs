@@ -3,7 +3,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 import { POND_DOCK } from '../src/content/world.mjs';
 import { EXPLORATION_SITES } from '../src/content/exploration-sites.mjs';
 import { EXPLORATION_STEPS } from '../src/content/exploration.mjs';
@@ -17,7 +17,8 @@ const shots = join(tmpdir(), 'farm-village-exploration'); mkdirSync(shots, { rec
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 let failures = 0;
 async function prepare(page) {
   await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });

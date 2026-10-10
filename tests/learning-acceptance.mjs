@@ -12,12 +12,14 @@ import { REPAIR_LESSON, LEARNING_MEMORIES } from '../src/content/learning.mjs';
 import { SCHOOL_MEMORY } from '../src/content/school-activity.mjs';
 import { schoolQuestions } from '../src/core/school-state.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { LANGUAGES, loadLanguage, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-learning'); mkdirSync(shots, { recursive: true });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await Promise.all(LANGUAGES.map(({ id }) => loadLanguage(id)));
+const LOCALES = LANGUAGES.map(({ id }) => id);
+const tr = tIn;
 const panel = page => page.locator('.panel:not([hidden])');
 const saved = page => page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
 function fixture() {
@@ -75,7 +77,7 @@ export async function runLearningAcceptance(testMode) {
     args: process.env.GPU === '0' ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
   let failures = 0;
   try {
-    for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
+    for (const lang of LOCALES) for (const width of [390, 1280]) {
       const context = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 500, hasTouch: width < 500, reducedMotion: 'reduce' });
       try {
         const initial = fixture(), start = initial.createdAt;

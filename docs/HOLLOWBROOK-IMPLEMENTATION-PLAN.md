@@ -1,6 +1,17 @@
 # Hollowbrook — consolidated implementation plan
 
-Current follow-up, 2026-10-09: [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), `codex/clearer-guidance-art`, is implemented and validated. It adds compact HUD/contextual guidance and integrates the hospital footprint correction and AR-013 bench art; see [the release scope](CLEARER-GUIDANCE-AND-ART.md). The first garden lesson, bench rules, project-only energy, strawberries, school baskets and AR-011/AR-012 first delivery shipped in PR #28 at `027ec20`. [Meadow/dairy](MEADOW-DAIRY-SCOPE.md) is the next scoped art/gameplay contract, with gameplay and tuning reserved for a separate release.
+Current language follow-up, 2026-10-09: `codex/korean-japanese` adds complete Korean/Japanese editions for the current
+game, with four-language menus, independent catalog downloads and unchanged progression. See
+[LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for implementation and verification. Meadow/dairy, later cast and later
+chapters remain separate gameplay tasks. The naming-only descriptions below record the scope of PR #34.
+
+Current naming follow-up, 2026-10-09: `codex/localized-cast` implements independent English/Vietnamese names for the
+current cast, named pets and households, with explicit story references and old-save text compatibility.
+**Implemented and locally validated**; checks and release handoff are in [LOCALIZED-CAST.md](LOCALIZED-CAST.md). Korean/Japanese aliases
+are prepared data only; full language editions and later cast introductions are separate work. No new region,
+production chain, chapter or reward is completed by this naming pass.
+
+Previous follow-up, 2026-10-09: [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), `codex/clearer-guidance-art`, is implemented and validated. It adds compact HUD/contextual guidance and integrates the hospital footprint correction and AR-013 bench art; see [the release scope](CLEARER-GUIDANCE-AND-ART.md). The first garden lesson, bench rules, project-only energy, strawberries, school baskets and AR-011/AR-012 first delivery shipped in PR #28 at `027ec20`. [Meadow/dairy](MEADOW-DAIRY-SCOPE.md) is the next scoped art/gameplay contract, with gameplay and tuning reserved for a separate release.
 
 Historical release records below retain the original checks and branch references through PR #26; their test counts and then-pending work do not describe PR #31.
 
@@ -230,9 +241,16 @@ Acceptance: exercise each new condition before/after completion in **both** lang
 
 The first logic pass supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The shipped follow-up review covers visitors whose farm facts change while they walk. PR #6 added the first persistent advice-card lifecycle and retained first-bread/school/clinic memories. Broader scene systems and story chapters beyond the existing chapter 5 remain future work.
 
-See [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) for the full cast proposal, including replacing Pip. Names there are proposed display text, not yet applied. Stable IDs, family relationships, pronouns and the player's chosen name must survive the eventual change.
+The current cast's playful aliases from [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) are implemented in the
+[localized-name follow-up](LOCALIZED-CAST.md), with final verification/publication pending. Authored references use
+stable identity tokens; person/family IDs, relationships, pronouns and the player's chosen name remain unchanged.
+Korean/Japanese entries prepare names only. Later characters remain proposals until their introductions are written.
 
-Key relationships: Ada **bà–cháu**, Ellis **ông–cháu**, Gus **bác–cháu**, June refers to herself as **June** and addresses the player as **mình**, Pip uses **con**, and Bo uses **cháu**. Ellis and Gus never use **tôi** for themselves. Hollowbrook is **Thung Suối**; Biscuit keeps his name. Follow the full cast table in STORY.md.
+Key relationships by permanent ID: `ada` (Bà Mận) **bà–cháu**, `ellis` (Ông Quế) **ông–cháu**, `gus` (Bác Khoai)
+**bác–cháu**, `june` refers to herself as **Mơ** and addresses the player as **mình**, `pip` (Bắp) uses **con**, and
+`bo` (Sóc) uses **cháu**. Bắp calls the elders **cụ Mận / cụ Quế**. `ellis` and `gus` never use **tôi** for themselves.
+Hollowbrook is **Thung Suối**; the dog is Biscuit in English and Đậu / Cún Đậu in Vietnamese. Follow the full alias,
+kinship and medical-role guidance in [STORY.md](STORY.md).
 
 Draft contextual example after a tractor becomes visible:
 
@@ -503,7 +521,9 @@ School Lane and Civic Row already exist. Village Street starts damaged; School L
 
 Learn basic farm capabilities before the school opens. Otherwise school-required bread could depend on attending a school that requires bread to reopen. Cora's teaching begins after her arrival. A simple optional pre-opening family activity can preview the learning interest without pretending the full classroom is available.
 
-First interior scope: one usable classroom, one replayable activity, clear return to the village. Candidate activities include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
+Updated user decision, 2026-10-09: the first Explore interior is the farmhouse, with a design-only handoff and Claude's AR-015 art contract. [EXPLORE-MODE.md](EXPLORE-MODE.md) specifies direct controls, the cutaway room, safe entry/exit, small activities, saves and English/Vietnamese copy. Gameplay implementation remains a later pass. This replaces the earlier classroom-first order.
+
+The school follows the farmhouse with one usable classroom, the existing replayable picture-basket activity, and a clear return to the village. Further candidates include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
 
 The first completion can give a modest keepsake and a specific Cora/child reaction. Repeat contests should be enjoyable without repeatedly paying the existing 1,500-coin school festival reward. Budget any new rewards explicitly.
 

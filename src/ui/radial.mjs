@@ -9,7 +9,7 @@ import { sfx } from '../kit/sound.mjs';
 import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_DOCK, ruinAt, RUIN_NAMES, TIDY } from '../content/world.mjs';
+import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY } from '../content/world.mjs';
 import { tidied } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
@@ -82,6 +82,7 @@ export class Radial {
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
   houseMenu() {
     const s = this.s, lv = s.house?.level ?? 1, buttons = [];
+    buttons.push({ act: 'goInside', icon: glyph('home', 'ic'), label: t('Go inside'), disabled: levelOf(s, 'house') >= 3 || isRepairing(s, 'house') });
     if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
     const lesson = learningStatus(s, this.game.now);
     if (lesson.eligible || lesson.introduced) buttons.push({ act: 'learning', icon: iconHtml('wrench', '', 'ic'), label: t('Garden repairs') });
@@ -100,14 +101,22 @@ export class Radial {
     let id = occupant(s, cell.x, cell.z);
     // Advice/source links refer to a world cell, not the actor under their temporary screen coordinates.
     const animal = !opts.preview && !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
-    if (id && !opts.preview) this.people?.playerGo?.(cell);   // you walk over to what you tapped
+    // Pond controls remain available after sending a friend; the clear fishing bank wins over nearby actor picks.
+    const pondHere = isPond(cell.x, cell.z) || (cell.x >= POND_SHORE.x0 && cell.x <= POND_SHORE.x1 && cell.z >= POND_SHORE.z0 && cell.z <= POND_SHORE.z1) || (id && s.placed[id]?.kind === 'pond');
+    const sel = !opts.preview && this.people?.selected;
+    if (pondHere) {
+      const pond = id && s.placed[id]?.kind === 'pond' ? id : undefined;
+      if (pond && !(sel && performance.now() < (this.people.selectedUntil ?? 0)) && !opts.open && levelOf(s, pond) > 0) {
+        const { buttons, info } = this.repairMenu(pond, BUILDINGS.pond); return this.open(cell, x, y, buttons, info, { id: pond });
+      }
+      this.hide();
+      if (sel && performance.now() < (this.people.selectedUntil ?? 0) && !this.people.sendFishing(sel, pond ? s.placed[pond] : null)) this.hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info');
+      if (this.people) this.people.selected = null;
+      this.panels.show('pond', pond); return;
+    }
+    if (id && !opts.preview) this.people?.playerGo?.(cell);   // ordinary chores never interrupt a selected friend's fishing trip
     // a plain tap on an empty bed always opens the seed menu, so the crop can be changed; only a drag (or a harvest sweep) uses the armed tool
     if (!opts.preview && id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
-    // a person picked a moment ago, then a pond: they walk there and fish (you cast a line when you get there)
-    const pondHere = isPond(cell.x, cell.z) || near(cell, POND_DOCK, 1) || (id && s.placed[id]?.kind === 'pond');
-    const sel = !opts.preview && this.people?.selected;
-    if (pondHere && sel && performance.now() < (this.people.selectedUntil ?? 0)) { this.hide(); this.people.sendFishing(sel, id && s.placed[id]?.kind === 'pond' ? s.placed[id] : null); this.people.selected = null; return; }
-    if (pondHere && !id) { this.hide(); this.panels.show('pond'); return; }
     const ruin = !id && ruinAt(cell.x, cell.z);
     if (ruin && !(s.counts[ruin.kind] > 0)) {   // an old building on the civic row: its name, what will bring it back, and a tidy-up
       const step = STEPS[s.projects.step], next = step?.builds?.includes(ruin.kind), ruinButtons = [];
@@ -139,7 +148,7 @@ export class Radial {
     else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
     else if (p?.kind === 'clinic') { this.hide(); this.panels.show('clinic', id); return; }
     else if (def?.civicSite) { this.hide(); this.panels.show('villageGrowth'); return; }
-    else if (def?.pet) info = t('Biscuit watches the beds and chases crows. No upkeep needed.');
+    else if (def?.pet) info = t('{pet:dog:short} watches the beds and chases crows. No upkeep needed.');
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }
     else if (def?.market) { this.hide(); this.panels.show('market'); return; }
     else if (def?.pond) { this.hide(); this.panels.show('pond'); return; }
@@ -204,6 +213,7 @@ export class Radial {
   }
   choose(d) {
     const g = this.game, { id, cell, land, ruin } = this.target ?? {}; this.hide();
+    if (d.act === 'goInside') { const state = g.s; import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this)).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn')); return; }
     if (d.act === 'plant') { this.lastCrop = d.crop; this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'plantAll') g.do('plant', { ids: Object.keys(g.s.placed).filter(k => g.s.placed[k].kind === 'bed' && !g.s.beds[k]), crop: d.crop });

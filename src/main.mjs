@@ -35,7 +35,7 @@ import { LearningView } from './view/learning-view.mjs';
 import { LEARNING_SITE } from './content/learning-site.mjs';
 import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
-import { t, languageReady, loadVietnamese, getLanguage, setLanguage } from './kit/i18n.mjs';
+import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
 import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
@@ -47,8 +47,10 @@ import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
-const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs')]);
-await languageReady;   // the Vietnamese lines load first when the player reads Vietnamese
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs')]);
+await languageReady;   // load the selected edition before drawing its first text
+document.title = t('Farm Village');
+onLanguageChange(() => { document.title = t('Farm Village'); });
 const params = new URLSearchParams(location.search);
 const app = document.getElementById('app');
 // the title splash (index.html #boot) stays up until the first card is ready, then fades into it
@@ -61,19 +63,30 @@ if (!TEST_MODE || params.has('menu')) await mainMenu();
 async function mainMenu() {
   splash?.remove();
   const menu = document.createElement('section'); menu.className = 'main-menu'; menu.setAttribute('role', 'dialog');
+  let languageRequest = 0, loadingLanguage = false;
   app.appendChild(menu);
-  const draw = () => {
+  const draw = (error = '') => {
     menu.setAttribute('aria-label', t('Main menu'));
-    menu.innerHTML = `<div class="main-menu-card"><div class="logo" role="img" aria-label="Farm Village"><b>Farm</b> <b>Village</b></div>
+    menu.innerHTML = `<div class="main-menu-card"><div class="logo" role="img" aria-label="${t('Farm Village')}"><b>Farm</b> <b>Village</b></div>
       <div class="menu-lang" role="group" aria-label="${t('Language')}">
-        <button class="btn ${getLanguage() === 'en' ? 'primary' : 'ghost'}" data-lang="en">English</button>
-        <button class="btn ${getLanguage() === 'vi' ? 'primary' : 'ghost'}" data-lang="vi">Tiếng Việt</button></div>
+        ${LANGUAGES.map(lang => `<button class="btn ${getLanguage() === lang.id ? 'primary' : 'ghost'}" data-lang="${lang.id}" lang="${lang.id}" aria-pressed="${getLanguage() === lang.id}">${lang.label}</button>`).join('')}</div>
+      <p class="hint" role="status" data-language-error${error ? '' : ' hidden'}></p>
       <h2>${t('Choose your farm')}</h2>${renderProfiles(null, activeProfile())}</div>`;
+    menu.querySelector('[data-language-error]').textContent = error;
+    menu.querySelector('.menu-lang').setAttribute('aria-busy', String(loadingLanguage));
+    if (loadingLanguage) for (const button of menu.querySelectorAll('[data-do]')) button.disabled = true;
   };
   draw();
   await new Promise(done => menu.addEventListener('click', async e => {
     const lang = e.target.closest('[data-lang]');
-    if (lang) { await setLanguage(lang.dataset.lang); draw(); return; }
+    if (lang) {
+      const request = ++languageRequest; loadingLanguage = true; draw();
+      let error = '';
+      try { await setLanguage(lang.dataset.lang); }
+      catch { error = t('Could not load this language. Check your connection.'); }
+      if (request === languageRequest) { loadingLanguage = false; draw(error); }
+      return;
+    }
     const button = e.target.closest('[data-do]'), target = profileId(button?.dataset.n);
     if (!button || button.disabled || !target) return;
     if (button.dataset.do === 'resetProfile') {
@@ -237,6 +250,8 @@ world.cam.attach(canvas, {
     if (build.open) build.tap(cell);
     else {
       panels.close();
+      const float = world.fishingView?.pick(x, y);
+      if (float) { if (radial.people) radial.people.selected = null; radial.hide(); radial.armed = null; radial.tool.hidden = true; panels.show('pond', float.pond ?? undefined); return; }
       const place = world.exploration?.pick(x, y);
       const shop = !place && pickShop(world, x, y);
       if (place) { radial.hide(); panels.show('exploration', place); }
@@ -275,9 +290,20 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
-const [{ LifeView }, { PeopleView }, { Critters }, { Juice }] = await living;
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
+world.fishingView = new FishingView(world, game, people);
+panels.fishingWalk = () => { const player = people.walkers.get('you'); return !!(player?.orderedFishing && player?.goal); };
+panels.onFishCast = bait => {
+  if (panels.fishingWalk()) return;
+  const player = people.walkers.get('you'), id = panels.open?.arg, pond = id && game.s.placed[id];
+  if (id != null && pond?.kind !== 'pond') { hud.toast(t('This fishing spot is no longer here.'), 'info'); return; }
+  if (!player || !people.sendFishing(player, pond?.kind === 'pond' ? pond : null, { bait })) {
+    hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info'); return;
+  }
+  hud.toast(t('Walking to the fishing spot.'), 'info'); panels.render();
+};
 hud.onShowWay = at => panels.onShowWay?.(at);   // the Next chip's "go there"
 radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
 new Juice(world, game, app);
@@ -295,8 +321,7 @@ saveSession = autosave(game, profile);
 if (!saveSession()) hud.toast(t('Could not save your farm. Please try again.'), 'warn');
 new Guide(app, { game, world, hud, blocked: () => !!panels.open });
 if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 700); }
-// the Vietnamese lines come down once the farm is running, so a language switch is instant
-(globalThis.requestIdleCallback ?? setTimeout)(() => loadVietnamese().catch(() => {}), { timeout: 4000 });
+// Other language catalogs stay unloaded until the player selects them.
 // the Today board opens by itself once a day, for players who have started farming (a first visit gets the tutorial)
 if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); game.do('seeToday'); }
 

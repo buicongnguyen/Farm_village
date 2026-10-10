@@ -14,12 +14,12 @@ export const EXPLORATION_STEPS = [
     story: 'Inside lies a faded pink ribbon, neatly folded and still dry.',
     lines: [
       { who: 'pip', text: 'It looks like a tiny butterfly!' },
-      { who: 'june', text: 'Let us take it back to Ada, love. She might remember its picnic.' },
+      { who: 'june', text: 'Let us take it back to {person:ada:short}, love. She might remember its picnic.' },
       { who: 'pip', text: 'And maybe what they had for pudding!' },
     ] },
-  { id: 'share', title: 'Room for another picnic', location: 'porch', label: 'Show Ada the ribbon',
-    text: 'Bring the ribbon back to the farmhouse and share the find with Ada.',
-    story: 'Ada gives you a flowerpot for a new picnic corner. It is waiting in storage.',
+  { id: 'share', title: 'Room for another picnic', location: 'porch', label: 'Show {person:ada:short} the ribbon',
+    text: 'Bring the ribbon back to the farmhouse and share the find with {person:ada:short}.',
+    story: '{person:ada:short} gives you a flowerpot for a new picnic corner. It is waiting in storage.',
     lines: [
       { who: 'ada', text: 'I carried the basket all the way to the pond once. The bread was still cooling at home!' },
       { who: 'pip', text: 'Then this time I will be in charge of the bread!' },

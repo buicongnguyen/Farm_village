@@ -1,6 +1,6 @@
 // Photo mode (loaded when first used): the HUD, sheets and guide step aside, the player frames the farm freely (drag,
 // pinch, turn), and the shutter saves a picture with a Hollowbrook stamp through canvas.toBlob.
-import { t, getLanguage } from '../kit/i18n.mjs';
+import { t, getLocale } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { VILLAGE_NAME } from '../content/story.mjs';
 import { glyph } from './icon.mjs';
@@ -11,7 +11,7 @@ export function startPhoto({ world, root }) {
   document.body.classList.add('photo-mode');
   el = document.createElement('div'); el.className = 'photo';
   el.innerHTML = `<i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-    <div class="stamp"><b>${t(VILLAGE_NAME)}</b><small>${new Date().toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</small></div>
+    <div class="stamp"><b>${t(VILLAGE_NAME)}</b><small>${new Date().toLocaleDateString(getLocale(), { day: 'numeric', month: 'long', year: 'numeric' })}</small></div>
     <div class="photo-bar"><button class="round" data-p="turn" aria-label="${t('Turn the view')}">${glyph('rotate', 'g')}</button>
       <button class="round shutter" data-p="snap" aria-label="${t('Take a photo')}">${glyph('camera', 'g')}</button>
       <button class="round" data-p="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div>

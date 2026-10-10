@@ -10,12 +10,13 @@ import { ADVICE_TOPICS } from '../src/content/advice.mjs';
 import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-guidance'); mkdirSync(shots, { recursive: true });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 const fixed = Object.entries(ADVICE_TOPICS).flatMap(([id, topic]) => (topic.contexts ?? []).map(context => `${id}:${context}`));
 const panel = page => page.locator('.panel:not([hidden])');
 const saved = page => page.evaluate(() => JSON.parse(localStorage.getItem('farm-village:save:1')));
@@ -60,7 +61,7 @@ async function open(page, id, lang) {
   await panel(page).locator(`.advice-list [data-do="readAdvice"][data-id="${id}"]`).click();
   await panel(page).locator('.advice-detail').waitFor();
   expect((await panel(page).innerText()).includes(tr(lang, ADVICE_TOPICS[id].title)), `wrong ${lang} title for ${id}`);
-  if (!ADVICE_TOPICS[id].line.includes('{')) expect((await panel(page).innerText()).includes(tr(lang, ADVICE_TOPICS[id].line)), `wrong ${lang} June line for ${id}`);
+  if (!/\{\w+\}/.test(tr(lang, ADVICE_TOPICS[id].line))) expect((await panel(page).innerText()).includes(tr(lang, ADVICE_TOPICS[id].line)), `wrong ${lang} June line for ${id}`);
   expect(await panel(page).evaluate(el => el.scrollWidth <= el.clientWidth + 2), 'guidance text overflows at 130%');
 }
 async function defer(page, id, lang) {

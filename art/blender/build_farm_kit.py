@@ -50,6 +50,10 @@ for n, c in {
         'birchleafl': '#DCF07A', 'cypress': '#2E7A4A', 'cypressl': '#4E9E5A', 'fir': '#1F6E58', 'firl': '#36907A', 'oak': '#5C9E3A',
         'oakl': '#86C24A', 'oakd': '#3E7A30', 'lemon': '#FFE23A', 'plum': '#7A3AA8', 'pluml': '#A45ED0', 'mango': '#FFB22E',
         'mangor': '#FF6A3A', 'grape': '#6A3AA8', 'grapel': '#9A62D8', 'longan': '#D8B070', 'lychee': '#F0425E', 'rope': '#E8C88A',
+        # farmhouse interior (AR-015)
+        'plank': '#D8935A', 'plankd': '#B87445', 'seam': '#8A5230', 'wallin': '#FFF1D6', 'wainscot': '#7FC4B4', 'wainscotd': '#4E9E8E',
+        'rug': '#E0563B', 'rugl': '#F6B04A', 'sofa': '#3E8FD0', 'sofal': '#7DB8EA', 'sofad': '#2B6CA8', 'pillow': '#FFC83A',
+        'quilt': '#FF7FB5', 'tile': '#F3F6FA', 'tiled': '#C9D3DE', 'copper': '#D9773A',
         }.items():
     C[n] = mat('FK ' + n, c, .55)
 
@@ -1415,6 +1419,290 @@ def fruit_stand():
     return p
 piece('fruit_stand', fruit_stand())
 
+
+# =================================================================== the farmhouse interior (AR-015): one room for Explore
+# docs/ASSET-REQUESTS.md AR-015 is the contract. Room-local metres, glTF Y up, floor y = 0, door on +z. Shell roots share
+# the room origin; each prop is authored around its own base centre facing local +z, and interior-farmhouse.json gives
+# its room placement and yaw (applied once at runtime). Separate kit, loaded only on entry: nothing here is in KINDS.
+OUT_INTERIOR = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-farmhouse.glb')
+META_INTERIOR = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-farmhouse.json')
+RW, RD, WALL_H, WALL_T, DOOR_W, DOOR_H = 8.0, 6.0, 2.8, .15, 1.6, 2.2
+# id: room position (x, z), yaw, room collider (x0, x1, z0, z1), interaction stand (x, z), focus height (m)
+PROPS = {
+    'farmhouse_sofa': ((-3.15, -0.60), math.pi / 2, (-3.65, -2.65, -1.80, 0.60), (-2.00, -0.60), .95),
+    'farmhouse_wardrobe': ((3.20, 1.50), -math.pi / 2, (2.75, 3.65, 0.65, 2.35), (2.10, 1.50), 1.3),
+    'farmhouse_table': ((0.25, -0.30), 0., (-0.75, 1.25, -1.25, 0.65), (0.25, 1.35), .85),
+    'farmhouse_kitchen': ((2.45, -2.25), 0., (1.25, 3.65, -2.70, -1.80), (2.40, -1.10), 1.0),
+    'farmhouse_desk': ((-1.40, -2.25), 0., (-2.20, -0.60, -2.70, -1.80), (-1.40, -1.10), .9),
+    'farmhouse_memory_shelf': ((-3.15, 1.775), math.pi / 2, (-3.65, -2.65, 1.25, 2.30), (-2.00, 1.775), 1.2),
+}
+# The player's Sit clip, measured on the rigs as the game draws them (skinned meshes only, scaled by the Idle pose's
+# height, feet lifted to the floor; Sit mid-frame, the lowest 5 % of the hips bone's vertices): the hips rest at this
+# share of the actor's height, this share in front of the root (negative = behind). Feet hang 5-7 cm above the floor.
+SIT = {'man': (.2550, -.0218), 'woman': (.2408, .0066)}
+ACTOR_H = 1.8                       # the contract's test avatar
+SEAT_TOP = round(SIT['man'][0] * ACTOR_H, 2)       # cushion top: the man's hips land on it, the woman's 2.5 cm into it
+SEAT_Z = .12                        # cushion centre, prop-local +z
+
+def to_local(prop, x, z):
+    (px, pz), yaw = PROPS[prop][0], PROPS[prop][1]
+    dx, dz = x - px, z - pz
+    return dx * math.cos(yaw) - dz * math.sin(yaw), dx * math.sin(yaw) + dz * math.cos(yaw)
+def to_room(prop, lx, lz):
+    (px, pz), yaw = PROPS[prop][0], PROPS[prop][1]
+    return px + lx * math.cos(yaw) + lz * math.sin(yaw), pz - lx * math.sin(yaw) + lz * math.cos(yaw)
+
+def room_floor(lod=0):
+    """The floor: a warm plank slab (top at y = 0) with seams, and a round-cornered rug in the living zone."""
+    p = [bx('slab', RW, RD, .1, 0, 0, -.1, 'plank', bev=0)]
+    if lod == 0:
+        for i in range(1, 16):
+            p.append(bx('seam', .03, RD - .3, .004, -RW / 2 + i * .5, 0, 0, 'seam', bev=0))
+        for i in range(0, 16, 2):
+            p.append(bx('plankd', .47, RD - .3, .003, -RW / 2 + .25 + i * .5, 0, 0, 'plankd', bev=0))
+    p += [bx('rug', 2.3, 2.5, .02, -1.55, -.35, 0, 'rug', bev=.01 if lod == 0 else 0), bx('rugin', 1.9, 2.1, .022, -1.55, -.35, 0, 'rugl', bev=0)]
+    if lod == 0:
+        p.append(bx('mat', 1.2, .6, .02, 0, 2.45, 0, 'sack', bev=.01))        # a doormat on the entrance stand
+    return p
+
+def wall_x(name, side, lod=0):
+    """Left (-1) or right (+1) wall, thickness inward from x = +-4, with a wainscot band and one window."""
+    x = side * (RW / 2 - WALL_T / 2)
+    p = [bx(name, WALL_T, RD, WALL_H, x, 0, 0, 'wallin', bev=0), bx('wains', .04, RD - .3, .9, x - side * .09, 0, 0, 'wainscot', bev=0)]
+    if lod == 0:
+        p.append(bx('rail', .06, RD - .3, .06, x - side * .1, 0, .9, 'wainscotd', bev=0))
+    wz = 1.1 if side < 0 else -1.0   # the left window sits over the memory-shelf corner, leaving the sofa wall for a picture
+    p += [bx('win', .05, 1.2, 1.0, x - side * .09, wz, 1.2, 'glass', bev=0), bx('winframe', .07, 1.36, .1, x - side * .1, wz, 1.15, 'woodl', bev=0)]
+    if lod == 0:
+        for dz in (-.72, .72):
+            p.append(bx('curtain', .04, .3, 1.25, x - side * .11, wz + dz, 1.05, 'quilt' if side < 0 else 'sun', bev=0))
+        if side < 0:   # a little painted landscape over the sofa: sky, hills, a sun; no words
+            p += [bx('frame', .05, 1.0, .66, x - side * .1, -.6, 1.45, 'gold', bev=0), bx('sky', .03, .86, .52, x - side * .12, -.6, 1.52, 'sky', bev=0),
+                  bx('hill', .035, .86, .2, x - side * .125, -.6, 1.52, 'leafw', bev=0), bx('hill2', .036, .4, .3, x - side * .13, -.75, 1.52, 'leafwl', bev=0),
+                  ball('sunp', .07, x - side * .135, -.3, 1.88, 'sun', sub=1, sc=(.3, 1, 1))]
+    if lod == 0:
+        p += [bx('winframet', .07, 1.36, .1, x - side * .1, wz, 2.2, 'woodl', bev=0), bx('winbar', .06, .06, 1.0, x - side * .1, wz, 1.2, 'woodl', bev=0)]
+    return p
+
+def wall_back(lod=0):
+    p = [bx('back', RW, WALL_T, WALL_H, 0, -RD / 2 + WALL_T / 2, 0, 'wallin', bev=0), bx('wains', RW - .3, .04, .9, 0, -RD / 2 + .17, 0, 'wainscot', bev=0)]
+    if lod == 0:
+        p.append(bx('rail', RW - .3, .06, .06, 0, -RD / 2 + .18, .9, 'wainscotd', bev=0))
+    if lod == 0:   # a round wall clock without numbers, between the windows
+        p += [cl('clock', .24, .05, .55, -RD / 2 + .2, 1.95, 'woodd', verts=16, rot=(math.pi / 2, 0, 0)), cl('face', .2, .02, .55, -RD / 2 + .23, 1.95, 'cream', verts=16, rot=(math.pi / 2, 0, 0)),
+              bx('hand', .03, .02, .15, .55, -RD / 2 + .245, 1.95, 'charcoal', bev=0), bx('hand2', .11, .02, .03, .6, -RD / 2 + .245, 1.95, 'charcoal', bev=0)]
+    for wx in (-1.4, 2.45):   # windows over the desk and over the kitchen counter
+        p += [bx('win', 1.1, .05, .8, wx, -RD / 2 + .17, 1.45, 'glass', bev=0), bx('sill', 1.26, .12, .06, wx, -RD / 2 + .2, 1.4, 'woodl', bev=0)]
+        if lod == 0:
+            p += [bx('lintel', 1.26, .07, .08, wx, -RD / 2 + .19, 2.25, 'woodl', bev=0), bx('bar', .05, .06, .8, wx, -RD / 2 + .19, 1.45, 'woodl', bev=0)]
+            for dx in (-.68, .68):
+                p.append(bx('curtain', .26, .04, 1.05, wx + dx, -RD / 2 + .21, 1.25, 'pink' if wx < 0 else 'sun', bev=0))
+    return p
+
+def wall_front(lod=0):
+    """The front wall with the doorway (x -0.8..0.8, 2.2 m clear, no threshold); hidden at runtime, collision kept."""
+    side = (RW - DOOR_W) / 2
+    y = RD / 2 - WALL_T / 2
+    p = [bx('frontl', side, WALL_T, WALL_H, -(DOOR_W + side) / 2, y, 0, 'wallin', bev=0),
+         bx('frontr', side, WALL_T, WALL_H, (DOOR_W + side) / 2, y, 0, 'wallin', bev=0),
+         bx('lintel', DOOR_W, WALL_T, WALL_H - DOOR_H, 0, y, DOOR_H, 'wallin', bev=0)]
+    p += [bx('jambl', .1, .2, DOOR_H, -DOOR_W / 2 - .05, y, 0, 'woodd', bev=0), bx('jambr', .1, .2, DOOR_H, DOOR_W / 2 + .05, y, 0, 'woodd', bev=0),
+          bx('head', DOOR_W + .2, .2, .12, 0, y, DOOR_H, 'woodd', bev=0)]
+    if lod == 0:
+        p += [bx('wainsl', side - .15, .04, .9, -(DOOR_W + side) / 2 - .07, y - .09, 0, 'wainscot', bev=0),
+              bx('wainsr', side - .15, .04, .9, (DOOR_W + side) / 2 + .07, y - .09, 0, 'wainscot', bev=0)]
+    return p
+
+# --- props (prop-local, base centre, facing +z) ---
+def sofa(lod=0):
+    """Sofa (2.4 x 1.0): a chunky blue couch on a wooden plinth. The cushion top is SEAT_TOP, fitted to the Sit clip."""
+    b = .03 if lod == 0 else 0
+    p = [bx('plinth', 2.3, .9, .16, 0, 0, 0, 'woodd', bev=b), bx('base', 2.3, .9, SEAT_TOP - .3, 0, 0, .16, 'sofad', bev=b),
+         bx('cushion', 1.96, .66, .16, 0, SEAT_Z, SEAT_TOP - .16, 'sofa', bev=.06 if lod == 0 else 0),
+         bx('back', 2.3, .26, .62, 0, -.32, SEAT_TOP - .14, 'sofa', bev=.08 if lod == 0 else 0)]
+    for x in (-1.04, 1.04):
+        p.append(bx('arm', .22, .9, .32, x, 0, SEAT_TOP - .14, 'sofal', bev=.07 if lod == 0 else 0))
+    if lod == 0:
+        p += [bx('seamc', .02, .6, .02, 0, SEAT_Z, SEAT_TOP, 'sofad', bev=0),
+              ball('pillow', .2, -.62, -.08, SEAT_TOP + .17, 'pillow', sub=1, sc=(1, .55, 1)), ball('pillow2', .18, .66, -.1, SEAT_TOP + .15, 'quilt', sub=1, sc=(1, .55, 1)),
+              bx('throw', .5, .7, .02, .55, .02, SEAT_TOP + .005, 'cream', bev=0, rot=.12)]
+    return p
+def wardrobe(lod=0):
+    """Wardrobe (1.7 x 0.9): a tall painted cupboard with two doors, round knobs, a crown and feet."""
+    b = .03 if lod == 0 else 0
+    p = [bx('body', 1.6, .62, 1.95, 0, -.08, .1, 'wood', bev=b), bx('crown', 1.7, .7, .12, 0, -.08, 2.03, 'woodd', bev=b),
+         bx('doorl', .74, .04, 1.7, -.39, .2, .22, 'woodl', bev=0), bx('doorr', .74, .04, 1.7, .39, .2, .22, 'woodl', bev=0)]
+    for x in (-.7, .7):
+        p.append(bx('foot', .14, .14, .1, x, .1, 0, 'woodd', bev=0)); p.append(bx('footb', .14, .14, .1, x, -.35, 0, 'woodd', bev=0))
+    p += [cl('knobl', .04, .05, -.08, .23, 1.05, 'gold', verts=8, rot=(math.pi / 2, 0, 0)), cl('knobr', .04, .05, .08, .23, 1.05, 'gold', verts=8, rot=(math.pi / 2, 0, 0))]
+    if lod == 0:
+        for x in (-.39, .39):
+            p.append(bx('panel', .5, .02, .6, x, .225, 1.2, 'wood', bev=0)); p.append(bx('panel2', .5, .02, .6, x, .225, .45, 'wood', bev=0))
+        p += [bx('hatbox', .4, .36, .24, -.35, -.08, 2.15, 'quilt', bev=.03), bx('basket', .34, .3, .2, .4, -.08, 2.15, 'sack', bev=.03)]
+    return p
+def table(lod=0):
+    """Dining table with two chairs (2.0 x 1.9), plain illustrated seed packets and a jug of flowers on top."""
+    b = .02 if lod == 0 else 0
+    p = [bx('top', 1.5, .9, .08, 0, 0, .72, 'woodl', bev=b)]
+    for x in (-.65, .65):
+        for y in (-.35, .35):
+            p.append(bx('leg', .08, .08, .72, x, y, 0, 'wood', bev=0))
+    for y, face in ((-.72, 1), (.72, -1)):    # a chair behind and one in front of the table, tucked in
+        p += [bx('seat', .46, .4, .06, 0, y, .44, 'wood', bev=b), bx('cback', .46, .06, .5, 0, y - face * .17, .5, 'woodd', bev=b)]
+        for x in (-.18, .18):
+            for yy in (-.16, .16):
+                p.append(bx('cleg', .05, .05, .44, x, y + yy * .9, 0, 'woodd', bev=0))
+    if lod == 0:
+        p += [bx('cloth', 1.2, .5, .01, 0, 0, .8, 'cream', bev=0)]
+        for i, (x, c) in enumerate(((-.42, 'leafwl'), (-.18, 'sun'), (.08, 'pink'))):   # seed packets: a plain picture, no words
+            p += [bx('packet', .16, .22, .012, x, .12, .81, 'paper', bev=0, rot=(i - 1) * .2), ball('pic', .045, x, .14, .825, c, sub=1, sc=(1, 1, .3))]
+        p += [cl('jug', .08, .2, .45, -.12, .8, 'tile', verts=10, rt=.06), ball('bloom', .07, .45, -.12, 1.06, 'quilt', sub=1), ball('bloom2', .06, .52, -.08, 1.02, 'sun', sub=1)]
+    return p
+def kitchen(lod=0):
+    """Kitchen counter (2.4 x 0.9): cupboards, a tiled top with a sink and a little stove, copper pots, an unlettered
+    recipe book and a shelf of jars above."""
+    b = .02 if lod == 0 else 0
+    p = [bx('cab', 2.36, .6, .82, 0, -.12, 0, 'wainscot', bev=b), bx('ctop', 2.4, .66, .08, 0, -.12, .82, 'tile', bev=b),
+         bx('stove', .62, .5, .04, .72, -.14, .9, 'charcoal', bev=0), bx('sink', .5, .36, .03, -.55, -.12, .89, 'tiled', bev=0)]
+    for x in (-.9, -.3, .3, .9):
+        p.append(bx('door', .52, .03, .62, x, .19, .1, 'wainscotd' if lod else 'wainscot', bev=0))
+    p += [cl('pot', .14, .16, .6, -.12, .94, 'copper', verts=10), bx('book', .26, .2, .05, -.05, .05, .9, 'red', bev=.01, rot=.2)]   # the recipe book: a plain red cover
+    p += [bx('shelf', 2.0, .24, .04, 0, -.32, 1.55, 'woodl', bev=0)]
+    if lod == 0:
+        for x in (-.84, .84):
+            p.append(bx('knob', .05, .03, .05, x, .22, .55, 'gold', bev=0))
+        p += [cl('pot2', .11, .12, .86, -.1, .94, 'copper', verts=8), cl('tap', .02, .24, -.55, -.32, .9, 'iron', verts=6),
+              bx('bookpage', .24, .18, .01, -.05, .05, .955, 'paper', bev=0, rot=.2)]
+        for i, (x, c) in enumerate(((-.8, 'sun'), (-.5, 'berry'), (-.2, 'leafwl'), (.4, 'orange'), (.7, 'pink'))):
+            p.append(cl('jar', .07, .16, x, -.32, 1.59, c, verts=8)); p.append(cl('lid', .075, .03, x, -.32, 1.75, 'wood', verts=8))
+    return p
+def desk(lod=0):
+    """A small study desk (1.6 x 0.9) with a chair, a lamp and a closed planning journal (no words)."""
+    b = .02 if lod == 0 else 0
+    p = [bx('top', 1.3, .5, .06, 0, -.18, .74, 'woodl', bev=b), bx('drawers', .4, .46, .7, .4, -.18, .04, 'wood', bev=b)]
+    for x, y in ((-.6, -.38), (-.6, .02)):
+        p.append(bx('leg', .06, .06, .74, x, y, 0, 'wood', bev=0))
+    p += [bx('seat', .42, .38, .06, -.15, .25, .44, 'wood', bev=b), bx('cback', .42, .05, .44, -.15, .42, .5, 'woodd', bev=b)]
+    for x in (-.32, .02):
+        for y in (.1, .4):
+            p.append(bx('cleg', .05, .05, .44, x, y, 0, 'woodd', bev=0))
+    p += [bx('journal', .3, .22, .05, -.15, -.12, .8, 'cloth', bev=.01, rot=-.15), cl('lampbase', .08, .03, .45, -.26, .8, 'iron', verts=8)]
+    if lod == 0:
+        p += [cl('lampstem', .015, .35, .45, -.26, .83, 'iron', verts=5), cone('shade', .16, .18, (.45, .26, 1.24), C['sun'], verts=10),
+              bx('pencil', .02, .16, .02, .02, -.1, .8, 'sun', bev=0, rot=.6), bx('pulls', .12, .02, .03, .4, .06, .5, 'gold', bev=0),
+              bx('pulls2', .12, .02, .03, .4, .06, .25, 'gold', bev=0)]
+    return p
+def memory_shelf(lod=0):
+    """The family memory shelf (1.05 x 1.0): an open bookcase of keepsakes and framed pictures, a drawing partly tucked
+    behind a frame, and a basket on the floor in front."""
+    b = .02 if lod == 0 else 0
+    p = [bx('sidel', .06, .38, 1.9, -.48, -.3, 0, 'wood', bev=b), bx('sider', .06, .38, 1.9, .48, -.3, 0, 'wood', bev=b),
+         bx('backp', 1.0, .03, 1.9, 0, -.48, 0, 'woodd', bev=0)]
+    for z in (.05, .55, 1.05, 1.55, 1.88):
+        p.append(bx('board', 1.0, .38, .04, 0, -.3, z, 'woodl', bev=0))
+    p += [bx('frame', .3, .04, .36, -.2, -.25, 1.09, 'gold', bev=.01), bx('photo', .24, .02, .28, -.2, -.23, 1.13, 'sky', bev=0),
+          bx('drawing', .22, .01, .28, .05, -.3, 1.12, 'paper', bev=0, rot=.15),   # the tucked drawing, half behind the frame
+          bx('basket', .5, .36, .26, 0, .25, 0, 'sack', bev=.04 if lod == 0 else 0)]
+    if lod == 0:
+        for i, (x, c) in enumerate(((-.36, 'red'), (-.3, 'cloth'), (-.24, 'sun'), (-.18, 'leafwl'))):
+            p.append(bx('book', .055, .26, .34, x, -.3, .59, c, bev=0))
+        p += [bx('frame2', .26, .04, .3, .25, -.25, 1.59, 'woodd', bev=.01), bx('photo2', .2, .02, .22, .25, -.23, 1.63, 'pink', bev=0),
+              ball('vase', .1, .26, -.3, .7, 'teal', sub=1, sc=(1, 1, 1.4)), bx('box', .3, .24, .16, .2, -.3, .09, 'quilt', bev=.02),
+              ball('yarn', .09, -.1, .27, .3, 'pink', sub=1), cl('wool', .06, .1, .12, .3, .26, 'sun', verts=8), ball('ribbon', .06, -.3, -.25, .12, 'berry', sub=1)]
+    return p
+
+PROP_MODELS = {'farmhouse_sofa': sofa, 'farmhouse_wardrobe': wardrobe, 'farmhouse_table': table, 'farmhouse_kitchen': kitchen,
+               'farmhouse_desk': desk, 'farmhouse_memory_shelf': memory_shelf}
+SHELL = {'farmhouse_interior_floor': room_floor, 'farmhouse_interior_back': wall_back,
+         'farmhouse_interior_left': lambda lod=0: wall_x('left', -1, lod), 'farmhouse_interior_front': wall_front,
+         'farmhouse_interior_right': lambda lod=0: wall_x('right', 1, lod)}
+interior = []
+for name, f in {**SHELL, **PROP_MODELS}.items():
+    piece(name, f(0), interior); piece(name + '_mid', f(1), interior)
+
+def room_y(v):   # Blender (x, y, z up) -> room (x, y up, z front)
+    return [round(v[0], 3), round(v[2], 3), round(-v[1], 3)]
+def blender(x, y, z):   # room (x, y up, z front) -> Blender
+    return (x, -z, y)
+
+def interior_kit():
+    iobjs = build(interior)
+    by = {o.name: o for o in iobjs}
+    seat = {}
+    for sfx in ('', '_mid'):
+        fl = by['farmhouse_interior_floor' + sfx]
+        add_anchor(fl, 'entry', blender(0, 0, 2.15)); add_anchor(fl, 'exit', blender(0, 0, 2.45))
+        add_anchor(fl, 'camera', blender(9, 10, 11)); add_anchor(fl, 'camera_target', blender(0, .6, 0))
+        for pid, (pos, yaw, col, stand, fh) in PROPS.items():
+            o = by[pid + sfx]; lx, lz = to_local(pid, *stand)
+            add_anchor(o, 'interact', blender(lx, 0, lz)); add_anchor(o, 'focus', blender(0, fh, 0))
+        # the seat: the actor root that puts the Sit clip's hips on the cushion centre (feet on the floor)
+        root_z = SEAT_Z - SIT['man'][1] * ACTOR_H   # the root at floor height, so the hips sit on the cushion centre
+        add_anchor(by['farmhouse_sofa' + sfx], 'seat', blender(0, 0, root_z))
+        seat = {'local': [0, 0, round(root_z, 3)]}
+    bpy.context.view_layer.update()
+    # contract checks: every prop inside its collider after placement, the entrance corridor empty, budgets
+    report, full_tris, mid_tris = [], 0, 0
+    for o in iobjs:
+        t = triangles(o); mid = o.name.endswith('_mid'); base = o.name[:-4] if mid else o.name
+        if mid: mid_tris += t
+        else: full_tris += t
+        if base in PROPS:
+            assert t <= 1200, f'{o.name}: {t} triangles > 1.2k'
+            xs, zs = [], []
+            for v in o.data.vertices:
+                lx, lz = v.co.x, -v.co.y; rx, rz = to_room(base, lx, lz); xs.append(rx); zs.append(rz)
+            (x0, x1, z0, z1) = PROPS[base][2]
+            inside = min(xs) >= x0 - 1e-3 and max(xs) <= x1 + 1e-3 and min(zs) >= z0 - 1e-3 and max(zs) <= z1 + 1e-3
+            assert inside, f'{o.name} leaves its collider: x {min(xs):.2f}..{max(xs):.2f} (want {x0}..{x1}), z {min(zs):.2f}..{max(zs):.2f} (want {z0}..{z1})'
+            assert not (max(xs) > -.65 and min(xs) < .65 and max(zs) > 1.15 and min(zs) < 2.70), f'{o.name} blocks the entrance corridor'
+            report.append(f'{o.name}: {t} tris, room x {min(xs):.2f}..{max(xs):.2f}, z {min(zs):.2f}..{max(zs):.2f}')
+    shell_tris = sum(triangles(by[n]) for n in SHELL)
+    assert shell_tris <= 8000 and full_tris <= 16000 and mid_tris <= 8000, (shell_tris, full_tris, mid_tris)
+    # full and mid anchors agree, in room space
+    for pid in PROPS:
+        for lab in ('interact', 'focus'):
+            a, b = bpy.data.objects[f'{pid}.{lab}'].location, bpy.data.objects[f'{pid}_mid.{lab}'].location
+            assert (a - b).length < 1e-6, (pid, lab)
+    size = packed(iobjs, OUT_INTERIOR)
+    meta = interior_meta(seat)
+    with open(META_INTERIOR, 'w', encoding='utf-8', newline='\n') as f: json.dump(meta, f, indent=1)
+    print('\n'.join(report))
+    print(f'interior: shell {shell_tris}, full room {full_tris}, mid room {mid_tris} triangles; {size} bytes; metadata {os.path.getsize(META_INTERIOR)} bytes')
+
+def interior_meta(seat):
+    r = lambda v: round(v, 3)
+    meshes = [{'node': n, 'position': [0, 0, 0], 'yaw': 0, 'midNode': n + '_mid'} for n in SHELL]
+    meshes += [{'node': pid, 'position': [r(pos[0]), 0, r(pos[1])], 'yaw': r(yaw), 'midNode': pid + '_mid'} for pid, (pos, yaw, *_ ) in PROPS.items()]
+    half_t = WALL_T
+    walls = [{'id': 'wall_back', 'min': [-4, -3], 'max': [4, -3 + half_t]}, {'id': 'wall_left', 'min': [-4, -3], 'max': [-4 + half_t, 3]},
+             {'id': 'wall_right', 'min': [4 - half_t, -3], 'max': [4, 3]}, {'id': 'wall_front_left', 'min': [-4, 3 - half_t], 'max': [-DOOR_W / 2, 3]},
+             {'id': 'wall_front_right', 'min': [DOOR_W / 2, 3 - half_t], 'max': [4, 3]}]
+    colliders = [{'id': pid, 'min': [c[0], c[2]], 'max': [c[1], c[3]]} for pid, (_, _, c, _, _) in PROPS.items()] + walls
+    inter = []
+    for pid, (pos, yaw, col, stand, fh) in PROPS.items():
+        inter.append({'id': pid, 'anchor': f'{pid}.interact', 'stand': [stand[0], 0, stand[1]], 'focus': [r(pos[0]), fh, r(pos[1])]})
+    inter.append({'id': 'farmhouse_exit', 'anchor': 'farmhouse_interior_floor.exit', 'stand': [0, 0, 2.45], 'focus': [0, 1.05, 3]})
+    sx, sz = to_room('farmhouse_sofa', 0, seat['local'][2])
+    yaw = PROPS['farmhouse_sofa'][1]
+    return {'schemaVersion': 1, 'roomId': 'farmhouse_main', 'site': 'farmhouse', 'units': 'metres, Y up, yaw radians',
+            'bounds': {'room': {'min': [-4, -3], 'max': [4, 3]}, 'wallHeight': WALL_H, 'wallThickness': WALL_T,
+                       'innerFloor': {'min': [-3.85, -2.85], 'max': [3.85, 2.85]}, 'avatarCentre': {'min': [-3.55, -2.55], 'max': [3.55, 2.55]},
+                       'avatar': {'radius': .3, 'height': ACTOR_H}, 'entranceCorridor': {'min': [-.65, 1.15], 'max': [.65, 2.7]}},
+            'zones': {'home_living': {'min': [-3.85, -1.0], 'max': [-.9, 2.85]}, 'home_kitchen': {'min': [-.9, -2.85], 'max': [3.85, .9]},
+                      'home_study': {'min': [-3.85, -2.85], 'max': [-.9, -1.0], 'also': ['farmhouse_wardrobe']}},
+            'meshes': meshes, 'colliders': colliders, 'interactions': inter,
+            'entry': {'anchor': 'farmhouse_interior_floor.entry', 'position': [0, 0, 2.15], 'facing': [0, 0, -1]},
+            'exit': {'id': 'farmhouse_exit', 'anchor': 'farmhouse_interior_floor.exit', 'stand': [0, 0, 2.45],
+                     'doorway': {'centre': [0, 0, 3], 'width': DOOR_W, 'height': DOOR_H}},
+            'camera': {'anchor': 'farmhouse_interior_floor.camera', 'targetAnchor': 'farmhouse_interior_floor.camera_target',
+                       'position': [9, 10, 11], 'target': [0, .6, 0], 'padding': .1, 'projection': 'orthographic'},
+            'hiddenWalls': {'full': ['farmhouse_interior_front', 'farmhouse_interior_right'], 'mid': ['farmhouse_interior_front_mid', 'farmhouse_interior_right_mid']},
+            'seats': [{'id': 'farmhouse_sofa', 'node': 'farmhouse_sofa.seat', 'midNode': 'farmhouse_sofa_mid.seat',
+                       'position': [r(sx), 0, r(sz)], 'facing': [r(math.sin(yaw)), 0, r(math.cos(yaw))], 'returnStand': [-2.0, 0, -0.6],
+                       'cushionTop': SEAT_TOP, 'actorHeight': ACTOR_H, 'clip': 'Sit',
+                       'measured': {rig: {'hipHeight': r(h * ACTOR_H), 'hipForward': r(f * ACTOR_H), 'hipHeightShare': h, 'hipForwardShare': f} for rig, (h, f) in SIT.items()}}]}
+
 # =================================================================== export
 def build(group):
     objs = []
@@ -1468,5 +1756,6 @@ for o in kobjs:
 print(f'wrote {OUT_DISCOVERY} ({packed(kobjs, OUT_DISCOVERY)} bytes)')
 xobjs = build(exploration)   # the discovery trail (AR-010), world size
 print(f'wrote {OUT_EXPLORATION} ({packed(xobjs, OUT_EXPLORATION)} bytes)')
+interior_kit()   # the farmhouse interior (AR-015): its own kit and metadata
 json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
 print('anchors', ANCHOR_JSON)

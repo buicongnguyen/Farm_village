@@ -10,12 +10,14 @@ import { BEATS } from '../src/content/story.mjs';
 import { NEIGHBOURS } from '../src/content/people.mjs';
 import { RUINS } from '../src/content/world.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
+import { personName } from '../src/content/character-names.mjs';
 
 const url = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'hollowbrook-school-activity'); mkdirSync(shots, { recursive: true });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 let failed = 0, checks = 0;
@@ -130,7 +132,7 @@ await run('school introduction and repair gates keep unfinished games and earned
   await page.evaluate(() => { farm.game.s.story.chapter = 3; farm.panels.show('today'); });
   expect(await panel(page).locator('[data-do="schoolActivity"]').count() === 0, 'Cora appeared before her introduction');
   await page.evaluate(() => farm.panels.show('schoolActivity'));
-  expect((await panel(page).innerText()).includes('Meet Cora'), 'direct school page omitted introduction gate');
+  expect((await panel(page).innerText()).includes(`Meet ${personName('cora', 'en', 'short')}`), 'direct school page omitted introduction gate');
   expect(await panel(page).locator('[data-do="schoolStart"]').count() === 0, 'locked school offered start');
   await page.evaluate(() => { farm.game.s.story.chapter = 4; farm.panels.show('schoolActivity'); });
   await panel(page).locator('[data-do="schoolStart"][data-difficulty="simple"]').click();

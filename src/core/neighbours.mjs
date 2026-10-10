@@ -20,7 +20,7 @@ export function planDay(s, id, now) {
   const wantN = 3 + r.int(4), giveN = Math.max(1, Math.round((wantN * GOODS[wants].value * 1.2) / GOODS[gives].value));
   return { day: key, visits, visited: 0, trade: gives === wants ? null : { gives: { [gives]: giveN }, wants: { [wants]: wantN }, state: 'open' } };
 }
-/** The newest family that has moved in (surname only, a name that needs no translation), or null. */
+/** The newest family's authored identity reference, translated when the comment is shown, or null. */
 export function newestFamily(s) {
   const arrived = Object.values(s.homes).filter(h => h.family && h.arrived).map(h => FAMILIES.find(f => f.id === h.family)).filter(Boolean);
   const f = arrived[arrived.length - 1]; if (!f) return null;

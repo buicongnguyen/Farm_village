@@ -4,7 +4,8 @@ These rules are for every coding agent working in this repository (Codex, Claude
 you start a task.
 
 Farm Village is a single-player cozy farm and village game for phones and PC browsers (Three.js, shown like 2.5D). The
-player brings the run-down village of Hollowbrook (*Thung Suối*) back to life. The game is in English and Vietnamese.
+player brings the run-down village of Hollowbrook (*Thung Suối*) back to life. The game has English, Vietnamese,
+Korean and Japanese editions; see `docs/LANGUAGE-EDITIONS.md` for their scope and validation.
 
 **Read first**
 - `docs/HOLLOWBROOK-IMPLEMENTATION-PLAN.md`: the consolidated design decisions, implementation phases, and research
@@ -85,12 +86,15 @@ the PR or an integration branch before a production merge; verify production aft
 - **Rules** live in `src/core` behind `act(state, action, payload, now)` and `tick(state, now)`. A handler checks
   everything before it changes anything, so a refused action leaves no trace. **Content** is data in `src/content`.
   Drawing is in `src/view`, the interface in `src/ui`, saves in `src/kit/save.mjs`.
-- **Vietnamese:** every string on screen (`t()`, `ctx.fail()`, content text) needs a line in `src/i18n`. Tests check
+- **Translations:** every English string on screen (`t()`, `ctx.fail()`, content text) needs Vietnamese, Korean and
+  Japanese lines in `src/i18n`. Tests check
   coverage and placeholders. Each speaker keeps the pronouns in `docs/STORY.md` section 2 (`tests/story.test.mjs`).
-- **Both languages adapt:** select dialogue/advice from the same game facts and stable topic IDs before translating.
-  English and Vietnamese must share prerequisites, priorities, rewards and repetition rules. Language changes must
+- **All languages adapt:** select dialogue/advice from the same game facts and stable topic IDs before translating.
+  All four editions must share prerequisites, priorities, rewards and repetition rules. Language changes must
   not reset story progress or make rewards claimable again. Cover both languages before/after relevant milestones.
-  Character display-name proposals live in `docs/CHARACTER-NAMING-PLAN.md`; keep internal character/save/art IDs stable.
+  Localized names live in `src/content/character-names.mjs`; use the explicit identity references described in
+  `docs/LOCALIZED-CAST.md`. Keep internal character/save/art IDs stable. Load language catalogs independently;
+  preserve player-entered names literally and test CJK composition when changing input behavior.
 - **Cozy rules:** nothing is lost, wilts, spoils or leaves while the player is away; no paid currency; no lines that
   make the player feel guilty for being away; pets and animals never suffer if ignored. The user's confirmed energy
   scope (2026-10-08) permits a generous bar for larger optional exploration/repair projects only. Ordinary farming,

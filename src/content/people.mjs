@@ -4,78 +4,78 @@
 import { workingCount } from '../core/working.mjs';
 
 export const FAMILIES = [
-  { id: 'tran', name: 'The Tran family', kids: true, people: [
-    { id: 'minh', name: 'Minh', role: 'Carpenter', line: 'A good house starts with a straight beam and a kind neighbour.', likes: ['corn_bread'],
+  { id: 'tran', name: '{family:tran}', kids: true, people: [
+    { id: 'minh', name: '{person:minh:display}', role: 'Carpenter', line: 'A good house starts with a straight beam and a kind neighbour.', likes: ['corn_bread'],
       orders: ['Hungry work, raising rafters.', 'Lunch for the workbench crew. That is me and a saw.', 'Sawdust makes a man hungry.',
         'For the house-warming. I built the house, so I get to warm it.'] },
-    { id: 'lan', name: 'Lan', role: 'Cook', line: 'Fresh bread in the morning makes the whole street smile.', likes: ['bread', 'egg'],
-      orders: ['For the street supper on Friday.', 'Bo grew three centimetres this month. He eats like a horse.', 'Testing a recipe from my mother\'s notebook.',
+    { id: 'lan', name: '{person:lan:display}', role: 'Cook', line: 'Fresh bread in the morning makes the whole street smile.', likes: ['bread', 'egg'],
+      orders: ['For the street supper on Friday.', '{person:bo:short} grew three centimetres this month. He eats like a horse.', 'Testing a recipe from my mother\'s notebook.',
         'A welcome basket for whoever moves in next.', 'I cook when I am happy. I am very happy.'] },
-    { id: 'bo', name: 'Bo', role: 'Schoolboy', line: 'Is the school really going to open again? I want a desk by the window!', likes: ['carrot'], kid: true,
+    { id: 'bo', name: '{person:bo:display}', role: 'Schoolboy', line: 'Is the school really going to open again? I want a desk by the window!', likes: ['carrot'], kid: true,
       contextLines: [{ when: 'school', text: 'The school is open! My desk is by the window, just as I hoped.' }],
-      orders: ['Mum said I could order something! This one!', 'It is for a frog party. Captain is the guest.', 'For my lunchbox. Pip says mine is the best one.',
+      orders: ['Mum said I could order something! This one!', 'It is for a frog party. {pet:frog_captain:short} is the guest.', 'For my lunchbox. {person:pip:short} says mine is the best one.',
         'I need it for school. It is important. Really!'] },
   ] },
-  { id: 'okafor', name: 'The Okafor family', kids: true, people: [
-    { id: 'grace', name: 'Grace', role: 'Vet', line: 'Happy hens lay more eggs. Well, they lay the same, but they look happier doing it.', likes: ['egg', 'milk'],
+  { id: 'okafor', name: '{family:okafor}', kids: true, people: [
+    { id: 'grace', name: '{person:grace:display}', role: 'Vet', line: 'Happy hens lay more eggs. Well, they lay the same, but they look happier doing it.', likes: ['egg', 'milk'],
       orders: ['For a hungry goose at Lotus Farm.', 'Rounds today. Snacks for the patients. They are hens.', 'A long night with a calf. I need breakfast.',
-        'Zara\'s reading club meets at our house today.'] },
-    { id: 'sam', name: 'Sam', role: 'Postman', line: 'Letters, parcels and gossip. I deliver all three.', likes: ['pumpkin'],
+        '{person:zara:short}\'s reading club meets at our house today.'] },
+    { id: 'sam', name: '{person:sam:display}', role: 'Postman', line: 'Letters, parcels and gossip. I deliver all three.', likes: ['pumpkin'],
       orders: ['Lunch for the long way round.', 'Snacks for the post bag. They keep the dogs friendly.', 'A parcel for my mother in the city.',
         'Special delivery: to me, from you.'] },
-    { id: 'zara', name: 'Zara', role: 'Schoolgirl', line: 'I am going to be the best reader in the whole school.', likes: ['carrot_cake'], kid: true,
+    { id: 'zara', name: '{person:zara:display}', role: 'Schoolgirl', line: 'I am going to be the best reader in the whole school.', likes: ['carrot_cake'], kid: true,
       orders: ['For my book club. We are reading about farms!', 'I am doing a science experiment. It needs this.',
-        'Mum says I can have a treat when I finish chapter nine. I finished it.', 'For Bo. He lost our race, so I am being nice.'] },
+        'Mum says I can have a treat when I finish chapter nine. I finished it.', 'For {person:bo:short}. He lost our race, so I am being nice.'] },
   ] },
-  { id: 'lindqvist', name: 'The Lindqvist family', kids: false, people: [
-    { id: 'elin', name: 'Elin', role: 'Painter', line: 'Your fields look like a quilt from the hill. I might paint them.', likes: ['peach'],
+  { id: 'lindqvist', name: '{family:lindqvist}', kids: false, people: [
+    { id: 'elin', name: '{person:elin:display}', role: 'Painter', line: 'Your fields look like a quilt from the hill. I might paint them.', likes: ['peach'],
       orders: ['A still-life study. I will eat the model afterwards.', 'Painting all day makes me forget to eat.', 'For a picnic on the hill at sunset.',
         'Food for the painters\' club. Two members so far.'] },
-    { id: 'olaf', name: 'Olaf', role: 'Retired sailor', line: 'The brook is no sea, but it sings just as sweetly.', likes: ['corn'],
-      orders: ['Provisions for the porch.', 'At sea we ate biscuits as hard as bricks. Something softer, please.', 'For Elin. She forgets to eat when she paints.',
+    { id: 'olaf', name: '{person:olaf:display}', role: 'Retired sailor', line: 'The brook is no sea, but it sings just as sweetly.', likes: ['corn'],
+      orders: ['Provisions for the porch.', 'At sea we ate biscuits as hard as bricks. Something softer, please.', 'For {person:elin:short}. She forgets to eat when she paints.',
         'Fill the galley! A storm is coming. Probably.'] },
   ] },
-  { id: 'reyes', name: 'The Reyes family', kids: true, people: [
-    { id: 'marisol', name: 'Marisol', role: 'Nurse', line: 'A village needs a clinic. I have a list, and a plan.', likes: ['milk'],
+  { id: 'reyes', name: '{family:reyes}', kids: true, people: [
+    { id: 'marisol', name: '{person:marisol:display}', role: 'Nurse', line: 'A village needs a clinic. I have a list, and a plan.', likes: ['milk'],
       contextLines: [{ when: 'clinic', text: 'The clinic is open. There is room to care for everyone now.' }],
-      orders: ['For the clinic fundraiser.', 'Healthy snacks for the school. Nurse\'s orders.', 'Pia counted the pantry. All forty jars are empty.',
+      orders: ['For the clinic fundraiser.', 'Healthy snacks for the school. Nurse\'s orders.', '{person:pia:short} counted the pantry. All forty jars are empty.',
         'For a family I visit on my rounds.'] },
-    { id: 'tomas', name: 'Tomas', role: 'Mechanic', line: 'If it squeaks, bring it to me.', likes: ['bread'],
-      orders: ['Fuel for the mechanic.', 'I fixed Gus\'s tractor. Time to celebrate.', 'Grease on my hands, hunger in my belly.',
-        'Lunch in the workshop. Pia is helping. Mostly by eating.'] },
-    { id: 'pia', name: 'Pia', role: 'Young neighbour', line: 'I can count to a hundred. Do you want to hear?', likes: ['carrot'], kid: true,
+    { id: 'tomas', name: '{person:tomas:display}', role: 'Mechanic', line: 'If it squeaks, bring it to me.', likes: ['bread'],
+      orders: ['Fuel for the mechanic.', 'I fixed {person:gus:short}\'s tractor. Time to celebrate.', 'Grease on my hands, hunger in my belly.',
+        'Lunch in the workshop. {person:pia:short} is helping. Mostly by eating.'] },
+    { id: 'pia', name: '{person:pia:display}', role: 'Young neighbour', line: 'I can count to a hundred. Do you want to hear?', likes: ['carrot'], kid: true,
       orders: ['I want this one! I counted it!', 'For my teddy\'s birthday. He is four.', 'Mama said one treat. This is one. One big one.',
-        'For the Brook Club! Pip says clubs need snacks.'] },
+        'For the Brook Club! {person:pip:short} says clubs need snacks.'] },
   ] },
 ];
 
 // Villagers who are not in a rental family. `family: true` marks your own family: they never post orders (noOrders),
 // June gives tips, Pip comments on events in speech bubbles, and Ellis is away upriver: he appears only through letters.
 export const VILLAGERS = [
-  { id: 'hazel', name: 'Dr Hazel', role: 'Doctor', arrives: 'clinic', noOrders: true, noGifts: true,
+  { id: 'hazel', name: '{person:hazel:display}', role: 'Doctor', arrives: 'clinic', noOrders: true, noGifts: true,
     line: 'A nurse, a vet, and a cherry tree outside. You have given me every reason to stay.' },
-  { id: 'ada', name: 'Ada', role: 'Your grandmother', line: 'Bring Hollowbrook home, dear. Start with one seed.',
+  { id: 'ada', name: '{person:ada:display}', role: 'Your grandmother', line: 'Bring Hollowbrook home, dear. Start with one seed.',
     idle: [
-          "Ellis always said the brook keeps its own time. We can, too.",
-          "Pip has another question for me. I had better put the kettle on.",
+          "{person:ellis:short} always said the brook keeps its own time. We can, too.",
+          "{person:pip:short} has another question for me. I had better put the kettle on.",
           "I kept my old bread tin. Some things are worth bringing home again.",
           "There was always room for one more chair at our village table.",
           "When you were small, you could smell my bread from the gate.",
           "The old village had noisy days and quiet ones. Both were home."
     ],
-    orders: ['Ellis\'s favourite. I still make it for him, even when he is upriver.', 'For my oven. It has not been this busy since you were small.',
-      'Pip asked for my old recipe. We will make it together.', 'A little something for whoever moves in next.',
+    orders: ['{person:ellis:short}\'s favourite. I still make it for him, even when he is upriver.', 'For my oven. It has not been this busy since you were small.',
+      '{person:pip:short} asked for my old recipe. We will make it together.', 'A little something for whoever moves in next.',
       'I sold these at the mill gate when I was a girl. Let us see if I still can.'] },
-  { id: 'june', name: 'June', role: 'Your partner', family: true, noOrders: true, line: 'I will keep the house, you keep the fields. Deal?',
+  { id: 'june', name: '{person:june:display}', role: 'Your partner', family: true, noOrders: true, line: 'I will keep the house, you keep the fields. Deal?',
     // General encouragement when no immediate task is ready; contextual advice lives in JUNE_TIPS.
     tip: 'We can look around together, or take a little break. There is no hurry.',
     tips: ['The Today board says what is ready and what comes next.', 'Short crops while we are here, long crops before bed. That is my rule.',
       'Projects open new things. Peek at the next one when you are not sure.'] },
-  { id: 'pip', name: 'Pip', role: 'Your child', family: true, noOrders: true, kid: true, line: 'Can I name the next hen? Please?',
+  { id: 'pip', name: '{person:pip:display}', role: 'Your child', family: true, noOrders: true, kid: true, line: 'Can I name the next hen? Please?',
     // speech bubbles keyed by game event type: `first` the first time it happens, then one of `lines`; `idle` now and then
     says: {
-      harvested: { first: 'We grew that! From a seed! Can I tell Granny Ada?', lines: ['Crunchy!', 'I am counting the wheat. One, two... a lot.', 'Can we grow a pumpkin as big as a car?'] },
-      animalArrived: { first: 'A hen! She is looking at me! I am calling her Cloud.', lines: ['Another one! This one is Drizzle.', 'Hello, hen. I am Pip. I am in charge.'] },
+      harvested: { first: 'We grew that! From a seed! Can I tell {person:ada:display}?', lines: ['Crunchy!', 'I am counting the wheat. One, two... a lot.', 'Can we grow a pumpkin as big as a car?'] },
+      animalArrived: { first: 'A hen! She is looking at me! I am calling her {pet:hen_cloud:short}.', lines: ['Another one! This one is {pet:hen_drizzle:short}.', 'Hello, hen. I am {person:pip:short}. I am in charge.'] },
       familyArrived: { first: 'Neighbours! Real ones! Please have a kid. Please have a kid.', lines: ['More neighbours! Hollowbrook is getting big.'] },
       collected: { lines: ['Still warm!', 'An egg! Do not drop it, do not drop it...'] },
       orderFilled: { lines: ['Another happy customer!', 'Can I hold the coins? Just hold them.'] },
@@ -83,9 +83,9 @@ export const VILLAGERS = [
       levelUp: { lines: ['Level up! Do we get cake?'] },
       neighbourVisit: { lines: ['Someone is at the gate! Visitors!'] },
     },
-    idle: ['Why is it called a brook and not a river?', 'Do hens dream? What about?', 'Granny Ada says Grandpa Ellis talks to fish.'] },
-  { id: 'ellis', name: 'Ellis', role: 'Your grandfather', family: true, noOrders: true, away: true, line: 'Gone fishing upriver. Back when the fish say so. -E' },
-  { id: 'cora', name: 'Cora', role: 'Teacher', line: 'Thirty desks, one bell, and all the questions in the world.', arrives: 'school',
+    idle: ['Why is it called a brook and not a river?', 'Do hens dream? What about?', '{person:ada:display} says {person:ellis:display} talks to fish.'] },
+  { id: 'ellis', name: '{person:ellis:display}', role: 'Your grandfather', family: true, noOrders: true, away: true, line: 'Gone fishing upriver. Back when the fish say so. — {person:ellis:display}' },
+  { id: 'cora', name: '{person:cora:display}', role: 'Teacher', line: 'Thirty desks, one bell, and all the questions in the world.', arrives: 'school',
     orders: ['For the class picnic. Thirty little hands, all hungry.', 'A reward for good spelling. I promised.',
       'We are learning where food comes from. You are the lesson!', 'For the staff room. The staff is me.',
       'Science project: does bread rise faster if you sing to it?'] },
@@ -95,7 +95,7 @@ export const VILLAGERS = [
 // the state: REMARK_FACTS[fact](s) gives the {placeholders}, or null when the remark does not apply yet. Gus also has a
 // three-visit `arc` that ends with him admitting Ada taught him to bake.
 export const NEIGHBOURS = [
-  { id: 'mai', name: 'Mai', farm: 'Lotus Farm', role: 'Neighbour', line: 'Good morning! I brought you some of my eggs.', gives: ['egg', 'wheat'], wants: ['corn', 'carrot', 'wheat'],
+  { id: 'mai', name: '{person:mai:display}', farm: 'Lotus Farm', role: 'Neighbour', line: 'Good morning! I brought you some of my eggs.', gives: ['egg', 'wheat'], wants: ['corn', 'carrot', 'wheat'],
     comments: ['Your fields are so tidy!', 'I love the path to your gate.', 'Those carrots look delicious.', 'Your village is waking up!'],
     remarks: [
       { fact: 'hens', text: '{count} hens! You will have eggs all spring.' },
@@ -106,7 +106,7 @@ export const NEIGHBOURS = [
     ],
     orders: ['My ducks ate my lunch again! Help?', 'I am making a basket for a friend in the city.', 'Tea at Lotus Farm this afternoon! Can you spare some?',
       'I am trying a new recipe. Wish me luck!', 'Swapping is more fun than shopping, right?'] },
-  { id: 'gus', name: 'Gus', farm: 'Old Mill Farm', role: 'Neighbour', line: 'Hmph. Nice farm. For a beginner.', gives: ['wheat', 'bread'], wants: ['egg', 'corn', 'pumpkin'],
+  { id: 'gus', name: '{person:gus:display}', farm: 'Old Mill Farm', role: 'Neighbour', line: 'Hmph. Nice farm. For a beginner.', gives: ['wheat', 'bread'], wants: ['egg', 'corn', 'pumpkin'],
     comments: ['Not bad. Not bad at all.', 'In my day we planted wheat by hand. Uphill.', 'Your cottages need more flowers. Trust me.', 'That bakery smells better than mine.'],
     remarks: [
       { fact: 'hens', text: '{count} hens. Hmph. Mine lay bigger eggs. Probably.' },
@@ -116,12 +116,12 @@ export const NEIGHBOURS = [
       { fact: 'bakery', text: 'Your bread is almost as good as mine. Almost.' },
     ],
     arc: [
-      { visit: 1, text: 'Hmph. Ada\'s grandchild. You have her stubborn chin.' },
+      { visit: 1, text: 'Hmph. {person:ada:short}\'s grandchild. You have her stubborn chin.' },
       { visit: 2, text: 'That oven of hers... I learned on it, you know. A long time ago. Forget I said that.' },
-      { visit: 3, text: 'Fine. Ada taught me to bake, the winter the mill froze. I never thanked her. You tell her. No, wait. I will tell her.' },
+      { visit: 3, text: 'Fine. {person:ada:short} taught me to bake, the winter the mill froze. I never thanked her. You tell her. No, wait. I will tell her.' },
     ],
     orders: ['Hmph. My oven is bigger than yours. Fill it.', 'Not for me. For a friend. Fine, it is for me.', 'Old Mill Farm has standards. Meet them.',
-      'Do not tell Ada I ordered this.', 'My wheat is busy. Yours will do.'] },
+      'Do not tell {person:ada:short} I ordered this.', 'My wheat is busy. Yours will do.'] },
 ];
 
 /** What a neighbour can remark on: each returns the template's {placeholders}, or null when it is not true yet.

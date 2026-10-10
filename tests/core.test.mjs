@@ -436,7 +436,7 @@ test('neighbour comments fill {count} and {family} from the land; one neighbourV
   try {
     const c = commentFor(s, 'mai');
     assert.equal(c.text, 'Say hello to the {family} family.', 'no hens yet, so the hen line is not said');
-    assert.equal(c.params.family, 'Okafor'); assert.equal(newestFamily(s), 'Okafor');
+    assert.equal(c.params.family, '{family:okafor}'); assert.equal(newestFamily(s), '{family:okafor}');
     mai.arc = ['First visit line', 'Second visit line'];
     assert.equal(commentFor(s, 'mai', 2).text, 'Second visit line');
     assert.notEqual(commentFor(s, 'mai', 3).text, 'Second visit line');

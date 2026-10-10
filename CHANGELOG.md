@@ -1,5 +1,48 @@
 # Changelog
 
+## Explore: first playable farmhouse — 2026-10-09
+
+- Integrated Claude's AR-015 cutaway room after packed-model, geometry, anchor and budget checks; art PR #43 was merged first.
+- Tapping the farmhouse offers **Go inside**. Walk to its public porch, confirm entry, then use tap-to-walk, arrows/WASD or optional movement buttons. Furniture and walls block movement; Go outside walks to the exit, and Farm view provides a safe return.
+- Sit on the sofa for a quiet moment, optionally using the existing free project-rest timer. Read Bắp/Sunny's garden drawing at the memory shelf, replay it, or open the existing album. The memory is saved once with no additional coins or XP.
+- Explore rules/view code, room metadata and models load only on request. English, Vietnamese, Korean and Japanese share the same rules. Reload/profile changes clear transient room/input state; saved memories and control preference remain per farm.
+- This slice does not add other interiors, seed-packet activities, wardrobe actions or furniture placement. See [Explore mode](docs/EXPLORE-MODE.md#implemented-first-slice--2026-10-09).
+
+## Explore mode design and farmhouse art contract — 2026-10-09
+
+- Added a design-only plan for direct character controls, farmhouse entry/exit, small indoor activities, profile saves, HUD behavior and English/Vietnamese copy. Explore gameplay is not implemented by this update.
+- Requested AR-015: one 8 × 6 m cutaway farmhouse room, three open zones, six named interactive props, and explicit camera/door/navigation metadata. Claude owns the art; later logic implementation starts from [EXPLORE-MODE.md](docs/EXPLORE-MODE.md).
+
+## Fishing from the bank — 2026-10-09
+
+- Removed the floating platform at the village pond. A clear public bank has one player spot and two spaced visitor spots; reservations prevent people walking to the same seat. Built ponds also reserve separate reachable shores.
+- Fishing now shows a rod, line and float, with a visible cast on arrival. Tapping the pond or a float opens Cast/Reel controls even after sending a family member fishing. An unattended line stays safe and visible.
+- A ready catch offers a repeating timing challenge with a broad green band. Missed taps cost nothing; **Reel gently** skips timing for exactly the same fish and rewards. Reduced-motion play uses the gentle option. Both work with saved lines and all four language editions.
+- Bait is spent only after arrival. Seat reservations clear on cancellation or departure, and saved fishing trips resume without another cast or payment. [Scope and validation](docs/POND-FISHING.md).
+
+## Public pond access — 2026-10-09
+
+- The village dock has a permanent public footpath from the west road, including on existing saves. No land purchase, road construction or payment is needed.
+- Player, family and villager outings reach the dock itself and can return home. Routes respect buildings, covered land, rocks, animal pens, water and fences; a changed obstacle triggers a detour or cancels the trip safely.
+- Fishing casts happen only after the player arrives. New chores, nightfall, unreachable shores and moved/stored ponds clear pending actions; built ponds use an accessible shore and the correct facing direction.
+- Integrates and reviews Claude's route foundation from PR #33. Palette, models, profiles, saved progress and gameplay rewards are unchanged. Validation and release record: [POND-ACCESS-FIX.md](docs/POND-ACCESS-FIX.md).
+
+## Korean and Japanese editions — 2026-10-09
+
+- Complete Korean and Japanese catalogs cover the current interface, adaptive advice, chapters, letters, ingredient guidance, discoveries, civic projects and school games. Each uses its local cast names and preserves the same story facts, requirements and rewards.
+- Startup and Settings offer four languages, with saved/browser preferences, localized dates and numbers, and independently loaded catalogs. Failed or superseded switches keep the current edition usable; boot recovery works before the main game loads.
+- Typing a name with Korean/Japanese composition survives background farm updates. Player-entered text, existing saves, all three profiles, progress and economy stay compatible.
+- Villager speech uses actual screen bounds at enlarged text sizes, keeping translated bubbles within phone edges.
+- Validation: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 local production contexts pass. Production first-load code is 1,093,080 bytes. [Scope and verification](docs/LANGUAGE-EDITIONS.md). Independent human native-speaker editing remains a future quality pass.
+- Live through PR #35 (`ceef19c`): CI, Pages and 46 live acceptance contexts pass. The post-deploy test harness drains intercepted requests before closing their browser context, fixing a cleanup race without changing game code.
+
+## Localized playful cast — 2026-10-09
+
+- English and Vietnamese now use the selected local aliases in speaker labels, story references, letters, family labels and named-animal text. Vietnamese keeps relationship titles and each speaker's pronouns; the desk-name joke and signatures work with the new names.
+- Explicit identity references preserve player-entered text and ordinary words. Exact compatibility entries render old saved order/wish sentences with current names without changing their goods, payments or progress.
+- Language switches clear earlier speech/toasts and translate delayed visitor messages when shown. Imported player-name entities stay literal in Settings. Story cards and Friends remain readable on phones at 130% text.
+- Korean/Japanese name mappings are prepared for the current cast; full UI translations remain separate work. Save/profile IDs and all art assets stay compatible. [Scope and verification](docs/LOCALIZED-CAST.md).
+
 ## Clearer guidance and restoration art — implemented and validated (2026-10-09)
 
 - One roadmap tracker and compact status chips reduce duplicate HUD entries; labelled menu buttons, larger touch targets and stable timer controls improve phone use with enlarged text.

@@ -1,5 +1,5 @@
 export const VI_SCHOOL_ACTIVITY = {
-  'Cora’s basket game': 'Giỏ nông sản của cô Cora',
+  '{person:cora:short}’s basket game': 'Giỏ nông sản của cô {person:cora:short}',
   'A little counting': 'Cùng đếm nào',
   'A basket challenge': 'Thử tài xếp giỏ',
   'Count the pictures. How many altogether?': 'Cùng đếm các hình nhé. Có tất cả bao nhiêu?',
@@ -15,8 +15,8 @@ export const VI_SCHOOL_ACTIVITY = {
   'A drawing for the classroom': 'Bức vẽ cho lớp học',
   'Three baskets, three ways to count. There is room on the classroom wall for a picture of this.': 'Ba chiếc giỏ, ba cách đếm. Cô còn một chỗ trên tường lớp để treo bức vẽ về buổi hôm nay đấy.',
   'I drew a carrot with a hat! It gets its own basket.': 'Con vẽ củ cà rốt đội mũ này! Củ này được ở riêng một giỏ.',
-  'A very important carrot, love. Let’s keep this little afternoon in our album.': 'Củ cà rốt oai quá, mình nhỉ. June sẽ giữ buổi chiều nho nhỏ này trong cuốn lưu niệm nhà mình.',
-  'Meet Cora in the school-opening story first': 'Đọc câu chuyện ngày trường mở cửa để gặp cô Cora trước nhé',
+  'A very important carrot, love. Let’s keep this little afternoon in our album.': 'Củ cà rốt oai quá, mình nhỉ. {person:june:short} sẽ giữ buổi chiều nho nhỏ này trong cuốn lưu niệm nhà mình.',
+  'Meet {person:cora:short} in the school-opening story first': 'Đọc câu chuyện ngày trường mở cửa để gặp cô {person:cora:short} trước nhé',
   'Restore the school before playing the basket game': 'Sửa xong trường rồi cùng chơi trò xếp giỏ nhé',
   'Choose a basket game first': 'Chọn một trò xếp giỏ trước nhé',
   'Cannot save the classroom game yet': 'Chưa lưu được trò chơi ở lớp',

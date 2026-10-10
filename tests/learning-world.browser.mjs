@@ -166,8 +166,13 @@ try {
       await page.evaluate(id => { farm.radial.armed = null; farm.panels.show('production', id); }, ids.bakery);
       await panel(page).locator('[data-do="produce"][data-recipe="bread"]').click();
       expect(await page.evaluate(id => farm.state().production[id]?.queue.some(j => j.recipe === 'bread'), ids.bakery), 'zero energy blocked baking');
-      await page.evaluate(() => farm.panels.show('pond'));
+      await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
+      await page.evaluate(() => {
+        const p = farm.people, w = p.walkers.get('you'); p.cancelTrip(w);
+        Object.assign(w, { x: 37, z: 85, indoors: false, once: null, stay: 9999 }); farm.panels.show('pond');
+      });
       await panel(page).locator('[data-do="castLine"]:not([data-bait])').click();
+      await page.waitForFunction(() => !!farm.state().fishing.line);
       expect(await page.evaluate(() => !!farm.state().fishing.line), 'zero energy blocked casting a line');
       await page.evaluate(() => farm.panels.show('projects'));
       await panel(page).locator('[data-do="schoolActivity"]').click();

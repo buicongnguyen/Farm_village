@@ -1,5 +1,146 @@
 # Asset requests
 
+### AR-015: Farmhouse interior for Explore mode — requested 2026-10-09
+
+- **Status:** delivered by Claude on `art/farmhouse-interior` (2026-10-09); waiting for Codex's asset check. See the delivery notes at the end of this section. · **Priority:** P1 · **Asked by:** user/Codex. This is an art contract and design handoff;
+  Explore gameplay is not implemented by this document. Claude owns modeling and the look; Codex will own controls,
+  navigation, rules, saves, activities and localization in a later implementation pass.
+- **Read with:** [EXPLORE-MODE.md](EXPLORE-MODE.md). Follow the [HUD standard proposed in PR #41](https://github.com/buicongnguyen/Farm_village/pull/41).
+  PRs #39–#41 are open at this handoff; do not assume their source has merged. This request adds no permanent HUD button.
+- **First room:** stable room ID `farmhouse_main`, fixed exterior site `farmhouse` (not a new placed building).
+  One ground-floor, open-plan cutaway, **8 × 6 m**, with three connected visual zones listed below. No bedroom,
+  bathroom, upstairs, additional house interiors or new exterior model in this delivery.
+- **Style:** the existing richer, warm farmhouse palette, clear furniture silhouettes and welcoming lived-in details.
+  No words, character names or instructions baked into textures/meshes. Keep play surfaces recognizable at phone size.
+
+#### Rooms / zones
+
+| Room ID | Zone ID | What belongs here | Scope |
+|---|---|---|---|
+| `farmhouse_main` | `home_living` | Sofa and family memory shelf on the left | Required first delivery |
+| `farmhouse_main` | `home_kitchen` | Dining table and kitchen counter toward the back/right | Required first delivery |
+| `farmhouse_main` | `home_study` | Small desk and wardrobe | Required first delivery |
+| — | Bedroom, bathroom, upper floor | Later separate rooms if approved | Do not model yet |
+
+Zones are labels for placement and dialogue, not separate loading screens or invisible walls.
+
+#### Interactable objects and exact IDs
+
+The following identifiers are **reserved**, not existing runtime features. Use the same string for the top-level
+GLB prop node and future interaction ID. Coordinates below are room-local metres, Y up, floor Y=0. Prop geometry
+is authored around its own base centre; root transforms stay identity. The metadata supplies these placement/yaw
+transforms exactly once. Keep decoration and chairs inside their stated collider.
+
+| Object / ID | Future behavior owned by Codex | Placement `(x,z)` / yaw | Room-space collider `x ; z` | Interaction stand `(x,z)` |
+|---|---|---|---|---|
+| `farmhouse_sofa` | Sit; optionally use the existing free project-rest action when eligible | `(-3.15,-0.60)` / `+π/2` | `[-3.65,-2.65] ; [-1.80,0.60]` | `(-2.00,-0.60)` |
+| `farmhouse_wardrobe` | Open current appearance choices; no new clothing inventory | `(3.20,1.50)` / `-π/2` | `[2.75,3.65] ; [0.65,2.35]` | `(2.10,1.50)` |
+| `farmhouse_table` | Untimed illustrated seed-packet activity; contextual family conversation | `(0.25,-0.30)` / `0` | `[-0.75,1.25] ; [-1.25,0.65]` | `(0.25,1.35)` |
+| `farmhouse_kitchen` | Inspect a recipe book using current recipe/source information; no second cooking queue | `(2.45,-2.25)` / `0` | `[1.25,3.65] ; [-2.70,-1.80]` | `(2.40,-1.10)` |
+| `farmhouse_desk` | Open current Village ideas / planning journal | `(-1.40,-2.25)` / `0` | `[-2.20,-0.60] ; [-2.70,-1.80]` | `(-1.40,-1.10)` |
+| `farmhouse_memory_shelf` | Existing album and one optional family-drawing discovery | `(-3.15,1.775)` / `+π/2` | `[-3.65,-2.65] ; [1.25,2.30]` | `(-2.00,1.775)` |
+| `farmhouse_exit` | Return to the validated exterior porch | Door centre `(0,3)` | An opening, not a furniture collider | `(0,2.45)` |
+
+- Include a small unlettered recipe book in the kitchen, plain illustrated packets on the table and a partly tucked
+  drawing/photo at the shelf. They are details within those props, not additional tiny tap targets or inventory goods.
+- Sofa, wardrobe and shelf face inward after their listed yaw; remaining props face local +z. No new animations or
+  moving doors required. Open/closed drawer stages and new character outfits are outside this first delivery.
+
+#### Door, camera and navigation contract
+
+- Room bounds: X `[-4,4]`, Z `[-3,3]`; walls height 2.8 m, thickness 0.15 m extending inward. Entry is on **+z**, opening
+  X `[-0.8,0.8]`, clear height at least 2.1 m, threshold no higher than 0.05 m. No stairs or ceiling collision.
+- Entry spawn `(0,0,2.15)`, facing −z; exit stand `(0,0,2.45)`. Keep entrance corridor X `[-0.65,0.65]`,
+  Z `[1.15,2.70]` empty. Physical passages must be at least 1.2 m wide before subtracting avatar clearance;
+  test a 0.30 m radius / 1.8 m tall avatar. The 1.50 m table–wardrobe gap leaves 0.90 m of avatar-centre space.
+- Raw inner floor bounds X `[-3.85,3.85]`, Z `[-2.85,2.85]`. Permitted **avatar-centre** bounds after a single
+  0.30 m inset are X `[-3.55,3.55]`, Z `[-2.55,2.55]`, minus furniture AABBs expanded by 0.30 m. Do not inset
+  those centre bounds again. Hidden walls keep collision; preserve the front door opening. Entry/exit stands remain valid.
+  Codex owns finer interior navigation (approximately 0.5 m cells); the outdoor 2 m grid must not be reused inside.
+  Interaction stands remain exact authored points, with a final swept approach segment; do not round them into grid centres.
+- Fixed orthographic camera looks from +x/+z: suggested camera anchor `(9,10,11)`, target `(0,0.6,0)`.
+  Frame the room in the remaining viewport with a 10% margin. The **front and right walls hide**, while their
+  collision remains. No user camera rotation inside this first room; exterior rotation is restored on exit.
+- Exterior approach is **provisional** HOME_YARD cell `(25,62)` → world `(51,0,125)`, facing west. Existing house
+  centre is `(45,0,125)`, exterior yaw `+π/2`; current art has no generated door anchor. Supply a preview showing
+  the intended entrance against the existing exterior so Codex can validate the porch point. Do not silently edit
+  the exterior asset or use the house centre as a walk destination. Door alignment is an integration acceptance gate.
+
+#### Files, anchors, budgets and delivery
+
+- Separate packed kit: `public/assets/models/interior-farmhouse.glb`, generated by `art/blender/build_farm_kit.py`
+  (a helper is fine), packed through `art/blender/pack.mjs`, with provenance in `docs/ASSETS.md`.
+- Shell top-level nodes: `farmhouse_interior_floor`, `farmhouse_interior_back`, `farmhouse_interior_left`,
+  `farmhouse_interior_front`, `farmhouse_interior_right`; the six prop roots above; matching `_mid` variants.
+  Keep wall parts separate. Do not hide all nodes under a container that the existing kit loader cannot expose.
+- Floor empties: `farmhouse_interior_floor.entry`, `.exit`, `.camera`, `.camera_target`. Each prop has
+  `<prop-id>.interact` and `<prop-id>.focus`. Metadata records room-space positions; transforms apply once.
+  Floor `.entry` is the spawn `(0,0,2.15)` and `.exit` is the stand `(0,0,2.45)`; doorway plane `(0,0,3)` is
+  separate metadata. `farmhouse_exit` is a semantic interaction, not a seventh furniture mesh. Mid anchors use
+  `<prop-id>_mid.interact/.focus` and `farmhouse_interior_floor_mid.entry/.exit/.camera/.camera_target`, avoiding
+  duplicate names; compare their transformed positions against the corresponding full anchors.
+  The sofa additionally needs `farmhouse_sofa.seat` (and `farmhouse_sofa_mid.seat`) with its facing direction,
+  recorded as `seats[].facing`, fitted to the existing player man/woman Sit
+  rig: this is the actor-root pose that seats the body on the cushion, not the approach point. `.interact` is also
+  the safe standing return point. Include the measured seat pose in metadata; do not guess its height from the cushion.
+  Prop empties are prop-local; compare them with room-space metadata after the placement/yaw transform. Shell roots
+  share room origin `(0,0,0)`. Full/mid anchors must agree. Runtime must preserve metres (`center:false`, no automatic recentering/scaling).
+- Art-owned companion `public/assets/models/interior-farmhouse.json`, `schemaVersion: 1`, contains `roomId`,
+  `bounds`, `meshes` (node, position, yaw, midNode), `colliders`, `interactions` (id, stand, focus), `entry`,
+  `exit`, `camera`, `hiddenWalls` and `seats`. No costs, dialogue, unlocks or executable rules in asset metadata.
+  Units are metres, Y-up, yaw in radians. Arrays `position`, `stand`, `focus`, camera vectors and seat poses are
+  `[x,y,z]`; colliders use room-space `min:[x,z]`, `max:[x,z]` (do not transform them a second time). Specify:
+  `entry:{anchor,position,facing}`, `exit:{id,anchor,stand,doorway:{centre,width,height}}`,
+  `camera:{position,target,padding:0.1}`, `hiddenWalls:{full:[nodeIds],mid:[nodeIds]}`,
+  `seats:[{id,node,position,facing,returnStand}]`. All vectors except mesh-local GLB empties are room-space.
+- Lazy-load only on requested entry; **do not register this in eager world/KINDS loading lists**. No new textures,
+  lights, post-processing, rigs or icons. Reuse existing people and UI icons; never substitute an unrelated new icon.
+- Shell combined ≤8k triangles; each prop ≤1.2k; complete static room ≤16k full / ≤8k mid and ≤16 static draws.
+  Use one white material with vertex colours (`COLOR_0`). Render full **or** mid nodes; draw budgets measure one
+  active static room, never both LOD copies together.
+  Targets: packed kit ≤350 KB and metadata ≤16 KB. Whole scene hard caps remain 120 draws / 300k triangles;
+  first-load code remains ≤1.1 MB. These are acceptance budgets, not a reason to load outdoor scenery behind the room.
+- Deliver one coherent art PR with generator, packed GLB, metadata, measured dimensions/triangles/bytes, full/mid
+  anchor checks, screenshots at 390 px and desktop, and a collision/anchor overlay with the existing avatar rig.
+  No runtime interior entry, economy or new activities should ship from the art lane. Codex checks the asset before integration.
+
+#### AR-015 delivery notes (Claude, 2026-10-09)
+
+- **Files:** `public/assets/models/interior-farmhouse.glb` (packed, ~66 KB) and `interior-farmhouse.json` (schemaVersion 1, ~6.4 KB), built by `interior_kit()` in `art/blender/build_farm_kit.py`. Not registered in KINDS or any eager list.
+- **Budgets (measured):** shell 1,092 triangles; full room 3,836 (≤16k); mid room 1,260 (≤8k); largest prop 616 (kitchen; ≤1.2k). 22 roots (11 full + 11 mid), so one active LOD is 11 static draws (≤16). One white vertex-colour material, no textures, lights or rigs.
+- **Built-in checks** (the generator fails if any of these breaks): every prop's vertices, after its placement and yaw, lie inside its contract collider; nothing enters the entrance corridor; per-prop, shell and room triangle budgets; full and mid `interact`/`focus` anchors match exactly.
+- **Seat:** the Sit clip was measured on the rigs the way `skinned.mjs` draws them (skinned meshes only; the rig files' unskinned `Icosphere` helper excluded; scale from the Idle height; feet lifted to the floor). At 1.8 m the hips rest at 0.459 m (man) and 0.433 m (woman), 4 cm behind and 1 cm in front of the root, with the feet 5–7 cm above the floor. The cushion top is 0.46 m. `farmhouse_sofa.seat` is the actor root at floor height, room `(-2.991, 0, -0.6)`, facing `+x`. Per-rig values are under `seats[0].measured`; for another actor height, scale the shares.
+- **Door against the exterior** (`docs/ar015/porch-approach.webp`): in Willowmere's `home_t1` as drawn (9 m, centred, yaw +π/2 at (45,125)), the porch floor spans world x 46.85–49.32 and z 123.01–126.99 at 0.68 m height. The front door is in the house wall at x ≈ 47.0, centred on z = 125.0. The provisional approach (51, 0, 125), facing west, lines up with the door: it is 1.7 m in front of the porch edge, at the foot of the steps. A walk-in can go up the steps to about (47.6, 0.68, 125), or fade at the approach. The exterior asset is not edited.
+- **Previews:** `docs/ar015/room-390.webp` (phone), `room-desktop.webp`, `room-mid.webp` (mid LOD) and `room-overlay.webp`. The overlay shows colliders in red, colliders + 0.3 m in pink, avatar-centre bounds in cyan, the entrance corridor in yellow, interaction stands, entry (green) and exit (blue). It also shows the villager-man rig at 1.8 m standing on the entry and seated at the seat pose. All are rendered from the contract camera `(9,10,11)` → `(0,0.6,0)`, orthographic, with the front and right walls hidden and a 10 % margin.
+- **Zones** in the metadata are placement and dialogue labels only: `home_living` (sofa, shelf), `home_kitchen` (table, counter), `home_study` (desk; the wardrobe is listed with it).
+
+### Active logic handoff — pond fishing interaction (2026-10-09)
+
+- Codex owns `codex/pond-fishing`, from PR #37/main `f6b3049`. The user requested removal of the floating pond dock, separate seats, visible casting, and a timing minigame. For this requested visual fix, Codex removes only the pond planks/posts in `brook.propsGeometry` and adds simple fishing tackle in a new `src/view/fishing-view.mjs`; the river bridge, existing palettes, lighting, models/icons and Blender sources remain art-owned.
+- Shared behavior scope: `PeopleView` fishing reservations/arrival, public shore data, `radial.tap`/`main.mjs` pond interaction wiring, and pond-panel controls. Core timing rules, translations in all four editions, and tests are coordinated by Codex. Missed timing taps never lose fish/bait or charge again; the accessible gentle-reel option earns the same catch.
+- Gameplay handoff is `c646f22`; [PR #42](https://github.com/buicongnguyen/Farm_village/pull/42) records final validation and publication. This reservation ends when that PR merges. No binary assets requested for this bounded fix; Claude can style dedicated tackle later against the final behavior contract.
+
+### Active logic handoff — public pond access (2026-10-09)
+
+- Codex owns `codex/pond-access`, integrating Claude PR #33 at `635c457` from released main `58c6677`. Shared behavior edits are `PeopleView` journeys, `WorldView.fixedLook` for the public path, and `dress.planWilds` to clear that corridor. This supersedes the earlier note that walk-route work was still available.
+- Existing path colours and assets are reused; no art-lane binaries, palette or Blender changes are requested. [Scope and release checks](POND-ACCESS-FIX.md). Gameplay handoff is `bff1c69`; this reservation ends when [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37) merges.
+
+### Release handoff — Korean and Japanese editions (2026-10-09)
+
+- Codex owns `codex/korean-japanese`, based on deployed main `15c5738` (PR #34), for complete language catalogs, lazy locale loading, menu/settings options, formatting and language/save/layout tests. Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
+- Work is confined to logic, interface text/layout, documentation and tests. Character/save/model IDs and gameplay numbers stay fixed. Existing art, palette, lighting, wordmark and assets remain Claude's; this requests no binaries or new art. CJK text uses the existing system-font fallback, subject to actual rendered-font and phone checks.
+- Phone review found that CSS text zoom also enlarged speech coordinates. Codex corrected `PeopleView.placeBubbles()` coordinate conversion and viewport bounds only; bubble colours, typography and effects remain unchanged. This shared-function reservation ended when PR #35 merged.
+- The PR #34 and PR #35 shared-view reservations have ended. AR-002, the tree pack and walk-route work are free for their owners. The meadow/dairy gameplay contract remains the next gameplay slice.
+- Each catalog must cover the complete current English source inventory, including mobile help and adaptive story. The language options ship together with validated catalogs; naming aliases alone do not constitute an edition. See [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for scope and validation.
+- Local validation is complete: 428 native tests, pace, all 34 component suites, 28 smoke checks and 54 production contexts pass; production first-load code is 1,093,080 bytes. Follow the release PR for CI, Pages and live acceptance. New on-screen text now needs all three translated catalogs; `AGENTS.md` and the catalog tests enforce that shared maintenance contract.
+- PR #35 deployed successfully at `ceef19c`; all 35 published code/style files match the tested build and 46 targeted live contexts pass. The post-deploy test cleanup fix waits for intercepted downloads before closing a browser context; it changes no game code. [Verification record](LANGUAGE-EDITIONS.md).
+
+### Active logic handoff — localized cast (2026-10-09)
+
+- Codex owns `codex/localized-cast`, from deployed main `7cccfbf`, released through [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34). The user requested implementation of the playful native names in `CHARACTER-NAMING-PLAN.md`.
+- Logic owns the four-language identity registry, authored English/Vietnamese references, exact old-save text compatibility, name UI paths and tests. Shared view reservation: `PeopleView.nameOf()`/name labels and clearing transient speech on a language change in `src/view/people-view.mjs`; player-entered names, model IDs and art files remain unchanged. The modal viewport constraint in `src/ui/village.css` is a layout-only fix for 130% text; colours remain art-owned.
+- This supersedes the completed PR #31 edit reservations below. Claude can continue AR-002 from its separate exact asset contract; this pass requests no models, icons, palette or lighting changes. [Local verification](LOCALIZED-CAST.md) is complete (417 native, 32 browser suites, 28 smoke, 14 production contexts); the release PR records deployment/live checks. After merging, these view reservations are released. Read the identity-reference contract before adding named dialogue.
+
 ### Release handoff — clearer guidance and delivered art (2026-10-09)
 
 - Codex owns `codex/clearer-guidance-art`, from deployed main `027ec20`, for [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), currently implemented and validated. This pass finishes the compact HUD/status layout and contextual guidance to existing discoveries, garden repairs and school activities; it does not add new reward sources or meadow gameplay.
@@ -168,6 +309,7 @@ replaced) and `dropped`.
 
 | Id | Name | For | Priority | Status |
 |---|---|---|---|---|
+| AR-015 | Farmhouse cutaway interior, furniture and navigation anchors | Explore mode / first interior | P1 | done: PR #43 merged at `9d08f6e`; logic integration/validation in [PR #45](https://github.com/buicongnguyen/Farm_village/pull/45), 10 draws / ≤11,302 triangles; later furniture activities remain planned |
 | AR-001 | Look pass: colour, light, gold, celebrations | every screen | P1 | done (live 2026-10-08) |
 | AR-002 | Meadow and dairy set | next separate gameplay release | P1 | first delivery requested; exact IDs in MEADOW-DAIRY-SCOPE.md; cat/deed/region work still proposed |
 | AR-003 | New uses for goods | v0.5-v0.6 | P2 | proposed |
@@ -301,6 +443,12 @@ confirms each separately, changes it, or drops it. Ids and sizes are suggestions
   models and icons while Codex completes the UI integration and verification.
 
 ## Notes between lanes
+
+- **Explore handoff, 2026-10-09:** gameplay through `1732c88`, release [PR #45](https://github.com/buicongnguyen/Farm_village/pull/45). AR-015 stands, colliders, both LOD anchors, measured sofa pose and porch approach passed integration. Phone/desktop, all four languages, both rigs, safe reloads and late-load cancellation are covered. Production first-load code is **1,098,843 bytes** (only 1,157 bytes spare; test build has 318 bytes spare). Keep future optional rules/views lazy. The shared-file reservation below ends when PR #45 merges; no art source, binary or look values changed. Kitchen/table/desk/wardrobe and other interiors remain future logic, with no new art requested by this slice.
+
+- **2026-10-09 active writer — Codex, `codex/explore-home`, base `9d08f6e`:** PR #43 passed packed-GLB, full/mid anchor/triangle checks, 494 native tests and startup build; merged before integration. Codex owns the lazy Explore controller, farmhouse radial entry, the player direct-control guard in PeopleView and a render-scene override in WorldView. Existing art/look values and binaries remain unchanged. First slice uses the sofa and memory shelf only; other furniture is dressing. Three.js strips dots from loaded node names; anchor checks account for that. Final handoff commit and phone checks will be recorded here.
+
+- 2026-10-09, **active writer: Codex, `codex/pond-access`**, integrating Claude PR #33 at `635c457`. Scope: `PeopleView` route/arrival/cancellation behavior; `WorldView.fixedLook` draws the public pond path with the existing path token; `dress.planWilds` keeps that corridor clear. Core route data and regression tests are coordinated by Codex. No palette, model, icon or Blender changes. Gameplay handoff: `bff1c69`; validation/release in PR #37, which ends this reservation.
 
 Historical log: the dated ownership and waiting-for-art notes below describe their original releases. They do not reserve files now; the active reservation and current request statuses at the top of this file take precedence.
 
