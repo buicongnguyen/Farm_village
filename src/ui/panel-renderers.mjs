@@ -22,6 +22,8 @@ export { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';   
 import { renderFriends, renderGift, renderMail, heartBar, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
+import { handsOpen, handHired } from '../core/helpers.mjs';
+import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
 import { renderContracts, renderContractMemories, renderContractMemory } from './contracts-panel.mjs';
@@ -121,7 +123,7 @@ export function renderPanel() {
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
     else if (o.kind === 'cart') body = renderCart(s);
     else if (o.kind === 'mail') body = renderMail(s, now);
-    else if (o.kind === 'friends') body = renderFriends(s, now);
+    else if (o.kind === 'friends') body = renderHands(s) + renderFriends(s, now);
     else if (o.kind === 'gift') body = renderGift(s, o.arg, now);
     else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${readyFirst(s, s.orders.cards).map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
@@ -241,4 +243,13 @@ export function holdToSell(el) {
   });
   for (const type of ['pointerup', 'pointercancel', 'blur']) addEventListener(type, stop);
   el.addEventListener('click', e => { if (held && e.isTrusted) { held = false; e.stopPropagation(); e.preventDefault(); } }, true);   // letting go is not one more sale
+}
+
+/** Hired hands, at the top of Friends: each does half of the waiting work; the other half is yours. */
+const HAND_ROLES = { field: ['Field hand', 'Harvests half of the ripe beds and sows them again', 'wheat'], animals: ['Animal hand', 'Collects half of the eggs and milk and feeds half of the hungry animals', 'egg'],
+  workshop: ['Workshop hand', 'Collects half of the finished goods and starts the same again', 'bread'] };
+function renderHands(s) {
+  if (!handsOpen(s)) return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Build the school to hire farm hands.')}</p></section>`;
+  return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Hired neighbours do half of the work, a coin a task. Do the other half yourself to get more done.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => `<div class="hand${handHired(s, role) ? ' on' : ''}">${goodIcon(icon)}<div><b>${t(name)}</b><small>${t(what)}</small></div>${handHired(s, role)
+    ? `<button class="btn" data-do="releaseHand" data-role="${role}">${t('Let go')}</button>` : `<button class="btn orange" data-do="hireHand" data-role="${role}" ${s.coins >= HANDS.roles[role].fee ? '' : 'disabled'}>${t('Hire')} · ${coinMark()} ${num(HANDS.roles[role].fee)}</button>`}</div>`).join('')}</section>`;
 }

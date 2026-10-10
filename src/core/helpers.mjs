@@ -1,6 +1,7 @@
 // Your family lends a hand (v0.3e): now and then, while the game is open, June brings in a few ripe crops and sows the same
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
-import { HELP, WEAR } from '../content/economy.mjs';
+import { HELP, HANDS, WEAR } from '../content/economy.mjs';
+import { actions as production, collectableJobs } from './production.mjs';
 import { ANIMALS } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { actions as farm } from './farm.mjs';
@@ -31,4 +32,55 @@ export function tickHelpers(ctx) {
     ctx.emit('collected', { home: id, good: ANIMALS[an.kind].gives });
   }
   if (got) { gainXp(ctx, XP.collect * got); if (sold) ctx.emit('barnSold', { coins: sold }); ctx.emit('helperDid', { who: 'pip', count: got, what: 'eggs' }); }
+}
+
+/** Hired hands: open once the school stands. s.hands = { field?, animals?, workshop? }. */
+export const handsOpen = s => (s.counts?.school ?? 0) > 0;
+export const handHired = (s, role) => !!s.hands?.[role];
+export const handActions = {
+  hireHand(ctx, { role }) {
+    const { s } = ctx, def = Object.hasOwn(HANDS.roles, role) ? HANDS.roles[role] : null; if (!def) return ctx.fail('Nobody is hired for this');
+    if (!handsOpen(s)) return ctx.fail('Build the school first');
+    if (handHired(s, role)) return ctx.fail('Already hired');
+    if (s.coins < def.fee) return ctx.fail('Not enough coins');
+    s.coins -= def.fee; (s.hands ??= {})[role] = { since: ctx.now }; ctx.emit('handHired', { role }); return { role };
+  },
+  releaseHand(ctx, { role }) {
+    if (!handHired(ctx.s, role)) return ctx.fail('Nobody is hired for this');
+    delete ctx.s.hands[role]; return { role };
+  },
+};
+/** Every HANDS.everyMs, while the game is open, each hand does half (rounded up) of what waits; a coin a task, as far as the coins go. */
+export function tickHands(ctx) {
+  const { s, now } = ctx; if (!s.hands || !handsOpen(s)) return;
+  if (!s.handsAt) { s.handsAt = now + HANDS.everyMs; return; }
+  if (now < s.handsAt) return;
+  const late = now - s.handsAt > WEAR.tickCapMs; s.handsAt = now + HANDS.everyMs; if (late) return;
+  const quiet = { ...ctx, fail: () => ({ ok: false }) }, half = n => Math.min(Math.ceil(n / 2), Math.floor(s.coins / HANDS.wage));
+  const paid = (role, count) => { if (count > 0) { s.coins -= count * HANDS.wage; ctx.emit('handDid', { role, count }); } };
+  if (s.hands.field) {
+    const all = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now), ripe = all.slice(0, half(all.length)), crops = ripe.map(id => [id, s.beds[id].crop]);
+    if (ripe.length) { farm.harvest(quiet, { ids: ripe }); for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop }); paid('field', ripe.length); }
+  }
+  if (s.hands.animals) {
+    const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null);
+    let done = 0, sold = 0;
+    for (const { home, an } of ready.slice(0, half(ready.length))) { sold += barn.addOrSell(s, ANIMALS[an.kind].gives, 1); an.doneAt = null; done++; ctx.emit('collected', { home, good: ANIMALS[an.kind].gives }); }
+    if (done) gainXp(ctx, XP.collect * done);
+    if (sold) ctx.emit('barnSold', { coins: sold });
+    for (const { an } of hungry.slice(0, Math.max(0, half(hungry.length)))) { const a = ANIMALS[an.kind]; if (barn.take(s, { [a.eats]: 1 }, false)) { an.doneAt = now + a.everyMs; done++; } }
+    paid('animals', Math.min(done, Math.floor(s.coins / HANDS.wage)));
+  }
+  if (s.hands.workshop) {
+    const jobs = Object.keys(s.production ?? {}).flatMap(id => collectableJobs(s, id, now).map(job => ({ id, recipe: job.recipe })));
+    let left = half(jobs.length), done = 0;
+    for (const id of new Set(jobs.map(j => j.id))) {
+      if (left <= 0) break;
+      const mine = jobs.filter(j => j.id === id).slice(0, left), r = production.collectProducts(quiet, { building: id, limit: mine.length });
+      if (r?.ok === false) continue;
+      for (const j of mine.slice(0, r.collected)) production.produce(quiet, { building: id, recipe: j.recipe });
+      left -= r.collected; done += r.collected;
+    }
+    paid('workshop', done);
+  }
 }

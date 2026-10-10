@@ -67,11 +67,11 @@ export const actions = {
     return { count };
   },
   /** Collect finished products from one building or all: { building }. */
-  collectProducts(ctx, { building } = {}) {
+  collectProducts(ctx, { building, limit = Infinity } = {}) {   // limit: at most this many trays (a hired hand does half)
     const { s, now } = ctx; let got = 0, full = false;
     for (const id of building ? [building] : Object.keys(s.production)) {
       if (!s.production[id]) continue;   // read only: a refusal leaves no trace
-      const q = productionOf(s, id), jobs = collectableJobs(s, id, now), collectedSlots = new Set(jobs.map(job => job.slot));
+      const q = productionOf(s, id), jobs = collectableJobs(s, id, now).slice(0, Math.max(0, limit - got)), collectedSlots = new Set(jobs.map(job => job.slot));
       if (q.queue.some(job => job.doneAt <= now && !collectedSlots.has(job.slot))) full = true;
       if (!jobs.length) continue;
       for (const job of jobs) {

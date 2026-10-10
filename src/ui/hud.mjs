@@ -158,6 +158,7 @@ export class Hud {
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
     if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects', to: 'projects' });
     if (e.type === 'ruinTidied') this.toast(t('{name} is tidied up. The village looks loved.', { name: t(RUIN_NAMES[e.kind]) }), 'good', { icon: 'ui:heart', to: 'projects' });
+    if (e.type === 'handDid') this.toast(t(e.role === 'field' ? 'Your field hand brought in {count} crops and sowed them again' : e.role === 'animals' ? 'Your animal hand looked after {count} animals' : 'Your workshop hand finished {count} batches and started them again', { count: e.count }), 'good', { icon: e.role === 'field' ? 'wheat' : e.role === 'animals' ? 'egg' : 'bread', group: 'hand-' + e.role });
     if (e.type === 'helperDid') this.toast(t(e.who === 'june' ? '{person:june:short} brought in {count} crops and sowed them again' : '{person:pip:short} fetched {count} eggs and milk', { count: e.count }), 'good', { icon: e.who === 'june' ? 'wheat' : 'egg' });
     if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp', to: 'quests' });
     if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp', to: 'quests' });
