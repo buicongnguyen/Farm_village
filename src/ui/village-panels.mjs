@@ -103,7 +103,7 @@ export function renderProjects(s, now) {
     const way = left > 0 && have < left ? `<button class="link" data-do="showWay" data-at="${at}">${t('Made at: {place}', { place: at === 'farm' ? t('Farm') : t(BUILDINGS[at].name) })}</button>` : '';
     return `<div class="need-row"><span class="good ${given >= n ? 'ok' : have >= left ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${given}/${n}</span><small>${t(GOODS[g].name)} · ${t('{count} in the barn', { count: have })}</small>${way}</div>`;
   }).join('');
-  const kind = step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
+  const kind = step.site ?? step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
   // in the restored village the work is repairing what stands: the button takes you to the run-down thing
   const run = s.mode === 'restore' ? step.builds.find(k => Object.keys(s.placed).some(id => s.placed[id].kind === k && levelOf(s, id) >= 3 && !isRepairing(s, id))) : null, runMay = run && mayBuild(s, run, { repair: true });
   return `<button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>

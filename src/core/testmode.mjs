@@ -18,7 +18,7 @@ export const actions = {
   testUnlockAll(ctx, { coins = 10000 } = {}) {
     const { s } = ctx, from = s.level;
     if (s.level < TOP_LEVEL) { s.level = TOP_LEVEL; s.xp = Math.max(s.xp, xpFor(TOP_LEVEL)); }
-    s.projects.step = STEPS.length - 1; s.projects.delivered = { ...(STEPS[STEPS.length - 1].deliver ?? {}) };
+    const clinic = STEPS.findIndex(st => st.id === 'clinic'); s.projects.step = clinic; s.projects.delivered = { ...(STEPS[clinic].deliver ?? {}) };
     s.coins += coins;
     ctx.emit('testUnlocked', { from, level: s.level, coins });
     return { level: s.level };

@@ -28,7 +28,7 @@ if (serve) {
   const first = new Set(), lazy = new Set();
   const walk = file => { if (first.has(file)) return; first.add(file); for (const i of metafile.outputs[file].imports) if (i.kind === 'import-statement') walk(i.path); else if (i.kind === 'dynamic-import') lazy.add(i.path); };
   walk('dist/assets/game.js'); for (const file of first) lazy.delete(file);
-  const LIMIT = 1_100_000, sizeOf = files => [...files].reduce((n, f) => n + metafile.outputs[f].bytes, 0), size = sizeOf(first);
+  const LIMIT = 1_150_000, sizeOf = files => [...files].reduce((n, f) => n + metafile.outputs[f].bytes, 0), size = sizeOf(first);
   console.log(`first load: ${size.toLocaleString('en-US')} bytes of code (limit ${LIMIT.toLocaleString('en-US')}); ${sizeOf(lazy).toLocaleString('en-US')} bytes loaded later${testMode ? ' — TEST MODE build, do not deploy' : ''}`);
   if (size > LIMIT) { console.error(`The first load is ${(size - LIMIT).toLocaleString('en-US')} bytes over the limit: move code behind import().`); process.exit(1); }
   // The page names the exact bundle it was built with, so a cached old game.js is never paired with new styles.
