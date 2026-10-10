@@ -100,12 +100,13 @@ await check('dressing: fence joints, mill sails, cottage dressing, scaffold on t
     s.projects.step = 5;
     farm.game.emit({ ok: true, events: [{ type: 'loaded' }] }, 'test');
     const items = farm.world.batches.items;
-    return { corner: items.get('j43,70')?.model, end: items.get('j40,70')?.model, sails: items.get(`sails:${mill}`), dress: [...items.keys()].filter(k => k.startsWith(`dress:${home}:`)).length, scaffold: items.get('scaffold:school')?.model };
+    return { corner: items.get('j43,70')?.model, end: items.get('j40,70')?.model, sails: items.get(`sails:${mill}`), dress: [...items.keys()].filter(k => k.startsWith(`dress:${home}:`)).length, cottage: items.get(home)?.model, level: farm.state().homes?.[home]?.level ?? 0, scaffold: items.get('scaffold:school')?.model };
   });
   expect(r.corner === 'fence:corner', `corner joint: ${r.corner}`);
   expect(r.end === 'fence:post', `end post: ${r.end}`);
   expect(r.sails && Math.abs(r.sails.y - ANCHORS.feed_mill.sails[0][1]) < 0.01, `sails: ${JSON.stringify(r.sails)}`);
-  expect(r.dress >= 3, `${r.dress} dressing pieces on a furnished cottage`);
+  // a rental cottage is its own building at every furnish level (it carries its sign, boxes and garden); the town house with loose dressing is only the stand-in while the decor kit loads
+  expect(r.cottage?.startsWith(`cottage_t${Math.min(2, r.level)}`) ? r.dress === 0 : r.dress >= 3, `cottage ${r.cottage} at level ${r.level} with ${r.dress} dressing pieces`);
   expect(r.scaffold === 'scaffold', 'no scaffold on the school ruin');
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
