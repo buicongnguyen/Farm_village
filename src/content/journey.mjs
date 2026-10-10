@@ -11,7 +11,8 @@ export const STAGES = [
   // Act II of the story (docs/plan): each chapter adds its deed here as it is built.
   { id: 'wakes', name: 'The valley wakes', goal: 'Bring the village back to life', level: 6, version: '0.6',
     milestones: [{ name: 'Sell the good of the day on a market day', test: 'marketday' }, { name: 'Own three fields', test: 'fields3' }] },
-  { id: 'streets', name: 'Safe streets and work for all', goal: 'Reopen the police post and the company office', level: 12, version: '0.7', planned: true },
+  { id: 'streets', name: 'Safe streets and work for all', goal: 'Reopen the police post and the company office', level: 12, version: '0.7',
+    milestones: [{ name: 'Rebuild the police post', test: 'police' }, { name: 'Build the boat dock on the brook', test: 'dock' }] },
   { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 16, version: '0.8', planned: true },
   { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 18, version: '0.9', planned: true },
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
@@ -22,7 +23,7 @@ export const JOURNEY_UNLOCKS = [
   { name: 'Clinic', level: 6, kind: 'clinic' },
   { name: 'Goat barn', level: 8, kind: 'goat_barn' }, { name: 'Dairy', level: 8, kind: 'dairy' },
   { name: 'Police post', level: 12, kind: 'police' }, { name: 'Company office', level: 15, kind: 'company' },
-  { name: 'Boat dock on the brook', level: 10, version: '0.7', planned: true },
+  { name: 'Boat dock', level: 10, kind: 'dock' },
   { name: 'Festival stage', level: 12, version: '0.7', planned: true },
   { name: 'Riverside town', level: 18, version: '0.9', planned: true },
 ];

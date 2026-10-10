@@ -19,6 +19,7 @@ import { actions as quests, tickQuests } from './quests.mjs';
 import { addNewPlaces } from './places.mjs';
 import { tickHelpers, tickHands, handActions } from './helpers.mjs';
 import { actions as ruins } from './ruins.mjs';
+import { actions as sites } from './sites.mjs';
 import { actions as orchard, tickOrchard } from './orchard.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
@@ -40,7 +41,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins,
+export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {

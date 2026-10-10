@@ -1,6 +1,7 @@
 // The fish pond (v0.3b, after Willowmere's fishing): cast a line, wait a little, reel in a fish that sells like any good.
 // Villagers who like fishing sit at the pond and leave a small fee in the pond's till.
-import { FISH } from '../content/economy.mjs';
+import { FISH, RIVER } from '../content/economy.mjs';
+import { fishable } from './pond-bank.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { rng, hash } from './rng.mjs';
@@ -17,9 +18,9 @@ export function reelPosition(line, now) {
   const phase = Math.max(0, now - session.startedAt) % REEL_TIMING.periodMs / REEL_TIMING.periodMs;
   return 1 - Math.abs(phase * 2 - 1);
 }
-/** The fish that bites: better odds for rare ones with bait. Pure, from the line's own seed. */
-export function pick(seed, bait) {
-  const r = rng(hash(seed))(), table = FISH_TABLE.map(f => ({ ...f, w: f.rare ? f.weight * (bait ? 2 : 1) : f.weight })), total = table.reduce((a, f) => a + f.w, 0);
+/** The fish that bites: better odds for rare ones with bait, and in the brook from the dock (`river`). Pure, from the line's own seed. */
+export function pick(seed, bait, river = false) {
+  const r = rng(hash(seed))(), table = FISH_TABLE.map(f => ({ ...f, w: f.rare ? f.weight * (bait ? 2 : 1) * (river ? RIVER.rare : 1) : f.weight })), total = table.reduce((a, f) => a + f.w, 0);
   let x = r * total; for (const f of table) { if ((x -= f.w) < 0) return f.id; } return table[0].id;
 }
 /** Fish landed and lying on the bank, not yet in the barn: { [fish]: count } (after Willowmere). Malformed saves hold nothing. */
@@ -53,12 +54,12 @@ export const actions = {
   castLine(ctx, { bait = false, pond = null, foot = false } = {}) {
     const { s, now } = ctx; if (!hasPond(s)) return ctx.fail('Build a fish pond first');
     if (s.fishing?.line) return ctx.fail('The line is already in the water');
-    if (pond !== null && (typeof pond !== 'string' || !Object.hasOwn(s.placed, pond) || s.placed[pond]?.kind !== 'pond')) return ctx.fail('This fishing spot is no longer here.');
+    if (pond !== null && (typeof pond !== 'string' || !Object.hasOwn(s.placed, pond) || !fishable(s.placed[pond]))) return ctx.fail('This fishing spot is no longer here.');
     bait = !!bait; if (bait && !barn.take(s, { chicken_feed: 1 })) return ctx.fail('Missing goods');
     const f = fishingOf(s);
     const seed = `${now}:${f.caught}`, wait = foot === true ? FISH.footMs[0] + hash(seed, 'foot') % (FISH.footMs[1] - FISH.footMs[0]) : bait ? FISH.baitMs : FISH.waitMs;
     f.line = { doneAt: now + wait, bait, seed };
-    if (pond !== null) f.line.pond = pond;
+    if (pond !== null) { f.line.pond = pond; if (s.placed[pond].kind === 'dock') f.line.river = true; }
     ctx.emit('lineCast', { bait });
     return { doneAt: f.line.doneAt };
   },
@@ -80,7 +81,8 @@ export const actions = {
       const position = reelPosition(f.line, now);
       if (position < REEL_TIMING.from || position > REEL_TIMING.to) return ctx.fail('Almost! Try again when the marker is inside the green band.');
     }
-    const fish = pick(f.line.seed, f.line.bait), first = !(s.album?.fish?.[fish] > 0);
+    const fish = pick(f.line.seed, f.line.bait, f.line.river === true), first = !(s.album?.fish?.[fish] > 0);
+    if (f.line.river === true) s.stats.riverFish = (s.stats.riverFish ?? 0) + 1;
     let coins = 0, stored = 0;
     if (hold === true) { const held = bankCatch(s); held[fish] = (held[fish] ?? 0) + 1; f.bank = { fish: held, at: now }; }
     else { const before = barn.stock(s, fish); coins = barn.addOrSell(s, fish, 1); stored = barn.stock(s, fish) - before; if (coins) ctx.emit('barnSold', { coins }); }

@@ -1,6 +1,7 @@
 // Crop beds: plant (uses one crop from the barn, wheat is free), grow on real time, harvest two (DESIGN 5).
 import { CROPS, TUTORIAL_FIRST_GROW_MS } from '../content/goods.mjs';
-import { XP } from '../content/economy.mjs';
+import { XP, WATERED } from '../content/economy.mjs';
+import { wateredBed } from './grid.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
 import { cropOpen } from './learning-state.mjs';
@@ -29,8 +30,9 @@ export const actions = {
         else if (s.coins >= c.value) s.coins -= c.value;
         else { if (!planted) return ctx.fail('Not enough coins'); break; }
       }
-      const first = crop === 'wheat' && s.story.firstWheat;
-      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : c.growMs) };
+      const first = crop === 'wheat' && s.story.firstWheat, bed = s.placed[bid], watered = !first && wateredBed(s, bed.x, bed.z);   // a pond nearby waters it (chapter 7)
+      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : watered ? Math.round(c.growMs * WATERED.grow) : c.growMs), ...(watered ? { watered: true } : {}) };
+      if (watered) s.stats.watered = (s.stats.watered ?? 0) + 1;
       planted++;
     }
     if (!planted) return ctx.fail('Nothing to plant here');

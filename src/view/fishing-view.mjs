@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { CELL } from '../content/world.mjs';
 import { POND_SHAPE } from './brook.mjs';
 import { loadKitLater } from './models.mjs';
-import { BANK, nearestPond, bankSlot } from '../core/pond-bank.mjs';
+import { BANK, nearestPond, bankSlot, waterOf } from '../core/pond-bank.mjs';
 import { stepCost } from '../core/walk.mjs';
 import { bankCount } from '../core/fishing.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
@@ -210,9 +210,9 @@ export class FishingView {
     const rods = next.length;
     // The line remains safe while the player is away or walking back after a reload. Its float stays tappable.
     if (line && !active.has('you') && next.length < MAX) {
-      const placed = line.pond && this.game.s.placed[line.pond], pond = placed?.kind === 'pond' ? placed : null;
+      const placed = line.pond && this.game.s.placed[line.pond], pond = waterOf(placed);   // a built pond, or the brook by the dock
       const c = this.lastCast, point = c ? { id: 'you', pond: c.pond, x: c.x, y: c.y + .14, z: c.z }
-        : { id: 'you', pond: pond ? line.pond : null, x: pond ? (pond.x + 2) * CELL + 1.2 : POND_SHAPE.x + 3, y: (pond ? .24 : .06) + .14, z: pond ? (pond.z + 2) * CELL : POND_SHAPE.z };
+        : { id: 'you', pond: pond ? line.pond : null, x: pond ? pond.x + (pond.river ? 0 : 1.5) : POND_SHAPE.x + 3, y: (pond ? pond.surface : .06) + .14, z: pond ? pond.z : POND_SHAPE.z };
       matrix.makeTranslation(point.x, point.y, point.z); this.floats.setMatrixAt(next.length, matrix); next.push(point);
     }
     this.entries = next; this.rods.count = rods; this.floats.count = next.length;

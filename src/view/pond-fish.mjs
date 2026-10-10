@@ -9,6 +9,7 @@ import { POND_SHAPE } from './brook.mjs';
 import { loadKitLater, bake } from './models.mjs';
 import { toon } from '../kit/toon.mjs';
 import { pick } from '../core/fishing.mjs';
+import { waterOf } from '../core/pond-bank.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 
 // How many of each swim in the village pond and in a pond you built (the big ones need the big water); models and sizes come from FISH_TABLE.
@@ -53,7 +54,8 @@ export class PondFish {
   /** The ponds: the village pond, then every built pond (water level y). */
   ponds() {
     const out = [{ id: null, x: POND_SHAPE.x, z: POND_SHAPE.z, rx: POND_SHAPE.rx - 1.4, rz: POND_SHAPE.rz - 1.4, y: 0.06 }];
-    for (const [id, p] of Object.entries(this.game.s.placed)) if (p.kind === 'pond' && out.length < MAX) out.push({ id, x: (p.x + 2) * CELL - 0.3, z: (p.z + 2) * CELL, rx: 2.0, rz: 2.0, y: 0.24 });
+    // built ponds, and the stretch of brook by the boat dock (a little inside its banks)
+    for (const [id, p] of Object.entries(this.game.s.placed)) { const w = waterOf(p); if (w && out.length < MAX) out.push({ id, x: w.x, z: w.z, rx: w.rx - (w.river ? 1.1 : 0), rz: w.rz - (w.river ? 0.9 : 0), y: w.surface }); }
     return out;
   }
   get count() { return this.far?.visible ? this.far.count : this.kinds.reduce((a, k) => a + k.body.count, 0); }
@@ -66,7 +68,7 @@ export class PondFish {
   answer() {
     const view = this.world.fishingView, st = view?.play?.state, f = view?.playerFloat, line = this.game.s.fishing?.line;
     if (!f || !line || !st || !['approach', 'nibble', 'bite', 'fight'].includes(st.phase)) return null;
-    const fish = pick(line.seed, line.bait), kind = FISH_TABLE.find(f => f.id === fish)?.model ?? fish, pond = Math.max(0, this.list.findIndex(p => p.id === (line.pond ?? null)));
+    const fish = pick(line.seed, line.bait, line.river === true), kind = FISH_TABLE.find(f => f.id === fish)?.model ?? fish, pond = Math.max(0, this.list.findIndex(p => p.id === (line.pond ?? null)));
     const b = this.visitor;
     if (!b || b.kind !== kind || b.pond !== pond) {
       const k = this.kinds.find(k => k.id === kind); if (!k) return null;

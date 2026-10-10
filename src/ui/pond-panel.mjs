@@ -10,12 +10,12 @@ import { renderExplorationEntry } from './exploration-panels.mjs';
 const reduced = s => !!s.settings.reducedMotion || !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const phase = (line, now) => !line ? 'empty' : line.doneAt > now ? 'waiting' : reelingOf(line) ? 'reeling' : 'ready';
 const key = (panels) => { const s = panels.game.s; return JSON.stringify([getLanguage(), reduced(s), !!panels.fishingWalk?.(), phase(s.fishing?.line, panels.game.now), s.fishing, s.barn.items, s.exploration]); };
-export function renderPond(s, now, { walking = false } = {}) {
+export function renderPond(s, now, { walking = false, river = false } = {}) {
   const f = s.fishing ?? { line: null, coins: 0, caught: 0 }, state = phase(f.line, now), calm = reduced(s);
   const fish = FISH_TABLE.filter(x => s.barn.items[x.id] > 0), bait = barn.free(s, 'chicken_feed') > 0;
   const steady = `<button class="btn ${calm ? 'primary' : 'ghost'} wide" data-do="reelIn" data-steady="1">${t('Reel gently')}</button>`;
   return `<section data-pond>${renderExplorationEntry(s, { location: 'pond' })}
-    <p class="hint">${t('Cast a line and wait for the float to bob. Then reel in your fish.')}</p>
+    <p class="hint">${t('Cast a line and wait for the float to bob. Then reel in your fish.')}${river ? ` <b>${t('The rare fish bite twice as often here.')}</b>` : ''}</p>
     <p class="hint"><b data-fishing-status></b></p>
     ${state === 'empty' ? `<button class="btn primary wide" data-do="castLine" ${walking ? 'disabled' : ''}>${t('Cast a line')}</button><button class="btn ghost wide" data-do="castLine" data-bait="1" ${bait && !walking ? '' : 'disabled'}>${iconHtml('chicken_feed', '', 'mini')} ${t('Cast with bait')} (${t('chicken feed')})</button>` : ''}
     ${state === 'ready' && !calm ? `<p class="hint">${t('A fish is biting! Sit at the water and use the round Reel button: strike on the bite, then hold to reel.')}</p>` : ''}

@@ -58,6 +58,12 @@ export const RUINS = [
 export const RUIN_NAMES = { school: 'The old school', clinic: 'The old clinic', police: 'The old police station', company: 'The old company office' };
 export const TIDY = { coins: 40, xp: 15 };
 /** The ruin whose footprint holds this cell, if any. */
+/** Fixed sites (core/sites.mjs): where the story's own buildings stand, outside the farm and the village lots.
+ *  The boat dock (chapter 7): on the south bank of the brook, a few steps east of the road bridge. */
+export const SITES = [{ kind: 'dock', x: 32, z: 13, rot: 0, size: [2, 2] }];   // size: the building's footprint (content/buildings.mjs), for the scenery that keeps off it
+/** The bank by the dock: public ground, so anyone can walk to it from the brook road. */
+export const DOCK_BANK = { x0: 30, x1: 36, z0: 13, z1: 17 };
+export const isDockBank = (x, z) => x >= DOCK_BANK.x0 && x <= DOCK_BANK.x1 && z >= DOCK_BANK.z0 && z <= DOCK_BANK.z1;
 export const ruinAt = (x, z) => RUINS.find(r => { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; return x >= r.x && x < r.x + w && z >= r.z && z < r.z + d; }) ?? null;
 export const MAILBOX = { x: 27, z: 60 };
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];

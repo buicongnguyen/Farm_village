@@ -548,6 +548,40 @@ await check('chapter 6: a market day starts by itself, the good of the day sells
   await ctx.close();
 });
 
+await check('chapter 7: the dock is built from its site panel, the brook by it can be fished, and the police post closes the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:7'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 20000; g.do('testAddLevels', { levels: 6 }); farm.closeCards(); });
+  // a sign waits on the site; its panel builds the dock where it belongs
+  await page.waitForFunction(() => farm.world.batches.items.has('sitesign:dock'), null, { timeout: 30000 });
+  await page.evaluate(() => { farm.closeCards(); farm.panels.onSite('dock'); }); await page.waitForSelector('[data-do="siteBuild"]');
+  expect(!(await page.locator('[data-do="siteBuild"]').getAttribute('data-why')), 'the Build button is blocked at level 12 with coins');
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}dock-site-panel.png` });
+  await page.click('[data-do="siteBuild"]');
+  await page.waitForFunction(() => (farm.state().counts.dock ?? 0) === 1 && !farm.world.batches.items.has('sitesign:dock'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'dock'));
+  await page.waitForFunction(id => farm.world.batches.items.has(id), id, { timeout: 30000 });   // the model is in the late kit
+  // the brook by the dock is fishing water: fish swim there, the pond panel is the dock's, a cast is a river line
+  expect(await page.evaluate(id => farm.pondFish.ponds().some(p => p.id === id), id), 'no fish in the brook by the dock');
+  await page.evaluate(id => { farm.closeCards(); farm.panels.show('pond', id); }, id); await page.waitForSelector('[data-pond]');
+  expect((await page.textContent('.panel:not([hidden]) .panel-head, .panel:not([hidden]) h2')).includes('Boat dock'), 'the pond panel is not the dock\'s');
+  expect((await page.textContent('[data-pond]')).includes('twice as often'), 'the panel does not say what the brook is good for');
+  await page.evaluate(id => { farm.panels.close(); farm.game.do('castLine', { pond: id, foot: true }); }, id);
+  expect(await page.evaluate(() => farm.state().fishing.line?.river === true), 'not a river line');
+  await page.evaluate(() => { farm.game.do('pullLine'); farm.focus(33, 12, 18); }); await page.waitForTimeout(1200); await page.screenshot({ path: `${SHOTS}dock-on-the-brook.png` });
+  // the police post: the chapter card, then the constable is in the village
+  await page.evaluate(() => farm.game.do('rebuildCivic', { kind: 'police' }));
+  await page.waitForSelector('.chapter-modal', { timeout: 15000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Safe streets') && card.includes('Constable Sage') && card.includes('Skipper'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-7-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 7 && farm.people?.walkers?.has('pearl'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

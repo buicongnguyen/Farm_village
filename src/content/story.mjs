@@ -46,6 +46,12 @@ export const CHAPTERS = [
     ada: 'I can smell fresh bread from my porch again. Go on, dear, buy us a loaf. A big one.',
     panels: panels(6, ['Bunting over the square.', '{person:hugo:short} and his trays.', 'The brook, upriver.']),
     when: s => (s.stats.marketDays ?? 0) >= 1 && s.parcels.length >= 3 },
+  // The deed: the police post works again and the boat dock is built (docs/plan/ch07-safe-streets.md).
+  { id: 7, title: 'Safe streets', subtitle: 'A lamp at the end of the lane.', icon: '🏮',
+    text: 'The lamp over the police post is lit again. {person:pearl:display} reads a whole wall of old reports in a week and files every one. On the brook, {person:olaf:short} hammers the last plank of a dock and pretends it was nothing. In a drawer marked Gates, there is a letter from a flour company.',
+    ada: 'I sleep better with a lamp at the end of the lane. And {person:olaf:short} whistles when he works. Have you noticed?',
+    panels: panels(7, ['The lamp at the police post.', 'A dock on the brook.', 'The brook from the dock.']),
+    when: s => workingCount(s, 'police') > 0 && (s.counts.dock ?? 0) > 0 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -108,6 +114,21 @@ export const BEATS = [
     { who: 'tomas', text: 'The gate upriver has two plates on it. One is the maker. The other is the owner: a flour company in the city.' },
     { who: 'sam', text: 'I carried their letters as a boy! Thick envelopes, never a stamp out of place. Nobody here ever opened one.' },
     { who: 'tomas', text: 'A gate made that well was shut on purpose. Somebody still has the papers.' },
+  ] },
+  // ── Chapter 7 (docs/plan/ch07-safe-streets.md) ──
+  { id: 'pearl-arrives', chapter: 7, when: s => (s.story.chapter ?? 0) >= 6 && workingCount(s, 'police') > 0, lines: [
+    { who: 'pearl', text: '{person:pearl:display}, reporting. I have a whistle, a notebook and a kettle. The kettle is the important one.' },
+    { who: 'ada', text: 'A constable! Mind you, the worst crime here was {person:gus:short} taking the last scone.' },
+    { who: 'pearl', text: 'Noted. I will start with the old reports, and work forward to the scone.' },
+  ] },
+  { id: 'olaf-dock', chapter: 7, when: s => (s.story.chapter ?? 0) >= 6 && (s.counts.dock ?? 0) > 0, lines: [
+    { who: 'olaf', text: 'There. A dock. Every village on a river should have one, and now this one does.' },
+    { who: 'pip', text: 'Can we have a boat? A big one? With a flag?' },
+    { who: 'olaf', text: 'One plank at a time, little sailor. One plank at a time.' },
+  ] },
+  { id: 'pond-water', chapter: 7, when: s => (s.story.chapter ?? 0) >= 6 && (s.stats.watered ?? 0) > 0, lines: [
+    { who: 'june', text: 'The beds by the pond are ahead of the others, love. The roots found the water before we did.' },
+    { who: 'ada', text: '{person:ellis:short} always dug his beds where the ground stayed dark. Now I know why.' },
   ] },
 ];
 

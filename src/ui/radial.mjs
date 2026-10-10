@@ -27,6 +27,8 @@ import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
 import { roadSegmentAt, parcelNote } from '../content/world.mjs';
+import { fishable } from '../core/pond-bank.mjs';
+import { siteAt, siteBuilt } from '../core/sites.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
 import { learningStatus } from '../core/learning.mjs';
 
@@ -112,12 +114,12 @@ export class Radial {
     // Advice/source links refer to a world cell, not the actor under their temporary screen coordinates.
     const animal = !opts.preview && !id && this.life?.animalAt?.(cell); if (animal) id = animal.home;
     // Pond controls remain available after sending a friend; the clear fishing bank wins over nearby actor picks.
-    const pondHere = isPond(cell.x, cell.z) || (cell.x >= POND_SHORE.x0 && cell.x <= POND_SHORE.x1 && cell.z >= POND_SHORE.z0 && cell.z <= POND_SHORE.z1) || (id && s.placed[id]?.kind === 'pond');
+    const pondHere = isPond(cell.x, cell.z) || (cell.x >= POND_SHORE.x0 && cell.x <= POND_SHORE.x1 && cell.z >= POND_SHORE.z0 && cell.z <= POND_SHORE.z1) || (id && fishable(s.placed[id]));
     const sel = !opts.preview && this.people?.selected;
     if (pondHere) {
-      const pond = id && s.placed[id]?.kind === 'pond' ? id : undefined;
+      const pond = id && fishable(s.placed[id]) ? id : undefined;
       if (pond && !(sel && performance.now() < (this.people.selectedUntil ?? 0)) && !opts.open && levelOf(s, pond) > 0) {
-        const { buttons, info } = this.repairMenu(pond, BUILDINGS.pond); return this.open(cell, x, y, buttons, info, { id: pond });
+        const { buttons, info } = this.repairMenu(pond, BUILDINGS[s.placed[pond].kind]); return this.open(cell, x, y, buttons, info, { id: pond });
       }
       this.hide();
       if (sel && performance.now() < (this.people.selectedUntil ?? 0) && !this.people.sendFishing(sel, pond ? s.placed[pond] : null)) this.hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info');
@@ -138,6 +140,8 @@ export class Radial {
     }
     const who = !opts.preview && !id && this.people?.pick(x, y);
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
+    // a fixed site that waits for its building (the boat dock's place on the brook): its own panel
+    if (!id && !opts.preview) { const st = siteAt(cell.x, cell.z); if (st && !siteBuilt(s, st.kind)) { this.hide(); this.panels.onSite?.(st.kind); return; } }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];
     let buttons = [], info = '', land = null;
     if (p && !opts.open && levelOf(s, id) > 0) ({ buttons, info } = this.repairMenu(id, def));
@@ -148,7 +152,7 @@ export class Radial {
         return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
       else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml('ui:harvest_all', '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
-      else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${bar(1 - (b.doneAt - now) / full)}`; }
+      else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${b.watered ? ` · ${t('Watered by the pond')}` : ''}${bar(1 - (b.doneAt - now) / full)}`; }
     } else if (def?.fruit) {
       const st = treeState(s, id, now), f = FRUITS[def.fruit];
       if (st?.state === 'ripe') buttons = [{ act: 'pick', icon: iconHtml(def.fruit), label: t('Pick ({count})', { count: f?.yield ?? 1 }) }];

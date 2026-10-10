@@ -61,7 +61,7 @@ export class FishingPlay {
     this.held = true; this.btn.classList.add('held');
     if (this.phase === 'bite') {
       if (quiet()) { this.land(); return; }
-      this.fight = new FishFight(this.lineSeed, pick(this.lineSeed, this.game.s.fishing.line.bait), this.attempt++);
+      this.fight = new FishFight(this.lineSeed, pick(this.lineSeed, this.game.s.fishing.line.bait, this.game.s.fishing.line.river === true), this.attempt++);
       this.phase = 'fight'; this.say(t('Hold Reel!'), 1200); sfx('pop'); buzz(25);
     } else if (this.phase === 'wait' || this.phase === 'approach' || this.phase === 'nibble') {
       // too early: the fish is spooked for a moment (the first bite never comes before the core's own bite time)

@@ -54,7 +54,9 @@ test('the field hand brings in half of the ripe beds and sows them again; the ot
 test('the village projects go on after the clinic: market day, a third field, juice, pond, a second truck, noodles, police, company, hospital; they lock nothing', async () => {
   const { STEPS } = await import('../src/content/projects.mjs'), { mayBuild, currentStep } = await import('../src/core/projects.mjs');
   const ids = STEPS.map(st => st.id), after = ids.slice(ids.indexOf('clinic') + 1);
-  assert.deepEqual(after, ['market_day', 'third_field', 'juice', 'anglers', 'fleet', 'noodles', 'police', 'company', 'hospital']);
+  // later chapters add their own steps to this checklist; these keep their order, and the story's next deeds come first
+  const first = ['market_day', 'third_field', 'juice', 'anglers', 'fleet', 'noodles', 'police', 'company', 'hospital'];
+  assert.deepEqual(after.filter(id => first.includes(id)), first); assert.equal(after[0], 'market_day');
   for (const st of STEPS.slice(ids.indexOf('clinic') + 1)) assert.deepEqual(st.builds, [], `${st.id} locks a building`);
   const s = game(); s.projects.step = ids.indexOf('clinic') + 1; s.level = 20; s.coins = 99999;
   assert.equal(currentStep(s).id, 'market_day');

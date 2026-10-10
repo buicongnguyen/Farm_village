@@ -168,8 +168,9 @@ await check('coins pour into the counter when an order is delivered; flights fal
   await page.evaluate(() => { const g = farm.game; g.do('harvest', { ids: Object.keys(g.s.beds) }); });
   await page.click('[data-act="orders"]');
   await page.waitForTimeout(400);
-  const can = await page.$('.order.can [data-do="deliver"]');
-  expect(!!can, 'no order can be delivered');
+  // a locator, not a handle: the panel is redrawn on the clock, and a handle taken before a redraw is gone when clicked
+  const can = page.locator('.order.can [data-do="deliver"]').first();
+  expect(await can.count() > 0, 'no order can be delivered');
   await can.click(); await page.waitForTimeout(120);
   const coins = await page.evaluate(() => document.querySelectorAll('.jcoin').length);
   await shot(page, 'juice-coins');

@@ -1,4 +1,5 @@
 // The land grid and placement rules (DESIGN 4). Pure: reads the state, never changes it.
+import { WATERED } from '../content/economy.mjs';
 import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA, RUINS, ruinAt } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL_TYPES } from './state.mjs';
@@ -87,6 +88,7 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
   if (!def) return { ok: false, reason: 'Unknown item' };
   if (def.edge) return { ok: false, reason: 'Fences go on cell edges' };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden' };
+  if (def.site) return { ok: false, reason: 'It belongs on its own site' };   // core/sites.mjs builds it; it never moves
   if (def.civicSite) {
     const site = RUINS.find(r => r.kind === kind);
     if (!site || x !== site.x || z !== site.z || rot !== site.rot) return { ok: false, reason: 'Restore this building on its old civic site' };
@@ -158,6 +160,15 @@ export function penOf(s, homeId, limit = 900) {
 function gateKeyBetween(x, z, nx, nz) {
   if (nz === z - 1) return edgeKey(x, z, 'n'); if (nz === z + 1) return edgeKey(x, nz, 'n');
   if (nx === x - 1) return edgeKey(x, z, 'w'); return edgeKey(nx, z, 'w');
+}
+/** Is this cell within WATERED.reach cells of a fish pond the player built (its 4 x 4 footprint)? Such a bed grows faster. */
+export function wateredBed(s, x, z) {
+  for (const p of Object.values(s.placed)) {
+    if (p.kind !== 'pond') continue;
+    const [w, d] = footprint('pond', p.rot ?? 0), dx = Math.max(p.x - x, 0, x - (p.x + w - 1)), dz = Math.max(p.z - z, 0, z - (p.z + d - 1));
+    if (Math.max(dx, dz) <= WATERED.reach) return true;
+  }
+  return false;
 }
 /** First spot where `kind` fits, scanning outward from (x0, z0). For tests, the simulation and "suggest a spot". */
 export function findSpot(s, kind, x0, z0, { rot = 0, radius = 40, filter } = {}) {

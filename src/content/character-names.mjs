@@ -21,6 +21,8 @@ export const CHARACTER_NAMES = Object.freeze({
   hazel: { en: forms('Fern', 'Dr Fern'), vi: forms('Sen', 'Bác sĩ Sen'), ko: forms('온기', '온기 선생님'), ja: forms('すみれ', 'すみれ先生') },
   // the baker, who comes with the first market day (chapter 6). Not 보리 or こむぎ: those are the dog's names.
   hugo: { en: forms('Barley'), vi: forms('Lúa', 'Chú Lúa'), ko: forms('고소'), ja: forms('こんがり') },
+  // the constable, who comes with the police post (chapter 7)
+  pearl: { en: forms('Sage', 'Constable Sage'), vi: forms('Tre', 'Cô Tre'), ko: forms('반듯', '반듯 순경'), ja: forms('きりり', 'きりり巡査') },
   mai: { en: forms('Daisy'), vi: forms('Na', 'Chị Na'), ko: forms('도란'), ja: forms('ゆず') },
   gus: { en: forms('Bramble'), vi: forms('Khoai', 'Bác Khoai'), ko: forms('누룽지'), ja: forms('だいふく') },
 });

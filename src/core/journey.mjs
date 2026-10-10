@@ -16,6 +16,8 @@ const tests = {
   hand: s => Object.keys(s.hands ?? {}).length > 0,
   marketday: s => (s.stats?.marketDays ?? 0) >= 1,
   fields3: s => s.parcels.length >= 3,
+  police: s => workingCount(s, 'police') > 0,
+  dock: s => (s.counts.dock ?? 0) > 0,
 };
 export function journeyOf(s) {
   // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one

@@ -1,6 +1,36 @@
 # Chapter 7: Safe streets
 
-Status: not started · Depends on: chapter 6 · Size: one session · Level reach: 12
+Status: **done** (PR #82) · Depends on: chapter 6 · Size: one session · Level reach: 12
+
+## How to play it (for the owner)
+
+1. From level 8 a For-sale-style sign stands on the south bank of the brook, a few steps east of the road bridge.
+   Tap it (or open Village projects → "A dock on the brook"). At level 10, with 800 coins, **Build** puts the boat
+   dock there.
+2. Tap the dock: the fishing panel opens as "Boat dock". Cast: you walk onto the deck and fish in the brook, where the
+   rare fish bite twice as often. In Explore mode, walk onto the deck and cast as at any pond.
+3. Plant a bed within three cells of a fish pond you built: it grows a fifth faster and its menu says "Watered by the
+   pond".
+4. Rebuild the police post (level 12). Constable Sage arrives and writes three letters, one after the other is read.
+5. With the police post working and the dock built, the chapter 7 card appears.
+
+Tester (`?tester`): "Jump to chapter 7" starts here; "8" arranges this chapter's deed.
+
+## What was built, where it differs from the plan below
+
+- **Fixed sites are their own small system** (`src/core/sites.mjs`), not the civic-ruin code: a building with
+  `site: true` has one place (`SITES` in `content/world.mjs`), is built by `buildSite` from its own panel, and can
+  never be placed, moved, stored or taken down by hand. Chapter 9's stage and later fixed things reuse it.
+- The dock's site is cells (32–33, 13–14): outside the farm, the village and the road verge, so nothing of the
+  player's can ever be in the way. The bank round it (`DOCK_BANK`) is public walking ground.
+- **The dock is fishing water like a pond** (`waterOf`, `seatsOf`, `fishable` in `core/pond-bank.mjs`): the stretch of
+  brook in front of it is on the list of ponds under the dock's id, so the pond panel, the walk to the seat (on the
+  deck), Explore casting, the float and the swimming fish all work without a second fishing system. A line cast there
+  is a `river` line: rare fish count double (`RIVER.rare`; with bait, four times).
+- Watered beds: `wateredBed()` in `core/grid.mjs`, `WATERED` in `economy.mjs`; the bed keeps `watered: true`.
+- The constable's working id is `pearl`; her names are Constable Sage / Cô Tre / 반듯 순경 / きりり巡査.
+- The roadmap stage "Safe streets and work for all" is real now (police post, dock); chapter 8 adds its two deeds.
+- No droplet mark on watered beds (the bed's menu says it); no new fish kinds.
 Story source: `STORY.md` 4 (row 7), `JOURNEY.md` 3
 
 ## What the player gets
