@@ -17,7 +17,7 @@ Status: **done** (PR #95) · Depends on: chapter 19 · Size: one session
 5. **Nothing stops**: the market, the fair, the trains, the co-operative, the hotel and the dividend go on.
 6. **The valley album** keeps the whole story: every chapter seen as a tile (tap one to read its card again), what the
    valley chose in chapter 11, its titles with their dates, and the day the story ended. It is in the Album and in
-   Settings from chapter 1 on.
+   Settings from chapter 1 on, and on the Roadmap (tap the village's name) once the story is told.
 
 Tester (`?tester`): "Chapter 20" jumps to the county's prize; "Finish this chapter" brings the valley to a billion.
 
@@ -32,7 +32,8 @@ Tester (`?tester`): "Chapter 20" jumps to the county's prize; "Finish this chapt
 - **No family photograph keepsake**: the last card opens the existing photo mode (which saves a picture to the
   device). Posing the family and keeping the picture in the profile is left to the release pass.
 - **No new music**: the ending plays the game's own soundtrack. The slowed theme is the release pass's sound work.
-- **The album is in the Album panel and in Settings**, not on a title screen (the game has none).
+- **The album is in the Album panel, in Settings and (once the story is told) on the Roadmap**, not on the first
+  screen: that screen chooses a profile, and an album belongs inside its farm.
 - The far woods no longer glow green at night: the backdrop takes the same night grade as the rest of the world.
 - Tester: `JUMPS[21]` exists so the last chapter can be finished; the jump buttons stop at 20.
 - `tests/ending.test.mjs` (5), and a browser check that plays the ending.

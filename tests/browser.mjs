@@ -1227,6 +1227,8 @@ await check('chapter 20: the five closing cards, the end, the valley album, and 
   await page.evaluate(() => { farm.panels.close(); farm.game.tick(); }); await page.waitForTimeout(1500);
   expect(await page.locator('.closing-modal').count() === 0, 'the closing cards came back');
   await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-do="valleyAlbum"]');
+  await page.evaluate(() => farm.panels.show('roadmap')); await page.waitForSelector('.journey [data-do="valleyAlbum"]');
+  expect(await page.locator('.journey [data-do="fair"]').count() === 1, 'the Roadmap does not lead to the fair');
   const coins = await page.evaluate(() => farm.state().coins);
   await page.evaluate(() => { farm.panels.close(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 61 * 60000); farm.game.tick(); farm.game.do('collectDividend'); });
   expect(await page.evaluate(() => farm.state().coins) > coins, 'no dividend after the end: something stopped');
