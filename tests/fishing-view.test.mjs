@@ -104,14 +104,14 @@ test('casting settles into water, while reduced motion uses a still float immedi
   const still = { ...f.view.entries[0] }; f.frame(5); assert.deepEqual(f.view.entries[0], still);
 });
 
-test('tackle uses three shared draw objects (plus the bite shadow, hidden unless a bite plays) and caps instances and line vertices', t => {
+test('tackle uses three shared draw objects and caps instances and line vertices', t => {
   const actors = Array.from({ length: 40 }, (_, i) => actor(`npc${i}`, POND_FISHING_SPOTS[1]));
   const f = fixture(t, actors); f.frame();
-  assert.equal(f.world.scene.children.length, 4); assert.equal(f.view.shadow.visible, false); assert.equal(f.view.rods.count, 24); assert.equal(f.view.floats.count, 24);
+  assert.equal(f.world.scene.children.length, 3); assert.equal(f.view.rods.count, 24); assert.equal(f.view.floats.count, 24);
   assert.ok(f.view.lines.geometry.drawRange.count <= f.view.positions.length / 3);
   const triangles = f.view.rods.geometry.index.count / 3 * f.view.rods.count + f.view.floats.geometry.index.count / 3 * f.view.floats.count;
   assert.ok(triangles < 5000, `fishing tackle alone adds ${triangles} triangles`);
   const rods = f.view.rods.geometry, floats = f.view.floats.geometry, positions = f.view.positions;
-  f.frame(1); assert.equal(f.world.scene.children.length, 4);
+  f.frame(1); assert.equal(f.world.scene.children.length, 3);
   assert.equal(f.view.rods.geometry, rods); assert.equal(f.view.floats.geometry, floats); assert.equal(f.view.positions, positions);
 });
