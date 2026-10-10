@@ -424,7 +424,8 @@ for (const device of ['phone', 'pc']) await check(`expansion: tap a For-sale par
   await page.click('.radial-btn[data-act="buyParcel"]');
   const after = await page.evaluate(() => ({ parcels: farm.state().parcels.length, coins: farm.state().coins, signs: farm.world.locked?.signs, outline: farm.world.scene.getObjectByName('parcel-outline')?.visible }));
   expect(after.parcels === before.parcels + 1 && after.coins === 400, `not bought: ${JSON.stringify({ before, after })}`);
-  expect(after.signs === 0 && !after.outline, `the sign or outline stayed: ${JSON.stringify(after)}`);
+  // every parcel of the farm can be bought now: the signs move on to the land next to the new parcel
+  expect(after.signs >= 3 && !after.outline && await page.evaluate(() => farm.buyable?.().every(p => !farm.state().parcels.includes(p.parcel)) ?? true), `the signs did not move on or the outline stayed: ${JSON.stringify(after)}`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });

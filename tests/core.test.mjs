@@ -526,7 +526,7 @@ test('parcels: buyableParcels lists the land next to the farm; buyParcel emits p
   assert.ok(buyableParcels(s).every(p => p.ok));
   const r = must(s, 'buyParcel', { parcel: '1,2' });
   assert.equal(events(r, 'parcelBought')[0].parcel, '1,2');
-  assert.deepEqual(buyableParcels(s), [], 'v0.1 sells one more parcel');
+  assert.ok(buyableParcels(s).length >= 3 && buyableParcels(s).every(p => p.price === 2000 && p.parcel !== '1,2'), 'more land stays for sale next to what you own');
 });
 
 test('village charm milestones put up bunting once, for good', () => {

@@ -105,3 +105,11 @@ test('the farmhouse garden: one new thing at every level from 2 to 10, and its s
   s.house = { ...(s.house ?? {}), level: 4 }; assert.ok(stepCost(s, pool.block[0], pool.block[1]) > 0, 'the pool blocks the lawn before it is built');
   s.house.level = 5; assert.equal(stepCost(s, pool.block[0], pool.block[1]), 0); assert.equal(homeGardenAt(5, pool.block[2], pool.block[3]), true);
 });
+
+test('all sixteen parcels of the farm can be bought, each next to land already owned', async () => {
+  const { buyableParcels } = await import('../src/core/build.mjs'), s = game(); s.level = 30; s.coins = 5e6;
+  let bought = 0;
+  for (let guard = 0; guard < 20; guard++) { const next = buyableParcels(s)[0]; if (!next) break; assert.equal(act(s, 'buyParcel', { parcel: next.parcel }, T0).ok, true, next.parcel); bought++; }
+  assert.equal(s.parcels.length, 16); assert.equal(bought, 15); assert.deepEqual(buyableParcels(s), []);
+  assert.equal(act(s, 'buyParcel', { parcel: '0,0' }, T0).ok, false);
+});

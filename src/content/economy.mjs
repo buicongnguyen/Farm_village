@@ -44,12 +44,13 @@ export const RENT = {
   tipMs: [3 * MIN, 6 * MIN], tipCoins: [4, 12],   // a happy family leaves a tip every few minutes
   charmBonus: charm => Math.min(0.4, charm * 0.02), unmetNeed: 0.25,
 };
-export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.4 ** (n - 6)), maxV01: 2, level: 4 };
+// All sixteen parcels of the farm can be bought, one next to another (the limit of two was the first version's).
+export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.2 ** (n - 6) / 100) * 100, maxV01: 16, level: 4 };
 export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1 };
 /** The delivery trucks (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip
  *  (upgradeCost and level per size, every truck the same size); fleet: how many trucks a farm can own, and what the
  *  2nd and 3rd cost and at which level. */
-export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70, 100, 130, 160, 200, 240, 290, 350], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
+export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70, 110, 150, 200, 260, 330, 410, 500], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
 export const FISH = { waitMs: 25_000, baitMs: 12_000, footMs: [4500, 9000],   // footMs: a cast made on foot from the bank bites this soon (Zoo Garden's pace)
