@@ -74,6 +74,14 @@ export const POND_PATH = { x0: 18, x1: 27, z0: 42, z1: 43 };
 /** A small clear bank beside the approach, with three fishing places four metres apart. */
 export const POND_SHORE = { x0: 18, x1: 19, z0: 40, z1: 44 };
 export const POND_FISHING_SPOTS = [[18, 42], [18, 40], [18, 44]];
+/** The pond's water as drawn: an ellipse in metres (view/brook.mjs draws the same shape). The cells of POND are its box. */
+export const POND_WATER = { x: (POND.x0 + POND.x1 + 1) / 2 * CELL, z: (POND.z0 + POND.z1 + 1) / 2 * CELL, rx: (POND.x1 - POND.x0 + 1) * CELL / 2 + 0.3, rz: (POND.z1 - POND.z0 + 1) * CELL / 2 + 0.3 };
+/** A cell whose middle is in the water (the box's grassy corners are not). */
+export const isPondWater = (x, z) => isPond(x, z) && Math.hypot(((x + 0.5) * CELL - POND_WATER.x) / (POND_WATER.rx + 0.5), ((z + 0.5) * CELL - POND_WATER.z) / (POND_WATER.rz + 0.5)) < 1;
+/** The public bank all the way round the pond: three cells of open grass that the scenery already keeps clear, so
+ *  anyone can walk round the water and fish from any side. (The four lake kiosks stand on it; core/walk.mjs blocks them.) */
+export const POND_BANK = { x0: POND.x0 - 3, x1: POND.x1 + 3, z0: POND.z0 - 3, z1: POND.z1 + 3 };
+export const isPondBank = (x, z) => x >= POND_BANK.x0 && x <= POND_BANK.x1 && z >= POND_BANK.z0 && z <= POND_BANK.z1;
 export const isPondPath = (x, z) => [POND_PATH, POND_SHORE].some(p => x >= p.x0 && x <= p.x1 && z >= p.z0 && z <= p.z1);
 /** The village plaza (cells, inclusive): cobbles round the old well, between the cottage row and the ruins. */
 export const PLAZA = { x0: 38, z0: 98, x1: 43, z1: 103 };

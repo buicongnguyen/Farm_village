@@ -30,4 +30,9 @@ export const VI_FISHING = {
   'Reeling…': 'Đang kéo…',
   'Hold Reel to pull it in': 'Giữ nút Kéo để kéo cá vào',
   'A fish is biting! Sit at the water and use the round Reel button: strike on the bite, then hold to reel.': 'Cá đang cắn câu! Ngồi bên bờ và dùng nút tròn Kéo: bấm khi cá cắn, rồi giữ để kéo vào.',
+  // fishing on foot from the bank
+  'Your line is in the other pond. Reel it in first.': 'Dây câu của bạn đang ở ao kia. Hãy thu dây trước đã.',
+  'Your fish is packed away in the barn.': 'Con cá của bạn đã được cất vào kho.',
+  'Your catch is packed away: {count} fish in the barn.': 'Đã cất mẻ cá vào kho: {count} con.',
+  'Nothing to pack': 'Không có gì để cất',
 };

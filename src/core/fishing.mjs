@@ -22,9 +22,23 @@ export function pick(seed, bait) {
   const r = rng(hash(seed))(), table = FISH_TABLE.map(f => ({ ...f, w: f.rare ? f.weight * (bait ? 2 : 1) : f.weight })), total = table.reduce((a, f) => a + f.w, 0);
   let x = r * total; for (const f of table) { if ((x -= f.w) < 0) return f.id; } return table[0].id;
 }
+/** Fish landed and lying on the bank, not yet in the barn: { [fish]: count } (after Willowmere). Malformed saves hold nothing. */
+export const bankCatch = s => Object.fromEntries(Object.entries(s.fishing?.bank?.fish ?? {}).filter(([id, n]) => FISH_TABLE.some(f => f.id === id) && Number.isSafeInteger(n) && n > 0));
+export const bankCount = s => Object.values(bankCatch(s)).reduce((a, n) => a + n, 0);
+/** A catch nobody packed (the game was closed with fish on the grass) goes to the barn by itself after this long. */
+export const BANK_KEEP_MS = 10 * 60_000;
+function pack(ctx) {
+  const { s } = ctx, held = bankCatch(s); let count = 0, stored = 0, coins = 0;
+  for (const [fish, n] of Object.entries(held)) { const before = barn.stock(s, fish); coins += barn.addOrSell(s, fish, n); stored += barn.stock(s, fish) - before; count += n; }
+  delete s.fishing.bank;
+  if (coins) ctx.emit('barnSold', { coins });
+  if (count) ctx.emit('catchPacked', { count, stored, sold: count - stored, coins });
+  return { count, stored, coins };
+}
 export function tickFishing(ctx) {
   const { s, now } = ctx; if (!s.fishing) return;
   const f = s.fishing;
+  if (f.bank && !(now - f.bank.at < BANK_KEEP_MS)) pack(ctx);   // also a clock set back, or a bad stamp
   // A device-clock correction restarts only the harmless marker, never the saved fish or its wait.
   const reeling = reelingOf(f.line); if (reeling && reeling.startedAt > now) reeling.startedAt = now;
   if (!hasPond(s)) { f.feeAt = 0; return; }
@@ -57,7 +71,8 @@ export const actions = {
     ctx.emit('reelingStarted'); return { startedAt: now };
   },
   /** Legacy callers can reel directly. Once timing starts, use its window or the equal-reward accessible option. */
-  reelIn(ctx, { steady = false } = {}) {
+  /** hold: the fish is landed on the bank and waits there (packCatch brings it in); otherwise it goes straight to the barn. */
+  reelIn(ctx, { steady = false, hold = false } = {}) {
     const { s, now } = ctx, f = s.fishing; if (!f?.line) return ctx.fail('Cast a line first');
     if (f.line.doneAt > now) return ctx.fail('Nothing is biting yet');
     if (reelingOf(f.line) && steady !== true) {
@@ -65,12 +80,18 @@ export const actions = {
       if (position < REEL_TIMING.from || position > REEL_TIMING.to) return ctx.fail('Almost! Try again when the marker is inside the green band.');
     }
     const fish = pick(f.line.seed, f.line.bait), first = !(s.album?.fish?.[fish] > 0);
-    const before = barn.stock(s, fish), coins = barn.addOrSell(s, fish, 1), stored = barn.stock(s, fish) - before;
-    if (coins) ctx.emit('barnSold', { coins });
+    let coins = 0, stored = 0;
+    if (hold === true) { const held = bankCatch(s); held[fish] = (held[fish] ?? 0) + 1; f.bank = { fish: held, at: now }; }
+    else { const before = barn.stock(s, fish); coins = barn.addOrSell(s, fish, 1); stored = barn.stock(s, fish) - before; if (coins) ctx.emit('barnSold', { coins }); }
     f.line = null; f.caught++; (s.album ??= { fish: {}, fruit: {} }).fish[fish] = (s.album.fish[fish] ?? 0) + 1; s.stats.fished = (s.stats.fished ?? 0) + 1;
     // first means this species' first album entry. Rarity comes from the same content used by bait odds.
-    ctx.emit('fishCaught', { fish, first, rare: !!FISH_TABLE.find(f => f.id === fish)?.rare, stored, sold: 1 - stored, coins });
+    ctx.emit('fishCaught', { fish, first, rare: !!FISH_TABLE.find(f => f.id === fish)?.rare, stored, sold: hold === true ? 0 : 1 - stored, coins, ...(hold === true ? { held: true } : {}) });
     return { fish };
+  },
+  /** Pack the catch lying on the bank into the barn (the view calls this when you walk off; overflow sells as usual). */
+  packCatch(ctx) {
+    if (!bankCount(ctx.s)) return ctx.fail('Nothing to pack');
+    return pack(ctx);
   },
   collectFees(ctx) {
     const { s } = ctx, f = s.fishing, coins = f?.coins ?? 0; if (!Number.isSafeInteger(coins) || coins <= 0) return ctx.fail('Nothing sold yet');

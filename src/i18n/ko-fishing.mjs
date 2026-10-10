@@ -30,4 +30,9 @@ export const KO_FISHING = {
   'Reeling…': '감는 중…',
   'Hold Reel to pull it in': '감기를 꾹 눌러 끌어당겨요',
   'A fish is biting! Sit at the water and use the round Reel button: strike on the bite, then hold to reel.': '물고기가 물었어요! 물가에 앉아 동그란 감기 버튼을 써요. 입질에 맞춰 누르고, 꾹 눌러서 감아요.',
+  // fishing on foot from the bank
+  'Your line is in the other pond. Reel it in first.': '낚싯줄이 다른 연못에 있어요. 먼저 감아 주세요.',
+  'Your fish is packed away in the barn.': '잡은 물고기를 헛간에 넣었어요.',
+  'Your catch is packed away: {count} fish in the barn.': '잡은 물고기 {count}마리를 헛간에 넣었어요.',
+  'Nothing to pack': '넣을 것이 없어요',
 };

@@ -36,6 +36,7 @@ export class FishingPlay {
     Object.assign(this, { game, people, hud, view, phase: 'idle', held: false, cycle: 0, attempt: 0, cycleAt: null, fight: null,
       lineSeed: null, tick: 0, msg: '', msgUntil: 0, nibbleAt: -9, state: { phase: 'idle' } });
     view.play = this;
+    view.onPacked = n => hud.toast(n === 1 ? t('Your fish is packed away in the barn.') : t('Your catch is packed away: {count} fish in the barn.', { count: n }), 'good', { icon: 'ui:barn', to: 'barn' });
     if (!document.getElementById('fishing-play-css')) { const st = document.createElement('style'); st.id = 'fishing-play-css'; st.textContent = CSS; document.head.appendChild(st); }
     const box = document.createElement('div'); box.className = 'fishing-play'; box.hidden = true;
     box.innerHTML = `<p class="fish-hint" role="status" aria-live="polite"></p><button class="reel-btn" type="button"><span></span></button>`;
@@ -68,7 +69,8 @@ export class FishingPlay {
     void now;
   }
   land() {
-    const r = this.game.do('reelIn', { steady: true });
+    this.view.beforeCatch?.();
+    const r = this.game.do('reelIn', { steady: true, hold: true });   // landed on the grass; it is packed into the barn when you walk off
     this.fight = null; this.held = false; this.phase = 'idle';
     if (r?.ok) { this.view.leap?.(r.fish); sfx('cheer'); buzz(60); }
   }

@@ -75,3 +75,28 @@ Claude can replace the simple tackle later while preserving the seat and input c
 
 Gameplay handoff: `c646f22`; later commits integrate HUD PR #38, strengthen browser regressions and document the
 user's separately requested Explore design. Explore has **no runtime implementation** in this release.
+
+## Fishing on foot from the bank (2026-10-10)
+
+In Explore you fish as in Willowmere and Zoo Garden.
+
+- **The whole bank is walkable.** `POND_BANK` (the pond plus three cells each way) is public ground in
+  `core/walk.mjs`; only the water itself (`isPondWater`, the drawn ellipse) and the four lake kiosks block.
+- **The rod comes out near water.** Within `BANK.reach` (3 m) of any pond, the village pond or one you built, the
+  player holds the rod; it goes away past `BANK.leave` (4 m). The action pill reads "Cast a line".
+- **Cast where you tap.** A tap on the water lands the float there (`castPlan`: 1.8 to 7 m from you, never closer
+  than 0.7 m to the rim). Tapped from further off, you walk to the nearest shore and cast on arrival. With a line
+  out and no fish on, another tap only moves the float: no second line and no second bait.
+- **The catch lies on the grass.** A fish landed on foot is *held* (`reelIn { hold: true }` puts it in
+  `s.fishing.bank`). It counts for the album, the caught total and goals at once, but it is not in the barn.
+  Each fish gets its own place (`bankSpots`: three arcs round the angler, about 1.15 m apart, at least 1 m from
+  the water, on open ground only). They pile only when every place is taken.
+- **Packing.** Walking more than `BANK.pack` (2.5 m) from where you stood, going indoors, or fishing from a new
+  spot packs the catch (`packCatch`): the fish go to the barn, overflow sells as usual, and a notice links to the
+  barn. Fish are never lost: a held catch is saved, and `tickFishing` packs it by itself after `BANK_KEEP_MS`
+  (10 minutes) or when a game is loaded with fish still on the grass.
+- **The pond sheet is unchanged.** "Reel gently" from the fishing sheet, with no `hold`, still goes straight to the
+  barn with the same `fishCaught` event.
+
+Tests: `tests/pond-bank.test.mjs`, `tests/bank-catch.test.mjs`, and the fishing-on-foot check in
+`tests/explore-roam.browser.mjs`.

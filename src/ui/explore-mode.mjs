@@ -7,12 +7,13 @@ import { FISH_TABLE } from '../content/goods.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { fillable } from './panels.mjs';
 import { unread } from '../core/bonds.mjs';
-import { POND_FISHING_SPOTS, ORDER_BOARD, MAILBOX } from '../content/world.mjs';
+import { ORDER_BOARD, MAILBOX } from '../content/world.mjs';
 import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, homeCooldown, OUTDOOR_SPEED } from '../core/explore.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
 import { isWorking } from '../core/working.mjs';
+import { BANK, nearestPond, pondAt, castPlan, shorePoint, waterDistance } from '../core/pond-bank.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz } from '../core/explore-navigation.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
@@ -76,7 +77,7 @@ class ExploreMode {
   async open({ roam = false, who = 'you' } = {}) {
     if (this.active) return;
     if (!roam && !homeOpen(this.game.s)) { this.hud.toast(t('Repair the farmhouse before going inside'), 'info'); return; }
-    Object.assign(this, { roam, who, near: null, seat: null, enterOnArrival: false, actOnArrival: null, scanClock: 0, joy: false });
+    Object.assign(this, { roam, who, near: null, seat: null, rod: null, enterOnArrival: false, actOnArrival: null, castOnArrival: null, scanClock: 0, joy: false });
     this.state = this.game.s; this.active = true; this.loading = true; this.error = false; this.target = null; this.card = null; this.notice = null;
     const generation = ++this.generation;
     this.panels.close(); this.radial.hide(); this.radial.armed = null; this.radial.tool.hidden = true;
@@ -111,7 +112,7 @@ class ExploreMode {
     this.span = Math.min(ZOOM.max, Math.max(ZOOM.min, (this.span ?? ZOOM.start) * factor));
     this.world.cam.lookAt(this.world.cam.x, this.world.cam.z, this.span);
   }
-  clear(keepStick = false) { this.keys.clear(); if (!keepStick) this.joyReset(); this.actOnArrival = null; this.press = null; this.touches?.clear(); this.pinch = 0; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
+  clear(keepStick = false) { this.keys.clear(); if (!keepStick) this.joyReset(); this.actOnArrival = this.castOnArrival = null; this.press = null; this.touches?.clear(); this.pinch = 0; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
   /** Outdoors: the nearest thing worth doing something with (the door, the pond, a person, a bench, a ripe bed, the
    *  order board, the mailbox), with the label of its one action. Scanned a few times a second, not every frame. */
   scan(p = this.session?.p, reach = 1, all = false) {
@@ -119,7 +120,7 @@ class ExploreMode {
     const s = this.state, people = this.radial.people, now = this.game.now, out = [];
     const add = (id, d, max, label, params, at) => { if (d < max * reach) out.push({ id, d: d / max, label, params, at, max }); };
     if (this.own) add('door', far(p, ...HOME_APPROACH), 3, 'Go inside');
-    if (this.own && !s.fishing?.line) for (const [x, z] of POND_FISHING_SPOTS) add('pond', far(p, centre(x), centre(z)), 3.4, 'Fish here');
+    if (this.own && !s.fishing?.line) { const bank = nearestPond(s, ...p); add('pond', Math.max(0, bank.d), BANK.reach + .01, 'Cast a line'); }   // anywhere round any pond
     for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
     add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board', null, [centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)]);
     add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox', null, [centre(MAILBOX.x), centre(MAILBOX.z)]);
@@ -152,6 +153,25 @@ class ExploreMode {
   }
   /** The thing with this id if it is within reach now (a ripe bed stands for any ripe bed beside you). */
   inReach(id) { return this.scan(this.session.p, 1, true).find(o => o.id === id || (id.startsWith('bed:') && o.id.startsWith('bed:'))) ?? null; }
+  /** Cast from the bank where you stand, to the tapped spot on the water (or straight out). With a line already out and
+   *  no fish on yet, this just moves the float. The catch itself stays with core/fishing.mjs. */
+  cast(tap) {
+    const e = this.session, s = this.state, bank = nearestPond(s, ...e.p), play = this.world.fishingPlay, line = s.fishing?.line;
+    if (!this.own || !this.rod || bank.d > BANK.leave) return false;
+    if (line && ['bite', 'fight'].includes(play?.phase)) return true;   // a fish is on: the Reel button has it
+    if (line && (line.pond ?? null) !== bank.pond.id) { this.notice = 'Your line is in the other pond. Reel it in first.'; return true; }
+    if (!line) { const r = this.game.do('castLine', { pond: bank.pond.id }); if (!r.ok) { this.notice = r.reason; return true; } }
+    const to = castPlan(bank.pond, e.p, tap);
+    e.route = []; e.seated = false; e.yaw = Math.atan2(to[0] - e.p[0], to[1] - e.p[1]);
+    Object.assign(this.rod, { cast: to, castAt: this.world.fishingView.time, landed: false });
+    return true;
+  }
+  /** A tap on the water: cast there if you are at the bank, otherwise walk to the nearest shore and cast on arrival. */
+  tapWater(pond, point) {
+    const e = this.session;
+    if (waterDistance(pond, ...e.p) <= BANK.reach) { this.cast(point); return; }
+    if (routeExplore(this.state, shorePoint(pond, e.p))) this.castOnArrival = point; else this.notice = 'The way is blocked. Try another spot.';
+  }
   /** Tap a thing: walk to a free spot beside it, then do its action on arrival. */
   walkTo(target) {
     const e = this.session, [x, z] = target.at;
@@ -169,7 +189,7 @@ class ExploreMode {
       if (far(e.p, ...HOME_APPROACH) <= .35) { const r = this.game.do('enterFarmhouse'); if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason; }
       else if (routeExplore(this.state, HOME_APPROACH)) { this.target = 'door'; this.enterOnArrival = true; }
       else this.notice = 'The way is blocked. Try another spot.';
-    } else if (kind === 'pond') { const panels = this.panels; this.savedCamera = null; this.close(); panels.onFishCast?.(false); return; }   // fishing takes over; the camera stays on you
+    } else if (kind === 'pond') this.cast(null);   // straight out from where you stand
     else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, this.span); people.talk(w); } }
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
@@ -190,7 +210,7 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -239,7 +259,10 @@ class ExploreMode {
     } else {
       const hit = this.world.cellAt(x, y); if (!hit) return;
       const door = Math.hypot(hit.x * 2 + 1 - 47, hit.z * 2 + 1 - 125) < 6, point = [hit.x * 2 + 1, hit.z * 2 + 1];
-      this.target = door ? 'door' : null; this.actOnArrival = null;
+      this.target = door ? 'door' : null; this.actOnArrival = null; this.castOnArrival = null;
+      const water = this.own && hit.point ? pondAt(this.state, hit.point.x, hit.point.z) : null;
+      if (water) { this.tapWater(water, [hit.point.x, hit.point.z]); this.render(); return; }
+      if (door && this.own) { this.doNear({ id: 'door' }); this.render(); return; }   // a tap on the farmhouse: walk to the door and go in
       const thing = door ? null : this.scan(point, .75);
       if (thing?.at && thing.id !== 'pond') { if (!this.walkTo(thing)) this.notice = 'The way is blocked. Try another spot.'; }
       else if (!routeExplore(this.state, door ? HOME_APPROACH : point)) this.notice = 'The way is blocked. Try another spot.';
@@ -296,6 +319,7 @@ class ExploreMode {
   }
   syncScene() {
     this.world.presentation = this.inside ? this.room : null;
+    if (this.inside && this.world.fishingView) this.world.fishingView.angler = null;
     document.body.classList.toggle('explore-inside', this.inside);
     this.walker.indoors = this.inside;
     if (!this.inside) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; this.world.cam.lookAt(...this.session.p, this.span); }
@@ -307,7 +331,7 @@ class ExploreMode {
     const x = (this.keys.has('d') || this.keys.has('arrowright') ? 1 : 0) - (this.keys.has('a') || this.keys.has('arrowleft') ? 1 : 0) + this.stick[0];
     const y = (this.keys.has('s') || this.keys.has('arrowdown') ? 1 : 0) - (this.keys.has('w') || this.keys.has('arrowup') ? 1 : 0) + this.stick[1];
     const yaw = this.inside ? Math.atan2(9, 11) : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
-    if (x || y) this.actOnArrival = null, this.enterOnArrival = false;
+    if (x || y) this.actOnArrival = this.castOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
     if (this.inside) this.room.frame(this.session, moving, dt);
     else {
@@ -316,6 +340,16 @@ class ExploreMode {
       // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
       const cam = this.world.cam, k = document.body.classList.contains('reduced-motion') ? 1 : 1 - Math.exp(-9 * dt);
       if (!this.busy && (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02 || cam.span !== this.span)) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, this.span);
+      const view = this.world.fishingView;
+      if (view && this.own) {   // near any pond the rod comes out (and goes away a little further off, so it never flickers)
+        const bank = nearestPond(this.state, ...e.p), line = this.state.fishing?.line, rod = (this.rod ??= { cast: null, castAt: 0, landed: true });
+        const out = !e.seated && bank.d <= (view.angler ? BANK.leave : BANK.reach);
+        if (!line) rod.cast = null;
+        else if (out && !rod.cast && (line.pond ?? null) === bank.pond.id) Object.assign(rod, { cast: view.lastCast ? [view.lastCast.x, view.lastCast.z] : castPlan(bank.pond, e.p, null), castAt: -9, landed: true });   // a line from before: the float is where it was
+        view.angler = out ? Object.assign(rod, { x: e.p[0], z: e.p[1], pond: bank.pond }) : null;
+        if (out && rod.cast && line && !moving) e.yaw = Math.atan2(rod.cast[0] - e.p[0], rod.cast[1] - e.p[1]);
+      }
+      if (this.castOnArrival && !e.route.length && !moving) { const point = this.castOnArrival; this.castOnArrival = null; this.cast(point); this.render(); }
       if (this.actOnArrival && !e.route.length && !moving) {   // arrived beside the thing that was tapped
         const near = this.inReach(this.actOnArrival); this.actOnArrival = null;
         if (near) { this.doNear(near); if (!this.active) return; this.render(); }
