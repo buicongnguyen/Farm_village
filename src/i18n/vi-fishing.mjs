@@ -88,4 +88,14 @@ export const VI_FISHING = {
   'A fountain': 'Đài phun nước',
   'A garden gazebo': 'Chòi nghỉ trong vườn',
   'A flag over the farm': 'Lá cờ trên trang trại',
+  // the farmhouse room, level by level
+  'Pictures on the walls': 'Tranh treo tường',
+  'A tall house plant': 'Chậu cây cao',
+  'A reading lamp': 'Đèn đọc sách',
+  'A second rug': 'Tấm thảm thứ hai',
+  'A big painting': 'Bức tranh lớn',
+  'A piano': 'Đàn piano',
+  'A chandelier': 'Đèn chùm',
+  'A grandfather clock': 'Đồng hồ quả lắc',
+  'A golden trophy': 'Chiếc cúp vàng',
 };

@@ -190,7 +190,9 @@ await check('a tapped hen flaps and hops; crows land on open fields and leave fo
   await rigsReady(page, ['hen', 'crow']).catch(() => {});
   await page.evaluate(() => farm.view(15, 74, 133));
   await until(page, () => farm.world.cast.actors.some(a => a.subject?.animal && a.rig.name === 'hen'));
-  const p = await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor); const v = farm.world.cam.camera.position.clone().set(a.subject.x, 0.4, a.subject.z).project(farm.world.cam.camera); window.poked = a; return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; });
+  // hens range freely now: hold the chosen one still and bring the view to her before the tap
+  await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor); a.state = 'look'; a.target = null; a.until = farm.world.life.time + 60; farm.view(15, a.subject.x, a.subject.z); }); await page.waitForTimeout(500);
+  const p = await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor && h.state === 'look' && !h.target) ?? [...farm.world.life.herds.values()].find(h => h.subject.actor); const v = farm.world.cam.camera.position.clone().set(a.subject.x, 0.4, a.subject.z).project(farm.world.cam.camera); window.poked = a; return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; });
   await page.mouse.click(p.x, p.y);
   expect(await page.evaluate(() => window.poked.hop > 0 && window.poked.subject.once?.clip === 'Flap'), 'the hen did not react to the tap');
   // a crow comes to the wheat (no scarecrow yet)

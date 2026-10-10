@@ -113,3 +113,20 @@ test('all sixteen parcels of the farm can be bought, each next to land already o
   assert.equal(s.parcels.length, 16); assert.equal(bought, 15); assert.deepEqual(buyableParcels(s), []);
   assert.equal(act(s, 'buyParcel', { parcel: '0,0' }, T0).ok, false);
 });
+
+test('the farmhouse room: something new at every level, floor pieces get a collider, the entrance stays clear', async () => {
+  const { HOME_COMFORT, roomAtLevel } = await import('../src/content/explore.mjs'), { readFileSync, existsSync } = await import('node:fs');
+  const data = JSON.parse(readFileSync('public/assets/models/interior-farmhouse.json', 'utf8'));
+  assert.ok(existsSync('public/assets/models/interior-extras.glb'));
+  assert.deepEqual(HOME_COMFORT.map(c => c.level), [2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(roomAtLevel(data, 1).colliders.length, data.colliders.length);
+  assert.equal(roomAtLevel(data, 10).colliders.length, data.colliders.length + HOME_COMFORT.filter(c => c.collider).length);
+  assert.equal(data.colliders.length, roomAtLevel(data, 1).colliders.length, 'the kit metadata was changed in place');
+  const b = data.bounds.entranceCorridor, stands = data.interactions.map(i => [i.stand[0], i.stand[2]]);
+  for (const c of HOME_COMFORT) if (c.collider) {
+    const [x0, z0, x1, z1] = c.collider;
+    assert.ok(x0 < x1 && z0 < z1 && x0 >= -4 && x1 <= 4 && z0 >= -3 && z1 <= 3, `${c.node} leaves the room`);
+    assert.ok(!(x1 > b.min[0] && x0 < b.max[0] && z1 > b.min[1] && z0 < b.max[1]), `${c.node} blocks the entrance`);
+    for (const [sx, sz] of stands) assert.ok(!(sx > x0 - .3 && sx < x1 + .3 && sz > z0 - .3 && sz < z1 + .3), `${c.node} covers the place you stand to use something`);
+  }
+});

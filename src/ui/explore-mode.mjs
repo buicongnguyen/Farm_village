@@ -1,7 +1,7 @@
 import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
-import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY } from '../content/explore.mjs';
+import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, roomAtLevel } from '../content/explore.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 import { LETTERS } from '../content/letters.mjs';
@@ -92,7 +92,8 @@ class ExploreMode {
       this.walker = people.walkers.get(who) ?? people.walkers.get('you'); if (!this.walker) throw Error('player loading');
       if (roam && this.walker.indoors) { this.close(); this.hud.toast(t('It is night and everyone is asleep. Explore in the morning.'), 'info'); return; }
       this.own = !!this.walker.player;   // only your own character goes inside and fishes for you
-      this.room = new ExploreRoom(assets, this.state.settings);
+      const comfort = this.state.house?.level ?? 1; assets.data = roomAtLevel(assets.data, comfort);   // the room as this house level has made it
+      this.room = new ExploreRoom(assets, this.state.settings, comfort);
       this.room.scene.background = this.world.scene.background;
       if (!startExplore(this.state, [this.walker.x, this.walker.z], assets.data, people.penCells())) throw Error('no safe approach');
       people.cancelTrip(this.walker); this.walker.controlled = true; this.walker.indoors = false;

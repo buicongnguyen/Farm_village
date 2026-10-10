@@ -200,7 +200,7 @@ export class PeopleView {
     const key = `${Object.keys(this.s.fences).length}|${Object.keys(this.s.animals).length}`;
     if (this.pens?.key === key) return this.pens.set;
     const set = new Set(), life = this.world.life;
-    for (const home of Object.keys(this.s.animals)) for (const c of life?.penArea(home) ?? []) set.add(`${c[0]},${c[1]}`);
+    for (const home of Object.keys(this.s.animals)) for (const c of life?.penYard(home) ?? []) set.add(`${c[0]},${c[1]}`);
     this.pens = { key, set }; return set;
   }
   /** A spot for a family member: June by the farmhouse, Pip near the animals or the camera, the dog near Pip. */
