@@ -88,7 +88,8 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
   if (!def) return { ok: false, reason: 'Unknown item' };
   if (def.edge) return { ok: false, reason: 'Fences go on cell edges' };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden' };
-  if (def.site) return { ok: false, reason: 'It belongs on its own site' };   // core/sites.mjs builds it; it never moves
+  if (def.site) return { ok: false, reason: 'It belongs on its own site' };
+  if (def.lot) return { ok: false, reason: 'It belongs on a lot on the quay' };   // core/riverside.mjs builds it; it never moves   // core/sites.mjs builds it; it never moves
   if (def.civicSite) {
     const site = RUINS.find(r => r.kind === kind);
     if (!site || x !== site.x || z !== site.z || rot !== site.rot) return { ok: false, reason: 'Restore this building on its old civic site' };

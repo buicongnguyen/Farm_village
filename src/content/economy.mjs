@@ -60,6 +60,9 @@ export const RENT = {
 // All sixteen parcels of the farm can be bought, one next to another (the limit of two was the first version's).
 export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.2 ** (n - 6) / 100) * 100, maxV01: 16, level: 4 };
 export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1, firstCallMs: 20_000 };   // firstCallMs: a newcomer's first call, soon after they arrive (the second newcomer a little later)
+/** The riverside (core/riverside.mjs, Act IV). `quay`: what paving the old quay takes. `house`: a quay house (chapter 13)
+ *  pays `rent` for every rentMs since it was last collected, and holds at most `cap` payments. */
+export const RIVERSIDE = { quay: { level: 14, cost: 2500 }, house: { rent: 220, rentMs: paced(10 * MIN), cap: 8 } };
 /** The co-operative (core/cooperative.mjs, chapter 12). Founding takes `gift` from the barn. An order has `lines` goods;
  *  a line asks for about line(level) coins' worth of its good, between `min` and `max` of it; a neighbour brings
  *  `pledge` of every line. Filled, it pays what the player sent x `pay` plus `coins`, and xp x its worth; the neighbours

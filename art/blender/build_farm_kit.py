@@ -1130,6 +1130,70 @@ def towpath_gate(open_=False):
 piece('towpath_gate', towpath_gate(False), decor)
 piece('towpath_gate_open', towpath_gate(True), decor)
 
+def apartment():
+    """The quay house (chapter 13): three storeys on the far bank. A tea shop below, painted teal, with a striped awning
+    and two tables on the quay; two floors of flats above with shuttered windows, a long balcony and flower boxes; a
+    tiled roof with a chimney. 6 x 5 cells (everything inside x +-5.8, y +-4.8); the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    W, D, Y = 10.0, 6.2, -1.3          # the house stands at the back of its lot: the front of the lot is its terrace
+    F = Y + D / 2                       # the front wall
+    H0, H1 = 3.0, 2.6                   # the shop's height, and each floor above it
+    Z1 = .3 + H0 + .18                  # where the flats begin
+    top = Z1 + 2 * H1
+    p += [bx('base', W + .5, D + .5, .3, 0, Y, 0, 'stone', bev=.05, seg=2), bx('terrace', W + .5, 2.6, .16, 0, F + 1.4, 0, 'stonel', bev=.03),
+          bx('shop', W, D, H0, 0, Y, .3, 'teald', bev=.04), bx('band', W + .2, D + .2, .18, 0, Y, .3 + H0, 'stonel', bev=.03),
+          bx('floors', W, D, 2 * H1, 0, Y, Z1, 'plaster', bev=.04), bx('cornice', W + .24, D + .24, .16, 0, Y, top, 'stonel', bev=.03)]
+    p += roof_rows(W, D, 2.1, 0, Y, top + .16, 'roof', 'roofl', rows=5, over=.3)
+    for sd in (-1, 1):   # the gable ends, and a chimney on the east one
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 2.1)], .12, (sd * (W / 2 - .06), -Y, top + .16), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    p += [bx('chimney', .7, .7, 2.2, W / 2 - 1.5, Y - 1.2, top + .5, 'brick', bev=.03), bx('chimneycap', .86, .86, .14, W / 2 - 1.5, Y - 1.2, top + 2.7, 'charcoal', bev=.02)]
+    # the tea shop: a door between two big windows, a sign board and a striped awning over the terrace
+    p += [bx('door', 1.1, .1, 2.1, 0, F + .04, .3, 'cream', bev=.02), bx('doorglass', .7, .06, .9, 0, F + .09, 1.3, 'glass', bev=.01), ball('knob', .06, .36, F + .12, 1.2, 'gold', sub=0)]
+    A['door'].append((0, F + .12, .3))
+    for x in (-3.0, 3.0):
+        p += [bx('shopframe', 3.0, .1, 1.9, x, F + .03, .95, 'cream', bev=.02), bx('shopglass', 2.7, .08, 1.6, x, F + .07, 1.1, 'glass', bev=.01), bx('shopsill', 3.1, .22, .1, x, F + .1, .88, 'stonel', bev=.02)]
+        A['window'].append((x, F + .12, 1.9, 0, 1))
+        for k, mt in enumerate(('sun', 'pink', 'white', 'sun')):   # teapots and cakes in the window
+            p.append(ball('ware', .14, x - 1.0 + k * .66, F + .02, 1.28, mt, sub=0))
+    p += [bx('signboard', 3.6, .1, .5, 0, F + .06, .3 + H0 - .34, 'cream', bev=.02), cl('teapot', .17, .22, 0, F + .16, .3 + H0 - .2, 'red', verts=8, rot=(math.pi / 2, 0, 0))]
+    for i in range(10):   # the awning: ten stripes sloping down over the terrace
+        p.append(box('awning', (W / 10, 1.7, .07), (-W / 2 + (i + .5) * W / 10, -(F + .78), .3 + H0 - .62), C['red' if i % 2 else 'white'], bev=0., seg=1, rot=(-.24, 0, 0)))
+    for x in (-W / 2 + .1, W / 2 - .1):
+        p.append(st((x, F + 1.55, .16), (x, F + 1.55, .3 + H0 - .86), .04, 'iron', sides=4))
+    # the flats: four shuttered windows on each floor; a long balcony on the first, flower boxes on the second
+    for f in range(2):
+        z = Z1 + f * H1 + .8
+        for x in (-3.6, -1.2, 1.2, 3.6):
+            wp, c = window(x, F + .02, z, .9, 1.25, 'front', shutters='teal' if f == 0 else 'sky', box=(['pink', 'sun', 'white'] if f == 1 else None)); p += wp; A['window'].append(c)
+    zb = Z1 + .34
+    p += [bx('balcony', W - .8, .8, .1, 0, F + .4, zb, 'stonel', bev=.02), bx('rail', W - .8, .05, .06, 0, F + .78, zb + .8, 'iron', bev=0.)]
+    for k in range(13):
+        p.append(bx('bar', .04, .04, .74, -(W - .8) / 2 + .05 + k * (W - .9) / 12, F + .78, zb + .08, 'iron', bev=0.))
+    for k, mt in enumerate(('pink', 'sun', 'white', 'pink', 'sun')):
+        p.append(ball('pot', .16, -3.9 + k * 1.95, F + .66, zb + .26, mt, sub=0))
+    # the east and west walls: two windows on each floor (the east ones show)
+    for sd, face in ((1, 'right'), (-1, 'left')):
+        for f in range(2):
+            for y in (Y - 1.4, Y + 1.4):
+                wp, c = window(sd * (W / 2 + .02), y, Z1 + f * H1 + .8, .9, 1.25, face); p += wp
+                if sd > 0: A['window'].append(c)
+    # two tea tables on the terrace, a bench, and a tub of flowers at the door
+    for x in (-3.2, 3.2):
+        p += [cl('table', .5, .06, x, F + 1.6, .86, 'cream', verts=10), cl('tableleg', .06, .7, x, F + 1.6, .16, 'iron', verts=5), cl('cup', .08, .08, x + .16, F + 1.5, .92, 'white', verts=6)]
+        for dx in (-.75, .75):
+            p += [cl('stool', .2, .06, x + dx, F + 1.7, .56, 'woodl', verts=8), cl('stoolleg', .05, .4, x + dx, F + 1.7, .16, 'woodd', verts=5)]
+    p += [cl('tub', .3, .4, 1.1, F + .45, .16, 'woodd', verts=8), ball('tubflower', .3, 1.1, F + .45, .68, 'pink', sub=1, sc=(1, 1, .7)), ball('tubleaf', .34, 1.1, F + .45, .56, 'leaf', sub=0, sc=(1.1, 1.1, .5))]
+    anchors['apartment'] = A
+    return p
+piece('apartment', apartment(), decor)
+
+def quay_bollard():
+    """A mooring bollard for the water side of the paved quay (Act IV): a stout stone post with an iron cap, a coil of
+    rope round it and a ring. About 0.8 m tall."""
+    return [cl('post', .2, .7, 0, 0, 0, 'stone', verts=8, rt=.17), cl('cap', .24, .1, 0, 0, .7, 'iron', verts=8), ball('top', .2, 0, 0, .8, 'iron', sub=0, sc=(1, 1, .5)),
+            cl('rope', .26, .12, 0, 0, .26, 'rope', verts=8), cl('rope2', .25, .1, 0, 0, .37, 'rope', verts=8), bx('foot', .56, .56, .08, 0, 0, 0, 'stonel', bev=.02)]
+piece('quay_bollard', quay_bollard(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

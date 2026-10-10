@@ -35,6 +35,9 @@ const everyone = village + school + police + office + marketDay + `s.placed.st_c
 // chapter 10: a hired villager at the work. `put` stands someone at a cell; `work` shows them at a job (people-view handWork).
 const put = (id, x, z) => `{ const w = farm.people.walkers.get('${id}'); if (w) { farm.people.cancelTrip(w); w.x = (${x}) * 2 + 1; w.z = (${z}) * 2 + 1; w.indoors = false; } }`;
 const work = (role, who, kind) => `{ const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === '${kind}'); farm.people.handWork({ role: '${role}', who: '${who}', at: id }); }`;
+// chapter 13: the far bank open, the quay paved, a quay house on its first lot
+const far = `s.story.chapter = 12; s.story.albright = 'meadow'; s.firsts.bridge = 1;`;
+const quayHouse = `s.firsts.quay = 1; s.placed.st_quay = { kind: 'apartment', x: 46, z: 1, rot: 0, lot: 'q1' }; s.counts.apartment = 1; s.flats = { st_quay: { rentFrom: 1 } };`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -77,6 +80,10 @@ const PANELS = {
   'ch12-1': { hour: 9.2, scene: `s.story.chapter = 11; s.story.albright = 'meadow';`, after: `farm.people.visit('twins')`, wait: 10000, follow: 'visit:twins', look: [29, 8, 13] },
   'ch12-2': { hour: 16.4, scene: stage + village + `s.story.chapter = 11; s.story.albright = 'meadow';`, wait: 7000, then: [put('ada', 42, 101) + put('june', 44, 101) + put('minh', 43, 102), 1500], look: [43, 100.5, 9] },
   'ch12-3': { hour: 17.3, scene: sluice + `s.story.chapter = 12; s.story.albright = 'meadow'; s.firsts.bridge = 1;`, wait: 7000, look: [37, 7, 20] },
+  // chapter 13: the quay paved (signs on its lots), the first quay house with its keeper at the door, and its lamp at night
+  'ch13-1': { hour: 10, scene: sluice + far + `s.firsts.quay = 1;`, wait: 8000, look: [58, 7, 32] },
+  'ch13-2': { hour: 15.5, scene: sluice + far + quayHouse, wait: 8000, then: [put('tuyet', 50, 6), 1500], look: [49, 5.5, 16] },
+  'ch13-3': { hour: 20.6, scene: sluice + far + quayHouse, wait: 9000, look: [49, 4.5, 22] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

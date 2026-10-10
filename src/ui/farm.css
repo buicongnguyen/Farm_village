@@ -253,3 +253,13 @@ button.good { min-height: 44px; cursor: pointer; }
 .coop-send { display: grid; gap: 4px; }
 .coop-send .btn { min-width: 84px; }
 .coop-done .g { width: 26px; height: 26px; }
+/* the quay's panel (Act IV, chapter 13) */
+.quay-lots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 0 0 10px; }
+.quay-lot { display: grid; place-items: center; aspect-ratio: 1; min-width: 0; padding: 0; border: 3px solid var(--line); border-radius: 12px; background: #fff7e6; color: var(--ink-2); font: 900 16px/1 'Nunito', sans-serif; cursor: pointer; }
+.quay-lot.taken { background: #eefbe0; border-color: #9fd36a; }
+.quay-lot.on { border-color: var(--edge); box-shadow: 0 3px 0 var(--edge); transform: translateY(-2px); }
+.quay-lot img.mini { width: 80%; height: 80%; }
+.quay-kind { margin: 8px 0; padding: 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffdf4; }
+.quay-kind .site-top p { margin: 2px 0 0; }
+.quay-keeper { display: flex; align-items: center; gap: 8px; margin: 6px 0; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.quay-keeper .mini-face { width: 38px; height: 38px; flex: none; border-radius: 50%; }

@@ -36,7 +36,7 @@ import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes, setMood } from './kit/sound.mjs';
 import { festivalOf } from './core/festival.mjs';
-import { RUINS, SITES, OLD_MILL, MEADOW, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
+import { RUINS, SITES, OLD_MILL, MEADOW, LOTS, QUAY, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
 import { fishable } from './core/pond-bank.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
@@ -235,6 +235,8 @@ panels.onShopVisit = shop => {
 };
 // A fixed site (core/sites.mjs): look at it and open its panel; the panel's button builds it where it belongs.
 const siteView = kind => { const st = SITES.find(x => x.kind === kind), [w, d] = BUILDINGS[kind].size; flyTo((st.x + w / 2) * CELL, (st.z + d / 2 - 1.5) * CELL, Math.min(world.cam.span, 34)); };
+// The quay (Act IV): look at a lot, or at the whole quay.
+panels.onQuayLook = lot => { const at = LOTS.find(l => l.id === lot); if (build.open) build.close(); radial.hide(); flyTo(at ? (at.x + at.w / 2) * CELL : (QUAY.x0 + QUAY.x1 + 1) / 2 * CELL, (at ? at.z + at.d : QUAY.z1 + 1) * CELL, at ? Math.min(world.cam.span, 34) : 70); };
 // Mr Albright's offer (chapter 11): a card of its own, loaded when first asked for; after the answer, look at the meadow.
 const openOffer = () => {
   if (build.open) build.close(); radial.hide(); panels.close();
@@ -300,7 +302,7 @@ const festiveTune = () => setMood(festivalOf(game.s, game.now).active ? 'festiva
 game.on(r => { if (r.events?.some(e => e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded' || e.type === 'loaded')) festiveTune(); });
 festiveTune();
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+const SOUNDS = { quayPaved: 'cheer', familiesReturned: 'cheer', cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');

@@ -73,6 +73,8 @@ export const KIND_MODELS = {
   'produce:milk': { kit: 'animal-produce', node: 'milk', height: 0.5, lod: 'static' },
   // decorations and fruit trees the play package adds (drawn as soon as their kind exists in BUILDINGS)
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
+  apartment:    { kit: 'decor', node: 'apartment', authored: true, lod: 'static', late: true },   // chapter 13: the quay house, on a lot of the far bank
+  quay_bollard: { kit: 'decor', node: 'quay_bollard', authored: true, lod: 'static', late: true },   // along the water side of the paved quay
   cooperative_board: { kit: 'decor', node: 'cooperative_board', authored: true, lod: 'static', late: true },   // chapter 12: on the village square
   towpath_gate: { kit: 'decor', node: 'towpath_gate', authored: true, lod: 'static', late: true },   // shut across the old towpath until chapter 12 is seen
   towpath_gate_open: { kit: 'decor', node: 'towpath_gate_open', authored: true, lod: 'static', late: true },
@@ -189,7 +191,8 @@ export const ANCHORS = {
   "cottage_house_hip": {"window":[[-2.606,1.381,-0.39,-1,-0.02], [-1.137,1.381,1.647,-0.024,1], [2.599,1.381,-0.39,1,-0.02], [1.28,1.575,1.703,0.228,0.974], [-0.004,2.903,1.435,0,1]]},
   "cottage_house_tall": {"window":[[1.043,1.303,1.85,0.015,1], [2.438,1.303,-0.29,1,0], [-1.126,1.672,1.908,-0.228,0.974], [-2.438,2.681,-0.29,-1,0], [-1.118,2.681,1.85,-0.021,1], [1.043,2.681,1.85,0.021,1], [2.438,2.681,-0.29,1,0], [2.4,4.155,-0.299,0.974,-0.227]]},
   "cottage_house_round": {"window":[[-1.614,1.381,0.764,-0.841,0.54], [1.43,1.381,-1.551,0.746,-0.666], [1.614,1.381,0.764,0.841,0.54], [0,1.55,1.673,0,1]]},
-  "farmhouse": {"window":[[0,2.538,2.085,0,1], [-4.089,2.67,-1.21,-0.997,-0.075], [-2.725,2.67,2.085,-0.08,0.997], [2.725,2.67,2.085,0.08,0.997], [4.089,2.67,-1.21,0.997,-0.075], [-4.075,5.06,-0.949,-0.982,-0.191], [4.075,5.06,-0.949,0.982,-0.191]]}
+  "farmhouse": {"window":[[0,2.538,2.085,0,1], [-4.089,2.67,-1.21,-0.997,-0.075], [-2.725,2.67,2.085,-0.08,0.997], [2.725,2.67,2.085,0.08,0.997], [4.089,2.67,-1.21,0.997,-0.075], [-4.075,5.06,-0.949,-0.982,-0.191], [4.075,5.06,-0.949,0.982,-0.191]]},
+  "apartment": {"window":[[-3,1.9,1.92,0,1],[3,1.9,1.92,0,1],[-3.6,4.905,1.91,0,1],[-1.2,4.905,1.91,0,1],[1.2,4.905,1.91,0,1],[3.6,4.905,1.91,0,1],[-3.6,7.505,1.91,0,1],[-1.2,7.505,1.91,0,1],[1.2,7.505,1.91,0,1],[3.6,7.505,1.91,0,1],[5.11,4.905,-2.7,1,0],[5.11,4.905,0.1,1,0],[5.11,7.505,-2.7,1,0],[5.11,7.505,0.1,1,0]],"door":[[0,0.3,1.92]]},
 };
 // </anchors>
 

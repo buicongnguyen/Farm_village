@@ -93,6 +93,12 @@ export const CHAPTERS = [
     ada: 'Nobody ever got rich alone in this valley, dear. Plenty got poor that way.',
     panels: panels(12, ['New neighbours on the road.', 'The board on the square.', 'The towpath, open.']),
     when: s => !!s.cooperative?.founded && (s.cooperative.filled ?? 0) >= 1 },
+  // The deed: the first quay house stands on the paved quay (docs/plan/ch13-the-far-bank.md). Act IV begins.
+  { id: 13, title: 'The far bank', subtitle: 'A lamp on the other side.', icon: '🏮',
+    text: 'The first lamp is lit on the far side of the brook. {person:tuyet:display} opens the shutters of her tea shop and reads names off a list: every family that wrote to ask if it was true, that the village was back. Four of them are carrying boxes up the stairs above her head.',
+    ada: 'I can see that lamp from my porch, dear. I did not know how much I had missed a light over there.',
+    panels: panels(13, ['The old quay, paved again.', 'The first house on the far bank.', 'A lamp across the water.']),
+    when: s => (s.counts.apartment ?? 0) > 0 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -240,6 +246,16 @@ export const BEATS = [
   { id: 'bridge-open', chapter: 12, when: s => (s.story.chapter ?? 0) >= 12, lines: [
     { who: 'pip', text: 'I ran along the far bank and back! Twice! The grasshoppers over there are DIFFERENT.' },
     { who: 'ellis', text: 'I walked that towpath as a boy. It goes further than you think.' },
+  ] },
+  // ── Chapter 13 (docs/plan/ch13-the-far-bank.md): the quay paved, the first house on the far bank. ──
+  { id: 'quay-paved', chapter: 13, when: s => !!s.firsts?.quay, lines: [
+    { who: 'minh', text: 'Good stone under all that grass. Whoever laid this quay meant it to last. It did.' },
+    { who: 'ada', text: 'There were seven houses along it when I was a girl. You could buy a hat, a boat and a wedding cake without getting your feet wet.' },
+  ] },
+  { id: 'tuyet-list', chapter: 13, when: s => (s.story.chapter ?? 0) >= 13, lines: [
+    { who: 'tuyet', text: 'Forty-one names on my list, and I have ticked four. The rest are waiting for a roof.' },
+    { who: 'sam', text: 'Give me the replies. I will carry every one, and I will take the long way so they last.' },
+    { who: 'tuyet', text: 'You always did, boy. You were late with my newspaper for eleven years.' },
   ] },
 ];
 

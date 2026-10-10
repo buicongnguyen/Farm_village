@@ -1,6 +1,39 @@
 # Chapter 13: The far bank
 
-Status: not started · Depends on: `act4-far-bank.md` · Size: one session
+Status: **done** (PR #88, with the groundwork of `act4-far-bank.md`) · Size: one session
+
+## How to play it (for the owner)
+
+1. After chapter 12 the towpath on the far bank is open. Village projects shows **Pave the old quay** (level 14,
+   2,500 coins): tap it, or tap the far bank east of the old mill. Paving lays cobbles along the water, sets a lamp in
+   every lane and a sign on each of **seven lots**, and clears the wild trees from them.
+2. Open the quay again (tap a sign, or the project **A house on the quay**). Pick a lot in the row of seven and build
+   the **Quay house** (level 15, 9,000 coins): three storeys, a tea shop below, four flats above. Up to three can be
+   built.
+3. Four families come back to the valley with every quay house, and it **pays rent into the mailbox**: 220 coins every
+   ten minutes, at most eight payments waiting. The "Rent" pill collects it with the cottages' rent, and so does the
+   house's own panel (tap the house).
+4. **Nana Snow**, the keeper of the quay, arrives with the first house and sits by its door: tap her to hear her. She
+   passes on two letters from the families upstairs.
+5. The first quay house closes **chapter 13**. At night its windows and the quay's lamps are lit across the water.
+
+Tester (`?tester`): "Chapter 13" jumps to the open towpath; "Finish this chapter" paves the quay and builds a house
+on the first lot.
+
+## What was built, where it differs from the plan below
+
+- `apartment` in `content/buildings.mjs` (`lot: true`, `flats: 4`), built by `buildOnLot`. Its numbers are in
+  `RIVERSIDE.house` (`content/economy.mjs`). Levels and prices are the testing ones (the plan's level 18 and 12,000
+  coins are for the release pass).
+- Rent is counted per house (`s.flats[id].rentFrom`), not through the cottage rules: there are no tenant families to
+  name. It is collected with the mailbox (`core/homes.mjs` adds `quayRent`).
+- `s.stats.returned` counts the families who came back.
+- The keeper `tuyet` (Nana Snow / Bà Tuyết / 매실 할머니 / うめばあちゃん) **takes no gifts and has no heart scenes**,
+  like the other late villagers; she has her lines, two scenes and two letters. The shop's daily tea was left out.
+- The roadmap stage "Across the river" is real, with this chapter's two deeds; chapters 14 to 16 add theirs.
+- Models: `apartment` (with window anchors for the night), `quay_bollard`; icons for the house and the quay; a
+  portrait; three chapter pictures.
+- `tests/riverside.test.mjs` (6), and a browser check that plays the chapter.
 Story source: `JOURNEY.md` 3 (Act IV), `STORY.md` 4 (row 13)
 
 ## What the player gets

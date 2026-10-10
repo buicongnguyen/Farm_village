@@ -819,6 +819,58 @@ await check('chapter 12: two growers call, the co-operative is founded and fills
   await ctx.close();
 });
 
+// Chapter 13 (docs/plan/ch13-the-far-bank.md, act4-far-bank.md): the quay is paved, a quay house goes up on a lot,
+// its keeper arrives, the card shows, and the rent comes into the mailbox.
+await check('chapter 13: the quay is paved, a quay house is built on a lot, the keeper arrives and the rent comes in (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:13'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => farm.world.batches.items.get('story:gate')?.model === 'towpath_gate_open' && !!farm.world.wildDecor, null, { timeout: 40000 });
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 40000; g.s.barn.cap = 5000; });
+  const inZone = () => [...farm.world.batches.items].filter(([id, it]) => id.startsWith('wild') && it.x >= 44 * 2 && it.x < 100 * 2 && it.z >= 1 * 2 && it.z < 8 * 2).length;
+  const wildBefore = await page.evaluate(inZone);
+  expect(await page.evaluate(() => farm.people.canStand(60 * 2 + 1, 6 * 2 + 1)) === false, 'the quay can be walked before it is paved');
+  // the quay's panel: what paving takes, then pave it
+  await page.evaluate(() => farm.panels.show('quay')); await page.waitForSelector('.quay [data-do="paveQuay"]');
+  expect(await page.locator('.quay .req.ok').count() === 3, 'the paving checklist is not all met');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}quay-paving.png` });
+  await page.click('.quay [data-do="paveQuay"]'); await page.waitForFunction(() => farm.state().firsts.quay > 0);
+  await page.waitForFunction(() => ['quay:sign0', 'quay:sign6', 'quay:lamp0', 'quay:b0'].every(id => farm.world.batches.items.has(id)), null, { timeout: 20000 });
+  const wildAfter = await page.evaluate(inZone);
+  expect(wildAfter === 0, `wild trees still stand on the riverside: ${wildAfter} (there were ${wildBefore})`);
+  expect(await page.evaluate(() => farm.people.canStand(60 * 2 + 1, 6 * 2 + 1)), 'the paved quay cannot be walked');
+  await page.waitForTimeout(1200); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}quay-paved.png` });
+  // seven lots; pick the second and build a quay house on it
+  await page.evaluate(() => farm.panels.show('quay')); await page.waitForSelector('.quay-lots .quay-lot');
+  expect(await page.locator('.quay-lot').count() === 7 && await page.locator('.quay-lot.taken').count() === 0, 'seven free lots');
+  await page.click('.quay-lot[data-lot="q2"]'); await page.waitForSelector('.quay-lot.on[data-lot="q2"]');
+  await page.waitForTimeout(500); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}quay-lot.png` });
+  await page.click('[data-do="buildOnLot"][data-lot="q2"][data-kind="apartment"]');
+  await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'apartment' && p.lot === 'q2'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'apartment'));
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'apartment' && !farm.world.batches.items.has('quay:sign1') && farm.world.batches.items.has('quay:sign0'), id, { timeout: 15000 });
+  expect(await page.evaluate(() => farm.state().stats.returned) === 4, 'four families did not come back');
+  await page.waitForFunction(() => farm.people.walkers.has('tuyet'), null, { timeout: 15000 });
+  // the chapter card
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The far bank') && card.includes('Nana Snow') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-13-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 13);
+  // rent: half an hour later the quay house has paid three times; its panel collects it
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 31 * 60000); farm.game.tick(); });
+  await page.evaluate(() => farm.panels.show('quay', 'q2')); await page.waitForSelector('.quay [data-do="collectRent"]:not([disabled])');
+  expect((await page.textContent('.quay')).includes('660'), `three payments are not waiting: ${(await page.textContent('.quay')).slice(0, 160)}`);
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.quay [data-do="collectRent"]'); await page.waitForFunction(c => farm.state().coins >= c + 660, coins);
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(54, 6, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}quay-house.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

@@ -24,6 +24,7 @@ import { actions as festival, tickFestival } from './festival.mjs';
 import { actions as report, tallyEarned } from './report.mjs';
 import { actions as valley } from './valley.mjs';
 import { actions as cooperative, tickCooperative } from './cooperative.mjs';
+import { actions as riverside } from './riverside.mjs';
 import { actions as orchard, tickOrchard } from './orchard.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
@@ -45,7 +46,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative,
+export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {

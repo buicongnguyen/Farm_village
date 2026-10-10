@@ -1,4 +1,5 @@
 // Rental cottages, families and rent, and charm (DESIGN 10 and 12).
+import { quayRent, quayRentCollected } from './riverside.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { FAMILIES } from '../content/people.mjs';
 import { RENT, FAMILY_ARRIVAL_MS, HOUR, WEAR } from '../content/economy.mjs';
@@ -62,7 +63,7 @@ export function rentPerHour(s, id) {
 }
 /** Rent waiting in the mailbox (capped at RENT.capHours per cottage). */
 export function rentWaiting(s, now) {
-  let total = 0;
+  let total = quayRent(s, now);   // the quay houses pay into the same mailbox (core/riverside.mjs)
   for (const [id, h] of Object.entries(s.homes)) {
     if (!h.family || h.arrivesAt > now) continue;
     total += rentPerHour(s, id) * Math.min(RENT.capHours, Math.max(0, now - h.rentFrom) / HOUR);
@@ -75,6 +76,7 @@ export const actions = {
     const { s, now } = ctx, coins = rentWaiting(s, now);
     if (coins <= 0) return ctx.fail('The mailbox is empty');
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt <= now) h.rentFrom = now;
+    quayRentCollected(s, now);
     s.coins += coins; s.stats.coinsEarned += coins;
     ctx.emit('rent', { coins });
     return { coins };

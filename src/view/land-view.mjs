@@ -4,7 +4,8 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt } from '../content/world.mjs';
+import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -18,7 +19,7 @@ import { TRUCK } from '../content/economy.mjs';
 import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
@@ -84,6 +85,8 @@ export class LandView {
     if (!s) return fixed;
     const t = cellType(s, x, z);
     if (t === 'path') return { color: GROUND_COLORS.path };
+    // the paved quay on the far bank (Act IV): cobbles; its lots are swept earth until something is built
+    if (s.firsts?.quay && t === 'grass') { if (inQuay(x, z)) return { color: GROUND_COLORS.plaza, cobble: true }; if (lotAt(x, z)) return { color: GROUND_COLORS.yard, jitter: 0.04 }; }
     // the old towpath on the far bank: faint and overgrown while its gate is shut, trodden earth once it is open (chapter 12)
     if (t === 'grass' && inTowpath(x, z)) return s.firsts?.bridge ? { color: GROUND_COLORS.path, jitter: 0.03 } : { color: '#8fb65a', jitter: 0.05 };
     if (t === 'tilled') return { color: GROUND_COLORS.tilled, jitter: 0.02 };
@@ -294,6 +297,23 @@ export class LandView {
     ALBRIGHT.hives.forEach(([x, z], i) => { if (kept && b.has('beehive')) b.set(`meadow:hive${i}`, { model: 'beehive', x: x * CELL, z: z * CELL, rot: 0.35 * (i - 1) }); else b.remove(`meadow:hive${i}`); });
     GREEN_TREES.forEach(([dx, dz], i) => { if (green && b.has('round_tree')) b.set(`meadow:tree${i}`, { model: 'round_tree', x: (site.x + dx) * CELL, z: (site.z + dz) * CELL, rot: i * 1.7, scale: 0.62 + (i % 3) * 0.07 }); else b.remove(`meadow:tree${i}`); });
   }
+  /** The riverside once its quay is paved (Act IV, core/riverside.mjs): the wild scatter leaves the zone (once), a sign
+   *  stands on every free lot, lamps in the lanes between the lots and bollards along the water side of the quay. */
+  drawRiverside() {
+    const s = this.s, b = this.world.batches, paved = !!s.firsts?.quay;
+    const taken = new Set(Object.values(s.placed).map(p => p.lot).filter(Boolean));
+    const key = [paved, [...taken].sort().join(), b.has('sale_sign'), b.has('deco_lamp'), b.has('quay_bollard'), !!this.world.wildDecor].join('|');
+    if (key === this.riversideKey) return; this.riversideKey = key;
+    if (paved && this.world.wilds && this.world.wildDecor && !this.riversideCleared) { this.riversideCleared = true; clearWilds(this.world, inRiverside); }
+    if (paved !== this.riversidePaved) { this.riversidePaved = paved; this.world.ground.markAll(); }
+    LOTS.forEach((l, i) => {
+      const sign = `quay:sign${i}`, lamp = `quay:lamp${i}`;
+      if (paved && !taken.has(l.id) && b.has('sale_sign')) b.set(sign, { model: 'sale_sign', x: (l.x + l.w / 2) * CELL, z: (l.z + l.d - 0.6) * CELL, rot: 0 }); else b.remove(sign);
+      if (paved && b.has('deco_lamp')) b.set(lamp, { model: 'deco_lamp', x: (l.x - 1) * CELL, z: (QUAY.z0 - 0.3) * CELL, rot: 0 }); else b.remove(lamp);   // lit at night by view/daylight.mjs
+    });
+    for (let x = QUAY.x0 + 1, i = 0; x <= QUAY.x1; x += 4, i++) { const id = `quay:b${i}`; if (paved && b.has('quay_bollard')) b.set(id, { model: 'quay_bollard', x: (x + 0.5) * CELL, z: (QUAY.z1 + 0.95) * CELL, rot: 0 }); else b.remove(id); }
+    this.world.onLampsChanged?.();
+  }
   /** Chapter 12's fixtures: the co-operative's notice board on the square from the day the idea comes, and the towpath's
    *  gate on the far bank, shut until the chapter is seen and open after. Redrawn only when one of those changes. */
   drawCooperative() {
@@ -394,7 +414,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow(); this.drawCooperative();
+      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside();
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -434,7 +454,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
@@ -447,6 +467,7 @@ export class LandView {
       else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
       else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
       else if (e.type === 'bridgeOpened') this.drawCooperative();
+      else if (e.type === 'quayPaved') this.drawRiverside();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);

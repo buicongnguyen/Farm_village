@@ -171,6 +171,8 @@ await check('coins pour into the counter when an order is delivered; flights fal
   // a locator, not a handle: the panel is redrawn on the clock, and a handle taken before a redraw is gone when clicked
   const can = page.locator('.order.can [data-do="deliver"]').first();
   expect(await can.count() > 0, 'no order can be delivered');
+  // the setup lifts rocks, and a lucky find under one pays coins of its own: let those land first, so only this order's pour is counted
+  await page.waitForFunction(() => document.querySelectorAll('.jcoin').length === 0, null, { timeout: 5000 });
   await can.click(); await page.waitForTimeout(120);
   const coins = await page.evaluate(() => document.querySelectorAll('.jcoin').length);
   await shot(page, 'juice-coins');

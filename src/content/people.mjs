@@ -56,6 +56,12 @@ export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'functio
 /** Grandpa Oak is away upriver until chapter 9 has been seen; from then on he lives at the farmhouse again. */
 export const oakHome = s => (s.story?.chapter ?? 0) >= 9;
 export const VILLAGERS = [
+  // The keeper of the quay (chapter 13): an old boatwoman who sells tea from the ground floor of the first quay house and
+  // knows every family that ever left the valley. Warm and teasing. No orders, no gifts.
+  { id: 'tuyet', name: '{person:tuyet:display}', role: 'Keeper of the quay', arrives: 'apartment', noOrders: true, noGifts: true,
+    line: 'Tea is a coin. Gossip is free. Sit down, the kettle knows you are here.',
+    idle: ['I poled a boat on this water before your grandmother could walk. Do not tell her I said so.', 'Every family that left wrote to me once. I kept the letters in a biscuit tin.',
+      'A quay wants feet on it. Listen: it is coming back.', 'The brook is the same. It is the people who went away and came home.'] },
   // Mr Albright, the man from the city (chapter 11): he waits at the farm gate from the end of chapter 10 until he has his
   // answer, then goes. Polite, sure of himself, honestly puzzled that anyone would say no. Not a villain.
   { id: 'albright', name: '{person:albright:display}', role: 'Man from the city', arrives: s => (s.story?.chapter ?? 0) >= 10 && !s.story?.albright, noOrders: true, noGifts: true,

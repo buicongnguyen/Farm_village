@@ -20,8 +20,8 @@ folder says what to build, in which files, and how to know it is done.
 | 10 | [ch10-hands-to-help.md](ch10-hands-to-help.md) | Named villagers take the jobs and are seen at work, the evening report | 1–2 | **done** (PR #85) |
 | 11 | [ch11-the-man-from-the-city.md](ch11-the-man-from-the-city.md) | The one real choice, the valley beauty meter | 2 | **done** (PR #86) |
 | 12 | [ch12-one-river-many-farms.md](ch12-one-river-many-farms.md) | Two growers from outside, the co-operative, the towpath on the far bank opens | 2 | **done** (PR #87) |
-| A4 | [act4-far-bank.md](act4-far-bank.md) | Groundwork: the riverside zone, the quay, tall buildings | 2–3 | not started |
-| 13 | [ch13-the-far-bank.md](ch13-the-far-bank.md) | The first riverside building, the keeper of the quay | 1 | not started |
+| A4 | [act4-far-bank.md](act4-far-bank.md) | Groundwork: the riverside zone, the quay, tall buildings | 2–3 | **done** with chapter 13 (PR #88) |
+| 13 | [ch13-the-far-bank.md](ch13-the-far-bank.md) | The first riverside building, the keeper of the quay | 1 | **done** (PR #88) |
 | 14 | [ch14-rooms-with-a-view.md](ch14-rooms-with-a-view.md) | The hotel and its guests | 1–2 | not started |
 | 15 | [ch15-the-evening-train.md](ch15-the-evening-train.md) | The halt, the train, train orders | 2 | not started |
 | 16 | [ch16-where-the-brook-begins.md](ch16-where-the-brook-begins.md) | The walk upriver with Oak and Sunny | 1 | not started |
@@ -32,7 +32,7 @@ folder says what to build, in which files, and how to know it is done.
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 
-**Next: the far bank's groundwork** ([act4-far-bank.md](act4-far-bank.md)), then chapter 13. Acts II and III are complete.
+**Next: chapter 14** ([ch14-rooms-with-a-view.md](ch14-rooms-with-a-view.md)). Acts II and III are complete; Act IV has begun.
 
 Done before this plan: chapters 1 to 5; from v0.5, the goat barn and dairy, the farmhouse to level 10 (garden and
 room), six hired hands, sixteen parcels, twelve crops, the look of each language edition, the old-building fixes.

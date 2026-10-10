@@ -74,7 +74,7 @@ class Glows {
   }
 }
 // farm buildings whose windows glow too (their doors get no porch light: only homes have one)
-const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy']);
+const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment']);
 const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), POOL = new THREE.Color('#ff9d3a');
 
 /** The Harvest Festival (chapter 9): the hour its evening is lit as, and its lanterns: two strings from the stage's front
@@ -157,6 +157,7 @@ export class Daylight {
       else if (p.kind === 'lamp') { bulbs.push([cx, lampTop, cz, 0.75, WARM]); pools.push([cx, 0.13, cz, 3.6, POOL]); }
       else { bulbs.push([cx, 2.85, cz, 0.8, WARM]); pools.push([cx, 0.13, cz, 4, POOL]); }   // street lamp (props kit, 3 m tall)
     }
+    for (let i = 0; i < 7; i++) { const it = b.items.get(`quay:lamp${i}`); if (it) { bulbs.push([it.x, 2.35, it.z, 0.75, WARM]); pools.push([it.x, 0.13, it.z, 3.6, POOL]); } }   // the quay's lamps (land-view drawRiverside)
     for (const l of this.world.lamps ?? []) if (b.items.has(l.id)) { bulbs.push([l.x, l.y, l.z, 0.75, WARM]); pools.push([l.x, 0.13, l.z, 3.6, POOL]); }
     if (this.festive()) for (const l of festivalLights()) { bulbs.push([l.x, l.y, l.z, l.size, l.tint]); if (l.pool) pools.push([l.x, 0.13, l.z, l.pool, POOL]); }
     this.bulbs.set(bulbs); this.pools.set(pools);

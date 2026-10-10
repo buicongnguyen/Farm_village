@@ -68,6 +68,9 @@ export const BUILDINGS = {
   // Chapter 11, the one choice (core/valley.mjs). The cannery stands on the meadow by the brook if the player takes Mr
   // Albright's offer (built by the answer, never by hand); beehives are for the player who keeps the meadow (`choice`).
   cannery:    { name: 'Cannery', cat: 'projects', size: [5, 4], area: 'bank', level: 1, cost: 0, site: true, max: 1, produces: true, model: 'cannery' },
+  // The riverside town (Act IV, core/riverside.mjs): built on a lot of the paved quay from the quay's panel, never moved
+  // (`lot`). The quay house (chapter 13): a tea shop below, four flats above for families who come back (`flats`).
+  apartment:  { name: 'Quay house', cat: 'projects', size: [6, 5], area: 'riverside', level: 15, cost: 9000, door: true, lot: true, flats: 4, max: 3, model: 'apartment', charm: 3 },
   beehive:    { name: 'Beehive', cat: 'production', size: [1, 1], area: 'farm', level: 10, cost: 250, produces: true, max: 5, choice: 'meadow', model: 'beehive', charm: 2 },
   // Chapter 9: rebuilt on the village square where the old one burned (core/sites.mjs); the Harvest Festival is held from it
   stage:      { name: 'Festival stage', cat: 'projects', size: [4, 2], area: 'village', level: 12, cost: 1500, site: true, max: 1, model: 'stage' },

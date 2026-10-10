@@ -95,6 +95,7 @@ export const actions = {
     const { s } = ctx, p = typeof id === 'string' && Object.hasOwn(s.placed, id) ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to demolish');
     const def = BUILDINGS[p.kind];
     if (def.garden) return ctx.fail('The streak garden keeps its flowers');
+    if (def.lot) return ctx.fail('Buildings on the quay stay where they are');
     if (def.cat === 'projects') {
       // The old civic buildings (school, clinic, police post, company office) can be taken down like anything else; the
       // market square stays (its trucks live there). A company in use says what to do first.

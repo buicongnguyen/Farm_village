@@ -2,6 +2,8 @@
 // browser tests. They run through act() like any action, so the views and the save hear about them.
 import { LEVELS, MARKET_DAY, PARCELS } from '../content/economy.mjs';
 import { planDay } from './neighbours.mjs';
+import { actions as riverside } from './riverside.mjs';
+import { RIVERSIDE } from '../content/economy.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -82,6 +84,12 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 13 is behind: the quay is paved and the first quay house stands on its first lot
+  14: ctx => {
+    const { s, now } = ctx; (s.firsts ??= {}).bridge ??= now; upTo(ctx, BUILDINGS.apartment.level);
+    if (!s.firsts.quay) { const coins = s.coins; s.coins += RIVERSIDE.quay.cost; riverside.paveQuay(ctx); s.coins = coins; }
+    if (!(s.counts.apartment > 0)) { const coins = s.coins; s.coins += BUILDINGS.apartment.cost; riverside.buildOnLot(ctx, { lot: 'q1', kind: 'apartment' }); s.coins = coins; }
+  },
   // chapter 12 is behind: both newcomers have called, the co-operative is founded and one shared order filled
   13: ctx => {
     const { s, now } = ctx;
