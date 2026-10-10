@@ -236,4 +236,11 @@ export const actions = {
     ctx.emit('letterRead', { id, from: m.from, reward });
     return { reward };
   },
+  /** Open every unread thank-you note at once (they all say much the same): each still gives its own small present. */
+  readThanks(ctx) {
+    const notes = (ctx.s.mail ?? []).filter(m => !m.read && typeof m.id === 'string' && m.id.startsWith('thanks:') && letterOf(m.id));
+    if (!notes.length) return ctx.fail('That letter is gone');
+    for (const m of notes) { m.read = true; ctx.emit('letterRead', { id: m.id, from: m.from, reward: grant(ctx, letterOf(m.id).reward) }); }
+    return { count: notes.length };
+  },
 };

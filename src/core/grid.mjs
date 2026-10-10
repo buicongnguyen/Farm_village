@@ -21,6 +21,14 @@ export function landOf(s, x, z) {
   if (nearHome(x, z)) return 'home';
   return null;
 }
+/** The roadside verge: nobody's land, in no parcel, within two cells of a road. A path may cross it, so every piece of
+ *  land can be joined to the road (weeds there can be cleared too). */
+export function isVerge(s, x, z) {
+  if (landOf(s, x, z) || parcelOf(x, z)) return false;
+  const t = cellType(s, x, z); if (t === 'outside' || t === 'water' || t === 'road') return false;
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]]) if (cellType(s, x + dx, z + dz) === 'road') return true;
+  return false;
+}
 // Fixed buildings that are not in s.placed (the farmhouse and the storage barn).
 const FIXED = [FARMHOUSE, BARN].map(b => ({ x0: b.x - 4, z0: b.z - 4, x1: b.x + 4, z1: b.z + 4 }));
 const inFixed = (x, z) => FIXED.some(f => x >= f.x0 && x <= f.x1 && z >= f.z0 && z <= f.z1);
@@ -88,6 +96,7 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
   for (const [cx, cz] of cellsOf(kind, x, z, rot)) {
     const land = landOf(s, cx, cz), type = cellType(s, cx, cz);
     if (type === 'outside' || type === 'water' || type === 'road') return { ok: false, reason: 'Not on the road or the water' };
+    if (!land && kind === 'path' && isVerge(s, cx, cz)) { if (type === 'weeds' || type === 'rock') return { ok: false, reason: 'Clear the weeds and rocks first' }; continue; }   // a path may cross the roadside verge
     if (!land) return { ok: false, reason: 'Outside your land' };
     if (def.area === 'farm' && land !== 'farm') return { ok: false, reason: 'Only on your farm' };
     if (def.area === 'village' && land !== 'village') return { ok: false, reason: 'Only in the village' };

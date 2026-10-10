@@ -1,15 +1,17 @@
 // Crops, fruit, animals and recipes (ECONOMY.md section 2). `value` is the base price; `level` unlocks it.
 import { MIN, HOUR } from './economy.mjs';
 
+// Testing-time tuning (2026-10-10, the user's call): every crop earns at least 8 coins a minute per bed, the dear ones a
+// little more. Profit per harvest is the crop's value (seed = value, harvest = two). Lengthen growMs again for release.
 export const CROPS = {
   wheat:   { name: 'Wheat',   growMs: 20_000,  value: 2,  level: 1, free: true, model: 'crop_wheat', icon: '🌾' },
   carrot:  { name: 'Carrot',  growMs: 30_000,  value: 4,  level: 2, model: 'crop_carrot', icon: '🥕' },
   corn:    { name: 'Corn',    growMs: 45_000, value: 7,  level: 3, model: 'crop_goldcorn', icon: '🌽' },
-  strawberry: { name: 'Strawberry', growMs: 2 * MIN, value: 12, level: 4, skill: 'garden-repairs', model: 'crop_strawberry', icon: '🍓' },
-  pumpkin: { name: 'Pumpkin', growMs: 5 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
+  strawberry: { name: 'Strawberry', growMs: 85_000, value: 12, level: 4, skill: 'garden-repairs', model: 'crop_strawberry', icon: '🍓' },
+  pumpkin: { name: 'Pumpkin', growMs: 2 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
   // premium crops (docs/VILLAGE-GROWTH-PLAN.md, stage 2): slow and valuable, the money for the village's big buildings
-  herb:    { name: 'Healing herb', growMs: 15 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },
-  ginseng: { name: 'Ginseng', growMs: 40 * MIN, value: 120, level: 9, model: 'crop_ginseng', icon: '🫚' },
+  herb:    { name: 'Healing herb', growMs: 5 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },
+  ginseng: { name: 'Ginseng', growMs: 12 * MIN, value: 120, level: 9, model: 'crop_ginseng', icon: '🫚' },
 };
 export const TUTORIAL_FIRST_GROW_MS = 15_000;   // the very first wheat (DESIGN 15)
 

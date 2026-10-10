@@ -76,4 +76,5 @@ export const KO_FISHING = {
   'Cheese': '치즈',
   'Goat barn': '염소 우리',
   'Dairy': '유제품 공방',
+  'Open all {count} thank-you notes': '감사 편지 {count}통 모두 열기',
 };

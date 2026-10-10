@@ -183,7 +183,7 @@ try {
       await tapCell(page, bedPosition.x, bedPosition.z);
       await page.locator('.radial:not([hidden]) [data-act="plant"][data-crop="strawberry"]').click();
       expect(await page.evaluate(id => farm.state().beds[id]?.crop === 'strawberry', berryBed), 'finished bench did not unlock the radial crop choice');
-      expect(await page.evaluate(id => farm.state().beds[id].doneAt - farm.game.now, berryBed) === 120000, 'strawberry duration changed');
+      expect(await page.evaluate(id => farm.state().beds[id].doneAt - farm.game.now, berryBed) === 85000, 'strawberry duration changed');
       await page.evaluate(() => {
         sessionStorage.setItem('learning-world-clock', String(Date.now() + 120000)); farm.game.tick(); farm.closeCards();
       });

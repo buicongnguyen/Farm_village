@@ -155,7 +155,7 @@ export const actions = {
     cells = Array.isArray(cells) ? cells.filter(c => Array.isArray(c) && spot(c[0], c[1])) : [];
     const { s } = ctx; let cleared = 0, spent = 0, lifted = 0;
     for (const [cx, cz] of cells) {
-      const type = grid.cellType(s, cx, cz), land = grid.landOf(s, cx, cz);
+      const type = grid.cellType(s, cx, cz), land = grid.landOf(s, cx, cz) ?? (grid.isVerge(s, cx, cz) ? 'verge' : null);
       if (!land) continue;
       if (type === 'path') { if (grid.occupant(s, cx, cz)) continue; setCell(s, cx, cz, 'grass'); count(s, 'path', -1); lifted++; ctx.emit('cellChanged', { x: cx, z: cz }); continue; }
       if (type !== 'weeds' && type !== 'rock') continue;

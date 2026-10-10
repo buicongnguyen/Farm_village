@@ -265,3 +265,5 @@ button.village-name { border: 0; cursor: pointer; }
   .place-bar .round { position: relative; }
   .place-bar kbd { display: block; position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); padding: 0 5px; border-radius: 6px; background: #3b2a1acc; color: #fff; font: 800 10px/14px 'Nunito', sans-serif; white-space: nowrap; pointer-events: none; }
 }
+/* with a mouse the tab strip cannot be dragged sideways: on a wide screen every build tab is shown, on two rows if need be */
+@media (min-width: 900px) and (hover: hover) { .build-top .tabs { flex-wrap: wrap; overflow: visible; } }
