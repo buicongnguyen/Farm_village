@@ -286,11 +286,110 @@ def ginseng(stage, lod=0):
                 p.append(sp(.045, -.18, x - .06, y + .04, .05, 'root', sides=5, lean=(-.06, 0)))
     return p
 
-CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng}
+# ---- more vegetables (v0.5): tomato, potato, cabbage, onion, chili. Same three stages and two levels of detail.
+def veg_grid(lod, n=2, pitch=.62, seed=5):
+    rnd = random.Random(seed + lod)
+    pts = [((i - (n - 1) / 2) * pitch + rnd.uniform(-.05, .05), (j - (n - 1) / 2) * pitch + rnd.uniform(-.05, .05)) for j in range(n) for i in range(n)]
+    return pts[::2] if lod and len(pts) > 3 else pts, rnd
+
+def tomato(stage, lod=0):
+    """Staked tomato plants: a leafy bush on a cane, hung with red fruit when ripe."""
+    pts, rnd = veg_grid(lod, 2, .66, 31); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.3, 3.3): p.append(lf((x, y, 0), a + k, .22, .1, 'leafl', lift=.16, droop=0))
+            continue
+        ripe = stage == 'ripe'; h = .78 if ripe else .5
+        p.append(cl('cane', .022, h + .18, x + .05, y, 0, 'woodl', verts=4))
+        for i in range(5 if lod == 0 else 3):
+            a = i * 1.26 + k
+            p.append(lf((x, y, .1 + i * h / 6), a, .3 if ripe else .24, .14, 'leaf' if i % 2 else 'leafl', lift=.14 + i * .03, droop=.1))
+        p.append(ball('crown', .15 if ripe else .11, x, y, h, 'leaf', sub=1, sc=(1, 1, .8)))
+        if ripe:
+            for i in range(4 if lod == 0 else 2):
+                a = i * 1.7 + k * .9
+                p.append(ball('tomato', .085, x + math.cos(a) * .16, y + math.sin(a) * .16, .24 + (i % 3) * .17, 'fruitred', sub=1))
+    return p
+
+def potato(stage, lod=0):
+    """Potato plants: low leafy mounds on a heaped ridge; ripe, a few potatoes show in the soil and little white flowers above."""
+    pts, rnd = veg_grid(lod, 2, .66, 37); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.6, 2.7, 4.6)[:3 if lod == 0 else 2]: p.append(lf((x, y, 0), a + k, .2, .11, 'leafl', lift=.12, droop=0))
+            continue
+        ripe = stage == 'ripe'
+        p.append(ball('ridge', .26, x, y, .0, 'soill', sub=1, sc=(1.2, 1.2, .3)))
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k
+            p.append(lf((x, y, .05), a, .34 if ripe else .26, .16, 'leafw' if i % 2 else 'leaf', lift=.2 if ripe else .15, droop=.12))
+        p.append(ball('heart', .14 if ripe else .1, x, y, .2 if ripe else .15, 'leaf', sub=1, sc=(1, 1, .7)))
+        if ripe:
+            for i in range(3 if lod == 0 else 1):
+                a = i * 2.1 + k
+                p.append(ball('potato', .085, x + math.cos(a) * .27, y + math.sin(a) * .27, .05, 'sack', sub=1, sc=(1.3, 1, .8)))
+            if lod == 0:
+                for a in (.8, 3.6): p.append(ball('bloom', .045, x + math.cos(a + k) * .12, y + math.sin(a + k) * .12, .36, 'bloom', sub=0))
+    return p
+
+def cabbage(stage, lod=0):
+    """Cabbages: a rosette of broad leaves that closes into a pale round head."""
+    pts, rnd = veg_grid(lod, 2, .7, 41); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0, 2.1, 4.2)[:3 if lod == 0 else 2]: p.append(lf((x, y, 0), a + k, .2, .14, 'wgreenl', lift=.1, droop=0))
+            continue
+        ripe = stage == 'ripe'
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k * .7
+            p.append(lf((x, y, .02), a, .36 if ripe else .28, .26, 'leaf' if i % 2 else 'wgreen', lift=.12, droop=.05))
+        if ripe:
+            p += [ball('head', .2, x, y, .2, 'wgreenl', sub=2 if lod == 0 else 1, sc=(1, 1, .88)), ball('cap', .13, x + .02, y, .31, 'herbl', sub=1, sc=(1, 1, .5))]
+        else:
+            p.append(ball('bud', .1, x, y, .12, 'wgreenl', sub=1))
+    return p
+
+def onion(stage, lod=0):
+    """Onions: stiff green tubes in close rows; ripe, the purple bulbs shoulder out of the soil."""
+    pts, rnd = veg_grid(lod, 3, .44, 43); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            p.append(cl('shoot', .018, .16, x, y, 0, 'leafl', verts=4, rt=.006)); continue
+        ripe = stage == 'ripe'; h = .5 if ripe else .34
+        for i in range(3 if lod == 0 else 2):
+            a = i * 2.1 + k
+            p.append(sp(.03, h - i * .06, x + math.cos(a) * .03, y + math.sin(a) * .03, .04, 'leaf' if i % 2 else 'leafl', sides=4, lean=(math.cos(a) * .12, math.sin(a) * .12)))
+        if ripe:
+            p.append(ball('bulb', .1, x, y, .05, 'violet', sub=1, sc=(1, 1, .85)))
+            if lod == 0: p.append(ball('bulbtop', .05, x, y, .13, 'bloom', sub=0, sc=(1, 1, .6)))
+    return p
+
+def chili(stage, lod=0):
+    """Chili bushes: small dark-leaved bushes, hung with bright red pods when ripe."""
+    pts, rnd = veg_grid(lod, 2, .66, 47); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.4, 3.4): p.append(lf((x, y, 0), a + k, .2, .09, 'leafl', lift=.15, droop=0))
+            continue
+        ripe = stage == 'ripe'; h = .5 if ripe else .36
+        p.append(cl('stem', .025, h, x, y, 0, 'stem', verts=4))
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k
+            p.append(lf((x, y, h * .45 + (i % 3) * .08), a, .26, .11, 'leafw' if i % 2 else 'leaf', lift=.1, droop=.14))
+        p.append(ball('top', .13, x, y, h, 'leafw', sub=1, sc=(1.1, 1.1, .7)))
+        if ripe:
+            for i in range(5 if lod == 0 else 3):
+                a = i * 1.26 + k * .6
+                p.append(cone('pod', .035, .2, (x + math.cos(a) * .17, -(y + math.sin(a) * .17), h * .62 - (i % 2) * .08), C['fruitred'], verts=5, rot=(math.pi, 0, 0)))
+    return p
+
+CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng,
+         'tomato': tomato, 'potato': potato, 'cabbage': cabbage, 'onion': onion, 'chili': chili}
+LATE_CROPS = {'tomato', 'potato', 'cabbage', 'onion', 'chili'}   # these load with the decor kit, after the first scene
 for crop, gen in CROPS.items():
     for stage in ('sprout', 'mid', 'ripe'):
-        piece(f'crop_{crop}_{stage}', gen(stage, 0))
-        piece(f'crop_{crop}_{stage}_mid', gen(stage, 1))
+        piece(f'crop_{crop}_{stage}', gen(stage, 0), decor if crop in LATE_CROPS else None)
+        piece(f'crop_{crop}_{stage}_mid', gen(stage, 1), decor if crop in LATE_CROPS else None)
 
 # =================================================================== bed rim with furrows (one per crop bed, 2 m cell)
 def bed_rim():

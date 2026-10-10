@@ -9,6 +9,12 @@ export const CROPS = {
   corn:    { name: 'Corn',    growMs: 45_000, value: 7,  level: 3, model: 'crop_goldcorn', icon: '🌽' },
   strawberry: { name: 'Strawberry', growMs: 85_000, value: 12, level: 4, skill: 'garden-repairs', model: 'crop_strawberry', icon: '🍓' },
   pumpkin: { name: 'Pumpkin', growMs: 2 * MIN, value: 18, level: 5, model: 'crop_pumpkin', icon: '🎃' },
+  // more vegetables (v0.5): each a step dearer and slower than the last, all a little over 9 coins a minute per bed
+  tomato:  { name: 'Tomato',  growMs: 40_000,  value: 6,  level: 3, model: 'crop_tomato', icon: '🍅' },
+  potato:  { name: 'Potato',  growMs: 60_000,  value: 9,  level: 4, model: 'crop_potato', icon: '🥔' },
+  cabbage: { name: 'Cabbage', growMs: 75_000,  value: 12, level: 5, model: 'crop_cabbage', icon: '🥬' },
+  onion:   { name: 'Onion',   growMs: 90_000,  value: 14, level: 6, model: 'crop_onion', icon: '🧅' },
+  chili:   { name: 'Chili',   growMs: 100_000, value: 17, level: 7, model: 'crop_chili', icon: '🌶️' },
   // premium crops (docs/VILLAGE-GROWTH-PLAN.md, stage 2): slow and valuable, the money for the village's big buildings
   herb:    { name: 'Healing herb', growMs: 5 * MIN, value: 45, level: 7, model: 'crop_herb', icon: '🌿' },
   ginseng: { name: 'Ginseng', growMs: 12 * MIN, value: 120, level: 9, model: 'crop_ginseng', icon: '🫚' },

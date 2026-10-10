@@ -507,6 +507,66 @@ def cheese():
     return p
 item('cheese', cheese())
 
+# ---- more vegetables (v0.5): tomato, potato, cabbage, onion, chili
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'tomato': '#F03A2E', 'tomatol': '#FF7A5A', 'potato': '#D9B27A', 'potatod': '#B08A52', 'cabbage': '#BFE68A', 'cabbaged': '#7FC24A',
+    'cabbagel': '#E6F7C0', 'onion': '#B05AC8', 'onionl': '#E8C8F0', 'oniond': '#7E3A9A', 'chili': '#F03A2E', 'chilid': '#C21F1F'}.items()})
+def tomato_item():
+    """Two ripe tomatoes on the vine, each with a green star calyx."""
+    p = []
+    for (x, y, z, r) in ((-.2, 0, .34, .34), (.3, .08, .27, .27)):
+        p += [sphere('tomato', r, (x, y, z), C['tomato'], segs=16, rings=10, scale=(1, 1, .88)), P('shine', r * .2, (x - r * .4, y - r * .45, z + r * .4), 'tomatol', sub=1)]
+        for i in range(5):
+            a = i * math.tau / 5
+            p.append(leaf('calyx', (x, y, z + r * .82), a, r * .5, r * .2, C['leafd'], lift=.02, droop=.1))
+        p.append(cyl('stalk', .03, .14, (x, y, z + r * .9), C['leafd'], verts=6, bev=0))
+    p.append(stalk('vine', (-.2, 0, .74), (.3, .08, .62), .025, C['leafd']))
+    return p
+item('tomato', tomato_item())
+
+def potato_item():
+    """Three potatoes: tan lumps with darker eyes, one cut to show its pale inside."""
+    p = []
+    for (x, y, z, sc, rot) in ((-.2, .05, .22, (1.45, 1, .85), .3), (.28, -.1, .18, (1.2, .95, .8), -.5), (.05, .3, .17, (1.1, .9, .78), 1.2)):
+        o = sphere('potato', .24, (x, y, z), C['potato'], segs=14, rings=9, scale=sc); o.rotation_euler = (0, 0, rot); p.append(o)
+        for k in range(3):
+            p.append(P('eye', .03, (x - .1 + k * .1, y - .2, z + .08 - k * .03), 'potatod', sub=0))
+    return p
+item('potato', potato_item())
+
+def cabbage_item():
+    """A cabbage: a pale round head in a collar of darker outer leaves."""
+    p = [sphere('head', .42, (0, 0, .42), C['cabbage'], segs=18, rings=12, scale=(1, 1, .9)), sphere('cap', .3, (.03, -.03, .62), C['cabbagel'], segs=14, rings=8, scale=(1, 1, .6))]
+    for i in range(6):
+        a = i * math.tau / 6
+        p.append(leaf('outer', (0, 0, .08), a, .62, .5, C['cabbaged'], lift=.3, droop=.02))
+    for i in range(3):
+        a = i * 2.1 + .5
+        p.append(stalk('vein', (0, 0, .5), (math.cos(a) * .3, math.sin(a) * .3 - .1, .78), .015, C['cabbagel']))
+    return p
+item('cabbage', cabbage_item())
+
+def onion_item():
+    """A purple onion with papery pale shoulders and green shoots, a second one behind it."""
+    p = []
+    for (x, y, z, r) in ((-.12, 0, .32, .32), (.32, .2, .24, .24)):
+        p += [sphere('bulb', r, (x, y, z), C['onion'], segs=16, rings=10, scale=(1, 1, .9)), sphere('top', r * .5, (x, y, z + r * .7), C['onionl'], segs=10, rings=6, scale=(1, 1, .9)),
+              P('shine', r * .2, (x - r * .45, y - r * .4, z + r * .3), 'onionl', sub=1), cyl('roots', r * .25, .05, (x, y, .02), C['oniond'], verts=8, bev=0)]
+        for i in range(3):
+            p.append(stalk('shoot', (x, y, z + r), (x + (i - 1) * .12, y + .04 * i, z + r + .42 - i * .05), .035, C['leaf' if i % 2 else 'leafl'], rt=.012))
+    return p
+item('onion', onion_item())
+
+def chili_item():
+    """Three red chili pods, curved, with green caps."""
+    p = []
+    for k, (x, y, yaw) in enumerate(((-.25, 0, .2), (.05, .05, -.1), (.32, -.02, .35))):
+        for i in range(5):
+            f = i / 4
+            p.append(sphere('pod', .11 * (1 - f * .7), (x + math.sin(yaw) * f * .2 + f * f * .12, y - f * .08, .62 - f * .5), C['chili' if k != 1 else 'chilid'], segs=10, rings=6, scale=(1, 1, 1.5)))
+        p += [cyl('cap', .09, .07, (x, y, .7), C['leafd'], verts=8, bev=.01), stalk('stem', (x, y, .72), (x - .05, y, .9), .025, C['leafd'])]
+    return p
+item('chili', chili_item())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

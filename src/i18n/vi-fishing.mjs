@@ -117,4 +117,10 @@ export const VI_FISHING = {
   'Hire a farm hand': 'Thuê một người làm',
   'The meadow and the river': 'Đồng cỏ và dòng sông',
   'Riverside town': 'Phố ven sông',
+  // more vegetables
+  'Tomato': 'Cà chua',
+  'Potato': 'Khoai tây',
+  'Cabbage': 'Bắp cải',
+  'Onion': 'Hành tây',
+  'Chili': 'Ớt',
 };

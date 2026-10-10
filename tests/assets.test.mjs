@@ -31,7 +31,7 @@ test('every KIND_MODELS and EARLY model exists in its GLB, with its authored _mi
     const r = roots(spec.kit);
     assert.ok(r[spec.node], `${name}: ${spec.node} missing from ${spec.kit}.glb`);
   }
-  for (const c of CROP_MODELS) for (const st of ['sprout', 'mid', 'ripe']) assert.ok(roots('farm-kit')[`crop_${c}_${st}_mid`], `crop_${c}_${st}_mid missing`);
+  for (const c of CROP_MODELS) for (const st of ['sprout', 'mid', 'ripe']) assert.ok(roots(KIND_MODELS[`crop:${c}:${st}`].kit)[`crop_${c}_${st}_mid`], `crop_${c}_${st}_mid missing`);
 });
 
 test('every ANCHORS model is drawn by the game and its farm-kit anchors exist as empties in the GLB', () => {
@@ -105,7 +105,7 @@ test('pieces stay within their triangle budgets: ripe crop 1,500, prop 1,200, bu
   }
   for (const n of KITS.props) { const t = roots('props')[n].triangles; if (t > 1200) over.push(`props ${n}: ${t}`); }
   for (const c of CROP_MODELS) {
-    const near = roots('farm-kit')[`crop_${c}_ripe`].triangles, mid = roots('farm-kit')[`crop_${c}_ripe_mid`].triangles;
+    const near = roots(KIND_MODELS[`crop:${c}:ripe`].kit)[`crop_${c}_ripe`].triangles, mid = roots(KIND_MODELS[`crop:${c}:ripe`].kit)[`crop_${c}_ripe_mid`].triangles;
     if (mid > near * 0.5) over.push(`crop_${c}_ripe_mid (${mid}) should be at most half of the near model (${near})`);
   }
   for (const n of ['feed_mill', 'bakery', 'coop']) { const t = roots('farm-kit')[n].triangles; if (t < 2500) over.push(`${n} is only ${t} triangles (rebuilt buildings are 3–5k)`); }

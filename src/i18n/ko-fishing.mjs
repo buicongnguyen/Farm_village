@@ -117,4 +117,10 @@ export const KO_FISHING = {
   'Hire a farm hand': '일꾼 한 명 고용하기',
   'The meadow and the river': '초원과 강',
   'Riverside town': '강변 마을',
+  // more vegetables
+  'Tomato': '토마토',
+  'Potato': '감자',
+  'Cabbage': '양배추',
+  'Onion': '양파',
+  'Chili': '고추',
 };
