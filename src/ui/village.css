@@ -103,3 +103,4 @@ body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }
 .journey-unlock .tile-icon { width: 44px; height: 44px; flex: 0 0 44px; }
 .journey > .btn { margin-top: 14px; } .clinic-staff { text-align: center; }
 .hud .village-name { max-width: min(310px, 78vw); white-space: normal; text-align: left; }
+.btn.blocked { filter: saturate(.35); opacity: .8; }

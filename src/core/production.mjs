@@ -77,7 +77,7 @@ export const actions = {
       for (const job of jobs) {
         const rid = job.recipe, r = RECIPES[rid];
         barn.add(s, rid, r.makes); got++;
-        s.stats.produced += r.makes; gainXp(ctx, XP.produce(r.value));
+        s.stats.produced += r.makes; gainXp(ctx, XP.produce(r.value)); if (rid === 'cheese') s.stats.cheeseMade = (s.stats.cheeseMade ?? 0) + r.makes;
         ctx.emit('produced', { building: id, good: rid, count: r.makes, slot: job.slot });
       }
       q.queue = q.queue.filter(job => !collectedSlots.has(job.slot)); s.production[id] = q;

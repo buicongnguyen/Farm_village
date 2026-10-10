@@ -236,6 +236,15 @@ panels.onGrowthSite = kind => {
     radial.open({ x: site.x, z: site.z }, innerWidth / 2, innerHeight * .45, buttons, info, { id });
   } else panels.show(id ? 'villageGrowth' : 'civicSite', id ? undefined : kind);
 };
+// A civic building has one place it can stand, so its panel rebuilds it outright: the path tile at its door, then the
+// building, with no ghost to confirm. A refusal says why and leaves the panel open.
+panels.onGrowthRebuild = kind => {
+  const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
+  const [x, z] = doorCell(kind, site.x, site.z, site.rot); game.do('place', { kind: 'path', x, z });   // refused quietly if it is there already
+  const r = game.do('place', { kind, x: site.x, z: site.z, rot: site.rot });
+  if (!r.ok) { hud.refuse(r.reason, r.params); return; }
+  panels.close(); radial.hide(); flyTo((site.x + 2) * CELL, (site.z + 1.5) * CELL, Math.min(world.cam.span, 38));
+};
 panels.onGrowthPath = kind => {
   const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
   const [x, z] = doorCell(kind, site.x, site.z, site.rot); panels.close(); radial.hide();

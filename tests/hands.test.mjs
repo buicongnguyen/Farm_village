@@ -83,3 +83,21 @@ test('the workshop hand keeps a workshop going: it collects half of what is done
   s.placed.jp = { kind: 'juice_press', x: 44, z: 60, rot: 0 }; s.counts.juice_press = 1; s.production.jp = { slots: 2, queue: [] }; s.barn.items.apple = 30; s.level = 9;
   tick(s, later + HANDS.everyMs + 1000); assert.equal(s.production.jp.queue.length, 0);
 });
+
+test('three more hands: the orchard hand picks half the ripe trees, the fisher lands a fish a round, the driver runs the trucks', () => {
+  assert.deepEqual(Object.keys(HANDS.roles), ['field', 'animals', 'workshop', 'orchard', 'driver', 'fisher']);
+  const s = game(); s.level = 2; s.coins = 9000; s.barn.cap = 5000; s.counts.school = 1;
+  for (let i = 0; i < 4; i++) { s.placed[`t${i}`] = { kind: 'cherry_tree', x: 40 + i, z: 60, rot: 0 }; (s.trees ??= {})[`t${i}`] = { doneAt: T0 - 1, picked: 0 }; }
+  s.counts.cherry_tree = 4;
+  for (const role of ['orchard', 'fisher', 'driver']) assert.equal(act(s, 'hireHand', { role }, T0).ok, true, role);
+  s.placed.mk = { kind: 'market', x: 60, z: 96, rot: 0 }; s.counts.market = 1; s.orders.cards = [];   // a working market, and no order holding the goods back
+  s.barn.items = { wheat: 40 }; const fishBefore = Object.values(s.album?.fish ?? {}).reduce((a, n) => a + n, 0);
+  tick(s, T0 + 1000); const round = T0 + 1000 + HANDS.everyMs + 1000; tick(s, round);
+  assert.equal(Object.values(s.trees).filter(t => t.doneAt <= round).length, 2, 'the orchard hand did not pick exactly half of four trees');
+  assert.ok((s.stats.picked ?? 0) >= 6, 'no cherries were picked');   // (the driver may already have loaded them)
+  assert.equal(Object.values(s.album.fish).reduce((a, n) => a + n, 0), fishBefore + 1, 'the fisher landed no fish');
+  // the driver loaded spare goods and sent the truck: it is away now, and the takings come home on a later round
+  assert.equal(s.truck.away, true, 'the truck was not sent'); const coins = s.coins;
+  const back = Math.max(s.truck.backAt, round) + HANDS.everyMs + 2000; tick(s, s.truck.backAt + 1); tick(s, back);
+  assert.ok(s.coins > coins - 20, 'the takings never came in');
+});

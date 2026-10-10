@@ -68,7 +68,11 @@ test('roadmap derives deeds, shows exactly three unlocks and labels future work 
  for(const kind of ['feed_mill','coop']) { s.placed[kind]={kind,x:33,z:58,rot:0}; s.counts[kind]=1; } families(s,1); touch(s);
  let j=journeyOf(s); assert.equal(j.stage.id,'orchard'); assert.equal(j.unlocks.length,3); assert.equal(j.done,0);
  for(const kind of ['cherry_tree','fruit_stand','kennel','school','clinic']) { s.placed[kind]={kind,x:33,z:58,rot:0}; s.counts[kind]=1; } touch(s);
- s.album.fruit.cherry=9; j=journeyOf(s); assert.equal(j.stage.id,'meadow'); assert.ok(j.stage.planned); assert.ok(j.unlocks.every(u=>u.planned));
+ s.album.fruit.cherry=9; s.house={level:1}; j=journeyOf(s); assert.equal(j.stage.id,'meadow'); assert.ok(!j.stage.planned,'v0.5 is real now'); assert.equal(j.total,4); assert.equal(j.done,0);
+ assert.deepEqual(j.unlocks.map(u=>u.kind??'planned'),['goat_barn','dairy','planned']);
+ // the home-and-dairy stage done: only then does the roadmap show what is still planned (v0.6)
+ s.house={level:5}; s.hands={field:{since:T0}}; s.stats.cheeseMade=1; for(const kind of ['goat_barn','dairy']) { s.placed[kind]={kind,x:33,z:58,rot:0}; s.counts[kind]=1; } touch(s);
+ j=journeyOf(s); assert.equal(j.stage.id,'river'); assert.ok(j.stage.planned); assert.equal(j.stage.version,'0.6'); assert.ok(j.unlocks.every(u=>u.planned));
 });
 test('v0.3 saves retain their farm and coins, but chapter-five teasers do not suppress the clinic ending',()=>{
  const s=farm(); s.version=4; s.story.chapter=5; delete s.fruitStand; const coins=s.coins,placed=JSON.stringify(s.placed);

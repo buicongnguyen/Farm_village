@@ -247,7 +247,9 @@ export function holdToSell(el) {
 
 /** Hired hands, at the top of Friends: each does half of the waiting work; the other half is yours. */
 const HAND_ROLES = { field: ['Field hand', 'Harvests half of the ripe beds and sows them again', 'wheat'], animals: ['Animal hand', 'Collects half of the eggs and milk and feeds half of the hungry animals', 'egg'],
-  workshop: ['Workshop hand', 'Collects half of the finished goods and starts the same again', 'bread'] };
+  workshop: ['Workshop hand', 'Collects half of the finished goods and starts the same again', 'bread'],
+  orchard: ['Orchard hand', 'Picks half of the ripe fruit trees', 'cherry'], driver: ['Truck driver', 'Collects the takings, loads idle trucks with spare goods and sends them', 'truck'],
+  fisher: ['Fisher', 'Lands one fish a minute for the barn', 'perch'] };
 function renderHands(s) {
   if (!handsOpen(s)) return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Build the school to hire farm hands.')}</p></section>`;
   return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Hired neighbours do half of the work, a coin a task. Do the other half yourself to get more done.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => `<div class="hand${handHired(s, role) ? ' on' : ''}">${goodIcon(icon)}<div><b>${t(name)}</b><small>${t(what)}</small></div>${handHired(s, role)
