@@ -1,6 +1,33 @@
 # Chapter 10: Hands to help
 
-Status: not started · Depends on: chapter 9 · Size: one to two sessions
+Status: **done** (PR #85) · Depends on: chapter 9 · Size: one to two sessions
+
+## How to play it (for the owner)
+
+1. Open Friends. Hire a hand: the row now shows **who took the job**, with their face (Chip the field, Clover the
+   animals, Honey the workshops, Poppy the orchard, Dash the truck, Skipper the fishing), and how many tasks they did
+   today. A hand whose villager does not live in the village yet works all the same, without a name.
+2. Each minute a hand does its round. The villager **walks to where the work was** (a bed, a pen, a workshop, the
+   orchard, the market, the pond) and is seen at it for a moment. The notice of the round carries their face.
+3. Open **Today on the farm** (a button in Friends and on the Today board; from six in the evening a pill "Evening
+   sums" offers it once a day): what was earned today and from what, what each hand did, the wages paid, and one
+   piece of advice from Granny Maple with a button to act on it.
+4. With three hands hired and thirty tasks done by them, the chapter 10 card appears.
+
+Tester (`?tester`): "Finish this chapter" hires the first three hands and counts thirty tasks.
+
+## What was built, where it differs from the plan below
+
+- `HANDS.roles[role].who`, `handWho()`, `hiredCount()` in `core/helpers.mjs`; every round records
+  `s.hands[role].done`, `.last = { at, id }` and `s.stats.handTasks`, and the `handDid` event says who and where.
+- **The report is built from events, not from every place coins are added** (`core/report.mjs`): the day's total is
+  exact (`s.stats.coinsEarned` since the day began); the sources (orders, sales, rent, fishing, the festival) are
+  what the day's events named, and the rest shows as "everything else". No change to any earning rule.
+- The report is a panel, never a card that interrupts: the evening pill offers it; it does not open by itself.
+- The view (`people-view.mjs` `handWork`) is a picture of work the rules already did: the villager walks to the
+  place and plays a working clip. No tools in hand, and the driver does not ride in the truck (left for later).
+- Roadmap: the stage "The brook co-operative" is real, with this chapter's two deeds; chapters 11 and 12 add theirs.
+- `scripts/story-panels.mjs` takes `then: [code, ms]` for pictures that pose people.
 Story source: `JOURNEY.md` 3 (Act III), `STORY.md` 4 (row 10)
 
 ## What the player gets

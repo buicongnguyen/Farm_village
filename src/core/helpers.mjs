@@ -11,6 +11,7 @@ import * as barn from './barn.mjs';
 import { actions as farm } from './farm.mjs';
 import { gainXp } from './levels.mjs';
 import { XP } from '../content/economy.mjs';
+import { FAMILIES } from '../content/people.mjs';
 
 export function tickHelpers(ctx) {
   const { s, now } = ctx; if (s.level < HELP.level) return;
@@ -41,6 +42,14 @@ export function tickHelpers(ctx) {
 /** Hired hands: open once the school stands. s.hands = { field?, animals?, workshop? }. */
 export const handsOpen = s => (s.counts?.school ?? 0) > 0;
 export const handHired = (s, role) => !!s.hands?.[role];
+/** How many hands are hired now. */
+export const hiredCount = s => Object.keys(s.hands ?? {}).filter(role => HANDS.roles[role]).length;
+/** The villager who does a job (HANDS.roles[role].who) when their family lives in the village, else null. */
+export function handWho(s, role, now = Infinity) {
+  const who = HANDS.roles[role]?.who; if (!who || !handHired(s, role)) return null;
+  const fam = FAMILIES.find(f => f.people.some(p => p.id === who)); if (!fam) return null;
+  return Object.values(s.homes ?? {}).some(h => h.family === fam.id && h.arrivesAt <= now) ? who : null;
+}
 export const handActions = {
   hireHand(ctx, { role }) {
     const { s } = ctx, def = Object.hasOwn(HANDS.roles, role) ? HANDS.roles[role] : null; if (!def) return ctx.fail('Nobody is hired for this');
@@ -61,10 +70,16 @@ export function tickHands(ctx) {
   if (now < s.handsAt) return;
   const late = now - s.handsAt > WEAR.tickCapMs; s.handsAt = now + HANDS.everyMs; if (late) return;
   const quiet = { ...ctx, byHand: true, fail: () => ({ ok: false }) }, half = n => Math.min(Math.ceil(n / 2), Math.floor(s.coins / HANDS.wage));
-  const paid = (role, count) => { if (count > 0) { s.coins -= count * HANDS.wage; ctx.emit('handDid', { role, count }); } };
+  // `at`: where the work was (a placed id, or 'market' / 'pond'), so the view can send the villager there (chapter 10)
+  const paid = (role, count, at = null) => {
+    if (!(count > 0)) return;
+    s.coins -= count * HANDS.wage; s.stats.handTasks = (s.stats.handTasks ?? 0) + count;
+    const h = s.hands[role]; h.done = (h.done ?? 0) + count; h.last = { at: now, id: at };
+    ctx.emit('handDid', { role, count, who: handWho(s, role, now), at });
+  };
   if (s.hands.field) {
     const all = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now), ripe = all.slice(0, half(all.length)), crops = ripe.map(id => [id, s.beds[id].crop]);
-    if (ripe.length) { farm.harvest(quiet, { ids: ripe }); for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop }); paid('field', ripe.length); }
+    if (ripe.length) { farm.harvest(quiet, { ids: ripe }); for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop }); paid('field', ripe.length, ripe[0]); }
   }
   if (s.hands.animals) {
     const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null);
@@ -73,7 +88,7 @@ export function tickHands(ctx) {
     if (done) gainXp(ctx, XP.collect * done);
     if (sold) ctx.emit('barnSold', { coins: sold });
     for (const { an } of hungry.slice(0, Math.max(0, half(hungry.length)))) { const a = ANIMALS[an.kind]; if (barn.take(s, { [a.eats]: 1 }, false)) { an.doneAt = now + a.everyMs; done++; } }
-    paid('animals', Math.min(done, Math.floor(s.coins / HANDS.wage)));
+    paid('animals', Math.min(done, Math.floor(s.coins / HANDS.wage)), (ready[0] ?? hungry[0])?.home ?? null);
   }
   if (s.hands.workshop) {
     const jobs = Object.keys(s.production ?? {}).flatMap(id => collectableJobs(s, id, now).map(job => ({ id, recipe: job.recipe })));
@@ -93,22 +108,22 @@ export function tickHands(ctx) {
       let start = Math.min(Math.ceil((q.slots - q.queue.length) / 2), Math.floor(s.coins / HANDS.wage) - done);
       while (start-- > 0 && barn.hasAll(s, r.needs) && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
     }
-    paid('workshop', done);
+    paid('workshop', done, jobs[0]?.id ?? Object.keys(s.lastRecipe ?? {})[0] ?? null);
   }
   if (s.hands.orchard) {   // picks half of the ripe fruit trees
     const ripe = ripeTrees(s, now), ids = ripe.slice(0, half(ripe.length));
-    if (ids.length && trees.pick(quiet, { ids })?.ok !== false) paid('orchard', ids.length);
+    if (ids.length && trees.pick(quiet, { ids })?.ok !== false) paid('orchard', ids.length, ids[0]);
   }
   if (s.hands.driver) {   // brings in the takings, loads the trucks that stand idle with spare goods and sends them off
     let done = 0;
     if (truckCoins(s) > 0 && market.collectTruck(quiet)?.ok !== false) done++;
     const idle = trucksOf(s).filter(u => !u.away).length;
     if (idle && s.coins >= HANDS.wage) { if (market.fillTruck(quiet)?.ok !== false) done++; if (trucksOf(s).some(u => !u.away && u.load.length) && market.sendTruck(quiet)?.ok !== false) done++; }
-    paid('driver', Math.min(done, Math.floor(s.coins / HANDS.wage)));
+    paid('driver', Math.min(done, Math.floor(s.coins / HANDS.wage)), 'market');
   }
   if (s.hands.fisher && s.coins >= HANDS.wage) {   // lands one fish a round, straight into the barn
     const fish = pickFish(`${now}:hand`, false), sold = barn.addOrSell(s, fish, 1);
     (s.album ??= { fish: {}, fruit: {} }).fish[fish] = (s.album.fish[fish] ?? 0) + 1; if (sold) ctx.emit('barnSold', { coins: sold });
-    paid('fisher', 1);
+    paid('fisher', 1, 'pond');
   }
 }

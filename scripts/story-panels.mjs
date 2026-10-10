@@ -13,6 +13,7 @@ mkdirSync(OUT, { recursive: true });
 
 // Each panel: the hour of day, what to add to a fresh save (runs in the page: s = state), and where the camera looks
 // (cell x, z and the span in metres). `after` runs once the scene is drawn (for walkers who need time to arrive).
+// `then: [code, ms]` runs after the wait (people are in the world by then) and waits ms more before the picture.
 const cottage = (id, x, z, family) => `s.placed.${id} = { kind: 'cottage', x: ${x}, z: ${z}, rot: 2 }; s.counts.cottage = (s.counts.cottage ?? 0) + 1;
   s.homes.${id} = { level: 1, family: '${family}', arrivesAt: 0, rentFrom: 0, arrived: true };`;
 const school = `s.placed.st_school = { kind: 'school', x: 50, z: 106, rot: 2 }; s.counts.school = 1; s.projects.step = 6;`;
@@ -31,6 +32,9 @@ const festival = stage + `s.festival = { at: farm.game.now - 1000, until: farm.g
 const village = cottage('st_c1', 36, 93, 'tran') + cottage('st_c2', 41, 93, 'okafor') + cottage('st_c3', 66, 93, 'reyes') + cottage('st_c4', 46, 93, 'lindqvist');
 // everyone who has come to the village by chapter 9: the teacher, the doctor, the baker, the constable, the manager
 const everyone = village + school + police + office + marketDay + `s.placed.st_clinic = { kind: 'clinic', x: 62, z: 106, rot: 2 }; s.counts.clinic = 1;`;
+// chapter 10: a hired villager at the work. `put` stands someone at a cell; `work` shows them at a job (people-view handWork).
+const put = (id, x, z) => `{ const w = farm.people.walkers.get('${id}'); if (w) { farm.people.cancelTrip(w); w.x = (${x}) * 2 + 1; w.z = (${z}) * 2 + 1; w.indoors = false; } }`;
+const work = (role, who, kind) => `{ const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === '${kind}'); farm.people.handWork({ role: '${role}', who: '${who}', at: id }); }`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -60,6 +64,10 @@ const PANELS = {
   'ch9-1': { hour: 11, scene: stage + village, wait: 7000, look: [41, 100, 20] },
   'ch9-2': { hour: 11, scene: festival + everyone, wait: 30000, look: [41, 100, 27] },
   'ch9-3': { hour: 11, scene: festival + everyone, wait: 40000, look: [41, 101, 16] },
+  'ch10-1': { hour: 9.5, scene: cottage('st_c1', 36, 93, 'tran') + `s.hands = { field: { since: 1 } };`, wait: 5000, then: [put('minh', 38, 59) + work('field', 'minh', 'bed'), 5500], look: [36, 59, 15] },
+  'ch10-2': { hour: 15, scene: cottage('st_c1', 36, 93, 'tran') + `s.hands = { workshop: { since: 1 } }; for (const [id, p] of Object.entries(s.placed)) if (p.kind === 'bakery') delete s.cond[id];`, wait: 5000,
+    then: [`{ const s = farm.state(), b = Object.values(s.placed).find(p => p.kind === 'bakery'); if (b) { ${put('lan', 'b.x + 1', 'b.z + 3')} farm.focus(b.x + 1, b.z + 1, 14); } }` + work('workshop', 'lan', 'bakery'), 5500], look: [36, 62, 14] },
+  'ch10-3': { hour: 18.9, scene: `s.story.chapter = 9;`, wait: 7000, look: [25, 62, 15] },
 };
 const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);
@@ -82,6 +90,7 @@ for (const [name, p] of Object.entries(PANELS)) {
   const [x, z, span] = p.look;
   await page.evaluate(([x, z, span]) => farm.focus(x, z, span), [x, z, span]);
   await page.waitForTimeout(p.wait ?? 4000);   // models load, walkers settle, daylight refreshes (every 3 s)
+  if (p.then) { await page.evaluate(code => new Function(code)(), p.then[0]); await page.waitForTimeout(p.then[1]); }
   if (p.follow) await page.evaluate(([id, span]) => { const w = farm.people.walkers.get(id); if (w) farm.world.cam.lookAt(w.x, w.z, span); }, [p.follow, span]);
   await page.waitForTimeout(600);
   const png = (await page.screenshot()).toString('base64');

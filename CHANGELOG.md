@@ -1,5 +1,11 @@
 # Changelog
 
+## Chapter 10: Hands to help — 2026-10-11
+
+- **The hired hands have names and faces**: Chip takes the field, Clover the animals, Honey the workshops, Poppy the orchard, Dash the truck, Skipper the fishing. After each round the villager walks to where the work was and is seen at it.
+- **Today on the farm**: what was earned today and from what, what each hand did, the wages paid, and one piece of advice from Granny Maple. In Friends and on the Today board; from six in the evening a pill offers it once a day.
+- **Chapter 10** closes with three hands hired and thirty tasks done by them. Act III of the story has begun.
+
 ## Chapter 9: The village sings again — 2026-10-11
 
 - **The festival stage**: a burned platform stands on the village square where the old stage was; its panel builds the new one (level 12, 1,500 coins).

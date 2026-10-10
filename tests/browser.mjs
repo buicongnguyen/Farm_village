@@ -647,6 +647,50 @@ await check('chapter 9: the stage is rebuilt on the square, the Harvest Festival
   await ctx.close();
 });
 
+await check('chapter 10: hired villagers are named and seen at work, the evening sums add up, and three hands close the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:10'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 30000; g.s.barn.cap = 5000; g.s.story.firstWheat = false; });
+  // hire three hands in Friends: each shows the villager who took the job
+  await page.evaluate(() => farm.panels.show('friends')); await page.waitForSelector('[data-do="hireHand"][data-role="field"]');
+  for (const role of ['field', 'animals', 'workshop']) { await page.click(`[data-do="hireHand"][data-role="${role}"]`); await page.waitForSelector(`[data-do="releaseHand"][data-role="${role}"]`); }
+  const names = await page.locator('.hand.on b').allTextContents();
+  expect(names.length === 3 && names[0].includes('Chip') && names[1].includes('Clover') && names[2].includes('Honey'), `the hands: ${names.join(' | ')}`);
+  expect(await page.locator('.hand.on .hand-face').count() === 3, 'the hired hands have no faces');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}hands-named.png` });
+  // a round of work: the field hand harvests, and Chip walks to the bed
+  await page.waitForFunction(() => farm.people?.walkers?.has('minh'), null, { timeout: 40000 });
+  const tasks = await page.evaluate(async () => {
+    const g = farm.game, s = g.s; farm.panels.close(); farm.closeCards();
+    g.do('plant', { ids: Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]), crop: 'wheat' }); g.do('testFinishTimers'); g.tick();
+    const off = +(sessionStorage.getItem('fv-clock-offset') ?? 0); farm.setClockOffset(off + 61000); g.do('testFinishTimers'); g.tick();
+    return s.stats.handTasks ?? 0;
+  });
+  expect(tasks > 0, 'the hands did nothing');
+  await page.waitForFunction(() => { const w = farm.people.walkers.get('minh'); return w && (w.route.length > 0 || w.todo?.act === 'sweep' || w.clipFor === 'Sweep'); }, null, { timeout: 15000 });
+  // the evening: the pill offers the day's sums; the report shows the total, the hands and Maple's advice
+  await page.evaluate(() => { const g = farm.game; g.s.barn.items.wheat = 20; g.do('sellGood', { good: 'wheat', n: 10 }); farm.setClockOffset(new Date().setHours(18, 30, 0, 0) - Date.now()); });
+  await page.waitForSelector('[data-status="report"]', { timeout: 15000 });
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());   // the scene for three hands may be on screen
+  await page.click('[data-status="report"]');
+  await page.waitForSelector('.report-total');
+  const report = await page.evaluate(() => ({ total: document.querySelector('.report-total b').textContent, hands: document.querySelectorAll('.report-hands li').length, advice: !!document.querySelector('.report-advice'), seen: farm.state().today.reportSeen }));
+  expect(report.total !== '0' && report.hands >= 1 && report.advice, `the report: ${JSON.stringify(report)}`);
+  await page.waitForFunction(() => farm.state().today.reportSeen === true); await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}evening-report.png` });
+  expect(await page.locator('[data-status="report"]').count() === 0, 'the pill stays after the report was read');
+  // thirty tasks: the chapter card
+  await page.evaluate(() => { farm.panels.close(); farm.panels.onTest('finish'); });
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Hands to help') && card.includes('Chip') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-10-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 10);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

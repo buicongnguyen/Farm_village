@@ -86,7 +86,10 @@ export const FISH = { waitMs: paced(25_000), baitMs: paced(12_000), footMs: pace
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */
 /** Hired hands (core/helpers.mjs): once the school stands. Every everyMs while the game is open each does HALF of the
  *  waiting work of its kind; the other half is yours. fee: coins to hire; wage: coins per task done. */
-export const HANDS = { everyMs: paced(60_000), wage: 1, roles: { field: { fee: 300 }, animals: { fee: 300 }, workshop: { fee: 500 }, orchard: { fee: 400 }, driver: { fee: 600 }, fisher: { fee: 400 } } };
+// `who`: the villager who takes the job once their family lives in the village (chapter 10); until then it is done by
+// a hand from the next valley, exactly the same.
+export const HANDS = { everyMs: paced(60_000), wage: 1, roles: { field: { fee: 300, who: 'minh' }, animals: { fee: 300, who: 'grace' }, workshop: { fee: 500, who: 'lan' },
+  orchard: { fee: 400, who: 'elin' }, driver: { fee: 600, who: 'sam' }, fisher: { fee: 400, who: 'olaf' } } };
 export const HELP = { level: 3, everyMs: paced(2 * MIN), beds: 4, products: 3 };
 export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: paced(30_000), bonus: 1.25 };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
