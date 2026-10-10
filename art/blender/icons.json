@@ -1077,5 +1077,157 @@
   "src": "raw:items",
   "root": "ui_harvest_all",
   "preset": "goods"
+ },
+ {
+  "id": "maple",
+  "src": "raw:decor",
+  "root": "tree2_maple",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "birch",
+  "src": "raw:decor",
+  "root": "tree2_birch",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "cypress",
+  "src": "raw:decor",
+  "root": "tree2_cypress",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "fir",
+  "src": "raw:decor",
+  "root": "tree2_fir",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "great_oak",
+  "src": "raw:decor",
+  "root": "tree2_oak",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lemon_tree",
+  "src": "raw:decor",
+  "root": "tree2_lemon",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "plum_tree",
+  "src": "raw:decor",
+  "root": "tree2_plum",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "mango_tree",
+  "src": "raw:decor",
+  "root": "tree2_mango",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "grape_arbor",
+  "src": "raw:decor",
+  "root": "tree2_grape",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "longan_tree",
+  "src": "raw:decor",
+  "root": "tree2_longan",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lychee_tree",
+  "src": "raw:decor",
+  "root": "tree2_lychee",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lemon",
+  "src": "raw:items",
+  "root": "item_lemon",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "plum",
+  "src": "raw:items",
+  "root": "item_plum",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "mango",
+  "src": "raw:items",
+  "root": "item_mango",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "grape",
+  "src": "raw:items",
+  "root": "item_grape",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "longan",
+  "src": "raw:items",
+  "root": "item_longan",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "lychee",
+  "src": "raw:items",
+  "root": "item_lychee",
+  "preset": "goods",
+  "rough": 0.4
  }
 ]
