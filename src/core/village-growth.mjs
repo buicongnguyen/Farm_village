@@ -10,9 +10,12 @@ import * as barn from './barn.mjs';
 import { normalizeGrowth, stamp, owns, fleet, requestAt, validTag, matchingCargo, saveStamp } from './growth-state.mjs';
 export { newGrowth, normalizeGrowth } from './growth-state.mjs';
 
+/** The civic row opens with the clinic's homecoming chapter, or simply with a working clinic: a farm whose chapter card
+ *  never came up (too few families yet, an older save) must not be stuck with ruins it can never rebuild. */
+const civicOpen = s => (s.story?.chapter ?? 0) >= 5 || workingCount(s, 'clinic') > 0;
 export function civicBuildReason(s, kind) {
   if (!['police', 'company'].includes(kind)) return null;
-  if ((s.story?.chapter ?? 0) < 5) return 'Read the clinic homecoming chapter first';
+  if (!civicOpen(s)) return 'Read the clinic homecoming chapter first';
   if (kind === 'company' && !enoughFactories(s)) return 'Keep two different food factories working first';
   return null;
 }
