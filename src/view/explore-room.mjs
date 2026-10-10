@@ -3,6 +3,7 @@ import { loadKit, bake } from './models.mjs';
 import { Cast, loadRig, RIGS } from './skinned.mjs';
 import { addLights, toonRamp } from '../kit/toon.mjs';
 import { HOME_OBJECTS, HOME_COMFORT } from '../content/explore.mjs';
+import { outfitOf } from './people-view.mjs';
 
 export async function loadHomeRoom(body) {
   const [kit, response, , extras] = await Promise.all([loadKit('interior-farmhouse'), fetch('./assets/models/interior-farmhouse.json'), loadRig(body), loadKit('interior-extras').catch(() => null)]);   // the extras are a nicety: the room works without them
@@ -31,7 +32,7 @@ export class ExploreRoom {
     const body = settings.playerBody === 'woman' ? 'woman' : 'man';
     this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 });
     this.player = this.cast.add({ rig: body, x: 0, z: 2.15, rot: Math.PI, clip: 'Idle', scale: 1.8 / RIGS[body].height,
-      tint: { top: settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' }, priority: 10 });
+      tint: outfitOf('you', { settings }), priority: 10 });
     this.cast.select(); this.ray = new THREE.Raycaster(); this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     this.resize();
   }
