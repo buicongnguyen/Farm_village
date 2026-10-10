@@ -45,6 +45,11 @@
 .good-tile { position: relative; border: 3px solid var(--line); background: linear-gradient(#fff, #fff7e6); border-radius: 16px; padding: 6px 4px 7px; display: grid; justify-items: center; gap: 1px;
   font: 800 12px 'Nunito', sans-serif; color: var(--ink); box-shadow: 0 3px 0 #d3a868; }
 button.good-tile { cursor: pointer; }
+.good-cell { display: grid; gap: 4px; align-content: start; }
+.good-cell > .good-tile { width: 100%; }
+.sell-ten { min-height: 30px; padding: 3px 4px; border: 2px solid #d9861c; border-radius: 11px; background: linear-gradient(#ffd98a, #ffb84a); box-shadow: 0 2px 0 #b06a10; color: #5a3306; font: 900 12px/1.1 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; }
+.sell-ten:active { transform: translateY(2px); box-shadow: none; }
+.sell-ten img, .sell-ten svg { width: 13px; height: 13px; vertical-align: -2px; }
 .good-tile img.icon { width: 50px; height: 50px; }
 .good-tile b { font-size: 17px; font-weight: 1000; }
 .good-tile small { color: var(--ink-2); text-align: center; line-height: 1.15; }

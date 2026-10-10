@@ -203,8 +203,9 @@ export const actions = {
   },
   upgradeBarn(ctx) {
     const { s } = ctx, price = BARN.upgradeCost(s.barn.upgrades);
+    if (s.barn.cap >= BARN.max) return ctx.fail('The barn is as big as it can be');
     if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; s.barn.upgrades++; s.barn.cap += BARN.step;
+    s.coins -= price; s.barn.upgrades++; s.barn.cap = Math.min(BARN.max, s.barn.cap + BARN.step);
     ctx.emit('barnUpgraded', { cap: s.barn.cap });
     return { cap: s.barn.cap };
   },

@@ -100,7 +100,7 @@ export const VI = {
   'Order board': 'Bảng đơn hàng', 'Barn': 'Nhà kho', 'Deliver': 'Giao hàng', 'Discard': 'Bỏ đơn', 'Harvest': 'Thu hoạch', 'Free': 'Miễn phí',
   'Ready': 'Xong', 'All ({count})': 'Tất cả ({count})', 'Collect ({count})': 'Thu ({count})', 'Collect {count}': 'Lấy {count}',
   'Collect {coins} coins': 'Nhận {coins} xu', 'Feed ({count})': 'Cho ăn ({count})', 'Upgrade (+{step})': 'Nâng cấp (+{step})', '{count} held': 'Để dành: {count}',
-  'New orders are on their way.': 'Đơn hàng mới sắp đến.', 'The barn is empty.': 'Nhà kho đang trống.',
+  'New orders are on their way.': 'Đơn hàng mới sắp đến.', 'The barn is empty.': 'Nhà kho đang trống.', 'The barn is as big as it can be': 'Nhà kho đã rộng hết mức',
   'The barn is full: fill orders or upgrade it': 'Kho đã đầy: hãy giao đơn hoặc nâng cấp kho',
   'Market square': 'Chợ làng', 'Repair the market square first': 'Hãy sửa chợ làng trước', 'Repair the village street first': 'Hãy sửa đường làng trước',
   'The truck is away': 'Xe tải đang đi giao', 'The truck is full': 'Xe tải đã đầy', 'Load the truck first': 'Hãy chất hàng lên xe trước', 'Already the biggest truck': 'Xe tải đã được nâng cấp tối đa',

@@ -35,7 +35,7 @@ export const BEDS = {
   cost: n => n <= 6 ? 0 : Math.round(5 + 0.5 * (n - 7)),   // the nth bed: a few coins, rising very slowly (v0.3c)
 };
 export const CLEAR = { weeds: 2, rock: 10 };
-export const BARN = { start: 50, step: 100, upgradeCost: () => 100 };
+export const BARN = { start: 50, step: 100, max: 24000, upgradeCost: () => 100 };   // upgrades stop at max
 export const SLOTS = { start: 2, max: 6, cost: [0, 0, 60, 200, 600, 1500] };   // cost of the nth slot (index = slot count before buying)
 export const RENT = {
   perHour: [12, 24, 40], upgradeCost: [0, 400, 1500], capHours: 8,   // v0.3c: passive income worth having now that everything is quick
