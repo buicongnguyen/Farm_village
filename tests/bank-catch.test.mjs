@@ -50,3 +50,11 @@ test('a full barn sells what does not fit when the catch is packed, as any overf
   assert.equal(r.stored, 0); assert.ok(r.coins > 0 && s.coins === coins + r.coins);
   void FISH;
 });
+
+test('walking on winds the line in: no fish, no charge, and the next cast is a fresh one', () => {
+  const s = fresh(); assert.equal(act(s, 'pullLine', {}, T0).ok, false, 'pulled a line that was never cast');
+  must(s, 'castLine', {}, T0); const stock = { ...s.barn.items }, coins = s.coins;
+  must(s, 'pullLine', {}, T0 + 5000);
+  assert.equal(s.fishing.line, null); assert.equal(s.fishing.caught, 0); assert.deepEqual(s.barn.items, stock); assert.equal(s.coins, coins);
+  must(s, 'castLine', {}, T0 + 6000); assert.ok(s.fishing.line.doneAt > T0 + 6000);
+});

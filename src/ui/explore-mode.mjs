@@ -159,11 +159,10 @@ class ExploreMode {
     const e = this.session, s = this.state, bank = nearestPond(s, ...e.p), play = this.world.fishingPlay, line = s.fishing?.line;
     if (!this.own || !this.rod || bank.d > BANK.leave) return false;
     if (line && ['bite', 'fight'].includes(play?.phase)) return true;   // a fish is on: the Reel button has it
-    if (line && (line.pond ?? null) !== bank.pond.id) { this.notice = 'Your line is in the other pond. Reel it in first.'; return true; }
     if (!line) { const r = this.game.do('castLine', { pond: bank.pond.id }); if (!r.ok) { this.notice = r.reason; return true; } }
     const to = castPlan(bank.pond, e.p, tap);
     e.route = []; e.seated = false; e.yaw = Math.atan2(to[0] - e.p[0], to[1] - e.p[1]);
-    Object.assign(this.rod, { cast: to, castAt: this.world.fishingView.time, landed: false });
+    Object.assign(this.rod, { cast: to, from: [...e.p], castAt: this.world.fishingView.time, landed: false });
     return true;
   }
   /** A tap on the water: cast there if you are at the bank, otherwise walk to the nearest shore and cast on arrival. */
@@ -344,10 +343,12 @@ class ExploreMode {
       if (view && this.own) {   // near any pond the rod comes out (and goes away a little further off, so it never flickers)
         const bank = nearestPond(this.state, ...e.p), line = this.state.fishing?.line, rod = (this.rod ??= { cast: null, castAt: 0, landed: true });
         const out = !e.seated && bank.d <= (view.angler ? BANK.leave : BANK.reach);
-        if (!line) rod.cast = null;
-        else if (out && !rod.cast && (line.pond ?? null) === bank.pond.id) Object.assign(rod, { cast: view.lastCast ? [view.lastCast.x, view.lastCast.z] : castPlan(bank.pond, e.p, null), castAt: -9, landed: true });   // a line from before: the float is where it was
-        view.angler = out ? Object.assign(rod, { x: e.p[0], z: e.p[1], pond: bank.pond }) : null;
-        if (out && rod.cast && line && !moving) e.yaw = Math.atan2(rod.cast[0] - e.p[0], rod.cast[1] - e.p[1]);
+        // Near the water you only carry the rod. The line goes out when you cast, and it is wound in again as soon as you
+        // walk on (or come to the bank with an old line still out): strolling round the pond never fishes by itself.
+        if (line && (rod.cast ? !out || far(e.p, ...rod.from) > .8 : out)) { this.game.do('pullLine'); rod.cast = null; }
+        if (!this.state.fishing?.line) rod.cast = null;
+        view.angler = out ? Object.assign(rod, { x: e.p[0], z: e.p[1], yaw: e.yaw, pond: bank.pond }) : null;
+        if (out && rod.cast && !moving) e.yaw = Math.atan2(rod.cast[0] - e.p[0], rod.cast[1] - e.p[1]);
       }
       if (this.castOnArrival && !e.route.length && !moving) { const point = this.castOnArrival; this.castOnArrival = null; this.cast(point); this.render(); }
       if (this.actOnArrival && !e.route.length && !moving) {   // arrived beside the thing that was tapped

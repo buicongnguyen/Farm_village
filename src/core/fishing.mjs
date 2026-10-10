@@ -88,6 +88,11 @@ export const actions = {
     ctx.emit('fishCaught', { fish, first, rare: !!FISH_TABLE.find(f => f.id === fish)?.rare, stored, sold: hold === true ? 0 : 1 - stored, coins, ...(hold === true ? { held: true } : {}) });
     return { fish };
   },
+  /** Wind the line in with nothing on it (fishing on foot: you walked on). The next cast starts a fresh wait. */
+  pullLine(ctx) {
+    const f = ctx.s.fishing; if (!f?.line) return ctx.fail('Cast a line first');
+    f.line = null; ctx.emit('linePulled'); return {};
+  },
   /** Pack the catch lying on the bank into the barn (the view calls this when you walk off; overflow sells as usual). */
   packCatch(ctx) {
     if (!bankCount(ctx.s)) return ctx.fail('Nothing to pack');
