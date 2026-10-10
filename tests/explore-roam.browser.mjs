@@ -50,6 +50,8 @@ await check('the Explore button starts roaming where you stand; keys walk and th
 
 await check('nearby things offer one action: talk, the order board, a bench, a ripe bed; Go inside works from a few steps away', async () => {
   const { ctx, page, errors } = await open('pc');
+  const park = () => page.evaluate(() => { const p = farm.people; for (const w of p.walkers.values()) if (!w.player && w.id !== 'june') { p.cancelTrip?.(w); Object.assign(w, { x: 20, z: 20, route: [], target: null, once: 'Idle', onceUntil: p.time + 9999 }); } });   // people and pets wander; keep them out of the staged spots
+  await park();
   await start(page);
   // a person
   const june = await page.evaluate(() => { const p = farm.people, w = p.walkers.get('june'); p.cancelTrip(w); Object.assign(w, { x: 61, z: 131, indoors: false, once: 'Idle', onceUntil: p.time + 9999 }); return [w.x, w.z]; });
@@ -63,7 +65,7 @@ await check('nearby things offer one action: talk, the order board, a bench, a r
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/roam-talk.png` });
   // the order board opens its panel, and exploring waits behind it
   await page.evaluate(() => { const w = farm.people.walkers.get('june'); Object.assign(w, { x: 20, z: 20 }); });
-  await stand(page, 59, 117); await settle(page); m = await mode(page);
+  await park(); await stand(page, 59, 117); await settle(page); m = await mode(page);
   expect(m.near === 'board', `by the order board: ${m.near}`);
   await page.locator('[data-explore="interact"]').click();
   await page.locator('.panel[data-kind="orders"]:not([hidden])').waitFor({ timeout: 3000 });
@@ -72,13 +74,20 @@ await check('nearby things offer one action: talk, the order board, a bench, a r
   const bed = await page.evaluate(() => { const s = farm.state(), id = Object.keys(s.beds).find(k => s.beds[k]); s.beds[id].doneAt = farm.game.now - 1; const p = s.placed[id]; return { id, x: p.x * 2 + 1, z: p.z * 2 + 1, crop: s.beds[id].crop, stock: s.barn.items[s.beds[id].crop] ?? 0 }; });
   await stand(page, bed.x, bed.z + 2); await settle(page); m = await mode(page);
   expect(m.near === `bed:${bed.id}`, `by a ripe bed: ${m.near}`);
+  // one press gathers every ripe bed within a few steps, one after another
+  const ripe = await page.evaluate(() => { const s = farm.state(); let n = 0; for (const id of Object.keys(s.beds)) if (s.beds[id]) { s.beds[id].doneAt = farm.game.now - 1; n++; } return n; });
   await page.locator('[data-explore="interact"]').click();
-  expect(await page.evaluate(b => !farm.state().beds[b.id] && (farm.state().barn.items[b.crop] ?? 0) > b.stock, bed), 'Harvest did not bring the crop in');
+  await page.waitForFunction(b => !farm.state().beds[b.id], bed, { timeout: 3000 });
+  await page.waitForTimeout(140 * ripe + 300);
+  const left = await page.evaluate(() => { const s = farm.state(), e = farm.world.exploreMode.session; return Object.keys(s.beds).filter(id => s.beds[id]?.doneAt <= farm.game.now && Math.hypot(s.placed[id].x * 2 + 1 - e.p[0], s.placed[id].z * 2 + 1 - e.p[1]) < 7).length; });
+  expect(left === 0 && ripe > 1, `one Harvest press left ${left} of ${ripe} ripe beds nearby`);
+  expect(await page.evaluate(b => (farm.state().barn.items[b.crop] ?? 0) > b.stock, bed), 'Harvest did not bring the crop in');
   // a bench: sit, then walking stands you up
-  const bench = await page.evaluate(() => { const r = farm.game.do('build', { kind: 'bench', x: 30, z: 66, rot: 0 }); const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bench'); return id ? { id, x: s.placed[id].x * 2 + 1, z: s.placed[id].z * 2 + 1, ok: r?.ok } : null; });
+  const bench = await page.evaluate(() => { const r = (farm.state().level = Math.max(farm.state().level, 6), farm.state().coins += 500, farm.game.do('place', { kind: 'bench', x: 34, z: 60, rot: 0 })); const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bench'); return id ? { id, x: s.placed[id].x * 2 + 1, z: s.placed[id].z * 2 + 1, ok: r?.ok } : null; });
   if (bench) {
     await stand(page, bench.x + 1.6, bench.z); await settle(page); m = await mode(page);
     expect(m.near === `bench:${bench.id}`, `by a bench: ${m.near}`);
+    await page.evaluate(() => farm.closeCards?.());   // a level-up card from the harvest pauses Explore input, as it should
     await page.keyboard.press('e'); await settle(page);
     expect(await page.evaluate(() => farm.world.exploreMode.session.seated && farm.people.walkers.get('you').clip === 'Sit'), 'did not sit on the bench');
     await page.keyboard.down('d'); await page.waitForTimeout(300); await page.keyboard.up('d');
@@ -129,6 +138,92 @@ await check('the Explore button waits until the first tutorial steps are done', 
   expect(await page.evaluate(() => farm.state().story.tutorial < 3), 'this fixture is not in the tutorial');
   expect(await page.locator('.hud [data-act="explore"]').isHidden(), 'the Explore button shows during the first tutorial steps');
   await ctx.close();
+});
+
+await check('more to do on foot: collect eggs, feed, pick fruit, pet the dog; tapping a thing walks there and does it', async () => {
+  const { ctx, page, errors } = await open('pc');
+  // a working coop with a hen that has laid, and a ripe fruit tree
+  const farmBits = await page.evaluate(() => {
+    const s = farm.state(); s.coins = 5000; s.level = 6;
+    const coop = Object.keys(s.placed).find(k => s.placed[k].kind === 'coop'); delete s.cond[coop];   // a mended coop for this check
+    return { coop };
+  });
+  const bits = await page.evaluate(({ coop }) => {
+    const g = farm.game, s = g.s, now = g.now;
+    g.do('buyAnimal', { home: coop }); const hens = s.animals[coop] ?? []; if (hens[0]) hens[0].doneAt = now - 1;
+    g.do('place', { kind: 'apple_tree', x: 36, z: 60, rot: 0 });
+    const tree = Object.keys(s.placed).find(k => s.trees?.[k]); if (tree) s.trees[tree].doneAt = now - 1;
+    const c = s.placed[coop], t = tree && s.placed[tree];
+    return { coop, hens: hens.length, eggs: s.barn.items.egg ?? 0, coopAt: [c.x * 2 + 2, c.z * 2 + 2], tree, treeAt: t && [t.x * 2 + 1, t.z * 2 + 1], fruit: tree ? Object.values(s.barn.items).reduce((a, b) => a + b, 0) : 0 };
+  }, farmBits);
+  await start(page);
+  if (bits.hens) {
+    await stand(page, bits.coopAt[0] - 3.2, bits.coopAt[1]); await settle(page); let m = await mode(page);
+    expect(m.near === `animals:${bits.coop}`, `by a coop with an egg: ${m.near} "${m.label}"`);
+    await page.keyboard.press('f');
+    expect(await page.evaluate(b => (farm.state().barn.items.egg ?? 0) > b.eggs, bits), 'Collect did not bring the egg in');
+    await settle(page); m = await mode(page);
+    expect(m.near === `feed:${bits.coop}`, `a hen that has laid is hungry: ${m.near}`);
+  }
+  if (bits.tree) {
+    await stand(page, bits.treeAt[0] + 2, bits.treeAt[1]); await settle(page); const m = await mode(page);
+    expect(m.near === `fruit:${bits.tree}`, `by a ripe tree: ${m.near}`);
+    await page.keyboard.press('e');
+    expect(await page.evaluate(b => farm.state().trees[b.tree].doneAt > farm.game.now, bits), 'Pick fruit did not pick the tree');
+  }
+  // the dog
+  const dog = await page.evaluate(() => {   // the dog keeps moving: stand beside it and look at once
+    const p = farm.people, w = [...p.walkers.values()].find(w => w.pet && !w.indoors); if (!w) return null;
+    const m = farm.world.exploreMode, pip = p.walkers.get('pip'), was = pip?.indoors; if (pip) pip.indoors = true;   // Pip is always beside his dog
+    m.session.p = [w.x + 1.2, w.z]; const near = m.scan(); if (pip) pip.indoors = was;
+    return { id: w.id, near: near?.id, label: near?.label };
+  });
+  if (dog) expect(dog.near === `person:${dog.id}` && dog.label === 'Pet {name}', `by the dog: ${JSON.stringify(dog)}`);
+  // tap a person across the yard: walk over, then talk
+  await page.evaluate(() => { const p = farm.people; for (const w of p.walkers.values()) if (w.pet) Object.assign(w, { x: 20, z: 20 }); const j = p.walkers.get('june'); p.cancelTrip(j); j.bubble?.remove(); j.bubble = null; Object.assign(j, { x: 65, z: 131, indoors: false, once: 'Idle', onceUntil: p.time + 9999 }); });
+  await page.evaluate(() => farm.closeCards?.());
+  await stand(page, 55, 131); await settle(page);
+  await page.waitForTimeout(700);   // the camera glides to you; tap where June is once it rests
+  const at = await page.evaluate(() => farm.cellToScreen(32, 65));
+  await page.mouse.click(at.x ?? at[0], at.y ?? at[1]);
+  await page.waitForFunction(() => !!farm.people.walkers.get('june').bubble?.isConnected, null, { timeout: 12000 });
+  expect(await page.evaluate(() => { const e = farm.world.exploreMode.session; return Math.hypot(e.p[0] - 65, e.p[1] - 131) < 3.2; }), 'did not walk over to the person that was tapped');
+  // tap a ripe bed in the middle of a row: walk over and harvest, even though other beds are as near
+  await page.evaluate(() => { const p = farm.people; for (const w of p.walkers.values()) if (!w.player) Object.assign(w, { x: 20, z: 20, once: 'Idle', onceUntil: p.time + 9999 }); farm.closeCards?.(); });
+  const bed = await page.evaluate(() => { const s = farm.state(), ids = Object.keys(s.beds).filter(k => s.beds[k]); for (const id of ids) s.beds[id].doneAt = farm.game.now - 1; const id = ids[Math.floor(ids.length / 2)], b = s.placed[id]; return { id, x: b.x, z: b.z }; });
+  await stand(page, bed.x * 2 + 1, bed.z * 2 + 9); await page.waitForTimeout(900);
+  const spot = await page.evaluate(b => farm.cellToScreen(b.x, b.z), bed);
+  await page.mouse.click(spot.x ?? spot[0], spot.y ?? spot[1]);
+  await page.waitForFunction(b => !farm.state().beds[b.id], bed, { timeout: 12000 }).catch(() => { throw Error('tapping a ripe bed walked there and did nothing'); });
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
+await check('phones get a thumb stick: dragging it walks, releasing stops; the action is one pill', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await start(page);
+  await stand(page, 57, 131); await settle(page);
+  const joy = page.locator('.explore-joy'); expect(await joy.isVisible(), 'no thumb stick on a touch screen');
+  const r = await joy.boundingBox(); expect(r.width >= 120 && r.x < 60 && r.y > 600, `the stick is not bottom-left: ${JSON.stringify(r)}`);
+  const from = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
+  const cdp = await ctx.newCDPSession(page), cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: cx, y: cy }] });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: cx + 45, y: cy }] });
+  await page.waitForTimeout(700);
+  expect(await page.evaluate(() => Math.hypot(...farm.world.exploreMode.stick) > .9), 'the stick does not report a direction');
+  // the action pill keeps up while the thumb stays on the stick
+  await page.evaluate(async () => {   // June waits six metres ahead, along the way the stick is taking you (screen right is a diagonal on the map)
+    const p = farm.people, j = p.walkers.get('june'), m = farm.world.exploreMode, a = [...m.session.p];
+    await new Promise(r => setTimeout(r, 250)); const b = m.session.p, len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    p.cancelTrip(j); Object.assign(j, { x: b[0] + (b[0] - a[0]) / len * 6, z: b[1] + (b[1] - a[1]) / len * 6, indoors: false, once: 'Idle', onceUntil: p.time + 9999 });
+  });
+  await page.waitForFunction(() => { const b = document.querySelector('[data-explore="interact"]'); return farm.world.exploreMode.joy && b && !b.disabled && farm.world.exploreMode.near?.id === 'person:june'; }, null, { timeout: 6000 }).catch(() => { throw Error('the action pill did not update while the stick was held'); });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await cdp.detach();
+  const to = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
+  expect(Math.hypot(to[0] - from[0], to[1] - from[1]) > 1, `the stick did not walk the character: ${from} → ${to}`);
+  expect(await page.evaluate(() => Math.hypot(...farm.world.exploreMode.stick) === 0), 'releasing the stick kept walking');
+  expect(await page.evaluate(() => { const c = document.querySelector('.explore-controls'); const j = document.querySelector('.explore-joy').getBoundingClientRect(), b = c.getBoundingClientRect(); return c.classList.contains('compact') && (b.bottom <= j.top + 1 || b.left >= j.right - 1); }), 'the action pill overlaps the thumb stick');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/zoo-phone.png` });
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
 await browser.close();
