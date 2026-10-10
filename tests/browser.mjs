@@ -882,7 +882,7 @@ await check('chapter 14: the hotel is built on the quay, guests come, breakfast 
   await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 5000; });
   // the quay's panel offers both riverside buildings on a free lot: build the hotel on the third
   await page.evaluate(() => farm.panels.show('quay', 'q3')); await page.waitForSelector('[data-do="buildOnLot"][data-kind="hotel"]');
-  expect(await page.locator('.quay-kind').count() === 2, 'the free lot does not offer the quay house and the hotel');
+  expect(await page.locator('[data-do="buildOnLot"][data-kind="apartment"]').count() === 1 && await page.locator('.quay-kind').count() >= 2, 'the free lot does not offer the quay house and the hotel');   // and the halt, from chapter 15 on
   await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}quay-hotel-lot.png` });
   await page.click('[data-do="buildOnLot"][data-lot="q3"][data-kind="hotel"]');
   await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'hotel' && p.lot === 'q3'));
