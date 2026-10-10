@@ -26,7 +26,7 @@ import { levelOf, isRepairing, repairCost, kindOf } from '../core/condition.mjs'
 import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
-import { roadSegmentAt, parcelNote, inOldMill, inMeadow, COOPERATIVE_BOARD, TOWPATH_GATE } from '../content/world.mjs';
+import { roadSegmentAt, parcelNote, inOldMill, inMeadow, COOPERATIVE_BOARD, TOWPATH_GATE, inRiverside, lotAt } from '../content/world.mjs';
 import { fishable } from '../core/pond-bank.mjs';
 import { siteAt, siteBuilt } from '../core/sites.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
@@ -144,6 +144,9 @@ export class Radial {
     if (id && !opts.preview && !opts.open && s.placed[id]?.kind === 'stage') { this.hide(); this.panels.show('festival'); return; }   // the festival stage: the Harvest Festival's panel
     // the old mill on the brook (scenery): what it is, and what its wheel does once the sluice is open (chapter 8)
     if (!id && !opts.preview && inOldMill(cell.x, cell.z)) return this.open(cell, x, y, [], `${iconHtml('feed_mill', '', 'mini')} ${t(s.firsts?.sluice ? 'The old mill: its wheel turns again, and every workshop works a tenth faster' : 'The old mill: its wheel has stood still since the water was shut off')}`);
+    // the riverside (Act IV): a building on a lot, a free lot, or the quay itself open the quay's panel
+    if (id && !opts.preview && !opts.open && s.placed[id]?.lot && levelOf(s, id) === 0) { this.hide(); this.panels.show('quay', s.placed[id].lot); return; }
+    if (!id && !opts.preview && s.firsts?.bridge && inRiverside(cell.x, cell.z) && !this.people?.pick(x, y)) { this.hide(); this.panels.show('quay', lotAt(cell.x, cell.z)?.id); return; }
     // the co-operative's notice board on the square (chapter 12)
     if (!opts.preview && cell.x === COOPERATIVE_BOARD.x && cell.z === COOPERATIVE_BOARD.z && (s.story?.chapter ?? 0) >= 11) { this.hide(); this.panels.show('cooperative'); return; }
     // the old towpath's gate on the far bank: shut until chapter 12 is seen

@@ -99,6 +99,16 @@ export function inTowpath(x, z) {
   if (x >= m.x0 - 1 && x <= m.x1 + 1) return z >= m.z0 - 2 && z < bank && (z < m.z0 || x < m.x0 || x > m.x1);   // behind the mill, and down again on either side
   return z === bank - 1 || z === bank - 2;
 }
+/** The riverside (Act IV, docs/plan/act4-far-bank.md): the far bank east of the old mill. The quay is two rows of cobbles
+ *  from the mill to the east edge of the farm; north of it seven lots of 6 x 5 cells, two cells apart, each with its
+ *  door on the quay; south of it the strand runs down to the towpath. Row 0 is kept for the railway (chapter 15).
+ *  Nothing of it shows until the quay is paved (s.firsts.quay, core/riverside.mjs). */
+export const QUAY = { x0: 44, x1: 99, z0: 6, z1: 7 };
+export const inQuay = (x, z) => x >= QUAY.x0 && x <= QUAY.x1 && z >= QUAY.z0 && z <= QUAY.z1;
+export const LOTS = Array.from({ length: 7 }, (_, i) => ({ id: `q${i + 1}`, x: 46 + i * 8, z: 1, w: 6, d: 5 }));
+export const lotAt = (x, z) => LOTS.find(l => x >= l.x && x < l.x + l.w && z >= l.z && z < l.z + l.d) ?? null;
+/** The whole riverside zone: the lots and the lanes between them, the quay, and the strand down to the water's edge. */
+export const inRiverside = (x, z) => x >= QUAY.x0 && x <= QUAY.x1 && z >= 1 && z < brookZ(x) - BROOK_HALF;
 /** The towpath's gate, just east of the brook road: shut until chapter 12 is seen, then open for good. Cells; rot in quarter turns. */
 export const TOWPATH_GATE = { x: 32, z: brookZ(32) - BROOK_HALF - 1, rot: 1 };   // its middle, in cells: across both rows of the path, where the road's verge ends
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];

@@ -156,6 +156,22 @@ function placeTrees(world, plan) {
   for (const t of plan.bushes) { b.set(`wild${n++}`, { model: 'bush', x: t.x, z: t.z, rot: rand() * 6.28, scale: t.s }); world.ground.stampShade(t.x, t.z, 1.1 * t.s, 0.1); }
   for (const t of plan.rocks) b.set(`wild${n++}`, { model: 'rock', x: t.x, z: t.z, rot: rand() * 6.28, scale: t.s });
 }
+/** Take the wild scatter off land that has just been built on (the riverside, once its quay is paved): its trees,
+ *  bushes and rocks leave the batches, the merged flowers and tufts are rebuilt without the ones inside, and the shade
+ *  under the trees is stamped again. inside(cellX, cellZ). Returns how many batch items went. */
+export function clearWilds(world, inside) {
+  const plan = world.wilds; if (!plan) return 0;
+  const out = t => inside(Math.floor(t.x / CELL), Math.floor(t.z / CELL));
+  const b = world.batches; let n = 0, removed = 0;
+  for (const list of [plan.trees, plan.bushes, plan.rocks]) for (const t of list) { const id = `wild${n++}`; if (!t.gone && out(t)) { t.gone = true; b.remove(id); removed++; } }   // the ids follow placeTrees' order
+  for (const key of ['flowers', 'tufts', 'mushrooms']) plan[key] = plan[key].filter(t => !out(t));
+  if (world.wildDecor) { for (const m of world.wildDecor) { world.scene.remove(m); m.geometry.dispose(); } world.wildDecor = placeDecor(world, plan); }
+  world.ground.clearShade();
+  for (const t of plan.trees) if (!t.gone) world.ground.stampShade(t.x + 0.6, t.z + 0.4, 2.3 * t.s, 0.16);
+  for (const t of plan.bushes) if (!t.gone) world.ground.stampShade(t.x, t.z, 1.1 * t.s, 0.1);
+  world.ground.markAll();
+  return removed;
+}
 /** Flowers, tufts and mushrooms merged into a few meshes. */
 function placeDecor(world, plan) {
   seed = 9001;

@@ -38,6 +38,7 @@ const CONTENTS = ['beds', 'animals', 'production', 'homes', 'trees'];
 export function storeWhy(s, id) {
   const p = s.placed[id];
   if (BUILDINGS[p.kind].garden) return 'The streak garden keeps its flowers';
+  if (BUILDINGS[p.kind].lot) return 'Buildings on the quay stay where they are';
   if (s.homes[id]?.family) return 'A family lives here: move the cottage instead';
   if (s.beds[id]) return 'Harvest the crop first';
   if (s.animals[id]?.length) return 'The animals live here: move it instead';

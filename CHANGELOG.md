@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 13: The far bank — 2026-10-11
+
+- **The old quay**: once the towpath is open, pave the quay on the far bank east of the old mill (level 14, 2,500 coins). Cobbles, lamps and bollards appear along the water, the wild trees leave, and seven lots wait with a sign each.
+- **The quay house**: pick a lot in the quay's panel and build it (level 15, 9,000 coins; up to three). A tea shop below, four flats above. Four families come back to the valley with each house, and it pays rent into the mailbox: 220 coins every ten minutes.
+- **Nana Snow**, the keeper of the quay, arrives with the first house, sits by its door and passes on two letters from the families upstairs.
+- **Chapter 13** closes with the first quay house. Act IV has begun; the roadmap has a new stage, "Across the river".
+
 ## Chapter 12: One river, many farms — 2026-10-11
 
 - **Two new neighbours**: Juniper of Hillside Orchard and the twins Pebble and Sprig of Brookhead Farm. They call soon after chapter 11, then visit, trade and post orders like Daisy and Bramble. The twins bring what your answer to Mr Albright did not give you: honey, or tins.

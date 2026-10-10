@@ -42,6 +42,7 @@ export function allowance(s, kind) {
 export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   const def = BUILDINGS[kind];
   if (def.choice && s.story?.albright !== def.choice) return { ok: false, reason: 'This belongs to the other answer you could have given', params: { kind, lock: 'choice' } };
+  if (def.lot) return (s.counts[kind] ?? 0) >= (def.max ?? Infinity) ? { ok: false, reason: 'The quay has all of these it can hold', params: { kind, lock: 'max' } } : { ok: true };   // core/riverside.mjs judges the rest
   if (def.site) return (s.counts[kind] ?? 0) > 0 ? { ok: false, reason: 'It is already built', params: { kind, lock: 'max' } } : { ok: true };   // core/sites.mjs judges the rest
   const civicReason = civicBuildReason(s, kind); if (civicReason) return { ok: false, reason: civicReason };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };

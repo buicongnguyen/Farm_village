@@ -63,4 +63,9 @@ export const LETTERS = [
   // Chapter 8: the sluice is open. Oak is still upriver (he comes home in chapter 9).
   { id: 'ellis-9', reward: { goods: { koi: 1 } }, from: 'ellis', after: ['ellis-8'], when: { type: 'chapter', value: 8 },
     text: 'The water came up past my boots this morning, and I knew before the post did. So the gate is open. Well done, all of you. I am following the brook home, slowly. The fish go first. — {person:ellis:display}' },
+  // Chapter 13: families who left the valley come back to the quay house. The keeper passes their notes on.
+  { id: 'tuyet-1', reward: { coins: 60 }, from: 'tuyet', when: { type: 'count', key: 'apartment', value: 1 },
+    text: 'From the second floor, on the left: “We left with two suitcases and came back with five and a cat. The window looks at the same hill. Thank you for the window.” They sent these coins with it. — {person:tuyet:display}' },
+  { id: 'tuyet-2', reward: { decor: 'flowerpot' }, from: 'tuyet', after: ['tuyet-1'], when: { type: 'count', key: 'apartment', value: 1 },
+    text: 'From the top floor: “Our girl was born in the city and had never heard a brook at night. She asked us to turn it down.” They left a flowerpot at my door for you. I have watered it. — {person:tuyet:display}' },
 ];

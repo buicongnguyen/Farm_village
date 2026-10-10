@@ -59,6 +59,7 @@ const OUTFITS = {
   pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
   albright: { top: '#6b7280', bottom: '#374151', hair: '#4a4a5c' },   // the man from the city: a grey suit
+  tuyet: { top: '#3d7bd0', bottom: '#fff4e2', hair: '#e8e4da' },   // the keeper of the quay: a blue scarf and jacket, white hair
   priya: { top: '#e0496b', bottom: '#3a6b4a', hair: '#1a1a22' },   // the orchard grower: a raspberry blouse, leaf-green trousers
   twins: { top: '#ffcf3f', bottom: '#2f4f8a', hair: '#a8642c' },   // the twins: the same yellow jersey and blue dungarees, both of them
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
@@ -128,6 +129,9 @@ export class PeopleView {
     // the baker keeps a stall at the market square from the first market day on (chapter 6)
     const market = Object.entries(s.placed).find(([, p]) => p.kind === 'market');
     if (market && hasArrived(s, villager('hugo'))) { const p = market[1]; out.push({ id: 'hugo', body: 'man', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // the keeper of the quay sits by the door of the first quay house (chapter 13)
+    const quayHouse = Object.entries(s.placed).filter(([, p]) => p.kind === 'apartment').sort((a, b) => a[1].x - b[1].x)[0];
+    if (quayHouse && hasArrived(s, villager('tuyet'))) { const p = quayHouse[1], door = doorCell(p.kind, p.x, p.z, p.rot); out.push({ id: 'tuyet', body: 'hana', home: [door[0] + 1, door[1]], work: true }); }
     // the man from the city waits by the farm gate until he has his answer (chapter 11)
     if (hasArrived(s, villager('albright'))) out.push({ id: 'albright', body: 'man', home: this.nearestWalkable(...ALBRIGHT.stand) ?? ALBRIGHT.stand, work: true });
     return out;

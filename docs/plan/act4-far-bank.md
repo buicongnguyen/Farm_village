@@ -1,6 +1,27 @@
 # Act IV groundwork: the far bank
 
-Status: not started · Depends on: chapter 12 · Size: two to three sessions, three PRs
+Status: **done** together with chapter 13 (PR #88) · Depends on: chapter 12 · Size: two to three sessions, three PRs
+
+## What was built, where it differs from the plan below
+
+- **One PR with chapter 13**, not three: the groundwork has nothing to show without a building on it.
+- **The land** (`content/world.mjs`): `QUAY` (cells 44..99 x 6..7, starting east of the old mill, where it meets the
+  towpath), seven `LOTS` of 6 x 5 cells (`q1`..`q7`, two cells apart, rows 1..5, fronts on the quay), `inRiverside`
+  (lots, lanes, quay and the strand down to the water). Row 0 is left for the railway of chapter 15. No `road_quay` in
+  the road list: a road can always be walked and wears out; the quay is its own ground.
+- **Paving is a deed**: `paveQuay` (level 14, 2,500 coins at testing pace) stamps `s.firsts.quay`. Until then the bank
+  is wild; then the cobbles, a lamp in every lane, bollards along the water and a sign on every free lot appear, and
+  the wild scatter leaves the zone (`clearWilds` in `view/dress.mjs`).
+- **Lots are picked in the quay's panel**, not in build mode: a row of seven lots, then what can be built on the one
+  picked. `buildOnLot({ lot, kind })` in `core/riverside.mjs`; a kind with `lot: true` is refused everywhere else
+  (`grid.canPlace`), is not in the build catalogue, and is never moved, stored or demolished. A later kind may name
+  its lots (`def.lots`), as the halt will.
+- **No level-of-detail system**: there are at most seven riverside buildings, each under 6,000 triangles, drawn by
+  the batches like any building. Night windows come from the kit's window anchors (`LIT` in `view/daylight.mjs`).
+  If a phone suffers once all seven stand, the mid model is the first thing to add.
+- The camera, the shadow range and the brook's north bank were left as they are: the far bank was already in view.
+- No zone label (the game has no place-name layer), no test building (chapter 13's quay house is the first real one).
+- Tests: `tests/riverside.test.mjs`.
 Story source: `JOURNEY.md` 3 (Act IV) and 6 (zones)
 
 This file is not a chapter. It builds the ground chapters 13 to 15 stand on.

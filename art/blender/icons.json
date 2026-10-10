@@ -469,6 +469,31 @@
   }
  },
  {
+  "id": "apartment",
+  "src": "raw:decor",
+  "root": "apartment",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
+  "id": "quay",
+  "src": "raw:decor",
+  "root": "quay_bollard",
+  "view": [-28, 18],
+  "preset": "building"
+ },
+ {
+  "id": "person:tuyet",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8C39E",
+   "Villager hair": "#E8E4DA",
+   "Villager shirt": "#3D7BD0",
+   "Villager trousers": "#FFF4E2"
+  }
+ },
+ {
   "id": "cooperative_board",
   "src": "raw:decor",
   "root": "cooperative_board",

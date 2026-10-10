@@ -33,6 +33,7 @@ import { handsOpen, handHired, handWho } from '../core/helpers.mjs';
 import { renderReport } from './report-panel.mjs';
 import { renderValley } from './valley-panel.mjs';
 import { renderCooperative } from './cooperative-panel.mjs';
+import { renderQuay } from './quay-panel.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
@@ -100,6 +101,7 @@ export function renderPanel() {
     }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
     else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s); }
+    else if (o.kind === 'quay') { title = t('The quay'); icon = 'quay'; body = renderQuay(s, now, o.arg); }
     else if (o.kind === 'cooperative') { title = t('The co-operative'); icon = 'cooperative_board'; body = renderCooperative(s, now); }
     else if (o.kind === 'site') { title = t(BUILDINGS[o.arg]?.name ?? ''); icon = o.arg; body = renderSite(s, o.arg); }
     else if (o.kind === 'civicSite') { title = t(BUILDINGS[o.arg]?.name ?? 'Village growth'); icon = o.arg; body = renderCivicSite(s, o.arg); }

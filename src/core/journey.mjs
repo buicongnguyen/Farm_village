@@ -27,6 +27,8 @@ const tests = {
   tasks30: s => (s.stats?.handTasks ?? 0) >= 30,
   albright: s => !!s.story?.albright,
   cooperative: s => !!s.cooperative?.founded,
+  quay: s => !!s.firsts?.quay,
+  quayHouse: s => (s.counts?.apartment ?? 0) >= 1,
   cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {

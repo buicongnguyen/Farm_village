@@ -67,6 +67,11 @@ export const STEPS = [
     needs: {}, panel: 'cooperative', done: s => !!s.cooperative?.founded, builds: [] },
   { id: 'cooperative_order', name: 'The first shared order', text: 'The city asks for more than one farm can send. Your neighbours bring a third of every line; send the rest from your barn, a little at a time.',
     needs: {}, panel: 'cooperative', done: s => (s.cooperative?.filled ?? 0) >= 1, builds: [] },
+  // chapter 13 (docs/plan/ch13-the-far-bank.md, act4-far-bank.md)
+  { id: 'quay', name: 'Pave the old quay', text: 'Under the grass of the far bank lies the old quay. Pave it again: seven lots along it wait for a town.',
+    needs: { level: 14 }, panel: 'quay', done: s => !!s.firsts?.quay, builds: [] },
+  { id: 'quay_house', name: 'A house on the quay', text: 'Build the first quay house on a lot of the quay: a tea shop below, and four flats for families who want to come home.',
+    needs: { level: 15 }, panel: 'quay', done: s => (s.counts.apartment ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

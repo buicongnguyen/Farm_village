@@ -22,7 +22,7 @@ if (previousDocument === undefined) delete globalThis.document;
 else globalThis.document = previousDocument;
 
 const LOCALES = ['en', 'vi', 'ko', 'ja'];
-const PERSON_IDS = ['ada', 'ellis', 'june', 'pip', 'minh', 'lan', 'bo', 'grace', 'sam', 'zara', 'elin', 'olaf', 'marisol', 'tomas', 'pia', 'cora', 'hazel', 'hugo', 'pearl', 'bea', 'albright', 'mai', 'gus', 'priya', 'twins'];   // newcomers: hugo the baker (chapter 6), pearl the constable (7), bea the office manager (8)
+const PERSON_IDS = ['ada', 'ellis', 'june', 'pip', 'minh', 'lan', 'bo', 'grace', 'sam', 'zara', 'elin', 'olaf', 'marisol', 'tomas', 'pia', 'cora', 'hazel', 'hugo', 'pearl', 'bea', 'albright', 'tuyet', 'mai', 'gus', 'priya', 'twins'];   // newcomers: hugo the baker (chapter 6), pearl the constable (7), bea the office manager (8)
 const PET_IDS = ['dog', 'hen_cloud', 'hen_drizzle', 'frog_captain', 'cat'];
 const FAMILY_IDS = ['tran', 'okafor', 'lindqvist', 'reyes'];
 const NOW = 1_800_000_000_000;

@@ -4,7 +4,7 @@
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, inQuay, inRiverside } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -23,10 +23,11 @@ const roadside = (x, z) => ROAD_SEGMENTS.some(r => x >= r.x0 - 2 && x <= r.x1 + 
 export function stepCost(s, x, z, blocked = null) {
   if (!validCell(x, z) || blocked?.has(`${x},${z}`)) return 0;
   if (isRoad(x, z)) return 1;                                           // the road bridge crosses the brook
+  if (s.firsts?.quay && inQuay(x, z)) return 1;                         // the paved quay on the far bank (Act IV)
   if (isBrook(x, z)) return x === STEPPING_STONES.x ? 2 : 0;
   if (isPondWater(x, z) || inFixed(x, z) || KIOSKS.has(`${x},${z}`)) return 0;
   const parcel = parcelOf(x, z);
-  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z) || (s.firsts?.bridge && inTowpath(x, z)))) return 0;   // the far bank's towpath, once its gate is off (chapter 12)
+  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z) || (s.firsts?.bridge && inTowpath(x, z)) || (s.firsts?.quay && inRiverside(x, z)))) return 0;   // the far bank's towpath, once its gate is off (chapter 12)
   if (x === COOPERATIVE_BOARD.x && z === COOPERATIVE_BOARD.z && (s.story?.chapter ?? 0) >= 11) return 0;   // the co-operative's notice board stands there
   const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0) && !s.village?.cleared?.[ruin.kind]) return 0;   // an old ruin stands there
   if (homeGardenAt(s.house?.level ?? 1, x, z)) return 0;   // the pool, the gazebo and the rest of the farmhouse garden
