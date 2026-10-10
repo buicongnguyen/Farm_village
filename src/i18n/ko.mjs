@@ -1,10 +1,11 @@
 // Korean edition. English keys and stable identity tokens are shared with every locale.
 import { KO_FEATURES } from './ko-features.mjs';
 import { KO_FISHING } from './ko-fishing.mjs';
+import { KO_MAIL } from './ko-mail.mjs';
 import { KO_EXPLORE } from './ko-explore.mjs';
 export const KO = {
   ...KO_EXPLORE,
-  ...KO_FISHING,
+  ...KO_FISHING, ...KO_MAIL,
   "Coins": "동전",
   "Garden repairs": "정원 수리",
   "Old potting bench": "오래된 분갈이 작업대",
