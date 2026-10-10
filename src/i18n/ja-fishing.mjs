@@ -117,4 +117,10 @@ export const JA_FISHING = {
   'Hire a farm hand': 'お手伝いを1人雇う',
   'The meadow and the river': '牧草地と川',
   'Riverside town': '川辺の町',
+  // more vegetables
+  'Tomato': 'トマト',
+  'Potato': 'ジャガイモ',
+  'Cabbage': 'キャベツ',
+  'Onion': 'タマネギ',
+  'Chili': 'トウガラシ',
 };

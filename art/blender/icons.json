@@ -1017,6 +1017,36 @@
   "rough": 0.5
  },
  {
+  "id": "tomato",
+  "src": "raw:items",
+  "root": "tomato",
+  "preset": "goods"
+ },
+ {
+  "id": "potato",
+  "src": "raw:items",
+  "root": "potato",
+  "preset": "goods"
+ },
+ {
+  "id": "cabbage",
+  "src": "raw:items",
+  "root": "cabbage",
+  "preset": "goods"
+ },
+ {
+  "id": "onion",
+  "src": "raw:items",
+  "root": "onion",
+  "preset": "goods"
+ },
+ {
+  "id": "chili",
+  "src": "raw:items",
+  "root": "chili",
+  "preset": "goods"
+ },
+ {
   "id": "orange",
   "src": "raw:items",
   "root": "item_orange",

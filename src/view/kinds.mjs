@@ -113,9 +113,10 @@ export const EARLY = {
 };
 
 // ── Crops: three growth stages, authored at their real size in farm-kit.glb ──
-export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng'];
+export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng', 'tomato', 'potato', 'cabbage', 'onion', 'chili'];
+const LATE_CROPS = new Set(['tomato', 'potato', 'cabbage', 'onion', 'chili']);   // in the decor kit, after the first scene (carrot leaves stand in until then)
 export const CROP_STAGES = ['sprout', 'mid', 'ripe'];
-for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
+for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = LATE_CROPS.has(c) ? { kit: 'decor', node: `crop_${c}_${st}`, authored: true, lod: 'crop', late: true } : { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
 for (const c of CROP_MODELS) KIND_MODELS[`crop:${c}`] = KIND_MODELS[`crop:${c}:ripe`];     // v0.1 names (life-view's cropStage)
 KIND_MODELS['crop:sprout'] = KIND_MODELS['crop:wheat:sprout'];
 /**
