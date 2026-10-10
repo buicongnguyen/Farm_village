@@ -36,7 +36,7 @@ export const BEDS = {
 };
 export const CLEAR = { weeds: 2, rock: 10 };
 export const BARN = { start: 50, step: 100, max: 24000, upgradeCost: () => 100 };   // upgrades stop at max
-export const SLOTS = { start: 2, max: 6, cost: [0, 0, 60, 90, 120, 150] };   // cost of the nth slot (index = slot count before buying)
+export const SLOTS = { start: 2, max: 10, cost: [0, 0, 60, 90, 120, 150, 180, 210, 240, 270] };   // cost of the nth slot (index = slot count before buying)
 export const RENT = {
   perHour: [12, 24, 40], upgradeCost: [0, 400, 1500], capHours: 8,   // v0.3c: passive income worth having now that everything is quick
   tipMs: [3 * MIN, 6 * MIN], tipCoins: [4, 12],   // a happy family leaves a tip every few minutes
@@ -50,7 +50,8 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
 export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70], upgradeCost: [0, 300, 700], level: [1, 3, 5],
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
-export const FISH = { waitMs: 25_000, baitMs: 12_000, feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
+export const FISH = { waitMs: 25_000, baitMs: 12_000, footMs: [4500, 9000],   // footMs: a cast made on foot from the bank bites this soon (Zoo Garden's pace)
+  feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */
 export const HELP = { level: 3, everyMs: 2 * MIN, beds: 4, products: 3 };
 export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: 30_000, bonus: 1.25 };

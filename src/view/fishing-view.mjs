@@ -27,7 +27,8 @@ export class FishingView {
       const c = float.attributes.position.getY(i) > 0 ? red : white; colors.push(c.r, c.g, c.b);
     }
     float.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    this.floats = instance('fishing-floats', float, new THREE.MeshBasicMaterial({ vertexColors: true }));
+    this.floats = instance('fishing-floats', float, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true }));
+    this.floats.renderOrder = 6;   // after the fish, which are drawn through the water: a float is never hidden under one
     this.positions = new Float32Array(MAX * SEGMENTS * 6);
     const line = new THREE.BufferGeometry();
     line.setAttribute('position', new THREE.BufferAttribute(this.positions, 3).setUsage(THREE.DynamicDrawUsage));
@@ -35,7 +36,8 @@ export class FishingView {
     // per-vertex colour: your own line warms from cream to red as its tension rises (view/fishing-play.mjs)
     this.lineColors = new Float32Array(MAX * SEGMENTS * 6).fill(1);
     line.setAttribute('color', new THREE.BufferAttribute(this.lineColors, 3).setUsage(THREE.DynamicDrawUsage));
-    this.lines = new THREE.LineSegments(line, new THREE.LineBasicMaterial({ vertexColors: true }));
+    this.lines = new THREE.LineSegments(line, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true }));
+    this.lines.renderOrder = 6;
     this.lines.name = 'fishing-lines'; this.lines.frustumCulled = false; world.scene.add(this.lines);
     game.on((result, action) => {
       if (action === 'load') { this.casts.clear(); this.clearPile(); this.unpacked = true; }
@@ -53,6 +55,17 @@ export class FishingView {
       const a = i / n * Math.PI * 2;
       p.spawn({ x, y: y + .05, z, vx: Math.cos(a) * (big ? 1.4 : .9), vy: (big ? 3.2 : 2.2) + Math.random(), vz: Math.sin(a) * (big ? 1.4 : .9), gravity: 9, size: .14, size1: .05, life: .55, color: '#bfefff' });
     }
+  }
+  /** A villager's catch: a small fish leaps from their float into their lap and is gone (their basket; your barn is not involved). */
+  landFor(w, from, water) {
+    this.splash(from.x, water, from.z, 14, true);
+    const def = FISH_TABLE[Math.floor(Math.random() * 4)];   // the four common kinds
+    loadKitLater('fish').then(kit => {
+      const src = kit[`fish_${def.model}`]; if (!src) return;
+      const o = src.clone(true), box = new THREE.Box3().setFromObject(o);
+      o.scale.setScalar(def.len * .9 / Math.max(.01, box.max.z - box.min.z)); o.rotation.order = 'YXZ'; this.world.scene.add(o);
+      this.leaps.push({ o, t: 0, from: { x: from.x, y: water, z: from.z }, to: { x: w.x, y: 1.1, z: w.z }, rot: Math.random() * 6.28, landed: false, gone: true });
+    }).catch(() => {});
   }
   /** The caught fish leaps from the float onto the grass beside you (0.65 s, tumbling) and lies there with the rest
    *  of your catch (Willowmere's bank pile). It is already in the barn; the pile is packed away when you walk off. */
@@ -118,6 +131,13 @@ export class FishingView {
       let bob = quiet ? 0 : Math.sin(this.time * (ready ? 5 : 2) + next.length) * (ready ? .07 : .025);
       if (!quiet && play.phase === 'nibble') bob = -.07 * (play.dart ?? 0);
       if (!quiet && play.phase === 'bite') bob = -.22 + Math.sin(this.time * 40) * .04;
+      // The villagers catch fish too: now and then a float goes under, and a fish leaps out to whoever holds the rod.
+      let caught = false;
+      if (!w.player && !quiet && progress >= 1) {
+        cast.next ??= this.time + 12 + Math.random() * 28;
+        const since = this.time - cast.next;
+        if (since > .9) caught = true; else if (since > 0) bob = -.2 + Math.sin(this.time * 40) * .04;
+      }
       const tip = { x: w.x + ux * 2.1, y: 2.1 + (1 - progress) * .65, z: w.z + uz * 2.1 };
       const point = {
         x: tip.x + (w.x + ux * reach - tip.x) * progress,
@@ -125,6 +145,7 @@ export class FishingView {
         z: tip.z + (w.z + uz * reach - tip.z) * progress,
       };
       if (w.player && progress >= 1 && !cast.landed) { cast.landed = true; this.splash(point.x, water, point.z, 8); }
+      if (caught) { this.landFor(w, point, water); cast.next = null; cast.at = this.time; }   // and they cast again
       if (w.player && play.phase === 'fight') {   // the fish drags the float about as you reel it toward the bank
         const pull = play.progress * .75, side = Math.sin(this.time * (play.surge ? 14 : 6)) * (play.surge ? .55 : .2) * (1 - play.progress * .6);
         point.x += (w.x + ux * .9 - point.x) * pull - uz * side; point.z += (w.z + uz * .9 - point.z) * pull + ux * side;
@@ -208,7 +229,7 @@ export class FishingView {
       l.t += dt / .65; const k = Math.min(1, l.t);
       l.o.position.set(l.from.x + (l.to.x - l.from.x) * k, l.from.y + (l.to.y - l.from.y) * k + Math.sin(k * Math.PI) * 2.2, l.from.z + (l.to.z - l.from.z) * k);
       l.o.rotation.set(Math.sin(k * Math.PI) * Math.PI, l.rot, k * Math.PI / 2);   // tumbles over and comes down on its side
-      if (k >= 1) l.landed = true;
+      if (k >= 1) { l.landed = true; if (l.gone) this.world.scene.remove(l.o); }
     }
     this.leaps = this.leaps.filter(l => !l.landed);
     // fish left on the grass when the game was closed (or loaded from another device) are packed quietly: nothing is lost

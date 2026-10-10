@@ -34,4 +34,5 @@ export const KO_FISHING = {
   'Your fish is packed away in the barn.': '잡은 물고기를 헛간에 넣었어요.',
   'Your catch is packed away: {count} fish in the barn.': '잡은 물고기 {count}마리를 헛간에 넣었어요.',
   'Nothing to pack': '넣을 것이 없어요',
+  'You reeled the line back in.': '낚싯줄을 다시 감았어요.',
 };

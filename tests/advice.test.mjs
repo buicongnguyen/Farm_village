@@ -93,7 +93,7 @@ test('queue investment requires a full working queue, usable recipe inputs and a
   const c = card(s, 'queue-full'); assert.equal(c.params.cost, 60);
   assert.match(c.reason, /another batch at the same time/);
   s.coins = 59; assert.equal(card(s, 'queue-full'), undefined);
-  s.coins = 500; s.production.bakery.slots = 6; while (s.production.bakery.queue.length < 6) queueJob(s, 'bread', T0 + 60_000);
+  s.coins = 500; s.production.bakery.slots = 10; while (s.production.bakery.queue.length < 10) queueJob(s, 'bread', T0 + 60_000);
   assert.equal(card(s, 'queue-full'), undefined);
   s.production.bakery.slots = 2; s.production.bakery.queue.length = 2; delete s.barn.items.egg;
   assert.ok(card(s, 'order-ingredient')); assert.equal(card(s, 'queue-full'), undefined);

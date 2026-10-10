@@ -38,15 +38,16 @@ export class PondFish {
       const tg = tail ? bake(tail, { center: false, ao: 0 }) : null, hinge = tail ? tail.position.clone() : new THREE.Vector3();
       bg.computeBoundingBox(); const b = bg.boundingBox, z0 = Math.min(b.min.z, tg ? hinge.z + (tg.computeBoundingBox(), tg.boundingBox.min.z) : b.min.z);
       const scale = len / Math.max(0.01, b.max.z - z0), top = b.max.y * scale;
-      const make = g => { const m = new THREE.InstancedMesh(g, mat, Math.max(1, big + small * (MAX - 1))); m.count = 0; m.renderOrder = 4; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(m); return m; };
-      this.kinds.push({ id, big, small, tint: new THREE.Color(tint), nose: b.max.z * scale, scale, top, hinge, body: make(bg), tail: tg ? make(tg) : null });
+      const make = g => { const m = new THREE.InstancedMesh(g, mat, Math.max(1, big + small * (MAX - 1))); m.count = 0; m.renderOrder = 4.5 - len / 10; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(m); return m; };   // the big fish swim underneath: drawn first
+      this.kinds.push({ id, big, small, len, tint: new THREE.Color(tint), nose: b.max.z * scale, scale, top, hinge, body: make(bg), tail: tg ? make(tg) : null });
       total += Math.max(1, big + small * (MAX - 1));
-      if (!this.far) this.far = bg.clone();   // the first fish's body is everyone's far shape
     }
     if (this.kinds[0]) this.kinds[0].body.name = 'pond-fish';
-    if (this.far) {
-      this.far.deleteAttribute('color'); const plain = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.8, depthTest: false, depthWrite: false });
-      this.far = new THREE.InstancedMesh(this.far, plain, total); this.far.count = 0; this.far.renderOrder = 4; this.far.frustumCulled = false; this.far.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(this.far);
+    this.kinds.sort((a, b) => b.len - a.len);   // far off they share one draw, written biggest first, so small fish stay on top there too
+    if (total) {   // the far shape: a flat fish of three triangles, one metre long, nose to +z
+      const flat = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0, 0, .5, .15, 0, .08, -.15, 0, .08, -.15, 0, .08, .15, 0, .08, 0, 0, -.3, 0, 0, -.3, .17, 0, -.5, -.17, 0, -.5], 3));
+      const plain = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.8, depthTest: false, depthWrite: false, side: THREE.DoubleSide });
+      this.far = new THREE.InstancedMesh(flat, plain, total); this.far.count = 0; this.far.renderOrder = 4; this.far.frustumCulled = false; this.far.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(this.far);
     }
   }
   /** The ponds: the village pond, then every built pond (water level y). */
@@ -123,7 +124,7 @@ export class PondFish {
         q.setFromEuler(eu.set(0, heading + swish * 0.06, roll, 'YXZ'));   // the models face +z
         const y = p.y - k.top - 0.05 + lift + 0.03 * Math.sin(t * 1.3 + seed);   // just under the surface
         m4.compose(v.set(x, y, z), q, sc.setScalar(k.scale * size));
-        if (far) { this.far.setMatrixAt(all, m4); this.far.setColorAt(all++, k.tint); continue; }
+        if (far) { m4.compose(v, q, sc.setScalar(k.len * size)); this.far.setMatrixAt(all, m4); this.far.setColorAt(all++, k.tint); continue; }
         k.body.setMatrixAt(i, m4);
         if (k.tail) { qt.setFromAxisAngle(up, swish * swing); t4.compose(k.hinge, qt, sc.setScalar(1)); k.tail.setMatrixAt(i, m4.clone().multiply(t4)); }
       }

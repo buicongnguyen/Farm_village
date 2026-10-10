@@ -33,7 +33,7 @@ export const FISH_TABLE = [
   { id: 'pond_giant', name: 'Crystal giant', value: 100, weight: 1, rare: true, model: 'guardian', len: 3.0 },
 ];
 export const ANIMALS = {
-  hen: { name: 'Hen', home: 'coop', eats: 'chicken_feed', gives: 'egg', everyMs: 45_000, price: 40, freeFirst: 2, level: 2, perHome: 6 },
+  hen: { name: 'Hen', home: 'coop', eats: 'chicken_feed', gives: 'egg', everyMs: 45_000, price: 40, freeFirst: 2, level: 2, perHome: 8 },
   cow: { name: 'Cow', home: 'cow_barn', eats: 'cow_feed', gives: 'milk', everyMs: 5 * MIN, price: 150, freeFirst: 0, level: 6, perHome: 4 },
 };
 export const PRODUCE = {

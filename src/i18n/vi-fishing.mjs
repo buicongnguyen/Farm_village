@@ -34,4 +34,5 @@ export const VI_FISHING = {
   'Your fish is packed away in the barn.': 'Con cá của bạn đã được cất vào kho.',
   'Your catch is packed away: {count} fish in the barn.': 'Đã cất mẻ cá vào kho: {count} con.',
   'Nothing to pack': 'Không có gì để cất',
+  'You reeled the line back in.': 'Bạn đã thu dây về.',
 };

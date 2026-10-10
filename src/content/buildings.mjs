@@ -25,7 +25,7 @@ export const BUILDINGS = {
   fence:      { name: 'Fence', cat: 'paths', edge: true, area: 'any', level: 2, cost: 3, model: 'pen_fence' },
   gate:       { name: 'Gate', cat: 'paths', edge: true, area: 'any', level: 2, cost: 10, model: 'pen_gate' },
   // Animals
-  coop:       { name: 'Coop', cat: 'animals', size: [2, 2], area: 'farm', level: 2, cost: 40, door: true, animals: 'hen', project: 'mill_coop', max: 2, model: 'coop' },
+  coop:       { name: 'Coop', cat: 'animals', size: [2, 2], area: 'farm', level: 2, cost: 40, door: true, animals: 'hen', project: 'mill_coop', max: 4, model: 'coop' },
   cow_barn:   { name: 'Cow barn', cat: 'animals', size: [3, 2], area: 'farm', level: 6, cost: 0, door: true, animals: 'cow', after: 'school', max: 1, model: 'cow_shelter' },
   kennel:     { name: "{pet:dog:short}'s kennel", cat: 'animals', size: [1, 1], area: 'any', level: 5, cost: 90, pet: true, max: 1, model: 'kennel', charm: 2 },
   // Production
