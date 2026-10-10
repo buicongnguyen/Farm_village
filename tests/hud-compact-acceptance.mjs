@@ -113,7 +113,9 @@ export async function runCompactHud(testMode) {
         expect(await page.locator('.hud [data-status="projects"]').evaluate(el => !el.classList.contains('hot')), 'the Projects pill is lit although every project is done');
         expect(await page.locator('.hud [data-act="projects"].round, .hud [data-act="mail"].round').count() === 0, 'the Projects and Mailbox round buttons are back');
         expect(await page.locator('.hud [data-status="mail"]').isVisible(), 'unread letters have no notice pill');
-        expect(await page.locator('.hud .status-row').count() === 6, 'lost a compact activity route');
+        // goals, project, letters, rent, trucks, fishing, and the market day that begins as soon as the square can hold one (chapter 6)
+        expect(await page.locator('.hud [data-status="marketday"]').isVisible(), 'a running market day has no pill');
+        expect(await page.locator('.hud .status-row').count() === 7, 'lost a compact activity route');
         const goalBadge = await page.locator('.hud [data-status="quests"] .badge.ready').innerText();
         expect(goalBadge === '1', `goal readiness is not on its button: ${goalBadge}`);
         for (const id of ['today', 'barn', 'orders', 'build', 'friends']) expect((await page.locator(`.hud [data-act="${id}"] .hud-label`).innerText()).length > 0, `${id} has no visible label`);
