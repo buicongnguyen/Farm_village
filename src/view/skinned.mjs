@@ -26,10 +26,10 @@ export const RIGS = {
   cat:    { file: 'cat', height: 0.85, walk: 0.8, bake: 'Idle' },
   crow:   { file: 'crow', height: 0.75, walk: 0.6, bake: 'Idle' },
   rabbit: { file: 'rabbit', height: 0.8, walk: 1.2, bake: 'Idle' },
-  man:    { file: 'villager-man', height: 2.3, walk: 2.1, bake: 'Idle', tint: true },
-  woman:  { file: 'villager-woman', height: 2.2, walk: 2.05, bake: 'Idle', tint: true },
-  kid:    { file: 'villager-kid', height: 1.6, walk: 1.75, bake: 'Idle', tint: true },
-  hana:   { file: 'hana', height: 2.1, walk: 2.0, bake: 'Idle', tint: true },
+  man:    { file: 'villager-man', height: 2.3, walk: 2.0, bake: 'Idle', tint: true },
+  woman:  { file: 'villager-woman', height: 2.2, walk: 1.83, bake: 'Idle', tint: true },
+  kid:    { file: 'villager-kid', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },
+  hana:   { file: 'hana', height: 2.1, walk: 1.98, bake: 'Idle', tint: true },
 };
 // Clothes slots that can be recoloured, by material name. Their vertices are baked white (keeping the shading), and the
 // tint colour multiplies them back: per instance in a batch, per material on a skinned actor.

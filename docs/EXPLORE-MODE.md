@@ -58,8 +58,8 @@ than adding a second one.
   A family member can roam, talk, sit, harvest and read the board; the farmhouse room and fishing stay with your own
   character (the room draws the player's rig, and fishing belongs to the player's line).
 - **Nearby things** (`scan()`, five times a second): the one closest offers its single action on the existing
-  primary button and E/Enter. Go inside (within 3 m: walks to the approach, then enters), Fish here (hands over to
-  the fishing trip and its Reel button), Talk to {name} (the same `people.talk` as a tap), Read the order board,
+  primary button and E/Enter. Go inside (within 3 m: walks to the approach, then enters), Cast a line (anywhere on the bank of any pond: the rod comes out, a tap on
+  the water is where the float lands, and the catch lies on the grass until you walk off; see POND-FISHING.md), Talk to {name} (the same `people.talk` as a tap), Read the order board,
   Open the mailbox, Sit on the bench / Stand up, Harvest (the farm's own `harvest` action). No new rules or rewards.
 - **Night:** nobody roams while everyone is asleep; the button says so.
 - **Cost:** about 0.7 KB of first load for the button and its glyph; everything else loads with Explore. Test build

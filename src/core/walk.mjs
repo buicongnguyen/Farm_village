@@ -1,15 +1,19 @@
 // Walking routes for people (view/people-view.mjs). Roads and paths are cheapest, open grass costs a little more, crop
-// beds more still (people go round them when they can). Buildings, the farmhouse and barn, the pond, animal pens and
+// beds more still (people go round them when they can). Buildings, the farmhouse and barn, the pond's water (its bank is
+// public ground all the way round), animal pens and
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPond, isPondPath, parcelOf, nearHome, inVillage, ruinAt } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
+import { SHOP_SITES } from '../content/shops.mjs';
 
 // The houses themselves (cells x-3..x+1; the yard starts at x+2), not the wider building plots, so
 // the yard, the mailbox and the porch stay open.
 const FIXED = [FARMHOUSE, BARN].map(b => ({ x0: b.x - 3, z0: b.z - 3, x1: b.x + 1, z1: b.z + 3 }));   // a 9 m house: cells x-3..x+1
 const inFixed = (x, z) => FIXED.some(f => x >= f.x0 && x <= f.x1 && z >= f.z0 && z <= f.z1);
+// The four kiosks round the lake stand on the public bank: one cell each.
+const KIOSKS = new Set(SHOP_SITES.filter(k => k.id.startsWith('lake-')).map(k => `${Math.floor(k.x)},${Math.floor(k.z)}`));
 const validCell = (x, z) => Number.isInteger(x) && Number.isInteger(z) && inMap(x, z);
 const validPoint = p => Array.isArray(p) && p.length === 2 && validCell(p[0], p[1]);
 // Dressing keeps these roadside verges clear. They join farm entrances and neighbour signposts to the road.
@@ -20,9 +24,9 @@ export function stepCost(s, x, z, blocked = null) {
   if (!validCell(x, z) || blocked?.has(`${x},${z}`)) return 0;
   if (isRoad(x, z)) return 1;                                           // the road bridge crosses the brook
   if (isBrook(x, z)) return x === STEPPING_STONES.x ? 2 : 0;
-  if (isPond(x, z) || inFixed(x, z)) return 0;
+  if (isPondWater(x, z) || inFixed(x, z) || KIOSKS.has(`${x},${z}`)) return 0;
   const parcel = parcelOf(x, z);
-  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || roadside(x, z))) return 0;
+  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z))) return 0;
   const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0)) return 0;
   const type = cellType(s, x, z); if (type === 'rock' || type === 'weeds') return 0;
   const id = occupant(s, x, z), kind = id ? s.placed[id]?.kind : null;

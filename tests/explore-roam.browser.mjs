@@ -109,7 +109,7 @@ await check('nearby things offer one action: talk, the order board, a bench, a r
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
-await check('tap a family member, then Explore: you walk as them; the pond hands over to fishing as yourself', async () => {
+await check('tap a family member, then Explore: you walk as them; as yourself the pond offers a cast', async () => {
   const { ctx, page, errors } = await open('pc', 'vi');
   await page.evaluate(() => { const p = farm.people, w = p.walkers.get('pip'); p.cancelTrip(w); Object.assign(w, { x: 57, z: 131, indoors: false }); p.selected = w; p.selectedUntil = performance.now() + 10000; });
   await start(page);
@@ -121,13 +121,12 @@ await check('tap a family member, then Explore: you walk as them; the pond hands
   expect(m.near !== 'door', 'a family member is offered the farmhouse room meant for your own character');
   await page.locator('[data-explore="close"]').click();
   expect(await page.evaluate(() => !farm.people.walkers.get('pip').controlled), 'the family member stayed under control after Farm view');
-  // as yourself, the pond offers fishing and hands over to the fishing trip
+  // as yourself, the pond offers a cast, and you fish without leaving Explore
   await start(page);
   await stand(page, 39, 85); await settle(page); m = await mode(page);
   expect(m.who === 'you' && m.near === 'pond', `by the pond as ${m.who}: ${m.near}`);
   await page.locator('[data-explore="interact"]').click();
-  expect(await page.evaluate(() => !farm.world.exploreMode.active), 'fishing did not take over from exploring');
-  expect(await page.evaluate(() => { const w = farm.people.walkers.get('you'); return !w.controlled && (!!w.goal || !!w.fishSpot || !!farm.state().fishing.line); }), 'the fishing trip did not start');
+  expect(await page.evaluate(() => farm.world.exploreMode.active && !!farm.state().fishing.line && !!farm.world.fishingView.angler?.cast), 'the cast did not start a line while exploring');
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
@@ -286,6 +285,78 @@ await check('at home every piece of furniture does something: tea, the journal a
   expect(await page.locator('.explore-log li').count() === 4, 'the memory shelf has no collection log');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-shelf.png` });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'a home card overflows the phone');
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
+await check('a tap on the farmhouse walks to the door and goes inside; a second tap from the doorstep goes in too', async () => {
+  const { ctx, page, errors } = await open('pc');
+  await start(page);
+  const house = () => page.evaluate(() => { const v = new (farm.world.cam.camera.position.constructor)(47, 1.5, 123).project(farm.world.cam.camera); return { x: (v.x + 1) * innerWidth / 2, y: (1 - v.y) * innerHeight / 2 }; });
+  const inside = () => page.waitForFunction(() => farm.world.exploreMode.session?.location === 'farmhouse_main', null, { timeout: 12000 }).then(() => true, () => false);
+  await stand(page, 53, 117); await settle(page);
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  let at = await house(); await page.mouse.click(at.x, at.y);
+  expect(await inside(), `tapping the farmhouse did not go inside: ${await page.evaluate(() => JSON.stringify([farm.world.exploreMode.session.p, farm.world.exploreMode.notice]))}`);
+  await page.evaluate(() => farm.game.do('leaveFarmhouse', { recover: true }) && farm.world.exploreMode.syncScene());
+  await stand(page, 51, 125); await settle(page);   // on the doorstep already
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  at = await house(); await page.mouse.click(at.x, at.y);
+  expect(await inside(), `a tap from the doorstep did not go inside: ${await page.evaluate(() => farm.world.exploreMode.notice)}`);
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
+await check('fishing on foot: any bank is reached, the rod comes out, a tap on the water is where the float lands, the catch lies on the grass until you walk off', async () => {
+  const { ctx, page, errors } = await open('pc');
+  await page.waitForFunction(() => farm.world.fishingPlay, null, { timeout: 20000 });
+  await start(page);
+  const view = () => page.evaluate(() => { const m = farm.world.exploreMode, v = farm.world.fishingView; return { rod: !!v.angler, cast: v.angler?.cast ?? null, line: !!farm.state().fishing?.line, near: m.near?.id ?? null, label: m.near?.label ?? null, pile: v.pile ? v.pile.fish.length : 0, lying: v.pile ? v.pile.fish.filter(f => f.landed).map(f => [f.o.position.x, f.o.position.y, f.o.position.z]) : [], p: m.session.p }; });
+  await stand(page, 39, 85); await settle(page);   // the east bank, by the old fishing places
+  let v = await view(); expect(v.rod && v.near === 'pond' && v.label === 'Cast a line', `at the east bank: ${JSON.stringify(v)}`);
+  await stand(page, 49, 85); await settle(page); v = await view(); expect(!v.rod, 'the rod stays out far from the water');
+  await stand(page, 21.5, 85); await settle(page); v = await view(); expect(v.rod && !v.line, `the west bank has no rod: ${JSON.stringify(v)}`);
+  // tap a spot on the water: the float goes exactly there
+  const spot = [29, 87], at = await page.evaluate(([x, z]) => { const p = new (farm.world.cam.camera.position.constructor)(x, 0.06, z).project(farm.world.cam.camera); return { x: (p.x + 1) * innerWidth / 2, y: (1 - p.y) * innerHeight / 2 }; }, spot);
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  await page.mouse.click(at.x, at.y); await page.waitForTimeout(800); v = await view();
+  expect(v.line && v.cast && Math.hypot(v.cast[0] - spot[0], v.cast[1] - spot[1]) < 0.8, `the float is not where the water was tapped: ${JSON.stringify(v.cast)}`);
+  expect(await page.locator('.hud .reel-btn').isVisible(), 'no Reel button while fishing on foot');
+  // a tap elsewhere before the bite moves the float; no second line, no second charge
+  const seed = await page.evaluate(() => farm.state().fishing.line.seed);
+  const other = await page.evaluate(() => { const p = new (farm.world.cam.camera.position.constructor)(27, 0.06, 83).project(farm.world.cam.camera); return { x: (p.x + 1) * innerWidth / 2, y: (1 - p.y) * innerHeight / 2 }; });
+  await page.mouse.click(other.x, other.y); await page.waitForTimeout(700); v = await view();
+  expect(Math.hypot(v.cast[0] - 27, v.cast[1] - 83) < 0.8 && await page.evaluate(seed => farm.state().fishing.line.seed === seed, seed), 'tapping the water again did not just move the float');
+  // bite, strike, careful reel: the fish lands on the grass beside you and waits there; the barn has not got it yet
+  const barn = () => page.evaluate(() => Object.values(farm.state().barn.items).reduce((a, n) => a + n, 0));
+  const held = () => page.evaluate(() => Object.values(farm.state().fishing?.bank?.fish ?? {}).reduce((a, n) => a + n, 0));
+  const stock = await barn();
+  const land = async n => {
+    const line = await page.evaluate(() => farm.state().fishing.line);
+    await page.evaluate(now => { window.__now = now; farm.game.clock = () => window.__now; farm.game.tick(); }, line.doneAt - 4000);
+    await page.evaluate(() => new Promise((res, rej) => { const play = farm.world.fishingPlay, end = performance.now() + 20000; const step = () => { if (play.phase === 'bite') return res(); if (performance.now() > end) return rej(Error('never bit: ' + play.phase)); window.__now += 40; farm.game.tick(); requestAnimationFrame(step); }; step(); }));
+    await page.evaluate(() => farm.world.fishingPlay.press());
+    await page.evaluate(() => new Promise(res => { const p = farm.world.fishingPlay; const d = () => { if (!p.fight) return res(); p.held = !p.fight.surge && p.fight.tension < .7; requestAnimationFrame(d); }; d(); }));
+    await page.waitForFunction(n => farm.world.fishingView.pile?.fish.filter(f => f.landed).length >= n, n, { timeout: 8000 }).catch(() => { throw Error(`catch ${n} did not land on the grass`); });
+  };
+  await land(1); v = await view();
+  expect(await page.evaluate(() => farm.state().fishing.caught === 1 && !farm.state().fishing.line), 'the catch was not counted once');
+  expect(await held() === 1 && await barn() === stock, 'the fish went into the barn while it still lies on the grass');
+  const fish = v.lying[0], fromMe = Math.hypot(fish[0] - v.p[0], fish[2] - v.p[1]);
+  expect(fish[1] < 0.5 && fromMe > 1 && fromMe < 4.5, `the fish is not lying on the ground beside you: ${JSON.stringify(fish)} (${fromMe.toFixed(1)} m away)`);
+  // a second fish gets its own place on the grass: spread out, not piled
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  await page.mouse.click(at.x, at.y); await page.waitForTimeout(800);
+  expect(await page.evaluate(() => !!farm.state().fishing.line), 'could not cast again with a fish on the grass');
+  await land(2); v = await view();
+  const apart = Math.hypot(v.lying[0][0] - v.lying[1][0], v.lying[0][2] - v.lying[1][2]);
+  expect(v.lying.length === 2 && apart >= 0.9 && v.lying.every(f => f[1] < 0.75), `the two fish are piled: ${apart.toFixed(2)} m apart ${JSON.stringify(v.lying)}`);
+  expect(await held() === 2 && await barn() === stock, 'the catch reached the barn before it was packed');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/bank-fishing.png` });
+  // walk off: only now is the catch packed into the barn, with a notice; the rod goes away
+  await page.evaluate(() => farm.hud.el.querySelector('.toasts').replaceChildren());
+  await stand(page, 21.5, 78); await settle(page); await page.waitForTimeout(400); v = await view();
+  expect(v.pile === 0 && !v.rod, `walking off left the fish or the rod: ${JSON.stringify(v)}`);
+  expect(await held() === 0 && await barn() === stock + 2, `packing did not bring both fish in: ${await barn() - stock}`);
+  expect(await page.locator('.hud .toast').count() >= 1, 'no notice that the catch was packed');
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
