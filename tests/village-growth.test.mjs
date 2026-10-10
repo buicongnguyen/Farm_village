@@ -52,7 +52,10 @@ test('growth reads never initialize old saves; only actual working factories cou
   assert.equal(civicBuildReason(s, 'company'), null); s.cond.noodle_factory = { level: 3 };
   assert.equal(growthStatus(s).ready, false); assert.match(civicBuildReason(s, 'company'), /two different/);
   s.placed.bakery = { kind: 'bakery' }; s.placed.mill = { kind: 'feed_mill' }; assert.equal(growthStatus(s).ready, false);
-  s.story.chapter = 4; assert.match(civicBuildReason(s, 'police'), /chapter/);
+  // the civic row opens with the homecoming chapter or, failing that, with a working clinic (so no farm is stuck with ruins)
+  s.story.chapter = 4; assert.equal(civicBuildReason(s, 'police'), null);
+  for (const id of Object.keys(s.placed)) if (s.placed[id].kind === 'clinic') delete s.placed[id];
+  assert.match(civicBuildReason(s, 'police'), /chapter/);
 });
 
 test('company hires arrived adults only, no child, duplicate role or away family, with atomic refused actions', () => {
@@ -175,6 +178,6 @@ test('new civic stories use introduced adults and child voices, with full Vietna
     for (const match of source.matchAll(/'([A-Z][^'\r\n]* [^'\r\n]*)'/g)) assert.ok(VI_GROWTH[match[1]] ?? VI[match[1]], match[1]);
   }
   for (const [en, vi] of Object.entries(VI_GROWTH)) assert.deepEqual([...en.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort(), [...vi.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort());
-  for (const kind of ['police', 'company']) assert.ok(VI_GROWTH[civicBuildReason({ ...ready(), story: { chapter: 4 } }, kind)]);
+  for (const kind of ['police', 'company']) { const early = { ...ready(), story: { chapter: 4 } }; early.placed = Object.fromEntries(Object.entries(early.placed).filter(([, p]) => p.kind !== 'clinic')); assert.ok(VI_GROWTH[civicBuildReason(early, kind)]); }
   assert.ok(FAMILIES.flatMap(f => f.people).filter(p => p.kid).every(p => !eligibleCompanyStaff(ready(), NOW).some(a => a.id === p.id)));
 });

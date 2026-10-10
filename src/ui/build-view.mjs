@@ -17,6 +17,7 @@ import { iconHtml, glyph, coinMark } from './icon.mjs';
 const TOOLS = [{ id: 'clear', icon: 'tool:clear', name: 'Clear' }, { id: 'move', icon: 'tool:move', name: 'Move' }, { id: 'store', icon: 'tool:store', name: 'Store' }, { id: 'demolish', icon: 'demolish', name: 'Demolish' }];
 const QUICK = kind => BUILDINGS[kind].edge || (BUILDINGS[kind].size[0] === 1 && BUILDINGS[kind].size[1] === 1);
 
+const DOOR_PATH = 'Needs a path from the door to the road';
 export class BuildView {
   constructor(root, { game, world, ghost, hud }) {
     Object.assign(this, { game, world, ghost, hud, open: false, cat: 'farm', mode: null, kind: null, rot: 0, at: null, moving: null });
@@ -120,7 +121,10 @@ export class BuildView {
     const s = this.game.s, kind = this.kind; if (!kind || !this.at) return { ok: false };
     if (BUILDINGS[kind].edge) { const e = this.edgeAt(this.at); return { ...canPlaceEdge(s, kind, e.x, e.z, e.side), edge: e }; }
     const a = this.anchor(kind, this.at, this.rot);
-    return { ...(this.moving ? canPlace(s, kind, a.x, a.z, this.rot, { ignore: this.moving }) : canPlace(s, kind, a.x, a.z, this.rot)), a };
+    const r = this.moving ? canPlace(s, kind, a.x, a.z, this.rot, { ignore: this.moving }) : canPlace(s, kind, a.x, a.z, this.rot);
+    // a civic building on its old site that only lacks the path tile at its door is fine: confirm() lays that tile with it
+    if (!r.ok && r.reason === DOOR_PATH && BUILDINGS[kind].civicSite) return { ok: true, doorPath: true, a };
+    return { ...r, a };
   }
   refreshGhost() {
     if (this.mode !== 'place' && this.mode !== 'moving') { this.ghost.hide(); return; }
@@ -172,9 +176,10 @@ export class BuildView {
   confirm() {
     let c = this.check();
     // a civic building stands on its old site: if all it lacks is the path tile at its door, lay that tile with it
-    if (!c.ok && c.reason === 'Needs a path from the door to the road' && BUILDINGS[this.kind]?.civicSite) {
+    if (c.doorPath) {
       const site = RUINS.find(r => r.kind === this.kind), [x, z] = doorCell(this.kind, site.x, site.z, site.rot);
-      if (this.game.do('place', { kind: 'path', x, z }).ok) c = this.check();
+      this.game.do('place', { kind: 'path', x, z }); c = this.check();
+      if (c.doorPath) { this.hud.refuse(DOOR_PATH); return; }   // the tile could not be laid (no coin, something in the way)
     }
     if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
     if (c.edge) this.game.do('placeEdge', { kind: this.kind, ...c.edge });
