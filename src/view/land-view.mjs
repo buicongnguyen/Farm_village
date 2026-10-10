@@ -322,11 +322,15 @@ export class LandView {
    *  gate on the far bank, shut until the chapter is seen and open after. Redrawn only when one of those changes. */
   drawCooperative() {
     const s = this.s, b = this.world.batches, board = (s.story?.chapter ?? 0) >= 11, open = !!s.firsts?.bridge;
-    const key = [board, open, b.has('cooperative_board'), b.has('towpath_gate'), b.has('towpath_gate_open')].join('|');
+    const office = s.valley?.founded ? Object.values(s.placed).find(p => p.kind === 'company') : null;
+    const key = [board, open, b.has('cooperative_board'), b.has('towpath_gate'), b.has('towpath_gate_open'), office ? `${office.x},${office.z},${office.rot}` : '', b.has('company_flag')].join('|');
     if (key === this.cooperativeKey) return;
     if (this.cooperativeKey != null && open !== this.towpathOpen) this.world.ground.markAll();   // the path's ground changes with the gate
     this.cooperativeKey = key; this.towpathOpen = open;
     if (board && b.has('cooperative_board')) b.set('story:board', { model: 'cooperative_board', x: (COOPERATIVE_BOARD.x + 0.5) * CELL, z: (COOPERATIVE_BOARD.z + 0.5) * CELL, rot: COOPERATIVE_BOARD.rot * Math.PI / 2 }); else b.remove('story:board');
+    // the valley company's flag at the office's corner by the road, on the side the camera sees (chapter 17)
+    if (office && b.has('company_flag')) { const [w, d] = footprint('company', office.rot), c = this.centre('company', office.x, office.z, office.rot), r = office.rot * Math.PI / 2;
+      const ox = -(w * CELL / 2 + 1.5), oz = d * CELL / 2 - 0.9; b.set('story:flag', { model: 'company_flag', x: c.x + ox * Math.cos(r) + oz * Math.sin(r), z: c.z - ox * Math.sin(r) + oz * Math.cos(r), rot: r + Math.PI, scale: 1.3 }); } else b.remove('story:flag');
     const gate = open ? 'towpath_gate_open' : 'towpath_gate';
     if (b.has(gate)) b.set('story:gate', { model: gate, x: TOWPATH_GATE.x * CELL, z: TOWPATH_GATE.z * CELL, rot: TOWPATH_GATE.rot * Math.PI / 2 }); else b.remove('story:gate');
   }
@@ -470,7 +474,7 @@ export class LandView {
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
       else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
       else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
-      else if (e.type === 'bridgeOpened') this.drawCooperative();
+      else if (e.type === 'bridgeOpened' || e.type === 'valleyFounded') this.drawCooperative();
       else if (e.type === 'quayPaved') this.drawRiverside();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);

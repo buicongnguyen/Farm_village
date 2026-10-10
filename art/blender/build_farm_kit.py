@@ -1373,6 +1373,20 @@ def train_wagon(full=False):
 piece('train_wagon', train_wagon(False), decor)
 piece('train_wagon_full', train_wagon(True), decor)
 
+def company_flag():
+    """The valley company's flag (chapter 17): a tall white pole on a stone plinth with a brass plate, and a green flag
+    with a gold leaf on it. Stands at the office's corner. About 5 m tall. The cloth flies at 45 degrees to the plinth,
+    so it faces the camera where the plinth stands square to the building."""
+    p = [bx('plinth', .7, .7, .4, 0, 0, 0, 'stone', bev=.04), bx('plate', .46, .04, .26, 0, .36, .08, 'gold', bev=.01), cl('pole', .05, 4.6, 0, 0, .4, 'white', verts=6), ball('knob', .1, 0, 0, 5.05, 'gold', sub=1)]
+    a = math.radians(45); ca, sa = math.cos(a), math.sin(a)
+    for i in range(4):   # the flag, in four panels that ripple
+        cx, cy = .25 + i * .4, .03 * (1 if i % 2 else -1)
+        p.append(box('flag', (.4, .04, 1.0), (cx * ca - cy * sa, cx * sa + cy * ca, 4.35), C['leaf' if i % 2 == 0 else 'oakl'], bev=0., seg=1, rot=(0, 0, a + .1 * (1 if i % 2 else -1))))
+    for r, cx, z, sc in ((.22, .82, 4.34, (1.3, .34, .8)), (.13, 1.06, 4.5, (1.2, .5, .8))):   # the gold leaf, showing on both sides
+        p.append(ico('leafmark', r, (cx * ca, cx * sa, z), C['gold'], subdiv=1, scale=sc, rot=(0, 0, a)))
+    return p
+piece('company_flag', company_flag(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

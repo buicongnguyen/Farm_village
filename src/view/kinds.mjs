@@ -81,6 +81,7 @@ export const KIND_MODELS = {
   hotel_t2:     { kit: 'decor', node: 'hotel_t2', authored: true, lod: 'static', late: true },
   apartment:    { kit: 'decor', node: 'apartment', authored: true, lod: 'static', late: true },   // chapter 13: the quay house, on a lot of the far bank
   quay_bollard: { kit: 'decor', node: 'quay_bollard', authored: true, lod: 'static', late: true },   // along the water side of the paved quay
+  company_flag: { kit: 'decor', node: 'company_flag', authored: true, lod: 'static', late: true },   // chapter 17: beside the office door once the valley company is founded
   cooperative_board: { kit: 'decor', node: 'cooperative_board', authored: true, lod: 'static', late: true },   // chapter 12: on the village square
   towpath_gate: { kit: 'decor', node: 'towpath_gate', authored: true, lod: 'static', late: true },   // shut across the old towpath until chapter 12 is seen
   towpath_gate_open: { kit: 'decor', node: 'towpath_gate_open', authored: true, lod: 'static', late: true },

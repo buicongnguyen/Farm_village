@@ -34,6 +34,7 @@ const tests = {
   halt: s => (s.counts?.halt ?? 0) >= 1,
   train1: s => (s.stats?.trains ?? 0) >= 1,
   upriver: s => (s.upriver?.stops?.length ?? 0) >= 3,
+  valleyCompany: s => !!s.valley?.founded,
   cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {

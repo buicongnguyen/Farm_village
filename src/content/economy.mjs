@@ -68,6 +68,12 @@ export const RIVERSIDE = { quay: { level: 14, cost: 2500 }, house: { rent: 220, 
  *  doubled if their breakfast wish (one of `wishes` the farm can make) was served. The desk holds at most `cap` coins. */
 export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs: paced(8 * MIN), arriveMs: paced(2 * MIN), room: 120, tip: 40, cap: 4000,
   wishes: ['bread', 'corn_bread', 'butter', 'cheese', 'apple_juice', 'carrot_juice', 'orange_juice', 'noodles', 'apple_pie', 'carrot_cake', 'honey_cake'] };
+/** The valley company (core/valley.mjs, chapter 17). Founding takes `found` coins. The valley's value is its assets (coins,
+ *  the barn at market price, buildings, land and works at cost, the herd, beauty at `beauty` coins a point) times its
+ *  goodwill: x `step` for every deed done together (a market day sold on, a shared order, a train sent with a full
+ *  wagon, a festival or fair held, every `guests` hotel guests), `deeds` of them at most. Every dividendMs a dividend
+ *  of `dividend` of the assets is set aside; at most `cap` payments wait to be collected. */
+export const VALLEY = { found: 20000, beauty: 200, step: 1.08, deeds: 400, guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6 };
 /** The evening train (core/train.mjs, chapter 15). It stops at the halt every everyMs for stopMs; the first comes firstMs
  *  after the halt opens. A wagon holds about wagon(level) coins' worth of its good, between `min` and `max` of it. A
  *  full wagon pays its goods x `pay`, a part-loaded one what is in it; `wagons` full ones add `bonus`. */

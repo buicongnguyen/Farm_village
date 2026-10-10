@@ -118,6 +118,13 @@ export const CHAPTERS = [
     ada: 'He always did take the long way round, dear. My knees stayed home, and so did I. Was the fern still there?',
     panels: panels(16, ['The old weir.', 'The heron pool.', 'The spring.']),
     when: s => (s.upriver?.stops?.length ?? 0) >= 3 },
+  // The deed: the valley company is founded (docs/plan/ch17-a-share-for-everyone.md). Act V begins: from here the valley
+  // has one number, its value, which every part of the game adds to.
+  { id: 17, title: 'A share for everyone', subtitle: 'One page each, and the same number on every page.', icon: '📜',
+    text: '{person:bea:short} brings a ledger with one page for every household and the same number on every page. {person:gus:short} reads his three times. {person:june:short} signs last, because the hens wanted feeding. The co-operative, the office and the quay are one thing now, and it belongs to everybody who works in it.',
+    ada: 'Your grandfather wants to frame his page, dear. I told him the ledger needs it more than the wall does.',
+    panels: panels(17, ['The office on Civic row.', 'A page for every household.', 'The valley, all of it.']),
+    when: s => !!s.valley?.founded },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -318,6 +325,16 @@ export const BEATS = [
     { who: 'pip', text: 'That is IT? It is a wet rock.' },
     { who: 'ellis', text: 'Every drop in the mill race began under that fern. I sat here a long while, the year the water stopped, working up the nerve to follow it down.' },
     { who: 'pip', text: 'Then it is the BEST wet rock. Can we take some home in a bottle?' },
+  ] },
+  // ── Chapter 17 (docs/plan/ch17-a-share-for-everyone.md): the valley company, the first dividend. ──
+  { id: 'ledger', chapter: 17, when: s => (s.story.chapter ?? 0) >= 16 && !!s.cooperative?.founded && (s.counts?.apartment ?? 0) > 0, lines: [
+    { who: 'bea', text: 'A co-operative, an office and a quay, and three sets of books. I should like one set. I have drawn it up.' },
+    { who: 'tuyet', text: 'A company. With shares? I have never owned a share of anything but a rowing boat.' },
+    { who: 'bea', text: 'One each, every household alike. It only wants founding, and a sum to found it with.' },
+  ] },
+  { id: 'first-dividend', chapter: 17, when: s => !!s.firsts?.dividend, lines: [
+    { who: 'pip', text: 'Is a dividend the same as pocket money? Can I buy a goat with mine?' },
+    { who: 'june', text: 'It is the valley paying itself, love. And no. Half a goat, perhaps.' },
   ] },
 ];
 

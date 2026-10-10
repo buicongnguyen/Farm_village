@@ -26,7 +26,14 @@ export const STAGES = [
       { name: 'Open the hotel', test: 'hotel' }, { name: 'Welcome ten guests', test: 'guests10' },
       { name: 'Reopen the railway halt', test: 'halt' }, { name: 'Send a wagon by train', test: 'train1' },
       { name: 'Walk to where the brook begins', test: 'upriver' }] },
-  { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
+  // Act V: chapters 17 to 20 add their deeds here
+  { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 16, version: '1.0',
+    milestones: [{ name: 'Found the valley company', test: 'valleyCompany' }] },
+];
+/** What the valley is called as its value passes each mark (core/valley.mjs titleOf; chapter 19 hands them out). */
+export const VALUE_TITLES = [
+  { at: 100_000, name: 'A going farm' }, { at: 1_000_000, name: 'The pride of the lane' }, { at: 10_000_000, name: 'The valley’s larder' },
+  { at: 100_000_000, name: 'Known in the city' }, { at: 1_000_000_000, name: 'The lights of two villages' },
 ];
 export const JOURNEY_UNLOCKS = [
   { name: 'Cherry tree', level: 4, kind: 'cherry_tree' }, { name: 'Fruit stand', level: 4, kind: 'fruit_stand' },

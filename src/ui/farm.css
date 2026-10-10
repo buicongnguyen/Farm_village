@@ -288,3 +288,11 @@ button.good { min-height: 44px; cursor: pointer; }
 .stop .keepsake img.mini { width: 30px; height: 30px; }
 .stop .req img.mini { width: 22px; height: 22px; vertical-align: -5px; }
 @media (max-width: 420px) { .stop.done { grid-template-columns: 1fr; } .stop.done img { width: 100%; height: 96px; } }
+/* the Valley panel's second page: the company and the valley's value (chapter 17) */
+.valley-tabs { margin: 0 0 10px; }
+.value-big { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 30px; font-weight: 1000; }
+.value-big img.mark { width: 28px; height: 28px; }
+.valley.value .report-row { grid-template-columns: 26px minmax(0, 1.2fr) minmax(40px, 1fr) auto; }
+.valley.value .report-row img.mini { width: 24px; height: 24px; }
+.coop-members.shares { gap: 4px; }
+.coop-members.shares .mini-face { width: 34px; height: 34px; }

@@ -1032,6 +1032,48 @@ await check('chapter 16: the walk upriver is taken in three stops, each with its
   await ctx.close();
 });
 
+// Chapter 17 (docs/plan/ch17-a-share-for-everyone.md): the valley company is founded, the valley has a value, a
+// dividend is collected, and the card shows.
+await check('chapter 17: the valley company is founded, the value shows in the top bar, a dividend is collected and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:17'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 5000; g.tick(); });
+  expect(!(await page.textContent('.tracker-name')).includes('·'), 'a value in the top bar before there is a company');
+  // the Valley panel has a second page now: what founding takes
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-tabs .tab');
+  await page.click('.valley-tabs [data-do="valleyValue"]'); await page.waitForSelector('[data-do="foundValley"]');
+  expect(await page.locator('.valley .req').count() === 5 && await page.locator('.valley .req.ok').count() === 5, 'the founding list is not all met');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}company-founding.png` });
+  await page.click('[data-do="foundValley"]'); await page.waitForFunction(() => farm.state().valley?.founded > 0);
+  expect(Math.abs(await page.evaluate(() => farm.state().coins) - 40000) < 200, 'the founding sum was not taken');
+  // the value: a big number with its parts, goodwill and a share for every household; and in the top bar
+  await page.waitForSelector('.value-big');
+  const value = await page.evaluate(() => ({ big: document.querySelector('.value-big').textContent.trim(), rows: document.querySelectorAll('.valley.value .report-row').length, shares: document.querySelectorAll('.shares .mini-face').length, top: document.querySelector('.tracker-name').textContent }));
+  expect(/\d/.test(value.big) && value.rows >= 5 && value.shares >= 10 && value.top.includes('·') && value.top.includes(value.big), `the value: ${JSON.stringify(value)}`);
+  await page.waitForFunction(() => farm.world.batches.items.has('story:flag'), null, { timeout: 15000 });
+  await page.waitForTimeout(500); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}company-value.png` });
+  // the chapter card
+  await page.evaluate(() => farm.panels.close());
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('A share for everyone') && card.includes('Penny') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-17-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 17);
+  // an hour on: the dividend waits (as much as can), a pill offers it, and a tap collects it
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 61 * 60000); farm.game.tick(); });
+  await page.waitForSelector('[data-status="dividend"]', { timeout: 15000 });
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.evaluate(() => farm.closeCards()); await page.click('[data-status="dividend"]');
+  await page.waitForFunction(c => farm.state().coins > c, coins);
+  expect(await page.locator('[data-status="dividend"]').count() === 0, 'the dividend pill stays after collecting');
+  await page.evaluate(() => { farm.closeCards(); farm.focus(85, 107, 18); }); await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}company-flag.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

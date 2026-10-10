@@ -106,6 +106,11 @@ const PANELS = {
   'ch16-1': { hour: 11, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(14.3, 13.4, 9, 0.42, 1.25) + put('ellis', 15.2, 17.3) + put('pip', 13.2, 17.2), 1800], look: [14.2, 15.6, 11] },
   'ch16-2': { hour: 7.6, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(7.2, 12.0, 4, 0.5, 1.6) + ferns(8.2, 11.0, 5) + put('ellis', 10.4, 16.6) + put('pip', 9.0, 16.5), 1800], look: [9.4, 14.6, 10] },
   'ch16-3': { hour: 16.4, scene: sluice + `s.story.chapter = 15;`, wait: 7000, then: [stones(0.7, 11.6, 6, 0.36, 2.4) + ferns(0.9, 10.8, 6) + put('pip', 2.3, 15.4) + put('ellis', 3.6, 15.7), 1800], look: [2.6, 13.4, 9] },
+  // chapter 17: the company office with its flag, the households gathered at its door, and the whole valley
+  'ch17-1': { hour: 10.5, scene: everyone + `s.story.chapter = 16; s.valley = { founded: 1, dividendFrom: 1 };`, wait: 8000, look: [86, 107, 20] },
+  'ch17-2': { hour: 16.2, scene: everyone + `s.story.chapter = 16; s.valley = { founded: 1, dividendFrom: 1 };`, wait: 8000,
+    then: [put('bea', 88.2, 106.6) + put('ada', 89.0, 105.6) + put('gus', 89.9, 106.2) + put('june', 88.6, 107.5) + put('minh', 89.7, 107.4) + put('lan', 88.0, 108.3) + put('grace', 90.7, 106.9) + put('pip', 89.2, 108.4), 1800], look: [88, 107, 11] },
+  'ch17-3': { hour: 17.6, scene: everyone + stage + `s.story.chapter = 16; s.valley = { founded: 1, dividendFrom: 1 };`, wait: 9000, look: [43, 96.5, 50] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

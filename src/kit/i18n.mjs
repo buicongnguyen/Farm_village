@@ -76,6 +76,10 @@ export const t = (text, params) => render(language, text, params);
 export const tParams = params => params && Object.fromEntries(Object.entries(params).map(([k, v]) => [k, typeof v === 'string' ? t(v) : v]));
 /** Same, for a fixed language (tests, saves). */
 export const tIn = (lang, text, params) => render(lang, text, params);   // catalog once loaded
+/** A big number in short form for a locale: 12.5K, 1.2M, 1B; 120만, 1.2억 in Korean; 120万, 1.2億 in Japanese. Below ten
+ *  thousand it is written out in full. */
+export const shortIn = (locale, n) => Math.abs(n) < 10000 ? Math.round(n).toLocaleString(locale) : new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+export const short = n => shortIn(getLocale(), n);
 /** Format numbers with local separators; whole numbers by default, fixed decimals for rates. */
 export const num = (n, digits = 0) => {
   const locale = getLocale();

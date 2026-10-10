@@ -84,6 +84,8 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 17 is behind: the valley company is founded
+  18: ctx => { const { s, now } = ctx; give(ctx, 'company'); if (!s.valley?.founded) { (s.valley ??= {}).founded = now; s.valley.dividendFrom = now; } },
   // chapter 16 is behind: the three stops upriver are walked
   17: ctx => { const { s, now } = ctx, u = (s.upriver ??= { stops: [], trees0: 0, fish0: 0 }); for (const id of ['weir', 'heron', 'spring']) if (!u.stops.includes(id)) { u.stops.push(id); (s.firsts ??= {})[`upriver:${id}`] = now; } },
   // chapter 15 is behind: the halt stands on a free lot and one train has left with a full wagon
