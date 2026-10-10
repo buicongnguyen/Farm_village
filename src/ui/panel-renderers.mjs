@@ -135,6 +135,7 @@ export function renderPanel() {
       const q = productionOf(s, o.arg), ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
       const recipes = recipesAt(s, p.kind).map(r => { const def = RECIPES[r], can = barn.hasAll(s, def.needs);
         return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(productionDuration(s, o.arg, r, now))}</small></button>
+          ${can && q.slots - q.queue.length > 1 ? `<button class="sell-ten recipe-all" data-do="produceAll" data-recipe="${r}">${t('All')} ×${Math.min(q.slots - q.queue.length, ...Object.entries(def.needs).map(([g, n]) => Math.floor(barn.free(s, g) / n)))}</button>` : ''}
           <div class="recipe-help">${goodHelpButton(r, def.makes)}</div></div>`; }).join('');
       const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue.find(job => job.slot === i); if (!j) return `<div class="slot empty" data-tray="${i}" aria-label="${t('Empty tray')}"></div>`;
         const def = RECIPES[j.recipe], left = j.doneAt - now, k = left <= 0 ? 1 : Math.max(0, 1 - left / (j.durationMs ?? def.timeMs));

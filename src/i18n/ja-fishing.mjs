@@ -34,4 +34,5 @@ export const JA_FISHING = {
   'Your fish is packed away in the barn.': '釣った魚を納屋にしまいました。',
   'Your catch is packed away: {count} fish in the barn.': '釣った魚{count}匹を納屋にしまいました。',
   'Nothing to pack': 'しまうものがありません',
+  'You reeled the line back in.': '釣り糸を巻き戻しました。',
 };

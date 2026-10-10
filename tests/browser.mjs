@@ -124,6 +124,15 @@ await check('barn: holding a Sell button keeps selling until you let go; a short
   await page.click('.good-tile[data-good="wheat"]'); expect(await wheat() === after - 1, 'the next click did not sell one');
   await ctx.close();
 });
+await check('with a mouse, a click on the world beside an open menu only leaves the menu (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('barn'); }); await page.waitForSelector('.sheet.panel:not([hidden])');
+  const spot = await page.evaluate(() => { for (let y = 260; y < 640; y += 40) for (let x = 120; x < 760; x += 40) if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return [x, y]; return null; });
+  expect(!!spot, 'no free world beside the menu'); await page.mouse.click(...spot); await page.waitForTimeout(300);
+  expect(await page.evaluate(() => !farm.panels.open), `the click outside at ${spot} did not close the menu`);
+  expect(await page.evaluate(() => !document.querySelector('.radial:not([hidden]) button') && !farm.panels.open), 'the same click also opened something in the world');
+  await ctx.close();
+});
 await check('build mode: move and store (pc)', async () => {
   const { ctx, page } = await open('pc');
   await prep(page);

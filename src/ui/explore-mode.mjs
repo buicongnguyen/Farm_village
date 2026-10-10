@@ -13,6 +13,7 @@ import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
 import { isWorking } from '../core/working.mjs';
+import { sfx } from '../kit/sound.mjs';
 import { BANK, nearestPond, pondAt, castPlan, shorePoint, waterDistance } from '../core/pond-bank.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz } from '../core/explore-navigation.mjs';
@@ -159,7 +160,9 @@ class ExploreMode {
     const e = this.session, s = this.state, bank = nearestPond(s, ...e.p), play = this.world.fishingPlay, line = s.fishing?.line;
     if (!this.own || !this.rod || bank.d > BANK.leave) return false;
     if (line && ['bite', 'fight'].includes(play?.phase)) return true;   // a fish is on: the Reel button has it
-    if (!line) { const r = this.game.do('castLine', { pond: bank.pond.id }); if (!r.ok) { this.notice = r.reason; return true; } }
+    if (!line) { const r = this.game.do('castLine', { pond: bank.pond.id, foot: true }); if (!r.ok) { this.notice = r.reason; return true; } sfx('pop'); }
+    // no chosen spot: cast again where you cast last, as long as that is this pond
+    if (tap) this.lastTap = { pond: bank.pond.id, at: tap }; else if (this.lastTap?.pond === bank.pond.id) tap = this.lastTap.at;
     const to = castPlan(bank.pond, e.p, tap);
     e.route = []; e.seated = false; e.yaw = Math.atan2(to[0] - e.p[0], to[1] - e.p[1]);
     Object.assign(this.rod, { cast: to, from: [...e.p], castAt: this.world.fishingView.time, landed: false });

@@ -59,6 +59,13 @@ export const actions = {
   produce(ctx, { building, recipe }) {
     return queueBatches(ctx, { building, recipe, count: 1 });
   },
+  /** Fill every free tray with one recipe, as far as the ingredients go: { building, recipe }. Fails only if not even one starts. */
+  produceAll(ctx, { building, recipe }) {
+    const first = queueBatches(ctx, { building, recipe, count: 1 }); if (first?.ok === false) return first;
+    let count = 1; const q = productionOf(ctx.s, building), r = RECIPES[recipe];
+    while (q.queue.length < q.slots && barn.hasAll(ctx.s, r.needs) && count < SLOTS.max) { if (queueBatches(ctx, { building, recipe, count: 1 })?.ok === false) break; count++; }
+    return { count };
+  },
   /** Collect finished products from one building or all: { building }. */
   collectProducts(ctx, { building } = {}) {
     const { s, now } = ctx; let got = 0, full = false;

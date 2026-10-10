@@ -115,3 +115,15 @@ test('tackle uses three shared draw objects and caps instances and line vertices
   f.frame(1); assert.equal(f.world.scene.children.length, 3);
   assert.equal(f.view.rods.geometry, rods); assert.equal(f.view.floats.geometry, floats); assert.equal(f.view.positions, positions);
 });
+
+test('villagers at the pond catch fish too: now and then a float goes under, a fish leaps to them and they cast again', t => {
+  const f = fixture(t, [actor('npc0', POND_FISHING_SPOTS[1])]); document.body.classList.contains = () => false; f.frame();
+  let dips = 0, recasts = 0, last = f.view.casts.get('npc0').at;
+  for (let i = 0; i < 1500; i++) {   // 75 seconds
+    f.frame(.05); const cast = f.view.casts.get('npc0');
+    if (f.view.entries[0]?.y < .06) dips++;
+    if (cast.at !== last) { recasts++; last = cast.at; }
+  }
+  assert.ok(recasts >= 1 && recasts <= 6, `the villager landed ${recasts} fish in 75 s`);
+  assert.ok(dips >= 5, 'the float never went under before a catch');
+});

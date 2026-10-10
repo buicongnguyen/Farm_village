@@ -242,6 +242,8 @@ panels.onGrowthPath = kind => {
   flyTo((x + .5) * CELL, (z + .5) * CELL, Math.min(world.cam.span, 38));
   build.start('path', { x, z, point: { x: (x + .5) * CELL, z: (z + .5) * CELL } });
 };
+// With a mouse, a click on the world beside an open menu just leaves the menu (it does not also act on what was clicked).
+canvas.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && panels.open && !build.open) { panels.close(); e.stopImmediatePropagation(); e.preventDefault(); } }, true);
 world.cam.attach(canvas, {
   onTap: (x, y) => {
     const cell = world.cellAt(x, y);

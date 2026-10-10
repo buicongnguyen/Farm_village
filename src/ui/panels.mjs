@@ -119,7 +119,7 @@ export class Panels {
     else if (d.do === 'deliver') g.do('deliverOrder', { id: d.id });
     else if (d.do === 'discard') g.do('discardOrder', { id: d.id });
     else if (d.do === 'upgradeBarn') g.do('upgradeBarn');
-    else if (d.do === 'produce') g.do('produce', { building: this.open.arg, recipe: d.recipe });
+    else if (d.do === 'produce' || d.do === 'produceAll') g.do(d.do, { building: this.open.arg, recipe: d.recipe });
     else if (d.do === 'collectProducts') g.do('collectProducts', { building: this.open.arg });
     else if (d.do === 'buySlot') g.do('buySlot', { building: this.open.arg });
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });

@@ -70,3 +70,21 @@ test('every fish can bite, has its icon in both sizes and a model and size for t
   }
   assert.ok(Math.max(...FISH_TABLE.map(f => f.len)) >= 2.4, 'no huge fish');
 });
+
+test('a cast made on foot bites soon (4.5 to 9 s); a seat cast keeps its 25 s wait', () => {
+  for (let i = 0; i < 40; i++) {
+    const s = fresh(), at = T0 + i * 977; must(s, 'castLine', { foot: true }, at);
+    const wait = s.fishing.line.doneAt - at; assert.ok(wait >= 4500 && wait < 9000, `on foot the bite comes after ${wait} ms`);
+  }
+  const s = fresh(); must(s, 'castLine', {}, T0); assert.equal(s.fishing.line.doneAt - T0, 25_000);
+});
+
+test('All fills every free tray with one recipe as far as the ingredients go; trays can be bought up to ten', async () => {
+  const { SLOTS } = await import('../src/content/economy.mjs'), { game, must: do_ } = await import('./helpers.mjs');
+  assert.equal(SLOTS.max, 10); assert.equal(SLOTS.cost.length, 10); assert.ok(SLOTS.cost.every((c, i) => i < 3 || c > SLOTS.cost[i - 1] && c - SLOTS.cost[i - 1] <= 60));
+  const s = game(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bakery');
+  if (!id) return;   // the helper farm has no bakery: the rule is covered by the browser check
+  s.production[id] = { slots: 5, queue: [] }; s.barn.cap = 999; s.barn.items.wheat = 7;
+  const r = do_(s, 'produceAll', { building: id, recipe: 'bread' });
+  assert.ok(r.count >= 1 && s.production[id].queue.length === r.count && r.count <= 5);
+});

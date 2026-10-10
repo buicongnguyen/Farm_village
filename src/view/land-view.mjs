@@ -129,14 +129,14 @@ export class LandView {
     return at == null ? true : at <= now;
   }
   /**
-   * The worn look of a model (PLAN-v0.3): its colours drift toward dusty brown and darken with the condition (1 worn, 2 shabby,
-   * 3 broken). Made once per model and level, from the registered geometry, and shared by every thing that looks that way.
+   * The worn look of a model (PLAN-v0.3): its colours fade a little with the condition (1 worn, 2 shabby, 3 broken) and
+   * small green grass grows round its foot (overgrow). Made once per model and level, from the registered geometry, and shared by every thing that looks that way.
    */
   dusty(name, level) {
     const key = `${name}@${level}`, b = this.world.batches;
     if (b.has(key)) return key;
     const m = b.models.get(name); if (!m) return name;
-    const k = [0, 0.2, 0.38, 0.6][level], dark = [1, 0.97, 0.92, 0.82][level], tone = [0.56, 0.5, 0.42];
+    const k = [0, 0.1, 0.2, 0.34][level], dark = [1, 0.99, 0.97, 0.93][level], tone = [0.6, 0.58, 0.46];   // only a little faded: the grass growing round it tells the rest
     const tint = g => {
       if (!g) return g; const c = g.clone(), col = c.attributes.color; if (!col) return c;
       for (let i = 0; i < col.count; i++) { const grey = (col.getX(i) + col.getY(i) + col.getZ(i)) / 3; col.setXYZ(i, (col.getX(i) * (1 - k) + (grey * 0.6 + tone[0] * 0.4) * k) * dark, (col.getY(i) * (1 - k) + (grey * 0.6 + tone[1] * 0.4) * k) * dark, (col.getZ(i) * (1 - k) + (grey * 0.6 + tone[2] * 0.4) * k) * dark); }
@@ -158,6 +158,7 @@ export class LandView {
     const p = this.s.placed[id], b = this.world.batches, old = this.pos.get(id);
     if (old) { this.world.ground.markDirty(old.x, old.z); this.pos.delete(id); }
     b.remove(`sails:${id}`); b.remove(`scaffold:${id}`); this.undress(id);
+    for (let i = 0; i < 8; i++) b.remove(`overgrow:${id}:${i}`);
     if (this.beds.has(id)) { this.rimDirty.add(this.beds.get(id).chunk); this.beds.delete(id); }
     if (!p) { b.remove(id); return; }
     this.pos.set(id, { x: p.x, z: p.z }); this.world.ground.markDirty(p.x, p.z);
@@ -171,6 +172,15 @@ export class LandView {
     if (!model) return;                                                 // its model is still loading; sync() draws it later
     const lv = levelOf(this.s, id), c = this.centre(p.kind, p.x, p.z, p.rot), item = { model: lv > 0 ? this.dusty(model, lv) : model, x: c.x, z: c.z, rot: p.rot * Math.PI / 2 };
     b.set(id, item);
+    // a worn thing is overgrown: little tufts of green grass along the foot of its walls, more as it gets worse
+    if (lv > 0 && b.has('weeds')) {
+      const [w, d] = footprint(p.kind, p.rot), hw = w * CELL / 2 - 0.12, hd = d * CELL / 2 - 0.12, n = [0, 3, 5, 8][lv];
+      for (let i = 0; i < n; i++) {
+        const r = ((p.x * 31 + p.z * 17 + i * 53) % 97) / 97, side = (i + p.x) % 4, along = r * 2 - 1;
+        const ox = side === 0 ? -hw : side === 1 ? hw : along * hw, oz = side === 2 ? -hd : side === 3 ? hd : along * hd;
+        b.set(`overgrow:${id}:${i}`, { model: i % 3 ? 'weeds' : 'weeds2', x: c.x + ox, z: c.z + oz, rot: r * 6, scale: 0.34 + r * 0.22 });
+      }
+    }
     // scaffolding against the front of a building while its repair runs
     if (isRepairing(this.s, id) && b.has('scaffold')) { const [w, d] = footprint(p.kind, p.rot), cs = Math.cos(item.rot), sn = Math.sin(item.rot), ox = -1.2, oz = d * CELL / 2 + 0.3; b.set(`scaffold:${id}`, { model: 'scaffold', x: c.x + ox * cs + oz * sn, z: c.z - ox * sn + oz * cs, rot: item.rot, scale: 0.9 }); }
     if (p.kind === 'feed_mill' && b.has('feed_mill_sails')) {

@@ -50,13 +50,14 @@ export function tickFishing(ctx) {
 }
 export const actions = {
   /** Cast a line; with bait (chicken feed) the fish bite sooner and rare ones come more often. */
-  castLine(ctx, { bait = false, pond = null } = {}) {
+  castLine(ctx, { bait = false, pond = null, foot = false } = {}) {
     const { s, now } = ctx; if (!hasPond(s)) return ctx.fail('Build a fish pond first');
     if (s.fishing?.line) return ctx.fail('The line is already in the water');
     if (pond !== null && (typeof pond !== 'string' || !Object.hasOwn(s.placed, pond) || s.placed[pond]?.kind !== 'pond')) return ctx.fail('This fishing spot is no longer here.');
     bait = !!bait; if (bait && !barn.take(s, { chicken_feed: 1 })) return ctx.fail('Missing goods');
     const f = fishingOf(s);
-    f.line = { doneAt: now + (bait ? FISH.baitMs : FISH.waitMs), bait, seed: `${now}:${f.caught}` };
+    const seed = `${now}:${f.caught}`, wait = foot === true ? FISH.footMs[0] + hash(seed, 'foot') % (FISH.footMs[1] - FISH.footMs[0]) : bait ? FISH.baitMs : FISH.waitMs;
+    f.line = { doneAt: now + wait, bait, seed };
     if (pond !== null) f.line.pond = pond;
     ctx.emit('lineCast', { bait });
     return { doneAt: f.line.doneAt };

@@ -5,6 +5,7 @@
 // and losing the fight cost nothing: the fish swims off and comes back. Reduced motion skips the fight.
 import { bitePlan, FishFight, FIGHT } from '../core/fishing-fight.mjs';
 import { pick } from '../core/fishing.mjs';
+import { waterDistance } from '../core/pond-bank.mjs';
 import { t } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
 
@@ -13,6 +14,7 @@ import { sfx } from '../kit/sound.mjs';
 // on a bite, a progress ring in the fight, red when the line strains. 84 px, in thumb reach on a phone.
 const CSS = `.fishing-play { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px)); display: grid; justify-items: center; gap: 8px; z-index: 6; pointer-events: none; }
 .fishing-play[hidden] { display: none; }
+@media (min-width: 900px) and (min-height: 600px) { .fishing-play { left: auto; right: 36px; bottom: 40px; transform: none; justify-items: end; } body.panel-open .fishing-play { right: calc(min(440px, 36vw) + 36px); } }
 .fishing-play > * { pointer-events: auto; }
 .fish-hint { margin: 0; padding: 5px 12px; border-radius: 14px; background: var(--panel-bg); border: 2px solid var(--edge); font: 900 14px/1.2 'Nunito', sans-serif; color: var(--ink); box-shadow: 0 3px 0 var(--edge-dark); max-width: min(320px, calc(100vw - 32px)); text-align: center; }
 .reel-btn { --progress: 0%; position: relative; width: 84px; height: 84px; border-radius: 50%; border: 4px solid #fff; color: #fff; font: 1000 18px/1 'Nunito', sans-serif; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none;
@@ -65,6 +67,13 @@ export class FishingPlay {
       // too early: the fish is spooked for a moment (the first bite never comes before the core's own bite time)
       if (this.cycleAt !== null) this.cycleAt += FIGHT.earlyPenaltyS * 1000;
       this.say(t('Too early! Wait for the bite.'));
+      // on foot the float jerks 0.7 m toward you (Zoo Garden's earlyPull); pulled to the rim, the line is wound in
+      const g = this.view.angler;
+      if (g?.cast) {
+        const dx = g.x - g.cast[0], dz = g.z - g.cast[1], d = Math.hypot(dx, dz) || 1; g.cast = [g.cast[0] + dx / d * 0.7, g.cast[1] + dz / d * 0.7];
+        this.view.splash?.(g.cast[0], g.pond.surface, g.cast[1], 6);
+        if (waterDistance(g.pond, ...g.cast) > -0.75) { this.game.do('pullLine'); this.say(t('You reeled the line back in.'), 2000); }
+      }
     } else if (this.phase === 'away') this.say(t('It will be back in a moment.'));
     void now;
   }
