@@ -4,6 +4,25 @@
 to implement farmhouse entry, direct movement, door exit, sofa and memory shelf using Claude's PR #43. The authoritative art delivery is
 [AR-015 in ASSET-REQUESTS.md](ASSET-REQUESTS.md#ar-015-farmhouse-interior-for-explore-mode--requested-2026-10-09).
 
+## Explore the Zoo Garden way — 2026-10-10 (Claude, user request)
+
+The user asked for Explore to play like Zoo Garden (repo cute_game), with more to do. Mapped from its source and
+adapted (no combat, mining or planets):
+
+- **Thumb stick** on touch screens (given on the first visit; the choice is saved): fixed bottom-left, 128 px ring,
+  52 px of travel, an 18 % dead zone, full speed past it. It replaces the four direction buttons. Indoors on a narrow
+  screen it sits above the panel.
+- **One action pill** while roaming, instead of the card: the green pill names the nearby action (E, F or Enter).
+  Farm view and the controls switch are small buttons at the top left; the welcome line steps aside after 5 s.
+- **Tap a thing** (person, pet, bench, bed, tree, coop, workshop, board, mailbox): walk to a free spot beside it,
+  then do its action on arrival. Open ground is just a walk.
+- **Brisker walk** outdoors (`OUTDOOR_SPEED` 3.6 m/s; 2.4 indoors) and a gliding camera (`1 - exp(-9 dt)`).
+- **More to do**, each calling the farm's own action: Harvest gathers every ripe bed within 7 m, 140 ms apart;
+  Collect eggs/milk; Feed the animals; Pick fruit; Collect finished goods; Pet the dog or cat.
+- Checks: `explore-roam.browser` is now 6 checks (the new activities, tap-to-act, the stick on a phone).
+- Not ported yet: ground drops with a pickup magnet, regrowing forage nodes, auto-held tools, daily explore tasks,
+  tap-to-aim casting, buffs from farmhouse furniture.
+
 ## Roaming outdoors — 2026-10-10 (Claude, at the user's request while Codex was away)
 
 The user asked for a visible Explore button that changes the play style to the character they select. The first slice

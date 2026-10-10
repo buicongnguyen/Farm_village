@@ -46,5 +46,9 @@ export const VI_EXPLORE = {
   "Walk anywhere. Come close to people and places to do things.": "Đi đâu tùy thích. Lại gần mọi người và các nơi để làm việc.",
   "It is night and everyone is asleep. Explore in the morning.": "Trời tối rồi, mọi người đã ngủ. Sáng mai hãy đi khám phá nhé.",
   "Getting ready to explore…": "Đang chuẩn bị khám phá…",
-  "Could not start exploring. Please try again.": "Chưa bắt đầu khám phá được. Hãy thử lại nhé."
+  "Could not start exploring. Please try again.": "Chưa bắt đầu khám phá được. Hãy thử lại nhé.",
+  "Pet {name}": "Vuốt ve {name}",
+  "Pick fruit": "Hái quả",
+  "Feed the animals": "Cho vật nuôi ăn",
+  "Use the thumb stick": "Dùng cần điều khiển"
 };

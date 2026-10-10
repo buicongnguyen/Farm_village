@@ -15,9 +15,21 @@ body.panel-open .explore-ui, body:has(.modal) .explore-ui { visibility: hidden; 
 .explore-card .btn { margin: 4px; }
 .explore-card[data-object="sofa"] { top: auto; bottom: 92px; max-height: 35%; }
 @media (max-height: 520px) { .explore-card[data-object="sofa"] { left: auto; right: 16px; transform: none; width: 42%; top: 70px; bottom: auto; max-height: calc(100% - 162px); } }
-.explore-stick { position: absolute; left: max(20px, env(safe-area-inset-left)); bottom: 235px; display: grid; grid-template-columns: repeat(3, 44px); gap: 3px; pointer-events: auto; touch-action: none; }
-.explore-stick [data-move="up"] { grid-column: 2; }
-.explore-stick [data-move="left"] { grid-column: 1; grid-row: 2; }
-.explore-stick [data-move="down"] { grid-column: 2; grid-row: 2; }
-.explore-stick [data-move="right"] { grid-column: 3; grid-row: 2; }
+.explore-joy { position: absolute; left: max(22px, env(safe-area-inset-left)); bottom: max(32px, env(safe-area-inset-bottom)); width: 128px; height: 128px; border-radius: 50%; pointer-events: auto; touch-action: none;
+  background: radial-gradient(circle, #fffdf655 0 40%, #5b341833 41% 100%); border: 3px solid #fffdf6aa; box-shadow: 0 4px 12px #0003; }
+.explore-joy i { position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; margin: -25px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fffdf6, #f3e3c3); border: 3px solid var(--edge, #5b3418); box-shadow: 0 3px 0 #0003; pointer-events: none; }
+/* Roaming outdoors (Zoo Garden's look): no big card, just the green action pill with two small buttons under it. */
+.explore-controls.compact { background: none; border: 0; box-shadow: none; padding: 0; width: auto; max-width: min(94%, 420px); }
+.explore-controls.compact > p { display: inline-block; margin: 0 0 6px; padding: 4px 12px; border-radius: 14px; background: var(--paper); font-weight: 800; }
+.explore-controls.compact [data-explore="interact"] { min-width: 180px; min-height: 52px; font-size: 1.1em; border-radius: 26px; }
+.explore-controls.compact [data-explore="interact"][disabled] { display: none; }
+.explore-controls.compact .btn.ghost { min-height: 44px; padding: 4px 12px; font-size: .85em; }
+/* Farm view and the controls switch sit small at the top left, out of the thumbs' way */
+.explore-side { position: absolute; top: max(64px, calc(env(safe-area-inset-top) + 56px)); left: max(12px, env(safe-area-inset-left)); margin: 0; justify-content: flex-start; gap: 4px; pointer-events: auto; }
+.explore-side .btn.ghost { min-height: 44px; padding: 4px 12px; font-size: .85em; }
+.explore-controls.compact small { background: var(--paper); border-radius: 10px; padding: 2px 8px; display: inline-block; }
+@media (max-width: 600px) { .explore-controls.compact.joy { bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px)); } .explore-joy { left: max(16px, env(safe-area-inset-left)); } }
 @media (pointer: coarse) { .explore-controls small { display: none; } }
+.explore-ui:has(.explore-side) .explore-heading { display: none; }
+/* with the full panel (indoors) on a narrow screen, the stick sits above it, where the direction buttons used to be */
+@media (max-width: 600px) { .explore-controls.joy:not(.compact) ~ .explore-joy { bottom: 240px; } }

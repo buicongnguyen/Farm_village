@@ -46,5 +46,9 @@ export const KO_EXPLORE = {
   "Walk anywhere. Come close to people and places to do things.": "어디든 걸어 보세요. 사람이나 장소에 가까이 가면 할 수 있는 일이 나와요.",
   "It is night and everyone is asleep. Explore in the morning.": "밤이라 모두 자고 있어요. 아침에 둘러보세요.",
   "Getting ready to explore…": "둘러볼 준비를 하고 있어요…",
-  "Could not start exploring. Please try again.": "둘러보기를 시작하지 못했어요. 다시 시도해 주세요."
+  "Could not start exploring. Please try again.": "둘러보기를 시작하지 못했어요. 다시 시도해 주세요.",
+  "Pet {name}": "{name} 쓰다듬기",
+  "Pick fruit": "열매 따기",
+  "Feed the animals": "동물에게 먹이 주기",
+  "Use the thumb stick": "조이스틱 사용"
 };

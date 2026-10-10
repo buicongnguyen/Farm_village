@@ -3,7 +3,10 @@ import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY } from '../content/explore.mjs';
 import { POND_FISHING_SPOTS, ORDER_BOARD, MAILBOX } from '../content/world.mjs';
-import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject } from '../core/explore.mjs';
+import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, OUTDOOR_SPEED } from '../core/explore.mjs';
+import { BUILDINGS, footprint } from '../content/buildings.mjs';
+import { animalState } from '../core/animals.mjs';
+import { treeState } from '../core/trees.mjs';
 import { xz } from '../core/explore-navigation.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
@@ -44,11 +47,13 @@ class ExploreMode {
   }
   get session() { return exploreSession(this.state); }
   get inside() { return this.session?.location === 'farmhouse_main'; }
+  /** Tap or thumb stick: the saved choice (touch screens are given the stick on their first visit, in open()). */
+  get control() { return exploreState(this.state).controls; }
   get busy() { return modalOpen() || !!this.panels.open || document.hidden || !!this.card; }
   async open({ roam = false, who = 'you' } = {}) {
     if (this.active) return;
     if (!roam && !homeOpen(this.game.s)) { this.hud.toast(t('Repair the farmhouse before going inside'), 'info'); return; }
-    Object.assign(this, { roam, who, near: null, seat: null, enterOnArrival: false, scanClock: 0 });
+    Object.assign(this, { roam, who, near: null, seat: null, enterOnArrival: false, actOnArrival: null, scanClock: 0, joy: false });
     this.state = this.game.s; this.active = true; this.loading = true; this.error = false; this.target = null; this.card = null; this.notice = null;
     const generation = ++this.generation;
     this.panels.close(); this.radial.hide(); this.radial.armed = null; this.radial.tool.hidden = true;
@@ -66,31 +71,63 @@ class ExploreMode {
       this.room.scene.background = this.world.scene.background;
       if (!startExplore(this.state, [this.walker.x, this.walker.z], assets.data, people.penCells())) throw Error('no safe approach');
       people.cancelTrip(this.walker); this.walker.controlled = true; this.walker.indoors = false;
+      const first = !exploreState(this.state).introduced, touch = matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && innerWidth < 900);
       this.loading = false; this.game.do('introduceExplore'); this.target = roam ? null : 'door';
+      if (first && touch) this.game.do('exploreControls', { controls: 'joystick' });   // phones start with the thumb stick
       if (!roam && !routeExplore(this.state, HOME_APPROACH)) this.notice = 'The way is blocked. Try another spot.';
       this.near = this.scan();
+      if (roam) { this.hintUntil = performance.now() + 5000; setTimeout(() => this.active && this.render(), 5100); }   // the welcome line steps aside
       this.world.cam.lookAt(...this.session.p, 28); this.render();
     } catch {
       if (this.active && generation === this.generation) { this.loading = false; this.error = true; this.render(); }
     }
   }
-  clear() { this.keys.clear(); this.stick = [0, 0]; this.press = null; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
+  clear() { this.keys.clear(); this.stick = [0, 0]; this.joy = false; this.actOnArrival = null; this.press = null; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
   /** Outdoors: the nearest thing worth doing something with (the door, the pond, a person, a bench, a ripe bed, the
    *  order board, the mailbox), with the label of its one action. Scanned a few times a second, not every frame. */
-  scan() {
+  scan(p = this.session?.p, reach = 1) {
     const e = this.session; if (!e || this.inside) return null;
-    const s = this.state, p = e.p, people = this.radial.people, now = this.game.now, out = [];
-    const add = (id, d, max, label, params) => { if (d < max) out.push({ id, d: d / max, label, params }); };
+    const s = this.state, people = this.radial.people, now = this.game.now, out = [];
+    const add = (id, d, max, label, params, at) => { if (d < max * reach) out.push({ id, d: d / max, label, params, at }); };
     if (this.own) add('door', far(p, ...HOME_APPROACH), 3, 'Go inside');
     if (this.own && !s.fishing?.line) for (const [x, z] of POND_FISHING_SPOTS) add('pond', far(p, centre(x), centre(z)), 3.4, 'Fish here');
-    for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.pet && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, 'Talk to {name}', { name: people.nameOf(w) });
-    add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board');
-    add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox');
+    for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
+    add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board', null, [centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)]);
+    add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox', null, [centre(MAILBOX.x), centre(MAILBOX.z)]);
     for (const [id, item] of Object.entries(s.placed)) {
-      if (item.kind === 'bench') add(`bench:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, e.seated ? 'Stand up' : 'Sit on the bench');
-      else if (item.kind === 'bed' && s.beds[id]?.doneAt <= now) add(`bed:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, 'Harvest');
+      const def = BUILDINGS[item.kind]; if (!def) continue;
+      if (item.kind === 'bench') add(`bench:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, e.seated ? 'Stand up' : 'Sit on the bench', null, [centre(item.x), centre(item.z)]);
+      else if (item.kind === 'bed') { if (s.beds[id]?.doneAt <= now) add(`bed:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, 'Harvest', null, [centre(item.x), centre(item.z)]); }
+      else if (def.fruit || def.animals || def.produces) {   // the farm's own collecting, done on foot
+        const [w, d] = footprint(item.kind, item.rot), at = [(item.x + w / 2) * 2, (item.z + d / 2) * 2], max = Math.max(w, d) + 2.4, dist = far(p, ...at);
+        if (dist >= max * reach) continue;
+        if (def.fruit) { if (treeState(s, id, now)?.state === 'ripe') add(`fruit:${id}`, dist, max, 'Pick fruit', null, at); }
+        else if (def.animals) {
+          const list = s.animals[id] ?? [];
+          if (list.some(a => animalState(a, now) === 'ready')) add(`animals:${id}`, dist, max, 'Collect', null, at);
+          else if (list.some(a => animalState(a, now) === 'hungry')) add(`feed:${id}`, dist, max, 'Feed the animals', null, at);
+        } else if ((s.production?.[id]?.queue ?? []).some(j => j.doneAt <= now)) add(`goods:${id}`, dist, max, 'Collect', null, at);
+      }
     }
     return (e.seated && out.find(o => o.id.startsWith('bench:'))) || (out.sort((a, b) => a.d - b.d)[0] ?? null);
+  }
+  act(action, params) { const r = this.game.do(action, params); if (!r.ok) this.notice = r.reason; return r.ok; }
+  /** One press gathers every ripe bed within a few steps, one after another (Zoo Garden's staggered harvest). */
+  harvestNear(p) {
+    const s = this.state, now = this.game.now, state = s;
+    const ids = Object.keys(s.beds).filter(id => s.beds[id]?.doneAt <= now && s.placed[id] && far(p, centre(s.placed[id].x), centre(s.placed[id].z)) < 7)
+      .sort((a, b) => far(p, centre(s.placed[a].x), centre(s.placed[a].z)) - far(p, centre(s.placed[b].x), centre(s.placed[b].z)));
+    ids.forEach((id, i) => setTimeout(() => { if (this.active && this.game.s === state && state.beds[id]?.doneAt <= this.game.now) this.act('harvest', { id }); }, i * 140));
+  }
+  /** Tap a thing: walk to a free spot beside it, then do its action on arrival. */
+  walkTo(target) {
+    const e = this.session, [x, z] = target.at;
+    // free spots beside it: the ring right next to it first (nearest side to you), then further rings for big buildings
+    const ring = r => [[r, 0], [-r, 0], [0, r], [0, -r], [r, r], [-r, r], [r, -r], [-r, -r]].map(([dx, dz]) => [x + dx, z + dz]).sort((a, b) => far(e.p, ...a) - far(e.p, ...b));
+    const spots = [...ring(2), [x, z], ...ring(4), ...ring(6)];
+    if (this.scan(e.p)?.id === target.id) { this.doNear(target); return true; }   // already beside it
+    for (const spot of spots) if (routeExplore(this.state, spot)) { this.actOnArrival = target.id; return true; }
+    return false;
   }
   /** Do the nearby outdoor thing. Rules stay with their owners: these only call the same actions the farm view uses. */
   doNear(near) {
@@ -107,7 +144,11 @@ class ExploreMode {
       const b = this.state.placed[id];
       if (e.seated) { e.seated = false; this.seat = null; }
       else if (b) { e.seated = true; e.route = []; this.seat = { x: centre(b.x), z: centre(b.z), rot: (b.rot ?? 0) * Math.PI / 2 }; }
-    } else if (kind === 'bed') { const r = this.game.do('harvest', { id }); if (!r.ok) this.notice = r.reason; }
+    } else if (kind === 'bed') this.harvestNear(e.p);
+    else if (kind === 'fruit') this.act('pick', { id });
+    else if (kind === 'animals') this.act('collect', { home: id });
+    else if (kind === 'feed') this.act('feed', { home: id });
+    else if (kind === 'goods') this.act('collectProducts', { building: id });
     this.near = this.scan();
   }
   close() {
@@ -123,14 +164,14 @@ class ExploreMode {
   key(e, down) {
     if (!this.active || editing(e)) return;
     const k = e.key.toLowerCase();
-    if (!KEYS.has(k) && !['e', 'enter', 'escape', 'q', '+', '=', '-'].includes(k)) return;
+    if (!KEYS.has(k) && !['e', 'f', 'enter', 'escape', 'q', '+', '=', '-'].includes(k)) return;
     // A focused button keeps its keyboard activation. Typing/IME always belongs to its field.
     if (k === 'enter' && e.target?.closest?.('button')) return;
     e.stopImmediatePropagation(); e.preventDefault();
     if (!down) { this.keys.delete(k); return; }
     if (this.busy) { this.clear(); if (k === 'escape' && this.card) { this.card = null; this.render(); } return; }
-    if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
-    else if (!e.repeat && (k === 'e' || k === 'enter')) this.choose('interact');
+    if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
+    else if (!e.repeat && (k === 'e' || k === 'f' || k === 'enter')) this.choose('interact');
     else if (!e.repeat && k === 'escape') this.close();
   }
   pointer(e) {
@@ -155,9 +196,11 @@ class ExploreMode {
       if (!routeExplore(this.state, point)) this.notice = 'The way is blocked. Try another spot.';
     } else {
       const hit = this.world.cellAt(x, y); if (!hit) return;
-      const door = Math.hypot(hit.x * 2 + 1 - 47, hit.z * 2 + 1 - 125) < 6;
-      this.target = door ? 'door' : null;
-      if (!routeExplore(this.state, door ? HOME_APPROACH : [hit.x * 2 + 1, hit.z * 2 + 1])) this.notice = 'The way is blocked. Try another spot.';
+      const door = Math.hypot(hit.x * 2 + 1 - 47, hit.z * 2 + 1 - 125) < 6, point = [hit.x * 2 + 1, hit.z * 2 + 1];
+      this.target = door ? 'door' : null; this.actOnArrival = null;
+      const thing = door ? null : this.scan(point, .75);
+      if (thing?.at && thing.id !== 'pond') { if (!this.walkTo(thing)) this.notice = 'The way is blocked. Try another spot.'; }
+      else if (!routeExplore(this.state, door ? HOME_APPROACH : point)) this.notice = 'The way is blocked. Try another spot.';
     }
     this.render();
   }
@@ -172,7 +215,7 @@ class ExploreMode {
     if (action === 'back') { this.card = null; this.clear(); this.render(); return; }
     if (action === 'album') { this.card = null; this.clear(); this.panels.show('album'); this.render(); return; }
     if (this.loading || this.error || modalOpen() || this.panels.open) return;
-    if (action === 'controls') { this.clear(); this.game.do('exploreControls', { controls: exploreState(this.state).controls === 'tap' ? 'joystick' : 'tap' }); return; }
+    if (action === 'controls') { this.clear(); this.game.do('exploreControls', { controls: this.control === 'tap' ? 'joystick' : 'tap' }); return; }
     if (action === 'rest') { this.game.do('restOnSofa'); this.render(); return; }
     if (action === 'stand') { this.session.seated = false; this.card = null; this.render(); return; }
     if (action === 'outside') {
@@ -206,8 +249,14 @@ class ExploreMode {
     if (this.inside) this.room.frame(this.session, moving, dt);
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
-      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: 1 });
-      if (moving) this.world.cam.lookAt(...e.p, 28);
+      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / 2.1 : 1 });
+      // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
+      const cam = this.world.cam, k = 1 - Math.exp(-9 * dt);
+      if (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, 28);
+      if (this.actOnArrival && !e.route.length && !moving) {   // arrived beside the thing that was tapped
+        const id = this.actOnArrival, near = this.scan(e.p); this.actOnArrival = null;
+        if (near?.id === id) { this.near = near; this.doNear(near); if (!this.active) return; this.render(); }
+      }
       if (this.enterOnArrival && !e.route.length && far(e.p, ...HOME_APPROACH) > .35) this.enterOnArrival = false;   // the walk there was cut short
       if (this.enterOnArrival && far(e.p, ...HOME_APPROACH) <= .35) {   // Go inside was chosen from a few steps away
         this.enterOnArrival = false; const r = this.game.do('enterFarmhouse');
@@ -223,10 +272,10 @@ class ExploreMode {
   render() {
     if (!this.active) return;
     // Do not replace a captured direction button when the nearest-object label changes mid-hold.
-    if (Math.hypot(...this.stick) && !this.busy) { this.renderPending = true; return; }
+    if ((this.joy || Math.hypot(...this.stick)) && !this.busy) { this.renderPending = true; return; }
     const active = document.activeElement?.dataset.explore;
     const loading = this.loading ? t(this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
-    const nearest = this.nearest(), control = exploreState(this.state).controls;
+    const nearest = this.nearest(), control = this.control;
     let card = '';
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
     if (this.card === 'sofa') {
@@ -238,21 +287,32 @@ class ExploreMode {
     }
     const outdoor = !this.inside && this.near, label = outdoor ? t(outdoor.label, outdoor.params) : HOME_OBJECTS[nearest] ? t(HOME_OBJECTS[nearest].label) : null;
     const who = this.walker && !this.own ? ` · ${this.radial.people.nameOf(this.walker)}` : '';
+    const compact = this.roam && !this.inside && !loading;
+    const side = `${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use the thumb stick' : 'Use tap controls', 'ghost') : ''}`;
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
     const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
-      <div class="explore-controls">${card ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
+      <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
-      <div class="explore-actions">${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use movement buttons' : 'Use tap controls', 'ghost') : ''}</div>
-      ${!loading && !card ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>
-      ${!loading && !card && control === 'joystick' ? `<div class="explore-stick" role="group" aria-label="${esc(t('Movement controls'))}">${[['up','↑','Move up'],['left','←','Move left'],['down','↓','Move down'],['right','→','Move right']].map(([id,symbol,label]) => `<button type="button" class="btn" data-move="${id}" aria-label="${esc(t(label))}">${symbol}</button>`).join('')}</div>` : ''}`;
+      ${compact ? '' : `<div class="explore-actions">${side}</div>`}
+      ${!loading && !card && control !== 'joystick' ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
+      ${!loading && !card && control === 'joystick' ? `<div class="explore-joy" role="group" aria-label="${esc(t('Movement controls'))}"><i></i></div>` : ''}`;
     if (this.html === html) return;
     this.html = html; this.stick = [0, 0]; this.el.innerHTML = html;
     this.el.style.fontSize = `${this.state.settings.textSize ?? 1}em`;
-    this.el.querySelectorAll('[data-move]').forEach(b => {
-      const vectors = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
-      b.addEventListener('pointerdown', e => { e.preventDefault(); this.target = null; this.exitOnArrival = this.enterOnArrival = false; this.stick = vectors[b.dataset.move]; b.setPointerCapture(e.pointerId); });
-      for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(event, () => { this.stick = [0, 0]; if (this.renderPending) { this.renderPending = false; this.render(); } });
-    });
+    // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it).
+    const joy = this.el.querySelector('.explore-joy');
+    if (joy) {
+      const knob = joy.firstElementChild, R = 52, done = () => { this.joy = false; this.stick = [0, 0]; knob.style.transform = ''; if (this.renderPending) { this.renderPending = false; this.render(); } };
+      const move = e => {
+        const r = joy.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const len = Math.hypot(dx, dy) || 1;
+        if (len > R) { dx *= R / len; dy *= R / len; }
+        knob.style.transform = `translate(${dx}px, ${dy}px)`;
+        this.stick = len < R * .18 ? [0, 0] : [dx / Math.min(len, R), dy / Math.min(len, R)];
+      };
+      joy.addEventListener('pointerdown', e => { e.preventDefault(); this.joy = true; this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; try { joy.setPointerCapture(e.pointerId); } catch { /* not an active pointer */ } move(e); });
+      joy.addEventListener('pointermove', e => { if (this.joy) move(e); });
+      for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) joy.addEventListener(event, done);
+    }
     if (active) this.el.querySelector(`[data-explore="${active}"]`)?.focus({ preventScroll: true });
   }
 }

@@ -52,7 +52,7 @@ export function moveExplore(s, dx, dz, dt) {
   const goal = e.route[0]; let remaining = Infinity;
   if (!held && goal) { dx = goal[0] - before[0]; dz = goal[1] - before[1]; remaining = Math.hypot(dx, dz); }
   const length = Math.hypot(dx, dz); if (!length) { if (goal) e.route.shift(); return false; }
-  const step = Math.min(remaining, 2.4 * dt), clear = e.location === 'outdoors' ? p => outdoorClear(s, p, e.blocked) : p => roomClear(e.room, p);
+  const step = Math.min(remaining, (e.location === 'outdoors' ? OUTDOOR_SPEED : 2.4) * dt), clear = e.location === 'outdoors' ? p => outdoorClear(s, p, e.blocked) : p => roomClear(e.room, p);
   e.p = movePoint(before, [dx / length * step, dz / length * step], clear, e.location === 'outdoors' ? (a, b) => outdoorCrosses(s, a, b) : undefined);
   const moved = Math.hypot(e.p[0] - before[0], e.p[1] - before[1]);
   if (moved > .001) e.yaw = Math.atan2(e.p[0] - before[0], e.p[1] - before[1]);
@@ -60,6 +60,7 @@ export function moveExplore(s, dx, dz, dt) {
   else if (goal && moved < .001) e.route = [];
   return moved > .001;
 }
+export const OUTDOOR_SPEED = 3.6;
 const near = (e, p) => e && Math.hypot(e.p[0] - p[0], e.p[1] - p[1]) <= .35;
 export const atObject = (s, id) => {
   const e = sessions.get(s), object = e?.room.interactions.find(o => o.id === id);
