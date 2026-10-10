@@ -22,10 +22,15 @@ export const FRUITS = {
   coconut: { name: 'Coconut', tree: 'coconut_palm', value: 26, level: 8, yield: 2, firstMs: 6 * MIN, regrowMs: 10 * MIN, icon: '🥥' },
 };
 
-/** Fish from the pond (core/fishing.mjs). Icons are Willowmere's fish art. */
+/** Fish from the pond (core/fishing.mjs). Icons are Willowmere's fish art. `weight`: how often it bites (bait doubles
+ *  the rare ones). `model`: its node in fish.glb (fish_<model>); `len`: how long it is drawn in the water, in metres. */
 export const FISH_TABLE = [
-  { id: 'perch', name: 'Perch', value: 6, weight: 50 }, { id: 'carp', name: 'Carp', value: 12, weight: 30 },
-  { id: 'catfish', name: 'Catfish', value: 22, weight: 15, rare: true }, { id: 'goldfish', name: 'Golden carp', value: 70, weight: 5, rare: true },
+  { id: 'perch', name: 'Perch', value: 6, weight: 22, model: 'perch', len: 1.0 }, { id: 'carp', name: 'Carp', value: 12, weight: 16, model: 'carp', len: 1.15 },
+  { id: 'clownfish', name: 'Clownfish', value: 10, weight: 13, model: 'clown', len: 0.7 }, { id: 'rainbowfish', name: 'Rainbow fish', value: 14, weight: 12, model: 'rainbow', len: 1.0 },
+  { id: 'catfish', name: 'Catfish', value: 22, weight: 10, rare: true, model: 'catfish', len: 1.2 }, { id: 'koi', name: 'Koi', value: 24, weight: 9, rare: true, model: 'koi', len: 1.3 },
+  { id: 'eel', name: 'Eel', value: 28, weight: 7, rare: true, model: 'eel', len: 1.8 }, { id: 'pike', name: 'Blue pike', value: 36, weight: 5, rare: true, model: 'icepike', len: 2.0 },
+  { id: 'goldfish', name: 'Golden carp', value: 70, weight: 3, rare: true, model: 'golden', len: 0.85 }, { id: 'sunfish', name: 'Sunfish', value: 60, weight: 2, rare: true, model: 'sunfish', len: 2.4 },
+  { id: 'pond_giant', name: 'Crystal giant', value: 100, weight: 1, rare: true, model: 'guardian', len: 3.0 },
 ];
 export const ANIMALS = {
   hen: { name: 'Hen', home: 'coop', eats: 'chicken_feed', gives: 'egg', everyMs: 45_000, price: 40, freeFirst: 2, level: 2, perHome: 6 },

@@ -3,7 +3,7 @@ import { POND, PLAZA } from './world.mjs';
 export const SHOP_WAIT_MS = 15 * 60_000;
 export const SHOP_SKIP_MS = 5 * 60_000;
 export const SHOPS = {
-  fish: { name: 'Lakeside fish buyer', level: 2, goods: ['perch', 'carp', 'catfish', 'goldfish'], n: 1, line: 'A fresh catch for the lakeside kitchen. Bring it whenever you like.' },
+  fish: { name: 'Lakeside fish buyer', level: 2, goods: ['perch', 'carp', 'catfish', 'goldfish', 'clownfish', 'rainbowfish', 'koi', 'eel', 'pike', 'sunfish', 'pond_giant'], n: 1, line: 'A fresh catch for the lakeside kitchen. Bring it whenever you like.' },
   snacks: { name: 'Lakeside snack kiosk', level: 4, goods: ['bread', 'corn_bread', 'apple', 'orange', 'coconut', 'apple_juice', 'carrot_juice', 'orange_juice'], n: 3, line: 'Something tasty for a picnic basket. There is no rush.' },
   flowers: { name: 'Lakeside garden kiosk', level: 7, goods: ['herb', 'ginseng'], n: 2, line: 'The garden stall would love a few roots or herbs from your beds.' },
   plaza: { name: 'Plaza produce stalls', level: 4, goods: ['carrot', 'corn', 'pumpkin', 'peach', 'cherry', 'orange', 'coconut', 'noodles', 'instant_noodles'], n: 4, line: 'A small basket from your farm will brighten the village market.' },

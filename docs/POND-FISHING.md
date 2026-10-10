@@ -108,3 +108,14 @@ When a bite begins, one swimming fish of the kind the line will land (`pick(line
 swims to the float from the far side, darts at it on each nibble, takes it on the bite and is hauled about in the
 fight. Landed, that fish leaps out as the catch and is missing from the water for 12 seconds; then a new one grows
 in. The old dark shadow is gone. All of it lives in `view/pond-fish.mjs` (still two instanced draws per kind).
+
+## Eleven kinds of fish (2026-10-10)
+
+`FISH_TABLE` (content/goods.mjs) now lists perch, carp, clownfish, rainbow fish, catfish, koi, eel, blue pike, golden
+carp, sunfish and the crystal giant, each with its model in `fish.glb` and the length it is drawn at (0.7 m to 3 m).
+Bite weights are flatter than before, so casts bring up different fish; the rare ones are worth more. The village
+pond stocks 23 fish; a built pond keeps the small ones. Zoomed out (camera lod above 0) every fish is one plain
+coloured shape in a single draw, so the far view stays inside its draw-call budget. Icons were rendered with
+`render_icons.py` from the same kit. The pond fish now load after the first scene, with fishing.
+
+Production trays cost 60, 90, 120 and 150 coins (were 60, 200, 600, 1500); six trays is still the most.
