@@ -15,6 +15,7 @@ import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
 import { truckOf, trucksOf, loadUnits, capacity, roomIn, truckCoins, nextTruck, spareForTrucks, truckPays, blocked as blockedWhy } from '../core/market.mjs';
 import { marketDayOf } from '../core/market-day.mjs';
 import { renderSite } from './site-panel.mjs';
+import { renderFestival } from './festival-panel.mjs';
 /** Market day in one line, for the barn and the market square: the good of the day and the time left, or when the next one is. */
 const marketDayLine = (day, now) => !day.open || !day.good ? '' : day.active
   ? `<p class="market-day on">${goodIcon(day.good, 'mini')}<span><b>${t('Market day')}</b> · ${t('Double coins for {good}', { good: t(GOODS[day.good].name) })}</span><small>${glyph('clock', 'g')} ${shortTime(Math.max(0, day.endsAt - now))}</small></p>`
@@ -90,6 +91,7 @@ export function renderPanel() {
     }
     else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
     else if (o.kind === 'shops') { title = t('Village shops'); icon = 'stall'; body = renderShops(s, now, o.arg); }
+    else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
     else if (o.kind === 'site') { title = t(BUILDINGS[o.arg]?.name ?? ''); icon = o.arg; body = renderSite(s, o.arg); }
     else if (o.kind === 'civicSite') { title = t(BUILDINGS[o.arg]?.name ?? 'Village growth'); icon = o.arg; body = renderCivicSite(s, o.arg); }
     else if (o.kind === 'villageGrowth' || o.kind === 'growthMemory') {

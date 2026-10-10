@@ -29,7 +29,7 @@ const dockOf = s => Object.keys(s.placed).find(id => s.placed[id].kind === 'dock
 const site = siteOf('dock');
 
 test('the dock has one place: on the south bank of the brook, by the bridge, on dry ground that touches the water', () => {
-  assert.deepEqual(SITES.map(x => x.kind), ['dock']); assert.ok(BUILDINGS.dock.site && BUILDINGS.dock.max === 1);
+  assert.ok(SITES.some(x => x.kind === 'dock')); assert.ok(SITES.every(x => BUILDINGS[x.kind].site && BUILDINGS[x.kind].max === 1));
   for (const st of SITES) assert.deepEqual(st.size, BUILDINGS[st.kind].size, 'the site knows the footprint of its building');
   const cells = grid.cellsOf('dock', site.x, site.z, site.rot);
   for (const [x, z] of cells) { assert.ok(!isBrook(x, z) && !isRoad(x, z), `${x},${z} is water or road`); assert.equal(siteAt(x, z)?.kind, 'dock'); }

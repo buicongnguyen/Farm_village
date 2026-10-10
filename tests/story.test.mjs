@@ -34,7 +34,9 @@ test('every speaker in the story, heart scenes, arrivals and letters is a real p
 
 test('your family is on stage but never posts orders, and Ellis only writes letters', () => {
   for (const id of ['june', 'pip', 'ellis']) { const p = PEOPLE[id]; assert.ok(p?.family && p.noOrders, `${id} is not family/noOrders`); }
-  assert.ok(!spoken.some(l => l.who === 'ellis'), 'Ellis speaks in a scene, but he is away upriver');
+  // he comes home in chapter 9: before that he only writes
+  const home = new Set(BEATS.filter(b => b.chapter >= 9).flatMap(b => b.lines));
+  assert.ok(!spoken.some(l => l.who === 'ellis' && !home.has(l)), 'Ellis speaks in a scene before chapter 9, but he is away upriver');
   assert.ok(LETTERS.filter(l => l.from === 'ellis').length >= 3, 'Ellis needs his letters');
   assert.match(PEOPLE.ellis.line, /fishing upriver/);
   const pip = PEOPLE.pip.says;

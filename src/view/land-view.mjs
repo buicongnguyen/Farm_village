@@ -246,8 +246,10 @@ export class LandView {
     const s = this.s, b = this.world.batches, step = STEPS[s.projects?.step];
     // a fixed site (the boat dock on the brook) shows a sign from a little before its level until it is built
     for (const st of SITES) {
-      const def = BUILDINGS[st.kind], [w, d] = def.size, sign = `sitesign:${st.kind}`;
-      if (!(s.counts[st.kind] > 0) && s.level >= def.level - 2 && b.has('sale_sign')) b.set(sign, { model: 'sale_sign', x: (st.x + w / 2) * CELL, z: (st.z + d / 2) * CELL, rot: 0 });
+      const def = BUILDINGS[st.kind], [w, d] = def.size, sign = `sitesign:${st.kind}`, at = { x: (st.x + w / 2) * CELL, z: (st.z + d / 2) * CELL }, built = (s.counts[st.kind] ?? 0) > 0;
+      if (st.ruin) {   // what is left of the old one stands there from the start (the burned festival stage)
+        if (!built && b.has(st.ruin)) b.set(sign, { model: st.ruin, ...at, rot: st.rot * Math.PI / 2 }); else b.remove(sign);
+      } else if (!built && s.level >= def.level - 2 && b.has('sale_sign')) b.set(sign, { model: 'sale_sign', ...at, rot: 0 });
       else b.remove(sign);
     }
     for (const r of RUINS) {

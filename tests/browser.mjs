@@ -1,5 +1,6 @@
 // Browser suite. Builds nothing itself: run `npm run build:test`, serve dist (node scripts/serve-dist.mjs 5241),
-// then `npm run test:browser`. GAME_URL overrides the address; GPU=0 uses the software renderer.
+// then `npm run test:browser`. GAME_URL overrides the address; GPU=0 uses the software renderer; ONLY="text" runs the
+// checks whose name contains it.
 // Each check is a function; the suite grows with the milestones.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -24,6 +25,7 @@ async function open(device = 'pc', query = '', { intro = false } = {}) {
   return { ctx, page, errors };
 }
 async function check(name, f) {
+  if (process.env.ONLY && !name.includes(process.env.ONLY)) return;   // ONLY="chapter 9" runs the checks whose name has that text
   const t0 = Date.now();
   try { await f(); results.push([name, 'ok', Date.now() - t0]); console.log(`ok   ${name}`); }
   catch (e) { results.push([name, 'FAIL', Date.now() - t0, e.message]); console.log(`FAIL ${name}\n     ${e.message}`); }
@@ -605,6 +607,42 @@ await check('chapter 8: the first company delivery closes the chapter, the sluic
   await page.evaluate(() => { farm.closeCards(); farm.panels.show('villageGrowth'); }); await page.waitForSelector('.board-voice', { timeout: 20000 });
   expect((await page.textContent('.board-voice')).includes('Penny'), 'the manager is not on the board');
   await page.waitForFunction(() => farm.people?.walkers?.has('bea'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 9: the stage is rebuilt on the square, the Harvest Festival gathers the village under lanterns, and Oak comes home (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(11, 0, 0, 0) - Date.now()));   // by day, so the evening is the festival's doing
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:9'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 50000; g.s.barn.cap = 5000; Object.assign(g.s.barn.items, { bread: 6, corn_bread: 5, apple_juice: 4, apple: 9, egg: 9, carrot: 9, wheat: 20 }); });
+  // what is left of the old stage stands on the square; its panel builds the new one
+  await page.waitForFunction(() => farm.world.batches.items.get('sitesign:stage')?.model === 'stage_burned', null, { timeout: 40000 });
+  await page.evaluate(() => farm.focus(41, 100, 22)); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}stage-burned.png` });
+  await page.evaluate(() => farm.panels.onSite('stage')); await page.waitForSelector('[data-do="siteBuild"]'); await page.click('[data-do="siteBuild"]');
+  await page.waitForFunction(() => (farm.state().counts.stage ?? 0) === 1 && !farm.world.batches.items.has('sitesign:stage'));
+  // the festival panel: the feast from the barn, then the evening
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('festival'); }); await page.waitForSelector('[data-do="holdFestival"]');
+  expect(await page.locator('.feast .slot.ready').count() === 6 && !(await page.locator('[data-do="holdFestival"]').isDisabled()), 'the feast is not laid');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}festival-panel.png` });
+  const hearts = await page.evaluate(() => farm.state().people.lan?.hearts ?? 0);
+  await page.click('[data-do="holdFestival"]');
+  await page.waitForSelector('[data-status="festival"]', { timeout: 10000 });
+  const on = await page.evaluate(() => ({ night: farm.world.daylight.nightness, glows: farm.world.daylight.glowCount.bulbs, lan: farm.state().people.lan?.hearts ?? 0, n: farm.state().stats.harvestFestivals ?? 0 }));
+  expect(on.night > 0.2 && on.glows >= 20 && on.lan === hearts + 1 && on.n === 0, `the evening: ${JSON.stringify(on)}`);
+  // people walk to the square and face the stage
+  await page.waitForFunction(() => [...farm.people.walkers.values()].filter(w => w.party && !w.route.length && w.z > 198 && w.z < 210 && w.x > 74 && w.x < 90).length >= 4, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); farm.panels.close(); farm.focus(41, 101, 20); }); await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}festival-evening.png` });
+  // the evening ends (the tester's Finish every timer), the chapter card, Bramble's scene, and Oak is home
+  await page.evaluate(() => { farm.game.do('testFinishTimers'); farm.game.tick(); });
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The village sings again') && card.includes('Bramble') && card.includes('lantern'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-9-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 9 && farm.world.daylight.nightness < 0.05, null, { timeout: 15000 });   // day again
+  await page.waitForFunction(() => farm.people.walkers.has('ellis'), null, { timeout: 30000 });
   expect(!errors.length, errors.join('\n'));
   await ctx.close();
 });

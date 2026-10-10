@@ -172,7 +172,7 @@ export class Juice {
       else if (e.type === 'fishCaught' && (e.rare || e.fish === 'goldfish')) this.goldenCatch(e);
       else if (e.type === 'stallSold' || e.type === 'fruitSold') this.waiting(e.type);
       else if (e.type === 'levelUp') this.celebrate();
-      else if (e.type === 'projectDone') this.celebrate(true);
+      else if (e.type === 'projectDone' || e.type === 'harvestFestivalStarted') this.celebrate(true);
     }
   }
   harvested(list) {

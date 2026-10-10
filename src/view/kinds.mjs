@@ -73,6 +73,8 @@ export const KIND_MODELS = {
   'produce:milk': { kit: 'animal-produce', node: 'milk', height: 0.5, lod: 'static' },
   // decorations and fruit trees the play package adds (drawn as soon as their kind exists in BUILDINGS)
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
+  stage:        { kit: 'decor', node: 'stage', authored: true, lod: 'static', late: true },          // chapter 9: the festival stage on the square
+  stage_burned: { kit: 'decor', node: 'stage_burned', authored: true, lod: 'static', late: true },   // what is left of the old one, until it is rebuilt
   dock:         { kit: 'decor', node: 'dock', authored: true, lod: 'static', late: true },   // chapter 7: the pier reaches north of its footprint, over the brook
   bunting:      { kit: 'decor', node: 'bunting', authored: true, lod: 'static', late: true },
   banner:       { kit: 'decor', node: 'banner', authored: true, lod: 'static', late: true },

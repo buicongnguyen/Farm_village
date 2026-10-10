@@ -14,6 +14,8 @@ export const STAGES = [
   { id: 'streets', name: 'Safe streets and work for all', goal: 'Reopen the police post and the company office', level: 12, version: '0.7',
     milestones: [{ name: 'Rebuild the police post', test: 'police' }, { name: 'Build the boat dock on the brook', test: 'dock' },
       { name: 'Reopen the company office', test: 'company' }, { name: 'Send the first company delivery', test: 'contract1' }] },
+  { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 12, version: '0.7',
+    milestones: [{ name: 'Rebuild the festival stage', test: 'stage' }, { name: 'Hold the Harvest Festival', test: 'festival' }] },
   { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 16, version: '0.8', planned: true },
   { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 18, version: '0.9', planned: true },
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
@@ -25,6 +27,6 @@ export const JOURNEY_UNLOCKS = [
   { name: 'Goat barn', level: 8, kind: 'goat_barn' }, { name: 'Dairy', level: 8, kind: 'dairy' },
   { name: 'Police post', level: 12, kind: 'police' }, { name: 'Company office', level: 15, kind: 'company' },
   { name: 'Boat dock', level: 10, kind: 'dock' },
-  { name: 'Festival stage', level: 12, version: '0.7', planned: true },
+  { name: 'Festival stage', level: 12, kind: 'stage' },
   { name: 'Riverside town', level: 18, version: '0.9', planned: true },
 ];

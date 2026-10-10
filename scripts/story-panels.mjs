@@ -25,6 +25,12 @@ const dock = `s.placed.st_dock = { kind: 'dock', x: 32, z: 13, rot: 0 }; s.count
 // chapter 8: the company office on its old site, and the sluice open (the brook runs full, the mill wheel turns)
 const office = `s.placed.st_office = { kind: 'company', x: 83, z: 106, rot: 2 }; s.counts.company = 1; s.cells[105 * 128 + 85] = 3;`;
 const sluice = `s.firsts.sluice = 1;`;
+// chapter 9: the festival stage on the square, and the Harvest Festival's evening (lanterns, everyone gathered)
+const stage = `s.placed.st_stage = { kind: 'stage', x: 39, z: 98, rot: 0 }; s.counts.stage = 1;`;
+const festival = stage + `s.festival = { at: farm.game.now - 1000, until: farm.game.now + 170000, n: 1 };`;
+const village = cottage('st_c1', 36, 93, 'tran') + cottage('st_c2', 41, 93, 'okafor') + cottage('st_c3', 66, 93, 'reyes') + cottage('st_c4', 46, 93, 'lindqvist');
+// everyone who has come to the village by chapter 9: the teacher, the doctor, the baker, the constable, the manager
+const everyone = village + school + police + office + marketDay + `s.placed.st_clinic = { kind: 'clinic', x: 62, z: 106, rot: 2 }; s.counts.clinic = 1;`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -51,6 +57,9 @@ const PANELS = {
   'ch8-1': { hour: 10, scene: school + police + office + cottage('st_c3', 66, 93, 'reyes'), wait: 6000, look: [82, 104, 30] },
   'ch8-2': { hour: 11.5, scene: sluice + dock, wait: 7000, look: [38, 10, 26] },
   'ch8-3': { hour: 16.6, scene: sluice, wait: 7000, look: [41, 8, 13] },
+  'ch9-1': { hour: 11, scene: stage + village, wait: 7000, look: [41, 100, 20] },
+  'ch9-2': { hour: 11, scene: festival + everyone, wait: 30000, look: [41, 100, 27] },
+  'ch9-3': { hour: 11, scene: festival + everyone, wait: 40000, look: [41, 101, 16] },
 };
 const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

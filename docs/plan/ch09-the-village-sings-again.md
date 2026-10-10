@@ -1,6 +1,41 @@
 # Chapter 9: The village sings again
 
-Status: not started · Depends on: chapter 8 · Size: two sessions (stage and festival; Oak comes home)
+Status: **done** (PR #84, in one PR) · Depends on: chapter 8 · Size: two sessions (stage and festival; Oak comes home)
+
+## How to play it (for the owner)
+
+1. On the village square a burned platform stands where the old stage was. Tap it (or Village projects → "The
+   festival stage"): at level 12, for 1,500 coins, **Build** puts the new stage there.
+2. Tap the stage (or the project "The Harvest Festival"). The panel lays a feast from your barn: six different foods,
+   three of each (made food first, then fruit, eggs and milk, then crops). **Hold the Harvest Festival**.
+3. The evening begins whatever the clock says: dusk, strings of coloured lanterns over the square, a quicker tune
+   with a drum, and everyone in the village walks to the square, faces the stage, cheers and waves. The hat pays more
+   than the feast was worth and everyone you can give gifts to gains a heart. A "Festival" pill shows the time left
+   (three minutes at testing pace).
+4. When the evening is over the chapter 9 card appears: Bramble's story of the fire. Then a scene with Dr Fern and
+   Bramble, then **Oak comes home**: from now on he walks about the farm and the village, fishes, and has things to
+   say when tapped.
+5. The festival can be held again after the village has rested (twenty minutes at testing pace).
+
+Tester (`?tester`): "Finish every timer" also ends the evening; "Finish this chapter" builds the stage and counts a
+festival.
+
+## What was built, where it differs from the plan below
+
+- One PR, not two.
+- The stage is a fixed site (`core/sites.mjs`, as the dock): `SITES` has `ruin: 'stage_burned'`, which the world shows
+  on the site until the building stands (instead of a sign). It costs coins only (no goods to deliver).
+- `src/core/festival.mjs`: `feastOf`, `festivalOf`, `holdFestival`, `tickFestival`. The feast is chosen for the player
+  (best first), not picked slot by slot. **The deed counts when the evening is over**, so the card does not cover it.
+- The evening is spread over existing views, with no new view class: `daylight.mjs` (the hour is 20.4 while it
+  lasts, unless the player chose "always daytime"; the lanterns are glows), `people-view.mjs` (`liveParty`: each
+  walker takes a free place nearest the stage's front and retries if the way is blocked), `juice.mjs` (confetti at
+  the start), `kit/sound.mjs` (`setMood('festival')`).
+- Oak: `oakHome(s)` in `content/people.mjs` (chapter 9 seen); he is a walker with his own lines and likes to fish. The
+  `away` flag stays in the data as documentation; nothing read it.
+- Bramble's truth is on the chapter card; one scene follows it (`gus-truth`), then `oak-home`.
+- Roadmap stage "The village sings again" (stage, festival).
+- `tests/browser.mjs` takes `ONLY="text"` to run the checks whose name contains it.
 Story source: `STORY.md` 3 (Bramble's arc, the fire) and 4 (row 9), `JOURNEY.md` 3
 
 ## What the player gets

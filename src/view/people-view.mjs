@@ -10,6 +10,8 @@ import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK, POND_FISHING_SPOTS } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { fishable, seatsOf } from '../core/pond-bank.mjs';
+import { festivalOf } from '../core/festival.mjs';
+import { SITES, PLAZA, WELL } from '../content/world.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
 import { adviceCards, adviceOf } from '../core/advice.mjs';
@@ -22,14 +24,25 @@ import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
-const { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived } = PEOPLE_DATA;
+const { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived, oakHome } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
 const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl', 'bea']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
 const FAMILY_NAMES = { june: '{person:june:display}', pip: '{person:pip:display}', dog: '{pet:dog:display}', you: 'You' };
-const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo']);   // villagers who like to fish
+const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo', 'ellis']);   // villagers who like to fish
+// The Harvest Festival: places to stand, nearest the stage's front first: the square south of the stage and the grass two
+// cells round it (never on the well or right beside it), and the middle of the stage's front in metres (what everyone
+// looks at).
+const STAGE = SITES.find(x => x.kind === 'stage');
+const STAGE_FRONT = [(STAGE.x + STAGE.size[0] / 2) * CELL, (STAGE.z + STAGE.size[1]) * CELL];
+const PARTY_SPOTS = (() => {
+  const out = [];
+  for (let z = STAGE.z + STAGE.size[1]; z <= PLAZA.z1 + 2; z++) for (let x = PLAZA.x0 - 2; x <= PLAZA.x1 + 2; x++) if (Math.abs(x - WELL.x) > 1 || Math.abs(z - WELL.z) > 1) out.push([x, z]);
+  const far = c => Math.hypot((c[0] + 0.5) * CELL - STAGE_FRONT[0], (c[1] + 0.5) * CELL - STAGE_FRONT[1]);
+  return out.sort((a, b) => far(a) - far(b));
+})();
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 // Clothes: warm, vivid colours (sRGB). Named people wear their own; everyone else draws from the palette by name.
@@ -39,6 +52,7 @@ const HAIR = ['#2a1a12', '#5a3218', '#a8642c', '#1a1a22', '#7a3b1c', '#d9a548'];
 const OUTFITS = {
   you: { top: '#e63946', bottom: '#2f5aa8', hair: '#2a1a12' }, june: { top: '#ff6f4f', bottom: '#2f5aa8', hair: '#8a3a1c' }, pip: { top: '#ffc83d', bottom: '#3f8f4a', hair: '#5a3218' },
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
+  ellis: { top: '#4f9a52', bottom: '#5a3a2a', hair: '#d6d0c6' },   // Grandpa Oak: a green jersey, grey hair
   bea: { top: '#f2a93b', bottom: '#4a4a5c', hair: '#5a3218' },   // the office manager: a mustard cardigan
   pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
@@ -98,6 +112,8 @@ export class PeopleView {
     if (school) { const p = school[1]; out.push({ id: 'cora', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     const clinic = Object.entries(s.placed).find(([, p]) => p.kind === 'clinic');
     if (clinic) { const p = clinic[1]; out.push({ id: 'hazel', body: 'hana', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // Grandpa Oak is home once chapter 9 has been seen: he potters about like a villager, and likes the pond
+    if (oakHome(s)) out.push({ id: 'ellis', body: 'man', home });
     // the office manager keeps the company office (chapter 8)
     const office = Object.entries(s.placed).find(([, p]) => p.kind === 'company');
     if (office && hasArrived(s, villager('bea'))) { const p = office[1]; out.push({ id: 'bea', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
@@ -245,10 +261,11 @@ export class PeopleView {
   frame(dt) {
     this.time += dt;
     this.clock += dt; if (this.clock > 1) { this.clock = 0; this.sync(); this.maybeTip(); this.pipIdle(); }
-    const night = isNight(this.s, this.game.now);
+    const night = isNight(this.s, this.game.now), party = festivalOf(this.s, this.game.now).active;
     for (const w of this.walkers.values()) {
       if (w.pet) this.liveDog(w, dt, night);
       else if (w.player) this.livePlayer(w, dt, night);
+      else if ((party || w.party) && !w.visitor && !w.controlled) this.liveParty(w, dt, party);   // the Harvest Festival: everyone is on the square
       else if (w.family) this.liveFamily(w, dt, night);
       else this.liveVillager(w, dt, night);
       const sub = w.subject; sub.x = w.x; sub.z = w.z; sub.rot = w.rot; sub.clip = w.clip; sub.speed = w.speed ?? 1; sub.hidden = !!w.indoors;
@@ -256,6 +273,26 @@ export class PeopleView {
     }
     if ((this.greetClock += dt) > 0.5) { this.greetClock = 0; this.greet(); }
     this.placeBubbles();
+  }
+  /** The Harvest Festival (chapter 9): walk to a place on the square, face the stage, cheer and wave until the evening ends. */
+  liveParty(w, dt, on) {
+    if (!on) { w.party = false; w.partySpot = null; this.cancelTrip(w); w.wait = Math.random() * 3; return; }
+    if (!w.party) {
+      this.cancelTrip(w); w.party = true; w.goingHome = false; w.partyWait = 1 + Math.random() * 4; w.partyRetry = 0;
+      if (w.indoors) { w.indoors = false; const [x, z] = w.family ? this.familySpot(w.id) : w.home; w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
+      // a place of one's own: the free standable cell nearest the stage's front (the square first, then the grass round it)
+      const taken = new Set([...this.walkers.values()].filter(o => o.partySpot).map(o => o.partySpot.join()));
+      w.partySpot = PARTY_SPOTS.find(c => !taken.has(c.join()) && stepCost(this.s, c[0], c[1])) ?? PARTY_SPOTS[hash(w.id) % PARTY_SPOTS.length];
+      w.route = this.route(this.cellOf(w), w.partySpot);
+    }
+    if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
+    if (this.follow(w, dt, w.kid ? 2.1 : 1.9)) return;
+    // not there yet and no way planned (something was in the way): try again in a moment
+    const [sx, sz] = w.partySpot;
+    if (Math.hypot((sx + 0.5) * CELL - w.x, (sz + 0.5) * CELL - w.z) > CELL * 1.5 && (w.partyRetry -= dt) <= 0) { w.partyRetry = 2; w.route = this.route(this.cellOf(w), w.partySpot); if (w.route.length) return; }
+    w.faceTo = Math.atan2(STAGE_FRONT[0] - w.x, STAGE_FRONT[1] - w.z);
+    if ((w.partyWait -= dt) <= 0) { this.once(w, Math.random() < 0.6 ? 'Cheer' : 'Wave', 1.8); w.partyWait = 3 + Math.random() * 6; }
+    this.doing(w, 'Idle', dt);
   }
   /** Cancel a journey and its pending action together, including a fishing cast. */
   cancelTrip(w) {
@@ -338,7 +375,7 @@ export class PeopleView {
   once(w, clip, secs) { w.subject.once = { clip }; w.once = clip; w.onceUntil = this.time + secs; }
   /** Two people who meet stop, face each other, wave and chat for a moment. */
   greet() {
-    const list = [...this.walkers.values()].filter(w => !w.pet && !w.player && !w.family && !w.orderedFishing && !w.fishing && w.todo?.act !== 'fish' && !w.indoors && !w.visitor && w.route.length && this.time > (w.greetedAt ?? -99) + 40);   // a chat never cancels a trip you sent someone on
+    const list = [...this.walkers.values()].filter(w => !w.pet && !w.player && !w.family && !w.party && !w.orderedFishing && !w.fishing && w.todo?.act !== 'fish' && !w.indoors && !w.visitor && w.route.length && this.time > (w.greetedAt ?? -99) + 40);   // a chat never cancels a trip you sent someone on
     for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
       const a = list[i], b = list[j]; if (Math.hypot(a.x - b.x, a.z - b.z) > 2.6 || Math.random() > 0.5) continue;
       for (const [p, q] of [[a, b], [b, a]]) { p.greetedAt = this.time; p.route = []; p.wait = 3.5; p.clipFor = 'Talk'; p.faceTo = Math.atan2(q.x - p.x, q.z - p.z); p.todo = null; }
