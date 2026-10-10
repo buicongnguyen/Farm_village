@@ -1,5 +1,6 @@
 import { MOBILE_VI } from './mobile.mjs';
 import { VI_FISHING } from './vi-fishing.mjs';
+import { VI_EXPLORE } from './vi-explore.mjs';
 import { VI_LEARNING } from './vi-learning.mjs';
 import { VI_LEARNING_UI } from './vi-learning-ui.mjs';
 import { VI_SCHOOL_ACTIVITY } from './vi-school-activity.mjs';
@@ -21,6 +22,7 @@ import { VI_PROFILES } from './vi-profiles.mjs';
 // Vietnamese for every player-visible English string (key: the exact English text, with the same {placeholders}).
 // tests/i18n.test.mjs fails when a string in src/ or in content/ has no line here.
 export const VI = {
+  ...VI_EXPLORE,
   ...VI_FISHING,
   'Could not load this language. Check your connection.': 'Không tải được ngôn ngữ này. Hãy kiểm tra kết nối mạng.',
   ...VI_ADVICE_FOLLOWUP,

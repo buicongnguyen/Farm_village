@@ -342,7 +342,9 @@ export class LandView {
       const homeX = c.x + (4.4 + i * TRUCK_GAP) * CELL;
       let x = homeX, rot = -Math.PI / 2, show = true;
       if (tr.away) {
-        const k = Math.max(0, Math.min(1, 1 - (tr.backAt - this.game.now) / TRUCK.tripMs)), reach = homeX - 2 * CELL;
+        // Every truck drives the same distance at the same speed (the first truck's way to the west edge), so a convoy
+        // keeps its parking gap instead of the far trucks catching up and driving through the near ones.
+        const k = Math.max(0, Math.min(1, 1 - (tr.backAt - this.game.now) / TRUCK.tripMs)), reach = c.x + 4.4 * CELL - 2 * CELL;
         if (k < 0.2) x = homeX - reach * (k / 0.2);                // drives off west
         else if (k > 0.8) { x = homeX - reach * (1 - (k - 0.8) / 0.2); rot = Math.PI / 2; }   // comes home from the west
         else show = false;                                          // out in town

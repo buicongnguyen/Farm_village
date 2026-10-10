@@ -354,6 +354,7 @@ export class PeopleView {
     return true;
   }
   livePlayer(w, dt, night) {
+    if (w.controlled) return;
     if (!this.checkPond(w)) return;
     if (night) { this.cancelTrip(w); w.indoors = true; return; }
     if (w.indoors) { w.indoors = false; const [x, z] = this.familySpot('you'); w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }

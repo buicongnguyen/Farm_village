@@ -82,6 +82,7 @@ export class Radial {
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
   houseMenu() {
     const s = this.s, lv = s.house?.level ?? 1, buttons = [];
+    buttons.push({ act: 'goInside', icon: glyph('home', 'ic'), label: t('Go inside'), disabled: levelOf(s, 'house') >= 3 || isRepairing(s, 'house') });
     if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
     const lesson = learningStatus(s, this.game.now);
     if (lesson.eligible || lesson.introduced) buttons.push({ act: 'learning', icon: iconHtml('wrench', '', 'ic'), label: t('Garden repairs') });
@@ -212,6 +213,7 @@ export class Radial {
   }
   choose(d) {
     const g = this.game, { id, cell, land, ruin } = this.target ?? {}; this.hide();
+    if (d.act === 'goInside') { const state = g.s; import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this)).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn')); return; }
     if (d.act === 'plant') { this.lastCrop = d.crop; this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'plantAll') g.do('plant', { ids: Object.keys(g.s.placed).filter(k => g.s.placed[k].kind === 'bed' && !g.s.beds[k]), crop: d.crop });

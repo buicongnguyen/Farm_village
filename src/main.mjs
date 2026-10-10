@@ -20,7 +20,6 @@ import { BuildView } from './ui/build-view.mjs';
 import { Panels } from './ui/panels.mjs';
 import { Radial } from './ui/radial.mjs';
 import { Fx } from './ui/fx.mjs';
-import { Guide } from './ui/guide.mjs';
 import { initModals } from './ui/modal.mjs';
 import { Bonds } from './ui/bonds-panels.mjs';
 import { CartView } from './ui/cart-panel.mjs';
@@ -47,7 +46,7 @@ import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
-const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs'), import('./view/fishing-play.mjs')]);
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs'), import('./ui/guide.mjs'), import('./view/fishing-play.mjs')]);   // the guide and the fishing play download beside them
 await languageReady;   // load the selected edition before drawing its first text
 document.title = t('Farm Village');
 onLanguageChange(() => { document.title = t('Farm Village'); });
@@ -290,7 +289,7 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
-const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }, { FishingPlay }] = await living;
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }, { Guide }, { FishingPlay }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
 world.fishingView = new FishingView(world, game, people);

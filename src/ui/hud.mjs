@@ -31,6 +31,11 @@ import { VILLAGE_NAME } from '../content/story.mjs';
 import { RUIN_NAMES } from '../content/world.mjs';
 import { iconHtml, glyph } from './icon.mjs';
 const NAMES = Object.fromEntries(NEIGHBOURS.map(n => [n.id, n.name]));
+// Badge counts stay short on a phone (docs/HUD-STANDARD.md): 1..9, then "9+".
+const cap9 = n => !n ? '' : n > 9 ? '9+' : String(n);
+// Toast priority and how long each kind stays (docs/HUD-STANDARD.md): a warning outranks a reward, a reward outranks
+// news, and a new message never pushes a higher one off screen while a lower one is there to go first.
+const TOAST_RANK = { info: 0, good: 1, warn: 2 }, TOAST_MS = { info: 2400, good: 3000, warn: 4500 };
 const TOGGLED = ['orders', 'projects', 'today', 'friends'];   // the tutorial reveals these; build and barn are there from the start
 
 export class Hud {
@@ -105,13 +110,13 @@ export class Hud {
     this.refreshStatus();
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
-    badge.textContent = can || ''; badge.hidden = !can;
+    badge.textContent = cap9(can); badge.hidden = !can;
     q('[data-act="orders"]').setAttribute('aria-label', `${t('Order board')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`);
     this.refreshTodayMessages();
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
     q('[data-act="projects"] .badge').hidden = !canWork;
     const mail = unread(s), mailBtn = q('[data-act="mail"]');
-    mailBtn.hidden = !mail; mailBtn.querySelector('.badge').textContent = mail;
+    mailBtn.hidden = !mail; mailBtn.querySelector('.badge').textContent = cap9(mail);
     const used = barnUsed(s), cap = q('[data-act="barn"] .badge');
     cap.textContent = `${used}/${s.barn.cap}`; cap.classList.toggle('full', used >= s.barn.cap * 0.9);
     if (used > this.barnUsed) this.pulse(cap, 'bounce');
@@ -121,7 +126,7 @@ export class Hud {
   refreshTodayMessages() {
     const messages = unreadLearning(this.game.s) + unreadSchool(this.game.s) + unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
     const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
-    badge.textContent = messages || ''; badge.classList.remove('dot'); badge.hidden = !messages;
+    badge.textContent = cap9(messages); badge.classList.remove('dot'); badge.hidden = !messages;
     button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));
     if (messages) button.hidden = false;
   }
@@ -145,7 +150,7 @@ export class Hud {
     if (e.type === 'repairLearned') this.toast(t('Garden repairs learned'), 'good', { icon: 'wrench' });
     if (e.type === 'gardenProject' && e.complete) this.toast(t('The potting bench is ready! A new crop to try.'), 'good', { icon: 'strawberry' });
     if (e.type === 'schoolRoundCompleted' && e.first) this.toast(t('Your first basket game: a new memory for the album!'), 'good', { icon: 'school' });
-    if (e.type === 'repairStarted') this.toast(t('Repair started: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'info', { icon: 'wrench' });
+    // repairStarted: no toast (docs/HUD-STANDARD.md): the scaffolding and its timer already show it in the world.
     if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish });
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
     if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck' });
@@ -186,24 +191,26 @@ export class Hud {
     const help = reason === 'Not enough coins' ? ['orders', 'Fill orders to earn coins'] : lock === 'level' || /^Reach level/.test(reason) ? ['quests', 'Goals give XP'] :
       /Missing goods|No feed|Nothing to plant/.test(reason) ? ['plan', 'See what to do'] : null;
     const el = this.toast(help ? `${t(reason, tParams(params))} · ${t(help[1])} ›` : t(reason, tParams(params)), 'warn', { icon: lock ? 'lock' : null, group: lock ? `lock:${lock}` : `warn:${reason}` });
-    if (help && el) { el.classList.add('tappable'); el.onclick = () => { el.remove(); if (help[0] === 'plan') { const n = this.nextTask; if (n?.way) this.onShowWay?.(n.way); else this.onPanel?.('orders'); } else this.onPanel?.(help[0]); }; }
+    if (help && el) { el.dataset.until = performance.now() + 5000; el.classList.add('tappable'); el.onclick = () => { el.remove(); if (help[0] === 'plan') { const n = this.nextTask; if (n?.way) this.onShowWay?.(n.way); else this.onPanel?.('orders'); } else this.onPanel?.(help[0]); }; }
   }
   /** A short message. Options: icon (an icon id), group (messages of a group replace each other in one toast). */
   toast(text, kind = 'info', { icon = null, group = null } = {}) {
     const box = this.el.querySelector('.toasts'), now = performance.now();
     const same = [...box.children].find(el => !el.classList.contains('gone') && (el.dataset.text === text || (group && el.dataset.group === group)));
     if (same) {                                            // a repeat (or one of its group) refreshes the toast on screen
-      same.dataset.text = text; same.querySelector('.msg').textContent = text; same.dataset.until = now + 2600;
+      same.dataset.text = text; same.querySelector('.msg').textContent = text; same.dataset.until = now + (TOAST_MS[kind] ?? 2600);
       const n = +(same.dataset.n ?? 1) + 1; same.dataset.n = n; const c = same.querySelector('.count'); if (c) { c.textContent = `×${n}`; c.hidden = false; }
       this.pulse(same, 'bump'); return same;
     }
     const el = document.createElement('div');
-    el.className = `toast ${kind}`; el.dataset.text = text; if (group) el.dataset.group = group; el.dataset.until = now + 2600;
+    el.className = `toast ${kind}`; el.dataset.text = text; if (group) el.dataset.group = group; el.dataset.until = now + (TOAST_MS[kind] ?? 2600);
     el.innerHTML = `${icon ? iconHtml(icon, '', 'toast-icon') : ''}<span class="msg"></span><i class="count" hidden></i>`;
     el.querySelector('.msg').textContent = text;
     box.appendChild(el);
-    const live = [...box.children].filter(x => !x.classList.contains('gone'));
-    while (live.length > 2) live.shift().remove();
+    const live = [...box.children].filter(x => !x.classList.contains('gone')), rank = x => TOAST_RANK[[...x.classList].find(c => c in TOAST_RANK)] ?? 0;
+    while (live.length > 2) {   // two at most: the lowest-priority, oldest one makes room
+      const out = live.reduce((low, x) => rank(x) < rank(low) ? x : low, live[0]); live.splice(live.indexOf(out), 1); out.remove();
+    }
     const check = () => { if (!el.isConnected) return; if (performance.now() < +el.dataset.until) { setTimeout(check, 200); return; } el.classList.add('gone'); setTimeout(() => el.remove(), 450); };
     setTimeout(check, 2600);
     return el;
@@ -220,7 +227,7 @@ export class Hud {
       const label = `${t(row.label)}: ${detail}${row.ready ? ` · ${row.ready} ${t('ready')}` : ''}`;
       button.className = `status-row${row.hot || row.ready ? ' hot' : ''}`;
       button.querySelector('b').textContent = t(row.label); button.querySelector('small').textContent = detail;
-      const badge = button.querySelector('.badge'); badge.textContent = row.ready || ''; badge.hidden = !row.ready;
+      const badge = button.querySelector('.badge'); badge.textContent = cap9(row.ready); badge.hidden = !row.ready;
       button.setAttribute('aria-label', label); button.title = row.act === 'pond' && row.hot ? t('A fish is biting!') : label;
     }
     this.el.style.setProperty('--hud-stack-bottom', `${Math.ceil(this.el.querySelector('.hud-top').getBoundingClientRect().bottom)}px`);

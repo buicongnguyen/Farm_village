@@ -184,7 +184,9 @@ body.reduced-motion .next-chip { animation: none; }
 .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 54px); }
 .hud-status { display: grid; gap: 4px; justify-items: start; max-width: min(60vw, 250px); margin-top: 2px; }
 .status-row { display: flex; align-items: center; gap: 6px; font: 800 12.5px/1.15 'Nunito', sans-serif; color: #5a3410; background: #fff8e4ee; border: 2px solid #e2b977; border-radius: 12px; padding: 3px 9px 3px 5px; box-shadow: 0 2px 0 #b8741a66; cursor: pointer; text-align: left; }
-.status-row.hot { border-color: #ffb92e; background: #fff1c2; animation: row-bob 2.4s ease-in-out infinite; }
+.status-row.hot { border-color: #ffb92e; background: #fff1c2; }
+/* Only a biting fish moves (docs/HUD-STANDARD.md: one thing in motion at a time); other ready pills just glow. */
+.status-row.hot[data-status="pond"] { animation: row-bob 2.4s ease-in-out infinite; }
 .status-row .mini, .status-row .g { width: 20px; height: 20px; flex: none; }
 .status-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
 body.reduced-motion .status-row.hot { animation: none; }
@@ -227,3 +229,17 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 .plan-step img, .plan-step .icon { width: 18px; height: 18px; }
 .toast.tappable { pointer-events: auto; cursor: pointer; text-decoration: underline dotted; }
 button.village-name { border: 0; cursor: pointer; }
+
+/* Tidy order board: fewer rows per card. Name and hearts share a line, smaller faces and plan steps, and the saying is
+   dropped on phones (the card already shows who, what and the reward). Ready orders are sorted first (panel-renderers). */
+.order .who-name { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+.order .who-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order button.good { padding: 2px 4px; min-width: 50px; min-height: 0; gap: 0; }
+.order .item-token { width: 34px; height: 34px; }
+.order .item-token img.mini { width: 28px; height: 28px; }
+.order .reward img, .order .reward svg { width: 22px; height: 22px; }
+.order .who .face, .order .who img.face { width: 32px; height: 32px; }
+.order .who b { font-size: 15px; }
+.order-plan .plan-step { font-size: 12px; padding: 1px 6px; min-height: 0; }
+.order-plan .plan-step img { width: 18px; height: 18px; }
+@media (max-width: 560px) { .order .line { display: none; } }

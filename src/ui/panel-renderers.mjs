@@ -103,7 +103,7 @@ export function renderPanel() {
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'clinic') {
       if (growthRecord.hospitalAt !== null) { title = t('Our little hospital'); icon = 'hospital'; }
-      body = `<div class="clinic-staff">${iconHtml(growthRecord.hospitalAt !== null ? 'hospital' : 'clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('{person:hazel:display} is the doctor, {person:marisol:short} is the nurse, and {person:grace:short} cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for {person:ellis:short}.')}</p><button class="btn go wide" data-do="roadmap">${t('Roadmap')}</button></div>`;
+      body = `<div class="clinic-staff">${iconHtml(growthRecord.hospitalAt !== null ? 'hospital' : 'clinic', '', 'family-art')}<h3>${growthRecord.hospitalAt !== null ? t('Our little hospital') : t('The clinic is open!')}</h3><p>${t('{person:hazel:display} is the doctor, {person:marisol:short} is the nurse, and {person:grace:short} cares for animals in the back room.')}</p><p class="hint">${t('Four families brought the clinic home. The waiting room always has a chair for {person:ellis:short}.')}</p><button class="hint-link" data-do="roadmap"><span class="hint-q" aria-hidden="true">?</span>${t('Roadmap')}</button></div>`;
     }
     else if (o.kind === 'fruit_stand') {
       const st = s.fruitStand, spare = Object.entries(s.barn.items).filter(([g]) => GOODS[g]?.kind === 'fruit' && barn.free(s, g) > 0);
@@ -122,7 +122,7 @@ export function renderPanel() {
     else if (o.kind === 'mail') body = renderMail(s, now);
     else if (o.kind === 'friends') body = renderFriends(s, now);
     else if (o.kind === 'gift') body = renderGift(s, o.arg, now);
-    else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${s.orders.cards.map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
+    else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${readyFirst(s, s.orders.cards).map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
@@ -204,6 +204,10 @@ export function renderPanel() {
     this.el.scrollTop = scroll;
   }
 
+/** Orders you can sell right now come first, so they are done without scrolling; otherwise the board keeps its order. */
+function readyFirst(s, cards) {
+  return cards.map((c, i) => ({ c, i, can: barn.hasAll(s, c.need) })).sort((a, b) => (b.can - a.can) || (a.i - b.i)).map(x => x.c);
+}
 function renderOrderCard(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);
     const id = String(c.id).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
