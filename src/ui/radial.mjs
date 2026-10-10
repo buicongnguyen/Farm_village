@@ -26,7 +26,7 @@ import { levelOf, isRepairing, repairCost, kindOf } from '../core/condition.mjs'
 import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
-import { roadSegmentAt, parcelNote, inOldMill, inMeadow, COOPERATIVE_BOARD, TOWPATH_GATE, inRiverside, lotAt } from '../content/world.mjs';
+import { roadSegmentAt, parcelNote, inOldMill, inMeadow, COOPERATIVE_BOARD, FAIR_BOARD, TOWPATH_GATE, inRiverside, lotAt } from '../content/world.mjs';
 import { fishable } from '../core/pond-bank.mjs';
 import { siteAt, siteBuilt } from '../core/sites.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
@@ -150,6 +150,8 @@ export class Radial {
     if (!id && !opts.preview && s.firsts?.bridge && inRiverside(cell.x, cell.z) && !this.people?.pick(x, y)) { this.hide(); this.panels.show('quay', lotAt(cell.x, cell.z)?.id); return; }
     // the co-operative's notice board on the square (chapter 12)
     if (!opts.preview && cell.x === COOPERATIVE_BOARD.x && cell.z === COOPERATIVE_BOARD.z && (s.story?.chapter ?? 0) >= 11) { this.hide(); this.panels.show('cooperative'); return; }
+    // the fair's ribbon board on the square (chapter 18)
+    if (!opts.preview && cell.x === FAIR_BOARD.x && cell.z === FAIR_BOARD.z && s.valley?.founded) { this.hide(); this.panels.show('fair'); return; }
     // the old towpath's gate on the far bank: shut until chapter 12 is seen
     if (!id && !opts.preview && Math.abs(cell.x + 0.5 - TOWPATH_GATE.x) <= 1 && Math.abs(cell.z + 0.5 - TOWPATH_GATE.z) <= 1.5) return this.open(cell, x, y, [], `${iconHtml('gate', '', 'mini')} ${t(s.firsts?.bridge ? 'The old towpath: open along the far bank of the brook' : 'The old towpath: its gate has been shut for years')}`);
     // the brook meadow (chapter 11): the Valley panel, from the day the man from the city asks about it

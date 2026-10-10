@@ -125,6 +125,12 @@ export const CHAPTERS = [
     ada: 'Your grandfather wants to frame his page, dear. I told him the ledger needs it more than the wall does.',
     panels: panels(17, ['The office on Civic row.', 'A page for every household.', 'The valley, all of it.']),
     when: s => !!s.valley?.founded },
+  // The deed: a fair held to its end with at least one ribbon won (docs/plan/ch18-the-valley-fair.md).
+  { id: 18, title: 'The valley fair', subtitle: 'Three valleys’ worth of carts on the bridge road.', icon: '🎀',
+    text: 'Three valleys’ worth of carts come down the bridge road. {person:lan:short} judges the bread with her eyes closed. {person:olaf:short} measures every fish twice and the winner three times. {person:grace:short} lifts each pumpkin as if it might be asleep. By evening there are ribbons on the board, and one of them is ours.',
+    ada: 'My mother’s ribbon is still in the drawer, dear. Now it has company.',
+    panels: panels(18, ['Carts from three valleys.', 'The judging table.', 'A ribbon comes home.']),
+    when: s => (s.stats?.fairs ?? 0) >= 1 && (s.fair?.ribbons ?? 0) >= 1 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -335,6 +341,16 @@ export const BEATS = [
   { id: 'first-dividend', chapter: 17, when: s => !!s.firsts?.dividend, lines: [
     { who: 'pip', text: 'Is a dividend the same as pocket money? Can I buy a goat with mine?' },
     { who: 'june', text: 'It is the valley paying itself, love. And no. Half a goat, perhaps.' },
+  ] },
+  // ── Chapter 18 (docs/plan/ch18-the-valley-fair.md): the fair is talked of, and the first ribbon. ──
+  { id: 'fair-talk', chapter: 18, when: s => (s.story.chapter ?? 0) >= 17 && !!s.valley?.founded, lines: [
+    { who: 'gus', text: 'Three valleys held a fair on this square every autumn when I was a boy. Then one year nobody had anything to show.' },
+    { who: 'ada', text: 'We have things to show now. Three classes, as it always was: field, kitchen and pond.' },
+    { who: 'pip', text: 'Can I enter {pet:dog:display}? He is the best at being a dog.' },
+  ] },
+  { id: 'first-ribbon', chapter: 18, when: s => (s.fair?.ribbons ?? 0) >= 1, lines: [
+    { who: 'june', text: 'It is going on the wall by the door, love, where the postman can see it.' },
+    { who: 'pip', text: 'Next time I am growing a pumpkin so big it needs its own cart.' },
   ] },
 ];
 

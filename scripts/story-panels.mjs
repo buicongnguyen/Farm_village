@@ -48,6 +48,8 @@ const trainHere = `s.train = { nextAt: farm.game.now + 1500000, n: 1, here: { n:
 // chapter 16: staging for the three stops upriver. A row of stones from (x, z) southwards, and a clump of bushes for ferns.
 const stones = (x, z, n, step, scale) => `for (let i = 0; i < ${n}; i++) farm.world.batches.set('stage:r${Math.round(x * 10)}_' + i, { model: 'rock', x: (${x} + (i % 2) * 0.22) * 2, z: (${z} + i * ${step}) * 2, rot: i * 1.3, scale: ${scale} + (i % 3) * 0.2 });`;
 const ferns = (x, z, n) => `for (let i = 0; i < ${n}; i++) farm.world.batches.set('stage:f${Math.round(x * 10)}_' + i, { model: 'bush', x: (${x} + (i % 3) * 0.7) * 2, z: (${z} + Math.floor(i / 3) * 0.6) * 2, rot: i * 2.1, scale: 0.7 + (i % 2) * 0.25 });`;
+// chapter 18: the valley company founded and a fair running on the square (stalls, carts, the judging table, visitors)
+const fairOn = `s.story.chapter = 17; s.valley = { founded: 1, dividendFrom: 1 }; s.fair = { n: 1, at: farm.game.now - 1000, until: farm.game.now + 170000, ribbons: 1, best: { kitchen: 'gold' }, entry: {}, last: { n: 0, results: {} } };`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -111,6 +113,11 @@ const PANELS = {
   'ch17-2': { hour: 16.2, scene: everyone + `s.story.chapter = 16; s.valley = { founded: 1, dividendFrom: 1 };`, wait: 8000,
     then: [put('bea', 88.2, 106.6) + put('ada', 89.0, 105.6) + put('gus', 89.9, 106.2) + put('june', 88.6, 107.5) + put('minh', 89.7, 107.4) + put('lan', 88.0, 108.3) + put('grace', 90.7, 106.9) + put('pip', 89.2, 108.4), 1800], look: [88, 107, 11] },
   'ch17-3': { hour: 17.6, scene: everyone + stage + `s.story.chapter = 16; s.valley = { founded: 1, dividendFrom: 1 };`, wait: 9000, look: [43, 96.5, 50] },
+  // chapter 18: the carts and stalls west of the square, the judging before the stage, and the ribbon board at dusk
+  'ch18-1': { hour: 9.6, scene: everyone + stage + fairOn, wait: 24000, then: [`farm.focus(35.2, 101.6, 24);`, 1200], look: [35.2, 101.6, 24] },
+  'ch18-2': { hour: 11, scene: everyone + stage + fairOn, wait: 30000, then: [`farm.focus(39.4, 101.8, 24);`, 1200], look: [39.4, 101.8, 24] },
+  'ch18-3': { hour: 17.6, scene: everyone + stage + `s.story.chapter = 17; s.valley = { founded: 1, dividendFrom: 1 }; s.fair = { n: 1, at: 1, until: 2, over: 1, ribbons: 1, best: { kitchen: 'gold' }, entry: {} };`, wait: 8000,
+    then: [put('june', 38.6, 102.4) + put('pip', 39.5, 102.7) + put('ada', 37.5, 102.5) + `farm.focus(39.6, 100.6, 24);`, 1800], look: [39.6, 100.6, 24] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

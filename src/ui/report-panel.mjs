@@ -5,7 +5,7 @@ import { reportOf } from '../core/report.mjs';
 import { handWho } from '../core/helpers.mjs';
 import { coinMark, faceHtml, glyph } from './icon.mjs';
 import { nameOf } from './bonds-panels.mjs';
-const SOURCE_NAMES = { orders: 'Orders', sales: 'Barn, trucks and stands', rent: 'Rent', fishing: 'Fishing', festival: 'The festival', cooperative: 'The co-operative', hotel: 'The hotel', train: 'The train', dividend: 'Dividends', other: 'Everything else' };
+const SOURCE_NAMES = { orders: 'Orders', sales: 'Barn, trucks and stands', rent: 'Rent', fishing: 'Fishing', festival: 'The festival', cooperative: 'The co-operative', hotel: 'The hotel', train: 'The train', dividend: 'Dividends', fair: 'The fair', other: 'Everything else' };
 const ROLE_NAMES = { field: 'Field hand', animals: 'Animal hand', workshop: 'Workshop hand', orchard: 'Orchard hand', driver: 'Truck driver', fisher: 'Fisher' };
 /** Granny Maple's advice by id (core/report.mjs adviceOf). */
 const ADVICE = {

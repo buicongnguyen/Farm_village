@@ -74,6 +74,20 @@ export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs:
  *  wagon, a festival or fair held, every `guests` hotel guests), `deeds` of them at most. Every dividendMs a dividend
  *  of `dividend` of the assets is set aside; at most `cap` payments wait to be collected. */
 export const VALLEY = { found: 20000, beauty: 200, step: 1.08, deeds: 400, guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6 };
+/** The valley fair (core/fair.mjs, chapter 18). Holding one takes `fee` coins and `each` of every good entered; it lasts
+ *  lastsMs, and the valleys rest everyMs from its opening. A score is `base` (from the plainest good of its class to the
+ *  finest) plus up to `know` for how much of the good the farm has grown, made, picked or caught (full marks at the
+ *  class's knowAt) plus `taste` if the judge likes it, give or take `wobble`. The three rivals score
+ *  from + step x fairs held (steps at most) + spread x 0, 1 and 2, plus up to their own wobble. A ribbon pays its prize;
+ *  a class's first gold pays firstGold more, and the judge grows `hearts` fonder for any ribbon. */
+export const FAIR = { fee: 1500, each: 3, lastsMs: paced(3 * MIN), everyMs: paced(40 * MIN), base: [30, 60], know: 25, taste: 15, wobble: 4,
+  rivals: { from: 36, step: 5, steps: 6, spread: 8, wobble: 10 }, prizes: { gold: 900, silver: 500, bronze: 300 }, firstGold: 600, xp: 80, hearts: 1,
+  valleys: ['Pine Ridge', 'Stonewater', 'Larkfield'],
+  classes: {
+    field: { judge: 'grace', kinds: ['crop', 'fruit'], likes: ['pumpkin', 'peach'], knowAt: 400 },
+    kitchen: { judge: 'lan', kinds: ['product'], likes: ['bread', 'apple_pie'], knowAt: 120 },
+    pond: { judge: 'olaf', kinds: ['fish'], likes: ['carp', 'eel'], knowAt: 12 },
+  } };
 /** The evening train (core/train.mjs, chapter 15). It stops at the halt every everyMs for stopMs; the first comes firstMs
  *  after the halt opens. A wagon holds about wagon(level) coins' worth of its good, between `min` and `max` of it. A
  *  full wagon pays its goods x `pay`, a part-loaded one what is in it; `wagons` full ones add `bonus`. */

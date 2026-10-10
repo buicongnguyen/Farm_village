@@ -89,6 +89,11 @@ export const MAILBOX = { x: 27, z: 60 };
 /** The co-operative's notice board on the village square (chapter 12): one cell at the square's east edge, by the stage.
  *  It stands from the day the idea comes (chapter 11 seen); a tap opens the co-operative. */
 export const COOPERATIVE_BOARD = { x: 43, z: 100, rot: 0 };
+/** The fair's ribbon board (chapter 18): one cell at the square's west edge, across from the co-operative's board. It
+ *  stands from the day the valley company is founded; a tap opens the fair. */
+export const FAIR_BOARD = { x: 38, z: 101, rot: 0 };
+/** The judging table while a fair runs: two cells of the square south-west of the well (x and x + 1), kept clear of people. */
+export const FAIR_TABLE = { x: 39, z: 102 };
 /** The old towpath on the far bank of the brook (chapter 12; Act IV builds the riverside town beyond it): two cells
  *  wide along the north side of the water, from the brook road to the east edge of the farm, going round the old mill.
  *  Kept clear of wild scatter from the start; open to walk once its gate is taken off (s.firsts.bridge). */

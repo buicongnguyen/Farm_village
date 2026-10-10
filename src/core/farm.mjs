@@ -45,7 +45,7 @@ export const actions = {
     const { s, now } = ctx; let done = 0, sold = 0;
     for (const bid of ids) {
       const b = s.beds[bid]; if (!b || b.doneAt > now) continue;
-      sold += barn.addOrSell(s, b.crop, 2); delete s.beds[bid]; done++;
+      sold += barn.addOrSell(s, b.crop, 2); (s.stats.grown ??= {})[b.crop] = (s.stats.grown[b.crop] ?? 0) + 2; delete s.beds[bid]; done++;
       ctx.emit('harvested', { id: bid, crop: b.crop, count: 2 });
     }
     if (!done) return ctx.fail('Nothing is ready yet');

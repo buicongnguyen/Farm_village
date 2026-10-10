@@ -88,6 +88,9 @@ export const STEPS = [
   // chapter 17 (docs/plan/ch17-a-share-for-everyone.md)
   { id: 'valley_company', name: 'A company for the whole valley', text: 'The co-operative, the office and the quay could be one company that belongs to everyone who works in it. Found it in the Valley panel: every household gets a share.',
     needs: {}, panel: 'valleyValue', done: s => !!s.valley?.founded, builds: [] },
+  // chapter 18 (docs/plan/ch18-the-valley-fair.md)
+  { id: 'valley_fair', name: 'The valley fair', text: 'Three valleys used to bring their best to this square. Hold the fair: enter a crop, a food and a fish, and see what the judges say. A ribbon brings it home.',
+    needs: {}, panel: 'fair', done: s => (s.stats?.fairs ?? 0) >= 1 && (s.fair?.ribbons ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

@@ -11,7 +11,9 @@ import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { fishable, seatsOf } from '../core/pond-bank.mjs';
 import { festivalOf } from '../core/festival.mjs';
-import { SITES, PLAZA, WELL, ALBRIGHT } from '../content/world.mjs';
+import { fairOf } from '../core/fair.mjs';
+import { FAIR } from '../content/economy.mjs';
+import { SITES, PLAZA, WELL, ALBRIGHT, FAIR_TABLE } from '../content/world.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
 import { adviceCards, adviceOf } from '../core/advice.mjs';
@@ -46,6 +48,13 @@ const PARTY_SPOTS = (() => {
   const far = c => Math.hypot((c[0] + 0.5) * CELL - STAGE_FRONT[0], (c[1] + 0.5) * CELL - STAGE_FRONT[1]);
   return out.sort((a, b) => far(a) - far(b));
 })();
+// The valley fair (chapter 18): where each judge stands at the judging table (cell x, z and the way they face), and the
+// table's middle in metres (what everyone else looks at).
+const FAIR_JUDGES = { grace: [FAIR_TABLE.x, FAIR_TABLE.z - 1, 0], lan: [FAIR_TABLE.x + 1, FAIR_TABLE.z - 1, 0], olaf: [FAIR_TABLE.x - 1, FAIR_TABLE.z, Math.PI / 2] };
+const FAIR_FRONT = [(FAIR_TABLE.x + 1) * CELL, (FAIR_TABLE.z + 0.5) * CELL];
+// The valley fair (chapter 18): what a visitor from another valley says when tapped (in the language packs by hand).
+export const FAIRGOER_LINES = ['We came over from {valley} this morning. Three hours by cart!', 'In {valley} we say a fair is half the harvest.', '{valley} will have that ribbon back next time, you know.',
+  'I have not seen this square so full since I was small.'];
 const walkable = (s, x, z) => { const ty = cellType(s, x, z); return ty === 'path' || ty === 'road'; };
 const hash = id => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 // Clothes: warm, vivid colours (sRGB). Named people wear their own; everyone else draws from the palette by name.
@@ -133,6 +142,8 @@ export class PeopleView {
     // the hotel's guests stroll on the quay while rooms are taken: one for every two guests, three at most (chapter 14)
     const hotel = Object.values(s.placed).find(p => p.kind === 'hotel'), staying = (s.hotel?.rooms ?? []).filter(Boolean).length;
     if (hotel) { const door = doorCell(hotel.kind, hotel.x, hotel.z, hotel.rot); for (let i = 0; i < Math.min(3, Math.ceil(staying / 2)); i++) out.push({ id: `guest${i}`, body: i % 2 ? 'man' : 'woman', home: [door[0] - 2 + i * 2, door[1] + i % 2], work: true, guest: true }); }
+    // visitors from the three valleys walk in while a fair runs (chapter 18): six of them, two from each
+    if (fairOf(s, now).active) for (let i = 0; i < 6; i++) out.push({ id: `fairgoer${i}`, body: i % 3 === 2 ? 'kid' : i % 2 ? 'man' : 'woman', home: [PLAZA.x1 + 3 + i % 3, PLAZA.z1 + 2 + Math.floor(i / 3)], work: true, fairgoer: true, kid: i % 3 === 2 });
     // the keeper of the quay sits by the door of the first quay house (chapter 13)
     const quayHouse = Object.entries(s.placed).filter(([, p]) => p.kind === 'apartment').sort((a, b) => a[1].x - b[1].x)[0];
     if (quayHouse && hasArrived(s, villager('tuyet'))) { const p = quayHouse[1], door = doorCell(p.kind, p.x, p.z, p.rot); out.push({ id: 'tuyet', body: 'hana', home: [door[0] + 1, door[1]], work: true }); }
@@ -279,7 +290,8 @@ export class PeopleView {
   frame(dt) {
     this.time += dt;
     this.clock += dt; if (this.clock > 1) { this.clock = 0; this.sync(); this.maybeTip(); this.pipIdle(); }
-    const night = isNight(this.s, this.game.now), party = festivalOf(this.s, this.game.now).active;
+    const night = isNight(this.s, this.game.now), fair = fairOf(this.s, this.game.now).active, party = fair || festivalOf(this.s, this.game.now).active;   // the valley fair, or the Harvest Festival's evening
+    this.fairOn = fair;
     for (const w of this.walkers.values()) {
       if (w.pet) this.liveDog(w, dt, night);
       else if (w.player) this.livePlayer(w, dt, night);
@@ -310,8 +322,9 @@ export class PeopleView {
       this.cancelTrip(w); w.party = true; w.goingHome = false; w.partyWait = 1 + Math.random() * 4; w.partyRetry = 0;
       if (w.indoors) { w.indoors = false; const [x, z] = w.family ? this.familySpot(w.id) : w.home; w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
       // a place of one's own: the free standable cell nearest the stage's front (the square first, then the grass round it)
-      const taken = new Set([...this.walkers.values()].filter(o => o.partySpot).map(o => o.partySpot.join()));
-      w.partySpot = PARTY_SPOTS.find(c => !taken.has(c.join()) && stepCost(this.s, c[0], c[1])) ?? PARTY_SPOTS[hash(w.id) % PARTY_SPOTS.length];
+      const taken = new Set([...this.walkers.values()].filter(o => o.partySpot).map(o => o.partySpot.join())), judge = this.fairOn && FAIR_JUDGES[w.id];
+      if (this.fairOn) for (const [x, z] of Object.values(FAIR_JUDGES)) taken.add([x, z].join());   // the judges' places at the table are theirs
+      w.partySpot = judge ? [judge[0], judge[1]] : PARTY_SPOTS.find(c => !taken.has(c.join()) && stepCost(this.s, c[0], c[1])) ?? PARTY_SPOTS[hash(w.id) % PARTY_SPOTS.length];
       w.route = this.route(this.cellOf(w), w.partySpot);
     }
     if (w.once && this.time < w.onceUntil) { w.clip = 'Idle'; return; }
@@ -319,7 +332,8 @@ export class PeopleView {
     // not there yet and no way planned (something was in the way): try again in a moment
     const [sx, sz] = w.partySpot;
     if (Math.hypot((sx + 0.5) * CELL - w.x, (sz + 0.5) * CELL - w.z) > CELL * 1.5 && (w.partyRetry -= dt) <= 0) { w.partyRetry = 2; w.route = this.route(this.cellOf(w), w.partySpot); if (w.route.length) return; }
-    w.faceTo = Math.atan2(STAGE_FRONT[0] - w.x, STAGE_FRONT[1] - w.z);
+    const judge = this.fairOn && FAIR_JUDGES[w.id], [fx, fz] = this.fairOn ? FAIR_FRONT : STAGE_FRONT;   // at a fair everyone looks at the judging table, and the judges at the crowd
+    w.faceTo = judge ? judge[2] : Math.atan2(fx - w.x, fz - w.z);
     if ((w.partyWait -= dt) <= 0) { this.once(w, Math.random() < 0.6 ? 'Cheer' : 'Wave', 1.8); w.partyWait = 3 + Math.random() * 6; }
     this.doing(w, 'Idle', dt);
   }
@@ -644,6 +658,7 @@ export class PeopleView {
     const id = w.person ?? w.id, who = PEOPLE[id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
     if (w.guest) { const g = (this.s.hotel?.rooms ?? []).filter(Boolean); if (g.length) this.say(w, t(remarkOf(this.s, g[hash(w.id) % g.length].n))); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }   // a hotel guest: what they saw from the window
+    if (w.fairgoer) { const n = hash(w.id); this.say(w, t(FAIRGOER_LINES[n % FAIRGOER_LINES.length], { valley: t(FAIR.valleys[n % FAIR.valleys.length]) })); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }   // a visitor to the fair
     if (w.player) { w.bubble?.remove(); w.bubble = null; this.once(w, 'Wave', 1.2); return; }
     // Orders are available on the board. An explicit caller can still open this person's card.
     const card = order && this.s.orders.cards.find(c => c.from === id);

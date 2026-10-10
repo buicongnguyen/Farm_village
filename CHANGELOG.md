@@ -1,5 +1,13 @@
 # Changelog
 
+## Chapter 18: The valley fair — 2026-10-11
+
+- **The valley fair**: once the valley company is founded, a ribbon board stands on the village square. Enter your best in three classes (Field, Kitchen, Pond) and open the fair.
+- **Three judges you know**: Clover, Honey and Skipper, each with a soft spot. The more of a thing you have grown, made or caught, the better it scores; stars hint at an entry's chances.
+- **Three rival valleys**, a little stronger at every fair. Gold, silver and bronze ribbons, each with a prize.
+- While it runs, the square fills: stalls, carts, the judging table, visitors from the three valleys and the whole village.
+- **Chapter 18** closes when a fair ends with a ribbon brought home.
+
 ## Chapter 17: A share for everyone — 2026-10-11
 
 - **The valley company**: found it once the co-operative, the company office and a quay house stand (20,000 coins). Every household gets a share; a flag goes up at the office's corner.

@@ -77,7 +77,7 @@ export const actions = {
       if (!jobs.length) continue;
       for (const job of jobs) {
         const rid = job.recipe, r = RECIPES[rid];
-        barn.add(s, rid, r.makes); got++;
+        barn.add(s, rid, r.makes); got++; (s.stats.grown ??= {})[rid] = (s.stats.grown[rid] ?? 0) + r.makes;   // what the farm knows how to make (core/fair.mjs)
         s.stats.produced += r.makes; gainXp(ctx, XP.produce(r.value)); if (rid === 'cheese') s.stats.cheeseMade = (s.stats.cheeseMade ?? 0) + r.makes;
         if (rid === 'butter') s.stats.butterMade = (s.stats.butterMade ?? 0) + r.makes;
         if (s.firsts?.sluice) s.stats.sluiceMade = (s.stats.sluiceMade ?? 0) + r.makes;   // made with the mill wheel turning (the chapter 8 scene)

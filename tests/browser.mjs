@@ -1074,6 +1074,59 @@ await check('chapter 17: the valley company is founded, the value shows in the t
   await ctx.close();
 });
 
+// Chapter 18 (docs/plan/ch18-the-valley-fair.md): entries are chosen, the fair is held, the judging shows a verdict and a
+// ribbon, the square fills with stalls and visitors, the fair ends and the card shows.
+await check('chapter 18: entries are chosen, the fair is held, a verdict and a ribbon show, the square fills and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:18'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game, s = g.s; s.coins = 30000; s.barn.cap = 5000; Object.assign(s.barn.items, { pumpkin: 12, wheat: 12, bread: 12, apple_pie: 6, perch: 6, carp: 6 }); (s.stats.grown ??= {}).bread = 500; g.tick(); });
+  // the ribbon board stands on the square from the founding of the company; the panel has a card for every class
+  await page.waitForFunction(() => farm.world.batches.items.has('fair:board'), null, { timeout: 30000 });
+  await page.evaluate(() => farm.panels.show('fair')); await page.waitForSelector('.fair-class');
+  expect(await page.locator('.fair-class').count() === 3 && await page.locator('.fair-options .slot.on').count() === 3, 'three classes with an entry chosen in each');
+  expect(await page.locator('.fair-options .stars').count() >= 6, 'the entries show their stars');
+  // Honey has a soft spot for bread, and the farm knows its bread: choose it for the kitchen
+  await page.click('.fair-class[data-cls="kitchen"] [data-good="bread"]');
+  await page.waitForFunction(() => document.querySelector('.fair-class[data-cls="kitchen"] .slot.on')?.dataset.good === 'bread');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-entries.png` });
+  const before = await page.evaluate(() => ({ coins: farm.state().coins, bread: farm.state().barn.items.bread }));
+  await page.click('[data-do="holdFair"]'); await page.waitForFunction(() => farm.state().fair?.n === 1);
+  expect(await page.evaluate(() => farm.state().barn.items.bread) === before.bread - 3, 'the entry did not leave the barn');
+  // the judging, class by class: a gold ribbon for the bread, Honey's verdict, four entries in order with ours first
+  await page.waitForSelector('.fair-result[data-cls="kitchen"].gold', { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelectorAll('.fair-result').length === 3 && !document.querySelector('.fair-result.judging'), null, { timeout: 15000 });
+  const kitchen = await page.evaluate(() => { const el = document.querySelector('.fair-result[data-cls="kitchen"]'); return { text: el.textContent, places: el.querySelectorAll('.fair-places li').length, first: el.querySelector('.fair-places li').className, ribbon: !!el.querySelector('img.fair-ribbon') }; });
+  expect(kitchen.text.includes('grandmother’s kitchen') && kitchen.text.includes('Honey') && kitchen.places === 4 && kitchen.first === 'ours' && kitchen.ribbon, `the kitchen's result: ${JSON.stringify(kitchen)}`);
+  expect(await page.evaluate(() => farm.state().fair.ribbons) >= 1 && await page.evaluate(() => farm.state().coins) > before.coins - 1500, 'no ribbon or no prize');
+  await page.waitForTimeout(400); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-judging.png` });
+  // while it runs: a pill counts it down, the stalls and the judging table stand, visitors walk in and everyone gathers
+  await page.waitForSelector('[data-status="fair"]', { timeout: 15000 });
+  await page.waitForFunction(() => ['fair:table', 'fair:0', 'fair:1'].every(id => farm.world.batches.items.has(id)), null, { timeout: 30000 });
+  await page.waitForFunction(() => farm.people.walkers.has('fairgoer0') && farm.people.walkers.has('fairgoer5'), null, { timeout: 20000 });
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(41, 101, 34); }); await page.waitForTimeout(9000);
+  await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-square.png` });
+  expect(await page.evaluate(() => [...farm.people.walkers.values()].filter(w => w.party).length) >= 6, 'nobody gathered on the square');
+  // the fair ends: it is counted, the stalls come down, the board stays, and the chapter card shows
+  await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 4 * 60000); farm.game.tick(); });
+  await page.waitForFunction(() => farm.state().stats.fairs === 1, null, { timeout: 15000 });
+  await page.waitForFunction(() => !farm.world.batches.items.has('fair:table') && !farm.world.batches.items.has('fair:0') && farm.world.batches.items.has('fair:board'), null, { timeout: 20000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The valley fair') && card.includes('Honey') && card.includes('Skipper') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-18-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 18);
+  // afterwards the valleys rest: the panel keeps the last fair's results under the next one's entries
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.panels.show('fair'); }); await page.waitForSelector('.fair-result');
+  expect(await page.locator('[data-do="holdFair"][disabled]').count() === 1 && await page.locator('.fair-class').count() === 3 && await page.locator('.fair-class img.fair-ribbon').count() >= 1, 'the resting panel: no button to wait behind, or no ribbon kept');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-resting.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);
