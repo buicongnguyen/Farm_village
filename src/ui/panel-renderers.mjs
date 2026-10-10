@@ -18,6 +18,7 @@ import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';
 import { renderExploration, renderExplorationEntry } from './exploration-panels.mjs';
 import { renderAdviceList, renderAdviceMemories, renderAdviceDetail } from './advice-panels.mjs';
+export { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';   // panels.mjs calls these through this.renderer
 import { renderFriends, renderGift, renderMail, heartBar, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
@@ -114,7 +115,7 @@ export function renderPanel() {
     else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
     else if (o.kind === 'album') body = renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
-    else if (o.kind === 'today') body = contractEntry + shopsEntry(s) + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
+    else if (o.kind === 'today') body = renderRecent(this.hud) + contractEntry + shopsEntry(s) + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
     else if (o.kind === 'advice') body = renderAdviceDetail(s, o.arg, now);
     else if (o.kind === 'projects') body = growthEntry + renderLandEntry(s) + renderProjects(s, now);
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
@@ -207,6 +208,14 @@ export function renderPanel() {
 /** Orders you can sell right now come first, so they are done without scrolling; otherwise the board keeps its order. */
 function readyFirst(s, cards) {
   return cards.map((c, i) => ({ c, i, can: barn.hasAll(s, c.need) })).sort((a, b) => (b.can - a.can) || (a.i - b.i)).map(x => x.c);
+}
+/** Today's Recent list: the last notices, newest first; a tap opens the same place the notice pointed to. */
+function renderRecent(hud) {
+  const feed = hud?.feed ?? []; if (!feed.length) return '';
+  const ago = at => { const m = Math.max(0, Math.round((Date.now() - at) / 60000)); return m < 1 ? t('just now') : t('{count} min ago', { count: m }); };
+  const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  return `<details class="recent" ${feed.length <= 4 ? 'open' : ''}><summary>${t('Recent')} · ${feed.length}</summary><div class="letters">${feed.map((n, i) =>
+    `<button class="letter-row recent-row ${n.kind}" data-do="notice" data-i="${i}" ${n.to ? '' : 'disabled'}>${n.icon ? iconHtml(n.icon, '', 'mini') : ''}<span class="lr-text"><b>${esc(n.text)}</b><small>${ago(n.at)}</small></span>${n.to ? '<b class="go">›</b>' : ''}</button>`).join('')}</div></details>`;
 }
 function renderOrderCard(c) {
     const s = this.game.s, who = PEOPLE[c.from], can = barn.hasAll(s, c.need);

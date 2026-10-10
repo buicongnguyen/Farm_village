@@ -30,7 +30,8 @@ const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 const tap = async (page, x, z) => {
   // walkers wander over the spot and a tap on a person talks to them: send them indoors so the tap reaches the thing
   for (let i = 0; i < 6; i++) { if (!(await page.isVisible('.modal [data-close]'))) break; await page.click('.modal [data-close]'); await page.waitForTimeout(150); }   // story cards the player would close
-  const p = await page.evaluate(([x, z]) => { farm.people?.walkers.forEach(w => { w.indoors = true; }); farm.focusVisible(x, z); return farm.cellToScreen(x, z); }, [x, z]);
+  const p = await page.evaluate(([x, z]) => { farm.people?.walkers.forEach(w => { w.indoors = true; }); farm.hud?.el.querySelector('.toasts')?.replaceChildren();   // a tappable notice over the spot would take the tap
+    farm.focusVisible(x, z); return farm.cellToScreen(x, z); }, [x, z]);
   await page.waitForTimeout(40); await page.mouse.click(p.x, p.y); await page.waitForTimeout(120);
 };
 const idOf = (page, kind, n = 0) => page.evaluate(([kind, n]) => Object.keys(farm.state().placed).filter(id => farm.state().placed[id].kind === kind)[n], [kind, n]);

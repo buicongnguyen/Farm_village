@@ -53,13 +53,16 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
     });
     await page.goto(URL_); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
     await page.evaluate(() => { clearInterval(farm.game.timer); farm.skipIntro(); farm.closeCards(); farm.panels.close(); });
-    for (const id of ['today', 'projects', 'mail']) {
+    await page.evaluate(() => { const s = farm.state(); if (!(s.mail ?? []).some(m => !m.read)) (s.mail ??= []).unshift({ id: 'ada-1', from: 'ada', at: farm.game.now, read: false }); farm.hud.refreshStatus(); });   // the Letters pill shows only with unread mail
+    const hasProject = await page.locator('.hud [data-act="projects"]').count() > 0;   // the Project pill exists while a project step does
+    for (const id of ['today', ...(hasProject ? ['projects'] : []), 'mail']) {   // Today is a round button; the project and unread letters are notice pills
       const img = page.locator(`.hud [data-act="${id}"] img`);
       expect((await img.getAttribute('src'))?.endsWith(`/ui-${id}.webp`), `${id} still uses the old menu picture`);
     }
     expect(await page.locator('.hud [data-act="orders"] .badge').evaluate(el => el.classList.contains('ready') && !el.hidden), 'fillable-order badge is not actionable');
-    expect(await page.locator('.hud [data-act="projects"] .badge').evaluate(el => el.classList.contains('ready')), 'project readiness is not green');
-    for (const id of ['today', 'mail']) expect(await page.locator(`.hud [data-act="${id}"] .badge`).evaluate(el => !el.classList.contains('ready') && !el.hidden), `${id} unread badge lost its distinction`);
+    if (hasProject) expect(await page.locator('.hud [data-act="projects"] .badge').evaluate(el => el.classList.contains('ready')), 'project readiness is not green');
+    expect(await page.locator('.hud [data-act="today"] .badge').evaluate(el => !el.classList.contains('ready') && !el.hidden), 'today unread badge lost its distinction');
+    expect(await page.locator('.hud [data-status="mail"]').evaluate(el => el.classList.contains('hot') && /\d/.test(el.textContent)), 'unread letters are not a lit notice pill with their count');
     const colors = await page.evaluate(() => ['orders', 'today'].map(id => getComputedStyle(document.querySelector(`.hud [data-act="${id}"] .badge`)).backgroundImage));
     expect(colors[0] !== colors[1], 'ready and unread badges have identical colors');
 

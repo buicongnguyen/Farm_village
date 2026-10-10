@@ -46,7 +46,7 @@ import { doorCell } from './core/grid.mjs';
 
 // Code the first frame does not need loads as its own chunks, fetched now, in parallel with the models: the living
 // cast (crops, herds, people, critters: life-view, people-view, critters and the skinned rigs) and game feel (juice).
-const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs'), import('./ui/guide.mjs'), import('./view/fishing-play.mjs')]);   // the guide and the fishing play download beside them
+const living = Promise.all([import('./view/life-view.mjs'), import('./view/people-view.mjs'), import('./view/critters.mjs'), import('./view/juice.mjs'), import('./view/fishing-view.mjs'), import('./ui/guide.mjs')]);   // the guide downloads beside them: it is first needed after the scene
 await languageReady;   // load the selected edition before drawing its first text
 document.title = t('Farm Village');
 onLanguageChange(() => { document.title = t('Farm Village'); });
@@ -289,11 +289,12 @@ world.start();
 await world.loadScenery();
 await dressWorld(world, game);
 await land.load();
-const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }, { Guide }, { FishingPlay }] = await living;
+const [{ LifeView }, { PeopleView }, { Critters }, { Juice }, { FishingView }, { Guide }] = await living;
 const life = new LifeView(world, game);
 const people = new PeopleView(world, game, app);
 world.fishingView = new FishingView(world, game, people);
-world.fishingPlay = new FishingPlay({ game, people, hud, view: world.fishingView });   // the bite, strike and hold-to-reel (cute_game's feel)
+// the bite, strike and hold-to-reel (cute_game's feel): not needed until someone fishes, so it loads after the first scene
+import('./view/fishing-play.mjs').then(({ FishingPlay }) => { world.fishingPlay = new FishingPlay({ game, people, hud, view: world.fishingView }); }).catch(() => {});
 panels.fishingWalk = () => { const player = people.walkers.get('you'); return !!(player?.orderedFishing && player?.goal); };
 panels.onFishCast = bait => {
   if (panels.fishingWalk()) return;

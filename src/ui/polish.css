@@ -218,7 +218,7 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 @media (max-height: 520px) {
   .hud-status { max-width: 200px; gap: 3px; }
   .status-row { font-size: 11px; padding: 2px 8px 2px 4px; }
-  .status-row[data-status="projects"] { display: none; }
+  .status-row[data-status="projects"]:not(.hot) { display: none; }   /* short screens: the Projects pill shows only when a step is ready (the banner still opens the roadmap) */
   .status-row .mini, .status-row .g { width: 16px; height: 16px; }
   .next-chip { left: 12px; transform: none; bottom: 10px; font-size: 11.5px; padding: 4px 10px; max-width: 44vw; animation: none; }
   .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 42px); }

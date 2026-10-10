@@ -9,7 +9,12 @@ test('compact HUD counts only visible goals and never creates a fleet while read
   s.quests.list = [{ id: 'harvest', t: 'harvest', n: 2, base: 0 }, { id: 'early-favour', favour: true, person: 'lan', good: 'wheat', n: 1 }];
   s.stats.harvested = 2; s.truck = { level: 1, away: false, coins: 0 };
   const before = structuredClone(s), rows = hudStatus(s, 5000);
-  assert.deepEqual(rows, [{ act: 'quests', icon: 'ui:xp', label: 'Goals', count: 1, ready: 1 }]);
+  const letters = (s.mail ?? []).filter(m => !m.read).length;
+  assert.deepEqual(rows.filter(r => r.act !== 'mail'), [{ act: 'quests', icon: 'ui:xp', label: 'Goals', count: 1, ready: 1 }]);
+  // unread letters and a ready project step are notice pills beside Goals (they replaced two round buttons)
+  assert.deepEqual(rows.filter(r => r.act === 'mail'), letters ? [{ act: 'mail', icon: 'ui:mail', label: 'Letters', count: letters, hot: true }] : []);
+  assert.deepEqual(hudStatus(s, 5000, { project: true, canWork: true }).find(r => r.act === 'projects'), { act: 'projects', icon: 'ui:projects', label: 'Project', text: 'ready', hot: true });
+  assert.deepEqual(hudStatus(s, 5000, { project: true }).find(r => r.act === 'projects'), { act: 'projects', icon: 'ui:projects', label: 'Project', text: '', hot: false });
   assert.deepEqual(s, before);
 });
 

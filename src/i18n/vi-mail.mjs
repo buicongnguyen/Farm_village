@@ -4,4 +4,10 @@ export const VI_MAIL = {
   'You always bring just what I asked for. I put a small present in with this note.': 'Bạn luôn mang đến đúng thứ tôi cần. Tôi gửi kèm một món quà nhỏ trong thư này.',
   'The whole house says thank you. Please take this, with our love.': 'Cả nhà gửi lời cảm ơn bạn. Xin nhận món quà này cùng tấm lòng của chúng tôi.',
   'A gift is inside': 'Có quà bên trong',
+  // notice pills and the Recent list
+  'Project': 'Dự án',
+  'Letters': 'Thư',
+  'Recent': 'Gần đây',
+  'just now': 'vừa xong',
+  '{count} min ago': '{count} phút trước',
 };

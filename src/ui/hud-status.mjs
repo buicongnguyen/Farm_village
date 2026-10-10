@@ -1,10 +1,14 @@
 // Read-only HUD facts. One chip per destination; order counts live on the order-board button.
 import { questsOf, ready } from '../core/quests.mjs';
 import { rentWaiting } from '../core/homes.mjs';
+import { unread } from '../core/bonds.mjs';
 
-export function hudStatus(s, now) {
+/** project: show the Projects pill (the HUD always does; it replaced a round button); canWork: a step can be worked now (the pill is lit). */
+export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   const goals = questsOf(s, now).list;
   const rows = [{ act: 'quests', icon: 'ui:xp', label: 'Goals', count: goals.length, ready: goals.filter(q => ready(s, q, now)).length }];
+  if (project) rows.push({ act: 'projects', icon: 'ui:projects', label: 'Project', text: canWork ? 'ready' : '', hot: canWork });
+  const mail = unread(s); if (mail) rows.push({ act: 'mail', icon: 'ui:mail', label: 'Letters', count: mail, hot: true });
   const rent = rentWaiting(s, now);
   if (rent >= 5) rows.push({ act: 'rent', icon: 'ui:coin', label: 'Rent', coins: rent, hot: true });
   // Do not use truckOf here: opening the interface must not create an old save's missing fleet.
