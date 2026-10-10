@@ -6,7 +6,8 @@ import { sitePlan, siteBuilt } from '../core/sites.mjs';
 import { coinMark, glyph, iconHtml } from './icon.mjs';
 const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 /** What each site is for, in one line. */
-const ABOUT = { dock: 'A deck and a pier on the brook. The rare fish bite here twice as often as at a pond.' };
+const ABOUT = { dock: 'A deck and a pier on the brook. The rare fish bite here twice as often as at a pond.',
+  stage: 'A new stage for the village square, where the old one burned. The Harvest Festival is held from it.' };
 export function renderSite(s, kind) {
   const def = BUILDINGS[kind]; if (!def?.site) return '';
   if (siteBuilt(s, kind)) return `<p>${t(ABOUT[kind] ?? '')}</p><p class="hint">${t('It is already built')}</p>`;

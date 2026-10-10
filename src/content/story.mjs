@@ -60,6 +60,13 @@ export const CHAPTERS = [
     ada: 'I had forgotten the sound of that wheel. Listen, dear. That is what Hollowbrook sounds like when it is working.',
     panels: panels(8, ['The company office, open again.', 'The brook, running full.', 'The mill wheel turns.']),
     when: s => workingCount(s, 'company') > 0 && normalizeGrowth(s).settled >= 1 },
+  // The deed: the festival stage is rebuilt and the first Harvest Festival has been held, to its end
+  // (docs/plan/ch09-the-village-sings-again.md). The fire thread ends here; seeing this card brings Oak home.
+  { id: 9, title: 'The village sings again', subtitle: 'Lanterns on the square.', icon: '🏮',
+    text: 'The new stage smells of fresh wood. {person:gus:short} asks to light the first lantern, and says it at last: a storm blew the lanterns over the night he was minding them, the old stage burned, and he carried the children out. {person:ada:short} has kept a letter for him all these years. It says thank you.',
+    ada: 'I wrote it the week after the fire, dear, and never found the right day to give it to him. Tonight was the right day.',
+    panels: panels(9, ['The stage, rebuilt.', 'Lanterns over the square.', 'The whole village, together.']),
+    when: s => (s.counts.stage ?? 0) > 0 && (s.stats.harvestFestivals ?? 0) >= 1 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -152,6 +159,22 @@ export const BEATS = [
   { id: 'wheel-turns', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8 && (s.stats.sluiceMade ?? 0) > 0, lines: [
     { who: 'minh', text: 'I have wanted to see that wheel move since I was a boy. It is faster than I drew it.' },
     { who: 'pip', text: 'It goes round and round and it never gets dizzy!' },
+  ] },
+  // ── Chapter 9 (docs/plan/ch09-the-village-sings-again.md): the fire thread ends; Oak comes home ──
+  { id: 'stage-up', chapter: 9, when: s => (s.story.chapter ?? 0) >= 8 && (s.counts.stage ?? 0) > 0, lines: [
+    { who: 'elin', text: 'I found the old festival poster under the clinic stairs. Same colours as your new canopy. I did not plan that.' },
+    { who: 'minh', text: 'Every joint pegged, not nailed. This one is staying up.' },
+    { who: 'gus', text: 'Hmph. It will want lanterns. I know where the old hooks are.' },
+  ] },
+  { id: 'gus-truth', chapter: 9, when: s => (s.story.chapter ?? 0) >= 9, lines: [
+    { who: 'hazel', text: 'I bandaged those hands that night, {person:gus:short}. You never said how you burned them.' },
+    { who: 'gus', text: 'Carrying children is hot work. That is all there is to say about it.' },
+    { who: 'ada', text: 'He has read my letter four times since supper. Do not tell him I counted.' },
+  ] },
+  { id: 'oak-home', chapter: 9, when: s => (s.story.chapter ?? 0) >= 9 && !!s.story.beats?.includes('gus-truth'), lines: [
+    { who: 'ellis', text: 'I followed the water down. It knew the way better than I did.' },
+    { who: 'pip', text: '{person:ellis:short}! You are real! Did you bring a fish? Did you bring ALL the fish?' },
+    { who: 'ada', text: 'Your chair is where you left it. Sit down before you say anything clever.' },
   ] },
 ];
 

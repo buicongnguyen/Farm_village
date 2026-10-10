@@ -157,6 +157,8 @@ export class Hud {
     if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market', to: 'market' });
     if (e.type === 'marketDayStarted') this.toast(t('Market day! Double coins for {good}', { good: t(GOODS[e.good]?.name ?? e.good) }), 'good', { icon: e.good, to: 'barn' });
     if (e.type === 'marketDaySale' && e.first) this.toast(t('Sold on market day: double coins!'), 'good', { icon: 'ui:coin', to: 'barn' });
+    if (e.type === 'harvestFestivalStarted') this.toast(t('The Harvest Festival has begun! The hat brought in {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'stage', to: 'festival' });
+    if (e.type === 'harvestFestivalEnded') this.toast(t('The lanterns go out. What an evening!'), 'info', { icon: 'stage' });
     if (e.type === 'sluiceOpened') this.toast(t('The sluice is open! The mill wheel turns, and every workshop works a tenth faster'), 'good', { icon: 'feed_mill' });
     if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck', to: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });

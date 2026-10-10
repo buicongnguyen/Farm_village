@@ -53,6 +53,8 @@ export const FAMILIES = [
 // June gives tips, Pip comments on events in speech bubbles, and Ellis is away upriver: he appears only through letters.
 /** Is this villager here yet? `arrives` is the building they come with (a kind), or a test of the farm. */
 export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'function' ? !!v.arrives(s) : (s.counts[v.arrives] ?? 0) > 0);
+/** Grandpa Oak is away upriver until chapter 9 has been seen; from then on he lives at the farmhouse again. */
+export const oakHome = s => (s.story?.chapter ?? 0) >= 9;
 export const VILLAGERS = [
   // The office manager comes with the company office (chapter 8): brisk, kind, counts everything twice. No orders, no gifts.
   { id: 'bea', name: '{person:bea:display}', role: 'Office manager', arrives: 'company', noOrders: true, noGifts: true,
@@ -98,7 +100,9 @@ export const VILLAGERS = [
       neighbourVisit: { lines: ['Someone is at the gate! Visitors!'] },
     },
     idle: ['Why is it called a brook and not a river?', 'Do hens dream? What about?', '{person:ada:display} says {person:ellis:display} talks to fish.'] },
-  { id: 'ellis', name: '{person:ellis:display}', role: 'Your grandfather', family: true, noOrders: true, away: true, line: 'Gone fishing upriver. Back when the fish say so. — {person:ellis:display}' },
+  { id: 'ellis', name: '{person:ellis:display}', role: 'Your grandfather', family: true, noOrders: true, away: true, line: 'Gone fishing upriver. Back when the fish say so. — {person:ellis:display}' ,
+    // what he says once he is home (chapter 9): tap him to hear one
+    idle: ['The fish upriver send their regards.', 'I left for a week. It was a long week.', 'That wheel never sounded so good.', 'Your grandmother kept my chair. I checked.', 'A brook that runs is a brook that sings.', 'I fish better with company. Do not tell the fish.'] },
   { id: 'cora', name: '{person:cora:display}', role: 'Teacher', line: 'Thirty desks, one bell, and all the questions in the world.', arrives: 'school',
     orders: ['For the class picnic. Thirty little hands, all hungry.', 'A reward for good spelling. I promised.',
       'We are learning where food comes from. You are the lesson!', 'For the staff room. The staff is me.',

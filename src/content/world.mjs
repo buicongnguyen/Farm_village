@@ -60,7 +60,12 @@ export const TIDY = { coins: 40, xp: 15 };
 /** The ruin whose footprint holds this cell, if any. */
 /** Fixed sites (core/sites.mjs): where the story's own buildings stand, outside the farm and the village lots.
  *  The boat dock (chapter 7): on the south bank of the brook, a few steps east of the road bridge. */
-export const SITES = [{ kind: 'dock', x: 32, z: 13, rot: 0, size: [2, 2] }];   // size: the building's footprint (content/buildings.mjs), for the scenery that keeps off it
+export const SITES = [
+  { kind: 'dock', x: 32, z: 13, rot: 0, size: [2, 2] },   // size: the building's footprint (content/buildings.mjs), for the scenery that keeps off it
+  // The festival stage (chapter 9): the north edge of the village square, facing the well. `ruin`: what stands there
+  // until it is rebuilt (the burned platform of the old stage) instead of a sign.
+  { kind: 'stage', x: 39, z: 98, rot: 0, size: [4, 2], ruin: 'stage_burned' },
+];
 /** The old water mill on the brook's north bank, across the water from the lane (scenery, view/old-mill.mjs): its middle
  *  in metres, and the cells it covers (wild scatter keeps off them; nobody's land, so nothing can be built there). Its
  *  wheel hangs over the brook on the south side, facing the usual view, and turns once the sluice is open (chapter 8). */

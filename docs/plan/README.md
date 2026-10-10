@@ -16,7 +16,7 @@ folder says what to build, in which files, and how to know it is done.
 | 6 | [ch06-market-day.md](ch06-market-day.md) | Market day, land that says what it is for, the dairy scenes, the baker | 1–2 | **done** (PR #81) |
 | 7 | [ch07-safe-streets.md](ch07-safe-streets.md) | The officer and her old reports, the boat dock, ponds that water beds | 1 | **done** (PR #82) |
 | 8 | [ch08-work-for-everyone.md](ch08-work-for-everyone.md) | The office manager, the first big contract, the sluice opens, the mill wheel turns | 1–2 | **done** (PR #83) |
-| 9 | [ch09-the-village-sings-again.md](ch09-the-village-sings-again.md) | The festival stage, the Harvest Festival, Bramble's truth, Oak comes home | 2 | not started |
+| 9 | [ch09-the-village-sings-again.md](ch09-the-village-sings-again.md) | The festival stage, the Harvest Festival, Bramble's truth, Oak comes home | 2 | **done** (PR #84) |
 | 10 | [ch10-hands-to-help.md](ch10-hands-to-help.md) | Named villagers take the jobs and are seen at work, the evening report | 1–2 | not started |
 | 11 | [ch11-the-man-from-the-city.md](ch11-the-man-from-the-city.md) | The one real choice, the valley beauty meter | 2 | not started |
 | 12 | [ch12-one-river-many-farms.md](ch12-one-river-many-farms.md) | Two growers from outside, the co-operative, the bridge road opens | 2 | not started |
@@ -32,7 +32,7 @@ folder says what to build, in which files, and how to know it is done.
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 
-**Next: chapter 9** ([ch09-the-village-sings-again.md](ch09-the-village-sings-again.md)).
+**Next: chapter 10** ([ch10-hands-to-help.md](ch10-hands-to-help.md)). Act II is complete.
 
 Done before this plan: chapters 1 to 5; from v0.5, the goat barn and dairy, the farmhouse to level 10 (garden and
 room), six hired hands, sixteen parcels, twelve crops, the look of each language edition, the old-building fixes.

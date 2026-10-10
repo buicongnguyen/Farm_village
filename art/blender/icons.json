@@ -469,6 +469,24 @@
   }
  },
  {
+  "id": "stage",
+  "src": "raw:decor",
+  "root": "stage",
+  "view": [-30, 22],
+  "preset": "building"
+ },
+ {
+  "id": "person:ellis",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E3B48C",
+   "Villager hair": "#E9E6E1",
+   "Villager shirt": "#4F9A52",
+   "Villager trousers": "#5A3A2A"
+  }
+ },
+ {
   "id": "dock",
   "src": "raw:decor",
   "root": "dock",

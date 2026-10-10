@@ -93,14 +93,18 @@ function ambience() {
 document.addEventListener?.('visibilitychange', () => { if (ambGain && ctx) ambGain.gain.setTargetAtTime(document.hidden ? 0 : vol.sound * 0.22, ctx.currentTime, 0.2); });
 // A soft loop: a pad chord every two bars and a pluck melody wandering on the major pentatonic.
 const SCALE = [0, 2, 4, 7, 9, 12, 14, 16], CHORDS = [[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]];
-let note = 2;
+let note = 2, mood = null;
+/** The tune's mood: null (the gentle everyday loop) or 'festival' (the Harvest Festival: quicker, fuller, with a drum). */
+export function setMood(next = null) { if (next === mood) return; mood = next; if (timer) startMusic(); }
 function startMusic() {
   clearInterval(timer);
+  const festive = mood === 'festival';
   timer = setInterval(() => {
     if (!ctx || ctx.state !== 'running' || vol.music <= 0 || document.hidden) return;
     const root = 261.63, step = beat % 16;
-    if (step === 0) for (const n of CHORDS[(beat / 16 | 0) % 4]) tone(root / 2 * 2 ** (n / 12), 0, 3.6, { gain: 0.12, out: musicGain });
-    if (Math.random() < 0.55) { note = Math.max(0, Math.min(SCALE.length - 1, note + [-2, -1, 1, 2][Math.random() * 4 | 0])); tone(root * 2 ** (SCALE[note] / 12), 0, 0.5, { type: 'triangle', gain: 0.16, out: musicGain }); }
+    if (step === 0) for (const n of CHORDS[(beat / 16 | 0) % 4]) tone(root / 2 * 2 ** (n / 12), 0, festive ? 2.6 : 3.6, { gain: 0.12, out: musicGain });
+    if (Math.random() < (festive ? 0.85 : 0.55)) { note = Math.max(0, Math.min(SCALE.length - 1, note + [-2, -1, 1, 2][Math.random() * 4 | 0])); tone(root * 2 ** (SCALE[note] / 12), 0, festive ? 0.32 : 0.5, { type: 'triangle', gain: 0.16, out: musicGain }); }
+    if (festive && step % 4 === 0) tone(step % 8 ? 150 : 95, 0, 0.14, { type: 'sine', gain: 0.2, to: 50, out: musicGain });   // a soft drum: low on the bar, higher between
     beat++;
-  }, 260);
+  }, festive ? 190 : 260);
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 9: The village sings again — 2026-10-11
+
+- **The festival stage**: a burned platform stands on the village square where the old stage was; its panel builds the new one (level 12, 1,500 coins).
+- **The Harvest Festival**: tap the stage, lay a feast of six different foods from the barn, and hold it. For an evening the sky turns to dusk, lanterns glow over the square, the tune quickens, and the whole village gathers at the stage to cheer. The hat pays more than the feast cost and everyone gains a heart. It can be held again after the village has rested.
+- **Chapter 9** closes when the first festival is over: Bramble tells the truth about the night of the fire, and **Grandpa Oak comes home**. He walks about, fishes at the ponds and has things to say.
+- Act II of the story is complete.
+
 ## Chapter 8: Work for everyone — 2026-10-11
 
 - **The old mill** stands on the far bank of the brook, its wheel still. **Chapter 8** closes when the company office works and its first big delivery is paid.

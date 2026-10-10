@@ -140,6 +140,7 @@ export class Radial {
     }
     const who = !opts.preview && !id && this.people?.pick(x, y);
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
+    if (id && !opts.preview && !opts.open && s.placed[id]?.kind === 'stage') { this.hide(); this.panels.show('festival'); return; }   // the festival stage: the Harvest Festival's panel
     // the old mill on the brook (scenery): what it is, and what its wheel does once the sluice is open (chapter 8)
     if (!id && !opts.preview && inOldMill(cell.x, cell.z)) return this.open(cell, x, y, [], `${iconHtml('feed_mill', '', 'mini')} ${t(s.firsts?.sluice ? 'The old mill: its wheel turns again, and every workshop works a tenth faster' : 'The old mill: its wheel has stood still since the water was shut off')}`);
     // a fixed site that waits for its building (the boat dock's place on the brook): its own panel

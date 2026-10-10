@@ -79,6 +79,9 @@ export const JUMPS = {
   5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
   6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
   // chapter 6 is behind: a market day sold on, and three fields
+  // chapter 9 is behind: the festival stage stands and a Harvest Festival has been held to its end
+  10: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.stage.level); const coins = s.coins; s.coins += BUILDINGS.stage.cost; sites.buildSite(ctx, { kind: 'stage' }); s.coins = coins;
+    s.stats.harvestFestivals = Math.max(1, s.stats.harvestFestivals ?? 0); },
   // chapter 8 is behind: two food factories, the company office, and its first delivery paid
   9: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.company.level); give(ctx, 'juice_press'); give(ctx, 'noodle_factory'); give(ctx, 'company');
     const g = normalizeGrowth(s); s.growth = { ...g, sent: Math.max(1, g.sent), returned: Math.max(1, g.returned), settled: Math.max(1, g.settled) }; },
@@ -155,6 +158,7 @@ export const actions = {
     for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null && a.doneAt > now) { a.doneAt = now; n++; }
     for (const q of Object.values(s.production)) for (const j of q.queue) if (j.doneAt > now) { j.doneAt = now; n++; }
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); n++; }
+    if (s.festival && s.festival.until > now) { s.festival.until = now; n++; }   // the Harvest Festival's evening too
     tickHomes(ctx);
     ctx.emit('timersFinished', { count: n });
     return { finished: n };

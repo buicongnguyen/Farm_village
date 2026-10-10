@@ -102,6 +102,8 @@ export class Panels {
     else if (d.do === 'villageGrowth') this.show('villageGrowth');
     else if (d.do === 'growthSite') this.onGrowthSite?.(d.kind);
     else if (d.do === 'growthPath') this.onGrowthPath?.(d.kind);
+    else if (d.do === 'holdFestival') { if (this.game.do('holdFestival').ok) this.close(); }   // watch the evening: the HUD pill has the time left
+    else if (d.do === 'site') this.onSite?.(d.kind);
     else if (d.do === 'siteBuild') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else this.onSiteBuild?.(d.kind); }
     else if (d.do === 'growthBuild') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else this.onGrowthRebuild?.(d.kind); }
     else if (d.do === 'growthMemory') this.show('growthMemory', d.id);
@@ -133,7 +135,7 @@ export class Panels {
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
-    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
+    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');

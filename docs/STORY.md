@@ -46,7 +46,7 @@ every amount, requirement and story fact. The village is こもれびの里; the
 | Stable ID | English / Vietnamese display | Role and voice | Vietnamese pair |
 |---|---|---|---|
 | `ada` | **Granny Maple / Bà Mận** | Your grandmother and guide. Warm, practical; remembers Oak and the oven. Calls the player “dear”. | **bà – cháu**. Skip: *Cháu biết rồi ạ*. |
-| `ellis` | **Grandpa Oak / Ông Quế** | Your grandfather, away upriver. Short, wry letters signed with his localized display name. | **ông – cháu** |
+| `ellis` | **Grandpa Oak / Ông Quế** | Your grandfather, away upriver until chapter 9, then home: he walks about, fishes and chats. Short, wry letters signed with his localized display name. | **ông – cháu** |
 | `june` | **Rosie / Mơ** | Your partner. Calm and teasing; calls the player “love”. | self-reference **Mơ**, addresses the player **mình** |
 | `pip` | **Sunny / Bắp** | Your curious child, who names the animals. | **con**; calls Maple and Oak **cụ Mận / cụ Quế** |
 | `minh` | **Chip / Chú Mộc** | Carpenter in `tran`; dry, proud of his woodwork. | **chú – cháu** |
@@ -108,7 +108,7 @@ and translate content names in message parameters with `tParams()` before substi
 
 - **Maple:** from a lonely keeper of an empty village to a grandmother with a full street. She gets a beat at the end of
   every chapter, and in the end she gets Bramble's thanks (his arc).
-- **Oak:** he remains away upriver in the current game, including after fishing unlocks and the school celebration.
+- **Oak:** he is away upriver until chapter 9 is seen, including after fishing unlocks and the school celebration; then he is home for good (a walker with his own lines).
   His optional letters move from fishing to low water, the locked sluice and old flour-company papers. They establish
   a mystery; they do not open the gate or bring Oak home. His return needs a later implemented story and actor.
 - **Bramble:** three visits. He sees Maple's stubborn chin in you, slips that he learned on her oven, and finally admits that
@@ -149,7 +149,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | 6 | Market day | **Built.** The deed: sell the good of the day on a market day and own three fields (no household count). The square holds market days, and Barley the baker (`hugo`) arrives with the first. | Rusty and Dash learn that the upriver land, with the sluice gate, belongs to a city flour company. |
 | 7 | Safe streets | **Built.** The deed: the police post works and the boat dock stands (no household count). Constable Sage (`pearl`) arrives with the post; Skipper's dock goes up on the brook. | In three letters Sage reads the old reports. The sluice was closed the summer before the mill shut, on a flour company's order, and the wheel had no water. |
 | 8 | Work for everyone | **Built.** The deed: the company office works and its first big delivery is paid (no household count). Penny (`bea`) runs the office. | With Oak's notes and Sage's reports the village buys the water rights back. Seeing the card opens the sluice: the brook runs full, the old mill's wheel turns, workshops work a tenth faster. The water thread ends; Oak writes that he is coming home. |
-| 9 | The village sings again | The festival stage is rebuilt. | Bramble tells the truth: a storm knocked over the lanterns he was minding, and the stage burned. Maple's undelivered letter (in Dash's scene) thanked him for saving the children that night. Bramble lights the first new lantern. |
+| 9 | The village sings again | **Built.** The deed: the festival stage is rebuilt on the square and the first Harvest Festival has been held to its end. | Bramble tells it at last: a storm blew over the lanterns he was minding, the old stage burned, and he carried the children out. Maple gives him the letter she wrote after the fire. Oak follows the brook home. The fire thread ends. |
 
 ### Optional picnic memory
 

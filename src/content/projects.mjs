@@ -51,6 +51,11 @@ export const STEPS = [
   // chapter 8 (docs/plan/ch08-work-for-everyone.md)
   { id: 'first_contract', name: 'The first big delivery', text: 'The company office takes orders bigger than any cart. Send its first delivery from the village board, and collect the payment.',
     needs: { level: 15 }, panel: 'villageGrowth', done: s => normalizeGrowth(s).settled >= 1, builds: [] },
+  // chapter 9 (docs/plan/ch09-the-village-sings-again.md)
+  { id: 'stage', name: 'The festival stage', text: 'Only a burned platform is left of the old stage on the village square. Build a new one where it stood.',
+    needs: { level: 12 }, site: 'stage', done: s => (s.counts.stage ?? 0) >= 1, builds: [] },
+  { id: 'harvest_festival', name: 'The Harvest Festival', text: 'Lay a feast from your barn and hold the Harvest Festival at the stage. The whole village comes.',
+    needs: { level: 12 }, panel: 'festival', done: s => (s.stats.harvestFestivals ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

@@ -944,6 +944,55 @@ def old_mill_wheel():
     return p
 piece('old_mill_wheel', old_mill_wheel(), decor)
 
+def stage():
+    """The festival stage (chapter 9): a timber platform on the village square (4 x 2 cells: everything inside x +-3.9,
+    y +-1.9), a striped skirt and canopy, a painted backdrop with a sun, three steps at the front (+y), and two lantern
+    poles with a string of coloured lanterns across the front."""
+    p = []
+    W, D, H = 7.4, 3.4, .7
+    p.append(bx('deck', W, D, .16, 0, 0, H - .16, 'woodl', bev=.03))
+    for i in range(10):
+        p.append(bx('skirt', W / 10 - .03, .06, H - .18, -W / 2 + W / 20 + i * W / 10, D / 2 - .03, 0, 'red' if i % 2 else 'cream', bev=0.))
+    for x in (-W / 2 + .2, W / 2 - .2):
+        for y in (-D / 2 + .2, D / 2 - .2):
+            p.append(bx('leg', .24, .24, H - .1, x, y, 0, 'woodd', bev=0.))
+            p.append(bx('post', .16, .16, 3.0, x, y, H, 'woodd', bev=.02))
+    for k in range(3):
+        p.append(bx('step', 1.9, .36, .52 - k * .18, 0, D / 2 + .18 + k * .36, 0, 'wood', bev=.02))
+    for i in range(8):   # the canopy: red and cream stripes, a little higher at the back
+        p.append(bx('stripe', W / 8 + .02, D + .5, .1, -W / 2 + W / 16 + i * W / 8, 0, H + 3.0, 'red' if i % 2 else 'cream', bev=0.))
+    for i in range(16):
+        p.append(bx('valance', W / 16 - .02, .05, .28 if i % 2 else .2, -W / 2 + W / 32 + i * W / 16, D / 2 + .26, H + 2.74 + (0 if i % 2 else .08), 'cream' if i % 2 else 'red', bev=0.))
+    p.append(bx('backdrop', W - .5, .08, 2.7, 0, -D / 2 + .2, H, 'teal', bev=.02))
+    p.append(ball('sun', .62, 0, -D / 2 + .27, H + 1.55, 'sun', sub=2, sc=(1, .16, 1)))
+    for k in range(8):
+        a = k / 8 * math.tau
+        p.append(bx('ray', .12, .06, .34, math.cos(a) * .95, -D / 2 + .27, H + 1.38 + math.sin(a) * .95, 'gold', bev=0.))
+    for sx in (-1, 1):   # lantern poles in front of the corners
+        p.append(cl('pole', .07, 3.5, sx * (W / 2 + .35), D / 2 + .5, 0, 'woodd', verts=6))
+        p.append(ball('poletop', .16, sx * (W / 2 + .35), D / 2 + .5, 3.56, 'lampglow', sub=1))
+    p.append(st((-(W / 2 + .35), D / 2 + .5, 3.4), (W / 2 + .35, D / 2 + .5, 3.4), .025, 'rope', sides=3, rt=.025))
+    for i in range(7):
+        x = -W / 2 + .35 + i * (W - .7) / 6
+        p.append(ball('lantern', .17, x, D / 2 + .5, 3.18, ('pink', 'sun', 'sky', 'mint', 'red', 'violet', 'sun')[i], sub=1, sc=(1, 1, 1.25)))
+    return p
+piece('stage', stage(), decor)
+
+def stage_burned():
+    """What is left of the old festival stage: a blackened platform with a broken corner, two charred posts, a fallen
+    beam, an ash heap and weeds growing through. Same footprint as the stage."""
+    p = [bx('deck', 6.6, 3.0, .14, -.3, 0, .34, 'charcoal', bev=.02), bx('deckhole', 1.8, 1.1, .16, 2.2, -.7, .2, 'wooddd', bev=.02, rot=.25)]
+    for x, y in ((-3.3, -1.3), (-3.3, 1.3), (0, -1.3), (0, 1.3), (2.6, 1.3)):
+        p.append(bx('leg', .24, .24, .34, x, y, 0, 'charcoal', bev=0.))
+    p += [bx('post', .18, .18, 1.9, -3.3, -1.3, .4, 'charcoal', bev=.02), bx('post', .18, .18, 1.1, 0, -1.3, .4, 'wooddd', bev=.02),
+          bx('beam', 3.2, .18, .18, -1.2, .5, .5, 'wooddd', bev=.02, rot=.45), bx('beam', 1.6, .16, .16, 2.6, .9, .1, 'charcoal', bev=.02, rot=-.6),
+          ball('ash', .5, 2.3, -.5, .12, 'stoned', sub=1, sc=(1.4, 1, .35)), ball('ash', .3, 1.5, .2, .42, 'iron', sub=1, sc=(1.2, 1, .3))]
+    for x, y in ((-2.2, 1.6), (3.3, -1.4), (.8, 1.7), (-3.6, .2)):
+        p.append(ball('weed', .22, x, y, .16, 'leaf', sub=1, sc=(1, 1, 1.3)))
+        p.append(ball('weed', .16, x + .2, y - .1, .12, 'leafw', sub=0, sc=(1, 1, 1.2)))
+    return p
+piece('stage_burned', stage_burned(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []
