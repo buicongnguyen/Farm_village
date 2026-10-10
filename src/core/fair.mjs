@@ -45,12 +45,14 @@ export function optionsOf(s, cls) {
     .sort((a, b) => b.parts.sum - a.parts.sum || GOODS[b.good].value - GOODS[a.good].value || (a.good < b.good ? -1 : 1));
 }
 export const fairOpen = s => !!s.valley?.founded;
+/** Is a fair running now? Cheap: the views ask every frame (fairOf builds the whole panel's worth). */
+export const fairActive = (s, now) => { const f = s.fair; return !!f && Number.isFinite(f.until) && now >= f.at && now < f.until; };
 const fresh = () => ({ n: 0, at: null, until: null, ribbons: 0, best: {}, entry: {} });
 /** Where the fair stands. Pure: { open, active, until, readyAt, held, fee, classes: [{ id, name, judge, likes, options,
  *  entry }], entries, ok, reason, params, last, ribbons, best, at }. An entry is the one chosen while the barn still has it,
  *  else the most promising one. */
 export function fairOf(s, now) {
-  const f = s.fair, open = fairOpen(s), active = !!f && Number.isFinite(f.until) && now >= f.at && now < f.until;
+  const f = s.fair, open = fairOpen(s), active = fairActive(s, now);
   const readyAt = f && Number.isFinite(f.at) ? f.at + FAIR.everyMs : 0;
   const classes = CLASSES.map(id => { const options = optionsOf(s, id), chosen = options.find(o => o.good === f?.entry?.[id]) ?? options[0] ?? null; return { id, ...FAIR.classes[id], options, entry: chosen?.good ?? null }; });
   const entries = classes.filter(c => c.entry).length;

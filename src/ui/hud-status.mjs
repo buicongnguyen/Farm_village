@@ -8,7 +8,7 @@ import { albrightOffer, dividendOf } from '../core/valley.mjs';
 import { VALLEY } from '../content/economy.mjs';
 import { breakfastReady } from '../core/hotel.mjs';
 import { trainOf } from '../core/train.mjs';
-import { fairOf } from '../core/fair.mjs';
+import { fairActive } from '../core/fair.mjs';
 
 /** project: show the Projects pill (the HUD always does; it replaced a round button); canWork: a step can be worked now (the pill is lit). */
 export function hudStatus(s, now, { project = false, canWork = false } = {}) {
@@ -28,8 +28,8 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   if (day.active) rows.push({ act: 'marketday', icon: day.good, label: 'Market day', ms: Math.max(0, day.endsAt - now), lit: true });
   const fest = festivalOf(s, now);   // the Harvest Festival's evening: the time left (a tap opens its panel)
   if (fest.active) rows.push({ act: 'festival', icon: 'stage', label: 'Festival', ms: Math.max(0, fest.until - now), lit: true });
-  const fair = fairOf(s, now);   // the valley fair runs (chapter 18): the time left (a tap opens the judging)
-  if (fair.active) rows.push({ act: 'fair', icon: 'ribbon_gold', label: 'Fair', ms: Math.max(0, fair.until - now), lit: true });
+  // the valley fair runs (chapter 18): the time left (a tap opens the judging)
+  if (fairActive(s, now)) rows.push({ act: 'fair', icon: 'ribbon_gold', label: 'Fair', ms: Math.max(0, s.fair.until - now), lit: true });
   // the evening report (chapter 10): offered once a day from six o'clock, when hands are hired and the day earned something
   if (!s.today?.reportSeen && Object.keys(s.hands ?? {}).length && new Date(now).getHours() >= 18 && (s.stats.coinsEarned ?? 0) > (s.today?.earnedBase ?? Infinity))
     rows.push({ act: 'report', icon: 'person:ada', label: 'Evening sums', text: 'ready', hot: true });
