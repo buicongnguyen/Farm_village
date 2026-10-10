@@ -160,7 +160,25 @@ export function postLetters(ctx) {
     ctx.emit('letter', { id: letter.id, from: letter.from });
   }
 }
-export const letterOf = id => data().letters.find(l => l.id === id) ?? null;
+// Thank-you notes (after Hay Day's mailbox): every fourth order filled for the same person, they post a short note with a
+// small present. Ids are 'thanks:<person>:<n>'; the words and the present rotate. Old read notes are thinned out.
+export const THANKS = { every: 4, keep: 6, texts: ['Thank you for filling my orders so kindly. Here is a little something from our kitchen.',
+  'You always bring just what I asked for. I put a small present in with this note.', 'The whole house says thank you. Please take this, with our love.'],
+  gifts: [{ coins: 15 }, { goods: { chicken_feed: 2 } }, { goods: { wheat: 4 } }] };
+function thankYou(ctx, events) {
+  for (const e of events) if (e.type === 'orderFilled' && e.from) {
+    const { s } = ctx, b = bondOf(s, e.from); b.orders = (b.orders ?? 0) + 1;
+    if (b.orders % THANKS.every) continue;
+    const id = `thanks:${e.from}:${b.orders / THANKS.every}`, mail = (s.mail ??= []);
+    const old = mail.filter(m => m.read && m.id.startsWith('thanks:'));
+    for (const m of old.slice(THANKS.keep - 1)) mail.splice(mail.indexOf(m), 1);
+    mail.unshift({ id, from: e.from, at: ctx.now, read: false }); ctx.emit('letter', { id, from: e.from });
+  }
+}
+export const letterOf = id => {
+  if (typeof id === 'string' && id.startsWith('thanks:')) { const [, from, n] = id.split(':'), k = (+n || 1) % THANKS.texts.length; return { id, from, text: THANKS.texts[k], reward: THANKS.gifts[k] }; }
+  return data().letters.find(l => l.id === id) ?? null;
+};
 export const unread = s => (s.mail ?? []).filter(m => !m.read).length;
 
 // ── Village charm ──
@@ -180,6 +198,7 @@ export function afterAction(ctx) {
   const events = [...ctx.events];
   checkWishes(ctx, events);
   if (events.some(e => CHARM_EVENTS.has(e.type))) checkCharm(ctx);
+  thankYou(ctx, events);
   postLetters(ctx);
 }
 const charmChecked = new WeakSet();

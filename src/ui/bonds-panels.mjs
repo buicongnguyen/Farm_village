@@ -62,7 +62,7 @@ export function renderMail(s, now) {
   const mail = [...s.mail ?? []].sort((a, b) => rank(a) - rank(b));
   const when = at => new Date(at).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
   return `${rent ? `<div class="rent-row">${glyph('mail', 'g big')}<div><b>${t('Rent from your cottages')}</b><small>${coinMark()} ${num(rent)}</small></div><button class="btn primary" data-do="collectRent">${t('Collect')}</button></div>` : ''}
-    <div class="letters">${mail.map(m => `<button class="letter-row ${m.read ? '' : 'new'}" data-do="readLetter" data-id="${m.id}">${faceHtml(m.from)}<span class="lr-text"><b>${t('From {name}', { name: nameOf(m.from) })}</b><small>${!m.read && letterPrerequisite(s, m.id) ? t('Read the earlier letter first') : when(m.at)}</small></span>${m.read ? '' : `<i class="badge">${t('New')}</i>`}</button>`).join('')
+    <div class="letters">${mail.map(m => `<button class="letter-row ${m.read ? '' : 'new'}" data-do="readLetter" data-id="${m.id}">${faceHtml(m.from)}<span class="lr-text"><b>${t('From {name}', { name: nameOf(m.from) })}</b><small>${!m.read && letterPrerequisite(s, m.id) ? t('Read the earlier letter first') : `${when(m.at)}${!m.read && letterOf(m.id)?.reward ? ` · ${t('A gift is inside')}` : ''}`}</small></span>${!m.read && letterOf(m.id)?.reward ? glyph('gift', 'g') : ''}${m.read ? '' : `<i class="badge">${t('New')}</i>`}</button>`).join('')
       || `<p class="empty">${t('No letters yet. {person:ada:short} says the post is slow up here.')}</p>`}</div>`;
 }
 export const unreadCount = unread;
