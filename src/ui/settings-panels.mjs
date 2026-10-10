@@ -20,12 +20,13 @@ function renderTests(s) {
   const seen = s.story.chapter ?? 0;
   return `<h3 class="test-head">${t('Test')}</h3><p class="hint">${TEST_MODE ? t('Only in test builds.') : t('Tester tools: this farm is for testing.')}</p>
     <div class="row test-row">${TESTS.filter(([, , only]) => TEST_MODE || !only).map(([id, label]) => `<button class="btn small" data-do="test" data-test="${id}">${t(label)}</button>`).join('')}</div>
-    <div class="set-row"><b>${t('Jump to chapter')}</b><div class="tabs test-jump">${JUMP_CHAPTERS.map(n => `<button class="tab${seen >= n - 1 ? ' on' : ''}" data-do="test" data-test="jump:${n}"${seen >= n - 1 ? ' disabled' : ''} aria-label="${t('Chapter {n}', { n })}">${n}</button>`).join('')}</div></div>`;
+    <div class="set-row"><b>${t('Jump to chapter')}</b><div class="tabs test-jump">${JUMP_CHAPTERS.filter(n => n <= CHAPTERS.length).map(n => `<button class="tab${seen >= n - 1 ? ' on' : ''}" data-do="test" data-test="jump:${n}"${seen >= n - 1 ? ' disabled' : ''} aria-label="${t('Chapter {n}', { n })}">${n}</button>`).join('')}</div></div>`;
 }
 export function renderSettings(s, profile, { tester = false } = {}) {
   const st = s.settings;
   return `<div class="settings">
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
+    ${(s.story.chapter ?? 0) >= 1 ? `<button class="btn wide" data-do="valleyAlbum">${glyph('album', 'g')} ${t('The valley album')}</button>` : ''}
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${LANGUAGES.map(lang => choice('lang', lang.id, getLanguage(), lang.label)).join('')}</div></div>
     <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${esc(st.playerName)}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>
     <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>

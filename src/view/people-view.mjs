@@ -11,7 +11,7 @@ import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { fishable, seatsOf } from '../core/pond-bank.mjs';
 import { festivalOf } from '../core/festival.mjs';
-import { fairOf } from '../core/fair.mjs';
+import { fairActive } from '../core/fair.mjs';
 import { FAIR } from '../content/economy.mjs';
 import { SITES, PLAZA, WELL, ALBRIGHT, FAIR_TABLE } from '../content/world.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
@@ -143,7 +143,7 @@ export class PeopleView {
     const hotel = Object.values(s.placed).find(p => p.kind === 'hotel'), staying = (s.hotel?.rooms ?? []).filter(Boolean).length;
     if (hotel) { const door = doorCell(hotel.kind, hotel.x, hotel.z, hotel.rot); for (let i = 0; i < Math.min(3, Math.ceil(staying / 2)); i++) out.push({ id: `guest${i}`, body: i % 2 ? 'man' : 'woman', home: [door[0] - 2 + i * 2, door[1] + i % 2], work: true, guest: true }); }
     // visitors from the three valleys walk in while a fair runs (chapter 18): six of them, two from each
-    if (fairOf(s, now).active) for (let i = 0; i < 6; i++) out.push({ id: `fairgoer${i}`, body: i % 3 === 2 ? 'kid' : i % 2 ? 'man' : 'woman', home: [PLAZA.x1 + 3 + i % 3, PLAZA.z1 + 2 + Math.floor(i / 3)], work: true, fairgoer: true, kid: i % 3 === 2 });
+    if (fairActive(s, now)) for (let i = 0; i < 6; i++) out.push({ id: `fairgoer${i}`, body: i % 3 === 2 ? 'kid' : i % 2 ? 'man' : 'woman', home: [PLAZA.x1 + 3 + i % 3, PLAZA.z1 + 2 + Math.floor(i / 3)], work: true, fairgoer: true, kid: i % 3 === 2 });
     // the keeper of the quay sits by the door of the first quay house (chapter 13)
     const quayHouse = Object.entries(s.placed).filter(([, p]) => p.kind === 'apartment').sort((a, b) => a[1].x - b[1].x)[0];
     if (quayHouse && hasArrived(s, villager('tuyet'))) { const p = quayHouse[1], door = doorCell(p.kind, p.x, p.z, p.rot); out.push({ id: 'tuyet', body: 'hana', home: [door[0] + 1, door[1]], work: true }); }
@@ -292,7 +292,7 @@ export class PeopleView {
   frame(dt) {
     this.time += dt;
     this.clock += dt; if (this.clock > 1) { this.clock = 0; this.sync(); this.maybeTip(); this.pipIdle(); }
-    const night = isNight(this.s, this.game.now), fair = fairOf(this.s, this.game.now).active, party = fair || festivalOf(this.s, this.game.now).active;   // the valley fair, or the Harvest Festival's evening
+    const night = isNight(this.s, this.game.now), fair = fairActive(this.s, this.game.now), party = fair || festivalOf(this.s, this.game.now).active;   // the valley fair, or the Harvest Festival's evening
     this.fairOn = fair;
     for (const w of this.walkers.values()) {
       if (w.pet) this.liveDog(w, dt, night);

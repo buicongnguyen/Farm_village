@@ -94,6 +94,9 @@ export const STEPS = [
   // chapter 19 (docs/plan/ch19-the-green-valley.md)
   { id: 'green_valley', name: 'The green valley', text: 'The county gives a prize to its prettiest working valley. Reach the green goals in the Valley panel, make the valley a picture postcard, and let its name grow with everything you do together.',
     needs: {}, panel: 'valleyGreen', done: s => !!s.firsts?.greenValley, builds: [] },
+  // chapter 20 (docs/plan/ch20-the-lights-of-two-villages.md)
+  { id: 'two_villages', name: 'The lights of two villages', text: 'A billion is only a number. Keep the market, the fair, the trains and the hotel going, and watch the lights come on along both banks.',
+    needs: {}, panel: 'valleyValue', done: s => !!s.firsts?.['title:1000000000'], builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

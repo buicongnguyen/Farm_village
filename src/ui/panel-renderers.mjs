@@ -38,6 +38,7 @@ import { renderHotel } from './hotel-panel.mjs';
 import { renderTrain } from './train-panel.mjs';
 import { renderUpriver } from './upriver-panel.mjs';
 import { renderFair } from './fair-panel.mjs';
+import { renderValleyAlbum, albumEntry } from './valley-album.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
@@ -146,7 +147,8 @@ export function renderPanel() {
     }
     else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1, { tester: !!this.onTest });
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
-    else if (o.kind === 'album') body = renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
+    else if (o.kind === 'valleyAlbum') { title = t('The valley album'); icon = 'ui:mail'; body = renderValleyAlbum(s); }
+    else if (o.kind === 'album') body = albumEntry(s) + renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
     else if (o.kind === 'today') body = renderRecent(this.hud) + contractEntry + shopsEntry(s) + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
     else if (o.kind === 'advice') body = renderAdviceDetail(s, o.arg, now);
     else if (o.kind === 'projects') body = growthEntry + renderLandEntry(s) + renderProjects(s, now);

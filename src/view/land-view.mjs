@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, PLAZA, AWARD_PLAQUE, inVillage, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
-import { fairOf } from '../core/fair.mjs';
+import { fairActive } from '../core/fair.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
@@ -353,7 +353,7 @@ export class LandView {
    *  while a fair runs, stalls and visitors' carts on the grass round the square (only where nothing is built or
    *  paved) and the judging table on the square. Redrawn only when one of those changes. */
   drawFair() {
-    const s = this.s, b = this.world.batches, board = !!s.valley?.founded, on = board && fairOf(s, this.game.now).active;
+    const s = this.s, b = this.world.batches, board = !!s.valley?.founded, on = board && fairActive(s, this.game.now);
     const free = cells => cells.every(([x, z]) => inVillage(x, z) && !occupant(s, x, z) && cellType(s, x, z) === 'grass');
     const open = on ? FAIR_SPOTS.map(spot => free(spot.cells)) : [];
     const key = [board, on, open.join(), ...['ribbon_board', 'fair_stall', 'fair_stall_b', 'judging_table', 'fair_cart'].map(m => b.has(m))].join('|');

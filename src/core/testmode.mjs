@@ -2,6 +2,7 @@
 // browser tests. They run through act() like any action, so the views and the save hear about them.
 import { LEVELS, MARKET_DAY, PARCELS, FAIR, BEAUTY, VALLEY } from '../content/economy.mjs';
 import { GREEN_GOALS } from '../content/valley.mjs';
+import { VALUE_TITLES } from '../content/journey.mjs';
 import { beautyOf, valueOf } from './valley.mjs';
 import { planDay } from './neighbours.mjs';
 import { actions as riverside, freeLots } from './riverside.mjs';
@@ -86,6 +87,9 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 20 is behind: the valley's name has grown to a billion and it has every title
+  21: ctx => { const { s, now } = ctx; for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.lights; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+    for (const x of VALUE_TITLES) (s.firsts ??= {})[`title:${x.at}`] ??= now; },
   // chapter 19 is behind: the green goals are reached, the valley is a picture postcard (trees and flowers planted on
   // free ground as far as it takes) and its name has grown past the green mark (hotel guests enough for the goodwill)
   20: ctx => { const { s, now } = ctx; if (s.firsts?.greenValley) return;
@@ -192,6 +196,7 @@ export const actions = {
     s.story.chapter = Math.max(s.story.chapter ?? 0, chapter - 1); s.story.tutorial = 99;
     if (s.story.chapter >= 8) (s.firsts ??= {}).sluice ??= ctx.now;   // what seeing chapter 8 does (core/today.mjs)
     if (s.story.chapter >= 19) (s.firsts ??= {}).award ??= ctx.now;   // and chapter 19: the plaque at the bridge
+    if (s.story.chapter >= 20) s.story.ended ??= ctx.now;   // and chapter 20: the story is told
     if (s.story.chapter >= 12) (s.firsts ??= {}).bridge ??= ctx.now;   // and chapter 12
     s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
     s.coins = Math.max(s.coins, 1000 * chapter); s.undo = [];

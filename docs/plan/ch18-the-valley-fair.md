@@ -5,7 +5,7 @@ Status: **done** (PR #93) · Depends on: chapter 17 · Size: one to two sessions
 ## How to play it (for the owner)
 
 1. Once the valley company is founded, a **ribbon board** stands at the west edge of the village square. Tap it, or
-   open **The valley fair** in Village projects or the Roadmap.
+   open **The valley fair** on the Roadmap (tap the village's name in the top bar) or in Village projects.
 2. The panel has a card for each class: **Field** (a crop or a fruit, judged by Clover), **Kitchen** (something made,
    judged by Honey) and **Pond** (a fish, judged by Skipper). Each card shows what the barn can enter (it takes 3 of
    one kind) with **one to five stars**; the most promising is chosen already, a tap chooses another.

@@ -76,7 +76,9 @@ export class Guide {
     const ch = CHAPTERS.find(c => c.id > (s.story.chapter ?? 0));
     if (ch && !this.shown.has(ch.id) && ch.when(s)) {
       this.shown.add(ch.id);
-      showModal(this.card(ch), { modal: true, cls: 'chapter-modal', onOpen: el => this.carousel(el), onClose: () => { this.game.do('chapterSeen', { id: ch.id }); if (ch.id === 1) this.begin(); } });
+      // the last chapter is five cards, not one (ui/closing.mjs, loaded when it comes); it is seen when the last is closed
+      if (ch.closing) import('./closing.mjs').then(m => m.showClosing(this.game, ch, { onSeen: () => this.game.do('chapterSeen', { id: ch.id }), onAlbum: () => this.onAlbum?.(), onPhoto: () => this.onPhoto?.() })).catch(() => this.shown.delete(ch.id));
+      else showModal(this.card(ch), { modal: true, cls: 'chapter-modal', onOpen: el => this.carousel(el), onClose: () => { this.game.do('chapterSeen', { id: ch.id }); if (ch.id === 1) this.begin(); } });
     }
     if ((s.story.chapter ?? 0) < 1) return;
     for (const beat of BEATS) {
@@ -86,6 +88,11 @@ export class Guide {
       this.beats.add(beat.id);
       showBeat(beat, () => this.game.do('beatSeen', { id: beat.id }));
     }
+  }
+  /** A chapter that was seen, shown once more (the valley album). Nothing happens when it is closed. */
+  replay(id) {
+    const ch = CHAPTERS.find(c => c.id === id); if (!ch || id > (this.s.story.chapter ?? 0)) return;
+    showModal(this.card(ch), { cls: 'chapter-modal replay', onOpen: el => this.carousel(el) });
   }
   card(ch) {
     ch = { ...ch, ...ch.variants?.[this.s.story?.albright] };   // chapter 11 reads by the answer given (content/story.mjs `variants`)

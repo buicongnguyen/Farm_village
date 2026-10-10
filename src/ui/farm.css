@@ -329,3 +329,20 @@ img.fair-ribbon { width: 46px; height: 46px; flex: none; }
 .green-goals li > span { font-weight: 900; font-size: 13px; }
 .green-goals li small { display: flex; align-items: center; gap: 2px; font-weight: 800; opacity: .8; }
 .green-goals li.done small { opacity: .45; }
+/* the ending (chapter 20): the closing cards' step dots, the cast and the last buttons; the valley album's tiles */
+.closing-dots { display: flex; justify-content: center; gap: 6px; margin: 10px 0 8px; }
+.closing-dots i { width: 8px; height: 8px; border-radius: 50%; background: #d9c7a3; }
+.closing-dots i.on { background: var(--gold); width: 20px; border-radius: 6px; }
+.closing-cast { max-height: 58vh; overflow-y: auto; gap: 6px 8px; }
+.closing-cast .mini-face { width: 40px; height: 40px; }
+.closing-cast span small { font-size: 10px; }
+@media (max-width: 560px) { .closing-cast { gap: 4px 5px; } .closing-cast .mini-face { width: 34px; height: 34px; } .closing-cast span small { font-size: 9px; padding-inline: 6px; } }
+.closing-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 2px; }
+.album-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; margin: 8px 0; }
+.album-chapter { display: grid; gap: 2px; padding: 6px; border: 2px solid var(--line); border-radius: 14px; background: #fffaf0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.album-chapter img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 9px; }
+.album-chapter small { opacity: .7; font-size: 11px; font-weight: 800; }
+.album-chapter b { font-size: 13px; line-height: 1.2; }
+.album-titles { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.album-titles li { display: flex; align-items: center; gap: 8px; }
+.album-titles li small { margin-left: auto; opacity: .7; }

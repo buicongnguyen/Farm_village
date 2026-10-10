@@ -71,6 +71,8 @@ export const actions = {
     st.chapter = Math.max(st.chapter ?? 0, id);
     // chapter 8: the water rights are bought back and the sluice opens (content/economy.mjs SLUICE), once and for good
     if (st.chapter >= 8 && !ctx.s.firsts?.sluice) { (ctx.s.firsts ??= {}).sluice = ctx.now; ctx.emit('sluiceOpened'); }
+    // chapter 20: the story is told to its end. Nothing is taken away and no timer stops (core/ending.mjs)
+    if (st.chapter >= 20 && !st.ended) { st.ended = ctx.now; ctx.emit('storyEnded'); }
     // chapter 19: the county's award: a plaque goes up at the bridge (view/land-view.mjs) and the valley is looked over once
     if (st.chapter >= 19 && !ctx.s.firsts?.award) { (ctx.s.firsts ??= {}).award = ctx.now; ctx.emit('valleyAwarded'); }
     // chapter 12: the gate comes off the old towpath, and the far bank of the brook can be walked (core/walk.mjs)

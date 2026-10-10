@@ -38,7 +38,7 @@ function beautyPage(s) {
 }
 const NEEDS = { chapter: 'Walk to where the brook begins', cooperative: 'Found the co-operative', office: 'Reopen the company office', quay: 'Build a house on the quay' };
 const ASSETS = { coins: ['Coins in hand', 'ui:coin'], barn: ['Goods in the barn', 'ui:barn'], buildings: ['Everything built', 'bakery'], land: ['Land', 'sale_sign'], works: ['Works and upgrades', 'quay'],
-  herd: ['The herd', 'hen'], beauty: ['The beauty of the valley', 'round_tree'] };
+  herd: ['The herd', 'hen'], beauty: ['Beauty', 'round_tree'] };
 function founding(s) {
   const plan = companyPlan(s);
   return `<div class="site-top">${iconHtml('company', '', 'tile-icon')}<p>${t('The co-operative, the office and the quay could be one company that belongs to everyone who works in it. Every household gets a share, and the valley gets one number: what it is worth.')}</p></div>

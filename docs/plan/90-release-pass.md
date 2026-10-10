@@ -20,6 +20,7 @@ testing pace on purpose.
 - Levels: rebalance the XP curve so level 25 lands near chapter 20, not level 15.
 - Chapter 11: Mr Albright asks as soon as chapter 10 is seen. Decide whether he should wait for level 16 and a farm
   worth 60,000 (`albrightOffer` in `core/valley.mjs`), and set the cannery's green upgrade price against release coins.
+- Chapter 20: decide how long the billion should take at release pace; the test fixes only the order of the chapters.
 - Chapters 19 and 20: `VALLEY.step` (1.08 at release pace) decides how long the green mark and the billion take; set it
   with the simulation so chapter 19 to 20 is a matter of sessions. Then look again at the green goals' counts
   (`GREEN_GOALS`), which are eased for testing.
@@ -28,6 +29,8 @@ testing pace on purpose.
   from `s.fair.best`), which the chapter left out.
 
 ## 2. Sound
+
+- The ending (chapter 20): the main theme slowed for the closing cards, the festival tune's drum for the names.
 
 - A soundtrack: four pieces (day, evening, festival, far bank) of two to three minutes, loopable. Either written
   for the game or licensed with a file of licences in `docs/licences/`. The generated pentatonic tune stays as a
@@ -47,6 +50,8 @@ testing pace on purpose.
   Blender generators is ours. Anything that came through Zoo Garden or another reference game must be shown to be
   our own generator's output, or replaced. No exceptions before a sale.
 - Fonts: confirm the licence allows embedding in a sold game.
+- The ending's keepsake: pose the family before the farmhouse and keep the photograph in the profile (chapter 20 opens
+  the photo mode instead); a porch camera for the first closing card.
 
 ## 5. Size and speed
 

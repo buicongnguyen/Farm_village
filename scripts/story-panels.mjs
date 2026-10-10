@@ -53,6 +53,8 @@ const fairOn = `s.story.chapter = 17; s.valley = { founded: 1, dividendFrom: 1 }
 // chapter 19: the award given (the plaque at the bridge, the meadow in full flower or the cannery's orchard)
 const award = `s.story.chapter = 19; s.valley = { founded: 1, dividendFrom: 1, green: 1 }; s.firsts.award = 1; s.firsts.greenValley = 1;`;
 const cannery = `s.story.albright = 'factory'; s.placed.st_cannery = { kind: 'cannery', x: 55, z: 16, rot: 0 }; s.counts.cannery = 1;`;
+// chapter 20: the whole quay built on (a quay house on every lot between the hotel and the halt)
+const fullQuay = [3, 4, 5, 6].map(i => `s.placed.st_q${i} = { kind: 'apartment', x: ${46 + 8 * (i - 1)}, z: 1, rot: 0, lot: 'q${i}' }; s.flats.st_q${i} = { rentFrom: 1 };`).join(' ') + ` s.counts.apartment = 5;`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -126,6 +128,10 @@ const PANELS = {
   'ch19-2': { hour: 18.4, scene: sluice + far + quayHouse + hotel + `s.story.chapter = 18; s.story.beats = [...(s.story.beats ?? []), 'albright-returns'];`, wait: 10000, then: [put('albright', 57.5, 6.4), 1800], look: [56.5, 5, 24] },
   'ch19-3': { hour: 10.5, scene: sluice + cannery + award, wait: 9000, look: [59.5, 17.6, 24] },
   'ch19-3m': { hour: 10.5, scene: sluice + `s.story.albright = 'meadow';` + award, wait: 9000, look: [62, 17.8, 24] },
+  // chapter 20: the family on the farmhouse step at dusk, the old village with every window lit, and the far bank
+  'ch20-1': { hour: 19.95, scene: everyone + `s.story.chapter = 19;`, wait: 9000, then: [put('ada', 27.3, 63.5) + put('ellis', 28.4, 63.8) + put('pip', 27.9, 64.7) + put('june', 26.5, 64.4) + `farm.focus(26.5, 63.4, 24);`, 1800], look: [26.5, 63.4, 24] },
+  'ch20-2': { hour: 20.25, scene: everyone + stage + `s.story.chapter = 19;` + [[51, 'c5'], [56, 'c6'], [61, 'c7']].map(([x, id]) => `s.placed.st_${id} = { kind: 'cottage', x: ${x}, z: 93, rot: 2 }; s.homes.st_${id} = { level: 2 }; s.counts.cottage += 1;`).join(' '), wait: 10000, look: [52, 98.5, 50] },
+  'ch20-3': { hour: 20.25, scene: sluice + far + quayHouse + hotel + `s.hotel.level = 2;` + haltLot + trainHere + fullQuay, wait: 10000, look: [60, 6, 50] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

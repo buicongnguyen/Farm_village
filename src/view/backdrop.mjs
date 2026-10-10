@@ -7,7 +7,7 @@
 // night the far land melts into a very dark blue. Draws: skirt 1, far plane 1, tree band ≤ 8 (culled per side),
 // farms 1. Triangles: about 9k skirt + ~28k trees when the whole ring is on screen.
 import * as THREE from 'three';
-import { toonRamp } from '../kit/toon.mjs';
+import { toonRamp, NIGHT } from '../kit/toon.mjs';
 import { N, CELL, ROADS, SKIRT, brookCurve } from '../content/world.mjs';
 import { noise, grassTone, MID_TONE } from './ground.mjs';
 import { NEIGHBOURS } from '../content/people.mjs';
@@ -32,12 +32,12 @@ float fvHaze(vec2 p){
 /** Wind for swaying decorations: time and strength (0 with reduced motion). The world package's frame loop sets them. */
 export const WIND = { time: { value: 0 }, amp: { value: 1 } };
 /**
- * Patch a toon material so it fades into the haze colour outside the map. With sway, vertices carrying an aSway weight
+ * Patch a toon material so it fades into the haze colour outside the map, and takes the moonlight grade by night. With sway, vertices carrying an aSway weight
  * (0 = rooted, 1 = tip) bend in the wind, phased by world position; geometry without aSway reads 0 and stays still.
  */
 export function withHaze(material, { sway = false } = {}) {
   material.onBeforeCompile = shader => {
-    shader.uniforms.uHaze = HAZE;
+    shader.uniforms.uHaze = HAZE; shader.uniforms.uMoon = NIGHT.uMoon;
     if (sway) { shader.uniforms.uWindTime = WIND.time; shader.uniforms.uWindAmp = WIND.amp; }
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `#include <common>
@@ -66,8 +66,11 @@ uniform float uWindTime, uWindAmp;` : ''}`)
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
 uniform vec3 uHaze;
+uniform float uMoon;
 varying float vHaze;`)
-      .replace('#include <tonemapping_fragment>', `gl_FragColor.rgb = mix(gl_FragColor.rgb, uHaze, vHaze);
+      // by night the same cool grade as every other toon surface (kit/toon.mjs), so the far woods do not glow green
+      .replace('#include <tonemapping_fragment>', `{ float lum = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(lum) * vec3(0.42, 0.62, 1.25), uMoon * 0.75); }
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, uHaze, vHaze);
 #include <tonemapping_fragment>`);
   };
   material.customProgramCacheKey = () => sway ? 'fv-haze-sway' : 'fv-haze';

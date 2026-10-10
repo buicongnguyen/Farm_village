@@ -28,11 +28,11 @@ folder says what to build, in which files, and how to know it is done.
 | 17 | [ch17-a-share-for-everyone.md](ch17-a-share-for-everyone.md) | The valley company and the valley's value | 1–2 | **done** (PR #92) |
 | 18 | [ch18-the-valley-fair.md](ch18-the-valley-fair.md) | The fair and the produce contest | 1–2 | **done** (PR #93) |
 | 19 | [ch19-the-green-valley.md](ch19-the-green-valley.md) | Beauty goals, wealth titles, the award | 1 | **done** (PR #94) |
-| 20 | [ch20-the-lights-of-two-villages.md](ch20-the-lights-of-two-villages.md) | The billion and the closing card | 1 | not started |
+| 20 | [ch20-the-lights-of-two-villages.md](ch20-the-lights-of-two-villages.md) | The billion and the closing card | 1 | **done** (PR #95) |
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 
-**Next: chapter 20** ([ch20-the-lights-of-two-villages.md](ch20-the-lights-of-two-villages.md)). Acts II, III and IV are complete.
+**The story is complete: all twenty chapters are built.** Next: the release pass ([90-release-pass.md](90-release-pass.md)), which sets the release pace and picks up what each chapter left for it.
 
 Done before this plan: chapters 1 to 5; from v0.5, the goat barn and dairy, the farmhouse to level 10 (garden and
 room), six hired hands, sixteen parcels, twelve crops, the look of each language edition, the old-building fixes.
