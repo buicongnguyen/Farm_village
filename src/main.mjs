@@ -240,9 +240,7 @@ panels.onGrowthSite = kind => {
 // building, with no ghost to confirm. A refusal says why and leaves the panel open.
 panels.onGrowthRebuild = kind => {
   const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
-  const [x, z] = doorCell(kind, site.x, site.z, site.rot); game.do('place', { kind: 'path', x, z });   // refused quietly if it is there already
-  const r = game.do('place', { kind, x: site.x, z: site.z, rot: site.rot });
-  if (!r.ok) { hud.refuse(r.reason, r.params); return; }
+  if (!game.do('rebuildCivic', { kind }).ok) return;   // the HUD says why; the panel stays open
   panels.close(); radial.hide(); flyTo((site.x + 2) * CELL, (site.z + 1.5) * CELL, Math.min(world.cam.span, 38));
 };
 panels.onGrowthPath = kind => {

@@ -4,9 +4,10 @@
 //   s.repairing[id] = { doneAt }  a broken thing being repaired: out of order until then.
 // Broken things (only at the start) do not work until repaired. Wear is very gentle: it counts only play time (a tick never
 // counts more than WEAR.tickCapMs, so time away adds nothing), never breaks anything, and costs a few percent of rent and charm.
+import { growthStatus, normalizeGrowth } from './village-growth.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { REPAIR, WEAR, HOUSE, DEMOLISH, XP } from '../content/economy.mjs';
-import { ROAD_SEGMENTS, N } from '../content/world.mjs';
+import { ROAD_SEGMENTS, N, RUINS } from '../content/world.mjs';
 import { hash } from './rng.mjs';
 import { gainXp } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
@@ -94,7 +95,15 @@ export const actions = {
     const { s } = ctx, p = typeof id === 'string' && Object.hasOwn(s.placed, id) ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to demolish');
     const def = BUILDINGS[p.kind];
     if (def.garden) return ctx.fail('The streak garden keeps its flowers');
-    if (def.cat === 'projects') return ctx.fail('Village buildings can be moved, not demolished');
+    if (def.cat === 'projects') {
+      // The old civic buildings (school, clinic, police post, company office) can be taken down like anything else; the
+      // market square stays (its trucks live there). A company in use says what to do first.
+      if (!RUINS.some(r => r.kind === p.kind)) return ctx.fail('Village buildings can be moved, not demolished');
+      if (p.kind === 'company') {
+        if (Object.values(normalizeGrowth(s).staff).some(Boolean)) return ctx.fail('Release the company staff first');
+        if (growthStatus(s).active) return ctx.fail('Wait for the company truck first');
+      }
+    }
     if (s.homes[id]?.family) return ctx.fail('A family lives here: move the cottage instead');
     if (s.beds[id]) return ctx.fail('Harvest the crop first');
     if (s.animals[id]?.length) return ctx.fail('The animals live here: move it instead');
@@ -105,6 +114,7 @@ export const actions = {
     for (const k of CONTENTS) delete s[k]?.[id];
     delete s.placed[id]; delete s.cond[id]; delete s.repairing?.[id];
     s.counts[p.kind] = Math.max(0, (s.counts[p.kind] ?? 1) - 1); grid.touch(s);
+    if (RUINS.some(r => r.kind === p.kind)) (s.village.cleared ??= {})[p.kind] = ctx.now;   // the old ruin does not come back
     s.coins += refund; s.stats.coinsEarned += refund;
     if (p.kind !== 'bed') (s.rebuild ??= {})[p.kind] = Math.min(3, (s.rebuild[p.kind] ?? 0) + 1);
     ctx.emit('demolished', { id, kind: p.kind, x: p.x, z: p.z, refund });

@@ -11,7 +11,7 @@ import { HOME_COMFORT } from '../content/explore.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
 import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY, HOME_GARDEN } from '../content/world.mjs';
-import { tidied } from '../core/ruins.mjs';
+import { tidied, ruinStands } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
 import { plantPrice, cropOpen } from '../core/farm.mjs';
@@ -128,12 +128,13 @@ export class Radial {
     // a plain tap on an empty bed always opens the seed menu, so the crop can be changed; only a drag (or a harvest sweep) uses the armed tool
     if (!opts.preview && id && s.placed[id].kind === 'bed' && this.isArmed() && this.armed.action === 'harvest' && this.applies(id)) { this.swept = new Set(); this.sweepBed(id); return; }
     const ruin = !id && ruinAt(cell.x, cell.z);
-    if (ruin && !(s.counts[ruin.kind] > 0)) {   // an old building on the civic row: its name, what will bring it back, and a tidy-up
+    if (ruin && !(s.counts[ruin.kind] > 0) && (ruinStands(s, ruin.kind) || BUILDINGS[ruin.kind].civicSite)) {   // an old building on the civic row (or the lot it must return to): its name, what will bring it back, a tidy-up, or clear it away
       const step = STEPS[s.projects.step], next = step?.builds?.includes(ruin.kind), ruinButtons = [];
       if (next) ruinButtons.push({ act: 'projects', icon: glyph('projects', 'ic'), label: t('Rebuild') });
       if (['police', 'company'].includes(ruin.kind)) ruinButtons.push({ act: 'growthSite', icon: iconHtml(ruin.kind, '', 'ic'), label: t('Rebuild') });   // straight to this building's own rebuild panel
-      if (!tidied(s, ruin.kind)) ruinButtons.push({ act: 'tidyRuin', kind: ruin.kind, icon: glyph('sprout', 'ic'), label: `${coinMark()}${TIDY.coins}`, disabled: s.coins < TIDY.coins });
-      return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
+      if (ruinStands(s, ruin.kind)) ruinButtons.push({ act: 'clearRuin', icon: iconHtml('demolish', '', 'ic'), label: t('Clear away') });
+      if (ruinStands(s, ruin.kind) && !tidied(s, ruin.kind)) ruinButtons.push({ act: 'tidyRuin', kind: ruin.kind, icon: glyph('sprout', 'ic'), label: `${coinMark()}${TIDY.coins}`, disabled: s.coins < TIDY.coins });
+      return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${!ruinStands(s, ruin.kind) ? t('Cleared, kept for the rebuild') : next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
     const who = !opts.preview && !id && this.people?.pick(x, y);
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
@@ -232,6 +233,7 @@ export class Radial {
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'plantAll') g.do('plant', { ids: Object.keys(g.s.placed).filter(k => g.s.placed[k].kind === 'bed' && !g.s.beds[k]), crop: d.crop });
     else if (d.act === 'tidyRuin') g.do('tidyRuin', { kind: ruin });
+    else if (d.act === 'clearRuin') g.do('clearRuin', { kind: ruin });
     else if (d.act === 'projects') this.panels.show('projects');
     else if (d.act === 'hurry') { if (g.do('hurry', { id }).ok) this.world.juice?.pop?.({ x: g.s.placed[id].x, z: g.s.placed[id].z }); }
     else if (d.act === 'harvestAll') g.do('harvest', { ids: Object.keys(g.s.beds).filter(k => g.s.beds[k].doneAt <= g.now) });
