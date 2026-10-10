@@ -19,6 +19,13 @@ Phone targets are at least 44 × 44 px ✓ (`hud-compact`). New buttons go into 
 target is 5–7 always-visible buttons. With Projects and Mailbox turned into notice pills we have 8 (Today, Friends,
 Barn, Orders, Build, Explore, Turn, Settings); a new destination must replace one.
 
+### Menus (sheets)
+
+- **Phones and tablets:** a sheet rising from the bottom (short landscape screens: a column on the right).
+- **Desktop** (at least 900 × 600 px): every menu is a column on the right, full height, `min(440px, 36vw)` wide (after
+  Zoo Garden), so the middle of the view stays clear. The farm buttons slide left of it, the banner and status pills
+  stay, and notices centre in the remaining space. The build tray stays a strip along the bottom.
+
 ## 2. Button tiers
 
 | Tier | Look | Use |
