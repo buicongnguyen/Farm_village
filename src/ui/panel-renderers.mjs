@@ -170,18 +170,18 @@ export function renderPanel() {
         const state = u.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, u.backAt - now))}`
           : u.coins ? t('Back with {coins} coins', { coins: num(u.coins) })
           : `${t('Load')}: ${num(loadUnits(u))}/${num(cap)}${u.load.length ? ` · ${coinMark()} ${num(Math.round(loadValue(u) * TRUCK.pay))}` : ''}`;
-        return `<div class="truck-row${u.away ? ' away' : ''}">${iconHtml('truck', '', 'mini')}<b>${name}</b><span>${state}</span></div>
-          ${u.load.length && !u.away ? `<div class="queue">${u.load.map(l => `<div class="slot">${goodIcon(l.good)}<small>×${l.n}</small></div>`).join('')}</div>` : ''}`;
+        // one tidy row for each truck: its name and state, and what it carries as small chips on the same card
+        return `<div class="truck-row${u.away ? ' away' : ''}">${iconHtml('truck', '', 'mini')}<b>${name}</b><span>${state}</span>${u.load.length && !u.away ? `<div class="truck-load">${u.load.map(l => `<i>${goodIcon(l.good, 'mini')}×${l.n}</i>`).join('')}</div>` : ''}</div>`;
       };
-      body = `<p class="hint">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p>
-        ${why ? `<p class="hint"><b>${t(why)}</b></p>` : ''}
+      body = `${why ? `<p class="hint"><b>${t(why)}</b></p>` : ''}
         <div class="trucks">${units.map(rowOf).join('')}</div>
         ${takings ? `<button class="btn primary wide" data-do="collectTruck">${t('Collect {coins} coins', { coins: num(takings) })}</button>` : ''}
-        ${canFill ? `<button class="btn ghost wide" data-do="fillTruck">${glyph('plus', 'g')} ${t(home.length > 1 ? 'Fill the trucks with spare goods' : 'Fill the truck with spare goods')}</button>` : ''}
-        ${!why && loaded ? `<button class="btn orange wide" data-do="sendTruck">${loaded > 1 ? t('Send {n} trucks', { n: loaded }) : t('Send the truck')}</button>` : ''}
-        ${buy ? `<button class="btn ghost wide" data-do="buyTruck" ${s.level < buy.level || why ? 'disabled' : ''}>${iconHtml('truck', '', 'mini')} ${t('Buy another truck')} · ${coinMark()} ${num(buy.cost)} · ${t('level {level}', { level: buy.level })}</button>` : ''}
-        ${next ? `<button class="btn ghost wide" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}>${glyph('up', 'g')} ${t(many ? 'Bigger trucks' : 'Bigger truck')} · ${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</button>` : ''}
-        ${home.length && !why ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}`;
+        ${canFill || (!why && loaded) ? `<div class="market-actions">${canFill ? `<button class="btn ghost" data-do="fillTruck">${glyph('plus', 'g')} ${t(home.length > 1 ? 'Fill the trucks with spare goods' : 'Fill the truck with spare goods')}</button>` : ''}
+          ${!why && loaded ? `<button class="btn orange" data-do="sendTruck">${loaded > 1 ? t('Send {n} trucks', { n: loaded }) : t('Send the truck')}</button>` : ''}</div>` : ''}
+        ${home.length && !why && spare.length ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}
+        ${buy || next ? `<div class="market-actions upgrades">${buy ? `<button class="btn ghost" data-do="buyTruck" ${s.level < buy.level || why ? 'disabled' : ''}><b>${iconHtml('truck', '', 'mini')} ${t('Buy another truck')}</b><small>${coinMark()} ${num(buy.cost)} · ${t('level {level}', { level: buy.level })}</small></button>` : ''}
+          ${next ? `<button class="btn ghost" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}><b>${glyph('up', 'g')} ${t(many ? 'Bigger trucks' : 'Bigger truck')}</b><small>${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</small></button>` : ''}</div>` : ''}
+        <p class="hint small">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p>`;
     } else if (o.kind === 'stall') {
       const st = s.stall, spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0);
       body = `<p class="hint">${t('Passers-by buy one thing every few minutes, at its base price.')}</p>
