@@ -10,7 +10,8 @@ import { STACK } from '../core/stall.mjs';
 import { goodHelpTarget } from '../core/good-help.mjs';
 import { showDiscovery } from './discovery-panels.mjs';
 import { showExplorationMemory } from './exploration-panels.mjs';
-import { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';
+// Advice cards load with the panel renderers (this.renderer), which also carries their three actions: an advice card
+// can only be on screen once that chunk is in, so its buttons act at once.
 import { showLetter } from './bonds-panels.mjs';
 import { showLandMemory } from './land-panel.mjs';
 import { goodIcon, glyph, iconHtml } from './icon.mjs';
@@ -124,11 +125,12 @@ export class Panels {
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
+    else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');
-    else if (d.do === 'readAdvice') openAdvice(this, d);
-    else if (d.do === 'deferAdvice' || d.do === 'restoreAdvice') changeAdvice(this, d.do, d);
-    else if (d.do === 'showAdvice') followAdvice(this, d);
+    else if (d.do === 'readAdvice') this.renderer?.openAdvice(this, d);
+    else if (d.do === 'deferAdvice' || d.do === 'restoreAdvice') this.renderer?.changeAdvice(this, d.do, d);
+    else if (d.do === 'showAdvice') this.renderer?.followAdvice(this, d);
     else if (d.do === 'stallList') g.do('stallList', { good: d.good, n: Math.min(STACK, barn.free(g.s, d.good)) });
     else if (d.do === 'stallCollect') g.do('stallCollect');
     else if (d.do === 'loadTruck') g.do('loadTruck', { good: d.good, n: Math.min(10, barn.free(g.s, d.good)) });

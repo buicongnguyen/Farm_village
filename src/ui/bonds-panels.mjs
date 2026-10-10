@@ -118,9 +118,9 @@ export class Bonds {
       for (const e of r.events ?? []) {
         if (e.type === 'heartScene') showHeartScene(e);
         else if (e.type === 'familyArrived') showArrival(e.family);
-        else if (e.type === 'letter') hud.toast(t('A letter from {name} is in the mailbox', { name: nameOf(e.from) }), 'info', { icon: 'mail' });
+        else if (e.type === 'letter') hud.toast(t('A letter from {name} is in the mailbox', { name: nameOf(e.from) }), 'info', { icon: 'mail', to: 'mail' });
         else if (e.type === 'gifted') hud.toast(e.liked ? t('{name} loves it!', { name: nameOf(e.person) }) : t('{name} says thank you', { name: nameOf(e.person) }), 'good', { icon: 'heart' });
-        else if (e.type === 'wishGranted') hud.toast(t('Wish granted: {name} is delighted', { name: nameOf(e.person) }), 'good', { icon: 'charm' });
+        else if (e.type === 'wishGranted') hud.toast(t('Wish granted: {name} is delighted', { name: nameOf(e.person) }), 'good', { icon: 'charm', to: 'friends' });
       }
     });
   }

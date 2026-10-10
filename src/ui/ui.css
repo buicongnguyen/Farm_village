@@ -173,13 +173,21 @@ body[data-text="1.3"] .hud.hud { --hud-text: 1.3; zoom: 1; }
 .hud .next-chip { width: max-content; min-height: 44px; max-width: min(520px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))); bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px)); font-size: calc(12px * var(--hud-text)); white-space: normal; text-align: left; }
 .hud .next-chip b { flex: none; }
 .hud .next-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.hud .toasts { left: max(12px, env(safe-area-inset-left)); top: calc(var(--hud-stack-bottom, 240px) + 8px); transform: none; width: min(300px, calc(100vw - 116px - env(safe-area-inset-left) - env(safe-area-inset-right))); justify-items: stretch; }
-.hud .toasts { gap: 4px; }
-.hud .toast { font-size: calc(12px * var(--hud-text)); padding: 3px 10px 3px 5px; border-width: 2px; border-radius: 12px; gap: 6px; box-shadow: 0 2px 0 var(--edge-dark), 0 4px 8px #0000002e; }
-.hud .toast .toast-icon { width: 22px; height: 22px; }
+/* Notices: one centred lane, low in the middle (Zoo Garden's place for them), big enough to read at a glance. Each one
+   that leads somewhere shows a chevron and opens its detail on a tap. They move to the top when a sheet is open. */
+.hud .toasts { left: 50%; top: auto; bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px)); transform: translateX(-50%); width: min(86vw, 420px); justify-items: center; gap: 6px; }
+.hud .toast { font-size: calc(14px * var(--hud-text)); padding: 7px 14px 7px 8px; border-width: 3px; border-radius: 16px; gap: 8px; box-shadow: 0 4px 0 var(--edge-dark), 0 8px 14px #0000003a; max-width: 100%; }
+.hud .toast .toast-icon { width: 28px; height: 28px; }
+.hud .toast { min-width: 0; } .hud .toast .msg { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.toast .go, .recent-row .go { flex: none; font-size: 1.5em; font-weight: 1000; line-height: .8; }
+.hud .toast.tappable { text-decoration: none; }
+body.fishing-active .hud .toasts, body.explore-active .hud .toasts { bottom: max(280px, calc(env(safe-area-inset-bottom) + 272px)); }
+.hud[data-mode="build"] .toasts { top: max(84px, calc(env(safe-area-inset-top) + 76px)); bottom: auto; }
+.recent { margin: 0 0 10px; } .recent summary { cursor: pointer; font-weight: 900; padding: 4px 2px; }
+.recent-row[disabled] { opacity: 1; cursor: default; } .recent-row .mini { width: 28px; height: 28px; flex: none; }
 body.panel-open .hud .hud-tools { bottom: calc(var(--sheet-h) * var(--hud-text) + 32px); }
 body.panel-open .hud .hud-tracker, body.panel-open .hud .hud-right { display: none; }
-body.panel-open .hud .toasts { top: calc(100vh - var(--sheet-h) * var(--hud-text) + 74px); }
+body.panel-open .hud .toasts { bottom: auto; top: min(calc(100vh - var(--sheet-h) * var(--hud-text) + 74px), calc(100vh - 180px)); }   /* just inside the open sheet's top (the raised buttons fill the space above it), never off the bottom */
 .hud[data-mode="build"] .hud-tools { bottom: calc(var(--build-h, min(46vh, 196px)) * var(--hud-text) + 32px); }
 @media (max-width: 560px) and (orientation: portrait) {
   .hud .hud-right { right: max(14px, env(safe-area-inset-right)); gap: 22px; }
@@ -192,10 +200,10 @@ body.panel-open .hud .toasts { top: calc(100vh - var(--sheet-h) * var(--hud-text
   .hud[data-mode="build"] .hud-tools { bottom: 32px; right: calc(min(430px, 50vw) + 12px); }
 }
 @media (max-height: 520px) and (orientation: landscape) {
-  .hud .toasts { left: calc(max(12px, env(safe-area-inset-left)) + min(260px, 42vw) + 16px); top: calc(max(10px, env(safe-area-inset-top)) + 148px); width: min(340px, calc(100vw - 320px)); }
+  .hud .toasts { left: calc(max(12px, env(safe-area-inset-left)) + min(250px, 42vw) + 16px); transform: none; top: max(10px, env(safe-area-inset-top)); bottom: auto; width: min(320px, calc(100vw - min(250px, 42vw) - 280px)); justify-items: stretch; }   /* between the status stack and the top-right buttons */
   body.panel-open .hud .hud-tools, .hud[data-mode="build"] .hud-tools { bottom: max(34px, calc(env(safe-area-inset-bottom) + 26px)); right: calc(min(430px, 50vw) * var(--hud-text) + 18px); }
   .hud[data-mode="build"] .hud-status { display: none; }
-  body.panel-open .hud .toasts, .hud[data-mode="build"] .toasts { left: max(12px, env(safe-area-inset-left)); top: calc(var(--hud-stack-bottom, 140px) + 12px); width: min(260px, calc(100vw - min(430px, 50vw) * var(--hud-text) - 32px)); }
+  body.panel-open .hud .toasts, .hud[data-mode="build"] .toasts { left: max(12px, env(safe-area-inset-left)); transform: none; bottom: auto; top: calc(var(--hud-stack-bottom, 140px) + 12px); width: min(260px, calc(100vw - min(430px, 50vw) * var(--hud-text) - 32px)); justify-items: stretch; }
 }
 .profile-card .btn { min-height: 44px; white-space: normal; }
 .profile-progress span { display: inline-flex; align-items: center; gap: 4px; }

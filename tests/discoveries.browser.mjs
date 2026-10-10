@@ -58,7 +58,7 @@ async function catchOne(page) {
   await page.evaluate(() => {
     const g = farm.game, at = g.s.fishing.line?.doneAt;
     if (!at) throw Error('Cast button did not start a line');
-    g.clock = () => at; g.tick(); farm.panels.render();
+    g.clock = () => at; g.tick(); farm.panels.show('pond');   // casting closes the sheet so the cast can be watched
   });
   await page.click('.panel [data-do="reelIn"][data-steady="1"]');
 }

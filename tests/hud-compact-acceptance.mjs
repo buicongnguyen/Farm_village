@@ -60,10 +60,10 @@ async function bounds(page) {
     }
     for (const toast of [...document.querySelectorAll('.hud .toast:not(.gone)')].filter(visible)) {
       const r = toast.getBoundingClientRect();
-      if (r.x < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1 || toast.scrollWidth > toast.clientWidth + 1) return `cut toast: ${toast.textContent}`;
+      if (r.x < -1 || r.right > innerWidth + 1 || r.bottom > innerHeight + 1 || toast.scrollWidth > toast.clientWidth + 1) return `cut toast: ${toast.textContent} (x ${Math.round(r.x)}..${Math.round(r.right)} of ${innerWidth}, bottom ${Math.round(r.bottom)} of ${innerHeight}, scroll ${toast.scrollWidth}/${toast.clientWidth}, panel ${document.querySelector('.panel:not([hidden])')?.dataset.kind ?? 'none'})`;
       for (const el of [...controls, ...captions]) {
         const q = el.getBoundingClientRect();
-        if (Math.min(r.right, q.right) - Math.max(r.left, q.left) > 1 && Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top) > 1) return `toast covers ${el.dataset.act ?? el.dataset.status ?? el.textContent}`;
+        if (Math.min(r.right, q.right) - Math.max(r.left, q.left) > 1 && Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top) > 1) return `toast covers ${el.dataset.act ?? el.dataset.status ?? el.textContent} (toast y ${Math.round(r.top)}..${Math.round(r.bottom)} x ${Math.round(r.left)}..${Math.round(r.right)}; it y ${Math.round(q.top)}..${Math.round(q.bottom)} x ${Math.round(q.left)}..${Math.round(q.right)}; panel ${document.querySelector('.panel:not([hidden])')?.dataset.kind ?? 'none'}, sheet ${getComputedStyle(document.body).getPropertyValue('--sheet-h')})`;
       }
     }
     // Incidental public villager speech must also fit enlarged text; no test hook is needed to inspect it.
@@ -109,11 +109,14 @@ export async function runCompactHud(testMode) {
         await bounds(page);
         expect(await page.locator('.hud .next-copy').evaluate(el => el.getBoundingClientRect().height <= parseFloat(getComputedStyle(el).lineHeight) * 3 + 1), 'Next hint wraps into more than three lines');
         expect(await page.locator('.hud .hud-tracker').count() === 1, 'missing unified roadmap tracker');
-        expect(await page.locator('.hud [data-status="roadmap"], .hud [data-status="projects"], .hud [data-status="orders"]').count() === 0, 'duplicate status rows remain');
-        expect(await page.locator('.hud .status-row').count() === 4, 'lost a compact activity route');
+        expect(await page.locator('.hud [data-status="roadmap"], .hud [data-status="orders"]').count() === 0, 'duplicate status rows remain');
+        expect(await page.locator('.hud [data-status="projects"]').evaluate(el => !el.classList.contains('hot')), 'the Projects pill is lit although every project is done');
+        expect(await page.locator('.hud [data-act="projects"].round, .hud [data-act="mail"].round').count() === 0, 'the Projects and Mailbox round buttons are back');
+        expect(await page.locator('.hud [data-status="mail"]').isVisible(), 'unread letters have no notice pill');
+        expect(await page.locator('.hud .status-row').count() === 6, 'lost a compact activity route');
         const goalBadge = await page.locator('.hud [data-status="quests"] .badge.ready').innerText();
         expect(goalBadge === '1', `goal readiness is not on its button: ${goalBadge}`);
-        for (const id of ['today', 'projects', 'mail', 'barn', 'orders', 'build', 'friends']) expect((await page.locator(`.hud [data-act="${id}"] .hud-label`).innerText()).length > 0, `${id} has no visible label`);
+        for (const id of ['today', 'barn', 'orders', 'build', 'friends']) expect((await page.locator(`.hud [data-act="${id}"] .hud-label`).innerText()).length > 0, `${id} has no visible label`);
         const today = await page.locator('.hud [data-act="today"] .hud-label').innerText();
         expect(today === tIn(lang, 'Today'), 'button label does not follow language');
         const statusImg = page.locator('.hud [data-status="market"] img');
@@ -125,7 +128,8 @@ export async function runCompactHud(testMode) {
         expect(focused.kept, `timer refresh removed keyboard focus: ${JSON.stringify(focused)}`);
         await bounds(page);
         await page.screenshot({ path: join(shots, `${testMode ? 'test' : 'production'}-${lang}-${viewport.width}.png`) });
-        for (const [selector, kind, content] of [['[data-act="village"]', 'roadmap', '.journey'], ['[data-status="quests"]', 'quests', '.goal'], ['[data-status="market"]', 'market', '.truck-row'], ['[data-status="pond"]', 'pond', '.goods-grid']]) {
+        for (const [selector, kind, content] of [['[data-act="village"]', 'roadmap', '.journey'], ['[data-status="quests"]', 'quests', '.goal'], ['[data-status="market"]', 'market', '.truck-row'], ['[data-status="pond"]', 'pond', '.goods-grid'], ['[data-status="mail"]', 'mail', '.letters'], ['[data-status="projects"]', 'projects', '.panel-body']]) {
+          if (kind === 'projects' && !await page.locator(`.hud ${selector}`).isVisible()) continue;   // short screens hide the unlit Projects pill
           await page.locator(`.hud ${selector}`).click();
           await page.locator(`.panel[data-kind="${kind}"] ${content}`).first().waitFor({ state: 'attached' });
           expect(await page.locator(`.panel[data-kind="${kind}"]`).isVisible(), `lost ${kind} route`);

@@ -50,9 +50,7 @@ export class Hud {
       <div class="hud-topright"><button class="round small rim-grey" data-act="explore">${glyph('explore', 'g')}</button><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
         <button class="round rim-blue" data-act="today">${iconHtml('ui:today', '', 'btn-icon')}<i class="badge dot"></i></button>
-        <button class="round rim-teal" data-act="projects">${iconHtml('ui:projects', '', 'btn-icon')}<i class="badge dot ready"></i></button>
         <button class="round rim-pink" data-act="friends">${iconHtml('ui:heart', '', 'btn-icon')}</button>
-        <button class="round rim-red" data-act="mail" hidden>${iconHtml('ui:mail', '', 'btn-icon')}<i class="badge"></i></button>
       </div>
       <button class="next-chip" data-act="next" hidden></button>
       <div class="toasts" aria-live="polite"></div>
@@ -116,9 +114,7 @@ export class Hud {
     q('[data-act="orders"]').setAttribute('aria-label', `${t('Order board')}: ${s.orders.cards.length}${can ? ` · ${can} ${t('ready')}` : ''}`);
     this.refreshTodayMessages();
     const step = currentStep(s), canWork = step && stepReady(s, this.game.now).ok && (step.deliver ? !deliveredAll(s, step) && barn.hasAll(s, step.deliver, false) : step.builds.some(k => !['path', 'bed', 'fence', 'gate'].includes(k) && mayBuild(s, k).ok));
-    q('[data-act="projects"] .badge').hidden = !canWork;
-    const mail = unread(s), mailBtn = q('[data-act="mail"]');
-    mailBtn.hidden = !mail; mailBtn.querySelector('.badge').textContent = cap9(mail);
+    if (!!canWork !== this.canWork) { this.canWork = !!canWork; this.refreshStatus(); }   // Projects is a pill beside Goals, lit when a step is ready
     const used = barnUsed(s), cap = q('[data-act="barn"] .badge');
     cap.textContent = `${used}/${s.barn.cap}`; cap.classList.toggle('full', used >= s.barn.cap * 0.9);
     if (used > this.barnUsed) this.pulse(cap, 'bounce');
@@ -150,34 +146,34 @@ export class Hud {
   pulse(el, cls = 'pulse') { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
   event(e) {
     if (e.type === 'repairLearned') this.toast(t('Garden repairs learned'), 'good', { icon: 'wrench' });
-    if (e.type === 'gardenProject' && e.complete) this.toast(t('The potting bench is ready! A new crop to try.'), 'good', { icon: 'strawberry' });
-    if (e.type === 'schoolRoundCompleted' && e.first) this.toast(t('Your first basket game: a new memory for the album!'), 'good', { icon: 'school' });
+    if (e.type === 'gardenProject' && e.complete) this.toast(t('The potting bench is ready! A new crop to try.'), 'good', { icon: 'strawberry', to: 'projects' });
+    if (e.type === 'schoolRoundCompleted' && e.first) this.toast(t('Your first basket game: a new memory for the album!'), 'good', { icon: 'school', to: 'album' });
     // repairStarted: no toast (docs/HUD-STANDARD.md): the scaffolding and its timer already show it in the world.
-    if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish });
-    if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market' });
-    if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck' });
+    if (e.type === 'fishCaught') this.toast(t('Caught a {fish}!', { fish: t(FISH_NAMES[e.fish] ?? e.fish) }), 'good', { icon: e.fish, to: 'pond' });
+    if (e.type === 'truckBack') this.toast(t('The truck is back with {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'market', to: 'market' });
+    if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck', to: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });
     if (e.type === 'neighbourRepair') this.toast(t('{name} mended the {thing}!', { name: t(NAMES[e.id] ?? e.id), thing: thingName(this.game.s, e.target) ?? t(BUILDINGS[e.kind]?.name ?? '') }), 'good', { icon: 'wrench' });
     if (e.type === 'demolished') this.toast(t('Taken down: {name} (+{coins})', { name: t(BUILDINGS[e.kind]?.name ?? ''), coins: e.refund }), 'info', { icon: 'demolish' });
     if (e.type === 'houseUpgraded') this.toast(t('The farmhouse is now level {level}', { level: e.level }), 'good', { icon: 'home' });
-    if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects' });
-    if (e.type === 'ruinTidied') this.toast(t('{name} is tidied up. The village looks loved.', { name: t(RUIN_NAMES[e.kind]) }), 'good', { icon: 'ui:heart' });
+    if (e.type === 'projectDone') this.toast(t('Project done: {name}', { name: t(e.name) }), 'good', { icon: 'projects', to: 'projects' });
+    if (e.type === 'ruinTidied') this.toast(t('{name} is tidied up. The village looks loved.', { name: t(RUIN_NAMES[e.kind]) }), 'good', { icon: 'ui:heart', to: 'projects' });
     if (e.type === 'helperDid') this.toast(t(e.who === 'june' ? '{person:june:short} brought in {count} crops and sowed them again' : '{person:pip:short} fetched {count} eggs and milk', { count: e.count }), 'good', { icon: e.who === 'june' ? 'wheat' : 'egg' });
-    if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
-    if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp' });
-    if (e.type === 'festival') this.toast(t('The Hollowbrook festival! {coins} coins and a warm night', { coins: num(e.coins) }), 'good', { icon: 'ui:heart' });
+    if (e.type === 'questDone') this.toast(t('Goal done: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:xp', to: 'quests' });
+    if (e.type === 'weeklyDone') this.toast(t('The village goal is done: {coins} coins and a hurry', { coins: num(e.coins) }), 'good', { icon: 'ui:xp', to: 'quests' });
+    if (e.type === 'festival') this.toast(t('The Hollowbrook festival! {coins} coins and a warm night', { coins: num(e.coins) }), 'good', { icon: 'ui:heart', to: 'today' });
     if (e.type === 'familyTip') this.toast(t('A family left a tip: {coins} coins', { coins: num(e.coins) }), 'good', { icon: 'ui:coin' });
-    if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn' });
-    if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn' });
-    if (e.type === 'cartArrived') this.toast(t('The market cart is at the gate'), 'info', { icon: 'cart' });
-    if (e.type === 'crateFilled' && e.by && e.by !== 'you') this.toast(t('{name} filled a crate on the cart', { name: t(NAMES[e.by] ?? e.by) }), 'good', { icon: 'crate' });
-    if (e.type === 'cartSent') this.toast(t('The cart is off to market!'), 'good', { icon: 'cart' });
-    if (e.type === 'charmMilestone') this.toast(t('Village charm {charm}!', { charm: e.at }), 'good', { icon: 'charm' });
+    if (e.type === 'barnSold') this.toast(t('The barn is full: sold the extra for {coins} coins', { coins: num(e.coins) }), 'warn', { icon: 'ui:barn', to: 'barn' });
+    if (e.type === 'barnFull') this.toast(t('The barn is full: fill orders or upgrade it'), 'warn', { icon: 'ui:barn', to: 'barn' });
+    if (e.type === 'cartArrived') this.toast(t('The market cart is at the gate'), 'info', { icon: 'cart', to: 'cart' });
+    if (e.type === 'crateFilled' && e.by && e.by !== 'you') this.toast(t('{name} filled a crate on the cart', { name: t(NAMES[e.by] ?? e.by) }), 'good', { icon: 'crate', to: 'cart' });
+    if (e.type === 'cartSent') this.toast(t('The cart is off to market!'), 'good', { icon: 'cart', to: 'cart' });
+    if (e.type === 'charmMilestone') this.toast(t('Village charm {charm}!', { charm: e.at }), 'good', { icon: 'charm', to: 'friends' });
     if (e.type === 'parcelBought') this.toast(t('New land is yours!'), 'good', { icon: 'sale_sign' });
     if (e.type === 'neighbourVisit') {
       // the visitor says it in a speech bubble when on screen; otherwise the line comes as a message (never both)
       setTimeout(() => {
-        if (!this.visibleVisitor(e.id)) this.toast(`${t(NAMES[e.id] ?? e.id)}: ${t(e.comment, tParams(e.params))}`, 'info', { icon: `person:${e.id}` });
+        if (!this.visibleVisitor(e.id)) this.toast(`${t(NAMES[e.id] ?? e.id)}: ${t(e.comment, tParams(e.params))}`, 'info', { icon: `person:${e.id}`, to: 'friends' });
       }, 700);
     }
   }
@@ -196,7 +192,11 @@ export class Hud {
     if (help && el) { el.dataset.until = performance.now() + 5000; el.classList.add('tappable'); el.onclick = () => { el.remove(); if (help[0] === 'plan') { const n = this.nextTask; if (n?.way) this.onShowWay?.(n.way); else this.onPanel?.('orders'); } else this.onPanel?.(help[0]); }; }
   }
   /** A short message. Options: icon (an icon id), group (messages of a group replace each other in one toast). */
-  toast(text, kind = 'info', { icon = null, group = null } = {}) {
+  /** Open a notice's detail: a panel kind, or a function. */
+  go(to) { if (typeof to === 'function') to(); else if (to) this.onPanel?.(to); }
+  toast(text, kind = 'info', { icon = null, group = null, to = null } = {}) {
+    const feed = (this.feed ??= []), top = feed[0];   // the last notices, for Today's Recent list
+    if (top && (top.text === text || (group && top.group === group))) Object.assign(top, { text, at: Date.now() }); else { feed.unshift({ text, kind, icon, group, to, at: Date.now() }); feed.length = Math.min(feed.length, 20); }
     const box = this.el.querySelector('.toasts'), now = performance.now();
     const same = [...box.children].find(el => !el.classList.contains('gone') && (el.dataset.text === text || (group && el.dataset.group === group)));
     if (same) {                                            // a repeat (or one of its group) refreshes the toast on screen
@@ -206,7 +206,8 @@ export class Hud {
     }
     const el = document.createElement('div');
     el.className = `toast ${kind}`; el.dataset.text = text; if (group) el.dataset.group = group; el.dataset.until = now + (TOAST_MS[kind] ?? 2600);
-    el.innerHTML = `${icon ? iconHtml(icon, '', 'toast-icon') : ''}<span class="msg"></span><i class="count" hidden></i>`;
+    el.innerHTML = `${icon ? iconHtml(icon, '', 'toast-icon') : ''}<span class="msg"></span><i class="count" hidden></i>${to ? '<b class="go">›</b>' : ''}`;
+    if (to) { el.classList.add('tappable'); el.dataset.until = now + 5000; el.onclick = () => { el.remove(); this.go(to); }; }
     el.querySelector('.msg').textContent = text;
     box.appendChild(el);
     const live = [...box.children].filter(x => !x.classList.contains('gone')), rank = x => TOAST_RANK[[...x.classList].find(c => c in TOAST_RANK)] ?? 0;
@@ -220,12 +221,13 @@ export class Hud {
   setMode(mode) { this.el.dataset.mode = mode; this.refreshStatus(); }
   /** Compact destinations; updating a timer preserves the focused button instead of rebuilding the whole stack. */
   refreshStatus() {
-    const box = this.el.querySelector('[data-hud="status"]'), rows = hudStatus(this.game.s, this.game.now);
+    const box = this.el.querySelector('[data-hud="status"]'), rows = hudStatus(this.game.s, this.game.now, { project: true, canWork: this.canWork });
     for (const old of [...box.children]) if (!rows.some(r => r.act === old.dataset.status)) old.remove();
     for (const row of rows) {
       let button = box.querySelector(`[data-status="${row.act}"]`);
       if (!button) { button = document.createElement('button'); button.dataset.status = row.act; button.innerHTML = `${iconHtml(row.icon, '', 'mini')}<span class="status-copy"><b></b><small></small></span><i class="badge ready" hidden></i>`; box.appendChild(button); }
-      const detail = row.coins != null ? `+${num(row.coins)}` : row.ms != null ? row.hot ? t('ready') : `${row.count > 1 ? `${row.count} · ` : ''}${shortTime(row.ms)}` : num(row.count);
+      if (row.act === 'projects' || row.act === 'mail') button.dataset.act = row.act;   // the tutorial's hand and old links find them here
+      const detail = row.text != null ? t(row.text) : row.coins != null ? `+${num(row.coins)}` : row.ms != null ? row.hot ? t('ready') : `${row.count > 1 ? `${row.count} · ` : ''}${shortTime(row.ms)}` : num(row.count);
       const label = `${t(row.label)}: ${detail}${row.ready ? ` · ${row.ready} ${t('ready')}` : ''}`;
       button.className = `status-row${row.hot || row.ready ? ' hot' : ''}`;
       button.querySelector('b').textContent = t(row.label); button.querySelector('small').textContent = detail;
