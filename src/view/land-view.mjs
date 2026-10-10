@@ -116,6 +116,7 @@ export class LandView {
     let name = modelFor(kind, id);
     if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = `${name}:bare`;
     const b = this.world.batches;
+    if (kind === 'cottage') { const tier = `cottage_t${Math.min(2, this.s.homes?.[id]?.level ?? 0)}`; if (b.has(tier)) name = tier; }   // each furnish level is its own building
     // AR-011: keep the clinic while its optional hospital model loads; the next late-kit sync selects the saved tier.
     if (kind === 'clinic' && Number.isSafeInteger(this.s.growth?.hospitalAt) && this.s.growth.hospitalAt >= 0 && b.has('clinic:hospital')) name = 'clinic:hospital';
     return b.has(name) ? name : b.has(`${name}~`) ? `${name}~` : null;
@@ -252,6 +253,7 @@ export class LandView {
   dressCottage(id, item) {
     const b = this.world.batches, level = this.s.homes?.[id]?.level ?? 0, model = item.model, ids = [];
     if (!b.has('window_box')) return;
+    if (model.startsWith('cottage_t')) return;   // the rental cottages carry their own boxes, sign and garden
     const geo = b.models.get(model)?.geo, front = geo ? geo.boundingBox.max.z : 2.8;
     const put = (key, m, x, y, z, extra = {}) => {
       const c = Math.cos(item.rot), s = Math.sin(item.rot), did = `dress:${id}:${key}`;

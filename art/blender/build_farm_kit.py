@@ -895,6 +895,121 @@ piece('lake_kiosk_flowers', kiosk('pink', ['pink', 'sun', 'violet', 'red']), dec
 piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred']), decor)
 
 
+# =================================================================== rental cottages: three shapes, one per furnish level
+# A cottage you let: every level is a different, better building, and each has the hanging ROOMS sign (a board with a
+# golden key) by its door, so it reads as a place to stay. 3 x 3 cells (6 x 6 m); everything stays inside +-2.8 m; the
+# door faces the front (+y on the plan). Cottages face the lane, so the default camera looks at the BACK: it gets
+# windows, a garden bench and (on the best one) a balcony. Origin at the footprint centre, on the ground.
+def back_window(x, y, z, w, h, shutters='teal'):
+    """A window on the back wall (the wall at plan y, facing -y)."""
+    p = [bx('wframe', w + .14, .08, h + .14, x, y - .02, z - .07, 'white', bev=.02), bx('glass', w, .06, h, x, y - .05, z, 'glass', bev=.01),
+         bx('mull', .05, .05, h, x, y - .08, z, 'white', bev=0), bx('mull', w, .05, .05, x, y - .08, z + h / 2 - .025, 'white', bev=0)]
+    if shutters:
+        for sd in (-1, 1):
+            p.append(bx('shutter', w * .48, .05, h + .04, x + sd * (w / 2 + w * .26 + .05), y - .04, z - .02, shutters, bev=.015))
+    return p, (x, y - .09, z + h / 2, 0, -1)
+
+def rooms_sign(x, y):
+    """The sign of a house that lets rooms: a post, an iron arm and a hanging board with a golden key."""
+    p = [bx('signpost', .1, .1, 2.0, x, y, 0, 'woodd', bev=.02), bx('signarm', .62, .06, .06, x + .3, y, 1.86, 'iron', bev=0),
+         bx('signboard', .54, .07, .44, x + .34, y, 1.34, 'woodl', bev=.03), bx('signface', .44, .09, .34, x + .34, y, 1.39, 'paper', bev=.02)]
+    for sx in (.14, .54):
+        p.append(bx('chain', .03, .03, .1, x + sx, y, 1.78, 'iron', bev=0))
+    for side in (-1, 1):   # the key shows on both faces of the board
+        p += [cl('keyring', .075, .03, x + .22, y + side * .05, 1.56, 'gold', verts=10, rot=(math.pi / 2, 0, 0)),
+              bx('keyshaft', .22, .03, .04, x + .38, y + side * .05, 1.54, 'gold', bev=0), bx('keybit', .04, .03, .09, x + .46, y + side * .05, 1.46, 'gold', bev=0)]
+    p.append(ball('signtuft', .16, x, y, .05, 'leaf', sub=1, sc=(1.4, 1.4, .6)))
+    return p
+
+def rental(tier):
+    p, A = [], {'window': []}
+    W, D, H = ((3.7, 3.1, 2.0), (4.0, 3.3, 2.2), (4.0, 3.4, 2.2))[tier]
+    roof, roof2 = (('hay', 'hayd'), ('roof', 'roofd'), ('teal', 'teald'))[tier]
+    shut = ('teal', 'sky', 'red')[tier]
+    cx = -.75 if tier else 0          # the main block sits a little left once there is a wing on the right
+    p.append(bx('plinth', W + .3, D + .3, .25, cx, 0, 0, 'stone', bev=.06, seg=2))
+    p.append(bx('walls', W, D, H, cx, 0, .25, 'plaster', bev=.05, seg=2))
+    p.append(bx('skirt', W + .06, D + .06, .45, cx, 0, .25, 'stonel' if tier else 'cream', bev=.03))
+    p += timber_wall(W, H - .5, cx, D / 2, .7, 'front', 'woodd', posts=4)
+    for sd, face in ((-1, 'left'), (1, 'right')):
+        p += timber_wall(D, H - .5, cx + sd * W / 2, 0, .7, face, 'woodd', posts=3)
+    for i in range(5):   # the back wall's frame
+        p.append(bx('bpost', .12, .06, H - .5, cx - W / 2 + W * i / 4, -D / 2 - .04, .7, 'woodd', bev=.015))
+    top = .25 + H
+    if tier == 2:   # an upper floor, jettied out a little, with its own frame
+        U = 1.9
+        p.append(bx('jetty', W + .3, D + .3, .16, cx, 0, top, 'woodd', bev=.03))
+        p.append(bx('upper', W + .2, D + .2, U, cx, 0, top + .16, 'cream', bev=.05, seg=2))
+        p += timber_wall(W + .2, U - .2, cx, D / 2 + .1, top + .2, 'front', 'woodd', posts=4)
+        for i in range(5):
+            p.append(bx('upost', .12, .06, U - .2, cx - (W + .2) / 2 + (W + .2) * i / 4, -D / 2 - .14, top + .2, 'woodd', bev=.015))
+        for sd, face in ((-1, 'left'), (1, 'right')):
+            p += timber_wall(D + .2, U - .2, cx + sd * (W + .2) / 2, 0, top + .2, face, 'woodd', posts=3)
+        for x in (-1.0, 1.0):
+            wp, c = window(cx + x, D / 2 + .12, top + .7, .6, .7, 'front', shutters=shut, box=['pink', 'sun', 'white']); p += wp; A['window'].append(c)
+            wp, c = back_window(cx + x, -D / 2 - .12, top + .7, .6, .7, shutters=shut); p += wp; A['window'].append(c)
+        # the balcony on the back, where the camera looks: a deck on brackets, a rail and a door
+        p += [bx('deck', 1.9, .8, .1, cx, -D / 2 - .5, top + .1, 'wood', bev=.02), bx('bdoor', .7, .08, 1.5, cx, -D / 2 - .13, top + .2, shut, bev=.02),
+              bx('bdoorwin', .4, .05, .5, cx, -D / 2 - .17, top + 1.0, 'glass', bev=.01), bx('rail', 1.9, .06, .07, cx, -D / 2 - .87, top + .85, 'woodd', bev=.01)]
+        for i in range(6):
+            p.append(bx('baluster', .06, .06, .7, cx - .9 + i * .36, -D / 2 - .87, top + .18, 'white', bev=0))
+        for x in (-.9, .9):
+            p += [bx('railside', .06, .75, .07, cx + x, -D / 2 - .5, top + .85, 'woodd', bev=.01), bx('bracket', .08, .6, .12, cx + x * .8, -D / 2 - .4, top - .06, 'woodd', bev=.01)]
+        top += .16 + U; W += .2; D += .2
+    rh = (1.55, 1.5, 1.55)[tier]
+    p += roof_rows(W, D, rh, cx, 0, top, roof, roof2, rows=(4, 5, 5)[tier], over=.3 if tier == 0 else .26, thick=.16 if tier == 0 else .09)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, rh)], .1, (cx + sd * (W / 2 - .05), 0, top), C['plaster' if tier < 2 else 'cream'], rot=(0, 0, math.pi / 2), bev=.01))
+        p.append(bx('gwin', .06, .4, .4, cx + sd * (W / 2 + .02), 0, top + .35, 'glassd', bev=.01))
+    if tier == 2: W -= .2; D -= .2
+    # door and front windows
+    dx = cx + (-.9 if tier == 0 else -.6)
+    p += [bx('doorframe', 1.0, .1, 1.65, dx, D / 2 + .02, .25, 'woodd', bev=.03), bx('door', .8, .1, 1.5, dx, D / 2 + .06, .25, shut, bev=.02),
+          cl('knob', .04, .05, dx + .26, D / 2 + .13, .95, 'gold', verts=6, rot=(math.pi / 2, 0, 0)), bx('doorwin', .36, .05, .36, dx, D / 2 + .1, 1.25, 'glass', bev=.01),
+          bx('step', 1.2, .5, .14, dx, D / 2 + .3, 0, 'stonel', bev=.03)]
+    A['door'] = [(dx, D / 2 + .12, .25)]
+    wp, c = window(cx + (.8 if tier == 0 else 1.0), D / 2 + .02, 1.0, .7, .7, 'front', shutters=shut, box=['pink', 'sun', 'violet']); p += wp; A['window'].append(c)
+    for sd in (-1, 1):
+        if tier and sd > 0: continue   # the wing covers the right wall
+        wp, c = window(cx + sd * (W / 2 + .02), 0, 1.05, .6, .65, 'right' if sd > 0 else 'left'); p += wp; A['window'].append(c)
+    for x in ((-.9, .9) if tier else (0,)):
+        wp, c = back_window(cx + x, -D / 2 - .02, 1.0, .65, .7, shutters=shut); p += wp; A['window'].append(c)
+    if tier:   # a lean-to wing on the right with its own window, and a porch over the door
+        wx, ww, wd, wh = cx + W / 2 + .65, 1.3, D - .7, 1.75
+        p += [bx('wingbase', ww + .2, wd + .2, .25, wx, -.1, 0, 'stone', bev=.05), bx('wing', ww, wd, wh, wx, -.1, .25, 'cream', bev=.05, seg=2),
+              box('wingroof', (ww + .5, wd + .5, .12), (wx + .05, .1, .25 + wh + .32), C[roof], bev=.03, seg=1, rot=(0, .42, 0)),
+              box('wingroof2', (ww + .56, .14, .14), (wx + .05, -(-.1 + wd / 2 + .25), .25 + wh + .32), C[roof2], bev=.02, seg=1, rot=(0, .42, 0))]
+        wp, c = window(wx, -.1 + wd / 2 + .02, 1.0, .6, .6, 'front', shutters=shut, box=['red', 'white', 'sun']); p += wp; A['window'].append(c)
+        wp, c = window(wx + ww / 2 + .02, -.1, 1.0, .55, .6, 'right'); p += wp; A['window'].append(c)
+        wp, c = back_window(wx, -.1 - wd / 2 - .02, 1.0, .55, .6, shutters=shut); p += wp; A['window'].append(c)
+        p += [box('porch', (1.5, .95, .1), (dx, -(D / 2 + .5), 2.12), C[roof], bev=.02, seg=1, rot=(-.3, 0, 0)), bx('porchtrim', 1.5, .06, .1, dx, D / 2 + .96, 1.93, roof2, bev=.01)]
+        for x in (-.65, .65):
+            p.append(bx('porchpost', .09, .09, 1.75, dx + x, D / 2 + .9, .14, 'white', bev=.01))
+    # chimneys
+    for i, (x, y) in enumerate(((cx + W / 2 - .7, -.5),) + (((cx - W / 2 + .7, .4),) if tier == 2 else ())):
+        ch = top + rh * .55
+        p += [bx('chimney', .5, .5, ch - top + .9, x, y, top - .1, 'brick', bev=.03), bx('chband', .6, .6, .1, x, y, ch + .7, 'brickd', bev=.02), bx('chtop', .4, .4, .14, x, y, ch + .8, 'charcoal', bev=.02)]
+        if i == 0: A['chimney'] = [(x, y, ch + .95)]
+    # what makes it a place to stay: the ROOMS sign by the door; a garden bench and flowers at the back
+    p += rooms_sign(cx - W / 2 - .15 if tier == 0 else dx - 1.35, D / 2 + .75)
+    bxx = cx - .2
+    p += [bx('bench', 1.1, .32, .07, bxx, -D / 2 - .5, .4, 'wood', bev=.01), bx('benchback', 1.1, .06, .4, bxx, -D / 2 - .36, .5, 'wood', bev=.01)]
+    for x in (-.48, .48):
+        p.append(bx('benchleg', .07, .3, .4, bxx + x, -D / 2 - .5, 0, 'woodd', bev=0))
+    for k in range(3 + tier * 2):
+        fx = cx - W / 2 + .3 + k * .42
+        p += [ball('bedleaf', .16, fx, -D / 2 - .28, .12, 'leaf', sub=1, sc=(1.2, 1, .7)), ball('bedflower', .09, fx, -D / 2 - .3, .3, ('pink', 'sun', 'white', 'red', 'violet')[k % 5], sub=0)]
+    if tier == 0:   # a little woodpile and a barrel: a humble first let
+        p += [cl('barrel', .26, .6, cx + W / 2 + .45, .9, 0, 'wood', verts=10, rt=.22), cl('hoop', .275, .06, cx + W / 2 + .45, .9, .28, 'iron', verts=10)]
+        for k in range(3):
+            p.append(cl('log', .11, .7, 0, 0, 0, 'woodl' if k % 2 else 'wood', verts=7, rot=(0, math.pi / 2, 0))); p[-1].location = (cx + W / 2 + .5, .2 - k * .0, .12 + k * .2)
+    return p, A
+
+for tier in range(3):
+    parts, A = rental(tier)
+    piece(f'cottage_t{tier}', parts, decor)
+    anchors[f'cottage_t{tier}'] = A
+
 # =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
 def hospital():
     """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,
