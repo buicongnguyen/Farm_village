@@ -3,6 +3,8 @@
 // Toasts: the same message within 3 s bumps the one on screen instead of stacking, at most two show at once, and
 // refusals that share a lock (params.lock: level, project, goods, max, garden) merge into one toast with a padlock.
 // The coin counter rolls up to its new value with a pulse; the barn badge bounces when goods land.
+import { valueOf } from '../core/valley.mjs';
+import { short } from '../kit/i18n.mjs';
 import { t, tParams, num, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from '../kit/i18n.mjs';
 import { progress } from '../core/levels.mjs';
 import { fillable } from './panels.mjs';
@@ -66,7 +68,7 @@ export class Hud {
       </div>`;
     this.el.addEventListener('click', e => {
       const st = e.target.closest('[data-status]')?.dataset.status;
-      if (st) { if (st === 'rent') this.game.do('collectRent'); else if (st === 'offer') this.onOffer?.(); else this.onPanel?.(st === 'marketday' ? 'barn' : st); return; }
+      if (st) { if (st === 'rent') this.game.do('collectRent'); else if (st === 'dividend') this.game.do('collectDividend'); else if (st === 'offer') this.onOffer?.(); else this.onPanel?.(st === 'marketday' ? 'barn' : st); return; }
       const act = e.target.closest('button')?.dataset.act; if (!act) return;
       if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
@@ -93,7 +95,7 @@ export class Hud {
     const goal = `${t(journey.stage.goal)}${journey.total ? ` · ${journey.done}/${journey.total}` : ''}`;
     q('[data-hud="village"]').setAttribute('aria-label', `${t('Roadmap')}: ${t(journey.stage.name)} · ${goal}`);
     q('[data-hud="village"]').title = `${t(journey.stage.name)} · ${goal}`;
-    q('.tracker-name').textContent = t(VILLAGE_NAME);
+    q('.tracker-name').textContent = s.valley?.founded ? `${t(VILLAGE_NAME)} · ${short(valueOf(s))}` : t(VILLAGE_NAME);   // the valley's value, once its company is founded (chapter 17)
     q('.tracker-goal').textContent = goal;
     q('[data-hud="coins"]').setAttribute('aria-label', `${t('Coins')}: ${num(s.coins)}`);
     q('[data-hud="coins"]').title = num(s.coins);
@@ -161,6 +163,7 @@ export class Hud {
     if (e.type === 'harvestFestivalEnded') this.toast(t('The lanterns go out. What an evening!'), 'info', { icon: 'stage' });
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
+    if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
     if (e.type === 'upriverStop') this.toast(t(e.complete ? 'You reached the spring where the brook begins' : 'A stop on the walk upriver, and a keepsake to bring home'), 'good', { icon: e.keepsake, to: 'upriver' });
     if (e.type === 'trainArrived') this.toast(t('The evening train is at the halt: three wagons to fill'), 'good', { icon: 'halt', to: 'train' });
     if (e.type === 'trainLeft') this.toast(e.coins > 0 ? t('The train has left: {coins} coins for what it carried', { coins: num(e.coins) }) : t('The train has left with empty wagons'), e.coins > 0 ? 'good' : 'info', { icon: 'halt', to: 'train' });

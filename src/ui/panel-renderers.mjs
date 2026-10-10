@@ -103,7 +103,8 @@ export function renderPanel() {
       if (!s.today.reportSeen) queueMicrotask(() => { if (this.open === o && !this.game.s.today.reportSeen) this.game.do('seeReport'); });
     }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
-    else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s); }
+    else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s, now); }
+    else if (o.kind === 'valleyValue') { title = t('The valley'); icon = 'company'; body = renderValley(s, now, 'value'); }
     else if (o.kind === 'upriver') { title = t('Where the brook begins'); icon = 'spring_water'; body = renderUpriver(s); }
     else if (o.kind === 'train') { title = t('The railway halt'); icon = 'halt'; body = renderTrain(s, now); }
     else if (o.kind === 'hotel') { title = t('The hotel'); icon = 'hotel'; body = renderHotel(s, now); }

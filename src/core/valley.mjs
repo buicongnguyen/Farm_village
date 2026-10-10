@@ -2,7 +2,10 @@
 // story. Mr Albright offers to build a cannery on the meadow by the brook (fast money, the meadow gone); the player may
 // take it or keep the meadow (wildflowers, bees and honey). The answer is given once and stands: s.story.albright.
 // Beauty is counted from what stands in the valley; it pays a little on every order now and brings guests later.
-import { BEAUTY } from '../content/economy.mjs';
+import { BEAUTY, VALLEY, HOTEL, RIVERSIDE, RENT, PARCELS } from '../content/economy.mjs';
+import { GOODS, ANIMALS } from '../content/goods.mjs';
+import { VALUE_TITLES } from '../content/journey.mjs';
+import { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived } from '../content/people.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { SITES } from '../content/world.mjs';
 import { isWorking } from './working.mjs';
@@ -48,6 +51,66 @@ export function beautyTip(s) {
   return null;
 }
 
+// ── The valley's value and the valley company (chapter 17, docs/plan/ch17-a-share-for-everyone.md) ──
+//   s.valley.founded        when the company was founded;  s.valley.dividendFrom   since when dividends have been waiting
+const sum = (list, f) => list.reduce((a, x, i) => a + f(x, i), 0);
+/** What the things of one kind cost to build: a price that rises with each one (beds, cottages) is added up one by one. */
+const builtCost = (kind, n) => { const c = BUILDINGS[kind]?.cost; return typeof c === 'function' ? sum(Array.from({ length: n }), (_, i) => Number(c(i)) || 0) : (Number(c) || 0) * n; };
+/** What stands in the valley, in coins: { coins, barn, buildings, land, works, herd, beauty, total }. Spending coins on a
+ *  building, land, an animal or an upgrade moves worth from one part to another: it never makes the total fall. */
+export function assetsOf(s) {
+  const placed = Object.values(s.placed ?? {});
+  const parts = {
+    coins: Math.max(0, s.coins ?? 0),
+    barn: sum(Object.entries(s.barn?.items ?? {}), ([g, n]) => (GOODS[g]?.value ?? 0) * n),
+    buildings: sum(Object.entries(placed.reduce((by, p) => { by[p.kind] = (by[p.kind] ?? 0) + 1; return by; }, {})), ([kind, n]) => builtCost(kind, n)),
+    land: sum(s.parcels ?? [], (_, i) => PARCELS.cost(i + 1)),
+    works: (s.firsts?.quay ? RIVERSIDE.quay.cost : 0) + (s.valley?.green ? BEAUTY.greenCost : 0) + (s.valley?.founded ? VALLEY.found : 0)
+      + sum(HOTEL.upgradeCost.slice(0, (s.hotel?.level ?? 0) + 1), c => c) + sum(Object.values(s.homes ?? {}), h => sum(RENT.upgradeCost.slice(0, (h.level ?? 0) + 1), c => c)),
+    herd: sum(Object.values(s.animals ?? {}).flat(), a => ANIMALS[a.kind]?.price ?? 0),
+    beauty: beautyOf(s).score * VALLEY.beauty,
+  };
+  return { ...parts, total: Math.round(Object.values(parts).reduce((a, b) => a + b, 0)) };
+}
+/** Deeds done together, which make the valley's name: market days, shared orders, trains, festivals, fairs, hotel guests by the handful. */
+export const deedsOf = s => Math.min(VALLEY.deeds, (s.stats?.marketDays ?? 0) + (s.stats?.cooperativeOrders ?? 0) + (s.stats?.trains ?? 0) + (s.stats?.harvestFestivals ?? 0) + (s.stats?.fairs ?? 0)
+  + Math.floor((s.stats?.guests ?? 0) / VALLEY.guests));
+/** How many times its assets the valley is worth for its name. */
+export const goodwillOf = s => VALLEY.step ** deedsOf(s);
+/** The valley's value: its assets times its goodwill. */
+export const valueOf = s => Math.round(assetsOf(s).total * goodwillOf(s));
+/** The title a value has earned (content/journey.mjs VALUE_TITLES), and the next one: { title, next }. */
+export function titleOf(value) {
+  const i = VALUE_TITLES.reduce((at, x, k) => value >= x.at ? k : at, -1);
+  return { title: VALUE_TITLES[i] ?? null, next: VALUE_TITLES[i + 1] ?? null };
+}
+/** Who holds a share: your own household, every family that has moved in, every villager and neighbour who has come;
+ *  and the families who came home to the quay, as a number. { people: [ids], returned } */
+export function shareholders(s, now = Infinity) {
+  const families = Object.values(s.homes ?? {}).filter(h => h.family && h.arrivesAt <= now).map(h => FAMILIES.find(f => f.id === h.family)?.people?.[0]?.id).filter(Boolean);
+  const people = ['ada', ...families, ...VILLAGERS.filter(v => !v.family && v.id !== 'ada' && v.id !== 'albright' && hasArrived(s, v)).map(v => v.id), ...NEIGHBOURS.filter(n => hasArrived(s, n)).map(n => n.id)];
+  return { people: [...new Set(people)], returned: s.stats?.returned ?? 0 };
+}
+/** What founding the valley company takes. Pure: { ok, reason?, price, needs: [{ id, ok }] }. */
+export function companyPlan(s) {
+  const price = VALLEY.found, founded = !!s.valley?.founded;
+  const needs = [
+    { id: 'chapter', ok: (s.story?.chapter ?? 0) >= 16 }, { id: 'cooperative', ok: !!s.cooperative?.founded },
+    { id: 'office', ok: Object.keys(s.placed ?? {}).some(id => s.placed[id].kind === 'company' && isWorking(s, id)) },
+    { id: 'quay', ok: (s.counts?.apartment ?? 0) > 0 }, { id: 'coins', ok: (s.coins ?? 0) >= price },
+  ];
+  if (founded) return { ok: false, reason: 'The valley company is founded already', price, needs, founded };
+  const missing = needs.find(n => !n.ok);
+  return missing ? { ok: false, reason: missing.id === 'coins' ? 'Not enough coins' : 'The valley is not ready for a company yet', price, needs, founded } : { ok: true, price, needs, founded };
+}
+/** The dividend: { each, payments, waiting, nextAt } (payments waiting, at most VALLEY.cap). */
+export function dividendOf(s, now) {
+  if (!s.valley?.founded) return { each: 0, payments: 0, waiting: 0, nextAt: null };
+  const from = s.valley.dividendFrom ?? s.valley.founded, each = Math.round(assetsOf(s).total * VALLEY.dividend);
+  const due = Math.floor(Math.max(0, now - from) / VALLEY.dividendMs), payments = Math.min(VALLEY.cap, due);
+  return { each, payments, waiting: payments * each, nextAt: payments >= VALLEY.cap ? null : from + (due + 1) * VALLEY.dividendMs };
+}
+
 /** Mr Albright's offer: open from the end of chapter 10 until it is answered. */
 export const albrightOffer = s => ({ open: (s.story?.chapter ?? 0) >= 10 && !s.story?.albright, answered: s.story?.albright ?? null });
 export const actions = {
@@ -64,6 +127,25 @@ export const actions = {
     }
     ctx.emit('albrightAnswered', { choice });
     return { choice };
+  },
+  /** Found the valley company: the co-operative, the office and the quay become one thing that belongs to everyone. */
+  foundValley(ctx) {
+    const { s, now } = ctx, plan = companyPlan(s);
+    if (!plan.ok) return ctx.fail(plan.reason);
+    s.coins -= plan.price; (s.valley ??= {}).founded = now; s.valley.dividendFrom = now;
+    ctx.emit('valleyFounded', { shares: shareholders(s, now).people.length });
+    return { founded: now };
+  },
+  /** Collect the dividends that are waiting. */
+  collectDividend(ctx) {
+    const { s, now } = ctx, d = dividendOf(s, now);
+    if (!s.valley?.founded) return ctx.fail('The valley company is not founded yet');
+    if (d.waiting <= 0) return ctx.fail('No dividend is waiting yet');
+    const from = s.valley.dividendFrom ?? s.valley.founded, waited = Math.max(0, now - from);
+    s.valley.dividendFrom = d.payments >= VALLEY.cap ? now : now - waited % VALLEY.dividendMs;   // the part of a payment already waited for is kept
+    s.coins += d.waiting; s.stats.coinsEarned += d.waiting; (s.firsts ??= {}).dividend ??= now;
+    ctx.emit('coins', { coins: d.waiting, source: 'dividend' });
+    return { coins: d.waiting };
   },
   /** Make the cannery a clean one (trees round it, a filter on the chimney): its beauty penalty goes for good. */
   greenCannery(ctx) {

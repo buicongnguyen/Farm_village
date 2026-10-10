@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 17: A share for everyone — 2026-10-11
+
+- **The valley company**: found it once the co-operative, the company office and a quay house stand (20,000 coins). Every household gets a share; a flag goes up at the office's corner.
+- **The valley's value**: one number for everything in the valley, shown beside the village's name in short form. The Valley panel's new **Value** page shows what it is made of and its **goodwill**, which grows with every market day sold on, shared order, loaded train, festival and handful of hotel guests.
+- **The dividend**: every ten minutes a small part of the valley's assets is set aside for you to collect.
+- **Chapter 17** closes with the founding. Act V has begun.
+
 ## Chapter 16: Where the brook begins — 2026-10-11
 
 - **A walk upriver** with Grandpa Oak and Sunny, in three stops: the old weir (bring a picnic), the heron pool (land a fish at the boat dock first) and the spring (plant ten trees first). Nothing is timed.

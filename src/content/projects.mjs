@@ -85,6 +85,9 @@ export const STEPS = [
   // chapter 16 (docs/plan/ch16-where-the-brook-begins.md)
   { id: 'upriver', name: 'A walk upriver', text: '{person:ellis:short} wants to walk up to the spring where the brook begins, with {person:pip:short}. Three stops, each with a small thing to do first. Nothing is in a hurry.',
     needs: {}, panel: 'upriver', done: s => (s.upriver?.stops?.length ?? 0) >= 3, builds: [] },
+  // chapter 17 (docs/plan/ch17-a-share-for-everyone.md)
+  { id: 'valley_company', name: 'A company for the whole valley', text: 'The co-operative, the office and the quay could be one company that belongs to everyone who works in it. Found it in the Valley panel: every household gets a share.',
+    needs: {}, panel: 'valleyValue', done: s => !!s.valley?.founded, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];
