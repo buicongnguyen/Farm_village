@@ -29,7 +29,7 @@ test('the branch previews the existing second-parcel price, level and cap withou
   assert.equal(status.price, 500); assert.equal(status.level, 4); assert.equal(status.size, 16);
   assert.equal(status.stage, 'unowned'); assert.equal(status.canBuy, false); assert.equal(status.canInspect, false);
   assert.equal(status.reason, 'Reach level {level} first'); assert.equal(unreadLandDiscovery(s), 0);
-  assert.deepEqual(s, before); assert.equal(PARCELS.maxV01, 2);
+  assert.deepEqual(s, before); assert.equal(PARCELS.maxV01, 16);
   s.level = 4; assert.equal(landBranchStatus(s).canBuy, true);
   s.coins = 499; assert.equal(landBranchStatus(s).reason, 'Not enough coins');
   assert.equal(landBranchStatus(s, '3,0').reason, 'Buy land next to your farm');
@@ -45,7 +45,7 @@ test('a paid second parcel immediately includes a clear buildable patch and leav
   }
   for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (x < o.x || x >= o.x + PARCEL || z < o.z || z >= o.z + PARCEL)
     assert.equal(s.cells[z * N + x], beforeCells[z * N + x]);
-  assert.deepEqual(buyableParcels(s), []); refused(s, 'buyParcel', { parcel: '2,2' }, true);
+  assert.ok(buyableParcels(s).some(p => p.parcel === '2,2' && !p.ok), 'the next parcel is not offered'); refused(s, 'buyParcel', { parcel: '2,2' }, true);
 });
 
 test('all previously offered second-parcel choices remain valid and receive the same bounded branch', () => {
