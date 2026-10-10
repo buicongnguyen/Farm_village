@@ -41,9 +41,6 @@ export class FishingView {
       const packed = result.events?.find(e => e.type === 'catchPacked'); if (packed) this.clearPile(packed.count);
       if (result.events?.some(e => e.type === 'lineCast')) this.casts.delete('you');
     });
-    // the fish that comes to your float: a soft shadow under the water (one draw, only while a bite plays out)
-    this.shadow = new THREE.Mesh(new THREE.CircleGeometry(.5, 12), new THREE.MeshBasicMaterial({ color: '#10303e', transparent: true, opacity: .55, depthWrite: false, depthTest: false }));
-    this.shadow.rotation.order = 'YXZ'; this.shadow.scale.set(.42, 1, 1); this.shadow.visible = false; this.shadow.renderOrder = 4; this.shadow.name = 'fishing-shadow'; world.scene.add(this.shadow);   // seen through the water, like the pond fish
     this.leaps = [];
     world.onFrame(dt => this.frame(dt));
   }
@@ -61,6 +58,7 @@ export class FishingView {
   leap(fish) {
     const from = this.playerFloat, me = this.people.walkers.get('you'); if (!from || !me) return;
     this.splash(from.x, from.y, from.z, 20, true);
+    this.world.pondFish?.caught();   // the fish that bit (view/pond-fish.mjs) leaves the water as the catch
     const here = [this.angler?.x ?? me.x, this.angler?.z ?? me.z], pond = nearestPond(this.game.s, ...here).pond;
     const free = (x, z) => stepCost(this.game.s, Math.floor(x / CELL), Math.floor(z / CELL)) > 0;   // open ground only: not a kiosk, a building or the water
     const pile = (this.pile ??= { pond, anchor: here, fish: [], count: 0 }), slot = bankSlot(pile.pond, pile.anchor, pile.count++, free);
@@ -199,17 +197,8 @@ export class FishingView {
     this.lines.geometry.attributes.position.needsUpdate = true; this.lines.geometry.attributes.color.needsUpdate = true;
     if (!active.has('you')) this.playerFloat = null;
     this.play?.frame(dt);
-    this.drawShadow();
     this.drawLeaps(dt);
     this.lines.visible = this.rods.visible = rods > 0; this.floats.visible = next.length > 0;
-  }
-  /** The fish's shadow: swims in from the far side, darts at each nibble, holds at the float while it bites or fights. */
-  drawShadow() {
-    const st = this.play?.state, f = this.playerFloat, show = f && st && ['approach', 'nibble', 'bite', 'fight'].includes(st.phase);
-    this.shadow.visible = !!show; if (!show) return;
-    const away = st.phase === 'fight' || st.phase === 'bite' ? .1 : (1 - (st.approach ?? 0)) * 2.4 + .55 - (st.dart ?? 0) * .32;
-    this.shadow.position.set(f.x + f.ux * away, f.y - .03, f.z + f.uz * away);
-    this.shadow.rotation.set(-Math.PI / 2, Math.atan2(f.ux, f.uz), 0);
   }
   drawLeaps(dt) {
     for (const l of this.leaps) {

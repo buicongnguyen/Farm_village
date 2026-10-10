@@ -100,3 +100,11 @@ In Explore you fish as in Willowmere and Zoo Garden.
 
 Tests: `tests/pond-bank.test.mjs`, `tests/bank-catch.test.mjs`, and the fishing-on-foot check in
 `tests/explore-roam.browser.mjs`.
+
+## The fish that bites is a real fish (2026-10-10)
+
+After Zoo Garden. The village pond holds 17 fish (7 perch, 5 carp, 3 catfish, 2 golden carp); a built pond holds 7.
+When a bite begins, one swimming fish of the kind the line will land (`pick(line.seed, line.bait)`) leaves its round,
+swims to the float from the far side, darts at it on each nibble, takes it on the bite and is hauled about in the
+fight. Landed, that fish leaps out as the catch and is missing from the water for 12 seconds; then a new one grows
+in. The old dark shadow is gone. All of it lives in `view/pond-fish.mjs` (still two instanced draws per kind).

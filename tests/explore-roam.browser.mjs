@@ -333,11 +333,15 @@ await check('fishing on foot: any bank is reached, the rod comes out, a tap on t
     const line = await page.evaluate(() => farm.state().fishing.line);
     await page.evaluate(now => { window.__now = now; farm.game.clock = () => window.__now; farm.game.tick(); }, line.doneAt - 4000);
     await page.evaluate(() => new Promise((res, rej) => { const play = farm.world.fishingPlay, end = performance.now() + 20000; const step = () => { if (play.phase === 'bite') return res(); if (performance.now() > end) return rej(Error('never bit: ' + play.phase)); window.__now += 40; farm.game.tick(); requestAnimationFrame(step); }; step(); }));
+    // the fish at the float is a real pond fish of the kind the line lands, not a shadow
+    const biter = await page.evaluate(() => { const v = farm.pondFish.visitor, l = farm.state().fishing.line; return { kind: v?.kind, w: v?.w ?? 0, shadow: !!farm.world.scene.getObjectByName('fishing-shadow'), seed: l.seed }; });
+    expect(biter.kind && biter.w > 0.5 && !biter.shadow, `no real fish came to the float: ${JSON.stringify(biter)}`);
     await page.evaluate(() => farm.world.fishingPlay.press());
     await page.evaluate(() => new Promise(res => { const p = farm.world.fishingPlay; const d = () => { if (!p.fight) return res(); p.held = !p.fight.surge && p.fight.tension < .7; requestAnimationFrame(d); }; d(); }));
     await page.waitForFunction(n => farm.world.fishingView.pile?.fish.filter(f => f.landed).length >= n, n, { timeout: 8000 }).catch(() => { throw Error(`catch ${n} did not land on the grass`); });
   };
   await land(1); v = await view();
+  expect(await page.evaluate(() => farm.pondFish.gone.length === 1 && !farm.pondFish.visitor), 'the landed fish still swims in the pond');
   expect(await page.evaluate(() => farm.state().fishing.caught === 1 && !farm.state().fishing.line), 'the catch was not counted once');
   expect(await held() === 1 && await barn() === stock, 'the fish went into the barn while it still lies on the grass');
   const fish = v.lying[0], fromMe = Math.hypot(fish[0] - v.p[0], fish[2] - v.p[1]);
