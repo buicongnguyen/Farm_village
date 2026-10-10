@@ -35,14 +35,20 @@ export const FISH_TABLE = [
 export const ANIMALS = {
   hen: { name: 'Hen', home: 'coop', eats: 'chicken_feed', gives: 'egg', everyMs: 45_000, price: 40, freeFirst: 2, level: 2, perHome: 8 },
   cow: { name: 'Cow', home: 'cow_barn', eats: 'cow_feed', gives: 'milk', everyMs: 5 * MIN, price: 150, freeFirst: 0, level: 6, perHome: 4 },
+  // v0.5, the meadow and the dairy (docs/MEADOW-DAIRY-SCOPE.md): an optional second herd after the school
+  goat: { name: 'Goat', home: 'goat_barn', eats: 'goat_feed', gives: 'goat_milk', everyMs: 6 * MIN, price: 180, freeFirst: 0, level: 8, perHome: 4 },
 };
 export const PRODUCE = {
   egg: { name: 'Egg', value: 12, icon: '🥚' },
   milk: { name: 'Milk', value: 30, icon: '🥛' },
+  goat_milk: { name: 'Goat milk', value: 34, icon: '🥛' },
 };
 export const RECIPES = {
   chicken_feed: { name: 'Chicken feed', at: 'feed_mill', needs: { wheat: 3 }, makes: 3, timeMs: 20_000, value: 3, level: 2, icon: '🌰' },
   cow_feed:     { name: 'Cow feed', at: 'feed_mill', needs: { corn: 2, wheat: 1 }, makes: 3, timeMs: 40_000, value: 8, level: 6, icon: '🫘' },
+  goat_feed:    { name: 'Goat feed', at: 'feed_mill', needs: { corn: 2, wheat: 1 }, makes: 3, timeMs: 40_000, value: 8, level: 8, icon: '🌾' },
+  butter:       { name: 'Butter', at: 'dairy', needs: { milk: 2 }, makes: 1, timeMs: 2 * MIN, value: 78, level: 8, icon: '🧈' },
+  cheese:       { name: 'Cheese', at: 'dairy', needs: { goat_milk: 2 }, makes: 1, timeMs: 3 * MIN, value: 94, level: 8, icon: '🧀' },
   bread:        { name: 'Bread', at: 'bakery', needs: { wheat: 3 }, makes: 1, timeMs: 30_000, value: 12, level: 3, icon: '🍞' },
   corn_bread:   { name: 'Corn bread', at: 'bakery', needs: { corn: 2, egg: 2 }, makes: 1, timeMs: 45_000, value: 55, level: 4, icon: '🥖' },
   apple_pie:    { name: 'Apple pie', at: 'bakery', needs: { apple: 3, wheat: 2, egg: 1 }, makes: 1, timeMs: 55_000, value: 70, level: 5, icon: '🥧' },

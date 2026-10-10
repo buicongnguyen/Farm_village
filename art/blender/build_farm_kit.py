@@ -1010,6 +1010,79 @@ for tier in range(3):
     piece(f'cottage_t{tier}', parts, decor)
     anchors[f'cottage_t{tier}'] = A
 
+# =================================================================== meadow and dairy (v0.5): goat barn and dairy
+# Both are 3 x 2 cells (6 x 4 m): everything inside x +-2.9, y +-1.9; origin at the base centre; a clear doorway at the
+# front centre (+y on the plan). See docs/MEADOW-DAIRY-SCOPE.md.
+def goat_barn():
+    """A low honey-coloured goat shelter with a mossy green roof, a wide open doorway, a hay rack, a climbing box and a trough."""
+    p, A = [], {'window': []}
+    W, D, H = 4.2, 2.6, 1.6
+    p.append(bx('base', W + .24, D + .24, .2, 0, 0, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .2, 'woodl', bev=.05, seg=2))
+    for i in range(12):
+        p.append(bx('board', .05, .04, H - .1, -W / 2 + .18 + i * (W - .36) / 11, D / 2 + .02, .25, 'wood', bev=0))
+        p.append(bx('boardb', .05, .04, H - .1, -W / 2 + .18 + i * (W - .36) / 11, -D / 2 - .02, .25, 'wood', bev=0))
+    for x in (-W / 2, W / 2):
+        p.append(bx('corner', .14, D + .08, H, x, 0, .2, 'woodd', bev=.03))
+    p += roof_rows(W, D, 1.05, 0, 0, H + .2, 'leafw', 'leafwd', rows=4, over=.26, thick=.11)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.05)], .1, (sd * (W / 2 - .05), 0, H + .2), C['woodl'], rot=(0, 0, math.pi / 2), bev=.01))
+        p.append(bx('vent', .06, .36, .3, sd * (W / 2 + .02), 0, H + .45, 'woodd', bev=.01))
+    # the wide doorway at the front centre, dark inside, with a half door standing open
+    p += [bx('doorway', 1.3, .08, 1.25, 0, D / 2 + .01, .2, 'wooddd', bev=.02), bx('lintel', 1.5, .1, .12, 0, D / 2 + .03, 1.45, 'woodd', bev=.02),
+          bx('halfdoor', .62, .06, .7, -.98, D / 2 + .3, .2, 'leafwd', bev=.02, rot=.9), bx('ramp', 1.3, .5, .08, 0, D / 2 + .32, .12, 'wood', bev=.01)]
+    A['door'] = [(0, D / 2 + .12, .2)]
+    wp, c = window(1.45, D / 2 + .02, .95, .5, .45, 'front', shutters='leafwd'); p += wp; A['window'].append(c)
+    wp, c = window(W / 2 + .02, 0, .95, .5, .45, 'right'); p += wp; A['window'].append(c)
+    # hay rack on the left wall, a climbing box and a trough in front, a salt lick, hay on the roof edge
+    p += [bx('rack', .9, .26, .5, -1.45, D / 2 + .16, .75, 'woodd', bev=.02), ball('hay', .3, -1.45, D / 2 + .2, 1.2, 'hay', sub=1, sc=(1.5, .7, .7)),
+          bx('trough', .9, .32, .22, 1.5, D / 2 + .42, .02, 'woodd', bev=.03), bx('troughin', .78, .22, .08, 1.5, D / 2 + .42, .2, 'water', bev=.01),
+          bx('climb', .6, .5, .42, -1.5, D / 2 + .5, 0, 'wood', bev=.03), bx('climb2', .4, .34, .3, -1.5, D / 2 + .5, .42, 'woodl', bev=.03)]
+    for k in range(4):
+        p.append(ball('moss', .16, -1.5 + k * 1.0, -.2 + (k % 2) * .5, H + .9 - abs(-.2 + (k % 2) * .5) * .7, 'leafwl', sub=1, sc=(1.6, 1, .5)))
+    return p, A
+
+def dairy():
+    """The dairy: a whitewashed creamery with a blue roof, a cheese-wheel sign over the door, milk churns, a cooling
+    shelf with cheeses in the window and a small chimney."""
+    p, A = [], {'window': []}
+    W, D, H = 4.3, 2.7, 2.1
+    p.append(bx('base', W + .3, D + .3, .28, 0, 0, 0, 'stonel', bev=.06, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .28, 'white', bev=.05, seg=2))
+    p.append(bx('band', W + .06, D + .06, .55, 0, 0, .28, 'sky', bev=.03))
+    p += roof_rows(W, D, 1.25, 0, 0, H + .28, 'sky', 'glassd', rows=5, over=.24)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.25)], .1, (sd * (W / 2 - .05), 0, H + .28), C['white'], rot=(0, 0, math.pi / 2), bev=.01))
+    # door at the front centre under a round cheese sign
+    p += [bx('doorframe', 1.0, .1, 1.62, 0, D / 2 + .02, .28, 'woodd', bev=.03), bx('door', .8, .1, 1.48, 0, D / 2 + .06, .28, 'sky', bev=.02),
+          bx('doorwin', .4, .05, .4, 0, D / 2 + .1, 1.22, 'glass', bev=.01), cl('knob', .04, .05, .26, D / 2 + .13, .98, 'gold', verts=6, rot=(math.pi / 2, 0, 0)),
+          bx('step', 1.2, .45, .14, 0, D / 2 + .28, .1, 'stone', bev=.03),
+          cl('sign', .34, .1, 0, D / 2 + .08, 2.06, 'sun', verts=14, rot=(math.pi / 2, 0, 0)), cl('signrim', .37, .06, 0, D / 2 + .06, 2.06, 'orange', verts=14, rot=(math.pi / 2, 0, 0))]
+    for (x, z, r) in ((-.12, 2.14, .06), (.1, 2.0, .08), (.14, 2.2, .045)):
+        p.append(ball('signhole', r, x, D / 2 + .15, z, 'hayd', sub=0, sc=(1, .4, 1)))
+    A['door'] = [(0, D / 2 + .12, .28)]
+    # a shop window with cheeses on a shelf (left), a shuttered window (right), side windows
+    p += [bx('dframe', 1.2, .1, .95, -1.4, D / 2 + .02, .8, 'woodd', bev=.03), bx('dglass', 1.04, .07, .8, -1.4, D / 2 + .05, .87, 'glass', bev=.01),
+          bx('dshelf', 1.1, .3, .06, -1.4, D / 2 + .15, .86, 'woodl', bev=.01)]
+    for i in range(3):
+        p.append(cl('wheel', .15, .12, -1.75 + i * .35, D / 2 + .16, .92, 'sun' if i % 2 else 'hay', verts=10))
+    A['window'].append((-1.4, D / 2 + .1, 1.27, 0, 1))
+    wp, c = window(1.4, D / 2 + .02, 1.0, .6, .65, 'front', shutters='sky', box=['white', 'sun', 'pink']); p += wp; A['window'].append(c)
+    for sd in (-1, 1):
+        wp, c = window(sd * (W / 2 + .02), 0, 1.15, .5, .5, 'right' if sd > 0 else 'left'); p += wp; A['window'].append(c)
+    # milk churns by the door, a crate, the chimney
+    for (x, y, h) in ((.95, D / 2 + .3, .62), (1.3, D / 2 + .36, .5)):
+        p += [cl('churn', .17, h, x, y, .02, 'stonel', verts=10, rt=.15), cl('churnneck', .1, .14, x, y, h + .02, 'stonel', verts=8), cl('churnlid', .13, .05, x, y, h + .16, 'stoned', verts=8)]
+    p += [bx('crate', .5, .36, .32, -.95, D / 2 + .32, .02, 'wood', bev=.02), bx('crateslat', .52, .38, .05, -.95, D / 2 + .32, .16, 'woodd', bev=0),
+          bx('chimney', .5, .5, 1.5, -1.4, -.5, H + .4, 'brick', bev=.03), bx('chband', .6, .6, .1, -1.4, -.5, H + 1.55, 'brickd', bev=.02), bx('chtop', .4, .4, .12, -1.4, -.5, H + 1.65, 'charcoal', bev=.02)]
+    A['chimney'] = [(-1.4, -.5, H + 1.8)]
+    return p, A
+
+for name, gen in (('goat_barn', goat_barn), ('dairy', dairy)):
+    parts, A = gen()
+    piece(name, parts, decor)
+    anchors[name] = A
+
 # =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
 def hospital():
     """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,

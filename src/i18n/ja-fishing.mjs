@@ -68,4 +68,12 @@ export const JA_FISHING = {
   'Open a company office, where neighbours can take proper jobs.': 'ご近所さんがきちんとした仕事につける会社の事務所を開きましょう。',
   'From clinic to hospital': '診療所から病院へ',
   'Help the clinic grow into a hospital for the whole valley.': '診療所が谷じゅうのための病院に育つよう手伝いましょう。',
+  // v0.5: goats and the dairy
+  'Goat': 'ヤギ',
+  'Goat milk': 'ヤギのミルク',
+  'Goat feed': 'ヤギのえさ',
+  'Butter': 'バター',
+  'Cheese': 'チーズ',
+  'Goat barn': 'ヤギ小屋',
+  'Dairy': '乳製品工房',
 };

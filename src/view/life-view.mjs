@@ -30,6 +30,7 @@ export function isNight(s, now) {
 const WAYS = {
   hen: { speed: 0.85, graze: 'Peck', call: 'Flap', sound: 'cluck', moves: [['walk', 0.4], ['graze', 0.42], ['look', 0.18]], radius: 0.45 },
   cow: { speed: 0.6, graze: 'Graze', call: 'Moo', sound: 'moo', moves: [['walk', 0.3], ['graze', 0.48], ['look', 0.15], ['sit', 0.07]], radius: 1.1 },
+  goat: { speed: 0.8, graze: 'Graze', call: 'Call', sound: 'moo', moves: [['walk', 0.42], ['graze', 0.4], ['look', 0.18]], radius: 0.6 },
   pig: { speed: 0.7, graze: 'Graze', call: 'Call', sound: 'oink', moves: [['walk', 0.35], ['graze', 0.45], ['look', 0.2]], radius: 0.7 },
 };
 const wayOf = kind => WAYS[kind] ?? WAYS.hen;

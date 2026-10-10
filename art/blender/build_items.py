@@ -467,6 +467,46 @@ def lychee_sprig():
     return p + [P('open', .14, (.36, -.3, .3), 'lycheew', sub=2), leaf('lf', (0, 0, 1.1), 2.2, .36, .14, C['leaf'], lift=.05, droop=.05)]
 item('item_lychee', lychee_sprig())
 
+# ---- meadow and dairy (v0.5, docs/MEADOW-DAIRY-SCOPE.md): goat feed, goat milk, butter, cheese
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'goat': '#E9E2D2', 'goatd': '#8A7B68', 'horn': '#C9A878', 'burlapg': '#7FB8A8', 'burlapgd': '#4E8E7E', 'burlapgl': '#A8D8C8',
+    'oat': '#E8D08A', 'capg': '#9B6BFF', 'labelg': '#EAD9FF', 'butter': '#FFE066', 'butterl': '#FFF2A8', 'butterd': '#E8B93A', 'paperw': '#FFFDF6',
+    'cheese': '#FFC83A', 'cheesel': '#FFE07A', 'cheesed': '#E89A1E', 'rind': '#F08A2E'}.items()})
+goat_mark = [P('head', .1, (0, -.34, .38), 'goat', sub=2, sc=(.9, .35, 1.2)), P('snout', .06, (0, -.36, .29), 'goatd', sub=1, sc=(1.1, .3, .7)),
+             P('earl', .045, (-.14, -.345, .42), 'goat', sub=1, sc=(1.6, .3, .6)), P('earr', .045, (.14, -.345, .42), 'goat', sub=1, sc=(1.6, .3, .6)),
+             cone('hornl', .03, .14, (-.06, -.345, .54), C['horn'], verts=6, rot=(0, -.35, 0)), cone('hornr', .03, .14, (.06, -.345, .54), C['horn'], verts=6, rot=(0, .35, 0)),
+             P('beard', .035, (0, -.36, .22), 'goatd', sub=1, sc=(.7, .3, 1.4))]
+item('goat_feed', sack('oat', 'oat', 'label1', goat_mark, bag=('burlapg', 'burlapgd', 'burlapgl')))
+
+def goat_milk():
+    """Goat milk: a squat round-shouldered bottle with a violet cap and a lilac label carrying the goat's head, so it
+    never reads as the tall blue-capped cow's milk."""
+    p = [cyl('body', .3, .62, (0, 0, .31), C['milk'], verts=16, bev=.06), sphere('shoulder', .3, (0, 0, .62), C['milk'], segs=16, rings=8, scale=(1, 1, .6)),
+         cyl('neck', .14, .22, (0, 0, .86), C['milk'], verts=12, bev=.02), cyl('cap', .17, .1, (0, 0, 1.0), C['capg'], verts=12, bev=.03),
+         box('label', (.4, .05, .3), (0, -.28, .34), C['labelg'], bev=.03, seg=1), P('shine', .05, (-.17, -.2, .62), 'cream', sub=1, sc=(1, .6, 1.6))]
+    return p + [P('head', .08, (0, -.31, .34), 'goat', sub=2, sc=(.9, .35, 1.2)), P('earl', .036, (-.11, -.312, .37), 'goat', sub=1, sc=(1.6, .3, .6)),
+                P('earr', .036, (.11, -.312, .37), 'goat', sub=1, sc=(1.6, .3, .6)), cone('hornl', .024, .11, (-.05, -.312, .46), C['horn'], verts=6, rot=(0, -.35, 0)),
+                cone('hornr', .024, .11, (.05, -.312, .46), C['horn'], verts=6, rot=(0, .35, 0)), P('snout', .045, (0, -.325, .27), 'goatd', sub=1, sc=(1.1, .3, .7))]
+item('goat_milk', goat_milk())
+
+def butter():
+    """Butter: a golden block on a blue-rimmed dish, half out of its white paper, with one pat cut off."""
+    return [cyl('dishrim', .62, .06, (0, 0, .03), C['platerim'], verts=20, bev=.02), cyl('dish', .54, .05, (0, 0, .07), C['plate'], verts=20, bev=.01),
+            box('paper', (.78, .5, .04), (-.08, 0, .11), C['paperw'], bev=.01, seg=1), box('block', (.6, .38, .3), (-.08, 0, .27), C['butter'], bev=.05, seg=2),
+            box('top', (.5, .28, .03), (-.08, 0, .42), C['butterl'], bev=.01, seg=1), box('wrap', (.24, .42, .34), (-.3, 0, .28), C['paperw'], bev=.04, seg=1),
+            box('pat', (.12, .34, .26), (.34, .02, .22), C['butter'], bev=.03, seg=1, rot=(0, .25, .12)), box('patface', (.02, .28, .2), (.28, .02, .24), C['butterd'], bev=0, seg=1, rot=(0, .25, .12)),
+            P('shine', .045, (-.22, -.12, .44), 'cream', sub=1, sc=(1.8, .8, .3))]
+item('butter', butter())
+
+def cheese():
+    """Cheese: a fat wedge cut from a wheel with an orange rind, holes on the cut faces, a crumb beside it."""
+    p = [extrude_outline('wedge', [(-.5, 0), (.5, 0), (.5, .42), (-.5, .3)], .56, (0, 0, 0), C['cheese'], bev=.04),
+         box('rind', (.07, .6, .44), (.52, 0, .22), C['rind'], bev=.03, seg=1), box('toplight', (.9, .5, .02), (0, 0, .385), C['cheesel'], bev=0, seg=1, rot=(0, -.12, 0))]
+    for (x, z, r) in ((-.2, .14, .075), (.12, .2, .095), (.3, .08, .06), (-.02, .06, .05)):
+        p.append(P('hole', r, (x, -.285, z), 'cheesed', sub=1, sc=(1, .25, 1)))
+    p += [P('crumb', .07, (-.5, -.42, .06), 'cheese', sub=1, sc=(1.2, 1, .8)), P('crumb2', .045, (-.34, -.5, .04), 'cheesel', sub=1)]
+    return p
+item('cheese', cheese())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

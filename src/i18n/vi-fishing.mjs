@@ -68,4 +68,12 @@ export const VI_FISHING = {
   'Open a company office, where neighbours can take proper jobs.': 'Hãy mở văn phòng công ty, nơi hàng xóm có thể nhận việc làm đàng hoàng.',
   'From clinic to hospital': 'Từ trạm xá thành bệnh viện',
   'Help the clinic grow into a hospital for the whole valley.': 'Hãy giúp trạm xá lớn lên thành bệnh viện cho cả thung lũng.',
+  // v0.5: goats and the dairy
+  'Goat': 'Dê',
+  'Goat milk': 'Sữa dê',
+  'Goat feed': 'Cám dê',
+  'Butter': 'Bơ',
+  'Cheese': 'Phô mai',
+  'Goat barn': 'Chuồng dê',
+  'Dairy': 'Xưởng sữa',
 };

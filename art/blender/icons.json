@@ -59,6 +59,30 @@
   "rough": 0.75
  },
  {
+  "id": "goat_feed",
+  "src": "raw:items",
+  "root": "goat_feed",
+  "preset": "goods"
+ },
+ {
+  "id": "goat_milk",
+  "src": "raw:items",
+  "root": "goat_milk",
+  "preset": "goods"
+ },
+ {
+  "id": "butter",
+  "src": "raw:items",
+  "root": "butter",
+  "preset": "dish"
+ },
+ {
+  "id": "cheese",
+  "src": "raw:items",
+  "root": "cheese",
+  "preset": "dish"
+ },
+ {
   "id": "bread",
   "src": "raw:items",
   "root": "bread",
@@ -149,6 +173,18 @@
   "id": "cow_barn",
   "src": "raw:farm-kit",
   "root": "cow_barn",
+  "preset": "building"
+ },
+ {
+  "id": "goat_barn",
+  "src": "raw:decor",
+  "root": "goat_barn",
+  "preset": "building"
+ },
+ {
+  "id": "dairy",
+  "src": "raw:decor",
+  "root": "dairy",
   "preset": "building"
  },
  {
@@ -1115,6 +1151,15 @@
  {
   "id": "cow",
   "src": "self:public/assets/models/rigged/cow.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "goat",
+  "src": "self:public/assets/models/rigged/goat.glb",
   "view": [
    -40,
    18
