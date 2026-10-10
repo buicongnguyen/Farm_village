@@ -34,6 +34,7 @@ export function reserved(x, z) {
   if (z >= 88 && z <= 89 && x >= 30) return true;                         // the verge between the farm and the village road
   if (x >= 30 && x <= 31 && z >= 22 && z <= 89) return true;               // the verge between the road and the farm
   if (W.NEIGHBOUR_SIGNS.some(s => Math.abs(s.x - x) <= 2 && Math.abs(s.z - z) <= 2)) return true;
+  if (W.inTowpath(x, z) || W.inTowpath(x, z + 1) || W.inTowpath(x, z + 2)) return true;   // the old towpath on the far bank (chapter 12), and room for the crowns beside it
   return false;
 }
 /** The footprints of the story's fixed sites (the boat dock) and scenery (the old mill): wild scatter keeps off them. */

@@ -145,6 +145,41 @@ export const NEIGHBOURS = [
     ],
     orders: ['Hmph. My oven is bigger than yours. Fill it.', 'Not for me. For a friend. Fine, it is for me.', 'Old Mill Farm has standards. Meet them.',
       'Do not tell {person:ada:short} I ordered this.', 'My wheat is busy. Yours will do.'] },
+  // Two growers from outside the valley (chapter 12): they come once chapter 11 is seen, call soon after, and from then
+  // on visit, trade and post orders like the other two. The orchard grower from over the east road: warm, exact, loves
+  // a good ledger.
+  { id: 'priya', name: '{person:priya:display}', farm: 'Hillside Orchard', role: 'Neighbour', arrives: s => (s.story?.chapter ?? 0) >= 11,
+    line: 'Good day! I grow fruit on the east hill. I hear this valley trades again.', gives: ['peach', 'orange', 'coconut'], wants: ['cheese', 'bread', 'corn_bread'],
+    comments: ['A tidy farm is a farm that counts its crates.', 'Your fences are straighter than mine.'],
+    arc: [
+      { visit: 1, text: 'Good day! {person:priya:short}, from Hillside Orchard over the east road. I hear this valley trades again.' },
+      { visit: 2, text: 'My trees fruit all at once and my cart is small. Half of it spoils on the hill. That is a sum I do not like.' },
+    ],
+    remarks: [
+      { fact: 'beds', text: '{count} beds, and every one of them sown. I approve.' },
+      { fact: 'cottages', text: '{count} cottages with smoke in the chimney. A village is the best customer a farm can have.' },
+      { fact: 'bakery', text: 'A bakery! Fruit wants pastry. We should talk.' },
+    ],
+    orders: ['The pickers want feeding. All twelve of them.', 'I trade in fruit, but I cannot eat only fruit.', 'For the orchard supper under the lanterns.',
+      'My ledger says I owe myself a treat.', 'One crate of yours for one of mine?'] },
+  // The twins from the farm upstream: they speak as one, finish each other's sentences and disagree about who carried
+  // what. What they bring depends on the answer given to Mr Albright: honey if the meadow went to the cannery, tins if
+  // it was kept (`givesBy`), so each valley can still taste what it did not choose.
+  { id: 'twins', name: '{person:twins:display}', farm: 'Brookhead Farm', role: 'Neighbours', arrives: s => (s.story?.chapter ?? 0) >= 11,
+    line: 'We are from Brookhead Farm, upstream. — We walked. — We raced.', gives: ['honey'], givesBy: { factory: ['honey'], meadow: ['canned_corn', 'canned_tomato'] },
+    wants: ['apple_juice', 'bread', 'egg'],
+    comments: ['Your brook is our brook, a little later. — We sent it down clean.', 'We counted your hens. — Twice. — We got different numbers.'],
+    arc: [
+      { visit: 1, text: 'We are {person:twins:display}, from Brookhead Farm upstream. — We walked. — We raced. I won.' },
+      { visit: 2, text: 'Two of us, one cart, and the city wants forty crates. — We did the sum. — It came out to "no".' },
+    ],
+    remarks: [
+      { fact: 'hens', text: '{count} hens! — Ours peck. — Yours look polite.' },
+      { fact: 'beds', text: '{count} beds. — That is more than us. — For now.' },
+      { fact: 'family', text: '{family} gave us lemonade. — Both of us. — Separately.' },
+    ],
+    orders: ['We burned the supper. — You burned the supper.', 'For the long walk home. — It is not that long.', 'We are having a contest. — Do not ask.',
+      'One of us is hungry. — Both of us are hungry.', 'It is our birthday. — Both of ours, as it happens.'] },
 ];
 
 /** What a neighbour can remark on: each returns the template's {placeholders}, or null when it is not true yet.

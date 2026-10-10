@@ -73,6 +73,9 @@ export const KIND_MODELS = {
   'produce:milk': { kit: 'animal-produce', node: 'milk', height: 0.5, lod: 'static' },
   // decorations and fruit trees the play package adds (drawn as soon as their kind exists in BUILDINGS)
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
+  cooperative_board: { kit: 'decor', node: 'cooperative_board', authored: true, lod: 'static', late: true },   // chapter 12: on the village square
+  towpath_gate: { kit: 'decor', node: 'towpath_gate', authored: true, lod: 'static', late: true },   // shut across the old towpath until chapter 12 is seen
+  towpath_gate_open: { kit: 'decor', node: 'towpath_gate_open', authored: true, lod: 'static', late: true },
   survey_stakes: { kit: 'decor', node: 'survey_stakes', authored: true, lod: 'static', late: true },   // chapter 11: on the meadow while the offer is open
   car:          { kit: 'decor', node: 'car', authored: true, lod: 'static', late: true },   // Mr Albright's, on the verge by the gate
   cannery:      { kit: 'decor', node: 'cannery', authored: true, lod: 'static', late: true },   // chapter 11: on the brook meadow, if the offer is taken

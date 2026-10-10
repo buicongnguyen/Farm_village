@@ -86,6 +86,21 @@ export const DOCK_BANK = { x0: 30, x1: 36, z0: 13, z1: 17 };
 export const isDockBank = (x, z) => x >= DOCK_BANK.x0 && x <= DOCK_BANK.x1 && z >= DOCK_BANK.z0 && z <= DOCK_BANK.z1;
 export const ruinAt = (x, z) => RUINS.find(r => { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; return x >= r.x && x < r.x + w && z >= r.z && z < r.z + d; }) ?? null;
 export const MAILBOX = { x: 27, z: 60 };
+/** The co-operative's notice board on the village square (chapter 12): one cell at the square's east edge, by the stage.
+ *  It stands from the day the idea comes (chapter 11 seen); a tap opens the co-operative. */
+export const COOPERATIVE_BOARD = { x: 43, z: 100, rot: 0 };
+/** The old towpath on the far bank of the brook (chapter 12; Act IV builds the riverside town beyond it): two cells
+ *  wide along the north side of the water, from the brook road to the east edge of the farm, going round the old mill.
+ *  Kept clear of wild scatter from the start; open to walk once its gate is taken off (s.firsts.bridge). */
+export const TOWPATH = { x0: 30, x1: 99 };
+export function inTowpath(x, z) {
+  if (x < TOWPATH.x0 || x > TOWPATH.x1) return false;
+  const bank = brookZ(x) - BROOK_HALF, m = OLD_MILL.box;   // bank: the water's north row
+  if (x >= m.x0 - 1 && x <= m.x1 + 1) return z >= m.z0 - 2 && z < bank && (z < m.z0 || x < m.x0 || x > m.x1);   // behind the mill, and down again on either side
+  return z === bank - 1 || z === bank - 2;
+}
+/** The towpath's gate, just east of the brook road: shut until chapter 12 is seen, then open for good. Cells; rot in quarter turns. */
+export const TOWPATH_GATE = { x: 32, z: brookZ(32) - BROOK_HALF - 1, rot: 1 };   // its middle, in cells: across both rows of the path, where the road's verge ends
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 
 /** What a piece of land is good for, by where it lies (shown where it is for sale). */

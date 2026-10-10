@@ -161,6 +161,10 @@ export class Hud {
     if (e.type === 'harvestFestivalEnded') this.toast(t('The lanterns go out. What an evening!'), 'info', { icon: 'stage' });
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
+    if (e.type === 'cooperativeFounded') this.toast(t('The co-operative is founded! Five farms, one road to the city'), 'good', { icon: 'cooperative_board', to: 'cooperative' });
+    if (e.type === 'cooperativeOrderPosted' && e.n > 0) this.toast(t('A new shared order is on the co-operative board'), 'info', { icon: 'cooperative_board', to: 'cooperative' });
+    if (e.type === 'cooperativeOrderDone') this.toast(t('The shared order is on its way: {coins} coins for your share', { coins: num(e.coins) }), 'good', { icon: 'ui:coin', to: 'cooperative' });
+    if (e.type === 'bridgeOpened') this.toast(t('The gate is off the old towpath: the far bank of the brook is open'), 'good', { icon: 'cooperative_board' });
     if (e.type === 'sluiceOpened') this.toast(t('The sluice is open! The mill wheel turns, and every workshop works a tenth faster'), 'good', { icon: 'feed_mill' });
     if (e.type === 'truckBought') this.toast(t('A new truck is parked at the market'), 'good', { icon: 'truck', to: 'market' });
     if (e.type === 'repaired') this.toast(t('Repaired: {name}', { name: thingName(this.game.s, e.id) ?? '' }), 'good', { icon: 'wrench' });

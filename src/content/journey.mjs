@@ -19,7 +19,7 @@ export const STAGES = [
   // Act III: chapters 10 to 12 add their deeds here
   { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 12, version: '0.8',
     milestones: [{ name: 'Hire three farm hands', test: 'hands3' }, { name: 'Let them do thirty tasks', test: 'tasks30' },
-      { name: 'Answer the man from the city', test: 'albright' }] },
+      { name: 'Answer the man from the city', test: 'albright' }, { name: 'Found the co-operative', test: 'cooperative' }, { name: 'Fill a shared order', test: 'cooperativeOrder' }] },
   { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 18, version: '0.9', planned: true },
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
 ];

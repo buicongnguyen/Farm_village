@@ -1,6 +1,6 @@
 // AI neighbours (DESIGN 9.3): scripted, seeded per day, never rude. They visit and help crops grow, comment on what they
 // really see, and offer one trade a day.
-import { NEIGHBOURS as LIST, FAMILIES, REMARK_FACTS } from '../content/people.mjs';
+import { NEIGHBOURS as LIST, FAMILIES, REMARK_FACTS, hasArrived } from '../content/people.mjs';
 import { NEIGHBOURS as N, MIN } from '../content/economy.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { dayKey } from './clock.mjs';
@@ -16,7 +16,7 @@ const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); retur
 export function planDay(s, id, now) {
   const key = dayKey(now), r = rng(hash(s.createdAt, id, key)), base = dayStart(now), info = LIST.find(n => n.id === id);
   const visits = Array.from({ length: N.visitsPerDay }, () => base + (8 * 60 + r.int(13 * 60)) * MIN).sort((a, b) => a - b);
-  const gives = r.pick(info.gives), wants = r.pick(info.wants);
+  const gives = r.pick(info.givesBy?.[s.story?.albright ?? 'meadow'] ?? info.gives), wants = r.pick(info.wants);   // the twins bring what the answer to Mr Albright did not give
   const wantN = 3 + r.int(4), giveN = Math.max(1, Math.round((wantN * GOODS[wants].value * 1.2) / GOODS[gives].value));
   return { day: key, visits, visited: 0, trade: gives === wants ? null : { gives: { [gives]: giveN }, wants: { [wants]: wantN }, state: 'open' } };
 }
@@ -76,10 +76,16 @@ export function commentFor(s, id, visit = 0) {
 }
 export function tickNeighbours(ctx) {
   const { s, now } = ctx;
-  for (const { id } of LIST) {
-    let n = s.neighbours[id];
+  for (const info of LIST) {
+    if (!hasArrived(s, info)) continue;   // the two growers from outside come with chapter 11
+    const { id } = info; let n = s.neighbours[id];
     // a new plan each game day, never for an earlier one (a clock moved back must not bring the day's visits again)
-    if (!n || n.day < dayKey(now)) n = s.neighbours[id] = { friendship: n?.friendship ?? 0, total: n?.total ?? 0, ...planDay(s, id, now) };
+    if (!n || n.day < dayKey(now)) {
+      const first = !n && !!info.arrives;
+      n = s.neighbours[id] = { friendship: n?.friendship ?? 0, total: n?.total ?? 0, ...planDay(s, id, now) };
+      // a newcomer calls soon after arriving, one after the other, and not again that day
+      if (first) n.visits = [now + N.firstCallMs * (1 + LIST.filter(x => x.arrives).indexOf(info))];
+    }
     // Visits come at their planned times. A player who opens the game later has missed some: only the latest one is acted
     // out (it counts for the story's visit arcs), the earlier ones are skipped, so a login never brings a crowd at once.
     const due = []; while (n.visited < n.visits.length && n.visits[n.visited] <= now) due.push(n.visits[n.visited++]);

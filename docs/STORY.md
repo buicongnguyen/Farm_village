@@ -66,6 +66,8 @@ every amount, requirement and story fact. The village is こもれびの里; the
 | `hazel` | **Dr Fern / Bác sĩ Sen** | Elder doctor, returns with chapter 5; quiet and practical. | **bà – cháu** |
 | `bea` | **Penny / Cô Xu** | The office manager, arrives with the company office (chapter 8); brisk, kind, counts everything twice. Korean 꼼꼼, Japanese きっちり. No orders, gifts or heart scenes. | **cô – cháu** |
 | `pearl` | **Constable Sage / Cô Tre** | The constable, arrives with the police post (chapter 7); calm, exact, reads every old report, fond of her kettle. Korean 반듯 순경, Japanese きりり巡査. No orders, gifts or heart scenes. | **cô – cháu** |
+| `priya` | **Juniper / Chị Sim** | Orchard grower from Hillside Orchard over the east road, a neighbour from chapter 12; warm, exact, keeps a ledger of every tree. Korean 오디, Japanese かりん. | **chị – em** |
+| `twins` | **Pebble and Sprig / Sỏi và Chồi** | The twins of Brookhead Farm upstream, one neighbour with two voices (lines alternate after a dash), a neighbour from chapter 12; they disagree about who carried what. Korean 누리와 마루, Japanese そらとあおい. | **tụi em**; they do not address the player directly |
 | `albright` | **Mr Albright / Ông Thịnh** | The man from the city (chapter 11): waits at the farm gate with an offer for the brook meadow, then goes. Polite, sure of himself, honestly puzzled that anyone would say no. Not a villain. Korean 한몫 씨, Japanese やりてさん. No orders, gifts or heart scenes. | **tôi**; addresses the household as **quý vị** |
 | `hugo` | **Barley / Chú Lúa** | The baker, arrives with the first market day (chapter 6) and keeps a stall on the square; cheerful, up before the birds. Korean 고소, Japanese こんがり (not the dog's names). No orders, gifts or heart scenes. | **chú – cháu** |
 

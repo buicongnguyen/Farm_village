@@ -1,6 +1,7 @@
 // Test-mode helpers for the Settings "Test" section (test builds, and the public game opened with ?tester) and for
 // browser tests. They run through act() like any action, so the views and the save hear about them.
 import { LEVELS, MARKET_DAY, PARCELS } from '../content/economy.mjs';
+import { planDay } from './neighbours.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -81,6 +82,13 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 12 is behind: both newcomers have called, the co-operative is founded and one shared order filled
+  13: ctx => {
+    const { s, now } = ctx;
+    for (const id of ['priya', 'twins']) { const n = (s.neighbours[id] ??= { friendship: 0, total: 0, ...planDay(s, id, now) }); n.total = Math.max(1, n.total ?? 0); n.visits = []; n.visited = 0; }
+    const c = (s.cooperative ??= { founded: now, n: 0, filled: 0, nextAt: now, order: null });
+    if (!c.filled) { c.filled = 1; c.n = Math.max(1, c.n); c.order = null; c.nextAt = now; s.stats.cooperativeOrders = 1; }
+  },
   // chapter 10 is behind: three hands hired (the field, the animals, the workshop) and thirty tasks done by them
   11: ctx => { const { s, now } = ctx; give(ctx, 'school'); for (const role of ['field', 'animals', 'workshop']) (s.hands ??= {})[role] ??= { since: now }; s.stats.handTasks = Math.max(30, s.stats.handTasks ?? 0); },
   // chapter 9 is behind: the festival stage stands and a Harvest Festival has been held to its end
@@ -139,6 +147,7 @@ export const actions = {
     // the story so far is behind the player: no stack of old cards, no tutorial, and a purse to start the chapter with
     s.story.chapter = Math.max(s.story.chapter ?? 0, chapter - 1); s.story.tutorial = 99;
     if (s.story.chapter >= 8) (s.firsts ??= {}).sluice ??= ctx.now;   // what seeing chapter 8 does (core/today.mjs)
+    if (s.story.chapter >= 12) (s.firsts ??= {}).bridge ??= ctx.now;   // and chapter 12
     s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
     s.coins = Math.max(s.coins, 1000 * chapter); s.undo = [];
     const missing = CHAPTERS.filter(c => c.id < chapter && !c.when(s)).map(c => c.id);
@@ -163,6 +172,8 @@ export const actions = {
     for (const q of Object.values(s.production)) for (const j of q.queue) if (j.doneAt > now) { j.doneAt = now; n++; }
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); n++; }
     if (s.festival && s.festival.until > now) { s.festival.until = now; n++; }   // the Harvest Festival's evening too
+    if (s.cooperative?.founded && !s.cooperative.order && s.cooperative.nextAt > now) { s.cooperative.nextAt = now; n++; }   // the co-operative's next order
+    for (const id of ['priya', 'twins']) { const nb = s.neighbours?.[id]; if (nb && !nb.total && nb.visited < (nb.visits?.length ?? 0)) { nb.visits = nb.visits.map(v => Math.min(v, now)); n++; } }   // a newcomer's first call
     tickHomes(ctx);
     ctx.emit('timersFinished', { count: n });
     return { finished: n };

@@ -159,8 +159,8 @@ test('chapter 11 closes on either answer and reads by it; no other chapter depen
 test('the roadmap names the answer, and the tester\'s jump past chapter 11 keeps the meadow', () => {
   const s = farm(); s.house = { level: 5 }; s.stats.cheeseMade = 1; s.album.fruit.cherry = 9;   // the earlier stages of the roadmap, as a played farm has them
   for (const kind of ['goat_barn', 'dairy', 'fruit_stand', 'kennel']) { s.placed[`x_${kind}`] = { kind, x: 2, z: 2, rot: 0 }; s.counts[kind] = 1; }
-  const j = journeyOf(s); assert.equal(j.stage.id, 'coop'); assert.ok(j.milestones.some(m => m.test === 'albright' && !m.done)); assert.equal(j.done, j.total - 1);
-  must(s, 'answerAlbright', { choice: 'factory' }); assert.notEqual(journeyOf(s).stage.id, 'coop', 'the co-operative stage is finished');
+  const j = journeyOf(s); assert.equal(j.stage.id, 'coop'); assert.ok(j.milestones.some(m => m.test === 'albright' && !m.done)); assert.equal(j.done, 2);
+  must(s, 'answerAlbright', { choice: 'factory' }); assert.ok(journeyOf(s).milestones.some(m => m.test === 'albright' && m.done)); assert.equal(journeyOf(s).done, 3, 'the co-operative itself is chapter 12');
   const t = newGame(T0, 3, { restore: true }); tick(t, T0); const r = must(t, 'testJumpChapter', { chapter: 12 });
   assert.deepEqual(r.missing, []); assert.equal(t.story.albright, 'meadow'); assert.equal(t.story.chapter, 11); assert.ok(ch.when(t));
   // a tester who is playing chapter 11 finishes it the same way

@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath } from '../content/world.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -18,7 +18,7 @@ import { TRUCK } from '../content/economy.mjs';
 import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
@@ -84,6 +84,8 @@ export class LandView {
     if (!s) return fixed;
     const t = cellType(s, x, z);
     if (t === 'path') return { color: GROUND_COLORS.path };
+    // the old towpath on the far bank: faint and overgrown while its gate is shut, trodden earth once it is open (chapter 12)
+    if (t === 'grass' && inTowpath(x, z)) return s.firsts?.bridge ? { color: GROUND_COLORS.path, jitter: 0.03 } : { color: '#8fb65a', jitter: 0.05 };
     if (t === 'tilled') return { color: GROUND_COLORS.tilled, jitter: 0.02 };
     if (t === 'weeds' || t === 'rock') return { color: GROUND_COLORS.weeds ?? '#86c062' };
     if (t === 'road') { const seg = roadSegmentAt(x, z); if (seg && levelOf(s, seg.id) >= 3) return { color: '#a98d68', jitter: 0.09 }; }   // a damaged stretch: cracked, patchy earth
@@ -292,6 +294,18 @@ export class LandView {
     ALBRIGHT.hives.forEach(([x, z], i) => { if (kept && b.has('beehive')) b.set(`meadow:hive${i}`, { model: 'beehive', x: x * CELL, z: z * CELL, rot: 0.35 * (i - 1) }); else b.remove(`meadow:hive${i}`); });
     GREEN_TREES.forEach(([dx, dz], i) => { if (green && b.has('round_tree')) b.set(`meadow:tree${i}`, { model: 'round_tree', x: (site.x + dx) * CELL, z: (site.z + dz) * CELL, rot: i * 1.7, scale: 0.62 + (i % 3) * 0.07 }); else b.remove(`meadow:tree${i}`); });
   }
+  /** Chapter 12's fixtures: the co-operative's notice board on the square from the day the idea comes, and the towpath's
+   *  gate on the far bank, shut until the chapter is seen and open after. Redrawn only when one of those changes. */
+  drawCooperative() {
+    const s = this.s, b = this.world.batches, board = (s.story?.chapter ?? 0) >= 11, open = !!s.firsts?.bridge;
+    const key = [board, open, b.has('cooperative_board'), b.has('towpath_gate'), b.has('towpath_gate_open')].join('|');
+    if (key === this.cooperativeKey) return;
+    if (this.cooperativeKey != null && open !== this.towpathOpen) this.world.ground.markAll();   // the path's ground changes with the gate
+    this.cooperativeKey = key; this.towpathOpen = open;
+    if (board && b.has('cooperative_board')) b.set('story:board', { model: 'cooperative_board', x: (COOPERATIVE_BOARD.x + 0.5) * CELL, z: (COOPERATIVE_BOARD.z + 0.5) * CELL, rot: COOPERATIVE_BOARD.rot * Math.PI / 2 }); else b.remove('story:board');
+    const gate = open ? 'towpath_gate_open' : 'towpath_gate';
+    if (b.has(gate)) b.set('story:gate', { model: gate, x: TOWPATH_GATE.x * CELL, z: TOWPATH_GATE.z * CELL, rot: TOWPATH_GATE.rot * Math.PI / 2 }); else b.remove('story:gate');
+  }
   /** Cottage dressing by furnish level: a doormat, then window boxes and flowerpots, then a door lantern. */
   dressCottage(id, item) {
     const b = this.world.batches, level = this.s.homes?.[id]?.level ?? 0, model = item.model, ids = [];
@@ -380,7 +394,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow();
+      this.clock = 0; this.drawMeadow(); this.drawCooperative();
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -420,7 +434,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
@@ -432,6 +446,7 @@ export class LandView {
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
       else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
       else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
+      else if (e.type === 'bridgeOpened') this.drawCooperative();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);

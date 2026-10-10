@@ -26,6 +26,8 @@ const tests = {
   hands3: s => Object.keys(s.hands ?? {}).length >= 3,
   tasks30: s => (s.stats?.handTasks ?? 0) >= 30,
   albright: s => !!s.story?.albright,
+  cooperative: s => !!s.cooperative?.founded,
+  cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {
   // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one

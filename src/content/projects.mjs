@@ -62,6 +62,11 @@ export const STEPS = [
   // chapter 11 (docs/plan/ch11-the-man-from-the-city.md)
   { id: 'albright', name: 'An answer for the man from the city', text: 'A man from the city waits at the farm gate with an offer for the brook meadow. Hear him out, and answer when you are ready.',
     needs: {}, panel: 'offer', done: s => !!s.story?.albright, builds: [] },
+  // chapter 12 (docs/plan/ch12-one-river-many-farms.md)
+  { id: 'cooperative', name: 'Found the co-operative', text: 'Two new growers have come to the valley. When both have called at your farm, bring the founding gift to the board on the village square.',
+    needs: {}, panel: 'cooperative', done: s => !!s.cooperative?.founded, builds: [] },
+  { id: 'cooperative_order', name: 'The first shared order', text: 'The city asks for more than one farm can send. Your neighbours bring a third of every line; send the rest from your barn, a little at a time.',
+    needs: {}, panel: 'cooperative', done: s => (s.cooperative?.filled ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];
