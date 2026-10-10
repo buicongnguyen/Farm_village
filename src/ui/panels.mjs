@@ -138,6 +138,9 @@ export class Panels {
     else if (d.do === 'report') this.show('report');
     else if (d.do === 'valley') this.show('valley');
     else if (d.do === 'cooperative') this.show('cooperative');
+    else if (d.do === 'hotel') this.show('hotel');
+    else if (d.do === 'serveGuest') g.do('serveGuest', { room: Number(d.room) });
+    else if (d.do === 'collectHotel' || d.do === 'upgradeHotel') g.do(d.do);
     else if (d.do === 'quay') { this.show('quay', d.lot); this.onQuayLook?.(d.lot); }
     else if (d.do === 'paveQuay') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else if (g.do('paveQuay').ok) { this.close(); this.onQuayLook?.(); } }
     else if (d.do === 'buildOnLot') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else if (g.do('buildOnLot', { lot: d.lot, kind: d.kind }).ok) { this.close(); this.onQuayLook?.(d.lot); } }
@@ -145,7 +148,7 @@ export class Panels {
     else if (d.do === 'fillCooperative') g.do('fillCooperative', { good: d.good, n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'offer' || d.do === 'stepPanel' && d.panel === 'offer') { this.close(); this.onOffer?.(); }   // Mr Albright's offer is a card of its own (ui/offer.mjs)
     else if (d.do === 'greenCannery') g.do('greenCannery');
-    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
+    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends', 'cooperative', 'quay', 'hotel'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');

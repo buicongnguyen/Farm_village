@@ -25,6 +25,7 @@ import { actions as report, tallyEarned } from './report.mjs';
 import { actions as valley } from './valley.mjs';
 import { actions as cooperative, tickCooperative } from './cooperative.mjs';
 import { actions as riverside } from './riverside.mjs';
+import { actions as hotel, tickHotel } from './hotel.mjs';
 import { actions as orchard, tickOrchard } from './orchard.mjs';
 import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
@@ -46,7 +47,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside,
+export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {
@@ -76,7 +77,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   tickShops(ctx); tickLearning(ctx); afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now); tallyEarned(s, ctx.events); afterAdvice(ctx);

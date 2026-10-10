@@ -11,7 +11,8 @@ import { shortTime } from '../core/clock.mjs';
 import { coinMark, faceHtml, glyph, iconHtml } from './icon.mjs';
 const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 /** What each riverside building is, in one line. */
-const ABOUT = { apartment: 'A tea shop below and four flats above, for families who want to come home. It pays rent into your mailbox.' };
+const ABOUT = { apartment: 'A tea shop below and four flats above, for families who want to come home. It pays rent into your mailbox.',
+  hotel: 'Rooms with a view of the brook. Guests come by themselves, sooner and more generous the prettier the valley is.' };
 
 function checklist(reqs, button) {
   const missing = reqs.find(r => !r[0]);
@@ -44,7 +45,7 @@ export function renderQuay(s, now, lot = null) {
   if (!quayOf(s).paved) return `<div class="quay">${paving(s)}</div>`;
   const picked = LOTS.find(l => l.id === lot) ?? LOTS.find(l => !onLot(s, l.id)) ?? LOTS[0], on = onLot(s, picked.id);
   const row = LOTS.map((l, i) => { const id = onLot(s, l.id); return `<button class="quay-lot${l.id === picked.id ? ' on' : ''}${id ? ' taken' : ''}" data-do="quay" data-lot="${l.id}" aria-label="${t('Lot {n}', { n: i + 1 })}">${id ? iconHtml(s.placed[id].kind, '', 'mini') : `<b>${i + 1}</b>`}</button>`; }).join('');
-  const body = on ? (BUILDINGS[s.placed[on].kind].flats ? house(s, on, now) : `<p>${t(BUILDINGS[s.placed[on].kind].name)}</p>`)
+  const body = on ? (BUILDINGS[s.placed[on].kind].flats ? house(s, on, now) : `<div class="site-top">${iconHtml(s.placed[on].kind, '', 'tile-icon')}<div><b>${t(BUILDINGS[s.placed[on].kind].name)}</b><p>${t(ABOUT[s.placed[on].kind] ?? '')}</p></div></div>${s.placed[on].kind === 'hotel' ? `<button class="btn primary wide" data-do="hotel">${t('The hotel')}</button>` : ''}`)
     : `<h3>${t('Lot {n}: free', { n: LOTS.indexOf(picked) + 1 })}</h3>${riversideKinds().map(kind => building(s, picked.id, kind)).join('')}`;
   return `<div class="quay"><div class="quay-lots">${row}</div>${body}</div>`;
 }

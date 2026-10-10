@@ -63,6 +63,11 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
 /** The riverside (core/riverside.mjs, Act IV). `quay`: what paving the old quay takes. `house`: a quay house (chapter 13)
  *  pays `rent` for every rentMs since it was last collected, and holds at most `cap` payments. */
 export const RIVERSIDE = { quay: { level: 14, cost: 2500 }, house: { rent: 220, rentMs: paced(10 * MIN), cap: 8 } };
+/** The hotel (core/hotel.mjs, chapter 14). `rooms` by level, and what each further floor costs. While a room is free a
+ *  guest arrives every arriveMs / (1 + beauty rank), stays stayMs, and pays `room` plus `tip` x (1 + rank), the tip
+ *  doubled if their breakfast wish (one of `wishes` the farm can make) was served. The desk holds at most `cap` coins. */
+export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs: paced(8 * MIN), arriveMs: paced(2 * MIN), room: 120, tip: 40, cap: 4000,
+  wishes: ['bread', 'corn_bread', 'butter', 'cheese', 'apple_juice', 'carrot_juice', 'orange_juice', 'noodles', 'apple_pie', 'carrot_cake', 'honey_cake'] };
 /** The co-operative (core/cooperative.mjs, chapter 12). Founding takes `gift` from the barn. An order has `lines` goods;
  *  a line asks for about line(level) coins' worth of its good, between `min` and `max` of it; a neighbour brings
  *  `pledge` of every line. Filled, it pays what the player sent x `pay` plus `coins`, and xp x its worth; the neighbours

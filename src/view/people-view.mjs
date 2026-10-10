@@ -19,6 +19,7 @@ import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
+import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
@@ -129,6 +130,9 @@ export class PeopleView {
     // the baker keeps a stall at the market square from the first market day on (chapter 6)
     const market = Object.entries(s.placed).find(([, p]) => p.kind === 'market');
     if (market && hasArrived(s, villager('hugo'))) { const p = market[1]; out.push({ id: 'hugo', body: 'man', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // the hotel's guests stroll on the quay while rooms are taken: one for every two guests, three at most (chapter 14)
+    const hotel = Object.values(s.placed).find(p => p.kind === 'hotel'), staying = (s.hotel?.rooms ?? []).filter(Boolean).length;
+    if (hotel) { const door = doorCell(hotel.kind, hotel.x, hotel.z, hotel.rot); for (let i = 0; i < Math.min(3, Math.ceil(staying / 2)); i++) out.push({ id: `guest${i}`, body: i % 2 ? 'man' : 'woman', home: [door[0] - 2 + i * 2, door[1] + i % 2], work: true, guest: true }); }
     // the keeper of the quay sits by the door of the first quay house (chapter 13)
     const quayHouse = Object.entries(s.placed).filter(([, p]) => p.kind === 'apartment').sort((a, b) => a[1].x - b[1].x)[0];
     if (quayHouse && hasArrived(s, villager('tuyet'))) { const p = quayHouse[1], door = doorCell(p.kind, p.x, p.z, p.rot); out.push({ id: 'tuyet', body: 'hana', home: [door[0] + 1, door[1]], work: true }); }
@@ -639,6 +643,7 @@ export class PeopleView {
   talk(w, { order = false } = {}) {
     const id = w.person ?? w.id, who = PEOPLE[id];
     if (w.pet) { this.once(w, 'Bark', 1.4); return; }
+    if (w.guest) { const g = (this.s.hotel?.rooms ?? []).filter(Boolean); if (g.length) this.say(w, t(remarkOf(this.s, g[hash(w.id) % g.length].n))); w.faceTo = this.world.cam.yaw; this.once(w, 'Wave', 1.3); return; }   // a hotel guest: what they saw from the window
     if (w.player) { w.bubble?.remove(); w.bubble = null; this.once(w, 'Wave', 1.2); return; }
     // Orders are available on the board. An explicit caller can still open this person's card.
     const card = order && this.s.orders.cards.find(c => c.from === id);

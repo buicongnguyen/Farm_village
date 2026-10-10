@@ -1194,6 +1194,67 @@ def quay_bollard():
             cl('rope', .26, .12, 0, 0, .26, 'rope', verts=8), cl('rope2', .25, .1, 0, 0, .37, 'rope', verts=8), bx('foot', .56, .56, .08, 0, 0, 0, 'stonel', bev=.02)]
 piece('quay_bollard', quay_bollard(), decor)
 
+C['hotelwall'] = mat('FK hotelwall', '#FFD0DC', .55)   # the hotel: rose plaster
+C['hotelwalld'] = mat('FK hotelwalld', '#F2A9BD', .55)
+def hotel(floors=2, name='hotel'):
+    """The hotel on the quay (chapter 14): a rose-plastered house with a teal roof. Below, a cream ground floor with an
+    arched door under a striped awning and a terrace with tables on the quay; above, `floors` floors of five tall
+    windows with little balconies; a sign with a gold bell on the roof's front. Upgrades add a floor (floors 2, 3, 4).
+    6 x 5 cells (everything inside x +-5.8, y +-4.8); the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    W, D, Y = 10.4, 6.0, -1.4
+    F = Y + D / 2
+    H0, H1 = 3.2, 2.5
+    Z1 = .3 + H0 + .2
+    top = Z1 + floors * H1
+    p += [bx('base', W + .5, D + .5, .3, 0, Y, 0, 'stone', bev=.05, seg=2), bx('terrace', W + .5, 2.7, .16, 0, F + 1.45, 0, 'stonel', bev=.03),
+          bx('ground', W, D, H0, 0, Y, .3, 'cream', bev=.04), bx('band', W + .24, D + .24, .2, 0, Y, .3 + H0, 'white', bev=.03),
+          bx('floors', W, D, floors * H1, 0, Y, Z1, 'hotelwall', bev=.04), bx('cornice', W + .3, D + .3, .2, 0, Y, top, 'white', bev=.03)]
+    for i in range(1, floors):   # a thin white course between floors
+        p.append(bx('course', W + .08, D + .08, .08, 0, Y, Z1 + i * H1 - .04, 'white', bev=0.))
+    for sx in (-1, 1):           # corner pilasters
+        p.append(bx('pilaster', .36, .14, floors * H1, sx * (W / 2 - .18), F + .04, Z1, 'hotelwalld', bev=.02))
+    p += roof_rows(W, D, 1.7, 0, Y, top + .2, 'teal', 'teald', rows=4, over=.32)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.7)], .12, (sd * (W / 2 - .06), -Y, top + .2), C['hotelwall'], rot=(0, 0, math.pi / 2), bev=.01))
+    # the sign over the cornice: a cream board with a gold bell
+    p += [bx('sign', 3.4, .14, .8, 0, F - .1, top + .3, 'cream', bev=.03), bx('signframe', 3.6, .1, 1.0, 0, F - .16, top + .2, 'teald', bev=.02),
+          ball('bell', .22, 0, F + .02, top + .72, 'gold', sub=1, sc=(1, .6, 1)), cl('bellfoot', .26, .06, 0, F + .02, top + .5, 'gold', verts=8, rot=(0, 0, 0)), ball('clapper', .07, 0, F + .04, top + .46, 'sun', sub=0)]
+    # the ground floor: an arched door between two pairs of tall windows, under a striped awning
+    p += [bx('door', 1.5, .1, 2.3, 0, F + .04, .3, 'teald', bev=.02), cl('arch', .75, .1, 0, F + .04, 2.6, 'teald', verts=12, rot=(math.pi / 2, 0, 0)),
+          bx('doorglass', .5, .06, 1.3, -.36, F + .09, .9, 'glass', bev=.01), bx('doorglass', .5, .06, 1.3, .36, F + .09, .9, 'glass', bev=.01), bx('step', 2.2, .7, .14, 0, F + .4, .16, 'stonel', bev=.02)]
+    A['door'].append((0, F + .12, .3))
+    for x in (-3.9, -2.2, 2.2, 3.9):
+        wp, c = window(x, F + .02, 1.0, 1.0, 1.8, 'front', shutters=None); p += wp; A['window'].append(c)
+    for i in range(8):
+        p.append(box('awning', (4.4 / 8, 1.5, .07), (-2.2 + (i + .5) * 4.4 / 8, -(F + .7), .3 + H0 - .3), C['sun' if i % 2 else 'white'], bev=0., seg=1, rot=(-.26, 0, 0)))
+    for x in (-2.15, 2.15):
+        p.append(st((x, F + 1.38, .16), (x, F + 1.38, .3 + H0 - .5), .04, 'iron', sides=4))
+    # the floors of rooms: five tall windows each, with a little balcony under every one
+    for f in range(floors):
+        z = Z1 + f * H1 + .55
+        for x in (-4.0, -2.0, 0, 2.0, 4.0):
+            wp, c = window(x, F + .02, z, .95, 1.45, 'front', shutters=None); p += wp; A['window'].append(c)
+            p += [bx('balcony', 1.3, .36, .07, x, F + .2, z - .12, 'white', bev=0.), bx('balrail', 1.3, .04, .34, x, F + .36, z - .08, 'teal', bev=0.)]
+        for sd, face in ((1, 'right'), (-1, 'left')):
+            for y in (Y - 1.3, Y + 1.3):
+                wp, c = window(sd * (W / 2 + .02), y, z, .9, 1.45, face); p += wp
+                if sd > 0: A['window'].append(c)
+    # the terrace: three tables with sun-yellow parasols, and two tubs of flowers at the door
+    for x in (-3.6, 0, 3.6):
+        if x == 0: continue
+        p += [cl('table', .55, .06, x, F + 1.7, .86, 'white', verts=10), cl('tableleg', .06, .7, x, F + 1.7, .16, 'iron', verts=5),
+              cl('parasolpole', .04, 1.5, x, F + 1.7, .92, 'woodd', verts=4), cl('parasol', 1.0, .5, x, F + 1.7, 2.3, 'sun' if x < 0 else 'pink', verts=8, rt=.05)]
+        for dx in (-.8, .8):
+            p += [cl('chair', .2, .06, x + dx, F + 1.9, .56, 'teal', verts=8), cl('chairleg', .05, .4, x + dx, F + 1.9, .16, 'iron', verts=4)]
+    for x in (-1.3, 1.3):
+        p += [cl('tub', .3, .42, x, F + .5, .3, 'white', verts=8), ball('tubflower', .32, x, F + .5, .86, 'pink' if x < 0 else 'sun', sub=1, sc=(1, 1, .7)), ball('tubleaf', .36, x, F + .5, .74, 'leaf', sub=0, sc=(1.1, 1.1, .5))]
+    anchors[name] = A
+    return p
+piece('hotel', hotel(2, 'hotel'), decor)
+piece('hotel_t1', hotel(3, 'hotel_t1'), decor)
+piece('hotel_t2', hotel(4, 'hotel_t2'), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

@@ -72,6 +72,11 @@ export const STEPS = [
     needs: { level: 14 }, panel: 'quay', done: s => !!s.firsts?.quay, builds: [] },
   { id: 'quay_house', name: 'A house on the quay', text: 'Build the first quay house on a lot of the quay: a tea shop below, and four flats for families who want to come home.',
     needs: { level: 15 }, panel: 'quay', done: s => (s.counts.apartment ?? 0) >= 1, builds: [] },
+  // chapter 14 (docs/plan/ch14-rooms-with-a-view.md)
+  { id: 'hotel', name: 'A hotel on the quay', text: 'People would come a long way for a valley like this, if there were beds. Build the hotel on a lot of the quay.',
+    needs: { level: 16 }, panel: 'quay', done: s => (s.counts.hotel ?? 0) >= 1, builds: [] },
+  { id: 'ten_guests', name: 'Ten guests', text: 'Guests come by themselves while a room is free, sooner in a prettier valley. Let ten stay and pay. Serve them the breakfast they wish for and they tip double.',
+    needs: { level: 16 }, panel: 'hotel', done: s => (s.stats.guests ?? 0) >= 10, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

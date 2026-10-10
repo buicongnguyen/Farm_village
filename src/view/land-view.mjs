@@ -125,6 +125,7 @@ export class LandView {
     let name = modelFor(kind, id);
     if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = `${name}:bare`;
     const b = this.world.batches;
+    if (kind === 'hotel') { const tier = `hotel_t${Math.min(2, this.s.hotel?.level ?? 0)}`; if (tier !== 'hotel_t0' && b.has(tier)) name = tier; }   // a floor more with each upgrade
     if (kind === 'cottage') { const tier = `cottage_t${Math.min(2, this.s.homes?.[id]?.level ?? 0)}`; if (b.has(tier)) name = tier; }   // each furnish level is its own building
     // AR-011: keep the clinic while its optional hospital model loads; the next late-kit sync selects the saved tier.
     if (kind === 'clinic' && Number.isSafeInteger(this.s.growth?.hospitalAt) && this.s.growth.hospitalAt >= 0 && b.has('clinic:hospital')) name = 'clinic:hospital';
@@ -470,7 +471,7 @@ export class LandView {
       else if (e.type === 'quayPaved') this.drawRiverside();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
-      else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
+      else if (e.type === 'homeUpgraded' || e.type === 'hotelUpgraded') this.drawPlaced(e.id);
       else if (e.type === 'hospitalUpgraded') {
         for (const [id, p] of Object.entries(this.s.placed)) if (p.kind === 'clinic') this.drawPlaced(id);
       }

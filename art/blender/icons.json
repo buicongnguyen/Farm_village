@@ -469,6 +469,13 @@
   }
  },
  {
+  "id": "hotel",
+  "src": "raw:decor",
+  "root": "hotel",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
   "id": "apartment",
   "src": "raw:decor",
   "root": "apartment",

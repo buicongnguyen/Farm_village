@@ -203,6 +203,20 @@ export const REMARK_FACTS = {
 
 /** Every person who can post an order, with their portrait colour. */
 export const allPeople = () => [...VILLAGERS, ...FAMILIES.flatMap(f => f.people.map(p => ({ ...p, family: f.id }))), ...NEIGHBOURS];
+/** What the hotel's guests remark on, from their window (chapter 14). `needs`: what the valley must have for the remark
+ *  to be true (core/hotel.mjs GUEST_NEEDS); one with no `needs` is always true. Guests are not named people. */
+export const GUEST_REMARKS = [
+  { text: 'We could hear the brook all night. We slept like stones.' },
+  { text: 'We stayed here on our honeymoon, before the mill shut. The wallpaper is the same.' },
+  { needs: 'sluice', text: 'You can see the old mill from the bath. The wheel was turning!' },
+  { needs: 'meadow', text: 'A meadow full of flowers, right under the window. We counted three white hives.' },
+  { needs: 'factory', text: 'The cannery whistles at noon. I set my watch by it.' },
+  { needs: 'festival', text: 'There were lanterns on the square last night, and somebody was singing.' },
+  { needs: 'towpath', text: 'We walked the towpath before breakfast. A heron let us pass.' },
+  { needs: 'trees', text: 'So many orchards! The whole hill smelled of blossom.' },
+  { needs: 'pond', text: 'The ponds were like mirrors this morning.' },
+  { needs: 'dock', text: 'A boat was tied at the little dock. We nearly borrowed it.' },
+];
 /** Fallback order lines for anyone without their own `orders`. */
 export const ORDER_LINES = [
   'I am baking for the children.', 'My pantry is empty!', 'Could you help with a little picnic?', 'A treat for my neighbours.',

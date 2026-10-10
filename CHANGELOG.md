@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 14: Rooms with a view — 2026-10-11
+
+- **The hotel**: build it on a free lot of the quay (level 16, 14,000 coins). Guests come by themselves while a room is free, sooner the prettier the valley is; each stays a while, then pays for the room and leaves a tip that grows with the valley's beauty.
+- **Breakfast**: every guest wishes for one made food. Serve it from the barn and that guest tips double; a pill shows when a wish is in the barn. The coins wait at the desk until you collect them.
+- **Two more floors**: nine rooms, then twelve; the building grows a storey each time. Guests stroll on the quay and say what they saw from their window.
+- **Chapter 14** closes when the hotel stands and ten guests have stayed.
+
 ## Chapter 13: The far bank — 2026-10-11
 
 - **The old quay**: once the towpath is open, pave the quay on the far bank east of the old mill (level 14, 2,500 coins). Cobbles, lamps and bollards appear along the water, the wild trees leave, and seven lots wait with a sign each.

@@ -38,6 +38,9 @@ const work = (role, who, kind) => `{ const s = farm.state(), id = Object.keys(s.
 // chapter 13: the far bank open, the quay paved, a quay house on its first lot
 const far = `s.story.chapter = 12; s.story.albright = 'meadow'; s.firsts.bridge = 1;`;
 const quayHouse = `s.firsts.quay = 1; s.placed.st_quay = { kind: 'apartment', x: 46, z: 1, rot: 0, lot: 'q1' }; s.counts.apartment = 1; s.flats = { st_quay: { rentFrom: 1 } };`;
+// chapter 14: the hotel on the quay's second lot, three guests staying
+const hotel = `s.placed.st_hotel = { kind: 'hotel', x: 54, z: 1, rot: 0, lot: 'q2' }; s.counts.hotel = 1;
+  s.hotel = { level: 0, rooms: [0, 1, 2, 3].map(n => ({ n, at: farm.game.now, until: farm.game.now + 600000, wish: 'bread', served: n === 1 })).concat([null, null]), nextAt: farm.game.now + 600000, held: 0, n: 4 };`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -84,6 +87,10 @@ const PANELS = {
   'ch13-1': { hour: 10, scene: sluice + far + `s.firsts.quay = 1;`, wait: 8000, look: [58, 7, 32] },
   'ch13-2': { hour: 15.5, scene: sluice + far + quayHouse, wait: 8000, then: [put('tuyet', 50, 6), 1500], look: [49, 5.5, 16] },
   'ch13-3': { hour: 20.6, scene: sluice + far + quayHouse, wait: 9000, look: [49, 4.5, 22] },
+  // chapter 14: the hotel on the second lot (with a floor added), guests on the quay, and every window lit
+  'ch14-1': { hour: 10.5, scene: sluice + far + quayHouse + hotel, wait: 9000, look: [55, 5.5, 24] },
+  'ch14-2': { hour: 8.2, scene: sluice + far + quayHouse + hotel, wait: 9000, look: [57, 6.5, 13] },
+  'ch14-3': { hour: 21, scene: sluice + far + quayHouse + hotel + `s.hotel.level = 2;`, wait: 9000, look: [56, 4, 24] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);
