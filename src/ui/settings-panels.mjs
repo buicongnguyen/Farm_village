@@ -14,7 +14,7 @@ import { JUMP_CHAPTERS } from '../core/testmode.mjs';
 const choice = (key, value, current, label) => `<button class="tab${current === value ? ' on' : ''}" data-do="setting" data-key="${key}" data-value="${value}" aria-pressed="${current === value}"${key === 'lang' ? ` lang="${value}"` : ''}>${label}</button>`;
 const esc = value => String(value ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // `build`: only in test builds (the clock and the tutorial are theirs to move; a public farm keeps its real clock)
-const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['levels', '+5 levels'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['marketday', 'Start a market day'],
+const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['levels', '+5 levels'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['marketday', 'Start a market day'], ['finish', 'Finish this chapter'],
   ['step', 'Next tutorial step', 'build'], ['hour', 'Clock +1 hour', 'build'], ['day', 'Clock +1 day', 'build']];
 function renderTests(s) {
   const seen = s.story.chapter ?? 0;

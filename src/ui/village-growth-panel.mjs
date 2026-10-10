@@ -4,6 +4,7 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import { GOODS, RECIPES } from '../content/goods.mjs';
 import { allPeople } from '../content/people.mjs';
 import { growthStatus } from '../core/village-growth.mjs';
+import { workingCount } from '../core/working.mjs';
 import { recipeOpen, productionOf } from '../core/production.mjs';
 import * as barn from '../core/barn.mjs';
 import { t, num } from '../kit/i18n.mjs';
@@ -26,7 +27,7 @@ export function renderVillageGrowth(s, now) {
     ${g.hospitalReason ? `<p>${t(g.hospitalReason, { level: GROWTH.hospital.level })}</p>` : ''}${button('upgradeHospital', t('Confirm the hospital upgrade'), '', !g.canUpgradeHospital)}`;
   body += `<h3>${t('Police post')}</h3><p>${t('A working post adds 5% to company delivery payments. The price is fixed when the truck leaves.')}</p>
     <p>${t('Level {level} · {coins} coins', { level: GROWTH.police.level, coins: num(GROWTH.police.coins) })}</p>${button('growthSite', t(g.police ? 'Visit the police post' : 'Preview the old police post'), 'data-kind="police"')}
-    <h3>${t('Company office')}</h3><p>${t('Level {level} · {coins} coins · two different working food factories', { level: GROWTH.company.level, coins: num(GROWTH.company.coins) })}</p>
+    <h3>${t('Company office')}</h3>${workingCount(s, 'company') > 0 ? `<p class="board-voice">${faceHtml('bea', 'mini-face')}<span><b>${t('{person:bea:display}')}:</b> ${t('Every crate counted twice, and every one of them ours.')}</span></p>` : ''}<p>${t('Level {level} · {coins} coins · two different working food factories', { level: GROWTH.company.level, coins: num(GROWTH.company.coins) })}</p>
     ${button('growthSite', t('Visit the old company office'), 'data-kind="company"')}`;
   const earned = BULK_REQUESTS.filter(request => g.memories[request.id] != null);
   if (earned.length) body += `<h3>${t('Company memories')}</h3>${earned.map(request => button('growthMemory', t(request.title), `data-id="${request.id}"`)).join('')}`;

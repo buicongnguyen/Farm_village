@@ -3,6 +3,7 @@ import { STAGES, JOURNEY_UNLOCKS } from '../content/journey.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { mayBuild } from './projects.mjs';
 import { workingCount } from './working.mjs';
+import { normalizeGrowth } from './growth-state.mjs';
 const tests = {
   farm: s => workingCount(s, 'feed_mill') > 0 && workingCount(s, 'coop') > 0,
   family: s => Object.values(s.homes).some(h => h.arrived),
@@ -18,6 +19,8 @@ const tests = {
   fields3: s => s.parcels.length >= 3,
   police: s => workingCount(s, 'police') > 0,
   dock: s => (s.counts.dock ?? 0) > 0,
+  company: s => workingCount(s, 'company') > 0,
+  contract1: s => normalizeGrowth(s).settled >= 1,
 };
 export function journeyOf(s) {
   // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one

@@ -36,8 +36,8 @@ export function reserved(x, z) {
   if (W.NEIGHBOUR_SIGNS.some(s => Math.abs(s.x - x) <= 2 && Math.abs(s.z - z) <= 2)) return true;
   return false;
 }
-/** The footprints of the story's fixed sites (the boat dock): wild scatter keeps off them. */
-const SITE_BOXES = W.SITES.map(st => ({ x0: st.x, x1: st.x + st.size[0] - 1, z0: st.z, z1: st.z + st.size[1] - 1 }));
+/** The footprints of the story's fixed sites (the boat dock) and scenery (the old mill): wild scatter keeps off them. */
+const SITE_BOXES = W.SITES.map(st => ({ x0: st.x, x1: st.x + st.size[0] - 1, z0: st.z, z1: st.z + st.size[1] - 1 })).concat(W.OLD_MILL.box);   // and off the old mill on the bank
 /** Within two cells of a road (trees and bushes keep their crowns off it). */
 const nearRoad = (x, z) => W.ROADS.some(r => x >= r.x0 - 2 && x <= r.x1 + 2 && z >= r.z0 - 2 && z <= r.z1 + 2);
 /** Grove density, 0..1: high in the woods, low in clearings (seeded; the same in every game). */
@@ -401,5 +401,6 @@ export async function dressWorld(world, game) {
     world.daylight?.apply(); fit(world.cam);
   })();
   // after that: the village's heavier models and the windmill's rotor
-  world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam)), spinRotor(world)]).catch(e => console.warn('world dressing', e));
+  world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam))
+    .then(() => import('./old-mill.mjs')).then(({ OldMill }) => { world.oldMill = new OldMill(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
 }

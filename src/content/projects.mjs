@@ -4,6 +4,7 @@
 // must all be delivered before the step's building can be placed; `cost` is added to that building's price; `allow`
 // raises how many of a kind may exist.
 import { workingCount } from '../core/working.mjs';
+import { normalizeGrowth } from '../core/growth-state.mjs';
 const working = (s, kind) => workingCount(s, kind);   // repaired or never broken (a run-down start has broken ones standing)
 export const STEPS = [
   { id: 'clear', name: 'Clear the land and lay a path', text: 'Clear three patches of weeds and lay three path tiles to the gate.',
@@ -47,6 +48,9 @@ export const STEPS = [
     needs: { level: 10 }, site: 'dock', done: s => (s.counts.dock ?? 0) >= 1, builds: [] },
   { id: 'company', name: 'The company office', text: 'Open a company office, where neighbours can take proper jobs.',
     needs: { level: 15 }, site: 'company', done: s => (s.counts.company ?? 0) >= 1, builds: [] },
+  // chapter 8 (docs/plan/ch08-work-for-everyone.md)
+  { id: 'first_contract', name: 'The first big delivery', text: 'The company office takes orders bigger than any cart. Send its first delivery from the village board, and collect the payment.',
+    needs: { level: 15 }, panel: 'villageGrowth', done: s => normalizeGrowth(s).settled >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

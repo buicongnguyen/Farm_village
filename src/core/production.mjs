@@ -1,7 +1,7 @@
 // Production buildings: independent trays. Inputs are paid when work starts; finished products keep their tray
 // until collected. Legacy serial jobs keep their saved schedule until that batch is collected.
 import { RECIPES } from '../content/goods.mjs';
-import { SLOTS, XP } from '../content/economy.mjs';
+import { SLOTS, XP, SLUICE } from '../content/economy.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
@@ -17,7 +17,8 @@ export const recipesAt = (s, kind) => Object.keys(RECIPES).filter(k => RECIPES[k
 export const readyCount = (s, id, now) => productionOf(s, id).queue.filter(j => j.doneAt <= now).length;
 export const slotCost = (s, id) => SLOTS.cost[productionOf(s, id).slots] ?? null;
 /** Current quote for a new batch. Existing work keeps the duration stored when its inputs were paid. */
-export const productionDuration = (s, building, recipe, now) => Math.max(1, Math.round(RECIPES[recipe].timeMs * companyWorkerMultiplier(s, building, now)));
+/** With the sluice open (chapter 8) every new batch is a tenth quicker; running batches keep the time they were started with. */
+export const productionDuration = (s, building, recipe, now) => Math.max(1, Math.round(RECIPES[recipe].timeMs * companyWorkerMultiplier(s, building, now) * (s.firsts?.sluice ? SLUICE.work : 1)));
 
 /** Exact collection preview: skip unfinished or oversized batches; no tray is held behind another one. */
 export function collectableJobs(s, id, now) {
@@ -79,6 +80,7 @@ export const actions = {
         barn.add(s, rid, r.makes); got++;
         s.stats.produced += r.makes; gainXp(ctx, XP.produce(r.value)); if (rid === 'cheese') s.stats.cheeseMade = (s.stats.cheeseMade ?? 0) + r.makes;
         if (rid === 'butter') s.stats.butterMade = (s.stats.butterMade ?? 0) + r.makes;
+        if (s.firsts?.sluice) s.stats.sluiceMade = (s.stats.sluiceMade ?? 0) + r.makes;   // made with the mill wheel turning (the chapter 8 scene)
         ctx.emit('produced', { building: id, good: rid, count: r.makes, slot: job.slot });
       }
       q.queue = q.queue.filter(job => !collectedSlots.has(job.slot)); s.production[id] = q;

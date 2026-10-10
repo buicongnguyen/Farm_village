@@ -135,3 +135,13 @@ test('release pace stretches every timer by its factor (FV_PACE=release)', () =>
   assert.equal(out.truck, TRUCK.tripMs * k); assert.equal(out.hands, 60_000 * k); assert.equal(out.repair, 30_000 * k); assert.equal(out.family, 2 * MIN * k);
   assert.deepEqual(out.fish, [25_000, 12_000, 4500, 9000].map(ms => ms * k));
 });
+test('"Finish this chapter" does the deed of the chapter in progress without marking its card seen', () => {
+  for (const chapter of JUMP_CHAPTERS.slice(0, -1)) {
+    const s = restored(); must(s, 'testJumpChapter', { chapter }); const seen = s.story.chapter, r = must(s, 'testFinishChapter', {});
+    assert.equal(r.chapter, chapter); assert.equal(r.done, true, `chapter ${chapter}'s deed`); assert.equal(s.story.chapter, seen, 'the card is still to come');
+    assert.ok(CHAPTERS.find(c => c.id === chapter).when(s)); must(s, 'chapterSeen', { id: chapter }); assert.equal(s.story.chapter, chapter);
+  }
+  // at the last chapter that exists there is nothing to finish, and nothing changes
+  const s = restored(); must(s, 'testJumpChapter', { chapter: JUMP_CHAPTERS.at(-1) });
+  const before = JSON.stringify(s), r = act(s, 'testFinishChapter', {}, T0); assert.equal(r.ok, false); assert.equal(JSON.stringify(s), before);
+});

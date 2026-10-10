@@ -582,6 +582,33 @@ await check('chapter 7: the dock is built from its site panel, the brook by it c
   await ctx.close();
 });
 
+await check('chapter 8: the first company delivery closes the chapter, the sluice opens, the mill wheel turns and the manager is on the board (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:8'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // the old mill stands by the brook from the start, its wheel still
+  await page.waitForFunction(() => !!farm.world.oldMill?.wheel, null, { timeout: 40000 });
+  const before = await page.evaluate(() => ({ target: farm.world.oldMill.target, full: farm.world.brook.uniforms.uFull.value, sluice: farm.state().firsts.sluice ?? null }));
+  expect(before.target === 0 && before.full === 0 && before.sluice === null, `before the chapter: ${JSON.stringify(before)}`);
+  await page.evaluate(() => { farm.closeCards(); farm.focus(41, 8, 16); }); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}old-mill-still.png` });
+  // the tester's "Finish this chapter" does the deed; the card appears as in play
+  await page.evaluate(() => farm.panels.onTest('finish'));
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Work for everyone') && card.includes('Rusty') && card.includes('wheel'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-8-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 8 && !!farm.state().firsts.sluice && farm.world.oldMill.target > 0 && farm.world.brook.uniforms.uFull.value === 1, null, { timeout: 15000 });
+  await page.waitForFunction(() => farm.world.oldMill.speed > 0.3, null, { timeout: 15000 });   // it creaks up to speed
+  await page.evaluate(() => { farm.closeCards(); farm.focus(41, 8, 16); }); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}old-mill-turning.png` });
+  // the manager speaks on the village board, and is in the village
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('villageGrowth'); }); await page.waitForSelector('.board-voice', { timeout: 20000 });
+  expect((await page.textContent('.board-voice')).includes('Penny'), 'the manager is not on the board');
+  await page.waitForFunction(() => farm.people?.walkers?.has('bea'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

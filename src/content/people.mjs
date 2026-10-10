@@ -54,6 +54,10 @@ export const FAMILIES = [
 /** Is this villager here yet? `arrives` is the building they come with (a kind), or a test of the farm. */
 export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'function' ? !!v.arrives(s) : (s.counts[v.arrives] ?? 0) > 0);
 export const VILLAGERS = [
+  // The office manager comes with the company office (chapter 8): brisk, kind, counts everything twice. No orders, no gifts.
+  { id: 'bea', name: '{person:bea:display}', role: 'Office manager', arrives: 'company', noOrders: true, noGifts: true,
+    line: 'Every crate counted twice, and every one of them ours.',
+    idle: ['I count everything twice. The second time is for the pleasure of it.', 'A label is a promise with a picture on it.', 'The ledger balanced on the first try. I checked it again anyway.'] },
   // The constable comes with the police post (chapter 7): calm, exact, reads every old report. No orders, no gifts.
   { id: 'pearl', name: '{person:pearl:display}', role: 'Constable', arrives: 'police', noOrders: true, noGifts: true,
     line: 'A whistle, a notebook and a kettle. The kettle is the important one.',

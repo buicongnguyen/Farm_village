@@ -66,7 +66,10 @@ export const actions = {
     const chapter = CHAPTERS.find(c => c.id === id), st = ctx.s.story;
     const seen = st.chapter ?? 0;
     if (!chapter || id > seen && (id !== seen + 1 || !chapter.when(ctx.s))) return ctx.fail('Unknown story moment');
-    st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter };
+    st.chapter = Math.max(st.chapter ?? 0, id);
+    // chapter 8: the water rights are bought back and the sluice opens (content/economy.mjs SLUICE), once and for good
+    if (st.chapter >= 8 && !ctx.s.firsts?.sluice) { (ctx.s.firsts ??= {}).sluice = ctx.now; ctx.emit('sluiceOpened'); }
+    return { chapter: st.chapter };
   },
   /** A story beat (content/story.mjs BEATS) was shown: { id }. Each beat plays once; s.story.beats lists the seen ids. */
   beatSeen(ctx, { id }) {

@@ -15,7 +15,7 @@ folder says what to build, in which files, and how to know it is done.
 | – | [01-small-fixes.md](01-small-fixes.md) | Backlog of small bugs and polish, done between chapters | ongoing | open |
 | 6 | [ch06-market-day.md](ch06-market-day.md) | Market day, land that says what it is for, the dairy scenes, the baker | 1–2 | **done** (PR #81) |
 | 7 | [ch07-safe-streets.md](ch07-safe-streets.md) | The officer and her old reports, the boat dock, ponds that water beds | 1 | **done** (PR #82) |
-| 8 | [ch08-work-for-everyone.md](ch08-work-for-everyone.md) | The office manager, the first big contract, the sluice opens, the mill wheel turns | 1–2 | not started |
+| 8 | [ch08-work-for-everyone.md](ch08-work-for-everyone.md) | The office manager, the first big contract, the sluice opens, the mill wheel turns | 1–2 | **done** (PR #83) |
 | 9 | [ch09-the-village-sings-again.md](ch09-the-village-sings-again.md) | The festival stage, the Harvest Festival, Bramble's truth, Oak comes home | 2 | not started |
 | 10 | [ch10-hands-to-help.md](ch10-hands-to-help.md) | Named villagers take the jobs and are seen at work, the evening report | 1–2 | not started |
 | 11 | [ch11-the-man-from-the-city.md](ch11-the-man-from-the-city.md) | The one real choice, the valley beauty meter | 2 | not started |
@@ -32,7 +32,7 @@ folder says what to build, in which files, and how to know it is done.
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 
-**Next: chapter 8** ([ch08-work-for-everyone.md](ch08-work-for-everyone.md)).
+**Next: chapter 9** ([ch09-the-village-sings-again.md](ch09-the-village-sings-again.md)).
 
 Done before this plan: chapters 1 to 5; from v0.5, the goat barn and dairy, the farmhouse to level 10 (garden and
 room), six hired hands, sixteen parcels, twelve crops, the look of each language edition, the old-building fixes.
@@ -55,7 +55,8 @@ room), six hired hands, sixteen parcels, twelve crops, the look of each language
 - Every line is in English, Vietnamese, Korean and Japanese, with each speaker's voice and pronouns (`STORY.md` 2).
 - `npm test` passes, with a rules test for the trigger and one for an old save; one browser check plays the ending.
 - The tester's menu can jump to the chapter: the chapter's PR adds the `JUMPS` entry for the chapter AFTER it
-  (`src/core/testmode.mjs`), which arranges this chapter's deed.
+  (`src/core/testmode.mjs`), which arranges this chapter's deed. The same entry powers the tester's "Finish this
+  chapter" button (`testFinishChapter`), and the chapter's browser check uses it to play the ending.
 - The far view stays within 120 draw calls and 300,000 triangles; first-load code within the limit in `scripts/build.mjs`, and the 4G loading check under 3.5 s.
 
 ## Decisions already made (do not reopen without the owner)

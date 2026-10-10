@@ -60,4 +60,7 @@ export const LETTERS = [
     text: 'One summer fills a whole drawer. Low water in the brook. The miller complained every week, in capitals. Nobody wrote down why the water was low. I find that untidy. — {person:pearl:display}' },
   { id: 'pearl-3', reward: { coins: 60 }, from: 'pearl', after: ['pearl-2'], when: { type: 'count', key: 'police', value: 1 },
     text: 'Found it, filed under Gates. The sluice upriver was closed that summer, on the order of a flour company in the city. The year after, the mill wheel had no water and the mill shut. A river does not lock itself. — {person:pearl:display}' },
+  // Chapter 8: the sluice is open. Oak is still upriver (he comes home in chapter 9).
+  { id: 'ellis-9', reward: { goods: { koi: 1 } }, from: 'ellis', after: ['ellis-8'], when: { type: 'chapter', value: 8 },
+    text: 'The water came up past my boots this morning, and I knew before the post did. So the gate is open. Well done, all of you. I am following the brook home, slowly. The fish go first. — {person:ellis:display}' },
 ];

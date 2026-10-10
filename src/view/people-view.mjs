@@ -24,7 +24,7 @@ import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
-const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl']), GIRLS = new Set(['zara', 'pia']);
+const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl', 'bea']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
@@ -39,6 +39,7 @@ const HAIR = ['#2a1a12', '#5a3218', '#a8642c', '#1a1a22', '#7a3b1c', '#d9a548'];
 const OUTFITS = {
   you: { top: '#e63946', bottom: '#2f5aa8', hair: '#2a1a12' }, june: { top: '#ff6f4f', bottom: '#2f5aa8', hair: '#8a3a1c' }, pip: { top: '#ffc83d', bottom: '#3f8f4a', hair: '#5a3218' },
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
+  bea: { top: '#f2a93b', bottom: '#4a4a5c', hair: '#5a3218' },   // the office manager: a mustard cardigan
   pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
@@ -97,6 +98,9 @@ export class PeopleView {
     if (school) { const p = school[1]; out.push({ id: 'cora', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     const clinic = Object.entries(s.placed).find(([, p]) => p.kind === 'clinic');
     if (clinic) { const p = clinic[1]; out.push({ id: 'hazel', body: 'hana', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // the office manager keeps the company office (chapter 8)
+    const office = Object.entries(s.placed).find(([, p]) => p.kind === 'company');
+    if (office && hasArrived(s, villager('bea'))) { const p = office[1]; out.push({ id: 'bea', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     // the constable keeps the police post (chapter 7)
     const police = Object.entries(s.placed).find(([, p]) => p.kind === 'police');
     if (police && hasArrived(s, villager('pearl'))) { const p = police[1]; out.push({ id: 'pearl', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
