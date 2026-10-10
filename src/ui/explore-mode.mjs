@@ -2,8 +2,13 @@ import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY } from '../content/explore.mjs';
+import { PLAYER_COLORS } from '../core/today.mjs';
+import { FISH_TABLE } from '../content/goods.mjs';
+import { LETTERS } from '../content/letters.mjs';
+import { fillable } from './panels.mjs';
+import { unread } from '../core/bonds.mjs';
 import { POND_FISHING_SPOTS, ORDER_BOARD, MAILBOX } from '../content/world.mjs';
-import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, OUTDOOR_SPEED } from '../core/explore.mjs';
+import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, homeCooldown, OUTDOOR_SPEED } from '../core/explore.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
@@ -254,6 +259,25 @@ class ExploreMode {
     if (this.loading || this.error || modalOpen() || this.panels.open) return;
     if (action === 'controls') { this.clear(); this.game.do('exploreControls', { controls: this.control === 'tap' ? 'joystick' : 'tap' }); return; }
     if (action === 'rest') { this.game.do('restOnSofa'); this.render(); return; }
+    if (action === 'tea') {
+      const r = this.game.do('brewTea');
+      this.said = !r.ok ? t(r.reason) : r.guest ? t('You shared a pot of tea with {name}. A heart grows.', { name: this.radial.people?.nameOf({ id: r.guest }) ?? r.guest }) : t('A quiet cup of tea. +{xp} XP', { xp: r.xp });
+      this.render(); return;
+    }
+    if (action === 'draw') {
+      const r = this.game.do('drawInJournal');
+      this.said = r.ok ? t('A new drawing for the journal. +{xp} XP', { xp: r.xp }) : t(r.reason);
+      this.render(); return;
+    }
+    if (action === 'journal') { this.card = null; this.clear(); this.panels.show('quests'); this.render(); return; }
+    if (action.startsWith('shirt:')) {
+      const value = action.slice(6);
+      if (this.game.do('setting', { key: 'playerColor', value }).ok && this.room?.player) {   // the room's own actor wears it at once
+        this.room.player.tint = { ...this.room.player.tint, top: value };
+        for (const actor of this.room.cast.actors) actor.uniforms?.uTop.value.set(value);
+      }
+      this.render(); return;
+    }
     if (action === 'stand') { this.session.seated = false; this.card = null; this.render(); return; }
     if (action === 'outside') {
       this.card = null; this.clear(); this.target = 'farmhouse_exit';
@@ -266,6 +290,7 @@ class ExploreMode {
     if (!this.inside) { if (this.near) this.doNear(this.near); if (this.active) this.render(); return; }
     if (id === 'farmhouse_exit') { this.game.do('leaveFarmhouse'); this.target = null; this.syncScene(); }
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
+    else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; }
     else if (id === 'farmhouse_memory_shelf' && this.game.do('readHomeMemory').ok) this.card = 'memory';
     this.render();
   }
@@ -304,6 +329,14 @@ class ExploreMode {
       if ((this.scanClock -= dt) <= 0) { this.scanClock = .2; const was = this.near?.label; this.near = this.scan(); if (was !== this.near?.label) this.lastNearest = undefined; }
     }
     const nearest = this.nearest();
+    if ((this.card === 'kitchen' || this.card === 'desk') && (this.cardClock = (this.cardClock ?? 0) + dt) > 1) {   // tick the wait in place: the card's buttons are never replaced under a finger
+      this.cardClock = 0;
+      for (const el of this.el.querySelectorAll('[data-wait]')) {
+        const ms = homeCooldown(this.state, el.dataset.wait, this.game.now);
+        if (ms <= 0) { this.render(); break; }
+        el.textContent = t('Ready again in {time}', { time: `${Math.floor(ms / 60000)}:${String(Math.ceil(ms / 1000) % 60).padStart(2, '0')}` });
+      }
+    }
     if (this.exitOnArrival && nearest === 'farmhouse_exit') { this.exitOnArrival = false; this.game.do('leaveFarmhouse'); this.syncScene(); this.render(); return; }
     if (nearest !== this.lastNearest) { this.lastNearest = nearest; this.render(); }
   }
@@ -315,6 +348,25 @@ class ExploreMode {
     const nearest = this.nearest(), control = this.control;
     let card = '';
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
+    const wait = id => { const ms = homeCooldown(this.state, id, this.game.now); return ms > 0 ? `${Math.floor(ms / 60000)}:${String(Math.ceil(ms / 1000) % 60).padStart(2, '0')}` : ''; };
+    const timed = (action, id, text) => wait(id) ? `<p role="status" data-wait="${id}">${esc(t('Ready again in {time}', { time: wait(id) }))}</p>` : button(action, text, 'primary');
+    const said = this.said ? `<p role="status"><b>${esc(this.said)}</b></p>` : '';
+    if (this.card === 'kitchen') card = `<h2>${esc(t('The kitchen'))}</h2><p>${esc(t('The kettle sings and the recipe book lies open. A pot of tea is best shared.'))}</p>${said}${timed('tea', 'tea', 'Brew tea')}${button('back', 'Back', 'ghost')}`;
+    if (this.card === 'desk') card = `<h2>${esc(t('The desk'))}</h2><p>${esc(t('Your planning journal, a pencil and good light.'))}</p>${said}${button('journal', 'Open the journal', 'primary')}${timed('draw', 'draw', 'Draw in the journal')}${button('back', 'Back', 'ghost')}`;
+    if (this.card === 'table') {
+      const st = this.state, now = this.game.now, ripe = Object.values(st.beds).filter(b => b?.doneAt <= now).length;
+      const animals = Object.values(st.animals).flat(), eggs = animals.filter(a => a.doneAt != null && a.doneAt <= now).length, hungry = animals.filter(a => a.doneAt == null).length;
+      const goods = Object.values(st.production ?? {}).reduce((n, p) => n + (p.queue ?? []).filter(j => j.doneAt <= now).length, 0);
+      const rows = [[ripe, 'Ripe crops to harvest: {count}'], [eggs, 'Eggs and milk to collect: {count}'], [hungry, 'Hungry animals: {count}'], [goods, 'Finished goods to collect: {count}'],
+        [fillable(st), 'Orders you can fill now: {count}'], [unread(st), 'Unread letters: {count}']].filter(([n]) => n > 0);
+      card = `<h2>${esc(t('The day on the table'))}</h2>${rows.length ? `<ul>${rows.map(([n, text]) => `<li>${esc(t(text, { count: n }))}</li>`).join('')}</ul>` : `<p>${esc(t('Everything is in hand. Enjoy the quiet.'))}</p>`}${button('close', 'Farm view', 'primary')}${button('back', 'Back', 'ghost')}`;
+    }
+    if (this.card === 'wardrobe') card = `<h2>${esc(t('The wardrobe'))}</h2><p>${esc(t('Pick a shirt for today.'))}</p><div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${(this.state.settings.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>${button('back', 'Back', 'ghost')}`;
+    if (this.card === 'memory') {   // the collection log: how much of the valley you have found so far
+      const st = this.state, fish = FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length, read = (st.mail ?? []).filter(m => m.read && LETTERS.some(l => l.id === m.id)).length;
+      const friends = Object.values(st.people ?? {}).filter(p => (p.hearts ?? 0) >= 3).length, log = [['Fish caught', fish, FISH_TABLE.length], ['Letters read', read, LETTERS.length], ['Friends with three hearts', friends, null], ['Journal drawings', exploreState(st).drawings, null]];
+      card += `<h3>${esc(t('Our collection'))}</h3><ul class="explore-log">${log.map(([text, n, of]) => `<li>${esc(t(text))} <b>${n}${of ? ` / ${of}` : ''}</b></li>`).join('')}</ul>`;
+    }
     if (this.card === 'sofa') {
       const l = learningStatus(this.state, this.game.now);
       card = `<h2>${esc(t('A quiet moment at home'))}</h2><p>${esc(t('Put your feet up. The farm can wait a moment.'))}</p>`;
@@ -329,13 +381,13 @@ class ExploreMode {
     this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
     if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
-    const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
-      <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
+    const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? HOME_MEMORY.title))}">${card}</div>` : ''}
+      <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the furniture to use it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}
       ${!loading && !card && control !== 'joystick' ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
       `;
-    if (this.html === html) return;
+    if (this.html === html || (this.card && this.html?.replace(/data-wait="\w+">[^<]*/g, '') === html.replace(/data-wait="\w+">[^<]*/g, ''))) return;   // only a ticking wait differs
     this.html = html; this.el.innerHTML = html;
     this.el.style.fontSize = `${this.state.settings.textSize ?? 1}em`;
     if (active) this.el.querySelector(`[data-explore="${active}"]`)?.focus({ preventScroll: true });

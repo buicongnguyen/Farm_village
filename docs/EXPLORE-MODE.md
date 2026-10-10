@@ -4,6 +4,27 @@
 to implement farmhouse entry, direct movement, door exit, sofa and memory shelf using Claude's PR #43. The authoritative art delivery is
 [AR-015 in ASSET-REQUESTS.md](ASSET-REQUESTS.md#ar-015-farmhouse-interior-for-explore-mode--requested-2026-10-09).
 
+## Things to do at home — 2026-10-10 (Claude, user request: the room should be as busy as Zoo Garden's cottage)
+
+Zoo Garden's cottage has 18 hotspots (timed buffs on cooldowns, furniture that opens panels, walls that fill with your
+own things). Our six pieces of furniture now all do something:
+
+| Furniture | Action | Rule |
+|---|---|---|
+| Kitchen | Brew tea | 30 min cooldown. Shared with the resident you know least: +1 heart (never past 10); alone: +5 XP |
+| Desk | Open the journal; Draw in the journal | The journal opens Goals. A drawing: 8 min cooldown, +5 XP, counted on the shelf (max 99) |
+| Dining table | Plan the day | A list of what is waiting: ripe crops, eggs and milk, hungry animals, finished goods, fillable orders, unread letters; Farm view |
+| Wardrobe | Pick a shirt | The existing `playerColor` setting; the room's actor changes at once |
+| Memory shelf | (as before) + Our collection | Fish caught, letters read, friends with three hearts, journal drawings |
+| Sofa, door | unchanged | |
+
+- State: `s.explore.used = { tea, draw }` (epoch ms) and `s.explore.drawings`, normalized with the rest of `exploreState`.
+  `homeCooldown()` is capped at the cooldown length, so a clock set back cannot lock an activity.
+- A waiting activity shows "Ready again in m:ss", ticking in place (the card's buttons are never rebuilt under a finger).
+- Tests: `home-activities.test.mjs` (5) and an indoor check in `explore-roam.browser`.
+- Not ported: buffs that change farming speed, visiting villagers posed indoors, a radio, kettle steam and fire, a
+  bed and more rooms (these need new art or economy decisions).
+
 ## Explore the Zoo Garden way — 2026-10-10 (Claude, user request)
 
 The user asked for Explore to play like Zoo Garden (repo cute_game), with more to do. Mapped from its source and

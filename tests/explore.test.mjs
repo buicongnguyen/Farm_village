@@ -70,7 +70,7 @@ test('old saves and malformed optional records normalize without rewards; indepe
   const s = fixture(), other = newGame(NOW, 222, { restore: true });
   assert.equal(exploreSession(other), undefined); assert.deepEqual(exploreState(other).memories, {});
   s.explore = { controls: 'bad', introduced: 'yes', memories: { [HOME_MEMORY.id]: { discoveredAt: -5, readAt: Infinity } }, location: 'farmhouse_main' };
-  assert.deepEqual(exploreState(s), { version: 1, controls: 'tap', introduced: false, memories: {} });
+  assert.deepEqual(exploreState(s), { version: 1, controls: 'tap', introduced: false, used: {}, drawings: 0, memories: {} });
   act(s, 'introduceExplore', {}, NOW); assert.equal(s.explore.location, undefined);
   act(s, 'exploreControls', { controls: 'joystick' }, NOW);
   assert.equal(exploreState(unpack(pack(s))).controls, 'joystick');
