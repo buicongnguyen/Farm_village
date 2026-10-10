@@ -88,6 +88,11 @@ await check('nearby things offer one action: talk, the order board, a bench, a r
   await stand(page, 53, 125); await settle(page); m = await mode(page);
   expect(m.near === 'door', `near the farmhouse: ${m.near}`);
   await page.locator('[data-explore="interact"]').click();
+  expect(await page.evaluate(() => farm.world.exploreMode.enterOnArrival), 'Go inside from a distance did not start the walk to the door');
+  await page.keyboard.down('d'); await page.waitForTimeout(200); await page.keyboard.up('d');   // a change of mind
+  expect(await page.evaluate(() => !farm.world.exploreMode.enterOnArrival && !farm.world.exploreMode.inside), 'walking away did not cancel Go inside');
+  await stand(page, 53, 125); await settle(page);
+  await page.locator('[data-explore="interact"]').click();
   await page.waitForFunction(() => farm.world.exploreMode.inside, null, { timeout: 15000 });
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/roam-inside.png` });
   await page.locator('[data-explore="close"]').click();
@@ -115,6 +120,15 @@ await check('tap a family member, then Explore: you walk as them; the pond hands
   expect(await page.evaluate(() => !farm.world.exploreMode.active), 'fishing did not take over from exploring');
   expect(await page.evaluate(() => { const w = farm.people.walkers.get('you'); return !w.controlled && (!!w.goal || !!w.fishSpot || !!farm.state().fishing.line); }), 'the fishing trip did not start');
   expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
+await check('the Explore button waits until the first tutorial steps are done', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }), page = await ctx.newPage();
+  await page.goto(`${URL_}?new&restore`);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  expect(await page.evaluate(() => farm.state().story.tutorial < 3), 'this fixture is not in the tutorial');
+  expect(await page.locator('.hud [data-act="explore"]').isHidden(), 'the Explore button shows during the first tutorial steps');
+  await ctx.close();
 });
 
 await browser.close();

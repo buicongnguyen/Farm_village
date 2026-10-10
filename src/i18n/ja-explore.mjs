@@ -44,5 +44,7 @@ export const JA_EXPLORE = {
   "Open the mailbox": "ポストを開ける",
   "Sit on the bench": "ベンチに座る",
   "Walk anywhere. Come close to people and places to do things.": "どこでも歩けます。人や場所に近づくと、できることが出ます。",
-  "It is night and everyone is asleep. Explore in the morning.": "夜なのでみんな眠っています。朝になったら探検しましょう。"
+  "It is night and everyone is asleep. Explore in the morning.": "夜なのでみんな眠っています。朝になったら探検しましょう。",
+  "Getting ready to explore…": "探検の準備中…",
+  "Could not start exploring. Please try again.": "探検を始められませんでした。もう一度お試しください。"
 };

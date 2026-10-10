@@ -44,5 +44,7 @@ export const VI_EXPLORE = {
   "Open the mailbox": "Mở hộp thư",
   "Sit on the bench": "Ngồi xuống ghế",
   "Walk anywhere. Come close to people and places to do things.": "Đi đâu tùy thích. Lại gần mọi người và các nơi để làm việc.",
-  "It is night and everyone is asleep. Explore in the morning.": "Trời tối rồi, mọi người đã ngủ. Sáng mai hãy đi khám phá nhé."
+  "It is night and everyone is asleep. Explore in the morning.": "Trời tối rồi, mọi người đã ngủ. Sáng mai hãy đi khám phá nhé.",
+  "Getting ready to explore…": "Đang chuẩn bị khám phá…",
+  "Could not start exploring. Please try again.": "Chưa bắt đầu khám phá được. Hãy thử lại nhé."
 };

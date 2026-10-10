@@ -48,7 +48,7 @@ class ExploreMode {
   async open({ roam = false, who = 'you' } = {}) {
     if (this.active) return;
     if (!roam && !homeOpen(this.game.s)) { this.hud.toast(t('Repair the farmhouse before going inside'), 'info'); return; }
-    Object.assign(this, { roam, near: null, seat: null, enterOnArrival: false, scanClock: 0 });
+    Object.assign(this, { roam, who, near: null, seat: null, enterOnArrival: false, scanClock: 0 });
     this.state = this.game.s; this.active = true; this.loading = true; this.error = false; this.target = null; this.card = null; this.notice = null;
     const generation = ++this.generation;
     this.panels.close(); this.radial.hide(); this.radial.armed = null; this.radial.tool.hidden = true;
@@ -60,7 +60,7 @@ class ExploreMode {
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
       this.walker = people.walkers.get(who) ?? people.walkers.get('you'); if (!this.walker) throw Error('player loading');
-      if (this.walker.indoors) { this.close(); this.hud.toast(t('It is night and everyone is asleep. Explore in the morning.'), 'info'); return; }
+      if (roam && this.walker.indoors) { this.close(); this.hud.toast(t('It is night and everyone is asleep. Explore in the morning.'), 'info'); return; }
       this.own = !!this.walker.player;   // only your own character goes inside and fishes for you
       this.room = new ExploreRoom(assets, this.state.settings);
       this.room.scene.background = this.world.scene.background;
@@ -83,14 +83,14 @@ class ExploreMode {
     const add = (id, d, max, label, params) => { if (d < max) out.push({ id, d: d / max, label, params }); };
     if (this.own) add('door', far(p, ...HOME_APPROACH), 3, 'Go inside');
     if (this.own && !s.fishing?.line) for (const [x, z] of POND_FISHING_SPOTS) add('pond', far(p, centre(x), centre(z)), 3.4, 'Fish here');
-    for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.pet) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, 'Talk to {name}', { name: people.nameOf(w) });
+    for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.pet && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, 'Talk to {name}', { name: people.nameOf(w) });
     add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board');
     add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox');
     for (const [id, item] of Object.entries(s.placed)) {
       if (item.kind === 'bench') add(`bench:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, e.seated ? 'Stand up' : 'Sit on the bench');
       else if (item.kind === 'bed' && s.beds[id]?.doneAt <= now) add(`bed:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, 'Harvest');
     }
-    return out.sort((a, b) => a.d - b.d)[0] ?? null;
+    return (e.seated && out.find(o => o.id.startsWith('bench:'))) || (out.sort((a, b) => a.d - b.d)[0] ?? null);
   }
   /** Do the nearby outdoor thing. Rules stay with their owners: these only call the same actions the farm view uses. */
   doNear(near) {
@@ -99,7 +99,7 @@ class ExploreMode {
       if (far(e.p, ...HOME_APPROACH) <= .35) { const r = this.game.do('enterFarmhouse'); if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason; }
       else if (routeExplore(this.state, HOME_APPROACH)) { this.target = 'door'; this.enterOnArrival = true; }
       else this.notice = 'The way is blocked. Try another spot.';
-    } else if (kind === 'pond') { const panels = this.panels; this.close(); panels.onFishCast?.(false); return; }   // fishing takes over from here
+    } else if (kind === 'pond') { const panels = this.panels; this.savedCamera = null; this.close(); panels.onFishCast?.(false); return; }   // fishing takes over; the camera stays on you
     else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, 28); people.talk(w); } }
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
@@ -129,7 +129,7 @@ class ExploreMode {
     e.stopImmediatePropagation(); e.preventDefault();
     if (!down) { this.keys.delete(k); return; }
     if (this.busy) { this.clear(); if (k === 'escape' && this.card) { this.card = null; this.render(); } return; }
-    if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.exitOnArrival = false; this.notice = null; }
+    if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
     else if (!e.repeat && (k === 'e' || k === 'enter')) this.choose('interact');
     else if (!e.repeat && k === 'escape') this.close();
   }
@@ -147,7 +147,7 @@ class ExploreMode {
     } else if (e.type === 'pointercancel') this.clear();
   }
   tap(x, y) {
-    this.notice = null; this.exitOnArrival = false;
+    this.notice = null; this.exitOnArrival = this.enterOnArrival = false;
     if (this.inside) {
       const hit = this.room.pick(x, y); if (!hit) return;
       this.target = hit.id ?? null;
@@ -168,7 +168,7 @@ class ExploreMode {
   }
   choose(action) {
     if (action === 'close') { this.close(); return; }
-    if (action === 'retry') { this.close(); this.open(); return; }
+    if (action === 'retry') { const again = { roam: this.roam, who: this.who }; this.close(); this.open(again); return; }
     if (action === 'back') { this.card = null; this.clear(); this.render(); return; }
     if (action === 'album') { this.card = null; this.clear(); this.panels.show('album'); this.render(); return; }
     if (this.loading || this.error || modalOpen() || this.panels.open) return;
@@ -208,6 +208,7 @@ class ExploreMode {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: 1 });
       if (moving) this.world.cam.lookAt(...e.p, 28);
+      if (this.enterOnArrival && !e.route.length && far(e.p, ...HOME_APPROACH) > .35) this.enterOnArrival = false;   // the walk there was cut short
       if (this.enterOnArrival && far(e.p, ...HOME_APPROACH) <= .35) {   // Go inside was chosen from a few steps away
         this.enterOnArrival = false; const r = this.game.do('enterFarmhouse');
         if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason;
@@ -224,7 +225,7 @@ class ExploreMode {
     // Do not replace a captured direction button when the nearest-object label changes mid-hold.
     if (Math.hypot(...this.stick) && !this.busy) { this.renderPending = true; return; }
     const active = document.activeElement?.dataset.explore;
-    const loading = this.loading ? t('Opening the farmhouse…') : this.error ? t('Could not open the farmhouse. Please try again.') : '';
+    const loading = this.loading ? t(this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
     const nearest = this.nearest(), control = exploreState(this.state).controls;
     let card = '';
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
@@ -249,7 +250,7 @@ class ExploreMode {
     this.el.style.fontSize = `${this.state.settings.textSize ?? 1}em`;
     this.el.querySelectorAll('[data-move]').forEach(b => {
       const vectors = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
-      b.addEventListener('pointerdown', e => { e.preventDefault(); this.target = null; this.exitOnArrival = false; this.stick = vectors[b.dataset.move]; b.setPointerCapture(e.pointerId); });
+      b.addEventListener('pointerdown', e => { e.preventDefault(); this.target = null; this.exitOnArrival = this.enterOnArrival = false; this.stick = vectors[b.dataset.move]; b.setPointerCapture(e.pointerId); });
       for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(event, () => { this.stick = [0, 0]; if (this.renderPending) { this.renderPending = false; this.render(); } });
     });
     if (active) this.el.querySelector(`[data-explore="${active}"]`)?.focus({ preventScroll: true });

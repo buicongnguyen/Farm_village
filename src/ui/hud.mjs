@@ -108,6 +108,7 @@ export class Hud {
         caption.textContent = t(act === 'projects' ? 'Projects' : act === 'orders' ? 'Orders' : text);
       }
     }
+    q('[data-act="explore"]').hidden = s.story?.tutorial < 3 && s.mode === 'restore';   // not during the first steps (like the Next chip)
     this.refreshStatus();
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');
