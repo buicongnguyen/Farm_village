@@ -184,7 +184,9 @@ body.reduced-motion .next-chip { animation: none; }
 .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 54px); }
 .hud-status { display: grid; gap: 4px; justify-items: start; max-width: min(60vw, 250px); margin-top: 2px; }
 .status-row { display: flex; align-items: center; gap: 6px; font: 800 12.5px/1.15 'Nunito', sans-serif; color: #5a3410; background: #fff8e4ee; border: 2px solid #e2b977; border-radius: 12px; padding: 3px 9px 3px 5px; box-shadow: 0 2px 0 #b8741a66; cursor: pointer; text-align: left; }
-.status-row.hot { border-color: #ffb92e; background: #fff1c2; animation: row-bob 2.4s ease-in-out infinite; }
+.status-row.hot { border-color: #ffb92e; background: #fff1c2; }
+/* Only a biting fish moves (docs/HUD-STANDARD.md: one thing in motion at a time); other ready pills just glow. */
+.status-row.hot[data-status="pond"] { animation: row-bob 2.4s ease-in-out infinite; }
 .status-row .mini, .status-row .g { width: 20px; height: 20px; flex: none; }
 .status-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
 body.reduced-motion .status-row.hot { animation: none; }
