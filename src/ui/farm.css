@@ -336,6 +336,7 @@ img.fair-ribbon { width: 46px; height: 46px; flex: none; }
 .closing-cast { max-height: 58vh; overflow-y: auto; gap: 6px 8px; }
 .closing-cast .mini-face { width: 40px; height: 40px; }
 .closing-cast span small { font-size: 10px; }
+@media (max-width: 560px) { .closing-cast { gap: 4px 5px; } .closing-cast .mini-face { width: 34px; height: 34px; } .closing-cast span small { font-size: 9px; padding-inline: 6px; } }
 .closing-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 2px; }
 .album-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; margin: 8px 0; }
 .album-chapter { display: grid; gap: 2px; padding: 6px; border: 2px solid var(--line); border-radius: 14px; background: #fffaf0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
