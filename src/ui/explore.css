@@ -1,6 +1,6 @@
 /* Layout only: reuse the shared art-lane tokens and button meanings. Loaded with Explore. */
 body.explore-active .hud-tools, body.explore-active .hud-right, body.explore-active .next-chip,
-body.explore-active .guide, body.explore-active .pointer, body.explore-active .bubbles,
+body.explore-active .guide, body.explore-active .pointer, body.explore-inside .bubbles, body.explore-active [data-act="explore"],
 body.explore-active .hud-status, body.explore-active .village-name, body.explore-active [data-act="turn"] { display: none !important; }
 .explore-ui { position: fixed; inset: 0; pointer-events: none; z-index: 9; }
 body.panel-open .explore-ui, body:has(.modal) .explore-ui { visibility: hidden; }

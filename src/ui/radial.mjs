@@ -68,6 +68,14 @@ export class Radial {
     else { const p = this.s.placed[id]; if (p) this.world.juice?.pop?.({ x: p.x, z: p.z }); }
     this.armedUntil = performance.now() + 6000;
   }
+  /** Explore (lazy): Go inside from the farmhouse menu, or roam from the HUD button as yourself or the family member
+   *  you tapped just before. */
+  explore(roam = false) {
+    const g = this.game, state = g.s, sel = this.people?.selected;
+    const who = roam && sel?.family && !sel.pet && performance.now() < (this.people.selectedUntil ?? 0) ? sel.id : 'you';
+    if (roam && this.people) this.people.selected = null;
+    import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this, { roam, who })).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn'));
+  }
   hide() { this.el.hidden = true; this.target = null; this.outline(null); }
   /** A tap on the map outside build mode. */
   /** The menu of something that is worn, broken or being repaired: its state, and Repair (and its usual menu if it still works). */
@@ -213,7 +221,7 @@ export class Radial {
   }
   choose(d) {
     const g = this.game, { id, cell, land, ruin } = this.target ?? {}; this.hide();
-    if (d.act === 'goInside') { const state = g.s; import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this)).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn')); return; }
+    if (d.act === 'goInside') { this.explore(); return; }
     if (d.act === 'plant') { this.lastCrop = d.crop; this.armed = { action: 'plant', crop: d.crop }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); this.hud.toast(t('Drag across more beds to plant them'), 'info', { icon: d.crop }); }
     else if (d.act === 'harvest') { this.armed = { action: 'harvest' }; this.armedUntil = performance.now() + 6000; this.swept = new Set(); this.sweepBed(id); }
     else if (d.act === 'plantAll') g.do('plant', { ids: Object.keys(g.s.placed).filter(k => g.s.placed[k].kind === 'bed' && !g.s.beds[k]), crop: d.crop });

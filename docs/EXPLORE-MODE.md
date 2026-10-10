@@ -4,6 +4,32 @@
 to implement farmhouse entry, direct movement, door exit, sofa and memory shelf using Claude's PR #43. The authoritative art delivery is
 [AR-015 in ASSET-REQUESTS.md](ASSET-REQUESTS.md#ar-015-farmhouse-interior-for-explore-mode--requested-2026-10-09).
 
+## Roaming outdoors — 2026-10-10 (Claude, at the user's request while Codex was away)
+
+The user asked for a visible Explore button that changes the play style to the character they select. The first slice
+already walked the player outdoors on the way to the door; this extends that controller (`ui/explore-mode.mjs`) rather
+than adding a second one.
+
+- **Entry:** a small round **Explore** button (compass) at the top right, beside Turn and Settings. It starts roaming
+  where the character stands, with no forced walk to the door. The farmhouse menu's Go inside is unchanged. The button
+  hides while exploring; **Farm view** returns. This supersedes section 2's "no permanent HUD button" at the user's
+  direction; the top-right corner is not a destination row, and every target stays 44 px.
+- **Who you walk as:** yourself, or the family member you tapped just before pressing Explore (`radial.explore`).
+  A family member can roam, talk, sit, harvest and read the board; the farmhouse room and fishing stay with your own
+  character (the room draws the player's rig, and fishing belongs to the player's line).
+- **Nearby things** (`scan()`, five times a second): the one closest offers its single action on the existing
+  primary button and E/Enter. Go inside (within 3 m: walks to the approach, then enters), Fish here (hands over to
+  the fishing trip and its Reel button), Talk to {name} (the same `people.talk` as a tap), Read the order board,
+  Open the mailbox, Sit on the bench / Stand up, Harvest (the farm's own `harvest` action). No new rules or rewards.
+- **Night:** nobody roams while everyone is asleep; the button says so.
+- **Cost:** about 0.7 KB of first load for the button and its glyph; everything else loads with Explore. Test build
+  1,097,151 / 1,100,000 bytes after the guide was made lazy (PR #46).
+- **Checks:** `tests/explore-roam.browser.mjs` (3 checks: phone start/keys/camera/return; talk, board, harvest, bench,
+  Go inside from a distance; walking as a selected family member and the pond hand-over, in Vietnamese). Codex's
+  `explore.browser` still passes unchanged.
+- **Still open:** an analog joystick, tap-to-aim casting, other family members indoors, more outdoor actions (shops,
+  animals), and other interiors.
+
 ## Implemented first slice — 2026-10-09
 
 - **Entry:** farmhouse radial → Go inside → walk to public approach `(51, 125)` → Go inside. No purchased land or new road is required. Worn levels 1–2 remain accessible; broken/repairing houses refuse entry after rechecking on arrival.

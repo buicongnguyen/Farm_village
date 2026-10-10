@@ -47,7 +47,7 @@ export class Hud {
         <div class="pill coins" data-hud="coins">${iconHtml('ui:coin', '', 'pill-icon')}<b></b></div></div>
         <button class="village-name hud-tracker" data-act="village" data-hud="village"><span class="tracker-name"></span><span class="tracker-goal"></span></button>
         <div class="hud-status" data-hud="status"></div></div>
-      <div class="hud-topright"><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
+      <div class="hud-topright"><button class="round small rim-grey" data-act="explore">${glyph('explore', 'g')}</button><button class="round small rim-grey" data-act="turn">${glyph('rotate', 'g')}</button><button class="round small rim-grey" data-act="settings">${glyph('settings', 'g')}</button></div>
       <div class="hud-right">
         <button class="round rim-blue" data-act="today">${iconHtml('ui:today', '', 'btn-icon')}<i class="badge dot"></i></button>
         <button class="round rim-teal" data-act="projects">${iconHtml('ui:projects', '', 'btn-icon')}<i class="badge dot ready"></i></button>
@@ -69,6 +69,7 @@ export class Hud {
       if (act === 'village') { this.onPanel?.('roadmap'); return; }
       if (act === 'next') { const n = this.nextTask; if (n) { if (n.do) this.game.do(...n.do); else if (n.way) this.onShowWay?.(n.way); else if (n.calm) this.toast(t('Everything is busy. Take a breath.'), 'info', { icon: 'ui:heart' }); else if (n.panel) this.onPanel?.(n.panel); else this.onNext?.(n); } return; }
       if (act === 'turn') onTurn?.();
+      if (act === 'explore') this.onExplore?.();
       if (act === 'lang') setLanguage(LANGUAGES[(LANGUAGES.findIndex(lang => lang.id === getLanguage()) + 1) % LANGUAGES.length].id).catch(() => this.toast(t('Could not load this language. Check your connection.'), 'warn'));
       if (act === 'build') onBuild?.();
       if (['orders', 'barn', 'today', 'projects', 'album', 'settings', 'profiles', 'friends', 'mail'].includes(act)) onPanel?.(act);
@@ -96,7 +97,7 @@ export class Hud {
     q('[data-hud="coins"]').title = num(s.coins);
     q('[data-act="lang"]').textContent = LANGUAGES[(LANGUAGES.findIndex(lang => lang.id === getLanguage()) + 1) % LANGUAGES.length].id.toUpperCase();
     // farm profiles are chosen on the main menu (main.mjs) only
-    const label = { turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
+    const label = { explore: 'Explore', turn: 'Turn the view', lang: 'Language', build: 'Build', orders: 'Order board', barn: 'Barn', today: 'Today', album: 'Family album', settings: 'Settings',
       projects: 'Village projects', friends: 'Friends', mail: 'Mailbox' };
     for (const [act, text] of Object.entries(label)) {
       const button = q(`[data-act="${act}"]`); if (!button) continue;
@@ -107,6 +108,7 @@ export class Hud {
         caption.textContent = t(act === 'projects' ? 'Projects' : act === 'orders' ? 'Orders' : text);
       }
     }
+    q('[data-act="explore"]').hidden = s.story?.tutorial < 3 && s.mode === 'restore';   // not during the first steps (like the Next chip)
     this.refreshStatus();
     this.refreshNext();
     const can = fillable(s), badge = q('[data-act="orders"] .badge');

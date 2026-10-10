@@ -36,5 +36,15 @@ export const KO_EXPLORE = {
   "Move up": "위로 이동",
   "Move left": "왼쪽으로 이동",
   "Move down": "아래로 이동",
-  "Move right": "오른쪽으로 이동"
+  "Move right": "오른쪽으로 이동",
+  // roaming outdoors (the HUD Explore button)
+  "Fish here": "여기서 낚시하기",
+  "Talk to {name}": "{name}와(과) 이야기하기",
+  "Read the order board": "주문 게시판 보기",
+  "Open the mailbox": "우편함 열기",
+  "Sit on the bench": "벤치에 앉기",
+  "Walk anywhere. Come close to people and places to do things.": "어디든 걸어 보세요. 사람이나 장소에 가까이 가면 할 수 있는 일이 나와요.",
+  "It is night and everyone is asleep. Explore in the morning.": "밤이라 모두 자고 있어요. 아침에 둘러보세요.",
+  "Getting ready to explore…": "둘러볼 준비를 하고 있어요…",
+  "Could not start exploring. Please try again.": "둘러보기를 시작하지 못했어요. 다시 시도해 주세요."
 };
