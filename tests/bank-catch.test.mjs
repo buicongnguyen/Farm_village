@@ -58,3 +58,15 @@ test('walking on winds the line in: no fish, no charge, and the next cast is a f
   assert.equal(s.fishing.line, null); assert.equal(s.fishing.caught, 0); assert.deepEqual(s.barn.items, stock); assert.equal(s.coins, coins);
   must(s, 'castLine', {}, T0 + 6000); assert.ok(s.fishing.line.doneAt > T0 + 6000);
 });
+
+test('every fish can bite, has its icon in both sizes and a model and size for the pond', async () => {
+  const { existsSync } = await import('node:fs'), { FISH_TABLE } = await import('../src/content/goods.mjs');
+  assert.equal(FISH_TABLE.length, 11);
+  const seen = new Set(); for (let i = 0; i < 4000; i++) seen.add(pick(`seed:${i}`, i % 2 === 0));
+  for (const f of FISH_TABLE) {
+    assert.ok(seen.has(f.id), `${f.id} never bites`);
+    assert.ok(existsSync(`public/assets/icons/${f.id}.webp`) && existsSync(`public/assets/icons/sm/${f.id}.webp`), `${f.id} has no icon`);
+    assert.ok(typeof f.model === 'string' && f.len >= 0.5 && f.len <= 3.2 && f.value > 0, `${f.id} is not ready for the pond`);
+  }
+  assert.ok(Math.max(...FISH_TABLE.map(f => f.len)) >= 2.4, 'no huge fish');
+});

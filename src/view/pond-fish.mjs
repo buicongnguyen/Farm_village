@@ -9,8 +9,13 @@ import { POND_SHAPE } from './brook.mjs';
 import { loadKitLater, bake } from './models.mjs';
 import { toon } from '../kit/toon.mjs';
 import { pick } from '../core/fishing.mjs';
+import { FISH_TABLE } from '../content/goods.mjs';
 
-const KINDS = [['perch', 7, 3, 1.0], ['carp', 5, 2, 1.15], ['catfish', 3, 1, 1.2], ['golden', 2, 1, 0.85]];   // [model, in the village pond, in a built pond, length m]
+// How many of each swim in the village pond and in a pond you built (the big ones need the big water); models and sizes come from FISH_TABLE.
+// The third entry is its colour from far off: zoomed out, every fish is one plain shape in one shared draw.
+const STOCK = { perch: [4, 2, '#7fb23a'], carp: [3, 1, '#c8702a'], clownfish: [3, 2, '#f47a1c'], rainbowfish: [3, 1, '#e84f7d'], catfish: [2, 0, '#8c6a48'], koi: [3, 1, '#f4ede4'], eel: [1, 0, '#2e8b57'],
+  pike: [1, 0, '#4a90d9'], goldfish: [1, 1, '#f7c21c'], sunfish: [1, 0, '#b9c4d6'], pond_giant: [1, 0, '#7fe3f0'] };
+const KINDS = FISH_TABLE.map(f => [f.model, ...(STOCK[f.id] ?? [1, 0, '#cccccc']), f.len]);   // [model, in the village pond, in a built pond, far colour, length m]
 const MAX = 6, BACK_S = 12;
 const m4 = new THREE.Matrix4(), t4 = new THREE.Matrix4(), q = new THREE.Quaternion(), qt = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), eu = new THREE.Euler();
 const turn = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k, ease = k => k * k * (3 - 2 * k);
@@ -25,17 +30,24 @@ export class PondFish {
   build(kit) {
     // seen through the water: drawn after it, a little see-through and tinted by it (the water itself is opaque)
     const mat = toon({ vertexColors: true, color: '#cfeeff', transparent: true, opacity: 0.85 }); mat.depthTest = false; mat.depthWrite = false;
-    for (const [id, big, small, len] of KINDS) {
+    let total = 0;
+    for (const [id, big, small, tint, len] of KINDS) {
       const root = kit[`fish_${id}`]; if (!root) continue;
       const body = root.getObjectByName(`fish_${id}_body`), tail = root.getObjectByName(`fish_${id}_tail`); if (!body) continue;
       const bg = bake(body, { center: false, ao: 0 }); bg.applyMatrix4(body.matrix);
       const tg = tail ? bake(tail, { center: false, ao: 0 }) : null, hinge = tail ? tail.position.clone() : new THREE.Vector3();
       bg.computeBoundingBox(); const b = bg.boundingBox, z0 = Math.min(b.min.z, tg ? hinge.z + (tg.computeBoundingBox(), tg.boundingBox.min.z) : b.min.z);
       const scale = len / Math.max(0.01, b.max.z - z0), top = b.max.y * scale;
-      const make = g => { const m = new THREE.InstancedMesh(g, mat, big + small * (MAX - 1)); m.count = 0; m.renderOrder = 4; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(m); return m; };
-      this.kinds.push({ id, big, small, nose: b.max.z * scale, scale, top, hinge, body: make(bg), tail: tg ? make(tg) : null });
+      const make = g => { const m = new THREE.InstancedMesh(g, mat, Math.max(1, big + small * (MAX - 1))); m.count = 0; m.renderOrder = 4; m.frustumCulled = false; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(m); return m; };
+      this.kinds.push({ id, big, small, tint: new THREE.Color(tint), nose: b.max.z * scale, scale, top, hinge, body: make(bg), tail: tg ? make(tg) : null });
+      total += Math.max(1, big + small * (MAX - 1));
+      if (!this.far) this.far = bg.clone();   // the first fish's body is everyone's far shape
     }
     if (this.kinds[0]) this.kinds[0].body.name = 'pond-fish';
+    if (this.far) {
+      this.far.deleteAttribute('color'); const plain = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.8, depthTest: false, depthWrite: false });
+      this.far = new THREE.InstancedMesh(this.far, plain, total); this.far.count = 0; this.far.renderOrder = 4; this.far.frustumCulled = false; this.far.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.world.scene.add(this.far);
+    }
   }
   /** The ponds: the village pond, then every built pond (water level y). */
   ponds() {
@@ -43,7 +55,7 @@ export class PondFish {
     for (const [id, p] of Object.entries(this.game.s.placed)) if (p.kind === 'pond' && out.length < MAX) out.push({ id, x: (p.x + 2) * CELL - 0.3, z: (p.z + 2) * CELL, rx: 2.0, rz: 2.0, y: 0.24 });
     return out;
   }
-  get count() { return this.kinds.reduce((a, k) => a + k.body.count, 0); }
+  get count() { return this.far?.visible ? this.far.count : this.kinds.reduce((a, k) => a + k.body.count, 0); }
   /** The fish on your line was landed: it leaves the water (fishing-view.mjs leaps the catch from the float). */
   caught() {
     const b = this.visitor; if (!b) return;
@@ -53,7 +65,7 @@ export class PondFish {
   answer() {
     const view = this.world.fishingView, st = view?.play?.state, f = view?.playerFloat, line = this.game.s.fishing?.line;
     if (!f || !line || !st || !['approach', 'nibble', 'bite', 'fight'].includes(st.phase)) return null;
-    const fish = pick(line.seed, line.bait), kind = fish === 'goldfish' ? 'golden' : fish, pond = Math.max(0, this.list.findIndex(p => p.id === (line.pond ?? null)));
+    const fish = pick(line.seed, line.bait), kind = FISH_TABLE.find(f => f.id === fish)?.model ?? fish, pond = Math.max(0, this.list.findIndex(p => p.id === (line.pond ?? null)));
     const b = this.visitor;
     if (!b || b.kind !== kind || b.pond !== pond) {
       const k = this.kinds.find(k => k.id === kind); if (!k) return null;
@@ -69,7 +81,8 @@ export class PondFish {
     const quiet = document.body.classList.contains('reduced-motion');
     this.time += quiet ? dt * 0.2 : dt;
     if ((this.acc += dt) > 2) { this.acc = 0; this.list = this.ponds(); }
-    const t = this.time, on = this.answer(), b = this.visitor;
+    const t = this.time, on = this.answer(), b = this.visitor, far = this.far && this.world.cam.lod > 0;   // zoomed out: one draw for every fish
+    let all = 0;
     if (b) { b.w = on ? 1 : Math.max(0, b.w - dt / 1.6); if (!on && b.w <= 0) this.visitor = null; }
     this.gone = this.gone.filter(g => g.until + 1.2 > t);
     this.kinds.forEach((k, ki) => {
@@ -109,11 +122,14 @@ export class PondFish {
         const swish = quiet ? 0 : Math.sin(t * wag + seed * 3);
         q.setFromEuler(eu.set(0, heading + swish * 0.06, roll, 'YXZ'));   // the models face +z
         const y = p.y - k.top - 0.05 + lift + 0.03 * Math.sin(t * 1.3 + seed);   // just under the surface
-        m4.compose(v.set(x, y, z), q, sc.setScalar(k.scale * size)); k.body.setMatrixAt(i, m4);
+        m4.compose(v.set(x, y, z), q, sc.setScalar(k.scale * size));
+        if (far) { this.far.setMatrixAt(all, m4); this.far.setColorAt(all++, k.tint); continue; }
+        k.body.setMatrixAt(i, m4);
         if (k.tail) { qt.setFromAxisAngle(up, swish * swing); t4.compose(k.hinge, qt, sc.setScalar(1)); k.tail.setMatrixAt(i, m4.clone().multiply(t4)); }
       }
-      k.body.count = i; k.body.instanceMatrix.needsUpdate = true;
-      if (k.tail) { k.tail.count = i; k.tail.instanceMatrix.needsUpdate = true; }
+      k.body.count = far ? 0 : i; k.body.visible = !far && i > 0; k.body.instanceMatrix.needsUpdate = true;
+      if (k.tail) { k.tail.count = far ? 0 : i; k.tail.visible = !far && i > 0; k.tail.instanceMatrix.needsUpdate = true; }
     });
+    if (this.far) { this.far.count = all; this.far.visible = far && all > 0; this.far.instanceMatrix.needsUpdate = true; if (this.far.instanceColor) this.far.instanceColor.needsUpdate = true; }
   }
 }

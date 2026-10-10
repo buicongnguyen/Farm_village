@@ -11,7 +11,6 @@ import { newGame } from './core/state.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { Marks } from './view/marks-view.mjs';
-import { PondFish } from './view/pond-fish.mjs';
 import { dressWorld } from './view/dress.mjs';
 import { Daylight } from './view/daylight.mjs';
 import { Ghost } from './view/ghost.mjs';
@@ -108,7 +107,7 @@ const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clo
 const world = new WorldView(app);
 const land = new LandView(world, game);
 const marks = new Marks(world, game, land);
-const pondFish = new PondFish(world, game);
+import('./view/pond-fish.mjs').then(({ PondFish }) => new PondFish(world, game)).catch(() => {});   // sets world.pondFish
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;
 let saveSession = null, changingProfile = false;
@@ -329,7 +328,7 @@ if (!game.s.today.seen) { if (game.s.stats.harvested > 0) panels.show('today'); 
 
 if (TEST_MODE) {
   const { installTestHook } = await import('./kit/test-hook.mjs');
-  installTestHook({ world, game, land, marks, pondFish, build, hud, panels, radial, people, juice: world.juice });
+  installTestHook({ world, game, land, marks, build, hud, panels, radial, people, juice: world.juice });
 }
 /** All transitions leave the old farm's timers and pagehide writer behind before reloading another save. */
 async function handleSave(what, arg) {

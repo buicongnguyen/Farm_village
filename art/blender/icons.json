@@ -891,6 +891,83 @@
   "why": "side-on view shows the stripes and the fins"
  },
  {
+  "id": "clownfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_clown",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "rainbowfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_rainbow",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "koi",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_koi",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "eel",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_eel",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "pike",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_icepike",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "sunfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_sunfish",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "pond_giant",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_guardian",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
   "id": "herb",
   "src": "raw:items",
   "root": "item_herb",

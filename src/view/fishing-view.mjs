@@ -7,6 +7,7 @@ import { loadKitLater } from './models.mjs';
 import { BANK, nearestPond, bankSlot } from '../core/pond-bank.mjs';
 import { stepCost } from '../core/walk.mjs';
 import { bankCount } from '../core/fishing.mjs';
+import { FISH_TABLE } from '../content/goods.mjs';
 
 const MAX = 24, SEGMENTS = 8;
 const up = new THREE.Vector3(0, 1, 0), a = new THREE.Vector3(), b = new THREE.Vector3();
@@ -62,7 +63,7 @@ export class FishingView {
     const here = [this.angler?.x ?? me.x, this.angler?.z ?? me.z], pond = nearestPond(this.game.s, ...here).pond;
     const free = (x, z) => stepCost(this.game.s, Math.floor(x / CELL), Math.floor(z / CELL)) > 0;   // open ground only: not a kiosk, a building or the water
     const pile = (this.pile ??= { pond, anchor: here, fish: [], count: 0 }), slot = bankSlot(pile.pond, pile.anchor, pile.count++, free);
-    const id = fish === 'goldfish' ? 'golden' : fish, size = { perch: 1.05, carp: 1.3, catfish: 1.55, golden: 1.05 }[id] ?? 1.1;   // a little larger than life, to read beside a 2.3 m villager
+    const def = FISH_TABLE.find(f => f.id === fish), id = def?.model ?? fish, size = (def?.len ?? 1) * 1.15;   // a little larger than life, to read beside a 2.3 m villager
     loadKitLater('fish').then(kit => {
       const src = kit[`fish_${id}`]; if (!src || this.pile !== pile) return;
       const o = src.clone(true), box = new THREE.Box3().setFromObject(o), len = Math.max(.01, box.max.z - box.min.z);

@@ -6,6 +6,7 @@ export function installTestHook(parts) {
   window.farm = {
     ready: true,
     ...parts,
+    get pondFish() { return world.pondFish; },
     info: () => world.info(),
     view: (span, x, z) => world.cam.lookAt(x ?? world.cam.x, z ?? world.cam.z, span),
     /** Screen position (CSS pixels) of the middle of cell (x, z), or of a point inside it (fx, fz in 0–1). */
