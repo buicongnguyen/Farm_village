@@ -192,13 +192,17 @@ export class Radial {
     const land = target.land ?? null;
     this.target = { cell, ...target };
     this.outline(land);
-    const r = Math.max(64, 30 + buttons.length * 9);
+    // Up to seven buttons fan round the finger. More than that (a long list of crops) would wrap round and overlap, so
+    // they sit in tidy rows above the finger instead, as many columns as the screen holds.
+    const n = buttons.length, grid = n > 7, cols = grid ? Math.max(3, Math.min(6, Math.ceil(n / 2), Math.floor((innerWidth - 24) / 74))) : 0, rows = grid ? Math.ceil(n / cols) : 0;
+    const r = grid ? Math.max(cols * 37, rows * 80 + 30) : Math.max(64, 30 + n * 12);   // wide enough that a price label never touches the next button
     this.el.innerHTML = (info ? `<div class="radial-info">${info}</div>` : '') + buttons.map((b, i) => {
-      const a = -Math.PI / 2 + (i - (buttons.length - 1) / 2) * 0.9, bx = Math.cos(a) * r, by = Math.sin(a) * r;
+      const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.9, row = Math.floor(i / cols), inRow = Math.min(cols, n - row * cols);
+      const bx = grid ? (i % cols - (inRow - 1) / 2) * 74 : Math.cos(a) * r, by = grid ? -58 - (rows - 1 - row) * 82 : Math.sin(a) * r;
       return `<button class="radial-btn" style="--x:${bx.toFixed(1)}px;--y:${by.toFixed(1)}px;--i:${i}" data-act="${b.act}"${b.crop ? ` data-crop="${b.crop}"` : ''}${b.parcel ? ` data-parcel="${b.parcel}"` : ''}${b.id ? ` data-id="${b.id}"` : ''}${b.disabled ? ' disabled' : ''}>${b.icon}<small>${b.label}</small></button>`;
     }).join('');
-    const margin = r + 44;
-    this.el.style.left = `${Math.min(innerWidth - margin, Math.max(margin, x))}px`; this.el.style.top = `${Math.min(innerHeight - margin, Math.max(margin + 20, y))}px`;
+    const margin = r + 44, mx = grid ? cols * 37 + 6 : margin, up = grid ? rows * 82 + 20 : margin + 20, down = grid ? 80 : margin;
+    this.el.style.left = `${Math.min(innerWidth - mx, Math.max(mx, x))}px`; this.el.style.top = `${Math.min(innerHeight - down, Math.max(up, y))}px`;
     this.el.hidden = false; this.el.classList.remove('open'); void this.el.offsetWidth; this.el.classList.add('open');
     sfx('pop');
   }
