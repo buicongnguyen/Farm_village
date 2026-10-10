@@ -567,6 +567,38 @@ def chili_item():
     return p
 item('chili', chili_item())
 
+# ---- chapter 11 (the one choice): tins from the cannery; honey and honey cake from the kept meadow
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'tin': '#C9D1DC', 'tind': '#8C95A5', 'labely': '#FFD23F', 'labelr': '#EF3B3B', 'honey': '#F5A81E',
+    'honeyl': '#FFD866', 'honeyd': '#C97A10', 'sponge': '#F2C777', 'sponged': '#D9A24E'}.items()})
+def tin(label, veg):
+    """A tin of preserves: a silver can with a bright paper label and a picture of what is inside, and one of them beside it."""
+    return [cyl('can', .3, .6, (0, 0, .3), C['tin'], verts=20, bev=.02), torus('rimt', .3, .025, (0, 0, .6), C['tind'], major_segs=20, minor_segs=4),
+            torus('rimb', .3, .025, (0, 0, .02), C['tind'], major_segs=20, minor_segs=4), cyl('label', .306, .36, (0, 0, .3), C[label], verts=20, bev=0),
+            P('pic', .13, (0, -.31, .3), veg, sub=2, sc=(1, .25, 1)), cyl('lid', .25, .02, (0, 0, .615), C['tind'], verts=20, bev=0),
+            P('veg', .15, (.43, -.18, .13), veg, sub=2), P('vegleaf', .06, (.43, -.18, .27), 'leaf', sub=1, sc=(1.4, 1.4, .5))]
+item('canned_corn', tin('labelr', 'corn'))
+item('canned_tomato', tin('labely', 'tomato'))
+def honey_jar():
+    """A jar of honey: amber glass, a cream lid and label with a bee, a wooden dipper leaning on it and a golden drop."""
+    return [cyl('jar', .27, .46, (0, 0, .23), C['honey'], verts=16, bev=.05), cyl('shine', .2, .05, (0, 0, .47), C['honeyl'], verts=16, bev=.02),
+            cyl('lid', .22, .1, (0, 0, .54), C['cream'], verts=14, bev=.02), cyl('labelj', .276, .17, (0, 0, .24), C['cream'], verts=16, bev=0),
+            P('bee', .065, (0, -.28, .24), 'honeyd', sub=1, sc=(1.5, .4, 1)), stalk('dipper', (.34, -.12, .04), (.52, -.12, .66), .03, C['woodd']),
+            P('dip', .09, (.5, -.12, .6), 'honeyd', sub=1, sc=(1, 1, 1.3)), P('drop', .08, (.3, -.26, .04), 'honeyl', sub=1, sc=(1.3, 1.3, .4))]
+item('honey', honey_jar())
+def honey_cake():
+    """Honey cake: thin sponge layers with cream between, a honey glaze running down, a piece of honeycomb on top, on a teal plate."""
+    p = [cyl('plate', .66, .05, (0, 0, .025), C['dish'], verts=28, bev=0), torus('rim', .64, .03, (0, 0, .05), C['dishd'], major_segs=28, minor_segs=4)]
+    for i in range(4):
+        p.append(cyl('sponge', .5, .09, (0, 0, .1 + i * .12), C['sponge' if i % 2 == 0 else 'sponged'], verts=24, bev=.01))
+        p.append(cyl('cream', .49, .03, (0, 0, .16 + i * .12), C['eggw'], verts=24, bev=0))
+    p.append(cyl('glaze', .51, .05, (0, 0, .55), C['honey'], verts=24, bev=.02))
+    for i in range(7):
+        a = i / 7 * math.tau
+        p.append(P('drip', .07, (math.cos(a) * .5, math.sin(a) * .5, .47 - (i % 3) * .06), 'honey', sub=1, sc=(.8, .8, 1.5)))
+    p += [box('comb', (.26, .2, .1), (0, 0, .63), C['honeyl'], bev=.02, seg=1, rot=(0, 0, .4)), P('combdrop', .05, (.12, -.1, .62), 'honeyd', sub=1)]
+    return p
+item('honey_cake', honey_cake())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

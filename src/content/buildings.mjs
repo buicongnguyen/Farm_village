@@ -65,6 +65,10 @@ export const BUILDINGS = {
   clinic:     { name: 'Clinic', cat: 'projects', size: [4, 3], area: 'village', level: 6, cost: 600, door: true, project: 'clinic', max: 1, model: 'hospital', charm: 4 },
   // Chapter 7: built on its own site on the brook (core/sites.mjs), never placed by hand; you fish from it (core/pond-bank.mjs)
   dock:       { name: 'Boat dock', cat: 'projects', size: [2, 2], area: 'bank', level: 10, cost: 800, site: true, max: 1, model: 'dock' },
+  // Chapter 11, the one choice (core/valley.mjs). The cannery stands on the meadow by the brook if the player takes Mr
+  // Albright's offer (built by the answer, never by hand); beehives are for the player who keeps the meadow (`choice`).
+  cannery:    { name: 'Cannery', cat: 'projects', size: [5, 4], area: 'bank', level: 1, cost: 0, site: true, max: 1, produces: true, model: 'cannery' },
+  beehive:    { name: 'Beehive', cat: 'production', size: [1, 1], area: 'farm', level: 10, cost: 250, produces: true, max: 5, choice: 'meadow', model: 'beehive', charm: 2 },
   // Chapter 9: rebuilt on the village square where the old one burned (core/sites.mjs); the Harvest Festival is held from it
   stage:      { name: 'Festival stage', cat: 'projects', size: [4, 2], area: 'village', level: 12, cost: 1500, site: true, max: 1, model: 'stage' },
   police:     { name: 'Police post', cat: 'projects', size: [4, 3], area: 'village', level: 12, cost: 2200, door: true, civicSite: true, max: 1, model: 'police', charm: 4 },

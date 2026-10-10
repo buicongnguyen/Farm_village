@@ -1,4 +1,5 @@
 // The order board (DESIGN 8, ECONOMY 3): cards from villagers and neighbours, delivered from the barn.
+import { beautyBonus } from './valley.mjs';
 import { ORDERS, XP, BONDS } from '../content/economy.mjs';
 import { GOODS, CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { VILLAGERS, NEIGHBOURS, ORDER_LINES, FIRST_ORDER, allPeople, hasArrived } from '../content/people.mjs';
@@ -68,7 +69,8 @@ export function makeCard(s, now, { easy = false } = {}) {
     const worth = Object.entries(need).reduce((a, [g, n]) => a + GOODS[g].value * n, 0);
     // the poster first, then a line in their own voice (the story's `orders` lines), with the same two draws as before
     const from = r.pick(posters(s, now)), lines = allPeople().find(p => p.id === from)?.orders;
-    return { id, from, need, coins: Math.round(worth * ORDERS.pay), xp: Math.max(1, Math.round(worth * XP.order)), line: r.pick(lines?.length ? lines : ORDER_LINES), readyAt: now };
+    return { id, from, need, coins: Math.round(worth * ORDERS.pay * (1 + beautyBonus(s))),   // a prettier valley pays a little more (chapter 11)
+      xp: Math.max(1, Math.round(worth * XP.order)), line: r.pick(lines?.length ? lines : ORDER_LINES), readyAt: now };
   });
 }
 /** Fill empty slots whose wait is over. Called by tick(). */

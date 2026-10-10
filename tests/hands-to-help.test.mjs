@@ -84,5 +84,5 @@ test('chapter 10 closes with three hands hired and thirty tasks done by them', (
   assert.deepEqual(r.missing, []); assert.ok(ch.when(t)); assert.equal(hiredCount(t), 3);
   const j = farm(11); j.house = { level: 5 }; j.stats.cheeseMade = 1; j.album.fruit.cherry = 9;
   for (const kind of ['goat_barn', 'dairy', 'fruit_stand', 'kennel']) { j.placed[`x_${kind}`] = { kind, x: 2, z: 2, rot: 0 }; j.counts[kind] = 1; }
-  j.hands = { field: { since: T0 } }; let stage = journeyOf(j); assert.equal(stage.stage.id, 'coop'); assert.equal(stage.total, 2); assert.equal(stage.done, 0);
+  j.hands = { field: { since: T0 } }; let stage = journeyOf(j); assert.equal(stage.stage.id, 'coop'); assert.ok(stage.total >= 2, 'later chapters add their deeds to the stage'); assert.equal(stage.done, 0);
 });

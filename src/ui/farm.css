@@ -196,3 +196,39 @@ button.good { min-height: 44px; cursor: pointer; }
 .market-actions.upgrades .btn b { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .market-actions.upgrades .btn small { display: inline-flex; align-items: center; gap: 3px; opacity: .85; white-space: nowrap; }
 .hint.small { font-size: 12px; opacity: .8; margin: 4px 0 0; }
+/* Mr Albright's offer (chapter 11): one card, two big answers, "Let me think" */
+.offer { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.offer-says { display: flex; gap: 10px; align-items: center; margin: 0; padding: 8px 12px; border: 3px solid var(--line); border-radius: 16px; background: #fff; text-align: left; font-style: italic; }
+.offer-says .face { width: 58px; height: 58px; flex: none; border-radius: 50%; }
+.offer-says b { display: block; font-style: normal; }
+.offer-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.offer-choice { display: grid; justify-items: center; align-content: start; gap: 4px; padding: 10px 10px 12px; border: 3px solid var(--line); border-radius: 20px; background: linear-gradient(#fffdf4, #ffeec2); box-shadow: 0 5px 0 #c99a4a; color: var(--ink); font: inherit; cursor: pointer; }
+.offer-choice[data-pick="meadow"] { background: linear-gradient(#f6ffe9, #d6f5b0); box-shadow: 0 5px 0 #6aa83a; }
+.offer-choice:active { transform: translateY(3px); box-shadow: none; }
+.offer-choice img.tile-icon { width: 96px; height: 96px; }
+.offer-choice b { font-size: 19px; font-weight: 1000; }
+.offer-choice ul { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; text-align: left; font-size: 13.5px; line-height: 1.25; }
+.offer-choice li { display: flex; gap: 6px; align-items: flex-start; }
+.offer-choice li .g { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.offer-choice li.minus { color: #a8452a; }
+.offer-think { min-width: 220px; }
+.offer.sure h2 { margin: 0; }
+.offer.sure img.family-art { width: 150px; height: 150px; }
+.offer.sure .btn { min-width: 260px; }
+@media (max-width: 560px) { .offer-choices { grid-template-columns: 1fr; } .offer-choice { grid-template-columns: 76px 1fr; justify-items: start; column-gap: 10px; text-align: left; } .offer-choice img.tile-icon { width: 76px; height: 76px; grid-row: 1 / span 2; } .offer-choice b { align-self: end; } }
+@media (max-height: 520px) { .offer-choice img.tile-icon { width: 60px; height: 60px; } .offer-says { display: none; } .offer { gap: 6px; } }
+/* the Valley panel (chapter 11) */
+.valley-rank { text-align: center; }
+.valley-rank h3 { margin: 4px 0 0; font-size: 21px; }
+.valley-rank p { margin: 2px 0 6px; color: var(--ink-2); }
+.valley-rank progress { width: 100%; }
+.valley-leaves { display: flex; justify-content: center; gap: 6px; }
+.valley-leaves i { width: 22px; height: 22px; border-radius: 2px 60% 2px 60%; background: #d9d2c0; border: 2px solid #b9b09a; transform: rotate(-12deg); }
+.valley-leaves i.on { background: linear-gradient(135deg, #a5e35a, #3fae1f); border-color: #2b7d16; }
+.valley-pays { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; font-weight: 800; }
+.valley-parts { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.valley-parts li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 12px; background: #fff7e6; }
+.valley-parts li span { flex: 1 1 auto; min-width: 0; }
+.valley-parts li b { font-weight: 1000; color: #1f8a3b; }
+.valley-parts li.minus b { color: #c0392b; }
+.valley-parts img.mini { width: 26px; height: 26px; flex: none; }

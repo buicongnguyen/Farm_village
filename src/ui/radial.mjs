@@ -26,7 +26,7 @@ import { levelOf, isRepairing, repairCost, kindOf } from '../core/condition.mjs'
 import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
-import { roadSegmentAt, parcelNote, inOldMill } from '../content/world.mjs';
+import { roadSegmentAt, parcelNote, inOldMill, inMeadow } from '../content/world.mjs';
 import { fishable } from '../core/pond-bank.mjs';
 import { siteAt, siteBuilt } from '../core/sites.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
@@ -139,10 +139,13 @@ export class Radial {
       return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${!ruinStands(s, ruin.kind) ? t('Cleared, kept for the rebuild') : next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
     const who = !opts.preview && !id && this.people?.pick(x, y);
+    if (who && (who.person ?? who.id) === 'albright') { this.hide(); this.people.talk(who); this.panels.onOffer?.(); return; }   // the man from the city: his offer (chapter 11)
     if (who) { this.hide(); this.people.talk(who); if (!who.pet && !who.visitor) { this.people.selected = who; this.people.selectedUntil = performance.now() + 10000; this.hud.toast(t('Tap the pond to send {name} fishing', { name: this.people.nameOf(who) }), 'info', { icon: 'perch' }); } return; }
     if (id && !opts.preview && !opts.open && s.placed[id]?.kind === 'stage') { this.hide(); this.panels.show('festival'); return; }   // the festival stage: the Harvest Festival's panel
     // the old mill on the brook (scenery): what it is, and what its wheel does once the sluice is open (chapter 8)
     if (!id && !opts.preview && inOldMill(cell.x, cell.z)) return this.open(cell, x, y, [], `${iconHtml('feed_mill', '', 'mini')} ${t(s.firsts?.sluice ? 'The old mill: its wheel turns again, and every workshop works a tenth faster' : 'The old mill: its wheel has stood still since the water was shut off')}`);
+    // the brook meadow (chapter 11): the Valley panel, from the day the man from the city asks about it
+    if (!id && !opts.preview && inMeadow(cell.x, cell.z) && (s.story?.chapter ?? 0) >= 10) { this.hide(); this.panels.show('valley'); return; }
     // a fixed site that waits for its building (the boat dock's place on the brook): its own panel
     if (!id && !opts.preview) { const st = siteAt(cell.x, cell.z); if (st && !siteBuilt(s, st.kind)) { this.hide(); this.panels.onSite?.(st.kind); return; } }
     const p = id && s.placed[id], def = p && BUILDINGS[p.kind];

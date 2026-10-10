@@ -18,6 +18,8 @@ testing pace on purpose.
   print the hour each chapter is reached, coins per hour by level, and the share of income that is idle (hotel,
   rent, dividends, hands). Idle income stays under 40% at every level.
 - Levels: rebalance the XP curve so level 25 lands near chapter 20, not level 15.
+- Chapter 11: Mr Albright asks as soon as chapter 10 is seen. Decide whether he should wait for level 16 and a farm
+  worth 60,000 (`albrightOffer` in `core/valley.mjs`), and set the cannery's green upgrade price against release coins.
 
 ## 2. Sound
 

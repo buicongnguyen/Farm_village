@@ -88,6 +88,7 @@ export class Guide {
     }
   }
   card(ch) {
+    ch = { ...ch, ...ch.variants?.[this.s.story?.albright] };   // chapter 11 reads by the answer given (content/story.mjs `variants`)
     const panels = (ch.panels ?? []).slice(0, 3);
     const strip = panels.length ? `<div class="panels" data-n="${panels.length}">${panels.map((p, i) => `<figure class="${i ? '' : 'on'}"><img src="${p.img}" alt="${esc(t(p.caption))}" onerror="this.parentNode.remove()"><figcaption>${esc(t(p.caption))}</figcaption></figure>`).join('')}
       ${panels.length > 1 ? `<div class="dots">${panels.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}</div>` : '';

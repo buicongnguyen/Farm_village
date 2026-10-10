@@ -31,6 +31,7 @@ import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
 import { handsOpen, handHired, handWho } from '../core/helpers.mjs';
 import { renderReport } from './report-panel.mjs';
+import { renderValley } from './valley-panel.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
@@ -97,6 +98,7 @@ export function renderPanel() {
       if (!s.today.reportSeen) queueMicrotask(() => { if (this.open === o && !this.game.s.today.reportSeen) this.game.do('seeReport'); });
     }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
+    else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s); }
     else if (o.kind === 'site') { title = t(BUILDINGS[o.arg]?.name ?? ''); icon = o.arg; body = renderSite(s, o.arg); }
     else if (o.kind === 'civicSite') { title = t(BUILDINGS[o.arg]?.name ?? 'Village growth'); icon = o.arg; body = renderCivicSite(s, o.arg); }
     else if (o.kind === 'villageGrowth' || o.kind === 'growthMemory') {

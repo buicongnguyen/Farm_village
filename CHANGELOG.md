@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 11: The man from the city — 2026-10-11
+
+- **Mr Albright** arrives with an offer for the meadow between the north lane and the brook: his car stands by the farm gate, his survey stakes on the grass. A pill says an offer is waiting; he waits as long as you like.
+- **The one choice of the story**, on one card with "Let me think". **Build the cannery**: it goes up at his cost and turns corn and tomatoes into tins that sell dear; the valley is less beautiful until you make the cannery a green one (6,000 coins). **Keep the meadow**: wildflowers and three white hives, a more beautiful valley for good, beehives that make meadow honey, and honey cake at the bakery. The answer cannot be changed; both are good ones.
+- **The valley's beauty**: trees, flowers, ponds and the brook add to it; worn things and smoking factories take from it. Five ranks, from Bare to A picture postcard; every order pays 2 % more for each rank. The Valley panel (from the Roadmap, or a tap on the meadow) shows the parts and what would raise it most.
+- **Chapter 11** closes with the answer; its card, Granny Maple's line and its last picture read by what you chose.
+
 ## Chapter 10: Hands to help — 2026-10-11
 
 - **The hired hands have names and faces**: Chip takes the field, Clover the animals, Honey the workshops, Poppy the orchard, Dash the truck, Skipper the fishing. After each round the villager walks to where the work was and is seen at it.

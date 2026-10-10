@@ -469,6 +469,55 @@
   }
  },
  {
+  "id": "cannery",
+  "src": "raw:decor",
+  "root": "cannery",
+  "view": [-32, 24],
+  "preset": "building"
+ },
+ {
+  "id": "beehive",
+  "src": "raw:decor",
+  "root": "beehive",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
+  "id": "canned_corn",
+  "src": "raw:items",
+  "root": "canned_corn",
+  "preset": "goods"
+ },
+ {
+  "id": "canned_tomato",
+  "src": "raw:items",
+  "root": "canned_tomato",
+  "preset": "goods"
+ },
+ {
+  "id": "honey",
+  "src": "raw:items",
+  "root": "honey",
+  "preset": "goods"
+ },
+ {
+  "id": "honey_cake",
+  "src": "raw:items",
+  "root": "honey_cake",
+  "preset": "dish"
+ },
+ {
+  "id": "person:albright",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#EDC3A4",
+   "Villager hair": "#4A4A5C",
+   "Villager shirt": "#6B7280",
+   "Villager trousers": "#374151"
+  }
+ },
+ {
   "id": "stage",
   "src": "raw:decor",
   "root": "stage",

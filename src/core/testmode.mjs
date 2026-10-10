@@ -79,6 +79,8 @@ export const JUMPS = {
   5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
   6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
   // chapter 6 is behind: a market day sold on, and three fields
+  // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
+  12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
   // chapter 10 is behind: three hands hired (the field, the animals, the workshop) and thirty tasks done by them
   11: ctx => { const { s, now } = ctx; give(ctx, 'school'); for (const role of ['field', 'animals', 'workshop']) (s.hands ??= {})[role] ??= { since: now }; s.stats.handTasks = Math.max(30, s.stats.handTasks ?? 0); },
   // chapter 9 is behind: the festival stage stands and a Harvest Festival has been held to its end

@@ -11,7 +11,7 @@ import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { fishable, seatsOf } from '../core/pond-bank.mjs';
 import { festivalOf } from '../core/festival.mjs';
-import { SITES, PLAZA, WELL } from '../content/world.mjs';
+import { SITES, PLAZA, WELL, ALBRIGHT } from '../content/world.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
 import { adviceCards, adviceOf } from '../core/advice.mjs';
@@ -58,6 +58,7 @@ const OUTFITS = {
   bea: { top: '#f2a93b', bottom: '#4a4a5c', hair: '#5a3218' },   // the office manager: a mustard cardigan
   pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
+  albright: { top: '#6b7280', bottom: '#374151', hair: '#4a4a5c' },   // the man from the city: a grey suit
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
 const clothesOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
@@ -125,6 +126,8 @@ export class PeopleView {
     // the baker keeps a stall at the market square from the first market day on (chapter 6)
     const market = Object.entries(s.placed).find(([, p]) => p.kind === 'market');
     if (market && hasArrived(s, villager('hugo'))) { const p = market[1]; out.push({ id: 'hugo', body: 'man', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // the man from the city waits by the farm gate until he has his answer (chapter 11)
+    if (hasArrived(s, villager('albright'))) out.push({ id: 'albright', body: 'man', home: this.nearestWalkable(...ALBRIGHT.stand) ?? ALBRIGHT.stand, work: true });
     return out;
   }
   sync() {

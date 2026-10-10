@@ -37,7 +37,7 @@ export function reserved(x, z) {
   return false;
 }
 /** The footprints of the story's fixed sites (the boat dock) and scenery (the old mill): wild scatter keeps off them. */
-const SITE_BOXES = W.SITES.map(st => ({ x0: st.x, x1: st.x + st.size[0] - 1, z0: st.z, z1: st.z + st.size[1] - 1 })).concat(W.OLD_MILL.box);   // and off the old mill on the bank
+const SITE_BOXES = W.SITES.map(st => ({ x0: st.x, x1: st.x + st.size[0] - 1, z0: st.z, z1: st.z + st.size[1] - 1 })).concat(W.OLD_MILL.box, W.MEADOW);   // and off the old mill on the bank, and the brook meadow (chapter 11)
 /** Within two cells of a road (trees and bushes keep their crowns off it). */
 const nearRoad = (x, z) => W.ROADS.some(r => x >= r.x0 - 2 && x <= r.x1 + 2 && z >= r.z0 - 2 && z <= r.z1 + 2);
 /** Grove density, 0..1: high in the woods, low in clearings (seeded; the same in every game). */
