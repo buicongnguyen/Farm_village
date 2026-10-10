@@ -142,6 +142,14 @@ export const CHAPTERS = [
     },
     panels: panels(19, ['The plaque at the bridge.', 'A guest at the hotel.', 'The green valley.']),
     when: s => !!s.firsts?.greenValley },
+  // The deed: the valley's value reaches a billion, its last title (docs/plan/ch20-the-lights-of-two-villages.md; stamped
+  // by core/valley.mjs tickValley). `closing`: its card is the first of the five closing cards (ui/closing.mjs). Seeing
+  // them stamps s.story.ended; nothing locks and the game goes on.
+  { id: 20, title: 'The lights of two villages', subtitle: 'It was only waiting for someone to stay.', icon: '🏮', closing: true,
+    text: '{person:ada:display} counts the lights on both banks from the porch, and loses count twice. {person:ellis:display} says the brook sounds the way it did when they were courting. {person:pip:short} has fallen asleep on the step with a ribbon in one hand.',
+    ada: 'The valley was never empty, dear. It was only waiting for someone to stay.',
+    panels: panels(20, ['From the porch.', 'The old village.', 'The far bank.']),
+    when: s => !!s.firsts?.['title:1000000000'] },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.

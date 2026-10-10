@@ -36,7 +36,7 @@ import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes, setMood } from './kit/sound.mjs';
 import { festivalOf } from './core/festival.mjs';
-import { RUINS, SITES, OLD_MILL, MEADOW, LOTS, QUAY, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS, AWARD_PLAQUE } from './content/world.mjs';
+import { RUINS, SITES, OLD_MILL, MEADOW, LOTS, QUAY, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS, AWARD_PLAQUE, FARMHOUSE } from './content/world.mjs';
 import { fishable } from './core/pond-bank.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
@@ -302,6 +302,16 @@ const festiveTune = () => setMood(festivalOf(game.s, game.now).active ? 'festiva
 game.on(r => { if (r.events?.some(e => e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded' || e.type === 'loaded')) festiveTune(); });
 festiveTune();
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
+// Chapter 20: after the last closing card the valley has its evening, whatever the clock says: dusk and every light for
+// a minute, and a slow look from the porch to the old village and along the far bank. A touch ends the look, not the
+// evening; then the day comes back.
+async function lights() {
+  const evening = on => { world.closing = on; game.emit({ ok: true, events: [{ type: 'closingEvening' }] }, 'view'); };
+  evening(true); setTimeout(() => evening(false), 60000);
+  if (!world.cam.flyTo || document.body.classList.contains('reduced-motion')) return;
+  for (const [x, z, span] of [[(FARMHOUSE.x + 6) * CELL, (FARMHOUSE.z + 2) * CELL, 60], [58 * CELL, 100 * CELL, 80], [72 * CELL, 5 * CELL, 80], [62 * CELL, 52 * CELL, 150]]) { if (!(await world.cam.flyTo(x, z, span, 3200))) return; await new Promise(done => setTimeout(done, 900)); }
+}
+game.on(r => { if (r.events?.some(e => e.type === 'storyEnded')) lights(); });
 // Chapter 19: when the county's plaque goes up the valley is looked over once, slowly: the farm, the village, the quay,
 // and last the plaque at the bridge. A touch ends it (a flight that is cut short resolves false).
 async function overview() {
@@ -366,7 +376,9 @@ game.start();
 applySettings();
 saveSession = autosave(game, profile);
 if (!saveSession()) hud.toast(t('Could not save your farm. Please try again.'), 'warn');
-new Guide(app, { game, world, hud, blocked: () => !!panels.open });
+const guide = new Guide(app, { game, world, hud, blocked: () => !!panels.open });
+// the valley album reads a chapter again; the closing cards lead on to the album or the photo mode (chapter 20)
+panels.onChapter = id => guide.replay(id); guide.onAlbum = () => panels.show('valleyAlbum'); guide.onPhoto = () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })).catch(() => {});
 if (splash) { splash.classList.add('gone'); setTimeout(() => splash.remove(), 700); }
 // Other language catalogs stay unloaded until the player selects them.
 // the Today board opens by itself once a day, for players who have started farming (a first visit gets the tutorial)

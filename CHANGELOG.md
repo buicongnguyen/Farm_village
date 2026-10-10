@@ -1,5 +1,13 @@
 # Changelog
 
+## Chapter 20: The lights of two villages — 2026-10-11
+
+- **The ending**: when the valley is worth a billion, five closing cards come one after another: the porch, the old village, the far bank, everyone who came back (a portrait and a name for each) and thanks.
+- **The game goes on**: nothing stops after the last card. The valley has its evening first: dusk, every light, and a slow look along both banks.
+- **The valley album** (in the Album and in Settings): every chapter you have seen, to read again; what the valley chose; its titles with their dates.
+- The far woods no longer glow green at night.
+- The story is complete: all twenty chapters are in the game.
+
 ## Chapter 19: The green valley — 2026-10-11
 
 - **Green goals**: a new page of the Valley panel with six goals (trees, flowers, ponds, benches and lamps, nothing left worn, and beehives or the green cannery by your answer to Mr Albright). Each pays once and adds to the valley's beauty for good.

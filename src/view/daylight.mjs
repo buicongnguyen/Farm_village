@@ -79,6 +79,7 @@ const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), PO
 
 /** The Harvest Festival (chapter 9): the hour its evening is lit as, and its lanterns: two strings from the stage's front
  *  corners out over the square, a row along the canopy, and warm pools of light on the cobbles. */
+const CLOSING_HOUR = 19.8;
 const FESTIVAL_HOUR = 20.4, FESTIVE = ['#ffb84a', '#ff7ab0', '#7fd8ff', '#ffe36a', '#9dff9a'].map(c => new THREE.Color(c));
 function festivalLights() {
   const st = SITES.find(x => x.kind === 'stage'); if (!st) return [];
@@ -102,7 +103,7 @@ export class Daylight {
     });
     game.on(r => {
       const ev = r.events ?? [];
-      if (ev.some(e => e.type === 'settingChanged' || e.type === 'loaded' || e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded')) { this.apply(); this.placeGlows(); }
+      if (ev.some(e => e.type === 'settingChanged' || e.type === 'loaded' || e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded' || e.type === 'closingEvening')) { this.apply(); this.placeGlows(); }
       if (ev.some(e => ['placed', 'moved', 'stored', 'loaded', 'familyArrived', 'projectDone', 'hotelUpgraded'].includes(e.type))) this.placeGlows();
     });
     world.onLampsChanged = () => this.placeGlows();
@@ -113,6 +114,7 @@ export class Daylight {
   hour() {
     if (this.game.s.settings.daylight === 'always') return 12;
     if (this.festive()) return FESTIVAL_HOUR;   // the Harvest Festival is an evening, whatever the clock says
+    if (this.world.closing) return CLOSING_HOUR;   // the evening of the ending (chapter 20): dusk and every light, for a while
     const d = new Date(this.game.now); return d.getHours() + d.getMinutes() / 60;
   }
   apply() {

@@ -1175,6 +1175,66 @@ await check('chapter 19: a green goal is reached, the valley gets a title, the c
   await ctx.close();
 });
 
+// Chapter 20 (docs/plan/ch20-the-lights-of-two-villages.md): the valley reaches a billion, the five closing cards show
+// one after another, the story ends, the valley album reads a chapter again, and the game goes on.
+await check('chapter 20: the five closing cards, the end, the valley album, and the game goes on (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:20'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => farm.state().story.chapter) === 19 && await page.evaluate(() => !farm.state().story.ended), 'the jump did not stop before the last chapter');
+  // the tester finishes the chapter: the valley's name grows to a billion, its last title
+  await page.evaluate(() => { farm.closeCards(); farm.panels.onTest('finish'); });
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.['title:1000000000']; }, null, { timeout: 15000, polling: 500 });
+  // card 1: the porch, with the chapter's own words
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const first = await page.textContent('.chapter-modal');
+  expect(first.includes('The lights of two villages') && first.includes('Granny Maple counts the lights') && first.includes('Chapter 20'), `the first card: ${first.slice(0, 200)}`);
+  expect(await page.locator('.chapter-modal .closing-dots i').count() === 5 && await page.locator('.chapter-modal .closing[data-step="1"]').count() === 1, 'the first card does not show five steps');
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-20-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  // cards 2 and 3: the old village, the far bank
+  await page.waitForSelector('.closing[data-step="2"]'); expect((await page.textContent('.closing-modal')).includes('The old village'), 'card 2');
+  await page.click('.closing-modal [data-close]');
+  await page.waitForSelector('.closing[data-step="3"]'); expect((await page.textContent('.closing-modal')).includes('Pine Ridge'), 'card 3');
+  await page.click('.closing-modal [data-close]');
+  // card 4: the names of everyone who came back, with their portraits, and Granny Maple's last word
+  await page.waitForSelector('.closing[data-step="4"]');
+  const names = await page.evaluate(() => ({ faces: document.querySelectorAll('.closing-cast img').length, text: document.querySelector('.closing-modal').textContent }));
+  expect(names.faces >= 20 && names.text.includes('Granny Maple') && names.text.includes('Skipper') && names.text.includes('Nana Snow') && names.text.includes('families who came home') && names.text.includes('waiting for someone to stay'), `the names: ${names.faces} ${names.text.slice(0, 160)}`);
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}closing-names.png` });
+  await page.click('.closing-modal [data-close]');
+  // card 5: thanks. The story is not over until this card is closed
+  await page.waitForSelector('.closing[data-step="5"]');
+  expect((await page.textContent('.closing-modal')).includes('Thank you for staying') && await page.evaluate(() => farm.state().story.chapter) === 19, 'card 5, or the end came early');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}closing-thanks.png` });
+  await page.click('.closing-modal [data-closing="album"]');
+  await page.waitForFunction(() => farm.state().story.chapter === 20 && farm.state().story.ended > 0);
+  // the valley has its evening, and the album opens: twenty chapters, the titles, the end
+  expect(await page.evaluate(() => farm.world.closing === true), 'the evening of the ending did not begin');
+  await page.waitForSelector('.valley-album .album-chapter');
+  const album = await page.evaluate(() => ({ chapters: document.querySelectorAll('.album-chapter').length, titles: document.querySelectorAll('.album-titles li').length, text: document.querySelector('.valley-album').textContent }));
+  expect(album.chapters === 20 && album.titles === 5 && album.text.includes('The story was told to its end') && album.text.includes('What the valley chose'), `the album: ${JSON.stringify(album).slice(0, 200)}`);
+  await page.waitForTimeout(600); await page.screenshot({ path: `${SHOTS}valley-album.png` });
+  // a chapter read again: its card, and closing it changes nothing
+  await page.click('.album-chapter[data-id="11"]'); await page.waitForSelector('.chapter-modal.replay');
+  expect((await page.textContent('.chapter-modal.replay')).includes('The man from the city'), 'chapter 11 does not read again');
+  await page.click('.chapter-modal.replay [data-close]'); await page.waitForFunction(() => !document.querySelector('.chapter-modal'));
+  expect(await page.evaluate(() => farm.state().story.chapter) === 20, 'reading a chapter again changed the story');
+  // the last card does not come back, the album is in Settings too, and the game goes on
+  await page.evaluate(() => { farm.panels.close(); farm.game.tick(); }); await page.waitForTimeout(1500);
+  expect(await page.locator('.closing-modal').count() === 0, 'the closing cards came back');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-do="valleyAlbum"]');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.evaluate(() => { farm.panels.close(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 61 * 60000); farm.game.tick(); farm.game.do('collectDividend'); });
+  expect(await page.evaluate(() => farm.state().coins) > coins, 'no dividend after the end: something stopped');
+  await page.evaluate(() => { farm.closeCards(); farm.focus(60, 52, 150); }); await page.waitForTimeout(2500); await page.screenshot({ path: `${SHOTS}closing-evening.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

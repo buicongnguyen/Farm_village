@@ -139,6 +139,8 @@ export class Panels {
     else if (d.do === 'valley') this.show('valley');
     else if (d.do === 'valleyValue') this.show('valleyValue');
     else if (d.do === 'valleyGreen') this.show('valleyGreen');
+    else if (d.do === 'valleyAlbum') this.show('valleyAlbum');
+    else if (d.do === 'chapterAgain') this.onChapter?.(Number(d.id));   // a chapter card, once more (ui/guide.mjs replay)
     else if (d.do === 'foundValley' || d.do === 'collectDividend') g.do(d.do);
     else if (d.do === 'cooperative') this.show('cooperative');
     else if (d.do === 'hotel') this.show('hotel');

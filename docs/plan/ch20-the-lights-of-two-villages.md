@@ -1,6 +1,41 @@
 # Chapter 20: The lights of two villages
 
-Status: not started · Depends on: chapter 19 · Size: one session
+Status: **done** (PR #95) · Depends on: chapter 19 · Size: one session
+
+## How to play it (for the owner)
+
+1. After the county's prize, keep doing things together: every market day sold on, shared order, loaded train,
+   festival, fair and handful of hotel guests makes the valley's name worth more. Village projects shows **The lights
+   of two villages**; the Value page shows how far the billion is.
+2. When the valley is worth **a billion** it gets its last title, and the **closing cards** come, five of them, one
+   after another: the porch (the chapter's own words), the old village, the far bank, **everyone who came back** (a
+   portrait and a name for each, and the families who came home to the quay), and thanks.
+3. The story ends when the last card is closed. **Keep playing** goes back to the farm; **The valley album** and
+   **Take a photograph** go on to the album or the photo mode.
+4. Then the valley has its evening, whatever the clock says: dusk and every light for a minute, and the view flies
+   slowly from the farmhouse to the old village and along the far bank.
+5. **Nothing stops**: the market, the fair, the trains, the co-operative, the hotel and the dividend go on.
+6. **The valley album** keeps the whole story: every chapter seen as a tile (tap one to read its card again), what the
+   valley chose in chapter 11, its titles with their dates, and the day the story ended. It is in the Album and in
+   Settings from chapter 1 on.
+
+Tester (`?tester`): "Chapter 20" jumps to the county's prize; "Finish this chapter" brings the valley to a billion.
+
+## What was built, where it differs from the plan below
+
+- The deed is the valley's last title (`s.firsts['title:1000000000']`, stamped by `tickValley`). Seeing the chapter
+  stamps `s.story.ended` once (`core/today.mjs`). `core/ending.mjs`: `castOf` (who is named), `albumOf`, `storyEnded`.
+- `ui/closing.mjs` (the five cards) and `ui/valley-album.mjs` are loaded only when needed; the guide shows the closing
+  cards instead of a chapter card for a chapter marked `closing`, and `guide.replay(id)` shows a seen chapter again.
+- **The pictures are the porch, the old village and the far bank at dusk**, rendered from the game like every chapter
+  picture. There is no special porch camera: the three views follow the last card instead (the evening look).
+- **No family photograph keepsake**: the last card opens the existing photo mode (which saves a picture to the
+  device). Posing the family and keeping the picture in the profile is left to the release pass.
+- **No new music**: the ending plays the game's own soundtrack. The slowed theme is the release pass's sound work.
+- **The album is in the Album panel and in Settings**, not on a title screen (the game has none).
+- The far woods no longer glow green at night: the backdrop takes the same night grade as the rest of the world.
+- Tester: `JUMPS[21]` exists so the last chapter can be finished; the jump buttons stop at 20.
+- `tests/ending.test.mjs` (5), and a browser check that plays the ending.
 Story source: `JOURNEY.md` 3 (Act V), `STORY.md` 4 (row 20), `STORY.md` 5 (the ending)
 
 ## What the player gets
