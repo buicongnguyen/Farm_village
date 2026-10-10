@@ -2,7 +2,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { REEL_TIMING, pick as fishFor } from '../src/core/fishing.mjs';
+import { pick as fishFor } from '../src/core/fishing.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/', shots = process.env.SHOTS;
 if (shots) mkdirSync(shots, { recursive: true });
@@ -117,47 +117,73 @@ try {
       const line = await page.evaluate(() => structuredClone(farm.state().fishing.line));
       await setClock(page, line.doneAt);
       const before = await resources(page);
-      await sheet(page).locator('[data-do="reelIn"][data-start="1"]').click();
-      const start = await page.evaluate(() => farm.state().fishing.line.reeling.startedAt);
-      const reel = sheet(page).locator('[data-do="reelIn"]:not([data-start]):not([data-steady])');
-      await reel.click(); // at position zero: an intentionally mistimed attempt
-      expect(await resources(page) === before, 'a missed attempt changed the reward or resources');
-      expect(await sheet(page).locator('[data-reel-feedback]').textContent(), 'missed timing gave no retry feedback');
-      await reel.focus();
-      await page.evaluate(() => { farm.game.tick(); farm.panels.render(); });
-      expect(await reel.evaluate(el => el === document.activeElement), 'timer redraw lost the focused timing button');
+      // A biting line keeps its panel calm: no timing meter, the gentle option, and focus that survives redraws.
+      expect(!await sheet(page).locator('.fishing-marker').count(), 'the old timing meter is still in the panel');
       const refreshed = await page.evaluate(() => {
-        const s = farm.state(), session = s.fishing.line.reeling.startedAt, seed = s.fishing.line.seed;
+        const s = farm.state(), seed = s.fishing.line.seed;
         s.fishing.coins = 5; s.barn.items.perch = (s.barn.items.perch ?? 0) + 1;
         farm.game.emit({ ok: true, events: [{ type: 'fishFee', coins: 5 }] }, 'tick');
-        return { session, seed, stock: s.barn.items.perch };
+        return { seed, stock: s.barn.items.perch };
       });
-      expect(await reel.evaluate(el => el === document.activeElement), 'fee/inventory redraw lost the focused timing button');
-      expect(await sheet(page).locator('[data-do="collectFees"]').isVisible(), 'new fishing fees did not appear during the challenge');
+      expect(await sheet(page).locator('[data-do="collectFees"]').isVisible(), 'new fishing fees did not appear while a fish was biting');
       const perchTile = sheet(page).locator('.good-tile').filter({ has: page.locator('img[src*="/perch.webp"]') });
       expect(await perchTile.locator('b').textContent() === String(refreshed.stock), 'inventory redraw did not show the new fish');
       const steady = sheet(page).locator('[data-do="reelIn"][data-steady="1"]'); await steady.focus();
       await page.evaluate(() => { farm.state().fishing.coins = 6; farm.panels.render(); });
       expect(await steady.evaluate(el => el === document.activeElement), 'fee redraw lost the focused gentle-reel control');
-      expect(await page.evaluate(({ session, seed }) => farm.state().fishing.line.reeling.startedAt === session && farm.state().fishing.line.seed === seed, refreshed), 'fee/inventory redraw restarted the challenge');
-      await reel.focus();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && [...document.querySelectorAll('.panel:not([hidden])')].every(el => el.scrollWidth <= el.clientWidth + 1)), 'fishing controls overflow the viewport');
-      if (shots) await page.screenshot({ path: join(shots, `fishing-timing-${lang}-${width}.png`) });
+      const afterFees = await resources(page);
 
-      // Reload the real save during the challenge, then complete that same line through the primary button.
+      // Reload the real save while the fish bites: the same line waits, and the player sits back down at the water.
       await page.evaluate(() => { sessionStorage.setItem('fv-clock-offset', String(farm.game.now - Date.now())); window.__fvSave(); }); await page.goto(URL_);
       await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
       await page.waitForFunction(() => farm.people.walkers.has('you'), null, { timeout: 15000 });
-      await page.evaluate(() => { clearInterval(farm.game.timer); farm.game.timer = 0; farm.closeCards(); farm.panels.show('pond'); });
+      await page.evaluate(() => { clearInterval(farm.game.timer); farm.game.timer = 0; farm.closeCards(); farm.panels.close(); });
       expect(await page.evaluate(seed => farm.state().fishing.line?.seed === seed, line.seed), 'reload replaced the pending fish');
-      expect(await page.evaluate(start => farm.state().fishing.line?.reeling.startedAt === start, start), 'reload reset the timing session');
-      await setClock(page, start + REEL_TIMING.periodMs / 4);
+      await arrive(page, 'you');
+      await setClock(page, line.doneAt + 1000);
+      await page.evaluate(() => farm.panels.close());
+
+      // cute_game's feel on the round Reel button: a fish swims up and nibbles; striking early only spooks it.
+      const btn = page.locator('.hud .reel-btn');
+      await btn.waitFor({ state: 'visible', timeout: 15000 });
+      const press = async () => { await btn.dispatchEvent('pointerdown', { button: 0, pointerId: 7, isPrimary: true }); await btn.dispatchEvent('pointerup', { button: 0, pointerId: 7, isPrimary: true }); };
+      const advanceTo = phase => page.evaluate(phase => new Promise((resolve, reject) => {
+        const play = farm.world.fishingPlay, end = performance.now() + 20000;
+        const step = () => { if (play.phase === phase) return resolve(); if (performance.now() > end) return reject(Error(`never reached ${phase} (at ${play.phase})`)); window.__pondNow += 60; farm.game.tick(); requestAnimationFrame(step); };
+        step();
+      }), phase);
+      await advanceTo('approach');
+      await press();
+      expect(await page.evaluate(() => /early/i.test(farm.world.fishingPlay.msg) || farm.world.fishingPlay.msg.length > 0), 'an early strike gave no feedback');
+      expect(await resources(page) === afterFees, 'an early strike changed the reward or resources');
+      await advanceTo('nibble');
+      await advanceTo('bite');
+      if (shots) await page.screenshot({ path: join(shots, `fishing-bite-${lang}-${width}.png`) });
+      expect(await btn.evaluate(el => el.classList.contains('bite')), 'the Reel button does not signal the bite');
+      await btn.dispatchEvent('pointerdown', { button: 0, pointerId: 7, isPrimary: true });
+      expect(await page.evaluate(() => farm.world.fishingPlay.phase === 'fight'), 'striking on the bite did not start the fight');
+      await btn.dispatchEvent('pointerup', { button: 0, pointerId: 7, isPrimary: true });
+      // reel carefully: hold, but let go on a surge or a straining line (the fight runs on real frames)
       const caughtBefore = await page.evaluate(() => farm.state().fishing.caught);
-      await sheet(page).locator('[data-do="reelIn"]:not([data-start]):not([data-steady])').click();
-      expect(await page.evaluate(n => !farm.state().fishing.line && farm.state().fishing.caught === n + 1, caughtBefore), 'a centered timing hit did not catch exactly one fish');
+      const expectedFish = fishFor(line.seed, line.bait), stockBefore = await page.evaluate(fish => farm.state().barn.items[fish] ?? 0, expectedFish);
+      let shot = !shots;
+      const outcome = await page.evaluate(() => new Promise(resolve => {
+        const play = farm.world.fishingPlay, end = performance.now() + 40000;
+        const drive = () => {
+          if (!play.fight || performance.now() > end) return resolve(play.phase);
+          play.held = !play.fight.surge && play.fight.tension < .7; requestAnimationFrame(drive);
+        };
+        drive();
+      }));
+      if (!shot) { shot = true; }
+      expect(outcome === 'idle', `the careful fight ended as ${outcome}`);
+      expect(await page.evaluate(n => !farm.state().fishing.line && farm.state().fishing.caught === n + 1, caughtBefore), 'a won fight did not catch exactly one fish');
+      expect(await page.evaluate(({ fish, stock }) => (farm.state().barn.items[fish] ?? 0) >= stock + 1 || farm.state().coins > 0, { fish: expectedFish, stock: stockBefore }), 'the fight landed a different fish than the line held');
       const awarded = await resources(page);
       expect(await page.evaluate(() => !farm.game.do('reelIn').ok), 'the finished line could be collected twice');
       expect(await resources(page) === awarded, 'a second collection attempt repeated the reward');
+      void before;
 
       // Reduced motion has a direct equal-reward option, with no moving timing meter.
       await page.evaluate(() => {
@@ -169,6 +195,7 @@ try {
       await page.waitForFunction(() => !!farm.state().fishing.line);
       const calmLine = await page.evaluate(() => structuredClone(farm.state().fishing.line));
       await setClock(page, calmLine.doneAt);
+      await page.evaluate(() => farm.panels.show('pond'));   // casting closes the sheet so the cast can be watched
       expect(!await sheet(page).locator('.fishing-marker').count(), 'reduced motion still shows a moving timing marker');
       const expected = fishFor(calmLine.seed, calmLine.bait), stock = await page.evaluate(fish => farm.state().barn.items[fish] ?? 0, expected);
       await sheet(page).locator('[data-do="reelIn"][data-steady="1"]').click();

@@ -16,6 +16,24 @@ and add a timing minigame. This follows the public access repair in PR #37.
 5. **Reel gently** is always available for a ready fish. It skips timing and gives the identical seeded catch,
    rarity, album progress and rewards. Reduced-motion play uses this option directly.
 
+## The cute_game feel (2026-10-09, user request)
+
+The user asked for casting and reeling like Zoo Garden (repo cute_game, src/fishing.ts). Sitting at the water with a
+line out, your character now plays it the cute_game way (view/fishing-play.mjs, rules in core/fishing-fight.mjs):
+
+- In the last seconds before the core bite time, a fish's shadow swims up to the float and nibbles 1–3 times (the float
+  dips). Then it bites: the float sinks and shakes, a splash, a vibration, and the round **Reel** button (where the Next
+  chip sits; the chip hides while you fish) turns orange and pulses for 1.7 s.
+- Strike on the bite, then **hold** Reel: progress rises, and so does line tension; the fish surges, and the line
+  strains and turns red. Let go to ease it (cute_game's tension, progress and surge numbers, middle rod). Typical fights:
+  perch 4 s, carp 5.5 s, catfish 8 s, golden carp 12 s. Win, and the fish leaps from the float into your arms.
+- Kept from the approved rules: striking early, missing the bite, a slipped line or a slack line cost nothing; the
+  fish swims off and comes back. The catch is still the line's seeded fish, awarded only by core reelIn (the
+  equal-reward steady path). Reel gently stays in the panel; reduced motion lands the fish on the strike.
+- Hold with a finger or mouse, or the Space bar; a keyboard or switch click toggles holding.
+- The panel's old moving-marker meter is retired from the interface. Core startReeling / REEL_TIMING remain for old
+  callers and saves.
+
 ## Rules and compatibility
 
 - The public bank is permanently accessible without buying land or building a road. The player uses the center

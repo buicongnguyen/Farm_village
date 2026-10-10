@@ -184,6 +184,8 @@ await check('the village pond: fish pictures swim in it; tap it, cast a line, re
   expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
   await page.evaluate(() => farm.setClockOffset(100_000)); await page.waitForTimeout(1500);
   expect(await page.evaluate(() => farm.marks.collect().coin.length) > 0, 'no coin marker over the biting pond');
+  await page.evaluate(() => farm.panels.show('pond'));   // casting closes the sheet so the cast can be watched
+  await page.waitForSelector('[data-do="reelIn"][data-steady="1"]', { timeout: 5000 });
   await page.evaluate(() => document.querySelector('[data-do="reelIn"][data-steady="1"]').click());
   expect(await page.evaluate(() => farm.state().fishing.caught) === 1, 'no fish was reeled in');
   // tap Pip (picked straight from the people view), then the pond: Pip walks off to fish
