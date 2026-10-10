@@ -7,7 +7,7 @@ Status: **done** (PR #92) · Depends on: chapter 16 · Size: one to two sessions
 1. After the walk upriver, Penny brings the idea. Open **A company for the whole valley** in Village projects, or the
    Roadmap's **The valley company**, or the **Value** page of the Valley panel.
 2. **Found the valley company**: it needs the co-operative, a working company office, a quay house and 20,000 coins.
-   Every household gets a share, and a flag goes up beside the office door.
+   Every household gets a share, and a flag goes up at the office's corner by the road.
 3. The valley now has **one number, its value**, shown beside the village's name in the top bar in short form
    (124.5K, 1.2M, 1B; 120만, 1.2억 in Korean; 120万, 1.2億 in Japanese). The Value page shows what it is made of:
    coins, goods in the barn, everything built, land, works and upgrades, the herd and the valley's beauty, times its
