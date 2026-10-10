@@ -16,3 +16,10 @@ hiring fee is not returned. Tests: `tests/hands.test.mjs`.
 Besides collecting and restarting half of the finished trays, the workshop hand now starts half of each building's free
 trays (rounded up) on what that building made last (`s.lastRecipe`), as far as ingredients and wages go. A building
 that was never used stays idle: the hand does not choose recipes. This is what lets a chain of goods run without taps.
+
+## 2026-10-11: three more hands
+
+- **Orchard hand** (400 coins): picks half of the ripe fruit trees.
+- **Truck driver** (600 coins): collects the takings, loads idle trucks with spare goods (never what orders or beds need) and sends them.
+- **Fisher** (400 coins): lands one fish a round for the barn and the album.
+

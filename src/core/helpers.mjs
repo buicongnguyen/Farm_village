@@ -2,6 +2,9 @@
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
 import { HELP, HANDS, WEAR } from '../content/economy.mjs';
 import { actions as production, collectableJobs } from './production.mjs';
+import { actions as trees, ripeTrees } from './trees.mjs';
+import { actions as market, trucksOf, truckCoins } from './market.mjs';
+import { pick as pickFish } from './fishing.mjs';
 import { ANIMALS, RECIPES } from '../content/goods.mjs';
 import { isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
@@ -91,5 +94,21 @@ export function tickHands(ctx) {
       while (start-- > 0 && barn.hasAll(s, r.needs) && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
     }
     paid('workshop', done);
+  }
+  if (s.hands.orchard) {   // picks half of the ripe fruit trees
+    const ripe = ripeTrees(s, now), ids = ripe.slice(0, half(ripe.length));
+    if (ids.length && trees.pick(quiet, { ids })?.ok !== false) paid('orchard', ids.length);
+  }
+  if (s.hands.driver) {   // brings in the takings, loads the trucks that stand idle with spare goods and sends them off
+    let done = 0;
+    if (truckCoins(s) > 0 && market.collectTruck(quiet)?.ok !== false) done++;
+    const idle = trucksOf(s).filter(u => !u.away).length;
+    if (idle && s.coins >= HANDS.wage) { if (market.fillTruck(quiet)?.ok !== false) done++; if (trucksOf(s).some(u => !u.away && u.load.length) && market.sendTruck(quiet)?.ok !== false) done++; }
+    paid('driver', Math.min(done, Math.floor(s.coins / HANDS.wage)));
+  }
+  if (s.hands.fisher && s.coins >= HANDS.wage) {   // lands one fish a round, straight into the barn
+    const fish = pickFish(`${now}:hand`, false), sold = barn.addOrSell(s, fish, 1);
+    (s.album ??= { fish: {}, fruit: {} }).fish[fish] = (s.album.fish[fish] ?? 0) + 1; if (sold) ctx.emit('barnSold', { coins: sold });
+    paid('fisher', 1);
   }
 }

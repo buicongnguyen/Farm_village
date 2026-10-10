@@ -175,17 +175,14 @@ for (const lang of ['en', 'vi']) for (const width of [390, 1280]) {
       await panel(page).locator(`[data-do="growthSite"][data-kind="${kind}"]`).click();
       await panel(page).locator(`[data-do="growthBuild"][data-kind="${kind}"]`).waitFor();
       expect(await page.evaluate(m => farm.game.s.coins === m, before), 'site preview spent money');
+      // a civic building has one place to stand: the panel's button rebuilds it there outright (no ghost to confirm)
       await fit(page); await panel(page).locator(`[data-do="growthBuild"][data-kind="${kind}"]`).click();
-      const confirm = page.locator('.place-bar:not([hidden]) [data-bar="ok"]'); await confirm.waitFor();
-      expect(await confirm.isEnabled(), 'fixed civic ghost not placeable with connected path');
-      expect(await page.evaluate(m => farm.game.s.coins === m, before), 'ghost preview spent money');
-      await confirm.click();
+      await page.waitForFunction(kind => (farm.game.s.counts[kind] ?? 0) === 1, kind, { timeout: 5000 }).catch(() => {});
       const site = RUINS.find(r => r.kind === kind);
       expect(await page.evaluate(({ kind, site, before, cost }) => {
         const placed = Object.values(farm.game.s.placed).filter(p => p.kind === kind);
         return placed.length === 1 && placed[0].x === site.x && placed[0].z === site.z && placed[0].rot === site.rot && farm.game.s.coins === before - cost;
       }, { kind, site, before, cost: GROWTH[kind].coins }), 'civic placement did not use exact site/price');
-      await page.evaluate(() => farm.build.close());
     }
     if (lang === 'en' && width === 390) {
       await page.waitForFunction(() => ['police', 'company'].every(kind => {

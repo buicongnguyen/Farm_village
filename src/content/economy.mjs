@@ -58,7 +58,7 @@ export const FISH = { waitMs: 25_000, baitMs: 12_000, footMs: [4500, 9000],   //
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */
 /** Hired hands (core/helpers.mjs): once the school stands. Every everyMs while the game is open each does HALF of the
  *  waiting work of its kind; the other half is yours. fee: coins to hire; wage: coins per task done. */
-export const HANDS = { everyMs: 60_000, wage: 1, roles: { field: { fee: 300 }, animals: { fee: 300 }, workshop: { fee: 500 } } };
+export const HANDS = { everyMs: 60_000, wage: 1, roles: { field: { fee: 300 }, animals: { fee: 300 }, workshop: { fee: 500 }, orchard: { fee: 400 }, driver: { fee: 600 }, fisher: { fee: 400 } } };
 export const HELP = { level: 3, everyMs: 2 * MIN, beds: 4, products: 3 };
 export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: 30_000, bonus: 1.25 };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
