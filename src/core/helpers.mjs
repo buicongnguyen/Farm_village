@@ -60,7 +60,7 @@ export function tickHands(ctx) {
   if (!s.handsAt) { s.handsAt = now + HANDS.everyMs; return; }
   if (now < s.handsAt) return;
   const late = now - s.handsAt > WEAR.tickCapMs; s.handsAt = now + HANDS.everyMs; if (late) return;
-  const quiet = { ...ctx, fail: () => ({ ok: false }) }, half = n => Math.min(Math.ceil(n / 2), Math.floor(s.coins / HANDS.wage));
+  const quiet = { ...ctx, byHand: true, fail: () => ({ ok: false }) }, half = n => Math.min(Math.ceil(n / 2), Math.floor(s.coins / HANDS.wage));
   const paid = (role, count) => { if (count > 0) { s.coins -= count * HANDS.wage; ctx.emit('handDid', { role, count }); } };
   if (s.hands.field) {
     const all = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now), ripe = all.slice(0, half(all.length)), crops = ripe.map(id => [id, s.beds[id].crop]);

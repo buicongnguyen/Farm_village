@@ -12,7 +12,12 @@ import { fruitPrice } from '../core/orchard.mjs';
 import { planFor, STEP_TEXT } from '../core/plan.mjs';
 import { questsOf, progressOf, ready as questReady, weeklyProgress, hurryLeft, hurryable } from '../core/quests.mjs';
 import { QUESTS, WEEKLY, WEEKLY_REWARD } from '../content/quests.mjs';
-import { truckOf, trucksOf, loadUnits, loadValue, capacity, roomIn, truckCoins, nextTruck, spareForTrucks, blocked as blockedWhy } from '../core/market.mjs';
+import { truckOf, trucksOf, loadUnits, capacity, roomIn, truckCoins, nextTruck, spareForTrucks, truckPays, blocked as blockedWhy } from '../core/market.mjs';
+import { marketDayOf } from '../core/market-day.mjs';
+/** Market day in one line, for the barn and the market square: the good of the day and the time left, or when the next one is. */
+const marketDayLine = (day, now) => !day.open || !day.good ? '' : day.active
+  ? `<p class="market-day on">${goodIcon(day.good, 'mini')}<span><b>${t('Market day')}</b> · ${t('{good} pays double', { good: t(GOODS[day.good].name) })}</span><small>${glyph('clock', 'g')} ${shortTime(Math.max(0, day.endsAt - now))}</small></p>`
+  : `<p class="market-day">${day.nextGood ? goodIcon(day.nextGood, 'mini') : iconHtml('market', '', 'mini')}<span>${t('Next market day in {time}', { time: shortTime(Math.max(0, day.nextAt - now)) })}${day.nextGood ? ` · ${t('{good} will pay double', { good: t(GOODS[day.nextGood].name) })}` : ''}</span></p>`;
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';
@@ -128,9 +133,11 @@ export function renderPanel() {
     else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${readyFirst(s, s.orders.cards).map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
       const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
+      const day = marketDayOf(s, now), k = g => day.active && day.good === g ? day.bonus : 1, badge = g => k(g) > 1 ? `<i class="day-badge">×${k(g)}</i>` : '';
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
         ${s.barn.cap >= BARN.max ? '' : `<button class="btn orange" data-do="upgradeBarn">${glyph('up', 'g')} ${t('Upgrade (+{step})', { step: Math.min(BARN.step, BARN.max - s.barn.cap) })} · ${coinMark()} ${num(BARN.upgradeCost(s.barn.upgrades))}</button>`}</div>
-        <div class="goods-grid">${items.map(([g, n]) => `<div class="good-cell"><button class="good-tile" data-do="sellGood" data-good="${g}" ${barn.free(s, g) ? '' : 'disabled'}>${goodIcon(g)}<b>${num(n)}</b><small>${t('Sell')} · ${coinMark()} ${GOODS[g].value}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></button>${barn.free(s, g) >= 10 ? `<button class="sell-ten" data-do="sellGood" data-good="${g}" data-n="10" aria-label="${t('Sell')} ×10">×10 · ${coinMark()} ${num(GOODS[g].value * 10)}</button>` : ''}</div>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
+        ${marketDayLine(day, now)}
+        <div class="goods-grid">${items.map(([g, n]) => `<div class="good-cell"><button class="good-tile${k(g) > 1 ? ' day' : ''}" data-do="sellGood" data-good="${g}" ${barn.free(s, g) ? '' : 'disabled'}>${badge(g)}${goodIcon(g)}<b>${num(n)}</b><small>${t('Sell')} · ${coinMark()} ${GOODS[g].value * k(g)}${held[g] ? ` · ${t('{count} held', { count: held[g] })}` : ''}</small></button>${barn.free(s, g) >= 10 ? `<button class="sell-ten" data-do="sellGood" data-good="${g}" data-n="10" aria-label="${t('Sell')} ×10">×10 · ${coinMark()} ${num(GOODS[g].value * 10 * k(g))}</button>` : ''}</div>`).join('') || `<p class="empty">${t('The barn is empty.')}</p>`}</div>`;
     } else if (o.kind === 'production') {
       const p = s.placed[o.arg]; if (!p) { this.close(); return; }
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
@@ -163,22 +170,22 @@ export function renderPanel() {
       // goes on the first truck at the market with room.
       const tr = truckOf(s), units = trucksOf(s), why = blockedWhy(s), many = units.length > 1, cap = capacity(tr);
       const spare = Object.entries(s.barn.items).filter(([g, n]) => n > 0 && barn.free(s, g) > 0), next = tr.level < TRUCK.capacity.length;
-      const home = units.filter(u => !u.away), takings = truckCoins(s), buy = nextTruck(s);
+      const home = units.filter(u => !u.away), takings = truckCoins(s), buy = nextTruck(s), day = marketDayOf(s, now);
       const loaded = home.filter(u => u.load.length).length, canFill = !why && home.some(u => roomIn(s, u) > 0) && spareForTrucks(s).length > 0;
       const rowOf = (u, i) => {
         const name = many ? t('Truck {n}', { n: i + 1 }) : t('Truck');
         const state = u.away ? `${t('The truck is on its way')} · ${shortTime(Math.max(0, u.backAt - now))}`
           : u.coins ? t('Back with {coins} coins', { coins: num(u.coins) })
-          : `${t('Load')}: ${num(loadUnits(u))}/${num(cap)}${u.load.length ? ` · ${coinMark()} ${num(Math.round(loadValue(u) * TRUCK.pay))}` : ''}`;
+          : `${t('Load')}: ${num(loadUnits(u))}/${num(cap)}${u.load.length ? ` · ${coinMark()} ${num(truckPays(s, u, now))}` : ''}`;
         // one tidy row for each truck: its name and state, and what it carries as small chips on the same card
         return `<div class="truck-row${u.away ? ' away' : ''}">${iconHtml('truck', '', 'mini')}<b>${name}</b><span>${state}</span>${u.load.length && !u.away ? `<div class="truck-load">${u.load.map(l => `<i>${goodIcon(l.good, 'mini')}×${l.n}</i>`).join('')}</div>` : ''}</div>`;
       };
-      body = `${why ? `<p class="hint"><b>${t(why)}</b></p>` : ''}
+      body = `${why ? `<p class="hint"><b>${t(why)}</b></p>` : ''}${marketDayLine(day, now)}
         <div class="trucks">${units.map(rowOf).join('')}</div>
         ${takings ? `<button class="btn primary wide" data-do="collectTruck">${t('Collect {coins} coins', { coins: num(takings) })}</button>` : ''}
         ${canFill || (!why && loaded) ? `<div class="market-actions">${canFill ? `<button class="btn ghost" data-do="fillTruck">${glyph('plus', 'g')} ${t(home.length > 1 ? 'Fill the trucks with spare goods' : 'Fill the truck with spare goods')}</button>` : ''}
           ${!why && loaded ? `<button class="btn orange" data-do="sendTruck">${loaded > 1 ? t('Send {n} trucks', { n: loaded }) : t('Send the truck')}</button>` : ''}</div>` : ''}
-        ${home.length && !why && spare.length ? `<div class="goods-grid">${spare.map(([g, n]) => `<button class="good-tile" data-do="loadTruck" data-good="${g}">${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value}</small></button>`).join('')}</div>` : ''}
+        ${home.length && !why && spare.length ? `<div class="goods-grid">${spare.map(([g, n]) => { const twice = day.active && day.good === g; return `<button class="good-tile${twice ? ' day' : ''}" data-do="loadTruck" data-good="${g}">${twice ? `<i class="day-badge">×${day.bonus}</i>` : ''}${goodIcon(g)}<b>${num(n)}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${GOODS[g].value * (twice ? day.bonus : 1)}</small></button>`; }).join('')}</div>` : ''}
         ${buy || next ? `<div class="market-actions upgrades">${buy ? `<button class="btn ghost" data-do="buyTruck" ${s.level < buy.level || why ? 'disabled' : ''}><b>${iconHtml('truck', '', 'mini')} ${t('Buy another truck')}</b><small>${coinMark()} ${num(buy.cost)} · ${t('level {level}', { level: buy.level })}</small></button>` : ''}
           ${next ? `<button class="btn ghost" data-do="upgradeTruck" ${s.level < TRUCK.level[tr.level] ? 'disabled' : ''}><b>${glyph('up', 'g')} ${t(many ? 'Bigger trucks' : 'Bigger truck')}</b><small>${coinMark()} ${num(TRUCK.upgradeCost[tr.level])} · ${t('level {level}', { level: TRUCK.level[tr.level] })}</small></button>` : ''}</div>` : ''}
         <p class="hint small">${t('The truck drives goods to the market in town and comes back with more coins than they are worth.')}</p>`;

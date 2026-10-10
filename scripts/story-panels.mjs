@@ -16,6 +16,9 @@ mkdirSync(OUT, { recursive: true });
 const cottage = (id, x, z, family) => `s.placed.${id} = { kind: 'cottage', x: ${x}, z: ${z}, rot: 2 }; s.counts.cottage = (s.counts.cottage ?? 0) + 1;
   s.homes.${id} = { level: 1, family: '${family}', arrivesAt: 0, rentFrom: 0, arrived: true };`;
 const school = `s.placed.st_school = { kind: 'school', x: 50, z: 106, rot: 2 }; s.counts.school = 1; s.projects.step = 6;`;
+// chapter 6: the market square mended, a market day running (flags up) and the baker at his stall
+const marketDay = `for (const [id, p] of Object.entries(s.placed)) if (p.kind === 'market') delete s.cond[id];
+  s.level = 6; s.firsts.marketDay = 1; s.marketDay = { shift: 0, n: 0, good: 'pumpkin' };`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -33,6 +36,9 @@ const PANELS = {
   'ch5-1': { hour: 18.6, scene: school, look: [63, 107, 20] },
   'ch5-2': { hour: 12, scene: school + cottage('st_c3', 66, 93, 'reyes'), look: [67, 94, 16] },
   'ch5-3': { hour: 19.3, scene: school + cottage('st_c1', 36, 93, 'tran') + cottage('st_c2', 41, 93, 'okafor'), look: [58, 104, 56] },
+  'ch6-1': { hour: 10.5, scene: marketDay + cottage('st_c3', 66, 93, 'reyes'), look: [77, 95, 30] },
+  'ch6-2': { hour: 9, scene: marketDay, wait: 6000, follow: 'hugo', look: [77, 93, 13] },
+  'ch6-3': { hour: 18.7, look: [30, 13, 30] },
 };
 const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

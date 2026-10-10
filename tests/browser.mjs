@@ -3,6 +3,7 @@
 // Each check is a function; the suite grows with the milestones.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { GOODS } from '../src/content/goods.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const SHOTS = process.env.SHOTS ?? 'test-results/ui/'; mkdirSync(SHOTS, { recursive: true });
 const gpu = process.env.GPU !== '0';
@@ -510,6 +511,39 @@ await check('tester tools: ?tester shows the tag; coins, levels and a chapter ju
   await page.click('[data-test="levels"]');
   expect(await page.evaluate(() => farm.state().level) === s.level + 5, 'the levels button gave nothing');
   await page.screenshot({ path: `${SHOTS}tester-settings.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 6: a market day starts by itself, the good of the day sells for double, and three fields close the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  // the tester's jump saves the farm and opens it again at the start of chapter 6
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:6'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForSelector('[data-status="marketday"]', { timeout: 15000 });
+  await page.waitForFunction(() => farm.people?.walkers?.has('hugo') && [...farm.world.batches.items.keys()].some(k => String(k).startsWith('market-flags-')), null, { timeout: 30000 });
+  const day = await page.evaluate(() => { const s = farm.state(); return { good: s.marketDay.good, flags: [...farm.world.batches.items.keys()].filter(k => String(k).startsWith('market-flags-')).length, chapter: s.story.chapter, step: s.projects.step }; });
+  expect(day.good && GOODS[day.good] && day.flags === 6 && day.chapter === 5, `market day: ${JSON.stringify(day)}`);
+  await page.evaluate(() => farm.focus(77, 94, 26)); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}market-day-square.png` });
+  // the pill opens the barn; the good of the day wears its badge and pays double
+  await page.evaluate(g => { farm.closeCards(); const s = farm.state(); s.barn.cap = 500; s.barn.items[g] = 12; s.barn.items.wheat = 8; }, day.good);
+  await page.click('[data-status="marketday"]'); await page.waitForSelector('.good-tile.day .day-badge');
+  expect(await page.locator('.market-day.on').count() === 1 && await page.locator('.good-tile.day').count() === 1, 'the barn does not show the market day');
+  await page.screenshot({ path: `${SHOTS}market-day-barn.png` });
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.good-tile.day');
+  const after = await page.evaluate(() => ({ coins: farm.state().coins, days: farm.state().stats.marketDays }));
+  expect(after.coins === coins + 2 * GOODS[day.good].value && after.days === 1, `one ${day.good}: ${coins} -> ${after.coins}, days ${after.days}`);
+  await page.click('[data-do="sellGood"][data-good="wheat"]');
+  expect(await page.evaluate(() => farm.state().coins) === after.coins + GOODS.wheat.value, 'another good was paid double');
+  // two more fields: the chapter card
+  await page.evaluate(() => { farm.panels.close(); const g = farm.game; g.s.coins += 20000; for (const parcel of ['1,2', '0,1']) g.do('buyParcel', { parcel }); });
+  await page.waitForSelector('.chapter-modal', { timeout: 15000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Market day') && card.includes('Barley') && card.includes('Bramble'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-6-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 6);
   expect(!errors.length, errors.join('\n'));
   await ctx.close();
 });

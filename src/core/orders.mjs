@@ -1,7 +1,7 @@
 // The order board (DESIGN 8, ECONOMY 3): cards from villagers and neighbours, delivered from the barn.
 import { ORDERS, XP, BONDS } from '../content/economy.mjs';
 import { GOODS, CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
-import { VILLAGERS, NEIGHBOURS, ORDER_LINES, FIRST_ORDER, allPeople } from '../content/people.mjs';
+import { VILLAGERS, NEIGHBOURS, ORDER_LINES, FIRST_ORDER, allPeople, hasArrived } from '../content/people.mjs';
 import * as barn from './barn.mjs';
 import { draw } from './rng.mjs';
 import { gainXp } from './levels.mjs';
@@ -41,7 +41,7 @@ export function orderable(s) {
 /** People who can post orders now: villagers who are here (not noOrders ones such as your own family), neighbours, and
  * families who have moved in. */
 export function posters(s, now) {
-  return [...VILLAGERS.filter(v => !v.noOrders && (!v.arrives || (s.counts[v.arrives] ?? 0) > 0)).map(v => v.id), ...NEIGHBOURS.map(n => n.id),
+  return [...VILLAGERS.filter(v => !v.noOrders && hasArrived(s, v)).map(v => v.id), ...NEIGHBOURS.map(n => n.id),
     ...familiesIn(s, now).flatMap(f => f.people.map(p => p.id))];
 }
 export const canFill = (s, card) => barn.hasAll(s, card.need);

@@ -277,7 +277,7 @@ canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !
 addEventListener('pointerdown', unlockAudio, { capture: true });
 
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+const SOUNDS = { marketDayStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');
@@ -444,6 +444,7 @@ function testAction(what) {
   if (what === 'unlock') g.do('testUnlockAll');
   if (what === 'coins') g.do('testAddCoins');
   if (what === 'levels') g.do('testAddLevels');
+  if (what === 'marketday') g.do('testMarketDay');
   if (what.startsWith('jump:')) {
     // the farm changes in many places at once: save it and open it again, so every view starts from what is there now
     const r = g.do('testJumpChapter', { chapter: +what.slice(5) });

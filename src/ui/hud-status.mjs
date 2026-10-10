@@ -2,6 +2,7 @@
 import { questsOf, ready } from '../core/quests.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { unread } from '../core/bonds.mjs';
+import { marketDayOf } from '../core/market-day.mjs';
 
 /** project: show the Projects pill (the HUD always does; it replaced a round button); canWork: a step can be worked now (the pill is lit). */
 export function hudStatus(s, now, { project = false, canWork = false } = {}) {
@@ -16,6 +17,9 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   const coins = trucks.reduce((sum, u) => sum + (u.coins ?? 0), 0), label = trucks.length > 1 ? 'Trucks' : 'Truck';
   if (coins) rows.push({ act: 'market', icon: 'truck', label, coins, hot: true });
   else if (away.length) rows.push({ act: 'market', icon: 'truck', label, ms: Math.max(0, Math.min(...away.map(u => u.backAt)) - now), count: away.length });
+  // a market day runs: the good of the day and the time left (a tap opens the barn, where it sells for double)
+  const day = marketDayOf(s, now);
+  if (day.active) rows.push({ act: 'marketday', icon: day.good, label: 'Market day', ms: Math.max(0, day.endsAt - now), lit: true });
   const line = s.fishing?.line;
   if (line) rows.push({ act: 'pond', icon: 'pond', label: 'Fishing', ms: Math.max(0, line.doneAt - now), hot: line.doneAt <= now });
   return rows;

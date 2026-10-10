@@ -8,7 +8,7 @@
 import { HEART_SCENES, WISHES } from '../content/hearts.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { CHAPTERS } from '../content/story.mjs';
-import { VILLAGERS, FAMILIES, allPeople } from '../content/people.mjs';
+import { VILLAGERS, FAMILIES, allPeople, hasArrived } from '../content/people.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BONDS, CHARM_MILESTONES } from '../content/economy.mjs';
@@ -46,7 +46,7 @@ export function residents(s, now = Infinity) {
 }
 /** Who can receive a gift now: villagers who are in the village (not your own family) and residents. */
 export function giftable(s, now = Infinity) {
-  const villagers = VILLAGERS.filter(v => !v.family && !v.noGifts && (!v.arrives || (s.counts[v.arrives] ?? 0) > 0)).map(v => v.id);
+  const villagers = VILLAGERS.filter(v => !v.family && !v.noGifts && hasArrived(s, v)).map(v => v.id);
   return [...villagers, ...residents(s, now).map(r => r.id)];
 }
 /** The story's scene at 3, 6 or 9 hearts. Optional state selects a context variant without changing its reward. */

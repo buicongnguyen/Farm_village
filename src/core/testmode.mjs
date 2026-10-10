@@ -1,6 +1,6 @@
 // Test-mode helpers for the Settings "Test" section (test builds, and the public game opened with ?tester) and for
 // browser tests. They run through act() like any action, so the views and the save hear about them.
-import { LEVELS } from '../content/economy.mjs';
+import { LEVELS, MARKET_DAY, PARCELS } from '../content/economy.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -11,7 +11,8 @@ import { xpFor, unlocksAt } from './levels.mjs';
 import { nextFamily, arriveNext, tickHomes } from './homes.mjs';
 import { RUINS, START_PARCEL, parcelOrigin } from '../content/world.mjs';
 import { CHAPTERS, BEATS } from '../content/story.mjs';
-import { actions as build } from './build.mjs';
+import { actions as build, buyableParcels } from './build.mjs';
+import { marketOpen, tickMarketDay } from './market-day.mjs';
 import { actions as animals } from './animals.mjs';
 import { advance } from './projects.mjs';
 import { tickCondition } from './condition.mjs';
@@ -60,12 +61,23 @@ function families(ctx, n) {
   tickHomes(ctx);
   for (let i = 0; i < 8 && here() < n; i++) if (actions.testAddFamily(ctx).ok === false) break;
 }
+/** At least `n` fields: the next ones beside the farm, for free. */
+function fields(ctx, n) {
+  const { s } = ctx; upTo(ctx, PARCELS.level);
+  for (let i = 0; i < 16 && s.parcels.length < n; i++) {
+    const next = buyableParcels(s)[0]; if (!next) break;
+    const coins = s.coins; s.coins += next.price; const out = build.buyParcel(ctx, { parcel: next.parcel }); s.coins = coins;
+    if (out.ok === false) break;
+  }
+}
 export const JUMPS = {
   2: ctx => upTo(ctx, 2),   // chapter 1 opens the game: nothing to do for it
   3: ctx => { upTo(ctx, 3); stepTo(ctx, 'mill_coop'); give(ctx, 'feed_mill'); const coop = give(ctx, 'coop'); if (coop && !ctx.s.animals[coop]?.length) animals.buyAnimal(ctx, { home: coop }); },
   4: ctx => { upTo(ctx, 4); stepTo(ctx, 'cottage1'); families(ctx, 1); },
   5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
-  6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); },
+  6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
+  // chapter 6 is behind: a market day sold on, and three fields
+  7: ctx => { const { s, now } = ctx; upTo(ctx, MARKET_DAY.level); give(ctx, 'market'); fields(ctx, 3); s.stats.marketDays = Math.max(1, s.stats.marketDays ?? 0); (s.firsts ??= {}).marketDay ??= now; },
 };
 /** The chapters a tester can jump to. */
 export const JUMP_CHAPTERS = Object.keys(JUMPS).map(Number).sort((a, b) => a - b);
@@ -86,6 +98,14 @@ export const actions = {
     while (s.level < to) { s.level++; ctx.emit('levelUp', { level: s.level, unlocks: unlocksAt(s.level) }); }
     s.xp = Math.max(s.xp, xpFor(s.level));
     return { level: s.level };
+  },
+  /** Start the next market day now (core/market-day.mjs): the timetable moves, nothing else. */
+  testMarketDay(ctx) {
+    const { s, now } = ctx; if (!marketOpen(s)) return ctx.fail('The square holds market days from level {level}', { level: MARKET_DAY.level });
+    const m = (s.marketDay ??= { shift: 0 }), t = Math.max(0, now - s.createdAt + m.shift);
+    m.shift += MARKET_DAY.everyMs - (t % MARKET_DAY.everyMs);
+    tickMarketDay(ctx);
+    return { good: s.marketDay.good ?? null };
   },
   /** Bring the farm to the start of a chapter: { chapter }. Only forward. Returns the deeds it could not arrange, if any. */
   testJumpChapter(ctx, { chapter } = {}) {

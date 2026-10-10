@@ -1,5 +1,19 @@
 # Changelog
 
+## Chapter 6: Market day — 2026-10-11
+
+- The market square holds a **market day** every ten minutes for four (testing pace). One good, the good of the day, pays double: sold from the barn, or sent on a truck while the day runs. The first one begins as soon as a farm has level 6 and a working square. The barn and the market panel say what the next market day will ask for, so there is time to get ready.
+- A notice, flags over the square, a "Market day" pill with the time left, and a ×2 badge in the barn show it. **Barley the baker** arrives with the first market day and keeps a stall at the square.
+- **Chapter 6** closes when you have sold on a market day and own three fields. Five short scenes follow their deeds (the third field, the goat barn, first butter, bread-butter-cheese, the gate upriver). Land for sale now says what it is good for.
+- Village projects: the checklist after the clinic starts with "The first market day" and "A third field"; steps that are not about building have a "Show me" button instead of the build-mode hint. Roadmap: the stage "The valley wakes".
+- Plan: [docs/plan](docs/plan/README.md) has one file per step from here to the end of the story.
+
+## Tester tools — 2026-10-11
+
+- Open the game with `?tester` to get a Test section in Settings: jump to the start of a chapter, +10,000 coins, +5 levels, finish every timer, start a market day. A red Tester tag shows while it is on. A normal visit never sees it.
+- Every waiting time goes through one pace switch (`PACE` in `src/content/economy.mjs`); the game stays at testing pace until the release pass.
+- The village projects after the clinic are a checklist: each is ticked off when it is true, in any order, and paid once.
+
 ## Explore: first playable farmhouse — 2026-10-09
 
 - Integrated Claude's AR-015 cutaway room after packed-model, geometry, anchor and budget checks; art PR #43 was merged first.

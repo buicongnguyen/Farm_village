@@ -14,12 +14,13 @@ const tests = {
   goatbarn: s => workingCount(s, 'goat_barn') > 0,
   cheese: s => (s.barn.items.cheese ?? 0) > 0 || !!s.firsts?.cheese || (s.stats?.cheeseMade ?? 0) > 0,
   hand: s => Object.keys(s.hands ?? {}).length > 0,
+  marketday: s => (s.stats?.marketDays ?? 0) >= 1,
+  fields3: s => s.parcels.length >= 3,
 };
 export function journeyOf(s) {
-  const homecoming = STAGES[0].milestones.every(m => tests[m.test](s));
-  const orchard = STAGES[1].milestones.every(m => tests[m.test](s));
-  const home = STAGES[2].milestones.every(m => tests[m.test](s));
-  const stage = !homecoming || s.level < 4 ? STAGES[0] : !orchard ? STAGES[1] : home ? STAGES[3] : STAGES[2];
+  // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one
+  const built = STAGES.filter(st => !st.planned), open = built.find((st, i) => !st.milestones.every(m => tests[m.test](s)) || (i === 0 && s.level < 4));
+  const stage = open ?? STAGES[built.length] ?? built.at(-1);
   const milestones = (stage.milestones ?? []).map(m => ({ ...m, done: tests[m.test](s) }));
   const unlocks = JOURNEY_UNLOCKS.filter(u => u.planned || !workingCount(s, u.kind)).slice(0, 3).map(u => ({ ...u, available: !u.planned && s.level >= BUILDINGS[u.kind].level && mayBuild(s, u.kind).ok }));
   return { stage, milestones, done: milestones.filter(m => m.done).length, total: milestones.length, unlocks };

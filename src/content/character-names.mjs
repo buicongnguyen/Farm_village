@@ -19,6 +19,8 @@ export const CHARACTER_NAMES = Object.freeze({
   pia: { en: forms('Tilly'), vi: forms('Su Su'), ko: forms('콩콩'), ja: forms('まめ') },
   cora: { en: forms('Winnie'), vi: forms('Mầm', 'Cô Mầm'), ko: forms('새싹'), ja: forms('わかば') },
   hazel: { en: forms('Fern', 'Dr Fern'), vi: forms('Sen', 'Bác sĩ Sen'), ko: forms('온기', '온기 선생님'), ja: forms('すみれ', 'すみれ先生') },
+  // the baker, who comes with the first market day (chapter 6). Not 보리 or こむぎ: those are the dog's names.
+  hugo: { en: forms('Barley'), vi: forms('Lúa', 'Chú Lúa'), ko: forms('고소'), ja: forms('こんがり') },
   mai: { en: forms('Daisy'), vi: forms('Na', 'Chị Na'), ko: forms('도란'), ja: forms('ゆず') },
   gus: { en: forms('Bramble'), vi: forms('Khoai', 'Bác Khoai'), ko: forms('누룽지'), ja: forms('だいふく') },
 });
