@@ -65,6 +65,9 @@ body.panel-open .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }   /* buil
 .set-row .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .set-row input[type="range"] { flex: 1; min-width: 150px; accent-color: var(--leaf); height: 32px; }
 .test-head { color: #c4363a !important; } .test-row .btn { flex: 1 1 140px; }
+.test-jump .tab[disabled] { opacity: .55; }
+/* shown only when the game was opened with ?tester: a screenshot from a tester's farm is never taken for normal play */
+.tester-tag { position: fixed; left: 50%; top: 2px; transform: translateX(-50%); z-index: 6; padding: 0 8px; border-radius: 8px; background: rgba(196, 54, 58, .88); color: #fff; font: 700 11px/16px system-ui, sans-serif; letter-spacing: .04em; pointer-events: none; }
 .album { display: grid; gap: 6px; }
 .album .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .chapter-tile { background: linear-gradient(#fff, #fff7e6); border: 3px solid var(--line); border-radius: 16px; padding: 6px; display: grid; gap: 2px; justify-items: center; text-align: center; box-shadow: 0 3px 0 #d3a868; align-content: start; }

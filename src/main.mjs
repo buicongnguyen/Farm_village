@@ -98,6 +98,10 @@ async function mainMenu() {
 const profile = activeProfile(), savedProfile = inspectProfile(profile);
 // A damaged save is kept for recovery; never silently replace it with a fresh farm and autosave over it.
 if (!(TEST_MODE && params.has('new')) && savedProfile.error) await recoverProfile();
+// ?tester opens the tester's tools in the public game (docs/plan/00-tester-tools.md). Kept for the tab, so the reload
+// after a chapter jump still has them; a normal visit never sees them.
+const TESTER = (() => { try { if (params.has('tester')) sessionStorage.setItem('fv-tester', '1'); return sessionStorage.getItem('fv-tester') === '1'; } catch { return params.has('tester'); } })();
+if (TESTER) { const tag = document.createElement('div'); tag.className = 'tester-tag'; tag.textContent = t('Tester'); document.body.append(tag); }
 // test builds can run the clock ahead (kept for the tab, so a reload sees the same time)
 const clockOffset = TEST_MODE ? +(sessionStorage.getItem('fv-clock-offset') ?? 0) : 0;
 // ?new starts a fresh farm (test builds only: in the public game a stray link must never replace a saved farm)
@@ -200,7 +204,7 @@ panels = new Panels(app, game, hud, {
   // a wish's Build button: the catalogue on that decoration
   onBuildKind: kind => { if (!BUILDINGS[kind]) return; build.cat = BUILDINGS[kind].cat; build.start(kind); },
   onPhoto: () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })),
-  onTest: TEST_MODE ? what => testAction(what) : null,
+  onTest: TEST_MODE || TESTER ? what => testAction(what) : null,
 });
 panels.profile = profile;
 hud.profile = profile; hud.update();
@@ -438,7 +442,14 @@ function recoverProfile() {
 function testAction(what) {
   const g = game;
   if (what === 'unlock') g.do('testUnlockAll');
-  if (what === 'coins') { g.s.coins += 10000; g.emit({ ok: true, events: [{ type: 'coins', coins: 10000 }] }, 'test'); }
+  if (what === 'coins') g.do('testAddCoins');
+  if (what === 'levels') g.do('testAddLevels');
+  if (what.startsWith('jump:')) {
+    // the farm changes in many places at once: save it and open it again, so every view starts from what is there now
+    const r = g.do('testJumpChapter', { chapter: +what.slice(5) });
+    if (r.ok) { if (r.missing?.length) console.warn('tester: could not arrange chapters', r.missing); handleSave('reload'); }
+    return;
+  }
   if (what === 'timers') g.do('testFinishTimers');
   if (what === 'family') g.do('testAddFamily');
   if (what === 'step') g.do('tutorial', { step: (g.s.story.tutorial ?? 0) + 1 });

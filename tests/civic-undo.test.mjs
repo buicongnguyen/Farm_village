@@ -89,6 +89,7 @@ test('old civic undo records without a valid snapshot conservatively honor prior
 
 test('an upgraded clinic cannot be fully refunded on imported progress that already completed its main project', () => {
   const s = farm(); s.projects.step = STEPS.length; s.story.chapter = 4;
+  for (const st of STEPS) s.firsts[`project:${st.id}`] = NOW;   // the steps after the clinic are kept by these stamps (core/projects.mjs TAIL)
   delete s.placed.home; s.homes = {};
   for (const [i, family] of FAMILIES.slice(0, 4).entries()) {
     const id = `family${i}`; s.placed[id] = { kind: 'cottage', x: 33 + i * 4, z: 93, rot: 2 };

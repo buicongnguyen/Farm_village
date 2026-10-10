@@ -5,7 +5,7 @@ Story source: `STORY.md` 4 (row 6), `JOURNEY.md` 3 (Act II), `MEADOW-DAIRY-SCOPE
 
 ## What the player gets
 
-- A **market day** that comes round every twenty minutes for six minutes: one good of the day pays double.
+- A **market day** that comes round every ten minutes for four (testing pace): one good of the day pays double.
 - Land that says what it is for when it is for sale, and Bramble selling the third field at a fair price, grumbling.
 - Three short dairy scenes (a corner for animals, the first butter, a cheese picnic).
 - A newcomer: the **baker**, who arrives with the first market day and stands at the square.
@@ -21,7 +21,10 @@ A market day counts once the player has sold at least one unit of the good of th
 
 New file `src/core/market-day.mjs`:
 
-- `MARKET_DAY` in `content/economy.mjs`: `{ everyMs: paced(20 * MIN), lastsMs: paced(6 * MIN), bonus: 2, level: 6 }`.
+- `MARKET_DAY` in `content/economy.mjs`: `{ everyMs: paced(10 * MIN), lastsMs: paced(4 * MIN), bonus: 2, level: 6 }`
+  (testing pace: every ten minutes for four; the release pace makes it every thirty for twelve).
+- The first market day starts the moment the market opens for the farm (level 6 and a working square), so nobody
+  waits for the first one. A tester's button starts the next one at once.
 - `marketDayOf(s, now)` → `{ open, active, n, good, endsAt, nextAt }`. Pure: `n = floor((now − s.createdAt) / everyMs)`,
   active while `(now − s.createdAt) % everyMs < lastsMs`. `open` needs level 6 and a working market square.
 - `marketGoods(s)`: what the farm can make now (crops at its level, recipes of its working buildings, fruit of its
@@ -40,7 +43,8 @@ Other rules:
 - `arrived(s, v)` helper for villagers (`content/people.mjs` or `core/bonds.mjs`): `arrives` may be a building kind (as
   now) or `'chapter:6'`. Use it in `core/bonds.mjs`, `core/orders.mjs` and `view/people-view.mjs`.
 - `s.stats.butterMade` counted beside `cheeseMade` in `collectProducts` (`src/core/production.mjs`).
-- Two project steps after `juice` in `content/projects.mjs`, both locking nothing:
+- Two project steps after `juice` in `content/projects.mjs`, both locking nothing (the checklist after the clinic is
+  kept by id since step 0, so they can go in the middle of it):
   `market_day` ("The first market day", level 6, done at `marketDays >= 1`) and
   `third_field` ("A third field", done at `parcels.length >= 3`).
 
@@ -50,8 +54,8 @@ Other rules:
   for goats and the dairy"), the north row ("North field: nearest the brook lane"), the south row ("South field: close
   to the village street"), else "Open field: room for anything". Shown in the for-sale round menu and the land panel.
 - `content/people.mjs`: `{ id: 'hugo', name: '{person:hugo:display}', role: 'Baker', arrives: 'chapter:6', noOrders: true, noGifts: true, line: ... }`.
-- `content/character-names.mjs`: `hugo` → en **Barley**, vi **Lúa** / **Chú Lúa**, ko **보리**, ja **こむぎ**. Vietnamese pair
-  **chú – cháu**; add him to the table in `STORY.md` 2.
+- `content/character-names.mjs`: `hugo` → en **Barley**, vi **Lúa** / **Chú Lúa**, ko **고소**, ja **こんがり** (not 보리 or
+  こむぎ: those are the dog's names). Vietnamese pair **chú – cháu**; add him to the table in `STORY.md` 2.
 - `content/story.mjs`:
   - `CHAPTERS` id 6, "Market day", subtitle "The square fills up again."; text: the square has stalls and bunting for
     the first time in years; Barley sets up his trays; Bramble sold the field "at a fair price, and do not thank me";

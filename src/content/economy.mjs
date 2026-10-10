@@ -1,6 +1,19 @@
 // Every tuning number (ECONOMY.md). Change a number here and in ECONOMY.md, then run `npm run sim`.
 export const MIN = 60_000, HOUR = 3_600_000, DAY = 86_400_000;
 
+// ── The pace switch (docs/plan/00-tester-tools.md B) ──
+// Every waiting time in the game goes through paced(). 'testing' is what ships now, so the owner can play a chapter in
+// minutes; the release pass (docs/plan/90-release-pass.md) sets mode to 'release' and tunes `time`.
+// `FV_PACE=release npm run sim` tries the release pace without editing this file.
+// Numbers that were eased for testing and want a second look then:
+//   crop grow times (goods.mjs; PR #66), tray count and tray costs (SLOTS; #59, #61), truck sizes (TRUCK; #66, #70),
+//   the barn limit (BARN.max; #57), parcel prices (PARCELS.cost; #70), bites on foot (FISH.footMs; #61),
+//   farmhouse costs (HOUSE; #68), hand fees and wages (HANDS; #62).
+const paceEnv = typeof process !== 'undefined' ? process.env?.FV_PACE : null;
+export const PACE = { mode: paceEnv === 'release' ? 'release' : 'testing', time: { testing: 1, release: 3 } };
+/** A waiting time at the current pace: a number of milliseconds, or a [from, to] pair. */
+export const paced = ms => Array.isArray(ms) ? ms.map(paced) : Math.round(ms * PACE.time[PACE.mode]);
+
 export const START = { coins: 50, barnCap: 50, stock: { wheat: 6 } };
 // A new game starts in Hollowbrook as it is: things stand, many run down (content/start.mjs). The player gets some money
 // and stock to speed up the first repairs (PLAN-v0.3 D9).
@@ -8,9 +21,9 @@ export const START_RESTORE = { coins: 500, barnCap: 200, stock: { wheat: 12, bre
 // Repairs (D2, D6, D7): a broken building (only at the start) is out of order until repaired: coins and a short wait.
 // Wear (D3) is very gentle: it grows only while the game is open, never stops anything and costs a few percent of rent and charm.
 export const REPAIR = {
-  broken: { share: 0.6, min: 25, ms: 30_000, xp: 10 },     // coins = max(min, share × the thing's price); the wait is `ms`
+  broken: { share: 0.6, min: 25, ms: paced(30_000), xp: 10 },     // coins = max(min, share × the thing's price); the wait is `ms`
   worn: { share: 0.08, min: 5 },                           // wear level 1; level 2 costs half as much again
-  road: 40, house: 400, helpMs: 45_000,
+  road: 40, house: 400, helpMs: paced(45_000),
 };
 export const WEAR = { ms: [3 * HOUR, 9 * HOUR], rent: 0.05, charm: 1, tickCapMs: 2 * MIN };   // play time to "worn" and "shabby"; one tick never counts more than tickCapMs
 // The farmhouse (D4): a one-floor home that can be upgraded. Each level adds barn room.
@@ -50,20 +63,20 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
 /** The delivery trucks (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip
  *  (upgradeCost and level per size, every truck the same size); fleet: how many trucks a farm can own, and what the
  *  2nd and 3rd cost and at which level. */
-export const TRUCK = { tripMs: 50_000, pay: 1.2, capacity: [20, 40, 70, 110, 150, 200, 260, 330, 410, 500], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
+export const TRUCK = { tripMs: paced(50_000), pay: 1.2, capacity: [20, 40, 70, 110, 150, 200, 260, 330, 410, 500], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
 /** The fish pond: a cast waits waitMs (baitMs with bait); fishing villagers leave feeCoins each feeMs, up to feeCap. */
-export const FISH = { waitMs: 25_000, baitMs: 12_000, footMs: [4500, 9000],   // footMs: a cast made on foot from the bank bites this soon (Zoo Garden's pace)
+export const FISH = { waitMs: paced(25_000), baitMs: paced(12_000), footMs: paced([4500, 9000]),   // footMs: a cast made on foot from the bank bites this soon (Zoo Garden's pace)
   feeMs: 6 * MIN, feeCoins: 5, feeCap: 80 };
 /** Family helpers (core/helpers.mjs): from this level, every everyMs while the game is open. */
 /** Hired hands (core/helpers.mjs): once the school stands. Every everyMs while the game is open each does HALF of the
  *  waiting work of its kind; the other half is yours. fee: coins to hire; wage: coins per task done. */
-export const HANDS = { everyMs: 60_000, wage: 1, roles: { field: { fee: 300 }, animals: { fee: 300 }, workshop: { fee: 500 }, orchard: { fee: 400 }, driver: { fee: 600 }, fisher: { fee: 400 } } };
-export const HELP = { level: 3, everyMs: 2 * MIN, beds: 4, products: 3 };
-export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: 30_000, bonus: 1.25 };
+export const HANDS = { everyMs: paced(60_000), wage: 1, roles: { field: { fee: 300 }, animals: { fee: 300 }, workshop: { fee: 500 }, orchard: { fee: 400 }, driver: { fee: 600 }, fisher: { fee: 400 } } };
+export const HELP = { level: 3, everyMs: paced(2 * MIN), beds: 4, products: 3 };
+export const FRUIT_STAND = { slots: 3, stack: 10, everyMs: paced(30_000), bonus: 1.25 };
 export const STALL = { slots: 4, sellEveryMs: [3 * MIN, 5 * MIN] };
 export const DAILY_RESET_HOUR = 4;
-export const FAMILY_ARRIVAL_MS = 2 * MIN;
+export const FAMILY_ARRIVAL_MS = paced(2 * MIN);
 // Hearts (DESIGN 9.2): 0–10 per person. Orders, gifts they like and granted wishes raise them; a heart scene plays at 3, 6
 // and 9 with a reward (the story's own reward when it has one, else these). Hearts never go down.
 export const BONDS = {

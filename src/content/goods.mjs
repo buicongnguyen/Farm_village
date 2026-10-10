@@ -1,5 +1,5 @@
 // Crops, fruit, animals and recipes (ECONOMY.md section 2). `value` is the base price; `level` unlocks it.
-import { MIN, HOUR } from './economy.mjs';
+import { MIN, HOUR, paced } from './economy.mjs';
 
 // Testing-time tuning (2026-10-10, the user's call): every crop earns at least 8 coins a minute per bed, the dear ones a
 // little more. Profit per harvest is the crop's value (seed = value, harvest = two). Lengthen growMs again for release.
@@ -67,6 +67,11 @@ export const RECIPES = {
   noodles:      { name: 'Noodles', at: 'noodle_factory', needs: { wheat: 4, egg: 1 }, makes: 2, timeMs: 60_000, value: 30, level: 8, icon: '🍜' },
   instant_noodles: { name: 'Instant noodles', at: 'noodle_factory', needs: { noodles: 2, carrot: 1 }, makes: 1, timeMs: 2 * MIN, value: 95, level: 9, icon: '🍲' },
 };
+// The pace switch (economy.mjs PACE): the times written above are the testing lengths; release stretches them all.
+for (const c of Object.values(CROPS)) c.growMs = paced(c.growMs);
+for (const f of Object.values(FRUITS)) { f.firstMs = paced(f.firstMs); f.regrowMs = paced(f.regrowMs); }
+for (const a of Object.values(ANIMALS)) a.everyMs = paced(a.everyMs);
+for (const r of Object.values(RECIPES)) r.timeMs = paced(r.timeMs);
 /** Every good the barn can hold: { id → { name, value, icon, kind } }. */
 export const GOODS = {
   ...Object.fromEntries(Object.entries(CROPS).map(([id, c]) => [id, { name: c.name, value: c.value, icon: c.icon, kind: 'crop', level: c.level }])),

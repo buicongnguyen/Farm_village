@@ -134,4 +134,12 @@ export const VI_FISHING = {
   'Clear away': 'Dỡ bỏ',
   'Cleared, kept for the rebuild': 'Đã dọn sạch, để dành xây lại',
   '{name} is cleared away': 'Đã dỡ bỏ {name}',
+  'Tester': 'Người thử',
+  'Tester tools: this farm is for testing.': 'Công cụ thử nghiệm: nông trại này dùng để thử.',
+  'Jump to chapter': 'Nhảy tới chương',
+  '+5 levels': '+5 cấp',
+  'Unknown amount': 'Số lượng không hợp lệ',
+  'This is the top level': 'Đây là cấp cao nhất rồi',
+  'Unknown chapter': 'Không có chương này',
+  'This farm is already there': 'Nông trại này đã tới đó rồi',
 };

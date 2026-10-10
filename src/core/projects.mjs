@@ -10,6 +10,13 @@ import { gainXp } from './levels.mjs';
 import { civicBuildReason } from './village-growth.mjs';
 
 export const stepIndex = id => STEPS.findIndex(st => st.id === id);
+/** Where the checklist starts: the first step that locks nothing (content/projects.mjs). Steps before it run in order
+ *  and are kept by position (s.projects.step). From here on a step is kept by id (s.firsts['project:<id>']) and is
+ *  ticked off whenever it is true, so a later chapter can add a step anywhere in this part without moving an old farm. */
+export const TAIL = STEPS.findIndex(st => !st.builds.length);
+const stamped = (s, step) => !!s.firsts?.[`project:${step.id}`];
+/** Is this step behind the player? (For the list in Village projects.) */
+export const stepDone = (s, id) => { const i = stepIndex(id); return i >= 0 && (i < TAIL ? i < s.projects.step : stamped(s, STEPS[i])); };
 export const currentStep = s => STEPS[s.projects.step] ?? null;
 export const reached = (s, id) => s.projects.step >= stepIndex(id);
 export const completed = (s, id) => s.projects.step > stepIndex(id);
@@ -52,12 +59,19 @@ export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
 export const projectCost = (s, kind) => { const step = currentStep(s); return step?.builds.includes(kind) && step.cost ? step.cost : 0; };
 /** Move past every step whose `done` test passes. */
 export function advance(ctx) {
-  const { s } = ctx;
-  while (currentStep(s) && currentStep(s).done(s)) {
-    const step = currentStep(s); s.projects.step++; s.projects.delivered = {};
+  const { s } = ctx, finished = [];
+  const finish = step => {
     (s.firsts ??= {})[`project:${step.id}`] ??= ctx.now;   // stamped here, so the cart (the day after the school) sees it in the same action
-    gainXp(ctx, XP.build * 4); ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });
+    gainXp(ctx, XP.build * 4); finished.push(step);
+  };
+  while (s.projects.step < TAIL && currentStep(s).done(s)) { const step = currentStep(s); s.projects.step++; s.projects.delivered = {}; finish(step); }
+  if (s.projects.step >= TAIL) {
+    // the checklist: whatever is true is ticked off (once: the stamp is the record); the step shown is the first still open
+    for (const step of STEPS.slice(TAIL)) if (!stamped(s, step) && step.done(s)) finish(step);
+    const open = STEPS.findIndex((st, i) => i >= TAIL && !stamped(s, st)), at = open < 0 ? STEPS.length : open;
+    if (at !== s.projects.step) { s.projects.step = at; s.projects.delivered = {}; }
   }
+  for (const step of finished) ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });
 }
 /** Where a missing good is made, for "show the way" (DESIGN 11): a building kind, or 'farm' for crops. */
 export function madeAt(good) {

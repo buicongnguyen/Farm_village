@@ -134,4 +134,12 @@ export const JA_FISHING = {
   'Clear away': '取りこわす',
   'Cleared, kept for the rebuild': '片づけ済み、再建用にとってあります',
   '{name} is cleared away': '{name}を取りこわしました',
+  'Tester': 'テスター',
+  'Tester tools: this farm is for testing.': 'テスター用ツール：この農場はテスト用です。',
+  'Jump to chapter': '章へジャンプ',
+  '+5 levels': 'レベル+5',
+  'Unknown amount': '数量が正しくありません',
+  'This is the top level': 'これが最高レベルです',
+  'Unknown chapter': 'その章はありません',
+  'This farm is already there': 'この農場はもうそこまで進んでいます',
 };
