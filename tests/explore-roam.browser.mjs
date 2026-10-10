@@ -226,6 +226,29 @@ await check('phones get a thumb stick: dragging it walks, releasing stops; the a
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
+await check('zoom while roaming: the wheel, + and - and a pinch change the view and it stays; indoors keeps its fixed view', async () => {
+  const { ctx, page, errors } = await open('phone');
+  await start(page); await stand(page, 57, 131); await settle(page);
+  const span = () => page.evaluate(() => farm.world.cam.span);
+  const s0 = await span(); expect(Math.abs(s0 - 28) < .01, `roaming starts at span ${s0}`);
+  await page.mouse.move(195, 300); await page.mouse.wheel(0, 400); await page.waitForTimeout(250);
+  const s1 = await span(); expect(s1 > s0 * 1.1, `the wheel did not zoom out: ${s0} → ${s1}`);
+  await page.keyboard.down('d'); await page.waitForTimeout(500); await page.keyboard.up('d'); await page.waitForTimeout(200);
+  expect(Math.abs(await span() - s1) < .01, 'walking snapped the zoom back');
+  for (let i = 0; i < 40; i++) await page.keyboard.press('-');
+  const far = await span(); expect(far > 100 && far <= 120.01, `zooming out stops at ${far}`);
+  for (let i = 0; i < 60; i++) await page.keyboard.press('+');
+  const close = await span(); expect(Math.abs(close - 24) < .01, `zooming in stops at ${close}`);
+  // pinch: two fingers moving together zoom out
+  const cdp = await ctx.newCDPSession(page), touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
+  await touch('touchStart', [[120, 300]]); await touch('touchStart', [[120, 300], [280, 300]]);
+  for (const d of [20, 40, 60]) await touch('touchMove', [[120 + d, 300], [280 - d, 300]]);
+  await touch('touchEnd', []); await cdp.detach(); await page.waitForTimeout(200);
+  const pinched = await span(); expect(pinched > close * 1.5, `the pinch did not zoom out: ${close} → ${pinched}`);
+  expect(await page.evaluate(() => !farm.world.exploreMode.session.route.length), 'a pinch was taken for a tap-to-walk');
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => !r).length;
 console.log(`\n${results.length - failed}/${results.length} roaming Explore checks passed`);

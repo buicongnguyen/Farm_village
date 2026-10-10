@@ -25,6 +25,7 @@ export function openExplore(radial, opts) {
   if (!mode) { mode = new ExploreMode(radial); instances.set(radial, mode); }
   return mode.open(opts);
 }
+const ZOOM = { min: 24, max: 120, start: 28 };   // outdoors: as close as the farm view allows, out to a wide look round
 const centre = c => c * 2 + 1, far = (p, x, z) => Math.hypot(p[0] - x, p[1] - z);
 class ExploreMode {
   constructor(radial) {
@@ -50,7 +51,7 @@ class ExploreMode {
     this.el.addEventListener('click', e => { const b = e.target.closest('[data-explore]'); if (b && !b.disabled) this.choose(b.dataset.explore); });
     const canvas = this.world.renderer.domElement;
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) canvas.addEventListener(type, e => this.pointer(e), { capture: true });
-    canvas.addEventListener('wheel', e => { if (this.active) { e.preventDefault(); e.stopImmediatePropagation(); } }, { capture: true, passive: false });
+    canvas.addEventListener('wheel', e => { if (this.active) { e.preventDefault(); e.stopImmediatePropagation(); if (!this.busy) this.zoom(e.deltaY > 0 ? 1.12 : 1 / 1.12); } }, { capture: true, passive: false });
     addEventListener('keydown', e => this.key(e, true), true); addEventListener('keyup', e => this.key(e, false), true);
     addEventListener('blur', () => this.clear()); document.addEventListener('visibilitychange', () => this.clear());
     document.addEventListener('focusin', e => { if (editing(e)) this.clear(); });
@@ -94,12 +95,18 @@ class ExploreMode {
       if (!roam && !routeExplore(this.state, HOME_APPROACH)) this.notice = 'The way is blocked. Try another spot.';
       this.near = this.scan();
       if (roam) { this.hintUntil = performance.now() + 5000; setTimeout(() => this.active && this.render(), 5100); }   // the welcome line steps aside
-      this.world.cam.lookAt(...this.session.p, 28); this.render();
+      this.span = ZOOM.start; this.world.cam.lookAt(...this.session.p, this.span); this.render();
     } catch {
       if (this.active && generation === this.generation) { this.loading = false; this.error = true; this.render(); }
     }
   }
-  clear(keepStick = false) { this.keys.clear(); if (!keepStick) this.joyReset(); this.actOnArrival = null; this.press = null; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
+  /** Zoom the roaming camera (wheel, pinch, + and -). The room indoors keeps its fixed view. */
+  zoom(factor) {
+    if (!this.session || this.inside || !Number.isFinite(factor)) return;
+    this.span = Math.min(ZOOM.max, Math.max(ZOOM.min, (this.span ?? ZOOM.start) * factor));
+    this.world.cam.lookAt(this.world.cam.x, this.world.cam.z, this.span);
+  }
+  clear(keepStick = false) { this.keys.clear(); if (!keepStick) this.joyReset(); this.actOnArrival = null; this.press = null; this.touches?.clear(); this.pinch = 0; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
   /** Outdoors: the nearest thing worth doing something with (the door, the pond, a person, a bench, a ripe bed, the
    *  order board, the mailbox), with the label of its one action. Scanned a few times a second, not every frame. */
   scan(p = this.session?.p, reach = 1, all = false) {
@@ -158,7 +165,7 @@ class ExploreMode {
       else if (routeExplore(this.state, HOME_APPROACH)) { this.target = 'door'; this.enterOnArrival = true; }
       else this.notice = 'The way is blocked. Try another spot.';
     } else if (kind === 'pond') { const panels = this.panels; this.savedCamera = null; this.close(); panels.onFishCast?.(false); return; }   // fishing takes over; the camera stays on you
-    else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, 28); people.talk(w); } }
+    else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, this.span); people.talk(w); } }
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
     else if (kind === 'bench') {
@@ -192,6 +199,7 @@ class ExploreMode {
     if (!down) { this.keys.delete(k); return; }
     if (this.busy) { this.clear(); if (k === 'escape' && this.card) { this.card = null; this.render(); } return; }
     if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
+    else if (k === '+' || k === '=' || k === '-') this.zoom(k === '-' ? 1.12 : 1 / 1.12);
     else if (!e.repeat && (k === 'e' || k === 'f' || k === 'enter')) this.choose('interact');
     else if (!e.repeat && k === 'escape') this.close();
   }
@@ -199,6 +207,14 @@ class ExploreMode {
     if (!this.active) return;
     e.stopImmediatePropagation(); e.preventDefault();
     if (this.busy || this.loading || this.error) { this.clear(); return; }
+    const touches = (this.touches ??= new Map());
+    if (e.type === 'pointerdown' || (e.type === 'pointermove' && touches.has(e.pointerId))) touches.set(e.pointerId, [e.clientX, e.clientY]); else if (e.type !== 'pointermove') touches.delete(e.pointerId);
+    if (touches.size === 2) {
+      const [a, b] = [...touches.values()], dist = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (this.pinch && dist > 0) this.zoom(this.pinch / dist);
+      this.pinch = dist; if (this.press) this.press.cancelled = true; return;
+    }
+    this.pinch = 0;
     if (e.type === 'pointerdown') {
       if (this.press) { this.press.cancelled = true; return; }
       this.press = { id: e.pointerId, x: e.clientX, y: e.clientY }; e.target.setPointerCapture(e.pointerId);
@@ -257,7 +273,7 @@ class ExploreMode {
     this.world.presentation = this.inside ? this.room : null;
     document.body.classList.toggle('explore-inside', this.inside);
     this.walker.indoors = this.inside;
-    if (!this.inside) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; this.world.cam.lookAt(...this.session.p, 28); }
+    if (!this.inside) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; this.world.cam.lookAt(...this.session.p, this.span); }
   }
   frame(dt) {
     if (!this.active || !this.session || this.loading || this.error) return;
@@ -274,7 +290,7 @@ class ExploreMode {
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
       // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
       const cam = this.world.cam, k = document.body.classList.contains('reduced-motion') ? 1 : 1 - Math.exp(-9 * dt);
-      if (!this.busy && Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, 28);
+      if (!this.busy && (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02 || cam.span !== this.span)) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, this.span);
       if (this.actOnArrival && !e.route.length && !moving) {   // arrived beside the thing that was tapped
         const near = this.inReach(this.actOnArrival); this.actOnArrival = null;
         if (near) { this.doNear(near); if (!this.active) return; this.render(); }
