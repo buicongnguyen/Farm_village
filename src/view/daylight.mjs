@@ -73,7 +73,7 @@ class Glows {
   }
 }
 // farm buildings whose windows glow too (their doors get no porch light: only homes have one)
-const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn']);
+const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy']);
 const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), POOL = new THREE.Color('#ff9d3a');
 
 export class Daylight {

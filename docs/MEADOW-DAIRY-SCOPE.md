@@ -73,3 +73,14 @@ clearance rules; do not build it into this first kit. No coast/lighthouse or add
    and a developed farm before committing the proposed prices. Keep casual school ≤10 days, steady 3–4, keen ≥2.
 6. Review phone/desktop at 130% text, all model rotations, neighboring placements, cast limits, reloads and duplicate
    reward protection. Record measured results before calling this implemented or deploying it.
+
+## Status, 2026-10-10: first dairy loop implemented
+
+Shipped with the proposed numbers: `goat_barn` (450 coins, four goats), `goat` (180 coins, goat feed in, goat milk out
+every 6 minutes), `goat_feed` at the feed mill, `dairy` (750 coins) making `butter` from two cow milk and `cheese` from
+two goat milk. Both buildings open at level 8 after the school. Models `goat_barn` and `dairy` are in the decor kit
+(`art/blender/build_farm_kit.py`), the four goods in `build_items.py`, seven icons rendered in both sizes. Rules tests:
+`tests/dairy.test.mjs`. Not done yet from this document: the three story scenes, the recipe-note memory and the
+source-aware order and advice text. Still open from v0.5 as a whole: land deeds, the east meadow region, Miso the cat,
+chapter 6 and market day.
+

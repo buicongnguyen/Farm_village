@@ -62,7 +62,7 @@ export function advance(ctx) {
 /** Where a missing good is made, for "show the way" (DESIGN 11): a building kind, or 'farm' for crops. */
 export function madeAt(good) {
   if (RECIPES[good]) return RECIPES[good].at;
-  if (good === 'egg') return 'coop'; if (good === 'milk') return 'cow_barn';
+  if (good === 'egg') return 'coop'; if (good === 'milk') return 'cow_barn'; if (good === 'goat_milk') return 'goat_barn';
   if (FRUITS[good]) return FRUITS[good].tree;
   return 'farm';
 }

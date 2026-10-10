@@ -68,4 +68,12 @@ export const KO_FISHING = {
   'Open a company office, where neighbours can take proper jobs.': '이웃들이 번듯한 일자리를 얻을 수 있는 회사 사무실을 열어 주세요.',
   'From clinic to hospital': '진료소에서 병원으로',
   'Help the clinic grow into a hospital for the whole valley.': '진료소가 골짜기 전체를 위한 병원으로 자라도록 도와주세요.',
+  // v0.5: goats and the dairy
+  'Goat': '염소',
+  'Goat milk': '염소젖',
+  'Goat feed': '염소 사료',
+  'Butter': '버터',
+  'Cheese': '치즈',
+  'Goat barn': '염소 우리',
+  'Dairy': '유제품 공방',
 };
