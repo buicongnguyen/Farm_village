@@ -66,7 +66,7 @@ try {
     assert.deepEqual(await page.evaluate(() => farm.world.exploreMode.session.p), paused, 'a sheet did not pause direct input');
     await page.locator('.panel [data-do="close"]').click();
     // Screen directions and release work on the optional touch controls too.
-    if (!await page.locator('.explore-joy').count()) await page.locator('[data-explore="controls"]').click();   // touch screens start with the stick
+    if (!await page.locator('.explore-joy').isVisible()) await page.locator('[data-explore="controls"]').click();   // touch screens start with the stick
     const ring = await page.locator('.explore-joy').boundingBox(), b = { x: ring.x + ring.width / 2 - 5, y: ring.y + ring.height / 2 + 35, width: 10, height: 10 };
     const heldFrom = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
     if (width === 390) {

@@ -7,6 +7,8 @@ import { installExplore, exploreState, exploreSession, startExplore, endExplore,
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
+import { isWorking } from '../core/working.mjs';
+import { RIGS } from '../view/skinned.mjs';
 import { xz } from '../core/explore-navigation.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
@@ -30,6 +32,21 @@ class ExploreMode {
     installExplore(); this.world.exploreMode = this;
     this.el = document.createElement('section'); this.el.className = 'explore-ui'; this.el.hidden = true; this.el.setAttribute('aria-label', t('Explore'));
     radial.el.parentElement.appendChild(this.el);
+    // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it). It is one
+    // permanent element beside the panel, so the panel can redraw (a new nearby action) while a thumb is on the stick.
+    const joy = this.joyEl = document.createElement('div'); joy.className = 'explore-joy'; joy.hidden = true; joy.setAttribute('role', 'group'); joy.innerHTML = '<i></i>';
+    radial.el.parentElement.appendChild(joy);
+    const knob = joy.firstElementChild, R = 52;
+    this.joyReset = () => { this.joy = false; this.stick = [0, 0]; knob.style.transform = ''; };
+    const move = e => {
+      const r = joy.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const len = Math.hypot(dx, dy) || 1;
+      if (len > R) { dx *= R / len; dy *= R / len; }
+      knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      this.stick = len < R * .18 ? [0, 0] : [dx / Math.min(len, R), dy / Math.min(len, R)];
+    };
+    joy.addEventListener('pointerdown', e => { if (!this.active || this.busy) return; e.preventDefault(); this.joy = true; this.target = null; try { joy.setPointerCapture(e.pointerId); } catch { /* not an active pointer */ } move(e); });
+    joy.addEventListener('pointermove', e => { if (this.joy) move(e); });
+    for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) joy.addEventListener(event, () => this.joyReset());
     this.el.addEventListener('click', e => { const b = e.target.closest('[data-explore]'); if (b && !b.disabled) this.choose(b.dataset.explore); });
     const canvas = this.world.renderer.domElement;
     for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) canvas.addEventListener(type, e => this.pointer(e), { capture: true });
@@ -82,13 +99,13 @@ class ExploreMode {
       if (this.active && generation === this.generation) { this.loading = false; this.error = true; this.render(); }
     }
   }
-  clear() { this.keys.clear(); this.stick = [0, 0]; this.joy = false; this.actOnArrival = null; this.press = null; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
+  clear(keepStick = false) { this.keys.clear(); if (!keepStick) this.joyReset(); this.actOnArrival = null; this.press = null; this.exitOnArrival = false; this.enterOnArrival = false; if (this.session) this.session.route = []; }
   /** Outdoors: the nearest thing worth doing something with (the door, the pond, a person, a bench, a ripe bed, the
    *  order board, the mailbox), with the label of its one action. Scanned a few times a second, not every frame. */
-  scan(p = this.session?.p, reach = 1) {
-    const e = this.session; if (!e || this.inside) return null;
+  scan(p = this.session?.p, reach = 1, all = false) {
+    const e = this.session; if (!e || this.inside) return all ? [] : null;
     const s = this.state, people = this.radial.people, now = this.game.now, out = [];
-    const add = (id, d, max, label, params, at) => { if (d < max * reach) out.push({ id, d: d / max, label, params, at }); };
+    const add = (id, d, max, label, params, at) => { if (d < max * reach) out.push({ id, d: d / max, label, params, at, max }); };
     if (this.own) add('door', far(p, ...HOME_APPROACH), 3, 'Go inside');
     if (this.own && !s.fishing?.line) for (const [x, z] of POND_FISHING_SPOTS) add('pond', far(p, centre(x), centre(z)), 3.4, 'Fish here');
     for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
@@ -105,11 +122,13 @@ class ExploreMode {
         else if (def.animals) {
           const list = s.animals[id] ?? [];
           if (list.some(a => animalState(a, now) === 'ready')) add(`animals:${id}`, dist, max, 'Collect', null, at);
-          else if (list.some(a => animalState(a, now) === 'hungry')) add(`feed:${id}`, dist, max, 'Feed the animals', null, at);
+          else if (isWorking(s, id) && list.some(a => animalState(a, now) === 'hungry')) add(`feed:${id}`, dist, max, 'Feed the animals', null, at);
         } else if ((s.production?.[id]?.queue ?? []).some(j => j.doneAt <= now)) add(`goods:${id}`, dist, max, 'Collect', null, at);
       }
     }
-    return (e.seated && out.find(o => o.id.startsWith('bench:'))) || (out.sort((a, b) => a.d - b.d)[0] ?? null);
+    out.sort((a, b) => a.d - b.d);
+    if (all) return out;
+    return (e.seated && out.find(o => o.id.startsWith('bench:'))) || (out[0] ?? null);
   }
   act(action, params) { const r = this.game.do(action, params); if (!r.ok) this.notice = r.reason; return r.ok; }
   /** One press gathers every ripe bed within a few steps, one after another (Zoo Garden's staggered harvest). */
@@ -119,13 +138,15 @@ class ExploreMode {
       .sort((a, b) => far(p, centre(s.placed[a].x), centre(s.placed[a].z)) - far(p, centre(s.placed[b].x), centre(s.placed[b].z)));
     ids.forEach((id, i) => setTimeout(() => { if (this.active && this.game.s === state && state.beds[id]?.doneAt <= this.game.now) this.act('harvest', { id }); }, i * 140));
   }
+  /** The thing with this id if it is within reach now (a ripe bed stands for any ripe bed beside you). */
+  inReach(id) { return this.scan(this.session.p, 1, true).find(o => o.id === id || (id.startsWith('bed:') && o.id.startsWith('bed:'))) ?? null; }
   /** Tap a thing: walk to a free spot beside it, then do its action on arrival. */
   walkTo(target) {
     const e = this.session, [x, z] = target.at;
     // free spots beside it: the ring right next to it first (nearest side to you), then further rings for big buildings
     const ring = r => [[r, 0], [-r, 0], [0, r], [0, -r], [r, r], [-r, r], [r, -r], [-r, -r]].map(([dx, dz]) => [x + dx, z + dz]).sort((a, b) => far(e.p, ...a) - far(e.p, ...b));
-    const spots = [...ring(2), [x, z], ...ring(4), ...ring(6)];
-    if (this.scan(e.p)?.id === target.id) { this.doNear(target); return true; }   // already beside it
+    const spots = [...ring(2), [x, z], ...ring(4), ...ring(6)].filter(spot => far(spot, x, z) < target.max - .3);   // only where it is in reach
+    if (this.inReach(target.id)) { this.doNear(target); return true; }   // already beside it
     for (const spot of spots) if (routeExplore(this.state, spot)) { this.actOnArrival = target.id; return true; }
     return false;
   }
@@ -157,7 +178,7 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -185,7 +206,7 @@ class ExploreMode {
       if (Math.hypot(e.clientX - this.press.x, e.clientY - this.press.y) > 9) this.press.cancelled = true;
     } else if (e.type === 'pointerup' && this.press?.id === e.pointerId) {
       const press = this.press; this.press = null; if (!press.cancelled) this.tap(e.clientX, e.clientY);
-    } else if (e.type === 'pointercancel') this.clear();
+    } else if (e.type === 'pointercancel') this.clear(true);
   }
   tap(x, y) {
     this.notice = null; this.exitOnArrival = this.enterOnArrival = false;
@@ -225,7 +246,7 @@ class ExploreMode {
       this.render(); return;
     }
     if (action !== 'interact' || this.card) return;
-    const id = this.nearest(); this.clear(); this.notice = null;
+    const id = this.nearest(); this.clear(true); this.notice = null;
     if (!this.inside) { if (this.near) this.doNear(this.near); if (this.active) this.render(); return; }
     if (id === 'farmhouse_exit') { this.game.do('leaveFarmhouse'); this.target = null; this.syncScene(); }
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
@@ -245,17 +266,18 @@ class ExploreMode {
     const x = (this.keys.has('d') || this.keys.has('arrowright') ? 1 : 0) - (this.keys.has('a') || this.keys.has('arrowleft') ? 1 : 0) + this.stick[0];
     const y = (this.keys.has('s') || this.keys.has('arrowdown') ? 1 : 0) - (this.keys.has('w') || this.keys.has('arrowup') ? 1 : 0) + this.stick[1];
     const yaw = this.inside ? Math.atan2(9, 11) : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
+    if (x || y) this.actOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
     if (this.inside) this.room.frame(this.session, moving, dt);
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
-      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / 2.1 : 1 });
+      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
       // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
-      const cam = this.world.cam, k = 1 - Math.exp(-9 * dt);
-      if (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, 28);
+      const cam = this.world.cam, k = document.body.classList.contains('reduced-motion') ? 1 : 1 - Math.exp(-9 * dt);
+      if (!this.busy && Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, 28);
       if (this.actOnArrival && !e.route.length && !moving) {   // arrived beside the thing that was tapped
-        const id = this.actOnArrival, near = this.scan(e.p); this.actOnArrival = null;
-        if (near?.id === id) { this.near = near; this.doNear(near); if (!this.active) return; this.render(); }
+        const near = this.inReach(this.actOnArrival); this.actOnArrival = null;
+        if (near) { this.doNear(near); if (!this.active) return; this.render(); }
       }
       if (this.enterOnArrival && !e.route.length && far(e.p, ...HOME_APPROACH) > .35) this.enterOnArrival = false;   // the walk there was cut short
       if (this.enterOnArrival && far(e.p, ...HOME_APPROACH) <= .35) {   // Go inside was chosen from a few steps away
@@ -272,7 +294,6 @@ class ExploreMode {
   render() {
     if (!this.active) return;
     // Do not replace a captured direction button when the nearest-object label changes mid-hold.
-    if ((this.joy || Math.hypot(...this.stick)) && !this.busy) { this.renderPending = true; return; }
     const active = document.activeElement?.dataset.explore;
     const loading = this.loading ? t(this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
     const nearest = this.nearest(), control = this.control;
@@ -289,30 +310,18 @@ class ExploreMode {
     const who = this.walker && !this.own ? ` · ${this.radial.people.nameOf(this.walker)}` : '';
     const compact = this.roam && !this.inside && !loading;
     const side = `${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use the thumb stick' : 'Use tap controls', 'ghost') : ''}`;
+    this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
+    if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
     const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t(this.card === 'sofa' ? 'A quiet moment at home' : HOME_MEMORY.title))}">${card}</div>` : ''}
       <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the sofa or memory shelf to visit it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}
       ${!loading && !card && control !== 'joystick' ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
-      ${!loading && !card && control === 'joystick' ? `<div class="explore-joy" role="group" aria-label="${esc(t('Movement controls'))}"><i></i></div>` : ''}`;
+      `;
     if (this.html === html) return;
-    this.html = html; this.stick = [0, 0]; this.el.innerHTML = html;
+    this.html = html; this.el.innerHTML = html;
     this.el.style.fontSize = `${this.state.settings.textSize ?? 1}em`;
-    // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it).
-    const joy = this.el.querySelector('.explore-joy');
-    if (joy) {
-      const knob = joy.firstElementChild, R = 52, done = () => { this.joy = false; this.stick = [0, 0]; knob.style.transform = ''; if (this.renderPending) { this.renderPending = false; this.render(); } };
-      const move = e => {
-        const r = joy.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const len = Math.hypot(dx, dy) || 1;
-        if (len > R) { dx *= R / len; dy *= R / len; }
-        knob.style.transform = `translate(${dx}px, ${dy}px)`;
-        this.stick = len < R * .18 ? [0, 0] : [dx / Math.min(len, R), dy / Math.min(len, R)];
-      };
-      joy.addEventListener('pointerdown', e => { e.preventDefault(); this.joy = true; this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; try { joy.setPointerCapture(e.pointerId); } catch { /* not an active pointer */ } move(e); });
-      joy.addEventListener('pointermove', e => { if (this.joy) move(e); });
-      for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) joy.addEventListener(event, done);
-    }
     if (active) this.el.querySelector(`[data-explore="${active}"]`)?.focus({ preventScroll: true });
   }
 }

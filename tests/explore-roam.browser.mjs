@@ -188,6 +188,13 @@ await check('more to do on foot: collect eggs, feed, pick fruit, pet the dog; ta
   await page.mouse.click(at.x ?? at[0], at.y ?? at[1]);
   await page.waitForFunction(() => !!farm.people.walkers.get('june').bubble?.isConnected, null, { timeout: 12000 });
   expect(await page.evaluate(() => { const e = farm.world.exploreMode.session; return Math.hypot(e.p[0] - 65, e.p[1] - 131) < 3.2; }), 'did not walk over to the person that was tapped');
+  // tap a ripe bed in the middle of a row: walk over and harvest, even though other beds are as near
+  await page.evaluate(() => { const p = farm.people; for (const w of p.walkers.values()) if (!w.player) Object.assign(w, { x: 20, z: 20, once: 'Idle', onceUntil: p.time + 9999 }); farm.closeCards?.(); });
+  const bed = await page.evaluate(() => { const s = farm.state(), ids = Object.keys(s.beds).filter(k => s.beds[k]); for (const id of ids) s.beds[id].doneAt = farm.game.now - 1; const id = ids[Math.floor(ids.length / 2)], b = s.placed[id]; return { id, x: b.x, z: b.z }; });
+  await stand(page, bed.x * 2 + 1, bed.z * 2 + 9); await page.waitForTimeout(900);
+  const spot = await page.evaluate(b => farm.cellToScreen(b.x, b.z), bed);
+  await page.mouse.click(spot.x ?? spot[0], spot.y ?? spot[1]);
+  await page.waitForFunction(b => !farm.state().beds[b.id], bed, { timeout: 12000 }).catch(() => { throw Error('tapping a ripe bed walked there and did nothing'); });
   expect(!errors.length, errors.join(' | ')); await ctx.close();
 });
 
@@ -203,6 +210,13 @@ await check('phones get a thumb stick: dragging it walks, releasing stops; the a
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: cx + 45, y: cy }] });
   await page.waitForTimeout(700);
   expect(await page.evaluate(() => Math.hypot(...farm.world.exploreMode.stick) > .9), 'the stick does not report a direction');
+  // the action pill keeps up while the thumb stays on the stick
+  await page.evaluate(async () => {   // June waits six metres ahead, along the way the stick is taking you (screen right is a diagonal on the map)
+    const p = farm.people, j = p.walkers.get('june'), m = farm.world.exploreMode, a = [...m.session.p];
+    await new Promise(r => setTimeout(r, 250)); const b = m.session.p, len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    p.cancelTrip(j); Object.assign(j, { x: b[0] + (b[0] - a[0]) / len * 6, z: b[1] + (b[1] - a[1]) / len * 6, indoors: false, once: 'Idle', onceUntil: p.time + 9999 });
+  });
+  await page.waitForFunction(() => { const b = document.querySelector('[data-explore="interact"]'); return farm.world.exploreMode.joy && b && !b.disabled && farm.world.exploreMode.near?.id === 'person:june'; }, null, { timeout: 6000 }).catch(() => { throw Error('the action pill did not update while the stick was held'); });
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await cdp.detach();
   const to = await page.evaluate(() => [...farm.world.exploreMode.session.p]);
   expect(Math.hypot(to[0] - from[0], to[1] - from[1]) > 1, `the stick did not walk the character: ${from} → ${to}`);
