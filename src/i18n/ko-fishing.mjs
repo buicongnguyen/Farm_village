@@ -88,4 +88,14 @@ export const KO_FISHING = {
   'A fountain': '분수',
   'A garden gazebo': '정원 정자',
   'A flag over the farm': '농장 위의 깃발',
+  // the farmhouse room, level by level
+  'Pictures on the walls': '벽에 건 그림',
+  'A tall house plant': '키 큰 화분',
+  'A reading lamp': '독서 등',
+  'A second rug': '두 번째 러그',
+  'A big painting': '큰 그림',
+  'A piano': '피아노',
+  'A chandelier': '샹들리에',
+  'A grandfather clock': '괘종시계',
+  'A golden trophy': '황금 트로피',
 };

@@ -1956,6 +1956,64 @@ def interior_meta(seat):
                        'cushionTop': SEAT_TOP, 'actorHeight': ACTOR_H, 'clip': 'Sit',
                        'measured': {rig: {'hipHeight': r(h * ACTOR_H), 'hipForward': r(f * ACTOR_H), 'hipHeightShare': h, 'hipForwardShare': f} for rig, (h, f) in SIT.items()}}]}
 
+# =================================================================== the farmhouse room, level by level (v0.5)
+# What each level of the farmhouse adds INSIDE (src/content/explore.mjs HOME_COMFORT): one node per level, authored in
+# room coordinates (origin at the room centre on the floor, x right, plan y = room z toward the door), so the game adds
+# the node as it is. Pieces on the floor have a collider listed beside them in HOME_COMFORT; the entrance corridor
+# (x -0.65..0.65, z 1.15..2.7) stays empty. Its own small kit (interior-extras.glb), loaded with the room.
+BW, LW = -RD / 2 + WALL_T, -RW / 2 + WALL_T      # inner faces of the back and the left wall
+def picture(x, z, w, h, face, sky='sky', land='leafw'):
+    """A framed little landscape on the back wall (face 'back') or the left wall (face 'left')."""
+    if face == 'back':
+        return [bx('frame', w, .05, h, x, BW + .03, z, 'gold', bev=0), bx('sky', w - .12, .03, h - .12, x, BW + .05, z + .06, sky, bev=0),
+                bx('land', w - .12, .035, (h - .12) * .4, x, BW + .055, z + .06, land, bev=0)]
+    return [bx('frame', .05, w, h, LW + .03, x, z, 'gold', bev=0), bx('sky', .03, w - .12, h - .12, LW + .05, x, z + .06, sky, bev=0),
+            bx('land', .035, w - .12, (h - .12) * .4, LW + .055, x, z + .06, land, bev=0)]
+
+def comfort(level):
+    if level == 2:    # pictures: one by the desk window on the back wall, one on the left wall by the corner
+        return picture(-3.1, 1.25, .7, .55, 'back', 'sun', 'roof') + picture(-2.3, 1.3, .6, .5, 'left', 'waterl', 'leaf')
+    if level == 3:    # a tall potted plant in the back-left corner
+        p = [cl('pot', .22, .4, -3.3, -2.3, 0, 'roof', verts=10, rt=.27), cl('soil', .25, .04, -3.3, -2.3, .38, 'soil', verts=10), cl('trunk', .04, .9, -3.3, -2.3, .4, 'woodd', verts=6)]
+        for i in range(7):
+            a = i * 2.4
+            p.append(lf((-3.3, -2.3, 1.1 + (i % 3) * .14), a, .55, .22, 'leaf' if i % 2 else 'leafl', lift=.35, droop=.25))
+        return p
+    if level == 4:    # a floor lamp between the sofa and the memory shelf
+        return [cl('base', .16, .05, -3.35, .92, 0, 'woodd', verts=10), cl('stem', .03, 1.5, -3.35, .92, .05, 'gold', verts=6),
+                cl('shade', .2, .32, -3.35, .92, 1.5, 'sun', verts=10, rt=.3), cl('glow', .12, .05, -3.35, .92, 1.48, 'lampglow', verts=8)]
+    if level == 5:    # a second rug, between the table and the wardrobe
+        return [bx('rug', 2.0, 1.5, .02, 1.75, 1.2, 0, 'teal', bev=.01), bx('rugin', 1.7, 1.2, .022, 1.75, 1.2, 0, 'mint', bev=0),
+                bx('rugline', 1.4, .9, .024, 1.75, 1.2, 0, 'white', bev=0), bx('rugmid', 1.2, .7, .026, 1.75, 1.2, 0, 'mint', bev=0)]
+    if level == 6:    # a big painting on the back wall, between the desk window and the clock
+        return picture(-.28, 1.3, .85, .7, 'back', 'sky', 'leafw') + [ball('sun', .08, -.05, BW + .06, 1.82, 'sun', sub=1, sc=(1, .3, 1)), bx('hill', .4, .04, .3, -.45, BW + .058, 1.36, 'leafwl', bev=0)]
+    if level == 7:    # an upright piano against the right wall (no stool: the way to the kitchen stays open)
+        x, y = RW / 2 - WALL_T - .32, -.25
+        p = [bx('body', .5, 1.4, 1.15, x, y, 0, 'wooddd', bev=.03), bx('lid', .56, 1.46, .06, x, y, 1.15, 'woodd', bev=.02), bx('keybed', .3, 1.3, .08, x - .36, y, .68, 'woodd', bev=.01),
+             bx('keys', .2, 1.22, .03, x - .38, y, .76, 'white', bev=0), bx('sheet', .02, .34, .26, x - .26, y, .9, 'paper', bev=0),
+             cl('candle', .03, .16, x, y + .5, 1.21, 'cream', verts=6), ball('flame', .04, x, y + .5, 1.42, 'lampglow', sub=0)]
+        for k in range(7):
+            p.append(bx('black', .12, .06, .02, x - .34, y - .5 + k * .17, .79, 'charcoal', bev=0))
+        return p
+    if level == 8:    # a chandelier over the middle of the room
+        p = [cl('chain', .02, .5, 0, .3, 2.3, 'gold', verts=6), cl('hub', .1, .12, 0, .3, 2.2, 'gold', verts=8), cl('ring', .5, .04, 0, .3, 2.1, 'gold', verts=12)]
+        for i in range(6):
+            a = i * math.tau / 6
+            p += [cl('cup', .06, .08, math.cos(a) * .5, .3 + math.sin(a) * .5, 2.12, 'gold', verts=6), ball('flame', .07, math.cos(a) * .5, .3 + math.sin(a) * .5, 2.27, 'lampglow', sub=1, sc=(1, 1, 1.3))]
+        return p
+    if level == 9:    # a grandfather clock in the front-left corner
+        return [bx('case', .46, .34, 2.0, -3.6, 2.62, 0, 'wooddd', bev=.03), bx('hood', .54, .4, .14, -3.6, 2.62, 2.0, 'woodd', bev=.03), cl('face', .17, .04, -3.34, 2.62, 1.62, 'cream', verts=14, rot=(0, math.pi / 2, 0)),
+                bx('door', .03, .2, .8, -3.36, 2.62, .5, 'glassd', bev=0), cl('bob', .07, .03, -3.35, 2.62, .72, 'gold', verts=10, rot=(0, math.pi / 2, 0)), bx('rod', .02, .02, .5, -3.35, 2.62, .78, 'gold', bev=0)]
+    if level == 10:   # a golden trophy on a pedestal by the door
+        return [bx('plinth', .5, .5, .7, 1.6, 2.5, 0, 'stonel', bev=.04), bx('cap', .58, .58, .08, 1.6, 2.5, .7, 'stone', bev=.02), cl('foot', .12, .08, 1.6, 2.5, .78, 'gold', verts=10),
+                cl('stemt', .04, .16, 1.6, 2.5, .86, 'gold', verts=6), cl('cup', .12, .3, 1.6, 2.5, 1.02, 'gold', verts=10, rt=.22), ball('star', .09, 1.6, 2.5, 1.44, 'sun', sub=1),
+                cl('handl', .04, .2, 1.36, 2.5, 1.1, 'gold', verts=6), cl('handr', .04, .2, 1.84, 2.5, 1.1, 'gold', verts=6)]
+
+interior_extras = []
+for level in range(2, 11):
+    piece(f'home_L{level}', comfort(level), interior_extras)
+OUT_EXTRAS = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-extras.glb')
+
 # =================================================================== export
 def build(group):
     objs = []
@@ -2010,5 +2068,7 @@ print(f'wrote {OUT_DISCOVERY} ({packed(kobjs, OUT_DISCOVERY)} bytes)')
 xobjs = build(exploration)   # the discovery trail (AR-010), world size
 print(f'wrote {OUT_EXPLORATION} ({packed(xobjs, OUT_EXPLORATION)} bytes)')
 interior_kit()   # the farmhouse interior (AR-015): its own kit and metadata
+eobjs = build(interior_extras)   # what each farmhouse level adds to the room
+print(f'wrote {OUT_EXTRAS} ({packed(eobjs, OUT_EXTRAS)} bytes)')
 json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
 print('anchors', ANCHOR_JSON)

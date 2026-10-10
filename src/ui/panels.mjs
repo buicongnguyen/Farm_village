@@ -28,6 +28,13 @@ export class Panels {
     this.returnEl = document.createElement('button'); this.returnEl.className = 'btn help-return'; this.returnEl.hidden = true;
     this.returnEl.addEventListener('click', () => this.returnFromHelp()); root.appendChild(this.returnEl);
     this.el.addEventListener('click', e => this.click(e));
+    // Enter presses the one obvious button: a menu's single main button (Preview the rebuild, Deliver goods, Collect),
+    // or the only choice of a round menu (Repair). Build mode has its own Enter (ui/build-view.mjs) and gets the key first.
+    addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.repeat || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal') || e.target?.closest?.('input, textarea, select, button, a')) return;
+      const main = this.open ? [...this.el.querySelectorAll('.btn.primary:not([disabled])')].filter(b => b.offsetParent) : [...document.querySelectorAll('.radial:not([hidden]) .radial-btn:not([disabled])')];
+      if (main.length === 1) { e.preventDefault(); main[0].click(); }
+    });
     this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-name]')) this.game.do('setting', { key: 'playerName', value: e.target.value }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
     game.on(() => { if (this.open && !this.holding()) this.render(); });
     onModal(open => { if (!open && this.open && !this.holding()) this.render(); });

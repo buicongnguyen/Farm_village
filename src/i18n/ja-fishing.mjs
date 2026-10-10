@@ -88,4 +88,14 @@ export const JA_FISHING = {
   'A fountain': '噴水',
   'A garden gazebo': '庭のあずまや',
   'A flag over the farm': '農場にはためく旗',
+  // the farmhouse room, level by level
+  'Pictures on the walls': '壁の絵',
+  'A tall house plant': '背の高い観葉植物',
+  'A reading lamp': '読書ランプ',
+  'A second rug': '2枚目のラグ',
+  'A big painting': '大きな絵',
+  'A piano': 'ピアノ',
+  'A chandelier': 'シャンデリア',
+  'A grandfather clock': '大きな振り子時計',
+  'A golden trophy': '金のトロフィー',
 };
