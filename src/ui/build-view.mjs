@@ -26,6 +26,16 @@ export class BuildView {
     root.appendChild(this.bar);
     this.el.addEventListener('click', e => this.click(e));
     this.bar.addEventListener('click', e => this.click(e));
+    // Desktop: the ghost follows the mouse, so the keyboard lands it. Enter or Space places, R turns, Esc cancels.
+    addEventListener('keydown', e => {
+      if (!this.open || e.repeat || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal:not([hidden])') || e.target?.closest?.('input, textarea, select')) return;
+      const k = e.key.toLowerCase(), placing = this.mode === 'place' || this.mode === 'moving';
+      if (k === 'escape') this.mode ? this.cancel() : this.close();
+      else if (placing && (k === 'enter' || k === ' ')) this.confirm();
+      else if (placing && k === 'r' && !QUICK(this.kind)) { this.rot = (this.rot + 1) % 4; this.refreshGhost(); }
+      else return;
+      e.preventDefault(); e.stopPropagation(); document.activeElement?.blur?.();
+    }, true);
     game.on(() => { if (this.open) { this.render(); this.refreshGhost(); } });
   }
   toggle() { this.open ? this.close() : this.show(); }
@@ -125,8 +135,8 @@ export class BuildView {
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
       <button class="round small" data-bar="undo" aria-label="${t('Undo')}">${glyph('undo', 'g')}</button>
-      ${big ? `<button class="round small" data-bar="rotate" aria-label="${t('Rotate')}">${glyph('rotate', 'g')}</button><button class="round small ok" data-bar="ok" aria-label="${t('Place')}" ${c.ok ? '' : 'disabled'}>${glyph('check', 'g')}</button>` : ''}
-      <button class="round small close" data-bar="cancel" aria-label="${t('Cancel')}">${glyph('close', 'g')}</button></div>`;
+      ${big ? `<button class="round small" data-bar="rotate" aria-label="${t('Rotate')}">${glyph('rotate', 'g')}<kbd>R</kbd></button><button class="round small ok" data-bar="ok" aria-label="${t('Place')}" ${c.ok ? '' : 'disabled'}>${glyph('check', 'g')}<kbd>Enter</kbd></button>` : ''}
+      <button class="round small close" data-bar="cancel" aria-label="${t('Cancel')}">${glyph('close', 'g')}<kbd>Esc</kbd></button></div>`;
   }
   charmNote(c) {
     if (!c.a) return ''; const p = charmPreview(this.game.s, this.kind, c.a.x, c.a.z, this.rot);
