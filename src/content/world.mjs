@@ -61,6 +61,11 @@ export const TIDY = { coins: 40, xp: 15 };
 /** Fixed sites (core/sites.mjs): where the story's own buildings stand, outside the farm and the village lots.
  *  The boat dock (chapter 7): on the south bank of the brook, a few steps east of the road bridge. */
 export const SITES = [{ kind: 'dock', x: 32, z: 13, rot: 0, size: [2, 2] }];   // size: the building's footprint (content/buildings.mjs), for the scenery that keeps off it
+/** The old water mill on the brook's north bank, across the water from the lane (scenery, view/old-mill.mjs): its middle
+ *  in metres, and the cells it covers (wild scatter keeps off them; nobody's land, so nothing can be built there). Its
+ *  wheel hangs over the brook on the south side, facing the usual view, and turns once the sluice is open (chapter 8). */
+export const OLD_MILL = { x: 82.5, z: 13.5, rot: 0, box: { x0: 39, x1: 43, z0: 5, z1: 7 } };
+export const inOldMill = (x, z) => x >= OLD_MILL.box.x0 && x <= OLD_MILL.box.x1 && z >= OLD_MILL.box.z0 && z <= OLD_MILL.box.z1;
 /** The bank by the dock: public ground, so anyone can walk to it from the brook road. */
 export const DOCK_BANK = { x0: 30, x1: 36, z0: 13, z1: 17 };
 export const isDockBank = (x, z) => x >= DOCK_BANK.x0 && x <= DOCK_BANK.x1 && z >= DOCK_BANK.z0 && z <= DOCK_BANK.z1;

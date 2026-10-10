@@ -29,7 +29,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 /** The water material: shared by the brook and the pond. uNight 0..1 comes from daylight. */
 function waterMaterial() {
   const uniforms = {
-    uTime: { value: 0 }, uNight: { value: 0 }, uHaze: HAZE,
+    uTime: { value: 0 }, uNight: { value: 0 }, uFull: { value: 0 }, uHaze: HAZE,
     uDeep: { value: lin(WATER.day.deep) }, uShallow: { value: lin(WATER.day.shallow) }, uFoam: { value: lin(WATER.day.foam) }, uGlint: { value: lin(WATER.day.glint) },
     uDeepN: { value: lin(WATER.night.deep) }, uShallowN: { value: lin(WATER.night.shallow) }, uFoamN: { value: lin(WATER.night.foam) }, uGlintN: { value: lin(WATER.night.glint) },
   };
@@ -44,7 +44,7 @@ void main(){
   gl_Position = projectionMatrix * viewMatrix * w;
 }`,
     fragmentShader: /* glsl */`
-uniform float uTime, uNight;
+uniform float uTime, uNight, uFull;   // uFull 0..1: the sluice is open (chapter 8): faster, brighter water
 uniform vec3 uDeep, uShallow, uFoam, uGlint, uDeepN, uShallowN, uFoamN, uGlintN, uHaze;
 varying vec2 vFlow; varying vec3 vWorld;
 float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -60,9 +60,10 @@ void main(){
   col *= 0.94 + 0.12 * vn(vWorld.xz * 0.12 + vec2(uTime * 0.05, 0.0));
   // highlights: broken sine streaks drifting downstream
   float n = vn(vec2(vFlow.x * 0.25, vFlow.y * 2.5) + vec2(-uTime * 0.35, 0.0));
-  float s = sin(vFlow.x * 1.1 - uTime * 2.4 + n * 5.0 + vFlow.y * 2.0);
-  float streak = smoothstep(0.9, 0.985, s) * smoothstep(0.95, 0.3, across) * (0.55 + 0.45 * n);
-  col = mix(col, glintC, streak * 0.55);
+  float s = sin(vFlow.x * 1.1 - uTime * (2.4 + uFull * 2.2) + n * 5.0 + vFlow.y * 2.0);
+  float streak = smoothstep(0.9 - uFull * 0.14, 0.985, s) * smoothstep(0.95, 0.3, across) * (0.55 + 0.45 * n);
+  col = mix(col, glintC, streak * (0.55 + uFull * 0.2));
+  col = mix(col, shallow, uFull * 0.18 * (1.0 - uNight));
   // foam: a lacy band at the banks
   float edge = 0.86 + (vn(vec2(vFlow.x * 0.9 - uTime * 0.6, vFlow.y * 3.0)) - 0.5) * 0.16;
   float foam = smoothstep(edge, edge + 0.07, across);
@@ -211,6 +212,8 @@ export class Brook {
     world.onFrame((dt, now) => this.frame(dt, now));
   }
   setNight(k) { this.uniforms.uNight.value = k; }
+  /** 0..1: how full the brook runs (1 once the sluice is open, chapter 8). */
+  setFull(k) { this.uniforms.uFull.value = k; }
   async loadDucks() {
     const kit = await loadKit('farm'), geo = fit(bake(kit.duck), { height: 0.62 });
     this.ducks = new THREE.InstancedMesh(geo, decorMaterial(), 3); this.ducks.name = 'pond-ducks'; this.ducks.frustumCulled = false;

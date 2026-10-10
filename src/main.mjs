@@ -35,7 +35,7 @@ import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, SITES, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
+import { RUINS, SITES, OLD_MILL, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
 import { fishable } from './core/pond-bank.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
@@ -289,7 +289,7 @@ canvas.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && !
 addEventListener('pointerdown', unlockAudio, { capture: true });
 
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { marketDayStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+const SOUNDS = { marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');
@@ -457,6 +457,7 @@ function testAction(what) {
   if (what === 'coins') g.do('testAddCoins');
   if (what === 'levels') g.do('testAddLevels');
   if (what === 'marketday') g.do('testMarketDay');
+  if (what === 'finish') { panels.close(); g.do('testFinishChapter'); }
   if (what.startsWith('jump:')) {
     // the farm changes in many places at once: save it and open it again, so every view starts from what is there now
     const r = g.do('testJumpChapter', { chapter: +what.slice(5) });

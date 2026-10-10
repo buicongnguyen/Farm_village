@@ -891,6 +891,59 @@ def dock():
     return p
 piece('dock', dock(), decor)
 
+WHEEL_X, WHEEL_Z, WHEEL_R = .5, 1.2, 1.55   # the wheel's hub on the mill's front wall (src/view/old-mill.mjs HUB mirrors these)
+def old_mill():
+    """The old water mill on the brook's north bank (chapter 8): a stone base, a plastered upper floor with dark timber
+    framing, old red shingles with moss, the door and a hoist on the right gable end, and the axle through the front wall
+    (the plan's +y, the game's south) where the wheel hangs over the water. 5 x 4 m; origin at the base centre. The
+    wheel is its own piece."""
+    p = []
+    W, D = 5.0, 4.0
+    p.append(bx('base', W, D, 1.3, 0, 0, 0, 'stone', bev=.06, seg=2))
+    for i in range(6):   # lighter and darker stones on the right end, so the base reads as masonry
+        p.append(bx('stoneb', .06, .6, .3, W / 2 + .005, -D / 2 + .5 + i * .62, .16 + (i % 3) * .34, 'stonel' if i % 2 else 'stoned', bev=.02))
+    p.append(bx('upper', W - .2, D - .2, 1.7, 0, 0, 1.3, 'plaster', bev=.04, seg=2))
+    p += timber_wall(W - .2, 1.7, 0, D / 2 - .1, 1.3, 'front', 'woodd', posts=4)
+    p += timber_wall(D - .2, 1.7, W / 2 - .1, 0, 1.3, 'right', 'woodd', posts=3)
+    p += timber_wall(D - .2, 1.7, -W / 2 + .1, 0, 1.3, 'left', 'woodd', posts=3)
+    p += roof_rows(W - .2, D - .2, 1.5, 0, 0, 3.0, 'roofd', 'brickd', rows=5, over=.3, thick=.1)
+    for x, y, zz, r in ((-1.4, .9, 3.75, .34), (.9, 1.4, 3.3, .3), (1.7, -.8, 3.95, .28), (-.4, -1.5, 3.3, .32), (-2.0, -.3, 4.3, .22)):   # moss on the old roof
+        p.append(ball('moss', r, x, y, zz, 'leafwd', sub=1, sc=(1.5, 1.2, .35)))
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-(D - .2) / 2, 0), ((D - .2) / 2, 0), (0, 1.5)], .1, (sd * ((W - .2) / 2 - .05), 0, 3.0), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    # the right gable end faces the lane across the water: the door, a window above it and the hoist
+    p += [bx('door', .08, .95, 1.75, W / 2 + .01, -.7, 0, 'woodd', bev=.02), bx('lintel', .1, 1.2, .14, W / 2 + .03, -.7, 1.75, 'wooddd', bev=.02),
+          bx('step', .5, 1.3, .12, W / 2 + .3, -.7, 0, 'stonel', bev=.02)]
+    wp, _ = window(W / 2 - .08, .75, 1.8, .6, .6, 'right', shutters=None); p += wp
+    wp, _ = window(-1.85, D / 2 - .08, 1.85, .5, .55, 'front', shutters='teald'); p += wp
+    p += [bx('hoist', 1.0, .14, .14, W / 2 + .3, -.7, 3.55, 'woodd', bev=.02), st((W / 2 + .72, -.7, 3.55), (W / 2 + .72, -.7, 2.7), .02, 'rope', sides=3, rt=.02),
+          ball('sack', .26, W / 2 + .72, -.7, 2.55, 'sack', sub=1, sc=(1, 1, 1.3)),
+          ball('sack', .3, W / 2 + .4, .5, .28, 'sack', sub=1, sc=(1, 1.1, 1.2)), ball('sack', .28, W / 2 + .5, 1.0, .26, 'sackd', sub=1, sc=(1, 1.1, 1.2))]
+    p.append(cl('axle', .14, 1.1, 0, 0, 0, 'wooddd', verts=8, rot=(math.pi / 2, 0, 0)))
+    p[-1].location = (WHEEL_X, -(D / 2 + .3), WHEEL_Z)
+    for sx in (-1, 1):   # the stone cheeks of the wheel pit, either side of the wheel
+        p.append(bx('cheek', .3, 1.0, .9, WHEEL_X + sx * 1.95, D / 2 + .5, -.3, 'stoned', bev=.04))
+    return p
+piece('old_mill', old_mill(), decor)
+
+def old_mill_wheel():
+    """The mill's water wheel, on its own so it can turn: built round its hub at the origin, the axle along the plan's y."""
+    p = []
+    for y in (-.24, .24):
+        for k in range(16):
+            a0, a1 = k / 16 * math.tau, (k + 1) / 16 * math.tau
+            p.append(st((math.cos(a0) * WHEEL_R, y, math.sin(a0) * WHEEL_R), (math.cos(a1) * WHEEL_R, y, math.sin(a1) * WHEEL_R), .07, 'woodd', sides=4, rt=.07))
+        for k in range(8):
+            a = k / 8 * math.tau
+            p.append(st((math.cos(a) * .2, y, math.sin(a) * .2), (math.cos(a) * (WHEEL_R - .05), y, math.sin(a) * (WHEEL_R - .05)), .05, 'wood', sides=4, rt=.05))
+    for k in range(12):
+        a = k / 12 * math.tau
+        p.append(box('paddle', (.42, .56, .06), (math.cos(a) * (WHEEL_R - .12), 0, math.sin(a) * (WHEEL_R - .12)), C['woodl'], bev=0., seg=1, rot=(0, -a, 0)))
+    p.append(cl('hub', .22, .7, 0, 0, 0, 'wooddd', verts=8, rot=(math.pi / 2, 0, 0)))
+    p[-1].location = (0, 0, 0)
+    return p
+piece('old_mill_wheel', old_mill_wheel(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

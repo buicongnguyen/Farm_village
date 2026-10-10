@@ -22,6 +22,9 @@ const marketDay = `for (const [id, p] of Object.entries(s.placed)) if (p.kind ==
 // chapter 7: the police post rebuilt on its old site (the constable stands at its door), and the boat dock on the brook
 const police = `s.placed.st_police = { kind: 'police', x: 73, z: 106, rot: 2 }; s.counts.police = 1; s.cells[105 * 128 + 75] = 3;`;
 const dock = `s.placed.st_dock = { kind: 'dock', x: 32, z: 13, rot: 0 }; s.counts.dock = 1;`;
+// chapter 8: the company office on its old site, and the sluice open (the brook runs full, the mill wheel turns)
+const office = `s.placed.st_office = { kind: 'company', x: 83, z: 106, rot: 2 }; s.counts.company = 1; s.cells[105 * 128 + 85] = 3;`;
+const sluice = `s.firsts.sluice = 1;`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -45,6 +48,9 @@ const PANELS = {
   'ch7-1': { hour: 18.5, scene: school + police + `s.placed.st_lamp = { kind: 'street_lamp', x: 78, z: 105, rot: 0 }; s.counts.street_lamp = 1;`, wait: 6000, look: [75, 106, 17] },
   'ch7-2': { hour: 10.5, scene: dock, wait: 6000, look: [33, 12, 20] },
   'ch7-3': { hour: 18.2, scene: dock, wait: 6000, look: [34, 10, 12] },
+  'ch8-1': { hour: 10, scene: school + police + office + cottage('st_c3', 66, 93, 'reyes'), wait: 6000, look: [82, 104, 30] },
+  'ch8-2': { hour: 11.5, scene: sluice + dock, wait: 7000, look: [38, 10, 26] },
+  'ch8-3': { hour: 16.6, scene: sluice, wait: 7000, look: [41, 8, 13] },
 };
 const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

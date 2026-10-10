@@ -65,6 +65,9 @@ export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, trad
  *  2nd and 3rd cost and at which level. */
 export const TRUCK = { tripMs: paced(50_000), pay: 1.2, capacity: [20, 40, 70, 110, 150, 200, 260, 330, 410, 500], upgradeCost: [0, 300, 700, 1100, 1600, 2200, 2900, 3700, 4600, 5600], level: [1, 3, 5, 6, 7, 8, 9, 10, 11, 12],   // ten truck sizes
   fleet: { max: 3, cost: [0, 400, 900], level: [1, 4, 6] } };
+/** Chapter 8: once the sluice is open (s.firsts.sluice) the brook runs full, the old mill's wheel turns, and every batch a
+ *  workshop starts takes `work` of its usual time. */
+export const SLUICE = { work: 0.9 };
 /** A crop bed within `reach` cells of a fish pond you built is watered: its crop takes `grow` of the usual time (chapter 7). */
 export const WATERED = { reach: 3, grow: 0.8 };
 /** Fishing in the brook from the boat dock: rare fish bite this many times as often (as bait does at a pond; both together multiply). */

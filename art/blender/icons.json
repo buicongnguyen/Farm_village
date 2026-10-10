@@ -476,6 +476,17 @@
   "preset": "building"
  },
  {
+  "id": "person:bea",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#EDC3A4",
+   "Villager hair": "#7A4A26",
+   "Villager shirt": "#F2A93B",
+   "Villager trousers": "#4A4A5C"
+  }
+ },
+ {
   "id": "person:pearl",
   "src": "3D_game_scene/public/models/villager-woman.glb",
   "portrait": true,

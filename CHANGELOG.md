@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 8: Work for everyone — 2026-10-11
+
+- **The old mill** stands on the far bank of the brook, its wheel still. **Chapter 8** closes when the company office works and its first big delivery is paid.
+- Closing the card **opens the sluice**: the brook runs faster and brighter, the mill wheel turns, and every batch a workshop starts from then on takes a tenth less time. The water story that began with Grandpa Oak's letters ends here.
+- **Penny, the office manager**, arrives with the company office and speaks on the village board. Three scenes follow their deeds; Oak writes that he is following the brook home.
+- Village projects: "The first big delivery". Tester (`?tester`): a **Finish this chapter** button.
+
 ## Chapter 7: Safe streets — 2026-10-11
 
 - **The boat dock**: a deck and a pier on the brook, a few steps east of the road bridge, built from its own panel (level 10, 800 coins). Tap it to fish in the brook: the rare fish bite twice as often as at a pond. In Explore mode you can walk onto the deck and cast.

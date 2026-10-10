@@ -17,6 +17,8 @@ and budgets that let a few big buildings stand there without slowing phones.
 - `inRiverside(x, z)`; `landOf(x, z)` returns `'riverside'` there.
 - **The quay**: a fixed road along `z = 6..7` from the bridge (`x = 28..29`) east to `x = 99`, added to the road
   list as `road_quay`. Drawn with the cobble material and a low stone edge towards the water.
+- **The old mill** already stands on this bank (chapter 8; `OLD_MILL` in `content/world.mjs`, cells 39–43 × 5–7): the
+  quay passes behind it and no lot overlaps it. It is the quay's landmark.
 - **Lots**: fixed sites, not free placing. `LOTS = [{ id: 'q1', x: 36, z: 1, w: 6, d: 5 }, ...]`, eight lots of
   6 × 5 cells with two-cell gaps, all with their door on the quay. A riverside building goes on a lot and nowhere
   else; nothing else goes on a lot. This reuses the fixed-site rule (`civicRebuildPlan` in `core/build.mjs`) with a

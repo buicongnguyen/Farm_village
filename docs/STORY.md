@@ -64,6 +64,7 @@ every amount, requirement and story fact. The village is こもれびの里; the
 | `mai` | **Daisy / Chị Na** | Lotus Farm neighbour; cheerful, ducks and tea. | **chị – em** |
 | `gus` | **Bramble / Bác Khoai** | Old Mill Farm neighbour; grumbles, secretly soft. | **bác – cháu** |
 | `hazel` | **Dr Fern / Bác sĩ Sen** | Elder doctor, returns with chapter 5; quiet and practical. | **bà – cháu** |
+| `bea` | **Penny / Cô Xu** | The office manager, arrives with the company office (chapter 8); brisk, kind, counts everything twice. Korean 꼼꼼, Japanese きっちり. No orders, gifts or heart scenes. | **cô – cháu** |
 | `pearl` | **Constable Sage / Cô Tre** | The constable, arrives with the police post (chapter 7); calm, exact, reads every old report, fond of her kettle. Korean 반듯 순경, Japanese きりり巡査. No orders, gifts or heart scenes. | **cô – cháu** |
 | `hugo` | **Barley / Chú Lúa** | The baker, arrives with the first market day (chapter 6) and keeps a stall on the square; cheerful, up before the birds. Korean 고소, Japanese こんがり (not the dog's names). No orders, gifts or heart scenes. | **chú – cháu** |
 
@@ -147,7 +148,7 @@ by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 | 5 | Someone to care for us | Four households. Bonnie's petition brings Dr Fern home, and the clinic reopens. Fern is a doctor, which settles the nurse overlap: Bonnie is the nurse. | Fern remembers the night of the fire: she treated Bramble's burned hands. |
 | 6 | Market day | **Built.** The deed: sell the good of the day on a market day and own three fields (no household count). The square holds market days, and Barley the baker (`hugo`) arrives with the first. | Rusty and Dash learn that the upriver land, with the sluice gate, belongs to a city flour company. |
 | 7 | Safe streets | **Built.** The deed: the police post works and the boat dock stands (no household count). Constable Sage (`pearl`) arrives with the post; Skipper's dock goes up on the brook. | In three letters Sage reads the old reports. The sluice was closed the summer before the mill shut, on a flour company's order, and the wheel had no water. |
-| 8 | Work for everyone | Ten households. The company office reopens, and Bea runs it. | With Oak's notes, the village buys the water rights back from the office's first big contract. The sluice opens and the mill wheel turns again. |
+| 8 | Work for everyone | **Built.** The deed: the company office works and its first big delivery is paid (no household count). Penny (`bea`) runs the office. | With Oak's notes and Sage's reports the village buys the water rights back. Seeing the card opens the sluice: the brook runs full, the old mill's wheel turns, workshops work a tenth faster. The water thread ends; Oak writes that he is coming home. |
 | 9 | The village sings again | The festival stage is rebuilt. | Bramble tells the truth: a storm knocked over the lanterns he was minding, and the stage burned. Maple's undelivered letter (in Dash's scene) thanked him for saving the children that night. Bramble lights the first new lantern. |
 
 ### Optional picnic memory

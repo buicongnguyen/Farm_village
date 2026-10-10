@@ -14,6 +14,7 @@ import { CHAPTERS, BEATS } from '../content/story.mjs';
 import { actions as build, buyableParcels } from './build.mjs';
 import { marketOpen, tickMarketDay } from './market-day.mjs';
 import { actions as sites } from './sites.mjs';
+import { normalizeGrowth } from './growth-state.mjs';
 import { actions as animals } from './animals.mjs';
 import { advance } from './projects.mjs';
 import { tickCondition } from './condition.mjs';
@@ -78,6 +79,9 @@ export const JUMPS = {
   5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
   6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
   // chapter 6 is behind: a market day sold on, and three fields
+  // chapter 8 is behind: two food factories, the company office, and its first delivery paid
+  9: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.company.level); give(ctx, 'juice_press'); give(ctx, 'noodle_factory'); give(ctx, 'company');
+    const g = normalizeGrowth(s); s.growth = { ...g, sent: Math.max(1, g.sent), returned: Math.max(1, g.returned), settled: Math.max(1, g.settled) }; },
   // chapter 7 is behind: the police post works and the boat dock stands
   8: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.police.level); give(ctx, 'police'); upTo(ctx, BUILDINGS.dock.level); const coins = s.coins; s.coins += BUILDINGS.dock.cost; sites.buildSite(ctx, { kind: 'dock' }); s.coins = coins; },
   7: ctx => { const { s, now } = ctx; upTo(ctx, MARKET_DAY.level); give(ctx, 'market'); fields(ctx, 3); s.stats.marketDays = Math.max(1, s.stats.marketDays ?? 0); (s.firsts ??= {}).marketDay ??= now; },
@@ -102,6 +106,15 @@ export const actions = {
     s.xp = Math.max(s.xp, xpFor(s.level));
     return { level: s.level };
   },
+  /** Do the deed of the chapter in progress, as the jump past it would arrange it, without marking its card seen: the
+   *  card then appears as in play. */
+  testFinishChapter(ctx) {
+    const { s } = ctx, n = (s.story.chapter ?? 0) + 1;
+    if (!Object.hasOwn(JUMPS, n + 1)) return ctx.fail('Unknown chapter');
+    for (const k of JUMP_CHAPTERS) if (k <= n + 1) { JUMPS[k](ctx); advance(ctx); }
+    s.undo = [];
+    return { chapter: n, done: !!CHAPTERS.find(c => c.id === n)?.when(s) };
+  },
   /** Start the next market day now (core/market-day.mjs): the timetable moves, nothing else. */
   testMarketDay(ctx) {
     const { s, now } = ctx; if (!marketOpen(s)) return ctx.fail('The square holds market days from level {level}', { level: MARKET_DAY.level });
@@ -118,6 +131,7 @@ export const actions = {
     for (const n of JUMP_CHAPTERS) if (n <= chapter) { JUMPS[n](ctx); advance(ctx); }
     // the story so far is behind the player: no stack of old cards, no tutorial, and a purse to start the chapter with
     s.story.chapter = Math.max(s.story.chapter ?? 0, chapter - 1); s.story.tutorial = 99;
+    if (s.story.chapter >= 8) (s.firsts ??= {}).sluice ??= ctx.now;   // what seeing chapter 8 does (core/today.mjs)
     s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
     s.coins = Math.max(s.coins, 1000 * chapter); s.undo = [];
     const missing = CHAPTERS.filter(c => c.id < chapter && !c.when(s)).map(c => c.id);

@@ -1,6 +1,37 @@
 # Chapter 8: Work for everyone
 
-Status: not started · Depends on: chapter 7 · Size: one to two sessions · Level reach: 15
+Status: **done** (PR #83) · Depends on: chapter 7 · Size: one to two sessions · Level reach: 15
+
+## How to play it (for the owner)
+
+1. An old water mill now stands on the far bank of the brook, a little east of the dock, its wheel still. Tap it to
+   read what it is.
+2. Rebuild the company office (level 15, two different food factories working). Penny, the office manager, arrives
+   and speaks at the top of the company section of the village board.
+3. Send the office's first big delivery from the village board and collect the payment at the market.
+4. The chapter 8 card appears. When you close it **the sluice opens**: a notice says so, the brook runs faster and
+   brighter, the mill wheel creaks up to speed, and from then on every batch a workshop starts takes a tenth less
+   time. Oak writes that he is following the brook home.
+
+Tester (`?tester`): **Finish this chapter** (new) does the deed of the chapter in progress, so the card shows at
+once; "Jump to chapter 8" starts here and "9" is past it.
+
+## What was built, where it differs from the plan below
+
+- The mill is on the **north** bank (`OLD_MILL` in `content/world.mjs`, cells 39–43 × 5–7), not the south: the usual
+  view looks from the south-east, and a wheel on the south bank's mill would hide behind the house. On the north bank
+  the wheel hangs over the water facing the player. Act IV's quay must leave these cells to the mill (a landmark on
+  the quay); `act4-far-bank.md` says so now.
+- `src/view/old-mill.mjs` (its own small chunk): the house and the wheel are two meshes; the wheel turns when
+  `s.firsts.sluice` is set. The brook's shader has `uFull` (faster, brighter water).
+- The sluice is stamped in `chapterSeen` (`core/today.mjs`) when chapter 8 is seen, and emits `sluiceOpened`;
+  `productionDuration` applies `SLUICE.work` (0.9) to batches started afterwards only.
+- The manager's working id is `bea`; her names are Penny / Cô Xu / 꼼꼼 / きっちり.
+- A project step "The first big delivery" (opens the village board), and the roadmap stage "Safe streets and work for
+  all" now has four deeds.
+- No one-off camera flight to the mill when the card closes (the notice and the wheel are enough, and a forced camera
+  move after a card felt like losing control); no line in the production panels.
+- Tester: `testFinishChapter` and its button.
 Story source: `STORY.md` 4 (row 8), `JOURNEY.md` 3
 
 ## What the player gets

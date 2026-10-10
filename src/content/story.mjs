@@ -6,6 +6,7 @@
 import { STEPS } from './projects.mjs';
 import { RESTORE } from './start.mjs';
 import { workingCount } from '../core/working.mjs';
+import { normalizeGrowth } from '../core/growth-state.mjs';
 
 /** The village's name, for the HUD and the chapter 1 card. */
 export const VILLAGE_NAME = 'Hollowbrook';
@@ -52,6 +53,13 @@ export const CHAPTERS = [
     ada: 'I sleep better with a lamp at the end of the lane. And {person:olaf:short} whistles when he works. Have you noticed?',
     panels: panels(7, ['The lamp at the police post.', 'A dock on the brook.', 'The brook from the dock.']),
     when: s => workingCount(s, 'police') > 0 && (s.counts.dock ?? 0) > 0 },
+  // The deed: the company office works and its first big delivery is paid (docs/plan/ch08-work-for-everyone.md).
+  // Seeing this card opens the sluice (core/today.mjs chapterSeen): the water thread ends here.
+  { id: 8, title: 'Work for everyone', subtitle: 'The wheel turns again.', icon: '⚙️',
+    text: 'The first crates with Hollowbrook’s own label leave on the truck. With {person:ellis:short}’s notes and {person:pearl:short}’s reports, the village buys the water rights back. {person:tomas:short} oils the old sluice wheel, the gate lifts, and the brook comes down loud. At the mill, the big wheel creaks, then turns.',
+    ada: 'I had forgotten the sound of that wheel. Listen, dear. That is what Hollowbrook sounds like when it is working.',
+    panels: panels(8, ['The company office, open again.', 'The brook, running full.', 'The mill wheel turns.']),
+    when: s => workingCount(s, 'company') > 0 && normalizeGrowth(s).settled >= 1 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -129,6 +137,21 @@ export const BEATS = [
   { id: 'pond-water', chapter: 7, when: s => (s.story.chapter ?? 0) >= 6 && (s.stats.watered ?? 0) > 0, lines: [
     { who: 'june', text: 'The beds by the pond are ahead of the others, love. The roots found the water before we did.' },
     { who: 'ada', text: '{person:ellis:short} always dug his beds where the ground stayed dark. Now I know why.' },
+  ] },
+  // ── Chapter 8 (docs/plan/ch08-work-for-everyone.md): the water thread ends; Oak is still upriver ──
+  { id: 'bea-arrives', chapter: 8, when: s => (s.story.chapter ?? 0) >= 7 && workingCount(s, 'company') > 0, lines: [
+    { who: 'bea', text: '{person:bea:display}, office manager. I count everything twice, and I already like what I am counting.' },
+    { who: 'june', text: 'She has a ledger for the ledgers, love.' },
+    { who: 'bea', text: 'Three, in fact.' },
+  ] },
+  { id: 'water-rights', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8, lines: [
+    { who: 'bea', text: 'Paid in full and stamped twice. The water is the village’s again, on paper and in the brook.' },
+    { who: 'tomas', text: 'One good pull on the wheel and the gate went up. It was never broken. Only shut.' },
+    { who: 'ada', text: 'Like the rest of us, dear. Never broken. Only shut.' },
+  ] },
+  { id: 'wheel-turns', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8 && (s.stats.sluiceMade ?? 0) > 0, lines: [
+    { who: 'minh', text: 'I have wanted to see that wheel move since I was a boy. It is faster than I drew it.' },
+    { who: 'pip', text: 'It goes round and round and it never gets dizzy!' },
   ] },
 ];
 
