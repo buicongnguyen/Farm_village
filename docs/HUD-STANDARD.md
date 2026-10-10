@@ -9,7 +9,7 @@ Material Design's badge and touch guidance. New interface work follows these rul
 | Place | What | Why it is always visible |
 |---|---|---|
 | Top left | Level, coins; the village banner (chapter goal); status pills | Progress and money at a glance |
-| Top right | Turn the camera, settings | Rarely tapped, so fine out of thumb reach |
+| Top right | Explore (walk as your character), turn the camera, settings | Mode and view switches, not destinations |
 | Right rail | Today (news), Projects, Friends, Mailbox (only with unread letters, last in the rail so nothing shifts) | The village's destinations |
 | Bottom right | Barn, Orders, Build | The core loop, in thumb reach |
 | Bottom middle | The Next chip: the one most useful thing to do | Help when unsure, a single surface |

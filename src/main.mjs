@@ -304,6 +304,7 @@ panels.onFishCast = bait => {
   }
   hud.toast(t('Walking to the fishing spot.'), 'info'); panels.close();   // watch the cast; the Reel button takes over at the water
 };
+hud.onExplore = () => { if (build.open) build.close(); panels.close(); radial.explore(true); };   // walk about as yourself (or the person you tapped)
 hud.onShowWay = at => panels.onShowWay?.(at);   // the Next chip's "go there"
 radial.life = life; radial.people = people; hud.people = people; people.onOrder = () => { if (build.open) build.close(); radial.hide(); panels.show('orders'); };
 new Juice(world, game, app);

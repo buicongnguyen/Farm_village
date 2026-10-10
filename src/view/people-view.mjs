@@ -375,6 +375,7 @@ export class PeopleView {
   }
   // Family outings and their journey home use the same safe routes as villagers.
   liveFamily(w, dt, night) {
+    if (w.controlled) return;   // you are walking as this family member (Explore)
     if (!this.checkPond(w)) return;
     if (night) { this.cancelTrip(w); w.indoors = true; return; }
     if (w.indoors) { w.indoors = false; const [x, z] = this.familySpot(w.id); w.x = (x + 0.5) * CELL; w.z = (z + 0.5) * CELL; }
