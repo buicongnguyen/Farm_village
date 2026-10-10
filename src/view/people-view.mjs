@@ -16,7 +16,7 @@ import { STEPS } from '../content/projects.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
-import { t, tParams, onLanguageChange } from '../kit/i18n.mjs';
+import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS } from './skinned.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
@@ -40,7 +40,16 @@ const OUTFITS = {
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
-const outfitOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
+const clothesOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
+// The look of each language edition: in English the village is fair-haired and lighter-skinned (blond, sandy, brown,
+// auburn); in Vietnamese, Korean and Japanese it keeps the dark hair and warm skin the models were made with. Grey
+// hair stays grey everywhere. Clothes, names' ids and saves are the same in every edition: only the tint changes.
+const FAIR_HAIR = ['#e6c06a', '#c99a52', '#9a6a3a', '#b0562a', '#6e4426', '#d9b060', '#8a5a34'], FAIR_SKIN = ['#f3c7a6', '#eebd98', '#f6d0b2', '#e9b48e'];
+const GREY = new Set(['#d6d0c6', '#9a9a9a']);
+export function outfitOf(id, s, lang = getLanguage()) {
+  const o = clothesOf(id, s); if (lang !== 'en') return o;
+  return { ...o, hair: GREY.has(o.hair) ? o.hair : FAIR_HAIR[(hash(id) >> 3) % FAIR_HAIR.length], skin: FAIR_SKIN[(hash(id) >> 6) % FAIR_SKIN.length] };
+}
 // What Pip says when things happen (the story package's lines win when it provides them), and June's stuck tips.
 const one = list => Array.isArray(list) ? list[Math.floor(Math.random() * list.length)] : list ?? null;
 const villager = id => VILLAGERS.find(p => p.id === id);
@@ -53,6 +62,8 @@ const FIRSTS = {
 
 export class PeopleView {
   constructor(world, game, root) {
+    // the look follows the language edition: hair and skin change as soon as the language does (clothes stay)
+    onLanguageChange(() => { for (const w of this.walkers.values()) if (w.subject && !w.pet) w.subject.tint = outfitOf(w.person ?? w.id, this.s); });
     Object.assign(this, { world, game, walkers: new Map(), clock: 0, time: 0, greetClock: 0, lastAction: performance.now(), tipAt: -Infinity, idleTipMs: 120000, pipAt: -99 });
     this.cast = castOf(world);
     this.bubbles = document.createElement('div'); this.bubbles.className = 'bubbles'; root.appendChild(this.bubbles);
