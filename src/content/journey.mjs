@@ -16,7 +16,9 @@ export const STAGES = [
       { name: 'Reopen the company office', test: 'company' }, { name: 'Send the first company delivery', test: 'contract1' }] },
   { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 12, version: '0.7',
     milestones: [{ name: 'Rebuild the festival stage', test: 'stage' }, { name: 'Hold the Harvest Festival', test: 'festival' }] },
-  { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 16, version: '0.8', planned: true },
+  // Act III: chapters 10 to 12 add their deeds here
+  { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 12, version: '0.8',
+    milestones: [{ name: 'Hire three farm hands', test: 'hands3' }, { name: 'Let them do thirty tasks', test: 'tasks30' }] },
   { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 18, version: '0.9', planned: true },
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 22, version: '1.0', planned: true },
 ];

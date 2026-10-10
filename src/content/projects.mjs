@@ -56,6 +56,9 @@ export const STEPS = [
     needs: { level: 12 }, site: 'stage', done: s => (s.counts.stage ?? 0) >= 1, builds: [] },
   { id: 'harvest_festival', name: 'The Harvest Festival', text: 'Lay a feast from your barn and hold the Harvest Festival at the stage. The whole village comes.',
     needs: { level: 12 }, panel: 'festival', done: s => (s.stats.harvestFestivals ?? 0) >= 1, builds: [] },
+  // chapter 10 (docs/plan/ch10-hands-to-help.md)
+  { id: 'three_hands', name: 'Three pairs of hands', text: 'The farm has outgrown one pair of hands. Hire three neighbours in Friends, and let them do thirty tasks.',
+    needs: {}, panel: 'friends', done: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

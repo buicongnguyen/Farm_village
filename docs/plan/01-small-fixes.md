@@ -23,7 +23,7 @@ the same files. Anything the owner reports while testing goes to the top of "Ope
 | 2 | The five new vegetables are used in no recipe (orders and market days do ask for them) | `src/content/goods.mjs` | Two or three recipes at the bakery or a kitchen (soup, chips, kimchi); chapter 6 added none |
 | 3 | The eleven extra trees (maple, birch, cypress, fir, great oak, lemon, plum, mango, grape arbor, longan, lychee) cannot be planted | `src/content/buildings.mjs`, `src/content/goods.mjs` (`FRUITS`) | Add catalogue entries with unlock levels one or two per chapter; icons exist |
 | 4 | No button to reset a profile | `src/ui/profiles-panel.mjs` | "Start this farm again", with a typed confirmation |
-| 5 | Hired people are not seen walking to their work | `src/view/people-view.mjs` | Done in chapter 10 |
+| 5 | The truck driver does not ride in the truck, and hands carry no tools | `src/view/people-view.mjs`, `land-view.mjs` | Chapter 10 made the hands walk to their work; the driver's seat and a tool in hand are polish |
 | 6 | Menus other than the Market square still carry long explanations | `src/ui/panel-renderers.mjs`, `src/ui/village-panels.mjs` | One pass per panel: main actions side by side, upgrades small, explanation as a small last line |
 | 7 | A notice can cover the world for a few seconds and catch a tap meant for the map | `src/ui/hud.mjs` | Notices pass taps through except on their own button; shorten to three seconds over the map centre |
 | 8 | Free-range animals sometimes cut a fence corner | `src/view/life-view.mjs` | Pick the next target through neighbouring cells of the range (a short path) instead of a straight line |

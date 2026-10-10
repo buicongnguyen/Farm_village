@@ -134,6 +134,7 @@ export function withDefaults(s) {
   // The first orchard build accidentally let pet homes acquire ordinary building wear.
   for (const [id, p] of Object.entries(s.placed ?? {})) if (BUILDINGS[p.kind]?.pet && [1, 2].includes(s.cond?.[id]?.level) && !s.repairing?.[id]) delete s.cond[id];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
+  s.today.earnedBase ??= s.stats?.coinsEarned ?? 0;   // the evening report (core/report.mjs): an old save's day starts counting now
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };

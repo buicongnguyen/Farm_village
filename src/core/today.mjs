@@ -22,6 +22,8 @@ export function tickToday(ctx) {
   const first = !s.today.day;
   s.today.day = key; s.today.giftDay = first ? 0 : (s.today.giftDay + 1) % GIFTS.length; s.today.claimed = false; s.today.seen = false;
   s.today.days = (s.today.days ?? 0) + 1;
+  // the evening report (core/report.mjs) starts again each day
+  s.today.earnedBase = s.stats.coinsEarned ?? 0; s.today.earned = {}; s.today.hands = {}; s.today.wages = 0; s.today.reportSeen = false;
   ctx.emit('newDay', { day: key, gift: GIFTS[s.today.giftDay], days: s.today.days });
   plantGardenFlower(ctx, key);
 }

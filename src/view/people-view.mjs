@@ -32,6 +32,8 @@ const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flat
 // Names for the family, in case the story's people list does not have them yet.
 const FAMILY_NAMES = { june: '{person:june:display}', pip: '{person:pip:display}', dog: '{pet:dog:display}', you: 'You' };
 const FISHERS = new Set(['gus', 'olaf', 'sam', 'tomas', 'minh', 'bo', 'ellis']);   // villagers who like to fish
+// What a hired villager is seen doing at the work (the errand acts of arrive()): raking the beds, tending and making.
+const HAND_ACT = { field: 'sweep', animals: 'knead', workshop: 'knead', orchard: 'knead', driver: 'idle' };
 // The Harvest Festival: places to stand, nearest the stage's front first: the square south of the stage and the grass two
 // cells round it (never on the well or right beside it), and the middle of the stage's front in metres (what everyone
 // looks at).
@@ -273,6 +275,17 @@ export class PeopleView {
     }
     if ((this.greetClock += dt) > 0.5) { this.greetClock = 0; this.greet(); }
     this.placeBubbles();
+  }
+  /** A hired hand's round was done (core/helpers.mjs, chapter 10): the villager who has the job walks to where the work
+   *  was and is seen at it for a moment. The rules have already done the work; this is only the picture of it. */
+  handWork(e) {
+    const w = this.walkers.get(e.who); if (!w || w.indoors || w.party || w.orderedFishing || w.fishing || w.visitor || w.controlled) return;
+    if (e.role === 'fisher') { this.sendFishing(w, null); return; }
+    const p = e.at === 'market' ? Object.values(this.s.placed).find(q => q.kind === 'market') : this.s.placed[e.at]; if (!p) return;
+    const cell = (BUILDINGS[p.kind]?.door && doorCell(p.kind, p.x, p.z, p.rot)) || [p.x, p.z], route = this.route(this.cellOf(w), cell);
+    if (!route.length) return;
+    this.cancelTrip(w); w.goingHome = false; w.route = route; w.wait = 0;
+    w.todo = { act: HAND_ACT[e.role] ?? 'idle', time: 7, face: [p.x, p.z] };
   }
   /** The Harvest Festival (chapter 9): walk to a place on the square, face the stage, cheer and wave until the evening ends. */
   liveParty(w, dt, on) {
@@ -542,6 +555,7 @@ export class PeopleView {
 
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);
+    if (e.type === 'handDid' && e.who) this.handWork(e);
     if (e.type === 'familyArrived') setTimeout(() => { for (const w of this.walkers.values()) if (FAMILIES.find(f => f.id === e.family)?.people.some(p => p.id === w.id)) this.once(w, 'Wave', 1.5); }, 1500);
     if (e.type === 'orderFilled') { const w = this.walkers.get(e.from); if (w && !w.family && !w.indoors) { this.cancelTrip(w); w.route = this.route(this.cellOf(w), [ORDER_BOARD.x, ORDER_BOARD.z]); w.todo = { act: 'idle', time: 1, carryHome: true }; w.wait = 0; } }
     if (e.type === 'delivered') { const site = this.site(), w = [...this.walkers.values()].find(x => !x.family && !x.kid && !x.visitor && !x.indoors && x.id !== 'ada'); if (site && w) { this.cancelTrip(w); w.route = this.route(this.cellOf(w), site); w.todo = { act: 'hammer', time: 20, face: site }; } }

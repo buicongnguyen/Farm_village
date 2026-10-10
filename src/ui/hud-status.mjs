@@ -23,6 +23,9 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   if (day.active) rows.push({ act: 'marketday', icon: day.good, label: 'Market day', ms: Math.max(0, day.endsAt - now), lit: true });
   const fest = festivalOf(s, now);   // the Harvest Festival's evening: the time left (a tap opens its panel)
   if (fest.active) rows.push({ act: 'festival', icon: 'stage', label: 'Festival', ms: Math.max(0, fest.until - now), lit: true });
+  // the evening report (chapter 10): offered once a day from six o'clock, when hands are hired and the day earned something
+  if (!s.today?.reportSeen && Object.keys(s.hands ?? {}).length && new Date(now).getHours() >= 18 && (s.stats.coinsEarned ?? 0) > (s.today?.earnedBase ?? Infinity))
+    rows.push({ act: 'report', icon: 'person:ada', label: 'Evening sums', text: 'ready', hot: true });
   const line = s.fishing?.line;
   if (line) rows.push({ act: 'pond', icon: 'pond', label: 'Fishing', ms: Math.max(0, line.doneAt - now), hot: line.doneAt <= now });
   return rows;

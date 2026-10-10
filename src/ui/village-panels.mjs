@@ -80,6 +80,7 @@ export function renderToday(s, now) {
     <div class="gift">${glyph('gift', 'g big')}<div><b>${t("Today's gift")}</b><small>${giftText(b.gift)}</small></div>
       ${b.claimed ? `<span class="done">${glyph('check', 'g')} ${t('Claimed')}</span>` : `<button class="btn primary" data-do="claimGift">${t('Claim')}</button>`}</div>
     ${days ? `<div class="streak">${iconHtml('garden_flower', '', 'mini')}<span>${t('Streak garden: day {count}', { count: days })}</span></div>` : ''}
+    ${(s.story.chapter ?? 0) >= 9 ? `<button class="next-project" data-do="report">${glyph('clock', 'g')} ${t('Today on the farm')}</button>` : ''}
     ${cartHere(s) ? `<button class="next-project" data-do="cart">${glyph('cart', 'g')} ${t('The market cart is at the gate')} <small>${t('{count} crates to fill', { count: cratesLeft(s) })}</small></button>` : ''}
     ${mail ? `<button class="next-project" data-do="mail">${glyph('mail', 'g')} ${t('{count} new letters', { count: mail })}</button>` : ''}
     ${ready.length ? `<h3>${t('While you were away')}</h3><ul class="ready">${ready.map(([i, r]) => `<li>${i}<span>${r}</span></li>`).join('')}</ul>` : ''}

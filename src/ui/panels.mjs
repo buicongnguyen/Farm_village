@@ -135,7 +135,8 @@ export class Panels {
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
-    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
+    else if (d.do === 'report') this.show('report');
+    else if (d.do === 'stepPanel' && ['barn', 'market', 'villageGrowth', 'festival', 'friends'].includes(d.panel)) this.show(d.panel);   // a project step done in a menu (content/projects.mjs `panel`)
     else if (d.do === 'notice') { const n = this.hud?.feed?.[+d.i]; if (n?.to) { if (typeof n.to === 'string') this.show(n.to); else { this.close(); n.to(); } } }
     else if (d.do === 'profiles') this.show('profiles');
     else if (d.do === 'adviceToday') this.show('today');

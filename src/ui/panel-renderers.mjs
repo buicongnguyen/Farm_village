@@ -29,7 +29,8 @@ export { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';   
 import { renderFriends, renderGift, renderMail, heartBar, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
-import { handsOpen, handHired } from '../core/helpers.mjs';
+import { handsOpen, handHired, handWho } from '../core/helpers.mjs';
+import { renderReport } from './report-panel.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
@@ -91,6 +92,10 @@ export function renderPanel() {
     }
     else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
     else if (o.kind === 'shops') { title = t('Village shops'); icon = 'stall'; body = renderShops(s, now, o.arg); }
+    else if (o.kind === 'report') {
+      title = t('Today on the farm'); icon = 'ui:coin'; body = renderReport(s, now);
+      if (!s.today.reportSeen) queueMicrotask(() => { if (this.open === o && !this.game.s.today.reportSeen) this.game.do('seeReport'); });
+    }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
     else if (o.kind === 'site') { title = t(BUILDINGS[o.arg]?.name ?? ''); icon = o.arg; body = renderSite(s, o.arg); }
     else if (o.kind === 'civicSite') { title = t(BUILDINGS[o.arg]?.name ?? 'Village growth'); icon = o.arg; body = renderCivicSite(s, o.arg); }
@@ -264,6 +269,8 @@ const HAND_ROLES = { field: ['Field hand', 'Harvests half of the ripe beds and s
   fisher: ['Fisher', 'Lands one fish a minute for the barn', 'perch'] };
 function renderHands(s) {
   if (!handsOpen(s)) return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Build the school to hire farm hands.')}</p></section>`;
-  return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Hired neighbours do half of the work, a coin a task. Do the other half yourself to get more done.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => `<div class="hand${handHired(s, role) ? ' on' : ''}">${goodIcon(icon)}<div><b>${t(name)}</b><small>${t(what)}</small></div>${handHired(s, role)
-    ? `<button class="btn" data-do="releaseHand" data-role="${role}">${t('Let go')}</button>` : `<button class="btn orange" data-do="hireHand" data-role="${role}" ${s.coins >= HANDS.roles[role].fee ? '' : 'disabled'}>${t('Hire')} · ${coinMark()} ${num(HANDS.roles[role].fee)}</button>`}</div>`).join('')}</section>`;
+  return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Hired neighbours do half of the work, a coin a task. Do the other half yourself to get more done.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => { const who = handWho(s, role), done = s.today?.hands?.[role] ?? 0;   // the villager who has the job, once hired (chapter 10)
+    return `<div class="hand${handHired(s, role) ? ' on' : ''}">${who ? faceHtml(who, 'hand-face') : goodIcon(icon)}<div><b>${who ? `${nameOf(who)} · ${t(name)}` : t(name)}</b><small>${t(what)}${done ? ` · ${t('{count} tasks today', { count: done })}` : ''}</small></div>${handHired(s, role)
+    ? `<button class="btn" data-do="releaseHand" data-role="${role}">${t('Let go')}</button>` : `<button class="btn orange" data-do="hireHand" data-role="${role}" ${s.coins >= HANDS.roles[role].fee ? '' : 'disabled'}>${t('Hire')} · ${coinMark()} ${num(HANDS.roles[role].fee)}</button>`}</div>`; }).join('')}
+    <button class="btn wide" data-do="report">${glyph('clock', 'g')} ${t('Today on the farm')}</button></section>`;
 }

@@ -53,6 +53,17 @@ button.good-tile { cursor: pointer; }
 .good-tile img.icon { width: 50px; height: 50px; }
 .good-tile b { font-size: 17px; font-weight: 1000; }
 .good-tile small { color: var(--ink-2); text-align: center; line-height: 1.15; }
+/* today's sums (chapter 10) */
+.report-total { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin: 0 0 10px; font-size: 15px; }
+.report-total b { font-size: 26px; font-weight: 1000; }
+.report-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(40px, 1fr) auto; align-items: center; gap: 8px; margin: 5px 0; }
+.report-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-row.best b { color: #1f8a3b; }
+.report-hands { list-style: none; margin: 4px 0; padding: 0; display: grid; gap: 4px; }
+.report-hands li { display: flex; align-items: center; gap: 8px; }
+.report-hands li span { flex: 1 1 auto; min-width: 0; }
+.report-hands .mini-face, .hand .hand-face { width: 34px; height: 34px; flex: none; border-radius: 50%; }
+.report-advice { margin-top: 10px; }
 /* the Harvest Festival's panel (chapter 9) */
 .feast { justify-content: center; }
 .feast-gives { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; font-weight: 800; }

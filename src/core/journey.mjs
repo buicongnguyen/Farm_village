@@ -23,6 +23,8 @@ const tests = {
   contract1: s => normalizeGrowth(s).settled >= 1,
   stage: s => (s.counts.stage ?? 0) > 0,
   festival: s => (s.stats?.harvestFestivals ?? 0) >= 1,
+  hands3: s => Object.keys(s.hands ?? {}).length >= 3,
+  tasks30: s => (s.stats?.handTasks ?? 0) >= 30,
 };
 export function journeyOf(s) {
   // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one

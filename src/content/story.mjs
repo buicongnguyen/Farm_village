@@ -67,6 +67,13 @@ export const CHAPTERS = [
     ada: 'I wrote it the week after the fire, dear, and never found the right day to give it to him. Tonight was the right day.',
     panels: panels(9, ['The stage, rebuilt.', 'Lanterns over the square.', 'The whole village, together.']),
     when: s => (s.counts.stage ?? 0) > 0 && (s.stats.harvestFestivals ?? 0) >= 1 },
+  // Act III, the brook co-operative. The deed: three hands hired, and thirty tasks done by them
+  // (docs/plan/ch10-hands-to-help.md).
+  { id: 10, title: 'Hands to help', subtitle: 'Nobody had to be asked twice.', icon: '🤝',
+    text: 'The farm is too big for one pair of hands now, and nobody had to be asked twice. {person:minh:short} takes the far beds, {person:lan:short} the ovens, {person:sam:short} the truck. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.',
+    ada: 'A farm is run from the porch as much as from the field, dear. Sit down. Let me show you the sums.',
+    panels: panels(10, ['Hands in the field.', 'The ovens, never cold.', 'The day, added up.']),
+    when: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -175,6 +182,16 @@ export const BEATS = [
     { who: 'ellis', text: 'I followed the water down. It knew the way better than I did.' },
     { who: 'pip', text: '{person:ellis:short}! You are real! Did you bring a fish? Did you bring ALL the fish?' },
     { who: 'ada', text: 'Your chair is where you left it. Sit down before you say anything clever.' },
+  ] },
+  // ── Chapter 10 (docs/plan/ch10-hands-to-help.md) ──
+  { id: 'three-hands', chapter: 10, when: s => (s.story.chapter ?? 0) >= 9 && Object.keys(s.hands ?? {}).length >= 3, lines: [
+    { who: 'june', text: 'Three pairs of hands, love. I sat down today. In daylight. On purpose.' },
+    { who: 'pip', text: 'Can I be a hand? I have two.' },
+    { who: 'june', text: 'You are the supervisor, sweetheart. It is a very serious job.' },
+  ] },
+  { id: 'report-first', chapter: 10, when: s => (s.story.chapter ?? 0) >= 9 && (s.stats.reports ?? 0) >= 1, lines: [
+    { who: 'ada', text: 'There. Every coin with a name on it. Your grandfather never believed in sums until the sums believed in him.' },
+    { who: 'ellis', text: 'I heard that.' },
   ] },
 ];
 
