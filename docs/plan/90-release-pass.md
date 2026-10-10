@@ -20,6 +20,9 @@ testing pace on purpose.
 - Levels: rebalance the XP curve so level 25 lands near chapter 20, not level 15.
 - Chapter 11: Mr Albright asks as soon as chapter 10 is seen. Decide whether he should wait for level 16 and a farm
   worth 60,000 (`albrightOffer` in `core/valley.mjs`), and set the cannery's green upgrade price against release coins.
+- Chapters 19 and 20: `VALLEY.step` (1.08 at release pace) decides how long the green mark and the billion take; set it
+  with the simulation so chapter 19 to 20 is a matter of sessions. Then look again at the green goals' counts
+  (`GREEN_GOALS`), which are eased for testing.
 - Chapter 18: set the fair's numbers (`FAIR` in `content/economy.mjs`: fee, prizes, the rivals' climb) once real play
   shows how often gold is won; and hang the ribbons on the farmhouse wall (three decals in the interior kit, shown
   from `s.fair.best`), which the chapter left out.

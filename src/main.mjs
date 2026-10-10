@@ -36,7 +36,7 @@ import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes, setMood } from './kit/sound.mjs';
 import { festivalOf } from './core/festival.mjs';
-import { RUINS, SITES, OLD_MILL, MEADOW, LOTS, QUAY, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
+import { RUINS, SITES, OLD_MILL, MEADOW, LOTS, QUAY, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS, AWARD_PLAQUE } from './content/world.mjs';
 import { fishable } from './core/pond-bank.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
@@ -302,7 +302,15 @@ const festiveTune = () => setMood(festivalOf(game.s, game.now).active ? 'festiva
 game.on(r => { if (r.events?.some(e => e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded' || e.type === 'loaded')) festiveTune(); });
 festiveTune();
 // Sounds for what happens (one of each kind per action, so a sweep is not a din)
-const SOUNDS = { fairHeld: 'cheer', fairEnded: 'cheer', valleyFounded: 'cheer', upriverStop: 'cheer', trainArrived: 'whistle', trainLeft: 'whistle', hotelUpgraded: 'cheer', guestServed: 'pop', quayPaved: 'cheer', familiesReturned: 'cheer', cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+// Chapter 19: when the county's plaque goes up the valley is looked over once, slowly: the farm, the village, the quay,
+// and last the plaque at the bridge. A touch ends it (a flight that is cut short resolves false).
+async function overview() {
+  const P = AWARD_PLAQUE, last = [P.x * CELL, P.z * CELL, 30];
+  if (!world.cam.flyTo || document.body.classList.contains('reduced-motion')) { world.cam.lookAt(...last); return; }
+  for (const [x, z, span] of [[64 * CELL, 56 * CELL, 120], [62 * CELL, 102 * CELL, 84], [72 * CELL, 5 * CELL, 84], last]) { if (!(await world.cam.flyTo(x, z, span, 2600))) return; await new Promise(done => setTimeout(done, 600)); }
+}
+game.on(r => { if (r.events?.some(e => e.type === 'valleyAwarded')) overview(); });
+const SOUNDS = { greenGoal: 'coin', valleyTitle: 'cheer', valleyAwarded: 'cheer', fairHeld: 'cheer', fairEnded: 'cheer', valleyFounded: 'cheer', upriverStop: 'cheer', trainArrived: 'whistle', trainLeft: 'whistle', hotelUpgraded: 'cheer', guestServed: 'pop', quayPaved: 'cheer', familiesReturned: 'cheer', cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');

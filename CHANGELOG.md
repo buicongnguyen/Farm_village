@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 19: The green valley — 2026-10-11
+
+- **Green goals**: a new page of the Valley panel with six goals (trees, flowers, ponds, benches and lamps, nothing left worn, and beehives or the green cannery by your answer to Mr Albright). Each pays once and adds to the valley's beauty for good.
+- **Titles**: the valley gets a new name as its value passes 100K, 1M, 10M and 100M.
+- **The county's prize**: a picture postcard valley worth 100M closes **chapter 19**. A plaque goes up at the bridge, the view flies once over the valley, the kept meadow fills with flowers (or the cannery's yard becomes an orchard), and Mr Albright comes back as a hotel guest.
+- At testing pace every deed done together now adds a fifth to the valley's name (it was 8%).
+
 ## Chapter 18: The valley fair — 2026-10-11
 
 - **The valley fair**: once the valley company is founded, a ribbon board stands on the village square. Enter your best in three classes (Field, Kitchen, Pond) and open the fair.

@@ -38,7 +38,7 @@ function spot(s, kind) {
 const ch = CHAPTERS.find(c => c.id === 11), cannery = siteOf('cannery');
 
 test('beauty counts trees, flowers, water, the meadow and its hives; each part has its cap', () => {
-  const s = bare(); assert.deepEqual(beautyOf(s), { score: 0, rank: 0, parts: { trees: 0, flowers: 0, water: 0, care: -0, industry: -0, meadow: 0 } });
+  const s = bare(); assert.deepEqual(beautyOf(s), { score: 0, rank: 0, parts: { trees: 0, flowers: 0, water: 0, care: -0, industry: -0, meadow: 0, goals: 0 } });
   put(s, 'round_tree', 3); put(s, 'cherry_tree', 2); assert.equal(beautyOf(s).parts.trees, 5 * BEAUTY.tree, 'fruit trees count as trees');
   put(s, 'pine_tree', 60); assert.equal(beautyOf(s).parts.trees, BEAUTY.cap.trees);
   const flowers = Object.keys(BUILDINGS).find(k => BUILDINGS[k].cat === 'charm' && !BUILDINGS[k].garden && !['round_tree', 'willow', 'pine_tree', 'tree', 'bush'].includes(k) && !BUILDINGS[k].fruit);

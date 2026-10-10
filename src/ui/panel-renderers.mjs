@@ -105,6 +105,7 @@ export function renderPanel() {
     }
     else if (o.kind === 'festival') { title = t('The Harvest Festival'); icon = 'stage'; body = renderFestival(s, now); }
     else if (o.kind === 'valley') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s, now); }
+    else if (o.kind === 'valleyGreen') { title = t('The valley'); icon = 'round_tree'; body = renderValley(s, now, 'green'); }
     else if (o.kind === 'valleyValue') { title = t('The valley'); icon = 'company'; body = renderValley(s, now, 'value'); }
     else if (o.kind === 'fair') { title = t('The valley fair'); icon = 'ribbon_board'; body = renderFair(s, now); }
     else if (o.kind === 'upriver') { title = t('Where the brook begins'); icon = 'spring_water'; body = renderUpriver(s); }

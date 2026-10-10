@@ -28,7 +28,7 @@ export const STAGES = [
       { name: 'Walk to where the brook begins', test: 'upriver' }] },
   // Act V: chapters 17 to 20 add their deeds here
   { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 16, version: '1.0',
-    milestones: [{ name: 'Found the valley company', test: 'valleyCompany' }, { name: 'Win a ribbon at the valley fair', test: 'fairRibbon' }] },
+    milestones: [{ name: 'Found the valley company', test: 'valleyCompany' }, { name: 'Win a ribbon at the valley fair', test: 'fairRibbon' }, { name: 'Win the county’s prize for the green valley', test: 'greenValley' }] },
 ];
 /** What the valley is called as its value passes each mark (core/valley.mjs titleOf; chapter 19 hands them out). */
 export const VALUE_TITLES = [

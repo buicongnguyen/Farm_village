@@ -4,12 +4,12 @@
 // value in the top bar or a tap on the brook meadow.
 import { t, num, short } from '../kit/i18n.mjs';
 import { BEAUTY } from '../content/economy.mjs';
-import { beautyOf, beautyTip, albrightOffer, RANK_NAMES, assetsOf, deedsOf, goodwillOf, valueOf, titleOf, companyPlan, dividendOf, shareholders } from '../core/valley.mjs';
+import { beautyOf, beautyTip, albrightOffer, RANK_NAMES, assetsOf, deedsOf, goodwillOf, valueOf, titleOf, companyPlan, dividendOf, shareholders, greenOpen, greenProgress, greenAward } from '../core/valley.mjs';
 import { shortTime } from '../core/clock.mjs';
 import { coinMark, faceHtml, glyph, iconHtml } from './icon.mjs';
 
 const PARTS = { trees: ['Trees and orchards', 'round_tree'], flowers: ['Flowers and gardens', 'flowers'], water: ['Ponds and the brook', 'pond'],
-  meadow: ['The brook meadow and its bees', 'beehive'], care: ['Things in need of mending', 'tool:demolish'], industry: ['Smoke and noise', 'cannery'] };
+  meadow: ['The brook meadow and its bees', 'beehive'], goals: ['Green goals reached', 'ui:xp'], care: ['Things in need of mending', 'tool:demolish'], industry: ['Smoke and noise', 'cannery'] };
 const TIPS = {
   care: 'Mend what is worn. A broken thing spoils the view.',
   green: 'Make the cannery a green one: trees round its walls and a filter on the chimney.',
@@ -65,9 +65,26 @@ function valuePage(s, now) {
     ${who.returned ? `<p class="hint">${t('And {count} families who came home to the quay.', { count: who.returned })}</p>` : ''}
   </div>`;
 }
-/** page: 'value' for the company's page, else the beauty page. The second page shows once chapter 16 is behind. */
+/** The green goals (chapter 19): the checklist with what each pays, and the two things the county's prize asks for. */
+function greenPage(s) {
+  const goals = greenProgress(s), a = greenAward(s);
+  const rows = goals.map(g => `<li class="${g.done ? 'done' : ''}" data-goal="${g.id}">${iconHtml(g.icon, '', 'mini')}<div><b>${t(g.name)}</b><i class="progress"><i style="width:${Math.round(g.have / g.need * 100)}%"></i></i></div>
+    <span>${g.done ? glyph('check', 'g') : `${num(g.have)}/${num(g.need)}`}</span><small>${coinMark()}${num(g.coins)}</small></li>`).join('');
+  const need = (ok, text) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`;
+  return `<div class="valley green">
+    <p>${t('The county gives a prize to its prettiest working valley. Each goal reached pays once and adds to the valley’s beauty for good.')}</p>
+    <ul class="green-goals">${rows}</ul>
+    <h3>${t('The county’s prize')}</h3>
+    ${need(a.rank >= a.rankNeed, `${t('A picture postcard valley')} · ${t(RANK_NAMES[a.rank])}`)}
+    ${need(a.value >= a.valueNeed, `${t('A valley worth {value}', { value: short(a.valueNeed) })} · ${coinMark()} ${short(a.value)}`)}
+    ${s.firsts?.award ? `<p class="hint">${glyph('check', 'g')} ${t('The plaque stands at the bridge: the prettiest working valley in the county.')}</p>` : ''}
+  </div>`;
+}
+/** page: 'value' for the company's page, 'green' for the green goals, else the beauty page. The value page shows once
+ *  chapter 16 is behind, the green goals once chapter 18 is. */
 export function renderValley(s, now, page = null) {
-  const company = (s.story?.chapter ?? 0) >= 16 || !!s.valley?.founded, on = company && page === 'value' ? 'value' : 'beauty';
-  const tabs = company ? `<div class="tabs valley-tabs"><button class="tab${on === 'beauty' ? ' on' : ''}" data-do="valley">${t('Beauty')}</button><button class="tab${on === 'value' ? ' on' : ''}" data-do="valleyValue">${t('Value')}</button></div>` : '';
-  return tabs + (on === 'value' ? valuePage(s, now) : beautyPage(s));
+  const company = (s.story?.chapter ?? 0) >= 16 || !!s.valley?.founded, green = greenOpen(s), on = company && page === 'value' ? 'value' : green && page === 'green' ? 'green' : 'beauty';
+  const tab = (id, kind, name) => `<button class="tab${on === id ? ' on' : ''}" data-do="${kind}">${t(name)}</button>`;
+  const tabs = company || green ? `<div class="tabs valley-tabs">${tab('beauty', 'valley', 'Beauty')}${green ? tab('green', 'valleyGreen', 'Green goals') : ''}${company ? tab('value', 'valleyValue', 'Value') : ''}</div>` : '';
+  return tabs + (on === 'value' ? valuePage(s, now) : on === 'green' ? greenPage(s) : beautyPage(s));
 }

@@ -91,6 +91,9 @@ export const STEPS = [
   // chapter 18 (docs/plan/ch18-the-valley-fair.md)
   { id: 'valley_fair', name: 'The valley fair', text: 'Three valleys used to bring their best to this square. Hold the fair: enter a crop, a food and a fish, and see what the judges say. A ribbon brings it home.',
     needs: {}, panel: 'fair', done: s => (s.stats?.fairs ?? 0) >= 1 && (s.fair?.ribbons ?? 0) >= 1, builds: [] },
+  // chapter 19 (docs/plan/ch19-the-green-valley.md)
+  { id: 'green_valley', name: 'The green valley', text: 'The county gives a prize to its prettiest working valley. Reach the green goals in the Valley panel, make the valley a picture postcard, and let its name grow with everything you do together.',
+    needs: {}, panel: 'valleyGreen', done: s => !!s.firsts?.greenValley, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

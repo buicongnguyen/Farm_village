@@ -1,6 +1,8 @@
 // Test-mode helpers for the Settings "Test" section (test builds, and the public game opened with ?tester) and for
 // browser tests. They run through act() like any action, so the views and the save hear about them.
-import { LEVELS, MARKET_DAY, PARCELS, FAIR } from '../content/economy.mjs';
+import { LEVELS, MARKET_DAY, PARCELS, FAIR, BEAUTY, VALLEY } from '../content/economy.mjs';
+import { GREEN_GOALS } from '../content/valley.mjs';
+import { beautyOf, valueOf } from './valley.mjs';
 import { planDay } from './neighbours.mjs';
 import { actions as riverside, freeLots } from './riverside.mjs';
 import { RIVERSIDE } from '../content/economy.mjs';
@@ -84,6 +86,17 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 19 is behind: the green goals are reached, the valley is a picture postcard (trees and flowers planted on
+  // free ground as far as it takes) and its name has grown past the green mark (hotel guests enough for the goodwill)
+  20: ctx => { const { s, now } = ctx; if (s.firsts?.greenValley) return;
+    for (const g of GREEN_GOALS) ((s.valley ??= {}).goals ??= {})[g.id] ??= now;
+    for (const id of Object.keys(s.cond ?? {})) if ((s.cond[id]?.level ?? 0) >= 1) delete s.cond[id];
+    if (s.story.albright === 'factory') s.valley.green ??= now;
+    const o = parcelOrigin(START_PARCEL), coins = s.coins; s.coins += 1e7;
+    for (const kind of ['round_tree', 'flowers']) for (let i = 0; i < 60 && beautyOf(s).rank < BEAUTY.ranks.length - 1; i++) { const at = grid.findSpot(s, kind, o.x + 8, o.z + 8); if (!at || build.place(ctx, { kind, ...at }).ok === false) break; }
+    s.coins = coins;
+    for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.green; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+    (s.firsts ??= {}).greenValley ??= now; },
   // chapter 18 is behind: a fair was held to its end and a ribbon won (the valleys have rested since)
   19: ctx => { const { s, now } = ctx, f = (s.fair ??= { n: 0, ribbons: 0, best: {}, entry: {} }); if ((s.stats.fairs ?? 0) >= 1 && f.ribbons >= 1) return;
     Object.assign(f, { n: Math.max(1, f.n ?? 0), at: now - FAIR.everyMs, until: now - FAIR.everyMs + FAIR.lastsMs, ribbons: Math.max(1, f.ribbons ?? 0) }); f.over = f.n; (f.best ??= {}).kitchen ??= 'gold';
@@ -178,6 +191,7 @@ export const actions = {
     // the story so far is behind the player: no stack of old cards, no tutorial, and a purse to start the chapter with
     s.story.chapter = Math.max(s.story.chapter ?? 0, chapter - 1); s.story.tutorial = 99;
     if (s.story.chapter >= 8) (s.firsts ??= {}).sluice ??= ctx.now;   // what seeing chapter 8 does (core/today.mjs)
+    if (s.story.chapter >= 19) (s.firsts ??= {}).award ??= ctx.now;   // and chapter 19: the plaque at the bridge
     if (s.story.chapter >= 12) (s.firsts ??= {}).bridge ??= ctx.now;   // and chapter 12
     s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
     s.coins = Math.max(s.coins, 1000 * chapter); s.undo = [];

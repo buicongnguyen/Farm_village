@@ -50,6 +50,9 @@ const stones = (x, z, n, step, scale) => `for (let i = 0; i < ${n}; i++) farm.wo
 const ferns = (x, z, n) => `for (let i = 0; i < ${n}; i++) farm.world.batches.set('stage:f${Math.round(x * 10)}_' + i, { model: 'bush', x: (${x} + (i % 3) * 0.7) * 2, z: (${z} + Math.floor(i / 3) * 0.6) * 2, rot: i * 2.1, scale: 0.7 + (i % 2) * 0.25 });`;
 // chapter 18: the valley company founded and a fair running on the square (stalls, carts, the judging table, visitors)
 const fairOn = `s.story.chapter = 17; s.valley = { founded: 1, dividendFrom: 1 }; s.fair = { n: 1, at: farm.game.now - 1000, until: farm.game.now + 170000, ribbons: 1, best: { kitchen: 'gold' }, entry: {}, last: { n: 0, results: {} } };`;
+// chapter 19: the award given (the plaque at the bridge, the meadow in full flower or the cannery's orchard)
+const award = `s.story.chapter = 19; s.valley = { founded: 1, dividendFrom: 1, green: 1 }; s.firsts.award = 1; s.firsts.greenValley = 1;`;
+const cannery = `s.story.albright = 'factory'; s.placed.st_cannery = { kind: 'cannery', x: 55, z: 16, rot: 0 }; s.counts.cannery = 1;`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -118,6 +121,11 @@ const PANELS = {
   'ch18-2': { hour: 11, scene: everyone + stage + fairOn, wait: 30000, then: [`farm.focus(39.4, 101.8, 24);`, 1200], look: [39.4, 101.8, 24] },
   'ch18-3': { hour: 17.6, scene: everyone + stage + `s.story.chapter = 17; s.valley = { founded: 1, dividendFrom: 1 }; s.fair = { n: 1, at: 1, until: 2, over: 1, ribbons: 1, best: { kitchen: 'gold' }, entry: {} };`, wait: 8000,
     then: [put('june', 38.6, 102.4) + put('pip', 39.5, 102.7) + put('ada', 37.5, 102.5) + `farm.focus(39.6, 100.6, 24);`, 1800], look: [39.6, 100.6, 24] },
+  // chapter 19: the plaque by the bridge, Mr Albright before the hotel at dusk, and the valley's answer grown green
+  'ch19-1': { hour: 9.4, scene: sluice + dock + `s.story.albright = 'meadow';` + award, wait: 8000, then: [put('ada', 31.6, 16.2) + put('pip', 29.9, 16.4), 1800], look: [30.4, 15.2, 24] },
+  'ch19-2': { hour: 18.4, scene: sluice + far + quayHouse + hotel + `s.story.chapter = 18; s.story.beats = [...(s.story.beats ?? []), 'albright-returns'];`, wait: 10000, then: [put('albright', 57.5, 6.4), 1800], look: [56.5, 5, 24] },
+  'ch19-3': { hour: 10.5, scene: sluice + cannery + award, wait: 9000, look: [59.5, 17.6, 24] },
+  'ch19-3m': { hour: 10.5, scene: sluice + `s.story.albright = 'meadow';` + award, wait: 9000, look: [62, 17.8, 24] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

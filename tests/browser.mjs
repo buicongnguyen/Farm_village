@@ -1127,6 +1127,54 @@ await check('chapter 18: entries are chosen, the fair is held, a verdict and a r
   await ctx.close();
 });
 
+// Chapter 19 (docs/plan/ch19-the-green-valley.md): the green goals show and one is reached, the valley earns a title,
+// the deed is done, the card shows, the plaque goes up at the bridge and the valley is looked over.
+await check('chapter 19: a green goal is reached, the valley gets a title, the card shows and the plaque goes up at the bridge (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:19'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  // something in the valley is worn: the "nothing left worn" goal is open; the others are counted
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game, s = g.s; s.coins = 30000; delete s.valley.goals; const id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bakery') ?? Object.keys(s.placed)[0]; s.cond[id] = { level: 1 }; g.tick(); });
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-tabs [data-do="valleyGreen"]');
+  expect(await page.locator('.valley-tabs .tab').count() === 3, 'the Valley panel does not have its three pages');
+  await page.click('.valley-tabs [data-do="valleyGreen"]'); await page.waitForSelector('.green-goals li');
+  expect(await page.locator('.green-goals li').count() === 6 && await page.locator('.green-goals li.done[data-goal="care"]').count() === 0, 'six goals, the worn one open');
+  expect(await page.locator('.valley.green .req').count() === 2 && await page.locator('.valley.green .req.ok').count() < 2, 'the prize shows its two needs, not both met yet');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-goals.png` });
+  // mend it: the goal is reached, paid once, and adds to the beauty
+  const before = await page.evaluate(() => ({ coins: farm.state().coins }));
+  await page.evaluate(() => { const s = farm.state(); for (const id of Object.keys(s.cond)) delete s.cond[id]; farm.game.tick(); });
+  await page.waitForSelector('.green-goals li.done[data-goal="care"]', { timeout: 15000 });
+  expect(await page.evaluate(() => farm.state().coins) >= before.coins + 400, 'the goal did not pay');
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-parts');
+  expect((await page.textContent('.valley-parts')).includes('Green goals reached'), 'the beauty page does not count the goals');
+  // the valley's value has passed its first mark: a title is given (ticks hand them out one at a time)
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.['title:100000']; }, null, { timeout: 15000, polling: 500 });
+  // the tester finishes the chapter: trees and flowers enough, and the name of the valley past the green mark
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.panels.onTest('finish'); });
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.greenValley; }, null, { timeout: 15000, polling: 500 });
+  // the chapter card (the title cards before it are closed as they come)
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The green valley') && card.includes('Mr Albright') && card.includes('better than his drawings') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-19-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 19 && !!farm.state().firsts.award);
+  // the plaque goes up at the bridge, and the valley is looked over: the view ends on the plaque
+  await page.waitForFunction(() => farm.world.batches.items.has('meadow:plaque'), null, { timeout: 20000 });
+  await page.waitForFunction(() => { farm.closeCards(); const c = farm.world.cam, it = farm.world.batches.items.get('meadow:plaque'); return Math.hypot(c.x - it.x, c.z - it.z) < 3 && !c.flight; }, null, { timeout: 40000, polling: 500 });
+  await page.waitForTimeout(900); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-plaque.png` });
+  // afterwards the goals page shows every goal reached, the prize won and where the plaque stands
+  await page.evaluate(() => farm.panels.show('valleyGreen')); await page.waitForSelector('.green-goals li');
+  expect(await page.locator('.green-goals li.done').count() === 6 && await page.locator('.valley.green .req.ok').count() === 2, 'the goals and the prize are not all met after the award');
+  expect((await page.textContent('.valley.green')).includes('The plaque stands at the bridge'), 'the goals page does not tell of the plaque');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-prize.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);
