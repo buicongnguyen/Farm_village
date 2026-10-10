@@ -145,6 +145,7 @@ export class Panels {
       const feedback = this.el.querySelector('[data-reel-feedback]'); if (feedback) feedback.textContent = r.ok ? '' : t(r.reason);
       if (r.ok && d.start === '1') this.el.querySelector('[data-do="reelIn"]:not([data-steady]):not([data-start])')?.focus();
     }
+    else if (d.do === 'hireHand' || d.do === 'releaseHand') g.do(d.do, { role: d.role });
     else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');
     else if (d.do === 'fillTruck') g.do('fillTruck');

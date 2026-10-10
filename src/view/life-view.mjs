@@ -119,7 +119,12 @@ export class LifeView {
     const out = free.length ? free : cells, set = new Set(out.map(c => `${c[0]},${c[1]}`));
     // the cells beside the home, where the animals gather to sleep
     const beside = out.filter(([x, z]) => own.some(c => Math.abs(c[0] - x) + Math.abs(c[1] - z) === 1));
-    this.pens.set(home, { key, cells: out, set, beside: beside.length ? beside : out }); return out;
+    this.pens.set(home, { key, cells: out, set, beside: beside.length ? beside : out });
+    // the home was moved (or its fence changed): animals left outside come along at once
+    for (const an of this.herds.values()) if (an.home === home && out.length && !set.has(`${Math.floor(an.subject.x / CELL)},${Math.floor(an.subject.z / CELL)}`)) {
+      const c = out[Math.floor(Math.random() * out.length)]; an.subject.x = (c[0] + 0.5) * CELL; an.subject.z = (c[1] + 0.5) * CELL; an.target = null; an.until = 0;
+    }
+    return out;
   }
   inPen(home, x, z, r = 0) {
     this.penArea(home); const set = this.pens.get(home)?.set; if (!set) return false;
