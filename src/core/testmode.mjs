@@ -1,6 +1,6 @@
 // Test-mode helpers for the Settings "Test" section (test builds, and the public game opened with ?tester) and for
 // browser tests. They run through act() like any action, so the views and the save hear about them.
-import { LEVELS, MARKET_DAY, PARCELS } from '../content/economy.mjs';
+import { LEVELS, MARKET_DAY, PARCELS, FAIR } from '../content/economy.mjs';
 import { planDay } from './neighbours.mjs';
 import { actions as riverside, freeLots } from './riverside.mjs';
 import { RIVERSIDE } from '../content/economy.mjs';
@@ -84,6 +84,10 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 18 is behind: a fair was held to its end and a ribbon won (the valleys have rested since)
+  19: ctx => { const { s, now } = ctx, f = (s.fair ??= { n: 0, ribbons: 0, best: {}, entry: {} }); if ((s.stats.fairs ?? 0) >= 1 && f.ribbons >= 1) return;
+    Object.assign(f, { n: Math.max(1, f.n ?? 0), at: now - FAIR.everyMs, until: now - FAIR.everyMs + FAIR.lastsMs, ribbons: Math.max(1, f.ribbons ?? 0) }); f.over = f.n; (f.best ??= {}).kitchen ??= 'gold';
+    s.stats.fairs = Math.max(1, s.stats.fairs ?? 0); },
   // chapter 17 is behind: the valley company is founded
   18: ctx => { const { s, now } = ctx; give(ctx, 'company'); if (!s.valley?.founded) { (s.valley ??= {}).founded = now; s.valley.dividendFrom = now; } },
   // chapter 16 is behind: the three stops upriver are walked

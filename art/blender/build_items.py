@@ -624,6 +624,23 @@ def spring_water():
             P('drop', .07, (.36, -.12, .05), 'waterb', sub=1, sc=(1.2, 1.2, .5))]
 item('spring_water', spring_water())
 
+# ── Chapter 18, the valley fair: the three ribbons (gold, silver, bronze), each a pleated rosette with two tails ──
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'ribgold': '#FFC531', 'ribgoldd': '#E89A12', 'ribsilver': '#E4EAF2', 'ribsilverd': '#A9B6C8', 'ribbronze': '#E08A4A', 'ribbronzed': '#B7602A',
+    'ribred': '#EF3B3B', 'ribblue': '#2F8FE8', 'ribgreen': '#3FB85A', 'ribwhite': '#FFFDF6'}.items()})
+def ribbon(mt, mtd, tails):
+    """A prize rosette seen from the front: twelve pleats round a ring, a pale button with a star, two tails."""
+    p = [cyl('disc', .34, .06, (0, 0, .78), C[mt], verts=24, bev=0, rot=(math.pi / 2, 0, 0))]
+    for i in range(12):
+        a = i * math.pi / 6
+        p.append(ico('pleat', .13, (math.cos(a) * .36, -.02, .78 + math.sin(a) * .36), C[mtd if i % 2 else mt], subdiv=1, scale=(1, .35, 1)))
+    p += [cyl('ring', .25, .08, (0, -.03, .78), C[tails], verts=20, bev=0, rot=(math.pi / 2, 0, 0)), cyl('button', .19, .1, (0, -.05, .78), C['ribwhite'], verts=20, bev=.01, rot=(math.pi / 2, 0, 0)),
+          ico('star', .1, (0, -.11, .78), C[mt], subdiv=1, scale=(1, .3, 1))]
+    for sx in (-1, 1): p.append(box('tail', (.22, .03, .7), (sx * .17, .02 + sx * .012, .22), C[tails], bev=0., seg=1, rot=(0, sx * -.22, 0)))
+    return p
+item('ribbon_gold', ribbon('ribgold', 'ribgoldd', 'ribred'))
+item('ribbon_silver', ribbon('ribsilver', 'ribsilverd', 'ribblue'))
+item('ribbon_bronze', ribbon('ribbronze', 'ribbronzed', 'ribgreen'))
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

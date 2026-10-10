@@ -26,13 +26,13 @@ folder says what to build, in which files, and how to know it is done.
 | 15 | [ch15-the-evening-train.md](ch15-the-evening-train.md) | The halt, the train, train orders | 2 | **done** (PR #90) |
 | 16 | [ch16-where-the-brook-begins.md](ch16-where-the-brook-begins.md) | The walk upriver with Oak and Sunny | 1 | **done** (PR #91) |
 | 17 | [ch17-a-share-for-everyone.md](ch17-a-share-for-everyone.md) | The valley company and the valley's value | 1–2 | **done** (PR #92) |
-| 18 | [ch18-the-valley-fair.md](ch18-the-valley-fair.md) | The fair and the produce contest | 1–2 | not started |
+| 18 | [ch18-the-valley-fair.md](ch18-the-valley-fair.md) | The fair and the produce contest | 1–2 | **done** (PR #93) |
 | 19 | [ch19-the-green-valley.md](ch19-the-green-valley.md) | Beauty goals, wealth titles, the award | 1 | not started |
 | 20 | [ch20-the-lights-of-two-villages.md](ch20-the-lights-of-two-villages.md) | The billion and the closing card | 1 | not started |
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 
-**Next: chapter 18** ([ch18-the-valley-fair.md](ch18-the-valley-fair.md)). Acts II, III and IV are complete.
+**Next: chapter 19** ([ch19-the-green-valley.md](ch19-the-green-valley.md)). Acts II, III and IV are complete.
 
 Done before this plan: chapters 1 to 5; from v0.5, the goat barn and dairy, the farmhouse to level 10 (garden and
 room), six hired hands, sixteen parcels, twelve crops, the look of each language edition, the old-building fixes.

@@ -1574,5 +1574,30 @@
   "root": "item_lychee",
   "preset": "goods",
   "rough": 0.4
+ },
+ {
+  "id": "ribbon_gold",
+  "src": "raw:items",
+  "root": "ribbon_gold",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_silver",
+  "src": "raw:items",
+  "root": "ribbon_silver",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_bronze",
+  "src": "raw:items",
+  "root": "ribbon_bronze",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_board",
+  "src": "raw:decor",
+  "root": "ribbon_board",
+  "view": [-24, 14],
+  "preset": "building"
  }
 ]

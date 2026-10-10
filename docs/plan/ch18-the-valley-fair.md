@@ -1,6 +1,50 @@
 # Chapter 18: The valley fair
 
-Status: not started · Depends on: chapter 17 · Size: one to two sessions
+Status: **done** (PR #93) · Depends on: chapter 17 · Size: one to two sessions
+
+## How to play it (for the owner)
+
+1. Once the valley company is founded, a **ribbon board** stands at the west edge of the village square. Tap it, or
+   open **The valley fair** in Village projects or the Roadmap.
+2. The panel has a card for each class: **Field** (a crop or a fruit, judged by Clover), **Kitchen** (something made,
+   judged by Honey) and **Pond** (a fish, judged by Skipper). Each card shows what the barn can enter (it takes 3 of
+   one kind) with **one to five stars**; the most promising is chosen already, a tap chooses another.
+3. What makes a good entry: a finer good; one you **know** (the more of it you have grown, made, picked or caught, the
+   better); and the judge's **soft spot** (two goods each, shown on the card).
+4. **Open the fair** (1,500 coins). The judging is told on the panel, class by class: the judge's verdict, the four
+   entries in order (Hollowbrook and the three valleys) and your ribbon. Gold pays 900, silver 500, bronze 300, and a
+   class's first gold 600 more. The judge who gave a ribbon grows a heart fonder.
+5. For three minutes the fair is on the square: stalls and carts round it, the judging table with the judges behind
+   it, visitors from the three valleys, the whole village gathered. A pill in the top bar counts it down.
+6. When it ends it counts as a deed for the valley's goodwill, and **chapter 18** closes if a ribbon came home. The
+   valleys rest forty minutes before the next fair; the rivals are a little stronger each time (six times at most).
+
+Tester (`?tester`): "Chapter 18" jumps to the founded company; put three of something in the barn and open the fair.
+"Finish this chapter" holds a fair with a ribbon for you.
+
+## What was built, where it differs from the plan below
+
+- `src/core/fair.mjs`: `partsOf` (base, know, taste), `starsOf`, `wobbleOf`, `rivalsOf`, `optionsOf`, `fairOf`,
+  `tickFair`, the actions `chooseEntry` and `holdFair`. Numbers: `FAIR` in `content/economy.mjs`.
+- **Knowing a good** is counted from a new `s.stats.grown[good]` (harvests and finished batches), the fruit album and
+  the fish album. Old saves start it from nothing, which is fair: the fair is new to them too.
+- **No fish length**: a catch has no length in this game, so the pond class is scored like the others (how rare the
+  fish is, how many of its kind were caught, Skipper's soft spot).
+- **Entries are chosen for you** (the most promising), so the fair can be opened with one tap; a tap changes one.
+  A class with nothing to enter is left out, and one entry is enough to hold a fair.
+- **The deed counts any ribbon**, not only gold: `s.fair.ribbons` is every medal won, `s.fair.best` the best one per
+  class. With three rivals a first fair nearly always brings one home, and gold still has to be earned.
+- **The judging is told at once on the panel** (a class every second and a half) while the fair runs on in the world;
+  the results were decided when it opened, from the save's own seed, so a reload cannot change them.
+- **One verdict per judge and ribbon** (twelve lines), not three each.
+- **The fair is on the village square**, not on the quay: the square already gathers everyone, and what the player
+  has built on the quay cannot be in the way. Stalls and carts stand only on free grass round the square.
+- **Ribbons show on the panel and the ribbon board**; they do not hang on the farmhouse wall (the interior kit is not
+  touched). This goes to the release pass.
+- Six visitors on every device (the plan's cap for phones was eight).
+- Models: `fair_stall`, `fair_stall_b`, `judging_table`, `ribbon_board`; the visitors' carts are the props kit's cart.
+  Icons: `ribbon_gold`, `ribbon_silver`, `ribbon_bronze`, `ribbon_board`.
+- `tests/fair.test.mjs` (7), and a browser check that plays the chapter.
 Story source: `JOURNEY.md` 3 (Act V), `STORY.md` 4 (row 18)
 
 ## What the player gets

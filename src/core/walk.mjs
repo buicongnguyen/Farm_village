@@ -4,7 +4,7 @@
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, inQuay, inRiverside } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -29,6 +29,8 @@ export function stepCost(s, x, z, blocked = null) {
   const parcel = parcelOf(x, z);
   if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z) || (s.firsts?.bridge && inTowpath(x, z)) || (s.firsts?.quay && inRiverside(x, z)))) return 0;   // the far bank's towpath, once its gate is off (chapter 12)
   if (x === COOPERATIVE_BOARD.x && z === COOPERATIVE_BOARD.z && (s.story?.chapter ?? 0) >= 11) return 0;   // the co-operative's notice board stands there
+  if (x === FAIR_BOARD.x && z === FAIR_BOARD.z && s.valley?.founded) return 0;   // the fair's ribbon board
+  if (z === FAIR_TABLE.z && (x === FAIR_TABLE.x || x === FAIR_TABLE.x + 1) && s.fair?.n && s.fair.over !== s.fair.n) return 0;   // the judging table, until the fair's end is told
   const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0) && !s.village?.cleared?.[ruin.kind]) return 0;   // an old ruin stands there
   if (homeGardenAt(s.house?.level ?? 1, x, z)) return 0;   // the pool, the gazebo and the rest of the farmhouse garden
   const type = cellType(s, x, z); if (type === 'rock' || type === 'weeds') return 0;

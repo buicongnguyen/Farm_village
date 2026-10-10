@@ -1387,6 +1387,65 @@ def company_flag():
     return p
 piece('company_flag', company_flag(), decor)
 
+# ── Chapter 18, the valley fair: stalls in two colours, the judging table and the ribbon board ──
+def rosette(x, y, z, mt, tails, r=.17):
+    """A prize rosette facing the front: a pleated disc, a button and two tails. (x, z) its middle, y its plane."""
+    return [ball('rosette', r, x, y, z, mt, sub=1, sc=(1, .22, 1)), ball('button', r * .45, x, y + .03, z, 'white', sub=1, sc=(1, .3, 1)),
+            box('tail', (r * .5, .02, r * 1.7), (x - r * .32, -y, z - r * 1.5), C[tails], bev=0., seg=1, rot=(0, .22, 0)),
+            box('tail', (r * .5, .02, r * 1.7), (x + r * .32, -y, z - r * 1.5), C[tails], bev=0., seg=1, rot=(0, -.22, 0))]
+def fair_stall(mt, goods):
+    """A fair stall: four posts, a counter with a cloth skirt, a striped awning that slopes to the front with a scalloped
+    edge, the valley's best on the counter and a crate beside it. About 2.9 x 2 m, 2.6 m tall; faces the front."""
+    p = [bx('post', .1, .1, 2.0, sx * 1.2, sy * .62, 0, 'woodd', bev=0.) for sx in (-1, 1) for sy in (-1, 1)]
+    p += [bx('post', .1, .1, .5, sx * 1.2, -.62, 2.0, 'woodd', bev=0.) for sx in (-1, 1)]
+    p += [bx('counter', 2.6, .8, .1, 0, .3, .86, 'woodl', bev=.02), bx('skirt', 2.6, .04, .82, 0, .7, .04, 'white', bev=0.), bx('hem', 2.6, .05, .12, 0, .71, .04, mt, bev=0.),
+          bx('back', 2.5, .05, 1.0, 0, -.62, .9, 'cream', bev=0.)]
+    n = 7; w = 2.9 / n
+    for i in range(n):
+        x = -1.45 + w * (i + .5); col = C[mt if i % 2 == 0 else 'white']
+        p.append(box('awning', (w, 2.0, .06), (x, 0, 2.3), col, bev=0., seg=1, rot=(.24, 0, 0)))
+        p.append(extrude_outline('scallop', [(-w / 2, 0), (w / 2, 0), (w / 2, -.14), (0, -.26), (-w / 2, -.14)], .04, (x, -.97, 2.08), col, bev=0.))
+    xs = (-.9, -.3, .35, .95)
+    for x, g in zip(xs, goods):
+        if g == 'pumpkin': p += [ball('pumpkin', .24, x, .3, 1.14, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .03, .1, x, .3, 1.3, 'stem', verts=5)]
+        elif g == 'loaf': p += [bx('board', .5, .34, .04, x, .3, .96, 'wood', bev=0.), ball('loaf', .2, x, .3, 1.1, 'bread', sub=1, sc=(1.25, .8, .6))]
+        elif g == 'jar': p += [cl('jar', .13, .3, x, .3, .96, 'sun', verts=8), cl('lid', .14, .05, x, .3, 1.26, 'red', verts=8)]
+        elif g == 'apples': p += [bx('tray', .5, .36, .1, x, .3, .96, 'woodd', bev=0.)] + [ball('apple', .1, x + dx, .3 + dy, 1.12, 'fruitred', sub=1) for dx, dy in ((-.13, -.07), (.1, -.06), (-.02, .09))]
+        elif g == 'cabbage': p += [ball('cabbage', .2, x, .3, 1.12, 'leafl', sub=1, sc=(1, 1, .85)), ball('heart', .12, x, .3, 1.2, 'wgreenl', sub=1)]
+        elif g == 'fish': p += [cl('plate', .26, .03, x, .3, .96, 'white', verts=10), ball('fish', .2, x, .3, 1.04, 'sky', sub=1, sc=(1.5, .5, .5)), ball('tailfin', .1, x + .3, .3, 1.05, 'glassd', sub=0, sc=(.6, .3, 1))]
+    p += [bx('crate', .6, .5, .4, 1.75, .45, 0, 'woodl', bev=.02), ball('gourd', .22, 1.75, .45, .56, 'pumpkinl', sub=1, sc=(1, 1, .8)), ball('tuft', .16, -1.6, .5, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('fair_stall', fair_stall('red', ('pumpkin', 'apples', 'loaf', 'jar')), decor)
+piece('fair_stall_b', fair_stall('sky', ('fish', 'cabbage', 'jar', 'pumpkin')), decor)
+
+def judging_table():
+    """The judging table: a long table under a white cloth with a gold runner, the three classes laid out on it (a
+    pumpkin, a loaf on its board, a fish on a plate), a gold cup, and three rosettes pinned along the front. 3.2 x 1 m."""
+    p = [bx('leg', .08, .08, .8, sx * 1.45, sy * .38, 0, 'woodd', bev=0.) for sx in (-1, 1) for sy in (-1, 1)]
+    p += [bx('cloth', 3.2, 1.0, .08, 0, 0, .8, 'white', bev=.02), bx('drape', 3.2, .04, .62, 0, .5, .2, 'white', bev=0.), bx('runner', 3.2, .3, .02, 0, 0, .88, 'gold', bev=0.),
+          bx('drapes', .04, 1.0, .5, -1.6, 0, .32, 'stonel', bev=0.), bx('drapes', .04, 1.0, .5, 1.6, 0, .32, 'stonel', bev=0.)]
+    p += [ball('pumpkin', .3, -1.0, 0, 1.12, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .035, .12, -1.0, 0, 1.32, 'stem', verts=5), ball('pumpkin2', .18, -.55, .2, 1.03, 'pumpkinl', sub=1, sc=(1, 1, .8)),
+          bx('board', .62, .4, .04, 0, 0, .9, 'wood', bev=0.), ball('loaf', .24, 0, 0, 1.06, 'bread', sub=1, sc=(1.25, .8, .6)), ball('bun', .12, .02, .3, .98, 'breadl', sub=1, sc=(1, 1, .7)),
+          cl('plate', .34, .03, .95, 0, .9, 'white', verts=12), ball('fish', .26, .95, 0, 1.0, 'sky', sub=1, sc=(1.5, .5, .5)), ball('tailfin', .13, 1.34, 0, 1.01, 'glassd', sub=0, sc=(.6, .3, 1)),
+          cl('cupfoot', .1, .05, 1.42, .3, .9, 'gold', verts=8), cl('cupstem', .03, .14, 1.42, .3, .95, 'gold', verts=6), cl('cup', .13, .2, 1.42, .3, 1.09, 'gold', verts=8, rt=.09)]
+    for x, mt, tails in ((-1.0, 'gold', 'red'), (0, 'stonel', 'sky'), (1.0, 'copper', 'leaf')): p += rosette(x, .54, .56, mt, tails)
+    return p
+piece('judging_table', judging_table(), decor)
+
+def ribbon_board():
+    """The fair's ribbon board (chapter 18): two posts, a white board under a little red roof with a gold header, three big
+    rosettes (gold, silver, bronze) with their tails, pennants along the eave and a prize pumpkin at its foot. One cell;
+    faces the front."""
+    p = [bx('post', .12, .12, 2.1, -.82, 0, 0, 'woodd', bev=0.), bx('post', .12, .12, 2.1, .82, 0, 0, 'woodd', bev=0.),
+         bx('board', 1.56, .08, 1.14, 0, .02, .78, 'white', bev=.02), bx('header', 1.56, .1, .2, 0, .03, 1.74, 'gold', bev=0.), bx('rail', 1.76, .1, .08, 0, .02, .72, 'wood', bev=0.),
+         gable('roof', 1.78, .52, .34, 0, 0, 2.1, 'red', over=.1, bev=0.), bx('eave', 1.94, .06, .06, 0, .33, 2.07, 'redd', bev=0.)]
+    for x, mt, tails in ((-.48, 'gold', 'red'), (0, 'stonel', 'sky'), (.48, 'copper', 'leaf')): p += rosette(x, .1, 1.42, mt, tails, r=.2)
+    for i, mt in enumerate(('sun', 'sky', 'pink', 'mint', 'violet')):
+        p.append(extrude_outline('pennant', [(-.11, 0), (.11, 0), (0, -.26)], .02, (-.62 + i * .31, -.37, 2.06), C[mt], bev=0.))
+    p += [ball('pumpkin', .26, .98, .42, .2, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .03, .1, .98, .42, .4, 'stem', verts=5), ball('tuft', .16, -.95, .2, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('ribbon_board', ribbon_board(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

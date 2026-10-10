@@ -4,9 +4,10 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, PLAZA, inVillage, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
+import { fairOf } from '../core/fair.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
@@ -19,7 +20,18 @@ import { TRUCK } from '../content/economy.mjs';
 import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 
 const RIM_CHUNK = 16;
-const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:)/;   // batch ids land-view owns (removed by sync)
+// The valley fair (chapter 18): where its stalls and the visitors' carts stand while it runs, outside the ring of grass
+// the crowd gathers on. x, z: the middle in cells; cells: what must be free grass for it to stand there.
+const FAIR_SPOTS = (() => {
+  const P = PLAZA, out = [];
+  for (const [i, z] of [P.z0 + 1, P.z0 + 4].entries()) {   // west of the square, facing it; east of it, facing the usual view
+    out.push({ model: i ? 'fair_stall_b' : 'fair_stall', x: P.x0 - 2.5, z: z + 1, rot: Math.PI / 2, cells: [[P.x0 - 3, z], [P.x0 - 3, z + 1]] });
+    out.push({ model: i ? 'fair_stall' : 'fair_stall_b', x: P.x1 + 4.5, z: z + 0.5, rot: 0, cells: [[P.x1 + 3, z], [P.x1 + 4, z], [P.x1 + 5, z]] });
+  }
+  for (const [i, z] of [P.z0, P.z0 + 3, P.z0 + 6].entries()) out.push({ model: 'fair_cart', x: P.x0 - 4.5, z: z + 0.5, rot: Math.PI / 2 + (i - 1) * 0.3, cells: [[P.x0 - 5, z]] });   // a cart from each valley
+  return out;
+})();
+const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
@@ -318,6 +330,23 @@ export class LandView {
     for (let i = 0; i < N / 2; i++) { const id = `quay:t${i}`; if (paved && b.has(rail)) b.set(id, { model: rail, x: (i * 2 + 1) * CELL, z: (TRACK.z + 0.5) * CELL, rot: 0 }); else b.remove(id); }
     this.world.onLampsChanged?.();
   }
+  /** Chapter 18's fixtures: the ribbon board at the square's west edge from the day the valley company is founded; and
+   *  while a fair runs, stalls and visitors' carts on the grass round the square (only where nothing is built or
+   *  paved) and the judging table on the square. Redrawn only when one of those changes. */
+  drawFair() {
+    const s = this.s, b = this.world.batches, board = !!s.valley?.founded, on = board && fairOf(s, this.game.now).active;
+    const free = cells => cells.every(([x, z]) => inVillage(x, z) && !occupant(s, x, z) && cellType(s, x, z) === 'grass');
+    const open = on ? FAIR_SPOTS.map(spot => free(spot.cells)) : [];
+    const key = [board, on, open.join(), ...['ribbon_board', 'fair_stall', 'fair_stall_b', 'judging_table', 'fair_cart'].map(m => b.has(m))].join('|');
+    if (key === this.fairKey) return; const first = this.fairKey == null || !on; this.fairKey = key;
+    if (board && b.has('ribbon_board')) b.set('fair:board', { model: 'ribbon_board', x: (FAIR_BOARD.x + 0.5) * CELL, z: (FAIR_BOARD.z + 0.5) * CELL, rot: FAIR_BOARD.rot * Math.PI / 2 }); else b.remove('fair:board');
+    FAIR_SPOTS.forEach((spot, i) => {
+      const id = `fair:${i}`; if (!on || !open[i] || !b.has(spot.model)) { b.remove(id); return; }
+      const isNew = !b.items.has(id); b.set(id, { model: spot.model, x: spot.x * CELL, z: spot.z * CELL, rot: spot.rot });
+      if (isNew && !first) b.pulse(id, { from: 0.3, to: 1.1, ms: 480 });   // the stalls go up as the fair opens
+    });
+    if (on && b.has('judging_table')) b.set('fair:table', { model: 'judging_table', x: (FAIR_TABLE.x + 1) * CELL, z: (FAIR_TABLE.z + 0.5) * CELL, rot: 0 }); else b.remove('fair:table');
+  }
   /** Chapter 12's fixtures: the co-operative's notice board on the square from the day the idea comes, and the towpath's
    *  gate on the far bank, shut until the chapter is seen and open after. Redrawn only when one of those changes. */
   drawCooperative() {
@@ -422,7 +451,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside();
+      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair();
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -462,7 +491,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside(); this.fairKey = null; this.drawFair();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }
@@ -476,6 +505,7 @@ export class LandView {
       else if (e.type === 'albrightAnswered' || e.type === 'canneryGreened') this.drawMeadow();
       else if (e.type === 'bridgeOpened' || e.type === 'valleyFounded') this.drawCooperative();
       else if (e.type === 'quayPaved') this.drawRiverside();
+      else if (e.type === 'fairHeld' || e.type === 'fairEnded' || e.type === 'valleyFounded') this.drawFair();
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded' || e.type === 'hotelUpgraded') this.drawPlaced(e.id);
