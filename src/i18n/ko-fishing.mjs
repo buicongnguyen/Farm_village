@@ -143,10 +143,8 @@ export const KO_FISHING = {
   'Unknown chapter': '없는 챕터예요',
   'This farm is already there': '이 농장은 이미 거기까지 왔어요',
   'The square holds market days from level {level}': '레벨 {level}부터 시장 광장에 장날이 열려요',
-  'Market day! {good} pays double': '장날이에요! {good} 값이 두 배',
   'Sold on market day: double coins!': '장날에 팔았어요: 코인이 두 배!',
   'Market day': '장날',
-  '{good} pays double': '{good} 값 두 배',
   'Next market day in {time}': '다음 장날까지 {time}',
   'Start a market day': '장날 바로 열기',
   'Boat dock on the brook': '개울가 나루터',
@@ -196,5 +194,6 @@ export const KO_FISHING = {
   'South field: close to the village street': '남쪽 밭: 마을 길 바로 옆',
   'Open field: room for anything': '빈 밭: 무엇이든 할 수 있어요',
   'The brook, upriver.': '상류 쪽 개울.',
-  '{good} will pay double': '{good} 값이 두 배가 돼요',
+  'Market day! Double coins for {good}': '장날이에요! {good} 값이 두 배',
+  'Double coins for {good}': '{good} 값 두 배',
 };

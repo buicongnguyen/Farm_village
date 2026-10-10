@@ -26,7 +26,7 @@ import { levelOf, isRepairing, repairCost, kindOf } from '../core/condition.mjs'
 import { thingName, condLabel } from './repair-ui.mjs';
 import { HOUSE, REPAIR } from '../content/economy.mjs';
 import { hurryLeft, hurryable } from '../core/quests.mjs';
-import { roadSegmentAt } from '../content/world.mjs';
+import { roadSegmentAt, parcelNote } from '../content/world.mjs';
 import { explorationStatus } from '../core/exploration.mjs';
 import { learningStatus } from '../core/learning.mjs';
 

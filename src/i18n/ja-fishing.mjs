@@ -143,10 +143,8 @@ export const JA_FISHING = {
   'Unknown chapter': 'その章はありません',
   'This farm is already there': 'この農場はもうそこまで進んでいます',
   'The square holds market days from level {level}': 'レベル{level}から市場広場で市の日がひらかれます',
-  'Market day! {good} pays double': '市の日です！{good}が2倍の値段で売れます',
   'Sold on market day: double coins!': '市の日に売りました：コインが2倍！',
   'Market day': '市の日',
-  '{good} pays double': '{good}が2倍',
   'Next market day in {time}': '次の市の日まで{time}',
   'Start a market day': '市の日をすぐ始める',
   'Boat dock on the brook': '小川の船着き場',
@@ -196,5 +194,6 @@ export const JA_FISHING = {
   'South field: close to the village street': '南の畑：村の通りのすぐそば',
   'Open field: room for anything': 'ひらけた畑：何にでも使えます',
   'The brook, upriver.': '川上の小川。',
-  '{good} will pay double': '{good}が2倍になります',
+  'Market day! Double coins for {good}': '市の日です！{good}が2倍の値段で売れます',
+  'Double coins for {good}': '{good}が2倍',
 };

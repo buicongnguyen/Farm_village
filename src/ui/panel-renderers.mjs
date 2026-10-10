@@ -16,8 +16,8 @@ import { truckOf, trucksOf, loadUnits, capacity, roomIn, truckCoins, nextTruck, 
 import { marketDayOf } from '../core/market-day.mjs';
 /** Market day in one line, for the barn and the market square: the good of the day and the time left, or when the next one is. */
 const marketDayLine = (day, now) => !day.open || !day.good ? '' : day.active
-  ? `<p class="market-day on">${goodIcon(day.good, 'mini')}<span><b>${t('Market day')}</b> · ${t('{good} pays double', { good: t(GOODS[day.good].name) })}</span><small>${glyph('clock', 'g')} ${shortTime(Math.max(0, day.endsAt - now))}</small></p>`
-  : `<p class="market-day">${day.nextGood ? goodIcon(day.nextGood, 'mini') : iconHtml('market', '', 'mini')}<span>${t('Next market day in {time}', { time: shortTime(Math.max(0, day.nextAt - now)) })}${day.nextGood ? ` · ${t('{good} will pay double', { good: t(GOODS[day.nextGood].name) })}` : ''}</span></p>`;
+  ? `<p class="market-day on">${goodIcon(day.good, 'mini')}<span><b>${t('Market day')}</b> · ${t('Double coins for {good}', { good: t(GOODS[day.good].name) })}</span><small>${glyph('clock', 'g')} ${shortTime(Math.max(0, day.endsAt - now))}</small></p>`
+  : `<p class="market-day">${day.nextGood ? goodIcon(day.nextGood, 'mini') : iconHtml('market', '', 'mini')}<span>${t('Next market day in {time}', { time: shortTime(Math.max(0, day.nextAt - now)) })}${day.nextGood ? ` · ${t('Double coins for {good}', { good: t(GOODS[day.nextGood].name) })}` : ''}</span></p>`;
 import { renderToday, renderProjects, renderCottage } from './village-panels.mjs';
 import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';

@@ -143,10 +143,8 @@ export const VI_FISHING = {
   'Unknown chapter': 'Không có chương này',
   'This farm is already there': 'Nông trại này đã tới đó rồi',
   'The square holds market days from level {level}': 'Chợ làng họp phiên chợ từ cấp {level}',
-  'Market day! {good} pays double': 'Phiên chợ! {good} bán được giá gấp đôi',
   'Sold on market day: double coins!': 'Bán đúng phiên chợ: tiền gấp đôi!',
   'Market day': 'Phiên chợ',
-  '{good} pays double': '{good} giá gấp đôi',
   'Next market day in {time}': 'Phiên chợ tới sau {time}',
   'Start a market day': 'Mở phiên chợ ngay',
   'Boat dock on the brook': 'Bến thuyền bên suối',
@@ -196,5 +194,6 @@ export const VI_FISHING = {
   'South field: close to the village street': 'Ruộng phía nam: sát đường làng',
   'Open field: room for anything': 'Ruộng trống: làm gì cũng được',
   'The brook, upriver.': 'Con suối, phía thượng nguồn.',
-  '{good} will pay double': '{good} sẽ được giá gấp đôi',
+  'Market day! Double coins for {good}': 'Phiên chợ! {good} bán được giá gấp đôi',
+  'Double coins for {good}': 'Giá gấp đôi cho {good}',
 };

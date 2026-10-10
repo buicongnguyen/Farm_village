@@ -20,7 +20,7 @@ To test quickly, open the game with `?tester`: Settings → Test has **Start a m
 - The timetable has a `shift` (`s.marketDay.shift`), so the first market day starts when the square opens and the
   tester's button can start the next one. The good is stamped when its day begins, so it cannot change mid-day.
 - **The next good is promised a day ahead** (`s.marketDay.next`, shown in the barn and the market panel as "Next
-  market day in 5:12 · Pumpkin will pay double"), so the player can grow or make it in time. It differs from today's
+  market day in 5:12 · Double coins for Pumpkin"), so the player can grow or make it in time. It differs from today's
   when the farm makes more than one thing, and is replaced if the farm can no longer make it.
 - A truck sent by the hired driver earns the bonus, but only the player's own sale or send counts as the deed.
 - The good of the day comes from `orderable(s)` (the order board's own test of what a farm can make), without fish,

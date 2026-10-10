@@ -36,8 +36,8 @@ const PANELS = {
   'ch5-1': { hour: 18.6, scene: school, look: [63, 107, 20] },
   'ch5-2': { hour: 12, scene: school + cottage('st_c3', 66, 93, 'reyes'), look: [67, 94, 16] },
   'ch5-3': { hour: 19.3, scene: school + cottage('st_c1', 36, 93, 'tran') + cottage('st_c2', 41, 93, 'okafor'), look: [58, 104, 56] },
-  'ch6-1': { hour: 10.5, scene: marketDay + cottage('st_c3', 66, 93, 'reyes'), look: [77, 95, 30] },
-  'ch6-2': { hour: 9, scene: marketDay, wait: 6000, follow: 'hugo', look: [77, 93, 13] },
+  'ch6-1': { hour: 17.4, scene: marketDay + cottage('st_c3', 66, 93, 'reyes') + cottage('st_c4', 70, 93, 'lindqvist'), look: [73, 95, 38] },
+  'ch6-2': { hour: 9, scene: marketDay, wait: 6000, follow: 'hugo', look: [77, 93, 9] },
   'ch6-3': { hour: 18.7, look: [30, 13, 30] },
 };
 const missing = CHAPTERS.flatMap(c => c.panels.map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
