@@ -35,7 +35,8 @@ import { landDiscoverySite } from './core/land-discovery.mjs';
 import { EXPLORATION_SITES } from './content/exploration-sites.mjs';
 import { t, languageReady, getLanguage, setLanguage, onLanguageChange, LANGUAGES } from './kit/i18n.mjs';
 import { sfx, unlockAudio, setVolumes } from './kit/sound.mjs';
-import { RUINS, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
+import { RUINS, SITES, START_PARCEL, parcelOrigin, CELL, POND_DOCK, ROAD_SEGMENTS } from './content/world.mjs';
+import { fishable } from './core/pond-bank.mjs';
 import { BUILDINGS, footprint } from './content/buildings.mjs';
 import { levelOf } from './core/working.mjs';
 import { RECIPES } from './content/goods.mjs';
@@ -127,6 +128,7 @@ build = new BuildView(app, { game, world, ghost, hud });
 panels = new Panels(app, game, hud, {
   // the projects panel's "Build" opens build mode with the ghost on the ruin it replaces
   onBuild: kind => {
+    if (BUILDINGS[kind]?.site) { panels.onSite(kind); return; }   // it has one place: its own panel builds it there
     const r = RUINS.find(x => x.kind === kind);
     if (!r) { build.start(kind); return; }
     flyTo((r.x + 2) * CELL, (r.z + 2) * CELL, Math.min(world.cam.span, 60));
@@ -230,6 +232,16 @@ panels.onShopVisit = shop => {
   flyTo(site.x * CELL, site.z * CELL, Math.min(world.cam.span, 38));
   panels.show('shops', shop);
 };
+// A fixed site (core/sites.mjs): look at it and open its panel; the panel's button builds it where it belongs.
+const siteView = kind => { const st = SITES.find(x => x.kind === kind), [w, d] = BUILDINGS[kind].size; flyTo((st.x + w / 2) * CELL, (st.z + d / 2 - 1.5) * CELL, Math.min(world.cam.span, 34)); };
+panels.onSite = kind => {
+  if (!SITES.some(x => x.kind === kind) || !BUILDINGS[kind]?.site) return;
+  if (build.open) build.close(); radial.hide(); siteView(kind); panels.show('site', kind);
+};
+panels.onSiteBuild = kind => {
+  if (!game.do('buildSite', { kind }).ok) return;   // the HUD says why; the panel stays open
+  panels.close(); radial.hide(); siteView(kind);
+};
 panels.onGrowthSite = kind => {
   const site = RUINS.find(r => r.kind === kind); if (!site || !BUILDINGS[kind]?.civicSite) return;
   if (build.open) build.close(); radial.hide();
@@ -311,8 +323,8 @@ panels.fishingWalk = () => { const player = people.walkers.get('you'); return !!
 panels.onFishCast = bait => {
   if (panels.fishingWalk()) return;
   const player = people.walkers.get('you'), id = panels.open?.arg, pond = id && game.s.placed[id];
-  if (id != null && pond?.kind !== 'pond') { hud.toast(t('This fishing spot is no longer here.'), 'info'); return; }
-  if (!player || !people.sendFishing(player, pond?.kind === 'pond' ? pond : null, { bait })) {
+  if (id != null && !fishable(pond)) { hud.toast(t('This fishing spot is no longer here.'), 'info'); return; }
+  if (!player || !people.sendFishing(player, fishable(pond) ? pond : null, { bait })) {
     hud.toast(t('The fishing spots are busy. Try again in a moment.'), 'info'); return;
   }
   hud.toast(t('Walking to the fishing spot.'), 'info'); panels.close();   // watch the cast; the Reel button takes over at the water

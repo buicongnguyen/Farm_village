@@ -1,7 +1,7 @@
 // Fishing from the bank on foot (Explore), after Willowmere and Zoo Garden: walk anywhere round a pond, the rod comes
 // out near the water, a tap on the water is where the float lands, and the catch lies on the grass beside you until you
 // walk off. Pure geometry in metres; the views (view/fishing-view.mjs, ui/explore-mode.mjs) draw and drive it.
-import { CELL, POND_WATER } from '../content/world.mjs';
+import { CELL, POND_WATER, brookCurve } from '../content/world.mjs';
 
 export const BANK = Object.freeze({
   reach: 3,        // the rod comes out this close to the water...
@@ -14,10 +14,24 @@ export const BANK = Object.freeze({
   pile: 12,        // fish shown on the grass at once
 });
 
-/** Every pond as an ellipse: the village pond (id null), then built ponds by their placed id. */
+/** Can you fish at this placed thing? A fish pond, or the boat dock on the brook (chapter 7). */
+export const fishable = p => p?.kind === 'pond' || p?.kind === 'dock';
+/** The water of a placed pond or dock as an ellipse in metres ({ x, z, rx, rz, surface, river? }), or null. The dock's
+ *  water is the stretch of brook in front of it: `river` fish (core/fishing.mjs) bite there. */
+export function waterOf(p) {
+  if (p?.kind === 'pond') return { x: (p.x + 2) * CELL - 0.3, z: (p.z + 2) * CELL, rx: 2.0, rz: 2.0, surface: 0.24 };
+  if (p?.kind === 'dock') return { x: (p.x + 1) * CELL, z: (brookCurve(p.x + 1) + 0.5) * CELL, rx: 4.6, rz: 3.2, surface: 0.05, river: true };
+  return null;
+}
+/** Where to stand to fish at a placed pond or dock, and which way to look: { spots: [[cx, cz]...], face: [cx, cz] } in cells. */
+export function seatsOf(p) {
+  if (p?.kind === 'dock') return { spots: [[p.x, p.z], [p.x + 1, p.z]], face: [p.x + 0.5, p.z - 3] };   // on the deck, looking out over the brook
+  return { spots: [[p.x + 4, p.z + 2], [p.x + 2, p.z + 4], [p.x - 1, p.z + 2], [p.x + 2, p.z - 1]], face: [p.x + 1.5, p.z + 1.5] };
+}
+/** Every pond as an ellipse: the village pond (id null), then built ponds and the dock by their placed id. */
 export function pondsOf(s) {
   const out = [{ id: null, x: POND_WATER.x, z: POND_WATER.z, rx: POND_WATER.rx, rz: POND_WATER.rz, surface: 0.06 }];
-  for (const [id, p] of Object.entries(s.placed ?? {})) if (p.kind === 'pond') out.push({ id, x: (p.x + 2) * CELL - 0.3, z: (p.z + 2) * CELL, rx: 2.0, rz: 2.0, surface: 0.24 });
+  for (const [id, p] of Object.entries(s.placed ?? {})) { const w = waterOf(p); if (w) out.push({ id, ...w }); }
   return out;
 }
 const norm = (pond, x, z) => Math.hypot((x - pond.x) / pond.rx, (z - pond.z) / pond.rz);

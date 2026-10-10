@@ -31,7 +31,7 @@ the same files. Anything the owner reports while testing goes to the top of "Ope
 | 10 | The piano has no stool; the chili icon reads as beads | `art/blender/build_farm_kit.py`, `build_items.py` | Stool beside the piano on the wall side; smooth chili pods |
 | 11 | Three browser checks fail now and then under load (restore: farmhouse repair; juice: coins pour; cast: chapter card timing) | `tests/*.browser.mjs` | Remove the timing dependence in each; until then rerun once |
 | 12 | The reserved-lot message says "stands here" even on a cleared lot | `src/core/grid.mjs` | Two messages: one for a standing ruin, one for a kept lot |
-| 13 | The first-load size limit was raised to 1,150,000 bytes without trimming | `scripts/build.mjs` | In the release pass: move `content/hearts.mjs` text and `ui/build-view.mjs` behind `import()`, then lower the limit again |
+| 13 | The first-load size limit was raised to 1,150,000 bytes (PR #64) and to 1,250,000 (chapter 7) without trimming: 628 KB is three.js, and each chapter adds 5 to 9 KB of rules and story text. The 4G loading check (3.5 s) is the real guard | `scripts/build.mjs` | In the release pass: move `content/hearts.mjs` text and `ui/build-view.mjs` behind `import()`, then lower the limit again |
 | 14 | In the English edition the family portraits (2D faces) still show the original hair | `public/assets/icons/` portraits, `src/ui/icon.mjs` | Render a second portrait set from the tinted rigs, or tint the portraits with CSS filters per edition |
 
 ## How to report a new one

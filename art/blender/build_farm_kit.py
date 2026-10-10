@@ -843,6 +843,54 @@ def fountain():
     return p
 piece('fountain', fountain(), decor)
 
+def dock():
+    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 3.8 m out over the
+    brook toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
+    coil and a fish crate. Stands on y = 0; the water is just above it (0.05)."""
+    p = []
+    for i in range(9):   # the deck on the bank
+        y = -1.8 + i * .45
+        p.append(bx('plank', 3.7, .41, .1, 0, y, .32, 'woodl' if i % 3 else 'wood', bev=0.))
+    for x in (-1.5, 1.5):
+        p.append(bx('beam', .2, 3.9, .22, x, 0, .1, 'woodd', bev=0.))
+    for x in (-1.7, 1.7):
+        for y in (-1.8, 1.8):
+            p.append(bx('foot', .26, .26, .34, x, y, 0, 'woodd', bev=0.))
+    for i in range(9):   # the pier over the water
+        y = -2.25 - i * .42
+        p.append(bx('plank', 2.1, .38, .1, 0, y, .32, 'wood' if i % 3 else 'woodl', bev=0.))
+    for x in (-.9, .9):
+        p.append(bx('beam', .18, 3.9, .2, x, -3.9, .12, 'woodd', bev=0.))
+        for y in (-2.6, -4.2, -5.7):
+            p.append(cl('pile', .13, 1.55, x * 1.2, y, -.9, 'wooddd', verts=7))
+    for x in (-1.08, 1.08):   # mooring posts at the end, a rope between them
+        p.append(cl('post', .11, .62, x, -5.7, .6, 'woodd', verts=7))
+        p.append(ball('cap', .13, x, -5.7, 1.26, 'wood', sub=1))
+    p.append(st((-1.08, -5.7, 1.0), (1.08, -5.7, 1.0), .035, 'rope', sides=4, rt=.035))
+    # the rowing boat, moored at the pier's right side
+    bx0, by0 = 2.05, -4.0
+    hull = lathe('hull', [(0, 0), (.7, .04), (1.0, .34), (1.0, .44), (.9, .44), (.86, .14), (0, .1)], (bx0, -by0, -.08), C['teal'], segments=14, smooth_angle=40)
+    hull.scale = (.6, 1.45, 1)
+    p.append(hull)
+    p.append(bx('thwart', 1.02, .24, .06, bx0, by0 - .55, .2, 'woodl', bev=0.))
+    p.append(bx('thwart', 1.02, .24, .06, bx0, by0 + .5, .2, 'woodl', bev=0.))
+    p.append(st((bx0 - .25, by0 - 1.0, .3), (bx0 + .3, by0 + 1.0, .42), .03, 'wood', sides=4, rt=.03))
+    p.append(bx('blade', .16, .4, .04, bx0 + .33, by0 + 1.12, .4, 'woodl', bev=0.))
+    p.append(st((1.08, -5.7, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
+    # on the deck: a lantern post, a rope coil, a crate with the catch, a rod against the rail
+    p.append(cl('lamppost', .07, 2.0, -1.6, 1.6, .42, 'iron', verts=6))
+    p.append(bx('arm', .5, .07, .07, -1.36, 1.6, 2.36, 'iron', bev=0.))
+    p.append(bx('lantern', .22, .22, .3, -1.14, 1.6, 2.0, 'lampglow', bev=.02))
+    p.append(bx('lcap', .3, .3, .06, -1.14, 1.6, 2.3, 'iron', bev=0.))
+    for i in range(3):
+        p.append(cl('coil', .27 - i * .03, .07, 1.3, 1.3, .42 + i * .07, 'rope', verts=10))
+    p.append(bx('crate', .62, .5, .4, -1.15, -.9, .42, 'woodl', bev=.02))
+    p.append(ball('fish', .13, -1.22, -.9, .88, 'sky', sub=1, sc=(1.7, .7, .5)))
+    p.append(ball('fish', .11, -1.0, -.78, .9, 'glass', sub=1, sc=(1.6, .7, .5)))
+    p.append(st((1.6, -1.5, .42), (1.78, -1.1, 2.1), .025, 'woodd', sides=4, rt=.015))
+    return p
+piece('dock', dock(), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

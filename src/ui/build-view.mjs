@@ -73,7 +73,7 @@ export class BuildView {
   }
   render() {
     const s = this.game.s, cats = CATEGORIES.map(c => `<button data-cat="${c.id}" class="tab${c.id === this.cat ? ' on' : ''}">${t(c.name)}</button>`).join('');
-    const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat).map(([kind, d]) => {
+    const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat && !d.site).map(([kind, d]) => {
       const may = mayBuild(s, kind), level = s.level < d.level, price = placementPrice(s, kind), stored = d.edge ? 0 : s.stored?.[kind] ?? 0;
       const locked = level || !may.ok;
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');

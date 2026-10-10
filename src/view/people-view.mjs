@@ -9,6 +9,7 @@
 import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK, POND_FISHING_SPOTS } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
+import { fishable, seatsOf } from '../core/pond-bank.mjs';
 import { conversationLine, pipReactionLines } from '../core/conversation.mjs';
 import { commentFor } from '../core/neighbours.mjs';
 import { adviceCards, adviceOf } from '../core/advice.mjs';
@@ -23,7 +24,7 @@ import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
-const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel']), GIRLS = new Set(['zara', 'pia']);
+const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
@@ -38,6 +39,7 @@ const HAIR = ['#2a1a12', '#5a3218', '#a8642c', '#1a1a22', '#7a3b1c', '#d9a548'];
 const OUTFITS = {
   you: { top: '#e63946', bottom: '#2f5aa8', hair: '#2a1a12' }, june: { top: '#ff6f4f', bottom: '#2f5aa8', hair: '#8a3a1c' }, pip: { top: '#ffc83d', bottom: '#3f8f4a', hair: '#5a3218' },
   ada: { top: '#7f5bd6', bottom: '#fff4e2', hair: '#d6d0c6' }, cora: { top: '#2bb3a6', bottom: '#3a3a4a', hair: '#1a1a22' },
+  pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
@@ -95,6 +97,9 @@ export class PeopleView {
     if (school) { const p = school[1]; out.push({ id: 'cora', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     const clinic = Object.entries(s.placed).find(([, p]) => p.kind === 'clinic');
     if (clinic) { const p = clinic[1]; out.push({ id: 'hazel', body: 'hana', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
+    // the constable keeps the police post (chapter 7)
+    const police = Object.entries(s.placed).find(([, p]) => p.kind === 'police');
+    if (police && hasArrived(s, villager('pearl'))) { const p = police[1]; out.push({ id: 'pearl', body: 'woman', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
     // the baker keeps a stall at the market square from the first market day on (chapter 6)
     const market = Object.entries(s.placed).find(([, p]) => p.kind === 'market');
     if (market && hasArrived(s, villager('hugo'))) { const p = market[1]; out.push({ id: 'hugo', body: 'man', home: doorCell(p.kind, p.x, p.z, p.rot), work: true }); }
@@ -111,7 +116,7 @@ export class PeopleView {
     if (this.restoreFishingPending !== false && you && !you.indoors && !isNight(this.s, this.game.now)) {
       this.restoreFishingPending = false;
       const line = this.s.fishing?.line, pond = this.s.placed[line?.pond];
-      if (line) this.sendFishing(you, pond?.kind === 'pond' ? pond : null, { cast: false });
+      if (line) this.sendFishing(you, fishable(pond) ? pond : null, { cast: false });
     }
   }
   add(w) {
@@ -156,7 +161,8 @@ export class PeopleView {
   releaseFishing(w) { w.fishSpot = null; w.fishFace = null; w.fishPond = null; }
   /** Choose and reserve one reachable shore before anyone starts walking; reservations live only in the view. */
   fishingRoute(w, pond) {
-    let spots = pond ? [[pond.x + 4, pond.z + 2], [pond.x + 2, pond.z + 4], [pond.x - 1, pond.z + 2], [pond.x + 2, pond.z - 1]] : POND_FISHING_SPOTS;
+    const seats = pond ? seatsOf(pond) : null;   // round a built pond, or on the boat dock's deck
+    let spots = pond ? seats.spots : POND_FISHING_SPOTS;
     if (!pond) spots = w.player ? spots.slice(0, 1) : spots.slice(1);   // the player's line has its own centre place
     for (const spot of spots) {
       const occupied = [...this.walkers.values()].some(other => other !== w && !other.indoors &&
@@ -164,7 +170,7 @@ export class PeopleView {
           || Math.hypot(other.x - (spot[0] + .5) * CELL, other.z - (spot[1] + .5) * CELL) < 1.5));
       if (occupied) continue;
       const route = this.route(this.cellOf(w), spot, true, w); if (!route.length) continue;
-      w.fishSpot = [...spot]; w.fishFace = pond ? [pond.x + 1.5, pond.z + 1.5] : [POND_DOCK.x - 3, spot[1]];
+      w.fishSpot = [...spot]; w.fishFace = pond ? seats.face : [POND_DOCK.x - 3, spot[1]];
       w.fishPond = pond ? [Object.keys(this.s.placed).find(id => this.s.placed[id] === pond), pond.x, pond.z] : null;
       return route;
     }
@@ -256,7 +262,7 @@ export class PeopleView {
   checkPond(w) {
     if (!w.fishPond) return true;
     const [id, x, z] = w.fishPond, p = this.s.placed[id];
-    if (p?.kind === 'pond' && p.x === x && p.z === z) return true;
+    if (fishable(p) && p.x === x && p.z === z) return true;
     this.cancelTrip(w); return false;
   }
   /** Follow legal cells; replan if the player changes a building or fence during the walk. */
@@ -340,7 +346,7 @@ export class PeopleView {
   sendFishing(w, pond, { bait = false, cast = true } = {}) {
     if (!w || w.pet || w.indoors) return false;
     if (w.player && this.s.fishing?.line) {
-      const saved = this.s.placed[this.s.fishing.line.pond]; pond = saved?.kind === 'pond' ? saved : null;
+      const saved = this.s.placed[this.s.fishing.line.pond]; pond = fishable(saved) ? saved : null;
     }
     this.cancelTrip(w);
     const route = this.fishingRoute(w, pond);

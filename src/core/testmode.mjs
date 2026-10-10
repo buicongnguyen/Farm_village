@@ -13,6 +13,7 @@ import { RUINS, START_PARCEL, parcelOrigin } from '../content/world.mjs';
 import { CHAPTERS, BEATS } from '../content/story.mjs';
 import { actions as build, buyableParcels } from './build.mjs';
 import { marketOpen, tickMarketDay } from './market-day.mjs';
+import { actions as sites } from './sites.mjs';
 import { actions as animals } from './animals.mjs';
 import { advance } from './projects.mjs';
 import { tickCondition } from './condition.mjs';
@@ -77,6 +78,8 @@ export const JUMPS = {
   5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
   6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
   // chapter 6 is behind: a market day sold on, and three fields
+  // chapter 7 is behind: the police post works and the boat dock stands
+  8: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.police.level); give(ctx, 'police'); upTo(ctx, BUILDINGS.dock.level); const coins = s.coins; s.coins += BUILDINGS.dock.cost; sites.buildSite(ctx, { kind: 'dock' }); s.coins = coins; },
   7: ctx => { const { s, now } = ctx; upTo(ctx, MARKET_DAY.level); give(ctx, 'market'); fields(ctx, 3); s.stats.marketDays = Math.max(1, s.stats.marketDays ?? 0); (s.firsts ??= {}).marketDay ??= now; },
 };
 /** The chapters a tester can jump to. */

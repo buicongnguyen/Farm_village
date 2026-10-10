@@ -53,4 +53,11 @@ export const LETTERS = [
     text: 'The brook sang all night, and I slept like a ship in harbour. Thank you, young farmer. — {person:olaf:display}' },
   { id: 'pia-1', reward: { decor: 'lamp' }, from: 'pia', when: { type: 'hearts', value: 3 },
     text: 'I counted the stars from my window. There were 100. Then I fell asleep. — {person:pia:display}' },
+  // Chapter 7: the constable reads the old reports. The water thread, one step at a time (no dates; nobody has a key).
+  { id: 'pearl-1', reward: { coins: 40 }, from: 'pearl', when: { type: 'count', key: 'police', value: 1 },
+    text: 'The post is open again. I have a great many old reports to read, in order. So far: four lost hens, one found, and a complaint about a goose. I will write when there is more. — {person:pearl:display}' },
+  { id: 'pearl-2', reward: { decor: 'street_lamp' }, from: 'pearl', after: ['pearl-1'], when: { type: 'count', key: 'police', value: 1 },
+    text: 'One summer fills a whole drawer. Low water in the brook. The miller complained every week, in capitals. Nobody wrote down why the water was low. I find that untidy. — {person:pearl:display}' },
+  { id: 'pearl-3', reward: { coins: 60 }, from: 'pearl', after: ['pearl-2'], when: { type: 'count', key: 'police', value: 1 },
+    text: 'Found it, filed under Gates. The sluice upriver was closed that summer, on the order of a flour company in the city. The year after, the mill wheel had no water and the mill shut. A river does not lock itself. — {person:pearl:display}' },
 ];

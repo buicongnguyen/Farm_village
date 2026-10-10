@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, HOME_GARDEN } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN } from '../content/world.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
@@ -244,6 +244,12 @@ export class LandView {
   /** A ruin stays until its building stands somewhere in the village; scaffolding marks the project being worked on. */
   drawRuins() {
     const s = this.s, b = this.world.batches, step = STEPS[s.projects?.step];
+    // a fixed site (the boat dock on the brook) shows a sign from a little before its level until it is built
+    for (const st of SITES) {
+      const def = BUILDINGS[st.kind], [w, d] = def.size, sign = `sitesign:${st.kind}`;
+      if (!(s.counts[st.kind] > 0) && s.level >= def.level - 2 && b.has('sale_sign')) b.set(sign, { model: 'sale_sign', x: (st.x + w / 2) * CELL, z: (st.z + d / 2) * CELL, rot: 0 });
+      else b.remove(sign);
+    }
     for (const r of RUINS) {
       const id = `ruin:${r.kind}`, built = (s.counts[r.kind] ?? 0) > 0 || !!s.village?.cleared?.[r.kind], [w, d] = r.kind === 'school' ? [5, 4] : [4, 3];   // rebuilt, or taken down
       const at = { x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 };
@@ -396,6 +402,7 @@ export class LandView {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
       else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') { this.drawPlaced(e.id); this.drawRuins(); }   // a rebuilt building takes its old ruin's place at once, whatever the current project is
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
+      else if (e.type === 'levelUp') this.drawRuins();   // a site's sign appears near its level
       else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);

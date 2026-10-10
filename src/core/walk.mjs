@@ -4,7 +4,7 @@
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -26,12 +26,12 @@ export function stepCost(s, x, z, blocked = null) {
   if (isBrook(x, z)) return x === STEPPING_STONES.x ? 2 : 0;
   if (isPondWater(x, z) || inFixed(x, z) || KIOSKS.has(`${x},${z}`)) return 0;
   const parcel = parcelOf(x, z);
-  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z))) return 0;
+  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z))) return 0;
   const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0) && !s.village?.cleared?.[ruin.kind]) return 0;   // an old ruin stands there
   if (homeGardenAt(s.house?.level ?? 1, x, z)) return 0;   // the pool, the gazebo and the rest of the farmhouse garden
   const type = cellType(s, x, z); if (type === 'rock' || type === 'weeds') return 0;
   const id = occupant(s, x, z), kind = id ? s.placed[id]?.kind : null;
-  if (kind === 'path' || (!kind && (type === 'path' || isPondPath(x, z)))) return 1;
+  if (kind === 'path' || kind === 'dock' || (!kind && (type === 'path' || isPondPath(x, z)))) return 1;   // the boat dock is a deck to stand on
   if (kind === 'bed') return 8;
   return kind ? 0 : 3;
 }

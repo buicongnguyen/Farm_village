@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 7: Safe streets — 2026-10-11
+
+- **The boat dock**: a deck and a pier on the brook, a few steps east of the road bridge, built from its own panel (level 10, 800 coins). Tap it to fish in the brook: the rare fish bite twice as often as at a pond. In Explore mode you can walk onto the deck and cast.
+- **Ponds water the beds**: a crop bed within three cells of a fish pond you built grows a fifth faster.
+- **Constable Sage** arrives with the rebuilt police post and writes three letters about the old reports: why the brook ran low the summer before the mill shut.
+- **Chapter 7** closes when the police post works and the dock stands. Three scenes follow their deeds. Roadmap: "Safe streets and work for all" is a real stage.
+
 ## Chapter 6: Market day — 2026-10-11
 
 - The market square holds a **market day** every ten minutes for four (testing pace). One good, the good of the day, pays double: sold from the barn, or sent on a truck while the day runs. The first one begins as soon as a farm has level 6 and a working square. The barn and the market panel say what the next market day will ask for, so there is time to get ready.

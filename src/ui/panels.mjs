@@ -102,6 +102,7 @@ export class Panels {
     else if (d.do === 'villageGrowth') this.show('villageGrowth');
     else if (d.do === 'growthSite') this.onGrowthSite?.(d.kind);
     else if (d.do === 'growthPath') this.onGrowthPath?.(d.kind);
+    else if (d.do === 'siteBuild') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else this.onSiteBuild?.(d.kind); }
     else if (d.do === 'growthBuild') { if (d.why) this.hud?.toast(t('Not yet: {why}', { why: d.why }), 'warn', { icon: 'lock' }); else this.onGrowthRebuild?.(d.kind); }
     else if (d.do === 'growthMemory') this.show('growthMemory', d.id);
     else if (d.do === 'growthMarket') this.show('market');

@@ -178,7 +178,7 @@ test('the checklist and the roadmap name the chapter', () => {
   for (const kind of ['goat_barn', 'dairy', 'fruit_stand', 'kennel']) { s.placed[`x_${kind}`] = { kind, x: 40, z: 60, rot: 0 }; s.counts[kind] = 1; }
   let j = journeyOf(s); assert.equal(j.stage.id, 'wakes'); assert.equal(j.total, 2); assert.equal(j.done, 0);
   s.stats.marketDays = 1; j = journeyOf(s); assert.equal(j.done, 1);
-  s.parcels.push('1,2', '0,1'); j = journeyOf(s); assert.equal(j.stage.id, 'streets'); assert.ok(j.stage.planned);
+  s.parcels.push('1,2', '0,1'); j = journeyOf(s); assert.equal(j.stage.id, 'streets', 'the stage after it');
   assert.equal(parcelNote('3,1'), 'East meadow: room for goats and a dairy'); assert.equal(parcelNote('1,0'), 'North field: nearest the brook');
   assert.equal(parcelNote('1,3'), 'South field: close to the village street'); assert.equal(parcelNote('1,1'), 'Open field: room for anything');
 });

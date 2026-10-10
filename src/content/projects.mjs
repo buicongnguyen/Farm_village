@@ -42,6 +42,9 @@ export const STEPS = [
     needs: { level: 8 }, site: 'noodle_factory', done: s => working(s, 'noodle_factory') >= 1, builds: [] },
   { id: 'police', name: 'A police post for a safe village', text: 'The village has grown. Build a police post, so someone keeps watch at night.',
     needs: { level: 12 }, site: 'police', done: s => (s.counts.police ?? 0) >= 1, builds: [] },
+  // chapter 7 (docs/plan/ch07-safe-streets.md)
+  { id: 'dock', name: 'A dock on the brook', text: '{person:olaf:short} has drawn a boat dock for the brook, by the bridge. Build it, and fish where the big ones are.',
+    needs: { level: 10 }, site: 'dock', done: s => (s.counts.dock ?? 0) >= 1, builds: [] },
   { id: 'company', name: 'The company office', text: 'Open a company office, where neighbours can take proper jobs.',
     needs: { level: 15 }, site: 'company', done: s => (s.counts.company ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',

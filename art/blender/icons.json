@@ -469,6 +469,24 @@
   }
  },
  {
+  "id": "dock",
+  "src": "raw:decor",
+  "root": "dock",
+  "view": [-34, 30],
+  "preset": "building"
+ },
+ {
+  "id": "person:pearl",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#2A2A36",
+   "Villager shirt": "#2F4F8A",
+   "Villager trousers": "#24324F"
+  }
+ },
+ {
   "id": "person:hugo",
   "src": "3D_game_scene/public/models/villager-man.glb",
   "portrait": true,

@@ -54,6 +54,10 @@ export const FAMILIES = [
 /** Is this villager here yet? `arrives` is the building they come with (a kind), or a test of the farm. */
 export const hasArrived = (s, v) => !v.arrives || (typeof v.arrives === 'function' ? !!v.arrives(s) : (s.counts[v.arrives] ?? 0) > 0);
 export const VILLAGERS = [
+  // The constable comes with the police post (chapter 7): calm, exact, reads every old report. No orders, no gifts.
+  { id: 'pearl', name: '{person:pearl:display}', role: 'Constable', arrives: 'police', noOrders: true, noGifts: true,
+    line: 'A whistle, a notebook and a kettle. The kettle is the important one.',
+    idle: ['Quiet night. I like to write that down.', 'A village is safe when people know each other\'s hens.', 'Every drawer in that post is in order now. I checked twice.'] },
   // The baker comes with the first market day (chapter 6) and keeps a stall on the square. No orders, no gifts.
   { id: 'hugo', name: '{person:hugo:display}', role: 'Baker', arrives: s => !!s.firsts?.marketDay, noOrders: true, noGifts: true,
     line: 'Warm from the oven! Mind your fingers, and mind the queue.',

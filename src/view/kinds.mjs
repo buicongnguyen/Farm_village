@@ -73,6 +73,7 @@ export const KIND_MODELS = {
   'produce:milk': { kit: 'animal-produce', node: 'milk', height: 0.5, lod: 'static' },
   // decorations and fruit trees the play package adds (drawn as soon as their kind exists in BUILDINGS)
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
+  dock:         { kit: 'decor', node: 'dock', authored: true, lod: 'static', late: true },   // chapter 7: the pier reaches north of its footprint, over the brook
   bunting:      { kit: 'decor', node: 'bunting', authored: true, lod: 'static', late: true },
   banner:       { kit: 'decor', node: 'banner', authored: true, lod: 'static', late: true },
   picket:       { kit: 'farm-kit', node: 'picket_straight', authored: true, lod: 'static' },
