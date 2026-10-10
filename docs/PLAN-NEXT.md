@@ -4,6 +4,9 @@ Updated 2026-10-11 by Claude (art and logic). It replaces the earlier version of
 `JOURNEY.md` section 6. The story itself (acts, chapters, cast rules) stays as written in `JOURNEY.md` section 3 and
 `STORY.md`; this file says in what order it gets built and what each chapter needs.
 
+**The detailed plan is in [`docs/plan/`](plan/README.md):** one file per step, with the rules, files, art, tests and
+the order of work. This file is the overview; where the two differ, the folder is right.
+
 ## What changed in the plan, and why
 
 The last two weeks added many systems (Explore mode, bank fishing, hired hands, ten house levels, goats and a dairy,
@@ -34,9 +37,9 @@ So the plan turns round:
 
 Done: 1 to 5 (the key and the seed tin, the first harvest, the first family, the school bell, the clinic).
 
-Names follow the cast in `content/people.mjs`. Where `JOURNEY.md` used a name the cast does not have (Hugo, Pearl,
-Bea), the role goes to a villager who already lives in Hollowbrook, as noted; new people arrive only where the story
-needs someone from outside.
+Names follow the cast in `content/people.mjs`. Where `JOURNEY.md` named someone the cast does not have (the baker,
+the officer, the office manager), that person arrives with their building, as the teacher did with the school and
+the doctor with the clinic. They are villagers, not families: no cottage and no heart scenes to write.
 
 ### Act II: the valley wakes
 
@@ -44,7 +47,7 @@ needs someone from outside.
 |---|---|---|---|---|
 | 6 | Market day | Sell at the first market day and own a third parcel | Market square, village shops, sixteen parcels, the dairy | A weekly market day (one kind of good pays more); Gus's deed for the east parcels (land now says what it is for); the three dairy scenes with Lan |
 | 7 | Safe streets | The police post stands and the dock is built | Police post rebuild, bank fishing | Old reports as three letters (the sluice was shut the summer before the mill closed); Olaf's boat dock on the brook; beds within three cells of water grow a fifth faster |
-| 8 | Work for everyone | The company office stands and its first contract is delivered | Company office, contracts, trucks | The sluice opens: the brook runs fuller and the mill wheel turns (art); Zara runs the office |
+| 8 | Work for everyone | The company office stands and its first contract is delivered | Company office, contracts, trucks | The sluice opens: the brook runs fuller and the mill wheel turns (art); an office manager arrives with the office |
 | 9 | The village sings again | The festival stage is rebuilt and the first festival held | Festival notes in `STORY.md` | A stage on the square; a festival evening (lanterns, music, everyone gathers); Gus tells the truth; Ellis comes home as a villager you can talk to |
 
 ### Act III: the brook co-operative
