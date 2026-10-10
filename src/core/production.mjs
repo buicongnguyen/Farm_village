@@ -45,7 +45,7 @@ export function queueBatches(ctx, { building, recipe, count = 1 }) {
   if (!Number.isFinite(now) || !Number.isFinite(now + durationMs)) return ctx.fail('The production clock is unavailable');
   const slots = [], occupied = new Set(q.queue.map(job => job.slot));
   for (let i = 0; i < count; i++) { let slot = 0; while (occupied.has(slot)) slot++; occupied.add(slot); slots.push(slot); }
-  barn.take(s, inputs); s.production[building] = q;
+  barn.take(s, inputs); s.production[building] = q; (s.lastRecipe ??= {})[building] = recipe;   // what this building last made: a hired workshop hand keeps it going
   if (durationMs < r.timeMs) markCompanyUsed(s);
   for (const slot of slots) {
     q.queue.push({ recipe, slot, startedAt: now, doneAt: now + durationMs, durationMs });

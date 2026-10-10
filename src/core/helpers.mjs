@@ -2,7 +2,8 @@
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
 import { HELP, HANDS, WEAR } from '../content/economy.mjs';
 import { actions as production, collectableJobs } from './production.mjs';
-import { ANIMALS } from '../content/goods.mjs';
+import { ANIMALS, RECIPES } from '../content/goods.mjs';
+import { isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
 import { actions as farm } from './farm.mjs';
 import { gainXp } from './levels.mjs';
@@ -80,6 +81,14 @@ export function tickHands(ctx) {
       if (r?.ok === false) continue;
       for (const j of mine.slice(0, r.collected)) production.produce(quiet, { building: id, recipe: j.recipe });
       left -= r.collected; done += r.collected;
+    }
+    // and it keeps every workshop going: half of each building's free trays (rounded up) start what that building made
+    // last, as far as the ingredients and the wages go, so a chain of goods runs on without a tap
+    for (const [id, recipe] of Object.entries(s.lastRecipe ?? {})) {
+      const p = s.placed[id], r = RECIPES[recipe]; if (!p || !r || r.at !== p.kind || !isWorking(s, id)) continue;
+      const q = s.production?.[id]; if (!q) continue;
+      let start = Math.min(Math.ceil((q.slots - q.queue.length) / 2), Math.floor(s.coins / HANDS.wage) - done);
+      while (start-- > 0 && barn.hasAll(s, r.needs) && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
     }
     paid('workshop', done);
   }

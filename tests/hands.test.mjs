@@ -64,3 +64,22 @@ test('the village projects go on after the clinic: juice, pond, a second truck, 
   tick(s, T0 + 1000); assert.equal(currentStep(s).id, 'fleet');
   s.truck.fleet.push({ level: 1, away: false, backAt: 0, load: [], coins: 0 }); tick(s, T0 + 2000); assert.equal(currentStep(s).id, 'noodles');
 });
+
+test('the workshop hand keeps a workshop going: it collects half of what is done and starts what the building made last', () => {
+  const s = game(); s.level = 4; s.coins = 5000; s.barn.cap = 5000; s.counts.school = 1; s.barn.items.wheat = 60;
+  s.placed.bk = { kind: 'bakery', x: 40, z: 60, rot: 0 }; s.counts.bakery = 1; s.production.bk = { slots: 4, queue: [] };
+  assert.equal(act(s, 'hireHand', { role: 'workshop' }, T0).ok, true);
+  assert.equal(act(s, 'produce', { building: 'bk', recipe: 'bread' }, T0).ok, true); assert.equal(s.lastRecipe.bk, 'bread');
+  tick(s, T0 + 1000);                                   // the hand's clock starts
+  const round = T0 + 1000 + HANDS.everyMs + 1000; tick(s, round);
+  // the one loaf was done: collected (1 task), restarted (same tray), and half of the other free trays started too
+  assert.ok((s.barn.items.bread ?? 0) >= 1, 'the finished loaf was not collected');
+  const running = s.production.bk.queue.length; assert.ok(running >= 2 && running <= 3, `${running} trays running after one round`);
+  assert.ok(s.production.bk.queue.every(j => j.recipe === 'bread'));
+  // with no flour nothing starts, and nothing is charged for nothing
+  s.barn.items.wheat = 0; const coins = s.coins, later = round + HANDS.everyMs + 1000; tick(s, later);
+  assert.ok(s.coins >= coins - 3, 'wages without work');
+  // a building that was never used stays idle: the hand does not choose recipes for you
+  s.placed.jp = { kind: 'juice_press', x: 44, z: 60, rot: 0 }; s.counts.juice_press = 1; s.production.jp = { slots: 2, queue: [] }; s.barn.items.apple = 30; s.level = 9;
+  tick(s, later + HANDS.everyMs + 1000); assert.equal(s.production.jp.queue.length, 0);
+});
