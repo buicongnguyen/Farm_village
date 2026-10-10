@@ -77,4 +77,15 @@ export const JA_FISHING = {
   'Goat barn': 'ヤギ小屋',
   'Dairy': '乳製品工房',
   'Open all {count} thank-you notes': 'お礼の手紙{count}通をまとめて開く',
+  // the farmhouse garden, level by level
+  'Next: {name}': '次: {name}',
+  'Flower beds by the door': '玄関わきの花だん',
+  'A bench and a lamp on the lawn': '芝生のベンチと街灯',
+  'A bigger farmhouse': 'もっと大きな農家',
+  'A swimming pool': 'プール',
+  'Sun loungers and a parasol': 'サンベッドとパラソル',
+  'A grand farmhouse': '立派な農家',
+  'A fountain': '噴水',
+  'A garden gazebo': '庭のあずまや',
+  'A flag over the farm': '農場にはためく旗',
 };

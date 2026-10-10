@@ -77,4 +77,15 @@ export const KO_FISHING = {
   'Goat barn': '염소 우리',
   'Dairy': '유제품 공방',
   'Open all {count} thank-you notes': '감사 편지 {count}통 모두 열기',
+  // the farmhouse garden, level by level
+  'Next: {name}': '다음: {name}',
+  'Flower beds by the door': '문 옆 꽃밭',
+  'A bench and a lamp on the lawn': '잔디밭의 벤치와 가로등',
+  'A bigger farmhouse': '더 큰 농가',
+  'A swimming pool': '수영장',
+  'Sun loungers and a parasol': '선베드와 파라솔',
+  'A grand farmhouse': '웅장한 농가',
+  'A fountain': '분수',
+  'A garden gazebo': '정원 정자',
+  'A flag over the farm': '농장 위의 깃발',
 };

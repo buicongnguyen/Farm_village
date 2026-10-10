@@ -1083,6 +1083,71 @@ for name, gen in (('goat_barn', goat_barn), ('dairy', dairy)):
     piece(name, parts, decor)
     anchors[name] = A
 
+# =================================================================== the farmhouse garden (v0.5): what a better house brings
+# Drawn round the farmhouse by its comfort level (src/content/world.mjs HOME_GARDEN). Origins at the footprint centre.
+def home_pool():
+    """A swimming pool, 6 x 4 m: a pale stone rim, bright water with two lane ripples, steps with a rail, a beach ball."""
+    p = [bx('rim', 5.8, 3.8, .18, 0, 0, 0, 'stonel', bev=.06, seg=2), bx('tile', 5.2, 3.2, .1, 0, 0, .1, 'sky', bev=.02),
+         bx('water', 5.0, 3.0, .06, 0, 0, .16, 'water', bev=.01), bx('shine', 1.6, .12, .02, -1.0, .5, .215, 'waterl', bev=0),
+         bx('shine2', 1.1, .1, .02, 1.1, -.6, .215, 'waterl', bev=0), bx('shine3', .7, .08, .02, .2, 1.0, .215, 'waterl', bev=0)]
+    for k in range(3):
+        p.append(bx('step', .9, .3, .05, -2.0, 1.2 - k * .3, .2 - k * .0, 'white', bev=.01))
+    for y in (1.35, .75):
+        p += [cl('railpost', .035, .7, -2.55, y, .18, 'stoned', verts=6), cl('railtop', .035, .5, 0, 0, 0, 'stoned', verts=6, rot=(0, math.pi / 2, 0))]
+        p[-1].location = (-2.3, -y, .88)
+    p += [ball('ball', .26, 1.5, .6, .44, 'white', sub=2), ball('ballr', .262, 1.5, .6, .44, 'red', sub=2, sc=(1, .28, 1)), ball('ringf', .34, -.4, -.7, .26, 'pink', sub=2, sc=(1, 1, .32))]
+    for x in (-2.75, 2.75):
+        p.append(ball('potleaf', .22, x, -1.75, .34, 'leaf', sub=1, sc=(1, 1, 1.2))); p.append(cl('pot', .18, .24, x, -1.75, .18, 'roof', verts=8, rt=.22))
+    return p
+
+def home_loungers():
+    """Two sun loungers under a striped parasol with a little table and drinks, 4 x 2 m."""
+    p = []
+    for x, mt in ((-1.0, 'sky'), (1.0, 'pink')):
+        p += [bx('bed', .7, 1.7, .1, x, 0, .3, 'white', bev=.03), bx('cushion', .6, 1.2, .08, x, -.2, .4, mt, bev=.03),
+              box('back', (.7, .6, .1), (x, -.85, .56), C['white'], bev=.03, seg=1, rot=(.75, 0, 0)), box('backc', (.6, .5, .08), (x, -.83, .63), C[mt], bev=.03, seg=1, rot=(.75, 0, 0))]
+        for yy in (-.7, .7):
+            p.append(bx('leg', .6, .06, .3, x, yy, 0, 'woodl', bev=0))
+    p += [cl('pole', .04, 2.3, 0, -.2, 0, 'woodd', verts=6), cl('table', .28, .05, 0, .5, .45, 'woodl', verts=10), cl('tleg', .04, .45, 0, .5, 0, 'woodd', verts=6),
+          cl('glass', .06, .16, -.08, .5, .5, 'orange', verts=8), cl('glass2', .06, .16, .1, .55, .5, 'mint', verts=8)]
+    for i in range(8):   # the parasol: eight gores, red and white
+        a = i * math.tau / 8
+        g = box('gore', (.95, .62, .05), (math.cos(a) * .55, .2 + math.sin(a) * .55, 2.12), C['red' if i % 2 else 'white'], bev=.01, seg=1, rot=(0, .32, a))
+        p.append(g)
+    p.append(ball('cap', .08, 0, -.2, 2.32, 'gold', sub=1))
+    return p
+
+def home_gazebo():
+    """A white garden gazebo, 4 x 4 m: a round deck, six posts with a rail, a teal cone roof with a gold ball, a bench inside."""
+    p = [cl('deck', 1.8, .22, 0, 0, 0, 'woodl', verts=12, bev=.03), cl('deckrim', 1.86, .08, 0, 0, .16, 'white', verts=12)]
+    for i in range(6):
+        a = i * math.tau / 6 + math.pi / 6
+        x, y = math.cos(a) * 1.6, math.sin(a) * 1.6
+        p.append(cl('post', .07, 2.1, x, y, .22, 'white', verts=8))
+        if i != 4:   # an opening at the front
+            b = (i + 1) * math.tau / 6 + math.pi / 6
+            mx, my = (x + math.cos(b) * 1.6) / 2, (y + math.sin(b) * 1.6) / 2
+            r = bx('rail', 1.6, .06, .07, mx, my, .85, 'white', bev=.01, rot=-(a + b) / 2 + math.pi / 2); p.append(r)
+    p += [cl('eave', 2.0, .14, 0, 0, 2.3, 'white', verts=12), cl('roof', 2.05, 1.1, 0, 0, 2.42, 'teal', verts=12, rt=.12), cl('roofband', 2.08, .1, 0, 0, 2.4, 'teald', verts=12),
+          ball('finial', .14, 0, 0, 3.6, 'gold', sub=1), bx('seat', 1.4, .4, .08, 0, -.9, .62, 'wood', bev=.02), bx('seatback', 1.4, .08, .4, 0, -1.1, .7, 'wood', bev=.02)]
+    for x in (-.6, .6):
+        p.append(bx('seatleg', .08, .36, .4, x, -.9, .22, 'woodd', bev=0))
+    for i in range(5):
+        a = i * math.tau / 5
+        p.append(ball('rose', .13, math.cos(a) * 1.95, math.sin(a) * 1.95, .3, ('pink', 'red', 'white', 'sun', 'violet')[i], sub=1))
+        p.append(ball('roseleaf', .2, math.cos(a) * 1.95, math.sin(a) * 1.95, .14, 'leaf', sub=1, sc=(1.2, 1.2, .7)))
+    return p
+
+def home_flag():
+    """A tall white flagpole on a stone foot with a long red-and-gold pennant and a gold ball."""
+    p = [cl('foot', .34, .26, 0, 0, 0, 'stone', verts=10, bev=.03), cl('pole', .05, 5.2, 0, 0, .2, 'white', verts=8), ball('ball', .12, 0, 0, 5.48, 'gold', sub=1)]
+    for k in range(5):
+        p.append(box('flag', (.44, .04, .7 - k * .1), (.26 + k * .42, 0, 4.86 - k * .03), C['red' if k % 2 == 0 else 'sun'], bev=.01, seg=1, rot=(0, 0, math.sin(k * 1.3) * .12)))
+    return p
+
+for name, gen in (('home_pool', home_pool), ('home_loungers', home_loungers), ('home_gazebo', home_gazebo), ('home_flag', home_flag)):
+    piece(name, gen(), decor)
+
 # =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
 def hospital():
     """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,
