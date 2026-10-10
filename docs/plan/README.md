@@ -11,7 +11,7 @@ folder says what to build, in which files, and how to know it is done.
 
 | # | File | What it delivers | Size | Status |
 |---|---|---|---|---|
-| 0 | [00-tester-tools.md](00-tester-tools.md) | Tester's menu, one pace switch, project steps kept by id | 1 session | not started |
+| 0 | [00-tester-tools.md](00-tester-tools.md) | Tester's menu, one pace switch, project steps kept by id | 1 session | **done** (PR #80) |
 | – | [01-small-fixes.md](01-small-fixes.md) | Backlog of small bugs and polish, done between chapters | ongoing | open |
 | 6 | [ch06-market-day.md](ch06-market-day.md) | Market day, land that says what it is for, the dairy scenes, the baker | 1–2 | not started |
 | 7 | [ch07-safe-streets.md](ch07-safe-streets.md) | The officer and her old reports, the boat dock, ponds that water beds | 1 | not started |
@@ -52,7 +52,8 @@ room), six hired hands, sixteen parcels, twelve crops, the look of each language
 - A village project step points at the deed and the roadmap names it.
 - Every line is in English, Vietnamese, Korean and Japanese, with each speaker's voice and pronouns (`STORY.md` 2).
 - `npm test` passes, with a rules test for the trigger and one for an old save; one browser check plays the ending.
-- The tester's menu can jump to the chapter.
+- The tester's menu can jump to the chapter: the chapter's PR adds the `JUMPS` entry for the chapter AFTER it
+  (`src/core/testmode.mjs`), which arranges this chapter's deed.
 - The far view stays within 120 draw calls and 300,000 triangles; first-load code within 1,150,000 bytes.
 
 ## Decisions already made (do not reopen without the owner)
@@ -77,7 +78,7 @@ room), six hired hands, sixteen parcels, twelve crops, the look of each language
 |---|---|
 | Chapter cards and short beats | `src/content/story.mjs` (`CHAPTERS`, `BEATS`); shown via `chapterSeen` in `src/core/today.mjs` |
 | Chapter pictures | `public/assets/story/chN-M.webp`, made by `scripts/story-panels.mjs` |
-| Village project steps | `src/content/projects.mjs` (`STEPS`; `builds: []` and `site` for steps that lock nothing) |
+| Village project steps | `src/content/projects.mjs` (`STEPS`; `builds: []` and `site` for steps that lock nothing). The steps after the clinic are a checklist kept by id: add new ones anywhere after the clinic, never before it |
 | Roadmap | `src/content/journey.mjs` (`STAGES`, `JOURNEY_UNLOCKS`), tests in `src/core/journey.mjs` |
 | Letters | `src/content/letters.mjs` |
 | People, neighbours, names | `src/content/people.mjs`, `src/content/character-names.mjs` |

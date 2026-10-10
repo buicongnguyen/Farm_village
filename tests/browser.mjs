@@ -493,6 +493,27 @@ await check('Vietnamese: every panel fits a 390 px phone with no text sticking o
   await ctx.close();
 });
 
+await check('tester tools: ?tester shows the tag; coins, levels and a chapter jump work from Settings, and the farm reopens at that chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  expect(await page.locator('.tester-tag').count() === 1, 'no tester tag');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.test-jump');
+  const before = await page.evaluate(() => ({ coins: farm.state().coins, level: farm.state().level }));
+  await page.click('[data-test="coins"]');
+  expect(await page.evaluate(() => farm.state().coins) === before.coins + 10000, 'the coins button gave nothing');
+  await Promise.all([page.waitForEvent('load'), page.click('[data-test="jump:6"]')]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  const s = await page.evaluate(() => { const st = farm.state(); return { chapter: st.story.chapter, school: st.counts.school ?? 0, clinic: st.counts.clinic ?? 0, families: Object.values(st.homes).filter(h => h.arrived).length, level: st.level, step: st.projects.step }; });
+  expect(s.chapter === 5 && s.school >= 1 && s.clinic >= 1 && s.families === 4 && s.level >= 6, `after the jump: ${JSON.stringify(s)}`);
+  expect(await page.locator('.tester-tag').count() === 1, 'the tools did not stay for the tab');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('settings'); }); await page.waitForSelector('.test-jump');
+  expect(await page.locator('[data-test="jump:6"]').isDisabled(), 'chapter 6 can still be jumped to');
+  await page.click('[data-test="levels"]');
+  expect(await page.evaluate(() => farm.state().level) === s.level + 5, 'the levels button gave nothing');
+  await page.screenshot({ path: `${SHOTS}tester-settings.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

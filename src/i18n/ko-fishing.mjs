@@ -134,4 +134,12 @@ export const KO_FISHING = {
   'Clear away': '철거하기',
   'Cleared, kept for the rebuild': '정리 완료, 재건을 위해 남겨 둠',
   '{name} is cleared away': '{name}을(를) 철거했어요',
+  'Tester': '테스터',
+  'Tester tools: this farm is for testing.': '테스터 도구: 이 농장은 테스트용이에요.',
+  'Jump to chapter': '챕터로 이동',
+  '+5 levels': '레벨 +5',
+  'Unknown amount': '알 수 없는 수량이에요',
+  'This is the top level': '이미 최고 레벨이에요',
+  'Unknown chapter': '없는 챕터예요',
+  'This farm is already there': '이 농장은 이미 거기까지 왔어요',
 };

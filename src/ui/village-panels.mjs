@@ -7,7 +7,7 @@ import { FAMILIES, NEIGHBOURS } from '../content/people.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { BUILDINGS, COTTAGE_LEVELS } from '../content/buildings.mjs';
 import { RENT, BONDS, CHARM_MILESTONES } from '../content/economy.mjs';
-import { currentStep, stepReady, deliveredAll, mayBuild, madeAt } from '../core/projects.mjs';
+import { currentStep, stepReady, deliveredAll, mayBuild, madeAt, stepDone } from '../core/projects.mjs';
 import { charmOf, rentPerHour, rentWaiting, needsOf } from '../core/homes.mjs';
 import { levelOf, isRepairing } from '../core/working.mjs';
 import { board } from '../core/today.mjs';
@@ -92,7 +92,7 @@ export function renderToday(s, now) {
 
 export function renderProjects(s, now) {
   const step = currentStep(s);
-  const list = STEPS.map((st, i) => `<li class="${i < s.projects.step ? 'done' : i === s.projects.step ? 'now' : ''}">${glyph(i < s.projects.step ? 'check' : i === s.projects.step ? 'play' : 'dot', 'g')} ${t(st.name)}</li>`).join('');
+  const list = STEPS.map((st, i) => { const done = stepDone(s, st.id), now = !done && i === s.projects.step; return `<li class="${done ? 'done' : now ? 'now' : ''}">${glyph(done ? 'check' : now ? 'play' : 'dot', 'g')} ${t(st.name)}</li>`; }).join('');
   if (!step) return `<p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
   const ready = stepReady(s, now), reqs = [];
   if (step.needs.level) reqs.push([s.level >= step.needs.level, t('Reach level {level}', { level: step.needs.level })]);

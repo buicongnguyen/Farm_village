@@ -1,6 +1,32 @@
 # Step 0: tools for fast testing
 
-Status: not started · Depends on: nothing · Size: one session, one PR
+Status: **done** (PR #80) · Depends on: nothing · Size: one session, one PR
+
+## How to use it (for the owner)
+
+Open the game with `?tester` at the end of the address:
+`https://buicongnguyen.github.io/Farm_village/?tester`. A small red "Tester" tag shows at the top of the screen.
+Open Settings and scroll to **Test**:
+
+- **Jump to chapter 2 … 6**: brings this farm to the start of that chapter (everything the earlier chapters ask for
+  is built or done, their cards are behind you). It only goes forward; the farm is saved and reopened.
+- **+10,000 coins**, **+5 levels**, **Finish every timer**, **Move a family in**, **Unlock everything**.
+
+The tools stay until the browser tab is closed. A visit without `?tester` never shows them. Use a spare farm
+(Farm 2 or 3 on the title screen) if you do not want to change your own.
+
+## What was built, where it differs from the plan below
+
+- **A** as planned. The clock buttons (+1 hour, +1 day) and "Next tutorial step" stay in test builds only: moving the
+  clock of a real farm forward would leave its timers in the future on the next normal visit.
+  `tests/tester.test.mjs`, a check in `tests/browser.mjs`, and `tests/tester.production.mjs` for the public build.
+- **B** as planned: `PACE` and `paced()` in `content/economy.mjs`; `FV_PACE=release npm run sim`.
+- **C** was built differently, and better for what the chapters need. The steps up to the clinic keep their position
+  (they lock buildings and must run in order). The steps after the clinic, which lock nothing, are now a **checklist
+  kept by id** (`TAIL` in `core/projects.mjs`): each is ticked off when it is true, in any order, paid once
+  (`s.firsts['project:<id>']` is the record), and the step shown is the first one still open. A chapter can add a
+  step anywhere after the clinic; an old farm that was past that point is simply asked for the new step. No save
+  migration was needed.
 
 ## Why first
 

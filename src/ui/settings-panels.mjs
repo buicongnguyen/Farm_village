@@ -1,5 +1,5 @@
-// Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section (TEST_MODE only:
-// esbuild drops it from public builds) with the play package's helpers.
+// Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section with the play
+// package's helpers; the public game shows it too when it was opened with ?tester (docs/plan/00-tester-tools.md).
 import { t, getLanguage, getLocale, LANGUAGES } from '../kit/i18n.mjs';
 import { CHAPTERS } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -9,11 +9,20 @@ import { nameOf } from './bonds-panels.mjs';
 import { renderDiscoveries } from './discovery-panels.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
 import { FISH_TABLE, FRUITS } from '../content/goods.mjs';
+import { JUMP_CHAPTERS } from '../core/testmode.mjs';
 
 const choice = (key, value, current, label) => `<button class="tab${current === value ? ' on' : ''}" data-do="setting" data-key="${key}" data-value="${value}" aria-pressed="${current === value}"${key === 'lang' ? ` lang="${value}"` : ''}>${label}</button>`;
 const esc = value => String(value ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['step', 'Next tutorial step'], ['hour', 'Clock +1 hour'], ['day', 'Clock +1 day']];
-export function renderSettings(s, profile) {
+// `build`: only in test builds (the clock and the tutorial are theirs to move; a public farm keeps its real clock)
+const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['levels', '+5 levels'], ['timers', 'Finish every timer'], ['family', 'Move a family in'],
+  ['step', 'Next tutorial step', 'build'], ['hour', 'Clock +1 hour', 'build'], ['day', 'Clock +1 day', 'build']];
+function renderTests(s) {
+  const seen = s.story.chapter ?? 0;
+  return `<h3 class="test-head">${t('Test')}</h3><p class="hint">${TEST_MODE ? t('Only in test builds.') : t('Tester tools: this farm is for testing.')}</p>
+    <div class="row test-row">${TESTS.filter(([, , only]) => TEST_MODE || !only).map(([id, label]) => `<button class="btn small" data-do="test" data-test="${id}">${t(label)}</button>`).join('')}</div>
+    <div class="set-row"><b>${t('Jump to chapter')}</b><div class="tabs test-jump">${JUMP_CHAPTERS.map(n => `<button class="tab${seen >= n - 1 ? ' on' : ''}" data-do="test" data-test="jump:${n}"${seen >= n - 1 ? ' disabled' : ''} aria-label="${t('Chapter {n}', { n })}">${n}</button>`).join('')}</div></div>`;
+}
+export function renderSettings(s, profile, { tester = false } = {}) {
   const st = s.settings;
   return `<div class="settings">
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
@@ -31,7 +40,7 @@ export function renderSettings(s, profile) {
     <p class="hint">${t('These controls affect only Profile {n}.', { n: profile })}</p>
     <div class="row"><button class="btn" data-do="export">${glyph('down', 'g')} ${t('Export save')}</button><label class="btn">${glyph('open', 'g')} ${t('Import save')}<input type="file" accept=".json,application/json" data-file hidden></label>
       <button class="btn ghost" data-do="newGame">${glyph('sprout', 'g')} ${t('Start over')}</button></div>
-    ${TEST_MODE ? `<h3 class="test-head">${t('Test')}</h3><p class="hint">${t('Only in test builds.')}</p><div class="row test-row">${TESTS.map(([id, label]) => `<button class="btn small" data-do="test" data-test="${id}">${t(label)}</button>`).join('')}</div>` : ''}
+    ${TEST_MODE || tester ? renderTests(s) : ''}
   </div>`;
 }
 /** A chapter's picture for the album: its first story panel, or its symbol while the picture loads or is missing. */

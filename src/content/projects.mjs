@@ -24,6 +24,8 @@ export const STEPS = [
     needs: { level: 6, families: 4 }, deliver: { bread: 12, cherry: 9 }, builds: ['clinic'], done: s => working(s, 'clinic') >= 1 },
   // After the clinic the village keeps growing. These steps lock nothing (builds is empty): each names the next thing
   // worth doing, is ticked off as soon as it is true, and `site` is the building its button takes you to.
+  // They are a checklist kept by id (core/projects.mjs TAIL): a new one may go anywhere from here on. Never add a step
+  // above this line: the steps above are kept by their position in old saves.
   { id: 'juice', name: 'Fresh juice for the village', text: 'The families ask for something cool to drink. Build a juice press on the farm.',
     needs: { level: 6 }, site: 'juice_press', done: s => working(s, 'juice_press') >= 1, builds: [] },
   { id: 'anglers', name: 'A quiet day at the pond', text: 'The children want fish for supper. Land five fish at the pond.',

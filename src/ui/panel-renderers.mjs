@@ -114,7 +114,7 @@ export function renderPanel() {
         ${st.coins ? `<button class="btn primary wide" data-do="fruitCollect">${t('Collect {coins} coins', { coins: num(st.coins) })}</button>` : ''}
         <div class="goods-grid">${spare.map(([g]) => `<button class="good-tile" data-do="fruitList" data-good="${g}" ${st.items.length >= FRUIT_STAND.slots ? 'disabled' : ''}>${goodIcon(g)}<b>×${Math.min(FRUIT_STAND.stack, barn.free(s, g))}</b><small>${t(GOODS[g].name)} · ${coinMark()} ${fruitPrice(g)}</small></button>`).join('') || `<p class="empty">${t('Pick fruit from your orchard to stock the stand.')}</p>`}</div>`;
     }
-    else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1);
+    else if (o.kind === 'settings') body = renderSettings(s, this.profile ?? 1, { tester: !!this.onTest });
     else if (o.kind === 'profiles') body = renderProfiles(s, this.profile ?? 1);
     else if (o.kind === 'album') body = renderContractMemories(s) + renderLandEntry(s, { album: true }) + renderExplorationEntry(s, { album: true }) + renderAdviceMemories(s) + renderAlbum(s);
     else if (o.kind === 'today') body = renderRecent(this.hud) + contractEntry + shopsEntry(s) + renderLandEntry(s) + renderExplorationEntry(s) + renderAdviceList(s, now) + renderToday(s, now);
