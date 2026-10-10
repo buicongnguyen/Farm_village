@@ -2,7 +2,7 @@
 // them; the bonds panels (ui package) show them in the chapter-card layout.
 //
 // HEART_SCENES[personId][3 | 6 | 9] = { lines: [{ who, text } × 3], reward: { decor: kind } | { coins: n } }
-//   Every resident family member, and every villager or neighbour who earns hearts (Ada, Cora, Mai, Gus), has all three. `who` is a person id from people.mjs. The player never speaks.
+//   Every resident family member, and every villager or neighbour who earns hearts (Ada, Cora, Mai, Gus, and the two growers of chapter 12), has all three. `who` is a person id from people.mjs. The player never speaks.
 // WISHES[personId] = [{ text, need: { kind, near: 'home' } }]
 //   A small, visible wish: a decoration of that kind placed near the person's cottage grants it.
 // ARRIVALS[familyId] = [{ who, text } × 3]: what the family says on the day they move in.
@@ -244,6 +244,35 @@ export const HEART_SCENES = {
       ['gus', 'The festival stopped the year the mill closed. Somebody should start it again.'],
       ['gus', 'Not me. I am too old. You, maybe. With {person:ada:short}. I would bring bread.'],
       ['ada', 'Did you hear that? {person:gus:short} wants a festival. Write it down before he takes it back.']),
+  },
+  // ── The two growers from outside the valley (chapter 12) ──
+  priya: {
+    3: scene({ decor: 'flowerpot' },
+      ['priya', 'I keep a ledger of every tree on my hill. Two hundred and six. Each one has a name.'],
+      ['pip', 'Can I name one? Can I name TWO?'],
+      ['priya', 'Tree two hundred and seven is yours to name. And a flowerpot, for my best customer.']),
+    6: scene({ coins: 150 },
+      ['priya', 'My father planted the hill. He sold fruit from a barrow, one village at a time.'],
+      ['priya', 'He always said the brook valley had the best cooks and the worst roads.'],
+      ['ada', 'Your father sold me peaches the summer I married, dear. They were worth the walk.']),
+    9: scene({ decor: 'tree' },
+      ['priya', 'I did a new sum last night. Not coins. Suppers eaten at other people’s tables since I came here.'],
+      ['priya', 'It is a large number. I checked it twice.'],
+      ['priya', 'A sapling from the hill. Plant it where you can see it from the kitchen.']),
+  },
+  twins: {
+    3: scene({ decor: 'hay_bale' },
+      ['twins', 'We brought a hay bale. — I carried it. — I carried it further.'],
+      ['june', 'Thank you, both of you. Is there anything you two agree on?'],
+      ['twins', 'No. — Yes. — See?']),
+    6: scene({ coins: 150 },
+      ['twins', 'Our farm is the first the brook meets. — We see the water before anybody.'],
+      ['twins', 'The summer it ran low, we were small. — We thought we had broken it.'],
+      ['ada', 'You had not. But I am glad somebody up there was watching.']),
+    9: scene({ decor: 'lamp' },
+      ['twins', 'We made you a lamp. — We made two. — One did not work.'],
+      ['pip', 'Which of you made the one that works?'],
+      ['twins', 'We are not saying. — Ever. — Put it where the path turns.']),
   },
 };
 

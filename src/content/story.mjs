@@ -86,6 +86,13 @@ export const CHAPTERS = [
     },
     panels: panels(11, ['The brook meadow.', '{person:albright:short} at the gate.', 'What the valley chose.']),
     when: s => !!s.story.albright },
+  // The deed: the co-operative is founded and its first order filled (docs/plan/ch12-one-river-many-farms.md). Seeing
+  // the card takes the gate off the old towpath: the far bank can be walked (core/today.mjs). The end of Act III.
+  { id: 12, title: 'One river, many farms', subtitle: 'Five carts, one road.', icon: '🤝',
+    text: 'One cart cannot carry what the city asks for. Five can. The neighbours sign {person:ada:short}’s kitchen table instead of a paper, {person:gus:short} first, to everyone’s surprise. Then they sweep the old towpath over the brook and lift its gate off the hinges. The far bank lies open.',
+    ada: 'Nobody ever got rich alone in this valley, dear. Plenty got poor that way.',
+    panels: panels(12, ['New neighbours on the road.', 'The board on the square.', 'The towpath, open.']),
+    when: s => !!s.cooperative?.founded && (s.cooperative.filled ?? 0) >= 1 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -218,6 +225,21 @@ export const BEATS = [
   { id: 'albright-meadow', chapter: 11, when: s => (s.story.chapter ?? 0) >= 11 && s.story.albright === 'meadow', lines: [
     { who: 'albright', text: 'I do not understand it. But I have seldom been refused so kindly. Good day to you all.' },
     { who: 'pip', text: 'He forgot his hat! No, wait. He left it for the scarecrow.' },
+  ] },
+  // ── Chapter 12 (docs/plan/ch12-one-river-many-farms.md): the co-operative, and the towpath opened. ──
+  { id: 'coop-idea', chapter: 12, when: s => (s.story.chapter ?? 0) >= 11 && ['priya', 'twins'].every(id => (s.neighbours?.[id]?.total ?? 0) >= 1), lines: [
+    { who: 'mai', text: 'Five farms on one river, and each of us sends a half-empty cart to the city. What if we filled them together?' },
+    { who: 'priya', text: 'I have done that sum. It comes out very well indeed.' },
+    { who: 'june', text: 'A co-operative. {person:ada:short} has been saying so for years, love. There is a board going up on the square.' },
+  ] },
+  { id: 'coop-founded', chapter: 12, when: s => !!s.cooperative?.founded, lines: [
+    { who: 'gus', text: 'Give me that pen. If I sign first, nobody can say I was talked into it.' },
+    { who: 'ada', text: 'Sign the table, all of you. Paper gets lost. This table was here before the mill.' },
+    { who: 'twins', text: 'We both signed. — I signed neater. — I signed bigger.' },
+  ] },
+  { id: 'bridge-open', chapter: 12, when: s => (s.story.chapter ?? 0) >= 12, lines: [
+    { who: 'pip', text: 'I ran along the far bank and back! Twice! The grasshoppers over there are DIFFERENT.' },
+    { who: 'ellis', text: 'I walked that towpath as a boy. It goes further than you think.' },
   ] },
 ];
 

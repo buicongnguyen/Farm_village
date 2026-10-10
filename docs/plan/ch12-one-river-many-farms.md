@@ -1,6 +1,48 @@
 # Chapter 12: One river, many farms
 
-Status: not started · Depends on: chapter 11 · Size: two sessions
+Status: **done** (PR #87) · Depends on: chapter 11 · Size: two sessions
+
+## How to play it (for the owner)
+
+1. Close the chapter 11 card. Within a minute **two new neighbours call**, one after the other: **Juniper** from
+   Hillside Orchard (east) and the twins **Pebble and Sprig** from Brookhead Farm (north, upstream; they come as two
+   and finish each other's sentences). From then on they visit, offer a trade a day and post orders like Daisy and
+   Bramble. Juniper trades fruit; the twins bring what your answer to Mr Albright did not give you (honey if you built
+   the cannery, tins if you kept the meadow).
+2. A scene brings the idea, and a **notice board** stands on the village square beside the stage. Tap it (or open
+   "The co-operative" on the Today board, or the step in Village projects).
+3. **Found the co-operative**: both newcomers must have called, and the founding gift comes from your barn (12 bread,
+   6 cheese, 6 apple juice at testing pace).
+4. **A shared order** is posted at once: three goods in large amounts. A neighbour brings a third of every line (the
+   orange part of the bar); you send the rest from the barn with **Send 10** or **Send all**, a little at a time.
+   When all three lines are full it pays well, and the next order comes fifteen minutes later.
+5. The first filled order closes **chapter 12**. Closing the card takes the gate off the **old towpath**: the far bank
+   of the brook can be walked, from the road bridge past the old mill to the east, and by the stepping stones too.
+
+Tester (`?tester`): "Chapter 12" jumps to the newcomers' arrival; "Finish every timer" brings their first call at
+once and the next shared order; "Finish this chapter" founds the co-operative and counts one order.
+
+## What was built, where it differs from the plan below
+
+- `src/core/cooperative.mjs` (named in full: `coop` is the hen coop): `foundingPlan`, `makeOrder`, `lineLeft`,
+  `members`, the actions `foundCooperative` and `fillCooperative`, `tickCooperative`. State: `s.cooperative`.
+  Numbers: `COOPERATIVE` in `content/economy.mjs`.
+- **Founding does not ask for hearts.** Farm neighbours have a friendship number, not hearts with gifts; asking for
+  two of each would have meant days of waiting. It asks that both newcomers have called, and for the gift.
+- **The newcomers** are `priya` (the orchard grower; the earlier plan's rice needs goods the game does not have) and
+  `twins` (one neighbour, two voices, two walkers). They arrive with chapter 11 (`arrives`), call once soon after
+  (`NEIGHBOURS.firstCallMs`), and have remarks, an arc, order lines and heart scenes. `givesBy` picks the twins' goods
+  by the chapter 11 answer.
+- **The far bank is a towpath, not open ground**: `TOWPATH` / `inTowpath` in `content/world.mjs`, two cells wide along
+  the north side of the water, round the old mill. It is clear of wild scatter from the start, faint and overgrown
+  until the chapter is seen, trodden earth after. `s.firsts.bridge` opens it in `core/walk.mjs`. The gate
+  (`TOWPATH_GATE`) stands on the bank beside the brook road, not on the road bridge, which neighbours cross every day.
+  `act4-far-bank.md` builds the riverside town north of this path.
+- A shared order's coins show in the evening sums as their own line.
+- Models: `cooperative_board`, `towpath_gate`, `towpath_gate_open`; two portraits; three chapter pictures. The
+  growers' carts do not park at the road end (left out).
+- `tests/cooperative.test.mjs` (8) and a browser check that plays the chapter. `STACK=1` makes `tests/browser.mjs`
+  say which line of a check failed.
 Story source: `JOURNEY.md` 3 (Act III), `STORY.md` 4 (row 12)
 
 ## What the player gets

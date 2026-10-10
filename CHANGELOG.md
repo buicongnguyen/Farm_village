@@ -1,5 +1,12 @@
 # Changelog
 
+## Chapter 12: One river, many farms — 2026-10-11
+
+- **Two new neighbours**: Juniper of Hillside Orchard and the twins Pebble and Sprig of Brookhead Farm. They call soon after chapter 11, then visit, trade and post orders like Daisy and Bramble. The twins bring what your answer to Mr Albright did not give you: honey, or tins.
+- **The co-operative**: a notice board on the village square. Found it with a gift from the barn once both newcomers have called. Then it posts one **shared order** at a time: three goods in large amounts, a third of each brought by a neighbour, the rest sent from your barn a little at a time. It pays well, and the next comes fifteen minutes later.
+- **Chapter 12** closes with the first shared order. Closing its card takes the gate off the **old towpath**: the far bank of the brook can be walked, past the old mill and over the stepping stones.
+- Act III of the story is complete.
+
 ## Chapter 11: The man from the city — 2026-10-11
 
 - **Mr Albright** arrives with an offer for the meadow between the north lane and the brook: his car stands by the farm gate, his survey stakes on the grass. A pill says an offer is waiting; he waits as long as you like.

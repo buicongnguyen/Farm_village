@@ -5,6 +5,10 @@ Story source: `JOURNEY.md` 3 (Act IV) and 6 (zones)
 
 This file is not a chapter. It builds the ground chapters 13 to 15 stand on.
 
+Chapter 12 already opened the bank: the old towpath (`TOWPATH`, `inTowpath`, `TOWPATH_GATE` in `content/world.mjs`) runs two
+cells wide along the north side of the water and is walkable once `s.firsts.bridge` is set. The quay below takes its
+place: build the quay on the towpath's line rather than a second road beside it.
+
 ## What it delivers
 
 A fourth zone north of the brook, the **riverside town**: a quay road, lots for tall buildings, and the rules, views

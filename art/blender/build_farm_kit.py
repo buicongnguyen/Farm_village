@@ -1086,6 +1086,50 @@ def car():
     return p
 piece('car', car(), decor)
 
+def cooperative_board():
+    """The co-operative's notice board (chapter 12): two posts, a board under a little teal roof, pinned notes, five
+    pennants in the farms' colours along the eave and a crate at its foot. One cell; faces the front (+y)."""
+    p = [bx('post', .12, .12, 2.0, -.78, 0, 0, 'woodd', bev=0.), bx('post', .12, .12, 2.0, .78, 0, 0, 'woodd', bev=0.),
+         bx('board', 1.5, .08, 1.0, 0, .02, .8, 'cork', bev=.02), bx('rail', 1.7, .1, .08, 0, .02, .74, 'wood', bev=0.),
+         gable('roof', 1.7, .5, .32, 0, 0, 2.0, 'teal', over=.1, bev=0.), bx('eave', 1.86, .06, .06, 0, .32, 1.97, 'teald', bev=0.)]
+    for i, (mt, x, z, w, h) in enumerate((('paper', -.48, 1.42, .34, .3), ('sun', -.05, 1.5, .3, .24), ('paper', .4, 1.4, .36, .34), ('pink', -.42, .98, .3, .26), ('paper', .02, 1.02, .4, .3), ('mint', .46, .96, .28, .24))):
+        p.append(bx('note', w, .02, h, x, .07, z - h / 2, mt, bev=0., rot=(.06 if i % 2 else -.05)))
+    for i, mt in enumerate(('sun', 'violet', 'red', 'sky', 'leaf')):   # one pennant for every farm on the river
+        p.append(extrude_outline('pennant', [(-.11, 0), (.11, 0), (0, -.26)], .02, (-.62 + i * .31, -.36, 1.96), C[mt], bev=0.))
+    p += [bx('crate', .5, .4, .34, .95, .42, 0, 'woodl', bev=.02), ball('sack', .2, .95, .42, .5, 'sack', sub=1, sc=(1.1, .9, .8)), ball('tuft', .16, -.9, .2, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('cooperative_board', cooperative_board(), decor)
+
+def towpath_gate(open_=False):
+    """The old towpath's gate on the far bank (chapter 12): two stout posts four metres apart and a five-bar field gate
+    between them, with a faded "closed" board and grass grown up through it. Open: the leaf is swung back along the
+    path on its hinge post, the board is gone. The gate lies along x."""
+    p = []
+    for x in (-2.05, 2.05):
+        p += [bx('post', .22, .22, 1.45, x, 0, 0, 'woodd', bev=.02), ball('cap', .15, x, 0, 1.5, 'wooddd', sub=0, sc=(1, 1, .6))]
+    L = 3.8
+    def leaf():
+        q = [bx('stile', .1, .08, 1.1, -L / 2 + .05, 0, .12, 'wood', bev=0.), bx('stile', .1, .08, 1.1, L / 2 - .05, 0, .12, 'wood', bev=0.)]
+        for k in range(4):
+            q.append(bx('bar', L, .06, .09, 0, 0, .16 + k * .32, 'woodl' if k % 2 else 'wood', bev=0.))
+        q.append(box('brace', (L * 1.02, .05, .08), (0, 0, .68), C['woodd'], bev=0., seg=1, rot=(0, -math.atan2(.96, L), 0)))
+        return q
+    if open_:
+        for o in leaf():   # swung a quarter turn about the hinge post at x = -L/2, to lie along the path
+            o.rotation_euler[2] += math.pi / 2 - .12
+            x, y = o.location[0] + L / 2, o.location[1]
+            c, s_ = math.cos(math.pi / 2 - .12), math.sin(math.pi / 2 - .12)
+            o.location[0], o.location[1] = -L / 2 + x * c - y * s_, x * s_ + y * c
+            p.append(o)
+    else:
+        p += leaf()
+        p += [bx('closed', .9, .04, .42, 0, .06, .5, 'white', bev=0.), bx('closedline', .7, .03, .1, 0, .09, .66, 'red', bev=0.), cl('chain', .05, .3, 1.9, .06, .6, 'iron', verts=5)]
+        for i, x in enumerate((-1.3, -.4, .6, 1.4)):   # grass grown up through the bars
+            p.append(ball('tuft', .2, x, (.12 if i % 2 else -.1), .1, 'leaf' if i % 2 else 'leafw', sub=0, sc=(1.2, .8, 1.5)))
+    return p
+piece('towpath_gate', towpath_gate(False), decor)
+piece('towpath_gate_open', towpath_gate(True), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

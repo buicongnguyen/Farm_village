@@ -27,6 +27,9 @@ export const CHARACTER_NAMES = Object.freeze({
   bea: { en: forms('Penny'), vi: forms('Xu', 'Cô Xu'), ko: forms('꼼꼼'), ja: forms('きっちり') },
   // the constable, who comes with the police post (chapter 7)
   pearl: { en: forms('Sage', 'Constable Sage'), vi: forms('Tre', 'Cô Tre'), ko: forms('반듯', '반듯 순경'), ja: forms('きりり', 'きりり巡査') },
+  // the two growers from outside the valley (chapter 12): the orchard grower from the east hill, and the twins from upstream
+  priya: { en: forms('Juniper'), vi: forms('Sim', 'Chị Sim'), ko: forms('오디'), ja: forms('かりん') },
+  twins: { en: forms('Pebble and Sprig'), vi: forms('Sỏi và Chồi'), ko: forms('누리와 마루'), ja: forms('そらとあおい') },
   mai: { en: forms('Daisy'), vi: forms('Na', 'Chị Na'), ko: forms('도란'), ja: forms('ゆず') },
   gus: { en: forms('Bramble'), vi: forms('Khoai', 'Bác Khoai'), ko: forms('누룽지'), ja: forms('だいふく') },
 });

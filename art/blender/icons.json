@@ -469,6 +469,35 @@
   }
  },
  {
+  "id": "cooperative_board",
+  "src": "raw:decor",
+  "root": "cooperative_board",
+  "view": [-24, 14],
+  "preset": "building"
+ },
+ {
+  "id": "person:priya",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#D9A27C",
+   "Villager hair": "#1A1A22",
+   "Villager shirt": "#E0496B",
+   "Villager trousers": "#3A6B4A"
+  }
+ },
+ {
+  "id": "person:twins",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F0C9A8",
+   "Villager hair": "#A8642C",
+   "Villager shirt": "#FFCF3F",
+   "Villager trousers": "#2F4F8A"
+  }
+ },
+ {
   "id": "cannery",
   "src": "raw:decor",
   "root": "cannery",

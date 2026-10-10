@@ -26,7 +26,7 @@ import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
 const { FAMILIES, VILLAGERS, NEIGHBOURS, hasArrived, oakHome } = PEOPLE_DATA;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
-const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl', 'bea']), GIRLS = new Set(['zara', 'pia']);
+const WOMEN = new Set(['lan', 'grace', 'elin', 'marisol', 'ada', 'cora', 'mai', 'june', 'hazel', 'pearl', 'bea', 'priya', 'twins']), GIRLS = new Set(['zara', 'pia']);
 const rigFor = (id, kid) => id === 'ada' ? 'hana' : kid || id === 'pip' ? 'kid' : WOMEN.has(id) ? 'woman' : 'man';
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...FAMILIES.flatMap(f => f.people)].map(p => [p.id, p]));
 // Names for the family, in case the story's people list does not have them yet.
@@ -59,6 +59,8 @@ const OUTFITS = {
   pearl: { top: '#2f4f8a', bottom: '#24324f', hair: '#1a1a22' },   // the constable: navy
   hugo: { top: '#fff4e2', bottom: '#b98a4e', hair: '#5a3218' },   // the baker: a white smock and flour-brown trousers
   albright: { top: '#6b7280', bottom: '#374151', hair: '#4a4a5c' },   // the man from the city: a grey suit
+  priya: { top: '#e0496b', bottom: '#3a6b4a', hair: '#1a1a22' },   // the orchard grower: a raspberry blouse, leaf-green trousers
+  twins: { top: '#ffcf3f', bottom: '#2f4f8a', hair: '#a8642c' },   // the twins: the same yellow jersey and blue dungarees, both of them
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
 const clothesOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
@@ -157,6 +159,9 @@ export class PeopleView {
     const old = this.walkers.get(`visit:${id}`); if (old) this.drop(old);
     const w = this.add({ id: `visit:${id}`, person: id, visitor: true, body: id === 'gus' ? 'man' : 'woman', x: (start[0] + 0.5) * CELL, z: (start[1] + 0.5) * CELL, comment, params, visitNumber, stage: 'coming', home: start });
     w.route = this.route([start[0], start[1]], [ORDER_BOARD.x, ORDER_BOARD.z]); w.wait = 0;
+    // the twins come as two: the second walks a few steps behind and lets the first do the talking
+    const pair = this.walkers.get(`visit:${id}:2`); if (pair) this.drop(pair);
+    if (id === 'twins') { const w2 = this.add({ id: `visit:${id}:2`, person: id, visitor: true, body: 'man', x: w.x, z: w.z, stage: 'coming', home: start, visitSpoken: true }); w2.route = w.route.slice(0, -1); w2.wait = 1.6; }
   }
   /** Speak one observation per visit, using the farm as it is when the neighbour actually speaks. */
   sayVisit(w) {

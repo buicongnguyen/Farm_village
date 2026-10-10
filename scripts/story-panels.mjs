@@ -73,6 +73,10 @@ const PANELS = {
   'ch11-2': { hour: 16.5, scene: `s.story.chapter = 10;`, wait: 7000, then: [put('albright', 30, 65), 1500], look: [31, 66, 9] },
   'ch11-3': { hour: 10.5, scene: `s.story.chapter = 11; s.story.albright = 'factory'; s.placed.st_cannery = { kind: 'cannery', x: 55, z: 16, rot: 0 }; s.counts.cannery = 1;`, wait: 7000, look: [58, 18, 22] },
   'ch11-3m': { hour: 10.5, scene: `s.story.chapter = 11; s.story.albright = 'meadow';`, wait: 7000, look: [63, 18, 22] },
+  // chapter 12: the twins on the brook road, the co-operative's board on the square, and the towpath with its gate off
+  'ch12-1': { hour: 9.2, scene: `s.story.chapter = 11; s.story.albright = 'meadow';`, after: `farm.people.visit('twins')`, wait: 10000, follow: 'visit:twins', look: [29, 8, 13] },
+  'ch12-2': { hour: 16.4, scene: stage + village + `s.story.chapter = 11; s.story.albright = 'meadow';`, wait: 7000, then: [put('ada', 42, 101) + put('june', 44, 101) + put('minh', 43, 102), 1500], look: [43, 100.5, 9] },
+  'ch12-3': { hour: 17.3, scene: sluice + `s.story.chapter = 12; s.story.albright = 'meadow'; s.firsts.bridge = 1;`, wait: 7000, look: [37, 7, 20] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

@@ -16,13 +16,14 @@ export function tallyEarned(s, events) {
   const festival = events.some(e => e.type === 'harvestFestivalStarted');
   for (const e of events) {
     if (e.type === 'orderFilled') add('orders', e.coins ?? 0);
+    else if (e.type === 'cooperativeOrderDone') add('cooperative', e.coins ?? 0);
     else if (e.type === 'rent' || e.type === 'familyTip') add('rent', e.coins ?? 0);
     else if (e.type === 'coins') add(e.source === 'pond' ? 'fishing' : festival ? 'festival' : 'sales', e.coins ?? 0);
     else if (e.type === 'barnSold') add('sales', e.coins ?? 0);
     else if (e.type === 'handDid') { const h = (s.today.hands ??= {}); h[e.role] = (h[e.role] ?? 0) + e.count; s.today.wages = (s.today.wages ?? 0) + e.count * HANDS.wage; }
   }
 }
-export const SOURCES = ['orders', 'sales', 'rent', 'fishing', 'festival'];
+export const SOURCES = ['orders', 'sales', 'rent', 'fishing', 'festival', 'cooperative'];
 /** Granny Maple's one piece of advice, the first that fits: [id, panel to open]. */
 export function adviceOf(s) {
   if (barn.used(s) >= s.barn.cap * 0.9) return ['barn', 'market'];

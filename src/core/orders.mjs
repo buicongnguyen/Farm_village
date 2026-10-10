@@ -42,7 +42,7 @@ export function orderable(s) {
 /** People who can post orders now: villagers who are here (not noOrders ones such as your own family), neighbours, and
  * families who have moved in. */
 export function posters(s, now) {
-  return [...VILLAGERS.filter(v => !v.noOrders && hasArrived(s, v)).map(v => v.id), ...NEIGHBOURS.map(n => n.id),
+  return [...VILLAGERS.filter(v => !v.noOrders && hasArrived(s, v)).map(v => v.id), ...NEIGHBOURS.filter(n => hasArrived(s, n)).map(n => n.id),
     ...familiesIn(s, now).flatMap(f => f.people.map(p => p.id))];
 }
 export const canFill = (s, card) => barn.hasAll(s, card.need);

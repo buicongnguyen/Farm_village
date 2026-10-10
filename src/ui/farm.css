@@ -232,3 +232,24 @@ button.good { min-height: 44px; cursor: pointer; }
 .valley-parts li b { font-weight: 1000; color: #1f8a3b; }
 .valley-parts li.minus b { color: #c0392b; }
 .valley-parts img.mini { width: 26px; height: 26px; flex: none; }
+/* the co-operative's panel (chapter 12) */
+.coop-members { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; margin: 6px 0 8px; }
+.coop-members span { display: grid; justify-items: center; gap: 2px; font-size: 12px; }
+.coop-members .mini-face { width: 44px; height: 44px; border-radius: 50%; }
+.coop-callers { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 4px; }
+.coop-callers li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 12px; background: #fff7e6; }
+.coop-callers li span { flex: 1 1 auto; min-width: 0; }
+.coop-callers li b { font-weight: 800; color: var(--ink-2); }
+.coop-callers li.done b { color: #1f8a3b; }
+.coop-callers .mini-face { width: 34px; height: 34px; flex: none; border-radius: 50%; }
+.coop-line { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 6px 0; padding: 6px 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffdf4; }
+.coop-line.full { background: #eefbe0; border-color: #9fd36a; }
+.coop-line img.icon { width: 44px; height: 44px; }
+.coop-fill { display: grid; gap: 3px; min-width: 0; }
+.coop-fill small { color: var(--ink-2); line-height: 1.2; }
+.coop-fill .progress { position: relative; display: flex; width: 100%; height: 12px; }
+.coop-fill .progress > i { display: block; height: 100%; }
+.coop-fill .progress > i.theirs { background: linear-gradient(#ffd98a, #ffb84a); }
+.coop-send { display: grid; gap: 4px; }
+.coop-send .btn { min-width: 84px; }
+.coop-done .g { width: 26px; height: 26px; }

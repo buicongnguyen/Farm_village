@@ -59,7 +59,13 @@ export const RENT = {
 };
 // All sixteen parcels of the farm can be bought, one next to another (the limit of two was the first version's).
 export const PARCELS = { cost: n => [0, 500, 2000, 4000, 7000, 11000][n - 1] ?? Math.round(11000 * 1.2 ** (n - 6) / 100) * 100, maxV01: 16, level: 4 };
-export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1 };
+export const NEIGHBOURS = { visitsPerDay: 2, helpBeds: 3, helpMs: 30 * MIN, tradesPerDay: 1, firstCallMs: 20_000 };   // firstCallMs: a newcomer's first call, soon after they arrive (the second newcomer a little later)
+/** The co-operative (core/cooperative.mjs, chapter 12). Founding takes `gift` from the barn. An order has `lines` goods;
+ *  a line asks for about line(level) coins' worth of its good, between `min` and `max` of it; a neighbour brings
+ *  `pledge` of every line. Filled, it pays what the player sent x `pay` plus `coins`, and xp x its worth; the neighbours
+ *  who brought a share (`friends` of them) grow fonder. The next order is posted everyMs later. */
+export const COOPERATIVE = { gift: { bread: 12, cheese: 6, apple_juice: 6 }, lines: 3, line: level => 150 + 25 * level, min: 6, max: 200, pledge: 1 / 3, pay: 1.4, coins: 200, xp: 0.3,
+  friends: 2, everyMs: paced(15 * MIN) };
 /** The delivery trucks (core/market.mjs): a trip takes tripMs, pays the goods' value x pay; capacity in goods per trip
  *  (upgradeCost and level per size, every truck the same size); fleet: how many trucks a farm can own, and what the
  *  2nd and 3rd cost and at which level. */
