@@ -59,11 +59,12 @@ const SYNTH = {
   error: () => tone(240, 0, 0.16, { type: 'square', gain: 0.06, to: 200 }),
   click: () => tone(1400, 0, 0.04, { gain: 0.08 }),
   cheer: () => [392, 523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.07, 0.35, { type: 'triangle', gain: 0.18 })),
+  whistle: () => { for (const [f, at, len] of [[740, 0, 0.5], [932, 0, 0.5], [740, 0.62, 0.9], [932, 0.62, 0.9]]) tone(f, at, len, { type: 'triangle', gain: 0.12 }); },   // a steam whistle: two notes together, short then long
   page: () => tone(900, 0, 0.12, { to: 2400, gain: 0.03 }),
 };
 // how loud each clip sits in the mix, and a minimum gap so a sweep is not a din
 const MIX = { harvest: [0.7, 45], pop: [0.6, 40], cluck: [0.75, 250], moo: [0.7, 600], oink: [0.7, 300], coin: [0.6, 60], tick: [0.35, 40], coins: [0.7, 200],
-  place: [0.9, 80], level: [0.8, 500], cheer: [0.8, 500], page: [0.6, 120], click: [0.5, 30], error: [0.55, 120] };
+  place: [0.9, 80], level: [0.8, 500], cheer: [0.8, 500], whistle: [0.7, 3000], page: [0.6, 120], click: [0.5, 30], error: [0.55, 120] };
 export function sfx(name) {
   if (!ctx || vol.sound <= 0 || ctx.state !== 'running') return;
   const [gain, gap] = MIX[name] ?? [0.7, 40], now = performance.now();

@@ -84,6 +84,12 @@ export const JUMPS = {
   // chapter 6 is behind: a market day sold on, and three fields
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 15 is behind: the halt stands on a free lot and one train has left with a full wagon
+  16: ctx => {
+    const { s } = ctx; upTo(ctx, BUILDINGS.halt.level);
+    if (!(s.counts.halt > 0)) { const coins = s.coins; s.coins += BUILDINGS.halt.cost; riverside.buildOnLot(ctx, { lot: freeLots(s)[0]?.id, kind: 'halt' }); s.coins = coins; }
+    s.stats.trains = Math.max(1, s.stats.trains ?? 0);
+  },
   // chapter 14 is behind: the hotel stands on the second lot and ten guests have stayed
   15: ctx => {
     const { s, now } = ctx; upTo(ctx, BUILDINGS.hotel.level);
@@ -118,7 +124,7 @@ export const JUMPS = {
 /** The chapters a tester can jump to. */
 export const JUMP_CHAPTERS = Object.keys(JUMPS).map(Number).sort((a, b) => a - b);
 /** The level a chapter's own deed asks for, where the jump before it does not reach it: a tester who jumps there can play it at once. */
-const PLAY_LEVEL = { 14: BUILDINGS.hotel.level };
+const PLAY_LEVEL = { 14: BUILDINGS.hotel.level, 15: BUILDINGS.halt.level };
 
 export const actions = {
   /** Coins to try things with: { coins }. */
@@ -190,6 +196,7 @@ export const actions = {
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); n++; }
     if (s.festival && s.festival.until > now) { s.festival.until = now; n++; }   // the Harvest Festival's evening too
     if (s.cooperative?.founded && !s.cooperative.order && s.cooperative.nextAt > now) { s.cooperative.nextAt = now; n++; }   // the co-operative's next order
+    if (s.train) { if (s.train.here && s.train.here.until > now) { s.train.here.until = now; n++; } else if (!s.train.here && s.train.nextAt > now) { s.train.nextAt = now; n++; } }   // the train at the halt leaves; else the next one comes
     if (s.hotel) { for (const g of s.hotel.rooms) if (g && g.until > now) { g.until = now; n++; } if (s.hotel.nextAt > now) { s.hotel.nextAt = now; n++; } }   // the hotel's guests leave, and the next one is at the door
     for (const id of ['priya', 'twins']) { const nb = s.neighbours?.[id]; if (nb && !nb.total && nb.visited < (nb.visits?.length ?? 0)) { nb.visits = nb.visits.map(v => Math.min(v, now)); n++; } }   // a newcomer's first call
     tickHomes(ctx);

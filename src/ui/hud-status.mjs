@@ -6,6 +6,7 @@ import { marketDayOf } from '../core/market-day.mjs';
 import { festivalOf } from '../core/festival.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { breakfastReady } from '../core/hotel.mjs';
+import { trainOf } from '../core/train.mjs';
 
 /** project: show the Projects pill (the HUD always does; it replaced a round button); canWork: a step can be worked now (the pill is lit). */
 export function hudStatus(s, now, { project = false, canWork = false } = {}) {
@@ -30,6 +31,8 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
     rows.push({ act: 'report', icon: 'person:ada', label: 'Evening sums', text: 'ready', hot: true });
   // Mr Albright waits for his answer (chapter 11): a tap opens his offer
   if (albrightOffer(s).open) rows.push({ act: 'offer', icon: 'person:albright', label: 'An offer', text: 'waiting', hot: true });
+  // the evening train is at the halt (chapter 15): the time until it leaves (a tap opens its wagons)
+  const train = trainOf(s, now); if (train.here) rows.push({ act: 'train', icon: 'halt', label: 'Train', ms: Math.max(0, train.leavesAt - now), lit: true });
   // a hotel guest's breakfast wish is in the barn (chapter 14): a tap opens the hotel
   const breakfast = breakfastReady(s); if (breakfast) rows.push({ act: 'hotel', icon: breakfast.wish, label: 'Breakfast', text: 'ready', hot: true });
   const line = s.fishing?.line;

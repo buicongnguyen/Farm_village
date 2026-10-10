@@ -109,6 +109,9 @@ export const LOTS = Array.from({ length: 7 }, (_, i) => ({ id: `q${i + 1}`, x: 4
 export const lotAt = (x, z) => LOTS.find(l => x >= l.x && x < l.x + l.w && z >= l.z && z < l.z + l.d) ?? null;
 /** The whole riverside zone: the lots and the lanes between them, the quay, and the strand down to the water's edge. */
 export const inRiverside = (x, z) => x >= QUAY.x0 && x <= QUAY.x1 && z >= 1 && z < brookZ(x) - BROOK_HALF;
+/** The railway (chapter 15): one row along the north edge of the map, behind the quay's lots. The rails lie rusty in
+ *  the grass from the day the quay is paved, and are relaid when the halt is built. Kept clear of wild scatter. */
+export const TRACK = { z: 0 };
 /** The towpath's gate, just east of the brook road: shut until chapter 12 is seen, then open for good. Cells; rot in quarter turns. */
 export const TOWPATH_GATE = { x: 32, z: brookZ(32) - BROOK_HALF - 1, rot: 1 };   // its middle, in cells: across both rows of the path, where the road's verge ends
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];

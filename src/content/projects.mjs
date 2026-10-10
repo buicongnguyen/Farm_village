@@ -77,6 +77,11 @@ export const STEPS = [
     needs: { level: 16 }, panel: 'quay', done: s => (s.counts.hotel ?? 0) >= 1, builds: [] },
   { id: 'ten_guests', name: 'Ten guests', text: 'Guests come by themselves while a room is free, sooner in a prettier valley. Let ten stay and pay. Serve them the breakfast they wish for and they tip double.',
     needs: { level: 16 }, panel: 'hotel', done: s => (s.stats.guests ?? 0) >= 10, builds: [] },
+  // chapter 15 (docs/plan/ch15-the-evening-train.md)
+  { id: 'halt', name: 'Reopen the railway halt', text: 'The old rails still run behind the quay. Build the halt on a lot, and the evening train will stop again.',
+    needs: { level: 17 }, panel: 'quay', done: s => (s.counts.halt ?? 0) >= 1, builds: [] },
+  { id: 'first_train', name: 'A wagon on the evening train', text: 'The train waits a while at the halt with three wagons. Fill at least one from your barn before it leaves: a full wagon pays best of all.',
+    needs: { level: 17 }, panel: 'train', done: s => (s.stats.trains ?? 0) >= 1, builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
     needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];

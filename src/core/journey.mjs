@@ -31,6 +31,8 @@ const tests = {
   quayHouse: s => (s.counts?.apartment ?? 0) >= 1,
   hotel: s => (s.counts?.hotel ?? 0) >= 1,
   guests10: s => (s.stats?.guests ?? 0) >= 10,
+  halt: s => (s.counts?.halt ?? 0) >= 1,
+  train1: s => (s.stats?.trains ?? 0) >= 1,
   cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {

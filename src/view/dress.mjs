@@ -34,6 +34,7 @@ export function reserved(x, z) {
   if (z >= 88 && z <= 89 && x >= 30) return true;                         // the verge between the farm and the village road
   if (x >= 30 && x <= 31 && z >= 22 && z <= 89) return true;               // the verge between the road and the farm
   if (W.NEIGHBOUR_SIGNS.some(s => Math.abs(s.x - x) <= 2 && Math.abs(s.z - z) <= 2)) return true;
+  if (z <= W.TRACK.z + 1) return true;                                     // the railway along the north edge (chapter 15), and room beside it
   if (W.inTowpath(x, z) || W.inTowpath(x, z + 1) || W.inTowpath(x, z + 2)) return true;   // the old towpath on the far bank (chapter 12), and room for the crowns beside it
   return false;
 }
@@ -419,5 +420,6 @@ export async function dressWorld(world, game) {
   })();
   // after that: the village's heavier models and the windmill's rotor
   world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam))
-    .then(() => import('./old-mill.mjs')).then(({ OldMill }) => { world.oldMill = new OldMill(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
+    .then(() => import('./old-mill.mjs')).then(({ OldMill }) => { world.oldMill = new OldMill(world, game); })
+    .then(() => import('./train-view.mjs')).then(({ TrainView }) => { world.train = new TrainView(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
 }

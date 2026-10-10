@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
@@ -303,7 +303,8 @@ export class LandView {
   drawRiverside() {
     const s = this.s, b = this.world.batches, paved = !!s.firsts?.quay;
     const taken = new Set(Object.values(s.placed).map(p => p.lot).filter(Boolean));
-    const key = [paved, [...taken].sort().join(), b.has('sale_sign'), b.has('deco_lamp'), b.has('quay_bollard'), !!this.world.wildDecor].join('|');
+    const halt = (s.counts.halt ?? 0) > 0, rail = halt ? 'track' : 'track_old';
+    const key = [paved, halt, [...taken].sort().join(), b.has('sale_sign'), b.has('deco_lamp'), b.has('quay_bollard'), b.has(rail), !!this.world.wildDecor].join('|');
     if (key === this.riversideKey) return; this.riversideKey = key;
     if (paved && this.world.wilds && this.world.wildDecor && !this.riversideCleared) { this.riversideCleared = true; clearWilds(this.world, inRiverside); }
     if (paved !== this.riversidePaved) { this.riversidePaved = paved; this.world.ground.markAll(); }
@@ -313,6 +314,8 @@ export class LandView {
       if (paved && b.has('deco_lamp')) b.set(lamp, { model: 'deco_lamp', x: (l.x - 1) * CELL, z: (QUAY.z0 - 0.3) * CELL, rot: 0 }); else b.remove(lamp);   // lit at night by view/daylight.mjs
     });
     for (let x = QUAY.x0 + 1, i = 0; x <= QUAY.x1; x += 4, i++) { const id = `quay:b${i}`; if (paved && b.has('quay_bollard')) b.set(id, { model: 'quay_bollard', x: (x + 0.5) * CELL, z: (QUAY.z1 + 0.95) * CELL, rot: 0 }); else b.remove(id); }
+    // the railway along the north edge: rusty in the grass once the quay is paved, relaid when the halt is built (chapter 15)
+    for (let i = 0; i < N / 2; i++) { const id = `quay:t${i}`; if (paved && b.has(rail)) b.set(id, { model: rail, x: (i * 2 + 1) * CELL, z: (TRACK.z + 0.5) * CELL, rot: 0 }); else b.remove(id); }
     this.world.onLampsChanged?.();
   }
   /** Chapter 12's fixtures: the co-operative's notice board on the square from the day the idea comes, and the towpath's

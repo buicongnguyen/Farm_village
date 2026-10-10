@@ -74,7 +74,7 @@ class Glows {
   }
 }
 // farm buildings whose windows glow too (their doors get no porch light: only homes have one)
-const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment', 'hotel']);
+const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment', 'hotel', 'halt']);
 const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), POOL = new THREE.Color('#ff9d3a');
 
 /** The Harvest Festival (chapter 9): the hour its evening is lit as, and its lanterns: two strings from the stage's front
