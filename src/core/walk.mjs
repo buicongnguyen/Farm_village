@@ -27,7 +27,7 @@ export function stepCost(s, x, z, blocked = null) {
   if (isPondWater(x, z) || inFixed(x, z) || KIOSKS.has(`${x},${z}`)) return 0;
   const parcel = parcelOf(x, z);
   if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z))) return 0;
-  const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0)) return 0;
+  const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0) && !s.village?.cleared?.[ruin.kind]) return 0;   // an old ruin stands there
   if (homeGardenAt(s.house?.level ?? 1, x, z)) return 0;   // the pool, the gazebo and the rest of the farmhouse garden
   const type = cellType(s, x, z); if (type === 'rock' || type === 'weeds') return 0;
   const id = occupant(s, x, z), kind = id ? s.placed[id]?.kind : null;

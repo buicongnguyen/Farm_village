@@ -123,4 +123,15 @@ export const VI_FISHING = {
   'Cabbage': 'Bắp cải',
   'Onion': 'Hành tây',
   'Chili': 'Ớt',
+  // old buildings: clear away, demolish, rebuild on a cluttered site
+  'Kept for the old building that stands here': 'Chỗ này dành cho công trình cũ đang đứng ở đây',
+  'Move {name} off the old site first': 'Hãy dời {name} khỏi nền cũ trước',
+  'Release the company staff first': 'Hãy cho nhân viên công ty nghỉ trước',
+  'Wait for the company truck first': 'Hãy đợi xe tải của công ty về trước',
+  'Tap a building, an old ruin or a path to take it away': 'Chạm vào công trình, phế tích cũ hoặc lối đi để dỡ bỏ',
+  'The village road stays where it is': 'Đường làng thì giữ nguyên',
+  'Paths and loose things on the old site are moved out of the way for you.': 'Lối đi và đồ lặt vặt trên nền cũ sẽ được dọn giúp bạn.',
+  'Clear away': 'Dỡ bỏ',
+  'Cleared, kept for the rebuild': 'Đã dọn sạch, để dành xây lại',
+  '{name} is cleared away': 'Đã dỡ bỏ {name}',
 };

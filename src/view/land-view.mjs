@@ -245,9 +245,12 @@ export class LandView {
   drawRuins() {
     const s = this.s, b = this.world.batches, step = STEPS[s.projects?.step];
     for (const r of RUINS) {
-      const id = `ruin:${r.kind}`, built = (s.counts[r.kind] ?? 0) > 0, [w, d] = r.kind === 'school' ? [5, 4] : [4, 3];
+      const id = `ruin:${r.kind}`, built = (s.counts[r.kind] ?? 0) > 0 || !!s.village?.cleared?.[r.kind], [w, d] = r.kind === 'school' ? [5, 4] : [4, 3];   // rebuilt, or taken down
       const at = { x: (r.x + w / 2) * CELL, z: (r.z + d / 2) * CELL, rot: r.rot * Math.PI / 2 };
       if (b.has(id)) { if (built) b.remove(id); else b.set(id, { model: id, ...at }); }
+      // a cleared lot that a police post or company office must return to keeps a sign, so it reads as a place with a purpose
+      const empty = !(s.counts[r.kind] > 0) && !!s.village?.cleared?.[r.kind] && BUILDINGS[r.kind].civicSite && b.has('sale_sign');
+      if (empty) b.set(`ruinsign:${r.kind}`, { model: 'sale_sign', x: at.x, z: at.z, rot: at.rot }); else b.remove(`ruinsign:${r.kind}`);
       const working = !built && step?.builds?.includes(r.kind) && b.has('scaffold');
       // against the ruin's front wall, a little off centre
       const ox = -1.6, oz = d * CELL / 2 - 0.6, c = Math.cos(at.rot), sn = Math.sin(at.rot);
@@ -391,9 +394,9 @@ export class LandView {
     if (!this.ready) return;
     for (const e of events) {
       if (e.type === 'cellChanged') this.drawCell(e.x, e.z);
-      else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') this.drawPlaced(e.id);
+      else if (e.type === 'placed' || e.type === 'moved' || e.type === 'stored') { this.drawPlaced(e.id); this.drawRuins(); }   // a rebuilt building takes its old ruin's place at once, whatever the current project is
       else if (e.type === 'gardenFlower' || e.type === 'picked') this.drawPlaced(e.id);   // the streak garden plants from tick(); a picked tree goes bare
-      else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered') this.drawRuins();
+      else if (e.type === 'projectDone' || e.type === 'projectDelivered' || e.type === 'delivered' || e.type === 'ruinCleared') this.drawRuins();
       else if (e.type === 'fenceChanged') this.drawEdge(`${e.x},${e.z},${e.side}`);
       else if (e.type === 'homeUpgraded') this.drawPlaced(e.id);
       else if (e.type === 'hospitalUpgraded') {
@@ -404,7 +407,7 @@ export class LandView {
         if (this.s.placed[e.id]) this.drawPlaced(e.id);
         else if (e.id === 'house') this.drawHouse();
         else if (ROAD_SEGMENTS.some(r => r.id === e.id)) this.world.ground.markAll();
-      } else if (e.type === 'demolished') { this.drawPlaced(e.id); this.refreshPens(); }
+      } else if (e.type === 'demolished') { this.drawPlaced(e.id); this.refreshPens(); this.drawRuins(); }
       else if (e.type === 'parcelBought' || e.type === 'loaded') this.sync();
     }
     if (events.some(e => e.type === 'fenceChanged' || e.type === 'placed' || e.type === 'moved' || e.type === 'stored' || e.type === 'cellChanged')) this.refreshPens();

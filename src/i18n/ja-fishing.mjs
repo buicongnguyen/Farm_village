@@ -123,4 +123,15 @@ export const JA_FISHING = {
   'Cabbage': 'キャベツ',
   'Onion': 'タマネギ',
   'Chili': 'トウガラシ',
+  // old buildings: clear away, demolish, rebuild on a cluttered site
+  'Kept for the old building that stands here': 'ここに立つ古い建物のためにとってある場所です',
+  'Move {name} off the old site first': '先に{name}を古い敷地からどかしてください',
+  'Release the company staff first': '先に会社のスタッフをやめさせてください',
+  'Wait for the company truck first': '先に会社のトラックが戻るのを待ってください',
+  'Tap a building, an old ruin or a path to take it away': '建物、古い廃屋、道をタップして取りのぞきます',
+  'The village road stays where it is': '村の道路はそのままです',
+  'Paths and loose things on the old site are moved out of the way for you.': '古い敷地の道や小物は自動でどかします。',
+  'Clear away': '取りこわす',
+  'Cleared, kept for the rebuild': '片づけ済み、再建用にとってあります',
+  '{name} is cleared away': '{name}を取りこわしました',
 };

@@ -5,10 +5,11 @@
 import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
-import { CELL, RUINS } from '../content/world.mjs';
-import { canPlace, canPlaceEdge, occupant, doorCell } from '../core/grid.mjs';
+import { CELL, RUINS, ruinAt } from '../content/world.mjs';
+import { canPlace, canPlaceEdge, occupant, cellType } from '../core/grid.mjs';
+import { ruinStands } from '../core/ruins.mjs';
 import { mayBuild } from '../core/projects.mjs';
-import { placementPrice } from '../core/build.mjs';
+import { placementPrice, civicRebuildPlan } from '../core/build.mjs';
 import { CLEAR } from '../content/economy.mjs';
 import { charmPreview } from '../core/homes.mjs';
 import { sfx } from '../kit/sound.mjs';
@@ -17,7 +18,6 @@ import { iconHtml, glyph, coinMark } from './icon.mjs';
 const TOOLS = [{ id: 'clear', icon: 'tool:clear', name: 'Clear' }, { id: 'move', icon: 'tool:move', name: 'Move' }, { id: 'store', icon: 'tool:store', name: 'Store' }, { id: 'demolish', icon: 'demolish', name: 'Demolish' }];
 const QUICK = kind => BUILDINGS[kind].edge || (BUILDINGS[kind].size[0] === 1 && BUILDINGS[kind].size[1] === 1);
 
-const DOOR_PATH = 'Needs a path from the door to the road';
 export class BuildView {
   constructor(root, { game, world, ghost, hud }) {
     Object.assign(this, { game, world, ghost, hud, open: false, cat: 'farm', mode: null, kind: null, rot: 0, at: null, moving: null });
@@ -121,9 +121,9 @@ export class BuildView {
     const s = this.game.s, kind = this.kind; if (!kind || !this.at) return { ok: false };
     if (BUILDINGS[kind].edge) { const e = this.edgeAt(this.at); return { ...canPlaceEdge(s, kind, e.x, e.z, e.side), edge: e }; }
     const a = this.anchor(kind, this.at, this.rot);
+    // a civic building has one site: its rebuild moves paths and loose things off it and lays the door path (core/build.mjs)
+    if (BUILDINGS[kind].civicSite && !this.moving) { const plan = civicRebuildPlan(s, kind); return { ok: plan.ok, reason: plan.reason, params: plan.params, civic: true, a }; }
     const r = this.moving ? canPlace(s, kind, a.x, a.z, this.rot, { ignore: this.moving }) : canPlace(s, kind, a.x, a.z, this.rot);
-    // a civic building on its old site that only lacks the path tile at its door is fine: confirm() lays that tile with it
-    if (!r.ok && r.reason === DOOR_PATH && BUILDINGS[kind].civicSite) return { ok: true, doorPath: true, a };
     return { ...r, a };
   }
   refreshGhost() {
@@ -137,7 +137,7 @@ export class BuildView {
     const s = this.game.s, placing = this.mode === 'place' || this.mode === 'moving';
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
-      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building to take it down for part of its price')
+      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building, an old ruin or a path to take it away')
       : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(placementPrice(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, tParams(c.params)) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
@@ -158,7 +158,14 @@ export class BuildView {
     if (!cell) return;
     const s = this.game.s;
     if (this.mode === 'clear') { this.game.do('clear', { x: cell.x, z: cell.z }); return; }
-    if (this.mode === 'demolish') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('demolish', { id }); else this.hud.refuse('Nothing to demolish'); return; }
+    if (this.mode === 'demolish') {   // a building, a path tile, or an old ruin
+      const id = occupant(s, cell.x, cell.z), type = cellType(s, cell.x, cell.z), old = ruinAt(cell.x, cell.z);
+      if (id) this.game.do('demolish', { id });
+      else if (type === 'path') this.game.do('clear', { x: cell.x, z: cell.z });
+      else if (old && ruinStands(s, old.kind)) this.game.do('clearRuin', { kind: old.kind });
+      else this.hud.refuse(type === 'road' ? 'The village road stays where it is' : 'Nothing to demolish');
+      return;
+    }
     if (this.mode === 'store') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('store', { id }); else this.hud.refuse('Nothing to store'); return; }
     if (this.mode === 'move') {
       const id = occupant(s, cell.x, cell.z); if (!id) { this.hud.refuse('Nothing to move'); return; }
@@ -176,11 +183,7 @@ export class BuildView {
   confirm() {
     let c = this.check();
     // a civic building stands on its old site: if all it lacks is the path tile at its door, lay that tile with it
-    if (c.doorPath) {
-      const site = RUINS.find(r => r.kind === this.kind), [x, z] = doorCell(this.kind, site.x, site.z, site.rot);
-      this.game.do('place', { kind: 'path', x, z }); c = this.check();
-      if (c.doorPath) { this.hud.refuse(DOOR_PATH); return; }   // the tile could not be laid (no coin, something in the way)
-    }
+    if (c.civic) { if (this.game.do('rebuildCivic', { kind: this.kind }).ok) this.cancel(); else this.refreshGhost(); return; }   // a refusal is shown by the HUD
     if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
     if (c.edge) this.game.do('placeEdge', { kind: this.kind, ...c.edge });
     else if (this.moving) { const r = this.game.do('move', { id: this.moving, x: c.a.x, z: c.a.z, rot: this.rot }); if (r.ok) { this.mode = 'move'; this.moving = null; this.kind = null; this.ghost.hide(); this.renderBar(); } return; }

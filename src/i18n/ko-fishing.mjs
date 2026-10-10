@@ -123,4 +123,15 @@ export const KO_FISHING = {
   'Cabbage': '양배추',
   'Onion': '양파',
   'Chili': '고추',
+  // old buildings: clear away, demolish, rebuild on a cluttered site
+  'Kept for the old building that stands here': '여기 서 있는 옛 건물을 위해 남겨 둔 자리예요',
+  'Move {name} off the old site first': '먼저 {name}을(를) 옛 터에서 옮겨 주세요',
+  'Release the company staff first': '먼저 회사 직원을 내보내 주세요',
+  'Wait for the company truck first': '먼저 회사 트럭이 돌아오길 기다려 주세요',
+  'Tap a building, an old ruin or a path to take it away': '건물, 옛 폐허나 길을 눌러 치워요',
+  'The village road stays where it is': '마을 도로는 그대로 둬요',
+  'Paths and loose things on the old site are moved out of the way for you.': '옛 터 위의 길과 작은 물건은 알아서 치워 드려요.',
+  'Clear away': '철거하기',
+  'Cleared, kept for the rebuild': '정리 완료, 재건을 위해 남겨 둠',
+  '{name} is cleared away': '{name}을(를) 철거했어요',
 };

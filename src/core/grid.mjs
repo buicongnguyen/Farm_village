@@ -1,5 +1,5 @@
 // The land grid and placement rules (DESIGN 4). Pure: reads the state, never changes it.
-import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA, RUINS } from '../content/world.mjs';
+import { N, parcelOf, isRoad, isBrook, inVillage, nearHome, FARMHOUSE, BARN, PLAZA, RUINS, ruinAt } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL_TYPES } from './state.mjs';
 import { reservedReason } from './reserved.mjs';
@@ -82,7 +82,7 @@ export const reachesRoad = (s, x, z) => roadReach(s).has(z * N + x);
  * Can `kind` be placed at (x, z, rot)? Returns { ok, reason, params }. The reason is an English sentence for t().
  * `ignore` is an id to leave out of overlap checks (moving an item).
  */
-export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = null } = {}) {
+export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = null, clearing = null } = {}) {   // clearing: a Set of things a civic rebuild moves off its site first (core/build.mjs)
   const def = BUILDINGS[kind];
   if (!def) return { ok: false, reason: 'Unknown item' };
   if (def.edge) return { ok: false, reason: 'Fences go on cell edges' };
@@ -104,14 +104,18 @@ export function canPlace(s, kind, x, z, rot = 0, { ignore = null, unlocked = nul
     const kept = reservedReason(cx, cz); if (kept) return { ok: false, reason: kept };
     // the village square stays open round the old well (paths may cross it)
     if (kind !== 'path' && cx >= PLAZA.x0 && cx <= PLAZA.x1 && cz >= PLAZA.z0 && cz <= PLAZA.z1) return { ok: false, reason: 'Keep the village square clear' };
-    const who = occupant(s, cx, cz); if (who && who !== ignore) return { ok: false, reason: 'Overlaps something' };
+    // Nothing new goes where an old building stands, or on the lot a police post or company office must return to.
+    const old = ruinAt(cx, cz);
+    if (old && old.kind !== kind && !(s.counts[old.kind] > 0) && (BUILDINGS[old.kind].civicSite || !s.village?.cleared?.[old.kind])) return { ok: false, reason: 'Kept for the old building that stands here' };
+    const who = occupant(s, cx, cz); if (who && who !== ignore && !clearing?.has(who)) return { ok: false, reason: 'Overlaps something' };
+    if (clearing) continue;   // the rebuild lifts paths and clears weeds on its own site
     if (type === 'weeds' || type === 'rock') return { ok: false, reason: 'Clear the weeds and rocks first' };
     if (type === 'path' && kind !== 'path') return { ok: false, reason: 'Overlaps a path' };
     if (type === 'tilled' && kind !== 'bed') return { ok: false, reason: 'Overlaps a crop bed' };
     if (kind === 'path' && type === 'path') return { ok: false, reason: 'There is a path here already' };
   }
   const door = doorCell(kind, x, z, rot);
-  if (door && !reachesRoad(s, door[0], door[1])) return { ok: false, reason: 'Needs a path from the door to the road' };
+  if (door && !clearing && !reachesRoad(s, door[0], door[1])) return { ok: false, reason: 'Needs a path from the door to the road' };
   return { ok: true };
 }
 
