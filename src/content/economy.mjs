@@ -14,7 +14,9 @@ export const REPAIR = {
 };
 export const WEAR = { ms: [3 * HOUR, 9 * HOUR], rent: 0.05, charm: 1, tickCapMs: 2 * MIN };   // play time to "worn" and "shabby"; one tick never counts more than tickCapMs
 // The farmhouse (D4): a one-floor home that can be upgraded. Each level adds barn room.
-export const HOUSE = { levels: 3, upgradeCost: [0, 300, 1100], level: [1, 4, 7], barn: 100, price: 400 };
+// Ten levels of comfort (v0.5). Each adds barn room; the house itself grows at 4 and 7 and the garden gains something
+// at every level (content/world.mjs HOME_GARDEN).
+export const HOUSE = { levels: 10, upgradeCost: [0, 300, 1100, 1800, 2600, 3600, 4800, 6200, 7800, 9600], level: [1, 4, 7, 8, 9, 10, 11, 12, 13, 14], barn: 100, price: 400 };
 // Demolishing gives back this share of the price and leaves a rebuild credit (the same thing again costs half).
 export const DEMOLISH = { refund: 0.4, rebuild: 0.5 };
 export const LEVELS = {

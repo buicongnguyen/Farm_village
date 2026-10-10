@@ -96,3 +96,12 @@ test('the truck can be made bigger ten times over', async () => {
   for (let i = 0; i < 9; i++) assert.equal(act(s, 'upgradeTruck', {}, T0).ok, true, `upgrade ${i + 2}`);
   assert.equal(s.truck.level, 10); assert.equal(act(s, 'upgradeTruck', {}, T0).ok, false);
 });
+
+test('the farmhouse garden: one new thing at every level from 2 to 10, and its solid pieces block walking only once built', async () => {
+  const { HOME_GARDEN, homeGardenAt, nearHome } = await import('../src/content/world.mjs'), { stepCost } = await import('../src/core/walk.mjs');
+  for (let lv = 2; lv <= 10; lv++) assert.ok(HOME_GARDEN.some(g => g.level === lv && g.name), `level ${lv} brings nothing`);
+  for (const g of HOME_GARDEN) if (g.at) assert.ok(nearHome(Math.floor(g.at[0]), Math.floor(g.at[1])), `${g.model} is outside the homestead`);
+  const pool = HOME_GARDEN.find(g => g.model === 'home_pool'), s = game();
+  s.house = { ...(s.house ?? {}), level: 4 }; assert.ok(stepCost(s, pool.block[0], pool.block[1]) > 0, 'the pool blocks the lawn before it is built');
+  s.house.level = 5; assert.equal(stepCost(s, pool.block[0], pool.block[1]), 0); assert.equal(homeGardenAt(5, pool.block[2], pool.block[3]), true);
+});

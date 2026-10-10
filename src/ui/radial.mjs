@@ -9,7 +9,7 @@ import { sfx } from '../kit/sound.mjs';
 import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY } from '../content/world.mjs';
+import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY, HOME_GARDEN } from '../content/world.mjs';
 import { tidied } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
@@ -94,7 +94,8 @@ export class Radial {
     if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
     const lesson = learningStatus(s, this.game.now);
     if (lesson.eligible || lesson.introduced) buttons.push({ act: 'learning', icon: iconHtml('wrench', '', 'ic'), label: t('Garden repairs') });
-    let info = `${t('Your farmhouse')} · ${t('Level {level}', { level: lv })}`;
+    const perk = HOME_GARDEN.find(g => g.name && g.level === lv + 1);   // what the next level of the house brings
+    let info = `${t('Your farmhouse')} · ${t('Level {level}', { level: lv })}${perk ? ` · ${t('Next: {name}', { name: t(perk.name) })}` : ''}`;
     if (levelOf(s, 'house') > 0 || isRepairing(s, 'house')) { const m = this.repairMenu('house'); buttons.push(...m.buttons); info = m.info; }
     if (lv < HOUSE.levels && levelOf(s, 'house') < 3 && !isRepairing(s, 'house')) {
       const cost = HOUSE.upgradeCost[lv], need = HOUSE.level[lv], ok = s.level >= need && s.coins >= cost;

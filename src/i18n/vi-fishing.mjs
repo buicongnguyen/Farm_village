@@ -77,4 +77,15 @@ export const VI_FISHING = {
   'Goat barn': 'Chuồng dê',
   'Dairy': 'Xưởng sữa',
   'Open all {count} thank-you notes': 'Mở cả {count} thư cảm ơn',
+  // the farmhouse garden, level by level
+  'Next: {name}': 'Tiếp theo: {name}',
+  'Flower beds by the door': 'Luống hoa bên cửa',
+  'A bench and a lamp on the lawn': 'Ghế dài và đèn trên bãi cỏ',
+  'A bigger farmhouse': 'Ngôi nhà trang trại lớn hơn',
+  'A swimming pool': 'Hồ bơi',
+  'Sun loungers and a parasol': 'Ghế tắm nắng và ô che',
+  'A grand farmhouse': 'Ngôi nhà trang trại bề thế',
+  'A fountain': 'Đài phun nước',
+  'A garden gazebo': 'Chòi nghỉ trong vườn',
+  'A flag over the farm': 'Lá cờ trên trang trại',
 };

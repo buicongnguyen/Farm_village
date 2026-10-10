@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, HOME_GARDEN } from '../content/world.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { cellType, occupant, penOf, cellsOf } from '../core/grid.mjs';
@@ -150,8 +150,14 @@ export class LandView {
   drawHouse() {
     const b = this.world.batches, it = b.items.get('farmhouse'); if (!it) return;
     this.houseBase ??= { ...it, model: 'farmhouse' };
-    const lv = levelOf(this.s, 'house'), want = lv > 0 ? this.dusty('farmhouse', lv) : 'farmhouse';
+    const comfort = this.s.house?.level ?? 1, tier = comfort >= 7 && b.has('farmhouse:3') ? 'farmhouse:3' : comfort >= 4 && b.has('farmhouse:2') ? 'farmhouse:2' : 'farmhouse';
+    const lv = levelOf(this.s, 'house'), want = lv > 0 ? this.dusty(tier, lv) : tier;
     if (it.model !== want) b.set('farmhouse', { ...this.houseBase, model: want });
+    // the garden: what each level of the house has brought (content/world.mjs HOME_GARDEN)
+    HOME_GARDEN.forEach((g, i) => {
+      const id = `homegarden:${i}`;
+      if (g.model && comfort >= g.level && b.has(g.model)) b.set(id, { model: g.model, x: g.at[0] * CELL, z: g.at[1] * CELL, rot: g.rot ?? 0, ...(g.scale ? { scale: g.scale } : {}) }); else b.remove(id);
+    });
   }
   /** World position of a placed item's centre. */
   centre(kind, x, z, rot) { const [w, d] = footprint(kind, rot); return { x: (x + w / 2) * CELL, z: (z + d / 2) * CELL }; }
@@ -393,6 +399,7 @@ export class LandView {
       else if (e.type === 'hospitalUpgraded') {
         for (const [id, p] of Object.entries(this.s.placed)) if (p.kind === 'clinic') this.drawPlaced(id);
       }
+      else if (e.type === 'houseUpgraded') this.drawHouse();
       else if (e.type === 'repairStarted' || e.type === 'repaired' || e.type === 'worn') {
         if (this.s.placed[e.id]) this.drawPlaced(e.id);
         else if (e.id === 'house') this.drawHouse();

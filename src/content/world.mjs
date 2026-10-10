@@ -10,6 +10,21 @@ export const FARMHOUSE = { x: 22, z: 62, model: 'home_t1', width: 9 };       // 
 /** The farmhouse forecourt (cells): stone tiles from the porch steps toward the road, with a bench and planters (view only;
  *  x 24–26 lie in the farmhouse's fixed footprint, so nothing can be built on them). */
 export const HOME_YARD = { x0: 24, x1: 26, z0: 60, z1: 64 };
+/** What each farmhouse level adds to the garden: { level, name, model, at: [cell x, cell z] (centre, may be fractional),
+ *  rot, scale?, block?: [x0, z0, x1, z1] cells nobody walks through }. Levels 4 and 7 make the house itself bigger. */
+export const HOME_GARDEN = [
+  { level: 2, name: 'Flower beds by the door', model: 'flowers', at: [24.5, 58.6], scale: 1.1 }, { level: 2, model: 'flowers', at: [24.5, 65.4], scale: 1.1 }, { level: 2, model: 'bush', at: [23.6, 58.5], scale: 0.7 }, { level: 2, model: 'bush', at: [23.6, 65.5], scale: 0.7 },
+  { level: 3, name: 'A bench and a lamp on the lawn', model: 'bench', at: [25.5, 56.5], rot: Math.PI }, { level: 3, model: 'lamp', at: [26.5, 56.5] },
+  { level: 4, name: 'A bigger farmhouse' },
+  { level: 5, name: 'A swimming pool', model: 'home_pool', at: [22.5, 54], block: [21, 53, 23, 54] },
+  { level: 6, name: 'Sun loungers and a parasol', model: 'home_loungers', at: [25.5, 54], block: [25, 53, 26, 54] },
+  { level: 7, name: 'A grand farmhouse' },
+  { level: 8, name: 'A fountain', model: 'fountain', at: [16, 67], block: [15, 66, 16, 67] },
+  { level: 9, name: 'A garden gazebo', model: 'home_gazebo', at: [16, 78], block: [15, 77, 16, 78] },
+  { level: 10, name: 'A flag over the farm', model: 'home_flag', at: [26.5, 66.5], block: [26, 66, 26, 66] },
+];
+/** Is this cell taken by something in the farmhouse garden at this house level? */
+export const homeGardenAt = (level, x, z) => HOME_GARDEN.some(g => g.block && level >= g.level && x >= g.block[0] && x <= g.block[2] && z >= g.block[1] && z <= g.block[3]);
 export const BARN = { x: 22, z: 72, model: 'barn', width: 8 };
 export const ORDER_BOARD = { x: 28, z: 58 };
 // Roads (2 cells wide) and the brook.

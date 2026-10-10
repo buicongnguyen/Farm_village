@@ -132,6 +132,10 @@ export function cropLook(crop, progress) {
 /** Cottages cycle through the town's five house styles. */
 export const COTTAGE_STYLES = ['house_gable', 'house_front', 'house_hip', 'house_tall', 'house_round'];
 for (const h of COTTAGE_STYLES) KIND_MODELS[`cottage_${h}`] = { kit: 'town', node: h, width: 5.6, lod: 'static', late: true };
+// The farmhouse grows with its comfort level (content/world.mjs HOME_GARDEN): bigger homes at levels 4 and 7, garden pieces between.
+KIND_MODELS['farmhouse:2'] = { kit: 'rural-extra', node: 'home_t2', width: 9.8, lod: 'static', late: true };
+KIND_MODELS['farmhouse:3'] = { kit: 'rural-extra', node: 'home_t3', width: 10.6, lod: 'static', late: true };
+for (const piece of ['home_pool', 'home_loungers', 'home_gazebo', 'home_flag']) KIND_MODELS[piece] = { kit: 'decor', node: piece, authored: true, lod: 'static', late: true };
 // Rental cottages have a shape of their own for each furnish level (art/blender/build_farm_kit.py rental()); the town
 // houses above stand in until the decor kit has loaded.
 for (const tier of [0, 1, 2]) KIND_MODELS[`cottage_t${tier}`] = { kit: 'decor', node: `cottage_t${tier}`, authored: true, lod: 'static', late: true };
