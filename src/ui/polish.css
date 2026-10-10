@@ -82,6 +82,19 @@ body.panel-open .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }   /* buil
 
 @media (min-width: 900px) and (min-height: 600px) {
   .sheet { left: calc(50% - min(400px, 46vw)); right: calc(50% - min(400px, 46vw)); border-radius: 26px 26px 0 0; }
+  /* Desktop menus are a column on the right (after Zoo Garden), so the middle of the view, where your character and the
+     farm are, stays clear. The build tray stays a short strip along the bottom: it is a toolbar for placing on the map. */
+  :root { --side: min(440px, 36vw); }
+  .sheet.panel { left: auto; right: 0; top: 0; bottom: 0; width: var(--side); max-height: none; border-radius: 26px 0 0 26px; border-right: 0; border-bottom: 4px solid var(--edge);
+    box-shadow: -5px 0 0 #ffffff60 inset, -6px 0 22px #0000004d; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .sheet.panel.pop { animation: side-in .28s cubic-bezier(.3, 1.2, .5, 1); }
+  .sheet.panel .order-list, .sheet.panel .friends, .sheet.panel .letters { grid-template-columns: 1fr; }
+  /* with a menu open: the farm buttons slide left of it instead of jumping up; the left of the HUD stays as it is */
+  body.panel-open .hud .hud-tools, body.panel-open .hud-tools { bottom: max(34px, calc(env(safe-area-inset-bottom) + 26px)); right: calc(var(--side) * var(--hud-text, 1) + 18px); }
+  body.panel-open .hud .hud-tracker { display: grid; } body.panel-open .hud .hud-status { display: flex; }
+  body.panel-open .hud .next-chip:not([hidden]) { display: flex; left: calc((100vw - var(--side)) / 2); }
+  body.panel-open .hud .toasts { top: auto; bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px)); left: calc((100vw - var(--side) * var(--hud-text, 1)) / 2); }
+  body.panel-open .guide { bottom: max(10px, env(safe-area-inset-bottom)); max-width: min(450px, calc(100vw - var(--side) - 280px)); }
   .place-bar { bottom: calc(var(--build-h, min(46vh, 196px)) + 14px); }
   .friends, .letters { grid-template-columns: 1fr 1fr; }
 }
@@ -232,7 +245,9 @@ button.village-name { border: 0; cursor: pointer; }
 
 /* Tidy order board: fewer rows per card. Name and hearts share a line, smaller faces and plan steps, and the saying is
    dropped on phones (the card already shows who, what and the reward). Ready orders are sorted first (panel-renderers). */
-.order .who-name { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+.order { min-width: 0; } .order .who { min-width: 0; }
+.order .who-name { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; flex: 1 1 0; overflow: hidden; }
+.order .who .reward { flex: none; }
 .order .who-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .order button.good { padding: 2px 4px; min-width: 50px; min-height: 0; gap: 0; }
 .order .item-token { width: 34px; height: 34px; }
@@ -243,3 +258,4 @@ button.village-name { border: 0; cursor: pointer; }
 .order-plan .plan-step { font-size: 12px; padding: 1px 6px; min-height: 0; }
 .order-plan .plan-step img { width: 18px; height: 18px; }
 @media (max-width: 560px) { .order .line { display: none; } }
+@keyframes side-in { from { transform: translateX(40px); opacity: .4; } }

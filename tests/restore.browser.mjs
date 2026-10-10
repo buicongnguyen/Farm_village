@@ -76,8 +76,9 @@ await check('a damaged road and the worn farmhouse can be repaired from their me
   expect(await page.isVisible('.radial-btn[data-act="repair"]'), 'no Repair on the damaged road');
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !!farm.state().repairing.road_south), 'the road repair did not start');
+  await page.evaluate(() => { farm.game.s.cond.house = { level: 1, ms: 3 * 3600e3 }; });   // a visiting neighbour may have mended it in the meantime (that is the feature)
   await tap(page, 22, 62);                               // the farmhouse
-  expect(await page.isVisible('.radial-btn[data-act="repair"]'), 'no Repair on the worn farmhouse');
+  expect(await page.isVisible('.radial-btn[data-act="repair"]'), `no Repair on the worn farmhouse (${await page.evaluate(() => JSON.stringify({ radial: [...document.querySelectorAll('.radial:not([hidden]) .radial-btn')].map(b => b.dataset.act), panel: document.querySelector('.panel:not([hidden])')?.dataset.kind ?? null, modal: !!document.querySelector('.modal'), house: farm.state().cond.house, repairing: Object.keys(farm.state().repairing ?? {}), explore: document.body.classList.contains('explore-active') }))})`);
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !farm.state().cond.house), 'a worn house is mended at once');
   await tap(page, 22, 62);
