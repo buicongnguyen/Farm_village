@@ -1,5 +1,11 @@
 # Changelog
 
+## Chapter 15: The evening train — 2026-10-11
+
+- **The railway halt**: build it on a free lot of the quay (level 17, 18,000 coins). The old rails behind the quay are relaid.
+- **The train**: it rolls in from the east with a whistle, waits eight minutes behind the halt and comes again every twenty-five. Its **three wagons** each ask for one good in a large amount: load them from the barn. A full wagon pays its goods at 1.6 times their price, three full wagons add a bonus, and a train that leaves empty costs nothing.
+- **Chapter 15** closes when a train has left with a full wagon.
+
 ## Chapter 14: Rooms with a view — 2026-10-11
 
 - **The hotel**: build it on a free lot of the quay (level 16, 14,000 coins). Guests come by themselves while a room is free, sooner the prettier the valley is; each stays a while, then pays for the room and leaves a tip that grows with the valley's beauty.

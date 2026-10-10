@@ -41,6 +41,10 @@ const quayHouse = `s.firsts.quay = 1; s.placed.st_quay = { kind: 'apartment', x:
 // chapter 14: the hotel on the quay's second lot, three guests staying
 const hotel = `s.placed.st_hotel = { kind: 'hotel', x: 54, z: 1, rot: 0, lot: 'q2' }; s.counts.hotel = 1;
   s.hotel = { level: 0, rooms: [0, 1, 2, 3].map(n => ({ n, at: farm.game.now, until: farm.game.now + 600000, wish: 'bread', served: n === 1 })).concat([null, null]), nextAt: farm.game.now + 600000, held: 0, n: 4 };`;
+// chapter 15: the halt on the quay's last lot, and a train waiting behind it with its middle wagon full
+const haltLot = `s.placed.st_halt = { kind: 'halt', x: 94, z: 1, rot: 0, lot: 'q7' }; s.counts.halt = 1;`;
+const trainHere = `s.train = { nextAt: farm.game.now + 1500000, n: 1, here: { n: 0, at: farm.game.now - 60000, until: farm.game.now + 420000,
+  wagons: [{ good: 'wheat', need: 100, have: 100 }, { good: 'bread', need: 60, have: 60 }, { good: 'egg', need: 60, have: 10 }] } };`;
 const PANELS = {
   'ch1-1': { hour: 6.4, look: [29, 16, 44] },
   'ch1-2': { hour: 9, look: [31, 61, 40] },
@@ -91,6 +95,10 @@ const PANELS = {
   'ch14-1': { hour: 10.5, scene: sluice + far + quayHouse + hotel, wait: 9000, look: [55, 5.5, 24] },
   'ch14-2': { hour: 8.2, scene: sluice + far + quayHouse + hotel, wait: 9000, look: [57, 6.5, 13] },
   'ch14-3': { hour: 21, scene: sluice + far + quayHouse + hotel + `s.hotel.level = 2;`, wait: 9000, look: [56, 4, 24] },
+  // chapter 15: the halt on the last lot, the train behind it with a full wagon, and the train in the evening
+  'ch15-1': { hour: 10.5, scene: sluice + far + quayHouse + hotel + haltLot, wait: 9000, look: [97, 4, 22] },
+  'ch15-2': { hour: 17.2, scene: sluice + far + quayHouse + hotel + haltLot + trainHere, wait: 9000, look: [96, 3, 22] },
+  'ch15-3': { hour: 19.6, scene: sluice + far + quayHouse + hotel + haltLot + trainHere, wait: 9000, look: [92, 3.5, 34] },
 };
 const missing = CHAPTERS.flatMap(c => [...c.panels, ...Object.values(c.variants ?? {}).flatMap(v => v.panels ?? [])].map(p => p.img.split('/').pop().replace('.webp', ''))).filter(k => !PANELS[k]);
 if (missing.length) throw new Error(`no scene for ${missing.join(', ')}`);

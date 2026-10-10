@@ -1255,6 +1255,124 @@ piece('hotel', hotel(2, 'hotel'), decor)
 piece('hotel_t1', hotel(3, 'hotel_t1'), decor)
 piece('hotel_t2', hotel(4, 'hotel_t2'), decor)
 
+def halt():
+    """The railway halt (chapter 15): a platform along the back of its lot (-y, by the rails) under a teal canopy on
+    slender posts, a small station house with a clock at the west end, a name board, a signal, benches and goods
+    waiting. Low and open, so the train behind it shows. 6 x 5 cells; the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    p += [bx('forecourt', 11.2, 6.0, .12, 0, 1.6, 0, 'stonel', bev=.03), bx('platform', 11.6, 2.8, .5, 0, -3.4, 0, 'stone', bev=.04),
+          bx('edge', 11.6, .22, .52, 0, -4.7, 0, 'sun', bev=0.), bx('ramp', 2.0, 1.0, .26, 3.0, -1.6, 0, 'stone', bev=.03)]
+    # the canopy: a teal roof on six posts, with a scalloped valance
+    for x in (-1.2, 1.8, 4.8):
+        for y in (-4.3, -2.5):
+            p.append(bx('post', .12, .12, 2.7, x, y, .5, 'white', bev=0.))
+    p += [bx('canopy', 7.4, 2.9, .12, 1.8, -3.4, 3.2, 'teal', bev=.02), bx('canopyrim', 7.5, 3.0, .08, 1.8, -3.4, 3.14, 'teald', bev=0.)]
+    for i in range(12):
+        p.append(extrude_outline('valance', [(-.3, 0), (.3, 0), (0, -.28)], .04, (-1.75 + i * .645, 1.95, 3.14), C['white'], bev=0.))
+    # the station house: red roof, a door to the quay, a clock in the gable
+    HX, HY, HW, HD, HH = -3.9, -2.6, 3.4, 3.0, 2.5
+    p.append(bx('house', HW, HD, HH, HX, HY, .5, 'plaster', bev=.04))
+    p += roof_rows(HW, HD, 1.2, HX, HY, .5 + HH, 'roof', 'roofl', rows=3, over=.25)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-HD / 2, 0), (HD / 2, 0), (0, 1.2)], .1, (HX + sd * (HW / 2 - .05), -HY, .5 + HH), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    F = HY + HD / 2
+    p += [bx('door', .9, .08, 1.9, HX - .7, F + .03, .5, 'teald', bev=.02), bx('steps', 1.4, .9, .26, HX - .7, F + .45, .12, 'stone', bev=.03)]
+    A['door'].append((HX - .7, F + .1, .5))
+    wp, c = window(HX + .8, F + .02, 1.2, .9, 1.0, 'front', shutters=None); p += wp; A['window'].append(c)
+    wp, c = window(HX + HW / 2 + .02, HY, 1.2, .9, 1.0, 'right'); p += wp; A['window'].append(c)
+    p += [cl('clock', .42, .08, HX + HW / 2 + .1, HY, .5 + HH + .25, 'white', verts=12, rot=(0, math.pi / 2, 0)), cl('clockrim', .48, .05, HX + HW / 2 + .08, HY, .5 + HH + .25, 'gold', verts=12, rot=(0, math.pi / 2, 0)),
+          bx('hand', .03, .04, .3, HX + HW / 2 + .16, HY, .5 + HH + .25, 'charcoal', bev=0.), bx('hand2', .03, .22, .04, HX + HW / 2 + .16, HY + .1, .5 + HH + .25, 'charcoal', bev=0.)]
+    # the name board, the signal, lamps, benches, goods waiting for the train
+    p += [bx('board', 2.6, .1, .6, 1.8, -2.3, 2.0, 'cream', bev=.02), bx('boardline', 2.2, .04, .1, 1.8, -2.24, 2.42, 'teald', bev=0.), bx('boardpost', .1, .1, 1.6, .7, -2.3, .5, 'woodd', bev=0.), bx('boardpost', .1, .1, 1.6, 2.9, -2.3, .5, 'woodd', bev=0.)]
+    p += [bx('signalpost', .14, .14, 4.2, 5.4, -4.2, .5, 'white', bev=0.), bx('signalarm', 1.3, .06, .3, 4.9, -4.2, 4.3, 'red', bev=0., rot=0.), bx('signaltip', .3, .07, .3, 4.3, -4.2, 4.3, 'white', bev=0.), ball('signallamp', .14, 5.4, -4.12, 4.0, 'lampglow', sub=0)]
+    for x in (-5.2, 5.2):
+        p += [bx('lamppost', .1, .1, 2.6, x, .2, .12, 'iron', bev=0.), ball('lamp', .2, x, .2, 2.85, 'lampglow', sub=1)]
+    for x in (.3, 3.3):
+        p += [bx('bench', 1.3, .4, .08, x, -2.9, .9, 'woodl', bev=.01), bx('benchback', 1.3, .06, .4, x, -2.72, 1.0, 'woodl', bev=.01), bx('benchleg', .08, .36, .4, x - .5, -2.9, .5, 'iron', bev=0.), bx('benchleg', .08, .36, .4, x + .5, -2.9, .5, 'iron', bev=0.)]
+    for i, (x, y, mt) in enumerate(((-.9, -3.9, 'wood'), (-.2, -4.0, 'woodl'), (-.6, -3.3, 'woodl'))):
+        p.append(bx('crate', .6, .55, .5, x, y, .5 if i < 2 else .5, mt, bev=.02))
+    p += [ball('sack', .26, -1.5, -3.3, .72, 'sack', sub=1, sc=(1.1, .9, .85)), ball('sack', .24, -1.9, -3.8, .7, 'sackd', sub=1, sc=(1, 1, .8)),
+          cl('tub', .3, .4, -4.4, .9, .12, 'woodd', verts=8), ball('tubflower', .3, -4.4, .9, .62, 'sun', sub=1, sc=(1, 1, .7)), cl('tub', .3, .4, 2.0, 1.0, .12, 'woodd', verts=8), ball('tubflower', .3, 2.0, 1.0, .62, 'pink', sub=1, sc=(1, 1, .7))]
+    anchors['halt'] = A
+    return p
+piece('halt', halt(), decor)
+
+def track(old=False):
+    """Four metres of railway along x (chapter 15): two rails on six sleepers over a bed of ballast. Old: rusty rails
+    in the grass, no ballast, a sleeper missing and tufts between. The rails are 1.8 m apart (a toy's wide gauge); their
+    tops are at z 0.26."""
+    rail, sleeper = ('brickd', 'wooddd') if old else ('stonel', 'woodd')
+    p = [] if old else [bx('bed', 4.0, 2.8, .08, 0, 0, 0, 'stoned', bev=0.)]
+    for i in range(6):
+        if old and i == 3: continue
+        p.append(bx('sleeper', .26, 2.3, .1, -1.67 + i * .667, 0, .06, sleeper, bev=0.))
+    for y in (-.9, .9):
+        p.append(bx('rail', 4.0, .09, .12, 0, y, .14, rail, bev=0.))
+    if old:
+        for x, y in ((-.9, .2), (.7, -.3), (1.6, .5)):
+            p.append(ball('tuft', .2, x, y, .1, 'leaf', sub=0, sc=(1.1, .9, 1.3)))
+    return p
+piece('track', track(False), decor)
+piece('track_old', track(True), decor)
+
+def axle(name, r, h, x, y, zc, mt, verts=12):
+    """A cylinder lying along y (a wheel) with its centre at height zc."""
+    return cl(name, r, h, x, y, zc - h / 2, mt, verts=verts, rot=(math.pi / 2, 0, 0))
+def along(name, r, h, x, y, zc, mt, verts=14):
+    """A cylinder lying along x (a boiler, a band) with its centre at (x, zc)."""
+    return cl(name, r, h, x, y, zc - h / 2, mt, verts=verts, rot=(0, math.pi / 2, 0))
+def train_wheels(xs, r, y=.9, mt='red'):
+    p = []
+    for x in xs:
+        for sy in (-1, 1):
+            p += [axle('wheel', r, .16, x, sy * y, .26 + r, mt), axle('tyre', r + .04, .1, x, sy * (y - .02), .26 + r, 'charcoal')]
+    return p
+def train_engine():
+    """The evening train's engine (chapter 15): a little tank engine in teal and red with brass bands, a tall chimney
+    and a gold dome. It lies along x, its nose to -x (it comes from the east); the rails' tops are at z 0.26. About
+    5.4 m long and 3.9 m to the top of the chimney."""
+    B = 1.3              # the running plate
+    T = B + .2           # its top
+    zc = T + .8          # the boiler's centre line
+    p = [bx('frame', 5.0, 1.9, .2, 0, 0, B, 'charcoal', bev=.02), along('boiler', .78, 3.1, -.75, 0, zc, 'teal'), along('smokebox', .82, .55, -2.2, 0, zc, 'charcoal'),
+         along('front', .66, .08, -2.5, 0, zc, 'iron', verts=12), cl('chimney', .2, .82, -2.1, 0, zc + .74, 'charcoal', verts=10), cl('chimneytop', .3, .16, -2.1, 0, zc + 1.5, 'gold', verts=10),
+         ball('dome', .34, -.9, 0, zc + .82, 'gold', sub=1, sc=(1, 1, .9)), ball('lamp', .17, -2.58, 0, zc + .2, 'lampglow', sub=1), bx('buffer', .16, 1.7, .2, -2.56, 0, B, 'red', bev=.02),
+         bx('guard', .34, 1.7, .34, -2.74, 0, .4, 'red', bev=.06)]
+    for x in (-1.6, -.4, .5):   # brass bands round the boiler
+        p.append(along('band', .8, .08, x, 0, zc, 'gold'))
+    for sy in (-1, 1):
+        p += [bx('tank', 2.2, .3, .9, -.6, sy * .82, T, 'teald', bev=.03), along('bufferhead', .16, .1, -2.68, sy * .6, B + .1, 'iron', verts=8), bx('rod', 2.4, .06, .1, -.4, sy * 1.02, .26 + .5 - .05, 'stonel', bev=0.)]
+    # the cab: red, with a cream roof and windows
+    p += [bx('cab', 1.5, 1.9, 1.7, 1.55, 0, T, 'red', bev=.04), bx('cabroof', 1.9, 2.1, .12, 1.55, 0, T + 1.72, 'cream', bev=.04), bx('bunker', .7, 1.7, 1.0, 2.5, 0, T, 'redd', bev=.03),
+          bx('coal', .56, 1.5, .16, 2.5, 0, T + .98, 'charcoal', bev=.02), bx('cabfront', .05, 1.2, .5, .78, 0, T + .95, 'glass', bev=.01)]
+    for sy in (-1, 1):
+        p.append(bx('cabwindow', .7, .05, .6, 1.55, sy * .96, T + .8, 'glass', bev=.01))
+    p += train_wheels((-1.5, -.4, .7), .5) + train_wheels((2.3,), .36)
+    return p
+piece('train_engine', train_engine(), decor)
+
+def train_wagon(full=False):
+    """A goods wagon for the evening train (chapter 15): a plank body on four wheels, along x. Full: crates stand in it
+    and sacks, hay and a churn show over the brim. About 4.7 m."""
+    F = 1.08   # the floor
+    p = [bx('floor', 4.5, 1.9, .16, 0, 0, F, 'charcoal', bev=.02)]
+    for sy in (-1, 1):
+        for k in range(3):
+            p.append(bx('plank', 4.5, .1, .3, 0, sy * .9, F + .16 + k * .32, 'wood' if k % 2 == 0 else 'woodl', bev=.01))
+        for x in (-2.15, 0, 2.15):
+            p.append(bx('stay', .1, .06, 1.0, x, sy * .97, F + .14, 'iron', bev=0.))
+    for sx in (-1, 1):
+        p += [bx('end', .1, 1.9, 1.0, sx * 2.2, 0, F + .16, 'woodd', bev=.01), bx('buffer', .16, 1.6, .16, sx * 2.34, 0, F, 'red', bev=.02), bx('coupling', .5, .1, .1, sx * 2.5, 0, F + .04, 'iron', bev=0.)]
+    p += train_wheels((-1.4, 1.4), .4, mt='stoned')
+    if full:
+        for x, y, w, mt in ((-1.5, -.35, .8, 'woodl'), (-1.45, .45, .7, 'wood'), (-.55, .1, .9, 'wood'), (.4, -.4, .8, 'woodl'), (.45, .45, .7, 'woodl'), (1.4, 0, .9, 'wood')):
+            p.append(bx('crate', w, .7, .8, x, y, F + .16, mt, bev=.02))
+        p += [ball('sack', .36, -.6, -.2, F + 1.2, 'sack', sub=1, sc=(1.2, 1, .8)), ball('sack', .34, .5, .1, F + 1.18, 'sackd', sub=1, sc=(1.1, 1, .8)), bx('hay', .9, .8, .5, 1.4, 0, F + .96, 'hay', bev=.04),
+              cl('churn', .22, .6, -1.5, .1, F + .96, 'stonel', verts=8), cl('churntop', .14, .12, -1.5, .1, F + 1.56, 'stonel', verts=8)]
+    return p
+piece('train_wagon', train_wagon(False), decor)
+piece('train_wagon_full', train_wagon(True), decor)
+
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
     p = []

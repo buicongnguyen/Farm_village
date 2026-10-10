@@ -105,6 +105,12 @@ export const CHAPTERS = [
     ada: 'Tell them breakfast is from our own oven, dear. And tell them twice: city people never believe it the first time.',
     panels: panels(14, ['The hotel on the quay.', 'Breakfast for room three.', 'Every window lit.']),
     when: s => (s.counts.hotel ?? 0) > 0 && (s.stats.guests ?? 0) >= 10 },
+  // The deed: the halt stands and a train has left with at least one full wagon (docs/plan/ch15-the-evening-train.md).
+  { id: 15, title: 'The evening train', subtitle: 'Four minutes late, and nobody minded.', icon: '🚂',
+    text: 'The first train is four minutes late and nobody minds. Half the village comes to the platform only to hear it. {person:sam:short}, who has carried the post by bicycle longer than he will say, lifts a sack on board and salutes the guard. When the whistle goes, the hens complain all the way down the valley.',
+    ada: 'I counted the wagons when I was a girl, dear. I counted them tonight. Old habits keep their own time.',
+    panels: panels(15, ['The halt on the quay.', 'Three wagons to fill.', 'The evening train.']),
+    when: s => (s.counts.halt ?? 0) > 0 && (s.stats.trains ?? 0) >= 1 },
 ];
 
 // Short story moments between the chapter cards: shown once each, as a card of speaker lines, when `when` first passes.
@@ -271,6 +277,19 @@ export const BEATS = [
   { id: 'full-house', chapter: 14, when: s => !!s.firsts?.fullHouse, lines: [
     { who: 'pip', text: 'Every room has somebody in it! I counted the shoes outside the doors.' },
     { who: 'june', text: 'A full house. The prettier we keep the valley, love, the faster the next ones come.' },
+  ] },
+  // ── Chapter 15 (docs/plan/ch15-the-evening-train.md): the halt, the train. ──
+  { id: 'rails-cleared', chapter: 15, when: s => (s.counts.halt ?? 0) > 0, lines: [
+    { who: 'tomas', text: 'New sleepers, old rails. I knocked the rust off every one. They ring like bells.' },
+    { who: 'sam', text: 'A train! Do you know how many hills I have pushed that bicycle up? I am going to sit down and watch the post arrive by itself.' },
+  ] },
+  { id: 'first-whistle', chapter: 15, when: s => (s.train?.n ?? 0) >= 1 || !!s.train?.here, lines: [
+    { who: 'pip', text: 'It WHISTLED! Did you hear? {pet:dog:short} hid under the cart!' },
+    { who: 'gus', text: 'Hmph. Four minutes late. In my day it was six. Standards are slipping.' },
+  ] },
+  { id: 'full-train', chapter: 15, when: s => !!s.firsts?.fullTrain, lines: [
+    { who: 'bea', text: 'Three wagons, full to the roof, and every crate on my list. I counted twice. I may count again for pleasure.' },
+    { who: 'ada', text: 'Hollowbrook on a railway label. Well. I shall need a better hat for the city.' },
   ] },
 ];
 

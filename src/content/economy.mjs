@@ -68,6 +68,10 @@ export const RIVERSIDE = { quay: { level: 14, cost: 2500 }, house: { rent: 220, 
  *  doubled if their breakfast wish (one of `wishes` the farm can make) was served. The desk holds at most `cap` coins. */
 export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs: paced(8 * MIN), arriveMs: paced(2 * MIN), room: 120, tip: 40, cap: 4000,
   wishes: ['bread', 'corn_bread', 'butter', 'cheese', 'apple_juice', 'carrot_juice', 'orange_juice', 'noodles', 'apple_pie', 'carrot_cake', 'honey_cake'] };
+/** The evening train (core/train.mjs, chapter 15). It stops at the halt every everyMs for stopMs; the first comes firstMs
+ *  after the halt opens. A wagon holds about wagon(level) coins' worth of its good, between `min` and `max` of it. A
+ *  full wagon pays its goods x `pay`, a part-loaded one what is in it; `wagons` full ones add `bonus`. */
+export const TRAIN = { everyMs: paced(25 * MIN), stopMs: paced(8 * MIN), firstMs: paced(1 * MIN), wagons: 3, wagon: level => 300 + 40 * level, min: 6, max: 200, pay: 1.6, bonus: 500, xp: 0.3 };
 /** The co-operative (core/cooperative.mjs, chapter 12). Founding takes `gift` from the barn. An order has `lines` goods;
  *  a line asks for about line(level) coins' worth of its good, between `min` and `max` of it; a neighbour brings
  *  `pledge` of every line. Filled, it pays what the player sent x `pay` plus `coins`, and xp x its worth; the neighbours
