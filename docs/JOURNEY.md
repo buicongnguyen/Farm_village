@@ -272,6 +272,6 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
 
-### Mobile compatibility follow-up — 2026-10-08
+### Picnic branch integration — 2026-10-12
 
-Applied the 3d_astra mobile interruption and fullscreen protections. Existing progression and saves are preserved. Browser and build validation is recorded in the mobile compatibility report. Physical iPhone system gestures still require a device check.
+The preserved `codex/picnic-discovery-trail` branch is synchronized with main. The picnic trail already shipped in PR #18; no additional trail or story rules were needed. This follow-up adds relative home-screen metadata and permits browser zoom. Current story completion and release-pass status are tracked in `docs/plan/README.md`.

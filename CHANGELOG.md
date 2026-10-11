@@ -1,5 +1,10 @@
 # Changelog
 
+## Branch integration and home-screen metadata — 2026-10-12
+
+- Integrated the preserved picnic-trail branch with current main; the trail itself already shipped in PR #18. Main’s chapters 1–20, translations, company reserves, feeding, output upgrades and grazing behavior are retained.
+- Added relative home-screen launch metadata for hosting under `/Farm_village/`, and removed the viewport restriction on browser zoom. Existing canvas gesture handling and fullscreen support remain main’s implementation.
+
 ## The herd goes out to graze — 2026-10-11
 
 - Cows and goats graze every field the farm owns, fenced home or not; they keep off beds, buildings, weeds and rocks. Hens stay near the coop.
@@ -464,5 +469,3 @@ The first playable version: from an overgrown farm to a village with a school.
   reduced motion, graphics quality, three save slots, export and import.
 - **Under the hood:** a large 128 × 128 map drawn in 3D like a 2.5D game with chunked levels of detail; a fully planted
   64 × 64 farm stays within phone budgets; autosave; time away counts.
-
-- iPhone interruption and fullscreen support (2026-10-08): cancel stale gestures on browser interruption; add fullscreen help, safe control margins, and relative home-screen metadata.
