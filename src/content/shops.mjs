@@ -13,7 +13,6 @@ export const SHOP_SITES = [
   { id: 'lake-shop1', shop: 'snacks', x: POND.x1 - .5, z: POND.z0 - 1.6 },
   { id: 'lake-shop2', shop: 'flowers', x: POND.x0 + .5, z: POND.z1 + 2.6 },
   { id: 'lake-shop3', shop: 'fish', x: POND.x1 - .5, z: POND.z1 + 2.6 },
-  { id: 'plaza-stall1', shop: 'plaza', x: PLAZA.x0 + 1, z: PLAZA.z0 + 1 },
-  { id: 'plaza-stall2', shop: 'plaza', x: PLAZA.x1, z: PLAZA.z0 + 1 },
+  { id: 'plaza-stall1', shop: 'plaza', x: PLAZA.x0 + 1, z: PLAZA.z1 },   // the south corners: the square's north edge is the festival stage's
   { id: 'plaza-stall3', shop: 'plaza', x: PLAZA.x1, z: PLAZA.z1 },
 ];

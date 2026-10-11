@@ -1624,7 +1624,6 @@ Object.assign(KO, {
   "Doctor": "의사",
   "{person:hazel:display}": "{person:hazel:display}",
   "The clinic opens its doors again.": "진료소가 다시 문을 열어요.",
-  "Four families sign {person:marisol:short}’s list, and {person:hazel:display} comes home from the coast. The clinic opens, with {person:grace:short}’s vet room at the back. {person:hazel:short} pauses by the burned festival poster: she remembers treating {person:gus:short}’s hands that night. Outside, {person:ada:short} plants cherries for the grandchildren’s grandchildren.": "네 가족이 {person:marisol:short}의 목록에 서명하고 {person:hazel:display}이 바닷가에서 돌아왔어요. 진료소 뒤쪽에는 {person:grace:short}의 동물 진료실도 생겼죠. 그을린 축제 포스터 앞에 선 {person:hazel:short}는 그날 밤 {person:gus:short}의 손을 치료하던 일을 떠올려요. 밖에서는 {person:ada:short} 할머니가 먼 훗날 손주들을 위해 체리를 심어요.",
   "{person:hazel:short} is home, and {person:ellis:short} has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.": "{person:hazel:short}가 돌아왔으니 {person:ellis:short} 영감도 낚싯바늘 흉터를 숨길 핑계가 없겠구나. 체리를 좀 따다 드리렴.",
   "Cherries for the grandchildren’s grandchildren. {person:ellis:short} says that is a long time to wait for pie.": "손주의 손주까지 먹을 체리란다. {person:ellis:short} 영감은 파이 한 조각 기다리기엔 너무 길다더구나.",
   "A fruit stand by the lane, love. Let the orchard pay for its own next tree.": "길가에 과일 가판대를 놓자, 자기야. 과수원에서 번 돈으로 다음 나무를 심는 거야.",

@@ -292,11 +292,10 @@ async function dressVillage(world, game) {
     ['plaza-bench1', { model: 'deco_bench', x: (P.x0 + 0.6) * CELL, z: (W.WELL.z) * CELL, rot: Math.PI / 2 }],
     ['plaza-bench2', { model: 'deco_bench', x: (P.x1 + 0.4) * CELL, z: (W.WELL.z) * CELL, rot: -Math.PI / 2 }],
     ['plaza-bench3', { model: 'deco_bench', x: W.WELL.x * CELL, z: (P.z1 + 0.4) * CELL, rot: Math.PI }],
-    ['plaza-lamp1', { model: 'deco_lamp', x: (P.x0 + 0.35) * CELL, z: (W.WELL.z - 1.6) * CELL, rot: 0 }],
+    ['plaza-lamp1', { model: 'deco_lamp', x: (P.x0 + 0.35) * CELL, z: (W.WELL.z - 0.7) * CELL, rot: 0 }],
     ['plaza-lamp2', { model: 'deco_lamp', x: (P.x1 + 0.65) * CELL, z: (W.WELL.z + 1.6) * CELL, rot: 0 }],
     // market stalls in the plaza's corners (vivid pass): striped awnings, goods, a busy village square
-    ...(world.batches.has('stall') ? [['plaza-stall1', { model: 'stall', x: (P.x0 + 1) * CELL, z: (P.z0 + 1) * CELL, rot: Math.PI / 4 }],
-      ['plaza-stall2', { model: 'stall', x: (P.x1) * CELL, z: (P.z0 + 1) * CELL, rot: -Math.PI / 4 }],
+    ...(world.batches.has('stall') ? [['plaza-stall1', { model: 'stall', x: (P.x0 + 1) * CELL, z: (P.z1) * CELL, rot: 3 * Math.PI / 4 }],   // the south corners: the north edge is the festival stage's (W.SITES)
       ['plaza-stall3', { model: 'stall', x: (P.x1) * CELL, z: (P.z1) * CELL, rot: -3 * Math.PI / 4 }]] : []),
     // a bench at the south edge of the farmhouse forecourt, between its planters
     ['home-bench', { model: 'deco_bench', x: ((W.HOME_YARD.x0 + W.HOME_YARD.x1 + 1) / 2) * CELL, z: (W.HOME_YARD.z1 + 0.6) * CELL, rot: Math.PI }],

@@ -41,7 +41,7 @@ import { renderFair } from './fair-panel.mjs';
 import { renderValleyAlbum, albumEntry } from './valley-album.mjs';
 import { HANDS } from '../content/economy.mjs';
 import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
-import { renderLandPanel, renderLandEntry } from './land-panel.mjs';
+import { renderLandPanel, renderLandEntry, plainField } from './land-panel.mjs';
 import { renderContracts, renderContractMemories, renderContractMemory } from './contracts-panel.mjs';
 import { contractStatus } from '../core/contracts.mjs';
 import { renderShops, shopsEntry } from './shops-panel.mjs';
@@ -132,7 +132,7 @@ export function renderPanel() {
       }
     }
     else if (o.kind === 'contractMemory') { title = t('A picnic menu'); icon = 'noodles'; body = renderContractMemory(s, o.arg); }
-    else if (o.kind === 'land') { title = t('Sunlit clearing'); icon = 'sale_sign'; body = renderLandPanel(s, o.arg); }
+    else if (o.kind === 'land') { title = t(plainField(s, o.arg) ? (s.parcels.includes(o.arg) ? 'Your new field' : 'A new field') : 'Sunlit clearing'); icon = 'sale_sign'; body = renderLandPanel(s, o.arg); }
     else if (o.kind === 'exploration') body = renderExploration(s, o.arg);
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'clinic') {

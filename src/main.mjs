@@ -116,7 +116,7 @@ const clock = () => Date.now() + clockOffset, emptyStart = TEST_MODE && params.h
 const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : savedProfile.state, clock);
 const world = new WorldView(app);
 const land = new LandView(world, game);
-const marks = new Marks(world, game, land);
+const marks = new Marks(world, game, land); world.marks = marks;
 import('./view/pond-fish.mjs').then(({ PondFish }) => new PondFish(world, game)).catch(() => {});   // sets world.pondFish
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;

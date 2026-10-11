@@ -11,10 +11,11 @@ import { sfx } from '../kit/sound.mjs';
 
 // The Reel button's look lives here, loaded with the fishing code, not in the first-load stylesheet. One round button in
 // the Next chip's place above the bottom buttons (the chip hides while you fish), a hint above: blue while waiting, orange and pulsing
-// on a bite, a progress ring in the fight, red when the line strains. 84 px, in thumb reach on a phone.
+// on a bite, a progress ring in the fight, red when the line strains. 84 px, in thumb reach on a phone. On a wide window it
+// sits at the right: above Barn, Orders and Build in the farm view, in their place while exploring (they are hidden then).
 const CSS = `.fishing-play { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px)); display: grid; justify-items: center; gap: 8px; z-index: 6; pointer-events: none; }
 .fishing-play[hidden] { display: none; }
-@media (min-width: 900px) and (min-height: 600px) { .fishing-play { left: auto; right: 36px; bottom: 40px; transform: none; justify-items: end; } body.panel-open .fishing-play { right: calc(min(440px, 36vw) + 36px); } }
+@media (min-width: 900px) and (min-height: 600px) { .fishing-play { left: auto; right: 36px; bottom: 132px; transform: none; justify-items: end; } body.explore-active .fishing-play { bottom: 40px; } body.panel-open .fishing-play { right: calc(min(440px, 36vw) + 36px); } }
 .fishing-play > * { pointer-events: auto; }
 .fish-hint { margin: 0; padding: 5px 12px; border-radius: 14px; background: var(--panel-bg); border: 2px solid var(--edge); font: 900 14px/1.2 'Nunito', sans-serif; color: var(--ink); box-shadow: 0 3px 0 var(--edge-dark); max-width: min(320px, calc(100vw - 32px)); text-align: center; }
 .reel-btn { --progress: 0%; position: relative; width: 84px; height: 84px; border-radius: 50%; border: 4px solid #fff; color: #fff; font: 1000 18px/1 'Nunito', sans-serif; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none;

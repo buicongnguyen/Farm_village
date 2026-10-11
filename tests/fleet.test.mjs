@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { newGame } from '../src/core/state.mjs';
 import { act, tick } from '../src/core/act.mjs';
 import { pack, unpack } from '../src/kit/save.mjs';
-import { trucksOf, keepFor, spareForTrucks, capacity } from '../src/core/market.mjs';
+import { trucksOf, keepFor, spareForTrucks, capacity, kitchenKeep, KITCHEN_BATCHES } from '../src/core/market.mjs';
+import { RECIPES } from '../src/content/goods.mjs';
 import { nextTask } from '../src/core/next.mjs';
 import { GOODS } from '../src/content/goods.mjs';
 import { REPAIR, TRUCK } from '../src/content/economy.mjs';
@@ -86,15 +87,19 @@ test('every loaded truck leaves with one tap and each comes back on its own trip
 test('"Fill" loads spare goods most plentiful first, keeps what orders need, every feed and a seed per bed', () => {
   const [s, t] = ready(); must(s, 'buyTruck', {}, t);
   const beds = Object.values(s.placed).filter(p => p.kind === 'bed').length;
-  s.barn.items = { wheat: 30, carrot: beds + 4, chicken_feed: 50, bread: 12, egg: 9 };
+  const k = g => kitchenKeep(s, g);   // what the farm's workshops cook with stays in the barn as well
+  s.barn.items = { wheat: 30 + k('wheat'), carrot: beds + 4 + k('carrot'), chicken_feed: 50, bread: 12 + k('bread'), egg: 9 + k('egg') };
   s.orders.cards = [{ id: 'o1', need: { egg: 9 } }];
-  assert.equal(keepFor(s, 'chicken_feed'), Infinity); assert.equal(keepFor(s, 'egg'), 9); assert.equal(keepFor(s, 'carrot'), beds);
-  assert.equal(keepFor(s, 'wheat'), 0, 'wheat is free to plant');
+  assert.equal(keepFor(s, 'chicken_feed'), Infinity); assert.equal(keepFor(s, 'egg'), 9 + k('egg')); assert.equal(keepFor(s, 'carrot'), beds + k('carrot'));
+  assert.equal(keepFor(s, 'wheat'), k('wheat'), 'wheat is free to plant');
+  { const [id, rec] = Object.entries(RECIPES).find(([, x]) => Object.keys(x.needs ?? {}).length), g = Object.keys(rec.needs)[0], had = s.counts[rec.at];
+    s.counts[rec.at] = 1; assert.ok(kitchenKeep(s, g) >= rec.needs[g] * KITCHEN_BATCHES, `${id}: three batches of ${g} stay for the workshop`);
+    s.counts[rec.at] = 0; const without = kitchenKeep(s, g); s.counts[rec.at] = 1; assert.ok(kitchenKeep(s, g) >= without); if (had == null) delete s.counts[rec.at]; else s.counts[rec.at] = had; }
   assert.deepEqual(spareForTrucks(s).map(([g]) => g), ['wheat', 'bread', 'carrot']);
   const cap = capacity(s.truck), r = must(s, 'fillTruck', {}, t), [a, b] = trucksOf(s);
   assert.equal(r.loaded, Math.min(2 * cap, 30 + 12 + 4), 'both trucks fill up'); assert.equal(a.load[0].good, 'wheat');
   assert.equal(a.load.reduce((n, i) => n + i.n, 0), Math.min(cap, 46));
-  assert.equal(s.barn.items.chicken_feed, 50); assert.equal(s.barn.items.egg, 9); assert.ok(s.barn.items.carrot >= beds, 'seed carrots stay');
+  assert.equal(s.barn.items.chicken_feed, 50); assert.equal(s.barn.items.egg, 9 + k('egg')); assert.ok(s.barn.items.carrot >= beds, 'seed carrots stay');
   assert.ok(b.load.length > 0 || cap >= 46, 'what does not fit goes on the second truck');
   s.barn.items.wheat = (s.barn.items.wheat ?? 0) + 5; refused(s, 'fillTruck', {}, t, 'The trucks are full');
   s.barn.items.wheat -= 5; if (!s.barn.items.wheat) delete s.barn.items.wheat;

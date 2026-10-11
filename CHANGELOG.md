@@ -1,5 +1,13 @@
 # Changelog
 
+## Review, third pass — 2026-10-11
+
+- A blue star in the world shows where the story goes on.
+- Every field for sale has its own panel with a Buy button (it used to show the Sunlit clearing). Its big trees are cut when you buy it.
+- The festival stage no longer stands in the square's market stalls. The Reel button no longer covers Barn, Orders and Build on a PC.
+- Trucks filled with spare goods (and the truck driver) leave three batches of every cooking ingredient in the barn.
+- Lamps, bollards and sale signs are solid. Chapter cards 5, 6 and 7 no longer give away what comes later.
+
 ## Review, second pass — 2026-10-11
 
 - After a chapter's card a notice says what the story asks next. "A third field" and the valley company's and the prize's needs are buttons that lead to the place.

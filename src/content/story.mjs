@@ -37,19 +37,19 @@ export const CHAPTERS = [
     panels: panels(4, ['The school, with fresh paint.', '{person:cora:short} rings the bell.', '{person:bo:short} and {person:zara:short} race to the door.']),
     when: s => (s.counts.school ?? 0) > 0 },
   { id: 5, title: 'Someone to care for us', subtitle: 'The clinic opens its doors again.', icon: '🩺',
-    text: 'Four families sign {person:marisol:short}’s list, and {person:hazel:display} comes home from the coast. The clinic opens, with {person:grace:short}’s vet room at the back. {person:hazel:short} pauses by the burned festival poster: she remembers treating {person:gus:short}’s hands that night. Outside, {person:ada:short} plants cherries for the grandchildren’s grandchildren.',
+    text: 'Four families sign {person:marisol:short}’s list, and {person:hazel:display} comes home from the coast. The clinic opens, with {person:grace:short}’s vet room at the back. {person:hazel:short} pauses by the burned festival poster: she remembers treating {person:gus:short}’s hands that night. Outside, {person:ada:short}’s young cherry trees are in blossom.',
     ada: '{person:hazel:short} is home, and {person:ellis:short} has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.',
     panels: panels(5, ['The old clinic, shutters closed.', '{person:marisol:short} and her list.', 'Where the festival stage once stood.']),
     when: s => workingCount(s, 'clinic') > 0 && arrivedFamilies(s) >= 4 },
   // Act II, the valley wakes (docs/plan/ch06-market-day.md). The deed: sell the good of the day on a market day, and own three fields.
   { id: 6, title: 'Market day', subtitle: 'The square fills up again.', icon: '🧺',
-    text: 'Stalls go up on the square, under bunting nobody has seen in years. A baker called {person:hugo:short} unpacks his trays as if he had never left. {person:gus:short} sold you the field “at a fair price, and do not thank me”. Upriver, {person:tomas:short} reads the name on a gatepost: a flour company in the city.',
+    text: 'Stalls go up on the square, under bunting nobody has seen in years. A baker called {person:hugo:short} unpacks his trays as if he had never left. {person:gus:short} sold you the field “at a fair price, and do not thank me”. Upriver, {person:tomas:short} finds a gatepost with a name on it, too worn to read from the road.',
     ada: 'I can smell fresh bread from my porch again. Go on, dear, buy us a loaf. A big one.',
     panels: panels(6, ['Bunting over the square.', '{person:hugo:short} and his trays.', 'The brook, upriver.']),
     when: s => (s.stats.marketDays ?? 0) >= 1 && s.parcels.length >= 3 },
   // The deed: the police post works again and the boat dock is built (docs/plan/ch07-safe-streets.md).
   { id: 7, title: 'Safe streets', subtitle: 'A lamp at the end of the lane.', icon: '🏮',
-    text: 'The lamp over the police post is lit again. {person:pearl:display} reads a whole wall of old reports in a week and files every one. On the brook, {person:olaf:short} hammers the last plank of a dock and pretends it was nothing. In a drawer marked Gates, there is a letter from a flour company.',
+    text: 'The lamp over the police post is lit again. {person:pearl:display} reads a whole wall of old reports in a week and files every one. On the brook, {person:olaf:short} hammers the last plank of a dock and pretends it was nothing. In a drawer marked Gates there is something she reads twice.',
     ada: 'I sleep better with a lamp at the end of the lane. And {person:olaf:short} whistles when he works. Have you noticed?',
     panels: panels(7, ['The lamp at the police post.', 'A dock on the brook.', 'The brook from the dock.']),
     when: s => workingCount(s, 'police') > 0 && (s.counts.dock ?? 0) > 0 },
@@ -245,7 +245,7 @@ export const BEATS = [
   ] },
   // ── Chapter 9 (docs/plan/ch09-the-village-sings-again.md): the fire thread ends; Oak comes home ──
   { id: 'stage-up', chapter: 9, when: s => (s.story.chapter ?? 0) >= 8 && (s.counts.stage ?? 0) > 0, lines: [
-    { who: 'elin', text: 'I found the old festival poster under the clinic stairs. Same colours as your new canopy. I did not plan that.' },
+    { who: 'elin', text: 'I framed the old festival poster from the clinic. Same colours as your new canopy. I did not plan that.' },
     { who: 'minh', text: 'Every joint pegged, not nailed. This one is staying up.' },
     { who: 'gus', text: 'Hmph. It will want lanterns. I know where the old hooks are.' },
   ] },
