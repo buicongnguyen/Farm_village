@@ -19,7 +19,13 @@ export const HOME_COMFORT = [
   { level: 10, node: 'home_L10', name: 'A golden trophy', collider: [1.3, 2.2, 1.9, 2.85] },
 ];
 /** The room as it is at this house level: the kit's metadata with the colliders of what has been added. */
-export const roomAtLevel = (data, level) => ({ ...data, colliders: [...data.colliders, ...HOME_COMFORT.filter(c => c.collider && level >= c.level).map(c => ({ id: c.node, min: [c.collider[0], c.collider[1]], max: [c.collider[2], c.collider[3]] }))] });
+export function roomAtLevel(data, level) {
+  const comforts = HOME_COMFORT.filter(c => level >= c.level).map(c => {
+    const [, x = 0, z = 0] = data.comfortOffsets?.find(o => o[0] === c.level) ?? [];
+    return { ...c, position: [x, 0, z], collider: c.collider?.map((v, i) => v + (i % 2 ? z : x)) };
+  });
+  return { ...data, comforts, colliders: [...data.colliders, ...comforts.filter(c => c.collider).map(c => ({ id: c.node, min: c.collider.slice(0, 2), max: c.collider.slice(2) }))] };
+}
 export const HOME_OBJECTS = {
   farmhouse_sofa: { label: 'Sit on the sofa' },
   farmhouse_memory_shelf: { label: 'Look at the memory shelf' },

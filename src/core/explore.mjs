@@ -45,7 +45,7 @@ export function startExplore(s, position, room, blocked) {
 export function routeExplore(s, to) {
   const e = sessions.get(s); if (!e || !to?.every(Number.isFinite)) return false;
   e.seated = false;
-  if (e.location === 'farmhouse_main') e.route = roomRoute(e.room, e.p, to);
+  if (e.location !== 'outdoors') e.route = roomRoute(e.room, e.p, to);
   else {
     if (!outdoorClear(s, to, e.blocked)) return false;
     e.route = findRoute(s, cell(e.p), cell(to), { exact: true, blocked: e.blocked }).map(([x, z]) => [x * 2 + 1, z * 2 + 1]);
@@ -73,7 +73,7 @@ export const OUTDOOR_SPEED = 3.6;
 const near = (e, p) => e && Math.hypot(e.p[0] - p[0], e.p[1] - p[1]) <= .35;
 export const atObject = (s, id) => {
   const e = sessions.get(s), object = e?.room.interactions.find(o => o.id === id);
-  return e?.location === 'farmhouse_main' && object && near(e, xz(object.stand));
+  return e?.location === e?.room.roomId && object && near(e, xz(object.stand));
 };
 export const actions = {
   introduceExplore(ctx) {
@@ -86,7 +86,7 @@ export const actions = {
   },
   enterFarmhouse(ctx) {
     const e = sessions.get(ctx.s);
-    if (!e || e.location !== 'outdoors' || !near(e, HOME_APPROACH)) return ctx.fail('Walk to the farmhouse door first');
+    if (!e || e.room.roomId !== 'farmhouse_main' || e.location !== 'outdoors' || !near(e, HOME_APPROACH)) return ctx.fail('Walk to the farmhouse door first');
     if (!homeOpen(ctx.s)) return ctx.fail('Repair the farmhouse before going inside');
     if (!outdoorClear(ctx.s, HOME_APPROACH, e.blocked)) return ctx.fail('The way is blocked. Try another spot.');
     e.location = 'farmhouse_main'; e.p = xz(e.room.entry.position); e.yaw = Math.PI; e.route = []; e.seated = false; return {};

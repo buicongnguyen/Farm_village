@@ -11,9 +11,13 @@ async function point(page, position) {
   }, position);
 }
 async function visit(page, id) {
+  if (await page.evaluate(() => farm.world.exploreMode.room.view !== 'whole')) await page.locator('[data-explore="homeView"]').click();
+  const label = page.locator(`[data-home-object="${id}"]`);
+  await page.waitForTimeout(60); // let labels settle after closing a card or changing the room camera
   const position = await page.evaluate(id => farm.world.exploreMode.session.room.interactions.find(o => o.id === id).focus, id);
   const p = await point(page, position);
-  if (page.viewportSize().width === 390) await page.touchscreen.tap(p.x, p.y); else await page.mouse.click(p.x, p.y);
+  if (await label.isVisible()) await label.click();
+  else if (page.viewportSize().width === 390) await page.touchscreen.tap(p.x, p.y); else await page.mouse.click(p.x, p.y);
   await page.waitForFunction(id => farm.world.exploreMode.nearest() === id, id, { timeout: 20000 });
   await page.locator('[data-explore="interact"]').click();
 }
@@ -26,7 +30,7 @@ try {
     await page.goto(url + '?new&restore'); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
     await page.evaluate(() => { farm.skipIntro(); farm.closeCards(); farm.game.s.cond.house = { level: 0, ms: 0 }; farm.game.do('setting', { key: 'textSize', value: 1.3 }); farm.focus(22, 62, 30); });
     if (language === 'vi') await page.evaluate(() => farm.game.do('setting', { key: 'playerBody', value: 'woman' }));
-    assert.ok(!requests.some(u => u.includes('interior-farmhouse')), 'interior downloaded before choosing Explore');
+    assert.ok(!requests.some(u => /interior-cottage|cottage-furniture|facility-props/.test(u)), 'interior downloaded before choosing Explore');
     const house = await page.evaluate(() => farm.cellToScreen(22,62));
     if (width === 390) await page.touchscreen.tap(house.x, house.y); else await page.mouse.click(house.x, house.y);
     await page.locator('.radial [data-act="goInside"]').click();
@@ -100,17 +104,17 @@ try {
   await page.goto(url + '?new&restore'); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
   await page.evaluate(() => { farm.skipIntro(); farm.closeCards(); farm.game.s.cond.house = { level: 0, ms: 0 }; });
   let release; let hold = new Promise(resolve => { release = resolve; });
-  await page.route('**/interior-farmhouse.json', async route => { await hold; await route.continue(); });
+  await page.route('**/interior-cottage.json', async route => { await hold; await route.continue(); });
   await page.evaluate(() => farm.radial.choose({ act: 'goInside' }));
   await page.locator('[data-explore="close"]').waitFor(); await page.locator('[data-explore="close"]').click();
   release(); await page.waitForTimeout(500);
   assert.equal(await page.evaluate(() => farm.world.exploreMode.active), false);
   assert.equal(await page.evaluate(() => !!farm.world.presentation), false);
-  await page.unroute('**/interior-farmhouse.json');
-  await page.route('**/interior-farmhouse.json', route => route.fulfill({ status: 503, body: 'unavailable' }));
+  await page.unroute('**/interior-cottage.json');
+  await page.route('**/interior-cottage.json', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await page.evaluate(() => farm.radial.choose({ act: 'goInside' }));
   await page.locator('[data-explore="retry"]').waitFor({ timeout: 60000 });
-  await page.unroute('**/interior-farmhouse.json'); await page.locator('[data-explore="retry"]').click();
+  await page.unroute('**/interior-cottage.json'); await page.locator('[data-explore="retry"]').click();
   await page.waitForFunction(() => farm.world.exploreMode.nearest() === 'door', null, { timeout: 60000 });
   await page.locator('[data-explore="interact"]').click(); await page.waitForFunction(() => farm.world.exploreMode.inside);
   await page.evaluate(() => { const next = structuredClone(farm.state()); delete next.explore; farm.game.replace(next); });

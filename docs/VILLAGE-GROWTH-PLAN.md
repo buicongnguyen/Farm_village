@@ -16,7 +16,7 @@ space) stay cheap. The big money goes to civic buildings and their upgrades, whi
 | 3b. Food factories | **6: juice press; 8: noodle factory; 9: instant noodles** | Apple/carrot/orange juice; wheat + egg → noodles → instant noodles. Snack and herbal-tea products remain later proposals | Higher-value requests and later civic investment; purchased production trays | **first slice live**; independent trays with legacy-save compatibility implemented on the current branch |
 | Existing village customers | **2: fish; 4: snacks/plaza; 7: garden** | Explicit small-basket sales at the existing lake kiosks and plaza stalls, at `ceil(base unit value × 1.35)` per unit | Optional extra value for spare goods; no background selling | implemented on the current branch; distinct from the future supermarket/department store |
 | 4a. Company | 15–18 | company labels on existing goods; three repeating truck-delivered requests | staff, more factories, the village's big buildings | first office, two staff roles and repeatable truck requests implemented on the current branch; later tiers remain planned |
-| 4. Shops | 14–18 | shop takings: supermarket and department store sell your goods at a markup | **supermarket**, **department store** | planned |
+| 4. Shops | 14–18 | shop takings: supermarket and department store sell your goods at a markup | **supermarket**, **department store** | supermarket story and interior prepared; gameplay remains planned — [scope](SUPERMARKET-STORY-PLAN.md) |
 | 5. Town | 18–24 | rent from apartments | **tall buildings** (apartments), **paved streets with cars** | planned |
 | 6. Leisure | 24+ | visitors' spending | **entertainment**: park and playground, cinema, fair | planned |
 

@@ -85,6 +85,7 @@ export class Panels {
     const d = b.dataset, g = this.game;
     sfx('click');
     if (d.do === 'close') this.close();
+    else if (d.do === 'enterInterior') { this.close(); this.onEnterInterior?.(d.id); }
     else if (d.do === 'retryPanel') this.onSave?.('reload');
     else if (d.do === 'learning') this.show('learning');
     else if (d.do === 'learningVisit') { this.close(); this.onLearningVisit?.(); }

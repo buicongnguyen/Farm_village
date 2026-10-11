@@ -220,7 +220,8 @@ panels = new Panels(app, game, hud, {
 });
 panels.profile = profile;
 hud.profile = profile; hud.update();
-radial = new Radial(app, { game, world, panels, hud });   // people and life are handed over once their chunk is in
+radial = new Radial(app, { game, world, panels, hud });
+panels.onEnterInterior = id => radial.explore(false, id);
 radial.fx = new Fx(app, { game, world });
 new Bonds({ game, hud });
 // the level-up card's "Show me": the catalogue on a new building, the building that makes a new recipe, an empty bed

@@ -11,7 +11,7 @@ import { HOME_MEMORY, HOME_OBJECTS } from '../src/content/explore.mjs';
 import { VI_EXPLORE } from '../src/i18n/vi-explore.mjs';
 import { KO_EXPLORE } from '../src/i18n/ko-explore.mjs';
 import { JA_EXPLORE } from '../src/i18n/ja-explore.mjs';
-const room = JSON.parse(readFileSync(new URL('../public/assets/models/interior-farmhouse.json', import.meta.url)));
+const room = JSON.parse(readFileSync(new URL('../public/assets/models/interior-cottage.json', import.meta.url)));
 const NOW = 1_800_000_000_000;
 installExplore();
 function fixture() { const s = newGame(NOW, 123, { restore: true }); s.cond.house = { level: 0, ms: 0 }; startExplore(s, [51,125], room); return s; }
@@ -26,20 +26,20 @@ function refuses(s, action, payload) {
   assert.equal(act(s, action, payload, NOW).ok, false, action);
   assert.equal(pack(s), saved); assert.equal(JSON.stringify(exploreSession(s)), pose);
 }
-test('every AR-015 interaction is connected, with swept collision around furniture and hidden walls', () => {
+test('every cottage interaction is connected, with swept collision around furniture and hidden walls', () => {
   const from = xz(room.entry.position);
   for (const object of room.interactions) {
     const path = roomRoute(room, from, xz(object.stand)); assert.ok(path.length, object.id);
     let previous = from;
     for (const p of path) { assert.ok(segmentClear(previous, p, q => roomClear(room, q))); previous = p; }
   }
-  assert.equal(roomClear(room, [0, -.3]), false, 'table');
-  assert.equal(roomClear(room, [3.9, 0]), false, 'hidden wall');
-  assert.deepEqual(roomRoute(room, from, [0, -.3]), []);
+  const table = room.furniture.find(p => p.kit === 'farmhouse_table'), blocked = [table.x, table.z];
+  assert.equal(roomClear(room, blocked), false, 'table');
+  assert.equal(roomClear(room, [room.bounds.room.max[0], 0]), false, 'outer wall');
+  assert.deepEqual(roomRoute(room, from, blocked), []);
   const s = fixture(); assert.ok(act(s, 'enterFarmhouse', {}, NOW).ok);
   for (let i = 0; i < 200; i++) moveExplore(s, 0, -1, 99);
-  assert.ok(roomClear(room, exploreSession(s).p));
-  assert.ok(exploreSession(s).p[1] >= .949, 'tunnelled through table');
+  assert.ok(roomClear(room, exploreSession(s).p), 'a large time step tunnelled through furniture or a wall');
 });
 test('entry rechecks condition and actual arrival, refusals are atomic and broken homes still allow exit', () => {
   const s = fixture(); exploreSession(s).p = [53,125]; refuses(s, 'enterFarmhouse');

@@ -15,12 +15,15 @@ import { treeState } from '../core/trees.mjs';
 import { isWorking } from '../core/working.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { BANK, nearestPond, pondAt, castPlan, shorePoint, waterDistance } from '../core/pond-bank.mjs';
+import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
+import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz } from '../core/explore-navigation.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
 
 const instances = new WeakMap();
+const HOME_LABELS = { farmhouse_sofa: 'Sofa', farmhouse_memory_shelf: 'Memory shelf', farmhouse_kitchen: 'Tea', farmhouse_desk: 'Journal', farmhouse_table: 'Plan the day', farmhouse_wardrobe: 'Wardrobe', farmhouse_exit: 'Go outside' };
 const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const button = (action, text, cls = '', disabled = false) => `<button type="button" class="btn ${cls}" data-explore="${action}" ${disabled ? 'disabled' : ''}>${esc(t(text))}</button>`;
 const editing = e => e.isComposing || e.target?.closest?.('input, textarea, select, [contenteditable="true"]');
@@ -37,9 +40,12 @@ const centre = c => c * 2 + 1, far = (p, x, z) => Math.hypot(p[0] - x, p[1] - z)
 class ExploreMode {
   constructor(radial) {
     Object.assign(this, { radial, game: radial.game, world: radial.world, panels: radial.panels, hud: radial.hud, generation: 0, keys: new Set(), stick: [0, 0] });
-    installExplore(); this.world.exploreMode = this;
+    installExplore(); installCivicExplore(); this.world.exploreMode = this;
     this.el = document.createElement('section'); this.el.className = 'explore-ui'; this.el.hidden = true; this.el.setAttribute('aria-label', t('Explore'));
     radial.el.parentElement.appendChild(this.el);
+    this.pinsEl = document.createElement('div'); this.pinsEl.className = 'home-pins'; this.pinsEl.hidden = true;
+    this.pins = new Map();
+    radial.el.parentElement.appendChild(this.pinsEl);
     // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it). It is one
     // permanent element beside the panel, so the panel can redraw (a new nearby action) while a thumb is on the stick.
     const joy = this.joyEl = document.createElement('div'); joy.className = 'explore-joy'; joy.hidden = true; joy.setAttribute('role', 'group'); joy.innerHTML = '<i></i>';
@@ -71,36 +77,50 @@ class ExploreMode {
     this.world.onFrame(dt => this.frame(dt));
   }
   get session() { return exploreSession(this.state); }
-  get inside() { return this.session?.location === 'farmhouse_main'; }
+  get inside() { return !!this.session && this.session.location !== 'outdoors'; }
+  get objects() { return this.kind ? { ...CIVIC_INTERIORS[this.kind].objects, interior_exit: { label: 'Go outside' } } : HOME_OBJECTS; }
+  get approach() { return this.site ? facilityDoor(this.state, this.site) ?? this.entryDoor : HOME_APPROACH; }
+  enterRoom() { return this.site ? this.game.do('enterFacility', { id: this.site }) : this.game.do('enterFarmhouse'); }
+  leaveRoom(recover = false) { return this.game.do(this.site ? 'leaveFacility' : 'leaveFarmhouse', { recover }); }
+  makePins() {
+    this.pinsEl.replaceChildren(); this.pins.clear();
+    for (const [id, object] of Object.entries(this.objects)) {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.homeObject = id;
+      b.addEventListener('click', () => { if (!this.inside || this.busy) return; this.clear(); this.target = id; this.notice = null;
+        if (!routeExplore(this.state, xz(this.session.room.interactions.find(o => o.id === id).stand))) this.notice = 'The way is blocked. Try another spot.';
+        this.render(); });
+      this.pinsEl.append(b); this.pins.set(id, { button: b, label: this.kind ? object.label : HOME_LABELS[id] });
+    }
+  }
   /** Tap or thumb stick: the saved choice (touch screens are given the stick on their first visit, in open()). */
   get control() { return exploreState(this.state).controls; }
   get busy() { return modalOpen() || !!this.panels.open || document.hidden || !!this.card; }
-  async open({ roam = false, who = 'you' } = {}) {
-    if (this.active) return;
-    if (!roam && !homeOpen(this.game.s)) { this.hud.toast(t('Repair the farmhouse before going inside'), 'info'); return; }
-    Object.assign(this, { roam, who, near: null, seat: null, rod: null, enterOnArrival: false, actOnArrival: null, castOnArrival: null, scanClock: 0, joy: false });
-    this.state = this.game.s; this.active = true; this.loading = true; this.error = false; this.target = null; this.card = null; this.notice = null;
+  async open({ roam = false, who = 'you', site = null } = {}) {
+    if (this.active) { if (site && site !== this.site) this.close(); else return; }
+    if (site && !facilityOpen(this.game.s, site)) { this.hud.toast(t('Repair this building before going inside'), 'info'); return; }
+    if (!site && !roam && !homeOpen(this.game.s)) { this.hud.toast(t('Repair the farmhouse before going inside'), 'info'); return; }
+    Object.assign(this, { roam, who, site, kind: site ? facilityKind(this.game.s, site) : null, entryDoor: site ? facilityDoor(this.game.s, site) : HOME_APPROACH, near: null, seat: null, rod: null, enterOnArrival: false, actOnArrival: null, castOnArrival: null, scanClock: 0, joy: false });
+    this.state = this.game.s; this.makePins(); this.active = true; this.loading = true; this.error = false; this.target = null; this.card = null; this.notice = null;
     const generation = ++this.generation;
     this.panels.close(); this.radial.hide(); this.radial.armed = null; this.radial.tool.hidden = true;
     this.world.cam.stop(); this.savedCamera = { x: this.world.cam.x, z: this.world.cam.z, span: this.world.cam.span };
     document.body.classList.add('explore-active'); this.el.hidden = false; this.render();
     try {
       const body = this.state.settings.playerBody === 'woman' ? 'woman' : 'man';
-      const assets = await loadHomeRoom(body);
+      const assets = await loadHomeRoom(body, this.kind);
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
       this.walker = people.walkers.get(who) ?? people.walkers.get('you'); if (!this.walker) throw Error('player loading');
       if (roam && this.walker.indoors) { this.close(); this.hud.toast(t('It is night and everyone is asleep. Explore in the morning.'), 'info'); return; }
       this.own = !!this.walker.player;   // only your own character goes inside and fishes for you
-      const comfort = this.state.house?.level ?? 1; assets.data = roomAtLevel(assets.data, comfort);   // the room as this house level has made it
+      const comfort = this.state.house?.level ?? 1; if (!this.kind) assets.data = roomAtLevel(assets.data, comfort);   // the room as this house level has made it
       this.room = new ExploreRoom(assets, this.state.settings, comfort);
-      this.room.scene.background = this.world.scene.background;
       if (!startExplore(this.state, [this.walker.x, this.walker.z], assets.data, people.penCells())) throw Error('no safe approach');
       people.cancelTrip(this.walker); this.walker.controlled = true; this.walker.indoors = false;
       const first = !exploreState(this.state).introduced, touch = matchMedia('(pointer: coarse)').matches || (navigator.maxTouchPoints > 0 && innerWidth < 900);
       this.loading = false; this.game.do('introduceExplore'); this.target = roam ? null : 'door';
       if (first && touch) this.game.do('exploreControls', { controls: 'joystick' });   // phones start with the thumb stick
-      if (!roam && !routeExplore(this.state, HOME_APPROACH)) this.notice = 'The way is blocked. Try another spot.';
+      if (!roam && !routeExplore(this.state, this.approach)) this.notice = 'The way is blocked. Try another spot.';
       this.near = this.scan();
       if (roam) { this.hintUntil = performance.now() + 5000; setTimeout(() => this.active && this.render(), 5100); }   // the welcome line steps aside
       this.span = ZOOM.start; this.world.cam.lookAt(...this.session.p, this.span); this.render();
@@ -108,9 +128,10 @@ class ExploreMode {
       if (this.active && generation === this.generation) { this.loading = false; this.error = true; this.render(); }
     }
   }
-  /** Zoom the roaming camera (wheel, pinch, + and -). The room indoors keeps its fixed view. */
+  /** Wheel, pinch and +/- zoom the active scene without changing the other camera. */
   zoom(factor) {
-    if (!this.session || this.inside || !Number.isFinite(factor)) return;
+    if (!this.session || !Number.isFinite(factor)) return;
+    if (this.inside) { this.room.zoom(factor); this.render(); return; }
     this.span = Math.min(ZOOM.max, Math.max(ZOOM.min, (this.span ?? ZOOM.start) * factor));
     this.world.cam.lookAt(this.world.cam.x, this.world.cam.z, this.span);
   }
@@ -121,13 +142,16 @@ class ExploreMode {
     const e = this.session; if (!e || this.inside) return all ? [] : null;
     const s = this.state, people = this.radial.people, now = this.game.now, out = [];
     const add = (id, d, max, label, params, at) => { if (d < max * reach) out.push({ id, d: d / max, label, params, at, max }); };
-    if (this.own) add('door', far(p, ...HOME_APPROACH), 3, 'Go inside');
+    if (this.own) add('door', far(p, ...this.approach), 3, 'Go inside');
+    if (this.own && this.site) add('home', far(p, ...HOME_APPROACH), 3, 'Go inside: {place}', { place: t('Farmhouse') }, HOME_APPROACH);
     if (this.own && !s.fishing?.line) { const bank = nearestPond(s, ...p); add('pond', Math.max(0, bank.d), BANK.reach + .01, 'Cast a line'); }   // anywhere round any pond
     for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
     add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board', null, [centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)]);
     add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox', null, [centre(MAILBOX.x), centre(MAILBOX.z)]);
+    if (this.own && this.site !== 'barn' && facilityOpen(s, 'barn')) { const door = facilityDoor(s, 'barn'); add('facility:barn', far(p, ...door), 3, 'Go inside: {place}', { place: t('Barn') }, door); }
     for (const [id, item] of Object.entries(s.placed)) {
       const def = BUILDINGS[item.kind]; if (!def) continue;
+      if (this.own && id !== this.site && facilityOpen(s, id)) { const door = facilityDoor(s, id); add(`facility:${id}`, far(p, ...door), 3, 'Go inside: {place}', { place: t(def.name) }, door); }
       if (item.kind === 'bench') add(`bench:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, e.seated ? 'Stand up' : 'Sit on the bench', null, [centre(item.x), centre(item.z)]);
       else if (item.kind === 'bed') { if (s.beds[id]?.doneAt <= now) add(`bed:${id}`, far(p, centre(item.x), centre(item.z)), 2.2, 'Harvest', null, [centre(item.x), centre(item.z)]); }
       else if (def.fruit || def.animals || def.produces) {   // the farm's own collecting, done on foot
@@ -189,10 +213,11 @@ class ExploreMode {
   doNear(near) {
     const [kind, id] = near.id.split(':'), e = this.session, people = this.radial.people;
     if (kind === 'door') {
-      if (far(e.p, ...HOME_APPROACH) <= .35) { const r = this.game.do('enterFarmhouse'); if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason; }
-      else if (routeExplore(this.state, HOME_APPROACH)) { this.target = 'door'; this.enterOnArrival = true; }
+      if (far(e.p, ...this.approach) <= .35) { const r = this.enterRoom(); if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason; }
+      else if (routeExplore(this.state, this.approach)) { this.target = 'door'; this.enterOnArrival = true; }
       else this.notice = 'The way is blocked. Try another spot.';
-    } else if (kind === 'pond') this.cast(null);   // straight out from where you stand
+    } else if (kind === 'facility' || kind === 'home') { this.close(); this.open({ site: kind === 'home' ? null : id }); }
+    else if (kind === 'pond') this.cast(null);   // straight out from where you stand
     else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, this.span); people.talk(w); } }
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
@@ -209,11 +234,11 @@ class ExploreMode {
   }
   close() {
     if (!this.active) return;
-    if (this.inside && this.game.s === this.state && !this.game.do('leaveFarmhouse', { recover: true }).ok) return;
+    if (this.inside && this.game.s === this.state && !this.leaveRoom(true).ok) return;
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.pinsEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -261,28 +286,29 @@ class ExploreMode {
       if (!routeExplore(this.state, point)) this.notice = 'The way is blocked. Try another spot.';
     } else {
       const hit = this.world.cellAt(x, y); if (!hit) return;
-      const door = Math.hypot(hit.x * 2 + 1 - 47, hit.z * 2 + 1 - 125) < 6, point = [hit.x * 2 + 1, hit.z * 2 + 1];
+      const door = this.site ? far([hit.x * 2 + 1, hit.z * 2 + 1], ...this.approach) < 5 : Math.hypot(hit.x * 2 + 1 - 47, hit.z * 2 + 1 - 125) < 6, point = [hit.x * 2 + 1, hit.z * 2 + 1];
       this.target = door ? 'door' : null; this.actOnArrival = null; this.castOnArrival = null;
       const water = this.own && hit.point ? pondAt(this.state, hit.point.x, hit.point.z) : null;
       if (water) { this.tapWater(water, [hit.point.x, hit.point.z]); this.render(); return; }
       if (door && this.own) { this.doNear({ id: 'door' }); this.render(); return; }   // a tap on the farmhouse: walk to the door and go in
       const thing = door ? null : this.scan(point, .75);
       if (thing?.at && thing.id !== 'pond') { if (!this.walkTo(thing)) this.notice = 'The way is blocked. Try another spot.'; }
-      else if (!routeExplore(this.state, door ? HOME_APPROACH : point)) this.notice = 'The way is blocked. Try another spot.';
+      else if (!routeExplore(this.state, door ? this.approach : point)) this.notice = 'The way is blocked. Try another spot.';
     }
     this.render();
   }
   nearest() {
     if (!this.session) return null;
     if (!this.inside) return this.near?.id ?? null;
-    return Object.keys(HOME_OBJECTS).find(id => atObject(this.state, id)) ?? null;
+    return Object.keys(this.objects).find(id => atObject(this.state, id)) ?? null;
   }
   choose(action) {
     if (action === 'close') { this.close(); return; }
-    if (action === 'retry') { const again = { roam: this.roam, who: this.who }; this.close(); this.open(again); return; }
+    if (action === 'retry') { const again = { roam: this.roam, who: this.who, site: this.site }; this.close(); this.open(again); return; }
     if (action === 'back') { this.card = null; this.clear(); this.render(); return; }
     if (action === 'album') { this.card = null; this.clear(); this.panels.show('album'); this.render(); return; }
     if (this.loading || this.error || modalOpen() || this.panels.open) return;
+    if (action === 'homeView' && this.inside) { this.room.toggleView(); this.render(); return; }
     if (action === 'controls') { this.clear(); this.game.do('exploreControls', { controls: this.control === 'tap' ? 'joystick' : 'tap' }); return; }
     if (action === 'rest') { this.game.do('restOnSofa'); this.render(); return; }
     if (action === 'tea') {
@@ -306,15 +332,16 @@ class ExploreMode {
     }
     if (action === 'stand') { this.session.seated = false; this.card = null; this.render(); return; }
     if (action === 'outside') {
-      this.card = null; this.clear(); this.target = 'farmhouse_exit';
+      this.card = null; this.clear(); this.target = this.session.room.exit.id;
       this.exitOnArrival = true;
-      if (!routeExplore(this.state, xz(this.session.room.exit.stand))) { this.game.do('leaveFarmhouse', { recover: true }); this.exitOnArrival = false; this.syncScene(); }
+      if (!routeExplore(this.state, xz(this.session.room.exit.stand))) { this.leaveRoom(true); this.exitOnArrival = false; this.syncScene(); }
       this.render(); return;
     }
     if (action !== 'interact' || this.card) return;
     const id = this.nearest(); this.clear(true); this.notice = null;
     if (!this.inside) { if (this.near) this.doNear(this.near); if (this.active) this.render(); return; }
-    if (id === 'farmhouse_exit') { this.game.do('leaveFarmhouse'); this.target = null; this.syncScene(); }
+    if (id === this.session.room.exit.id) { this.leaveRoom(); this.target = null; this.syncScene(); }
+    else if (this.kind && this.objects[id]) { const o = this.objects[id]; if (o.panel) this.panels.show(o.panel, o.siteArg ? this.site : undefined); else this.card = id; }
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
     else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; }
     else if (id === 'farmhouse_memory_shelf' && this.game.do('readHomeMemory').ok) this.card = 'memory';
@@ -333,10 +360,10 @@ class ExploreMode {
     if (this.busy) this.clear();
     const x = (this.keys.has('d') || this.keys.has('arrowright') ? 1 : 0) - (this.keys.has('a') || this.keys.has('arrowleft') ? 1 : 0) + this.stick[0];
     const y = (this.keys.has('s') || this.keys.has('arrowdown') ? 1 : 0) - (this.keys.has('w') || this.keys.has('arrowup') ? 1 : 0) + this.stick[1];
-    const yaw = this.inside ? Math.atan2(9, 11) : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
+    const yaw = this.inside ? this.room.movementYaw : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
     if (x || y) this.actOnArrival = this.castOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
-    if (this.inside) this.room.frame(this.session, moving, dt);
+    if (this.inside) { this.room.frame(this.session, moving, dt); this.positionPins(); }
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
@@ -359,9 +386,9 @@ class ExploreMode {
         const near = this.inReach(this.actOnArrival); this.actOnArrival = null;
         if (near) { this.doNear(near); if (!this.active) return; this.render(); }
       }
-      if (this.enterOnArrival && !e.route.length && far(e.p, ...HOME_APPROACH) > .35) this.enterOnArrival = false;   // the walk there was cut short
-      if (this.enterOnArrival && far(e.p, ...HOME_APPROACH) <= .35) {   // Go inside was chosen from a few steps away
-        this.enterOnArrival = false; const r = this.game.do('enterFarmhouse');
+      if (this.enterOnArrival && !e.route.length && far(e.p, ...this.approach) > .35) this.enterOnArrival = false;   // the walk there was cut short
+      if (this.enterOnArrival && far(e.p, ...this.approach) <= .35) {   // Go inside was chosen from a few steps away
+        this.enterOnArrival = false; const r = this.enterRoom();
         if (r.ok) { this.target = null; this.syncScene(); } else this.notice = r.reason;
         this.render(); return;
       }
@@ -376,16 +403,34 @@ class ExploreMode {
         el.textContent = t('Ready again in {time}', { time: `${Math.floor(ms / 60000)}:${String(Math.ceil(ms / 1000) % 60).padStart(2, '0')}` });
       }
     }
-    if (this.exitOnArrival && nearest === 'farmhouse_exit') { this.exitOnArrival = false; this.game.do('leaveFarmhouse'); this.syncScene(); this.render(); return; }
+    if (this.exitOnArrival && nearest === this.session.room.exit.id) { this.exitOnArrival = false; this.leaveRoom(); this.syncScene(); this.render(); return; }
     if (nearest !== this.lastNearest) { this.lastNearest = nearest; this.render(); }
+  }
+  positionPins() {
+    this.pinsEl.hidden = !this.inside || this.busy;
+    if (this.pinsEl.hidden) return;
+    const shown = [], toolbarBottom = this.el.querySelector('.explore-side')?.getBoundingClientRect().bottom ?? 122;
+    for (const o of this.session.room.interactions) {
+      const pin = this.pins.get(o.id)?.button; if (!pin) continue;
+      // Hidden labels have no measured width. Reveal for layout before deciding which ones fit.
+      pin.hidden = false;
+      const p = this.room.project(o.focus), width = pin.offsetWidth, height = pin.offsetHeight;
+      const box = { x: p.x - width / 2, y: p.y - height / 2, w: width, h: height };
+      const overlap = shown.some(b => box.x < b.x + b.w + 4 && box.x + box.w + 4 > b.x && box.y < b.y + b.h + 4 && box.y + box.h + 4 > b.y);
+      pin.hidden = !p.visible || overlap || box.x < 8 || box.x + box.w > innerWidth - 8 || box.y < toolbarBottom + 8 || box.y + box.h > innerHeight - 205;
+      if (!pin.hidden) { pin.style.left = `${p.x}px`; pin.style.top = `${p.y}px`; shown.push(box); }
+    }
   }
   render() {
     if (!this.active) return;
+    for (const { button: b, label } of this.pins.values()) { const text = t(label); if (b.textContent !== text) b.textContent = text; }
+    this.pinsEl.hidden = !this.inside || this.busy;
     // Do not replace a captured direction button when the nearest-object label changes mid-hold.
     const active = document.activeElement?.dataset.explore;
-    const loading = this.loading ? t(this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
+    const loading = this.loading ? t(this.kind || this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.kind || this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
     const nearest = this.nearest(), control = this.control;
     let card = '';
+    if (this.kind && this.objects[this.card]?.text) card = `<h2>${esc(t(this.objects[this.card].label))}</h2><p>${esc(t(this.objects[this.card].text))}</p>${button('back', 'Back', 'ghost')}`;
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
     const wait = id => { const ms = homeCooldown(this.state, id, this.game.now); return ms > 0 ? `${Math.floor(ms / 60000)}:${String(Math.ceil(ms / 1000) % 60).padStart(2, '0')}` : ''; };
     const timed = (action, id, text) => wait(id) ? `<p role="status" data-wait="${id}">${esc(t('Ready again in {time}', { time: wait(id) }))}</p>` : button(action, text, 'primary');
@@ -413,16 +458,16 @@ class ExploreMode {
       else if (l.resting) card += `<p role="status">${esc(t('Your project rest is underway. You can keep exploring.'))}</p>`;
       card += button('stand', 'Stand up', 'ghost');
     }
-    const outdoor = !this.inside && this.near, label = outdoor ? t(outdoor.label, outdoor.params) : HOME_OBJECTS[nearest] ? t(HOME_OBJECTS[nearest].label) : null;
+    const outdoor = !this.inside && this.near, label = outdoor ? t(outdoor.label, outdoor.params) : this.objects[nearest] ? t(this.objects[nearest].label) : null;
     const who = this.walker && !this.own ? ` · ${this.radial.people.nameOf(this.walker)}` : '';
-    const compact = this.roam && !this.inside && !loading;
-    const side = `${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${!loading && !card ? button('controls', control === 'tap' ? 'Use the thumb stick' : 'Use tap controls', 'ghost') : ''}`;
+    const compact = (this.roam || this.inside) && !loading;
+    const side = `${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${this.inside && !card ? button('homeView', this.room.view === 'whole' ? 'Follow my character' : this.kind ? 'View the whole building' : 'View the whole house', 'ghost') : ''}${!loading && !card ? button('controls', control === 'tap' ? 'Use the thumb stick' : 'Use tap controls', 'ghost') : ''}`;
     this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
     if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
-    const html = `<div class="explore-heading">${esc(t(this.inside ? 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? HOME_MEMORY.title))}">${card}</div>` : ''}
+    const html = `<div class="explore-heading">${esc(t(this.inside ? this.kind ? CIVIC_INTERIORS[this.kind].name : 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? this.objects[this.card]?.label ?? HOME_MEMORY.title))}">${card}</div>` : ''}
       <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the furniture to use it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
-      ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== 'farmhouse_exit' ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
+      ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== this.session?.room.exit.id ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}
       ${!loading && !card && control !== 'joystick' ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
       `;

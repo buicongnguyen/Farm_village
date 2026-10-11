@@ -74,11 +74,11 @@ export class Radial {
   }
   /** Explore (lazy): Go inside from the farmhouse menu, or roam from the HUD button as yourself or the family member
    *  you tapped just before. */
-  explore(roam = false) {
+  explore(roam = false, site = null) {
     const g = this.game, state = g.s, sel = this.people?.selected;
     const who = roam && sel?.family && !sel.pet && performance.now() < (this.people.selectedUntil ?? 0) ? sel.id : 'you';
     if (roam && this.people) this.people.selected = null;
-    import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this, { roam, who })).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn'));
+    import('./explore-mode.mjs').then(m => g.s === state && m.openExplore(this, { roam, who, site })).catch(() => this.hud.toast(t('Could not open the farmhouse. Please try again.'), 'warn'));
   }
   hide() { this.el.hidden = true; this.target = null; this.outline(null); }
   /** A tap on the map outside build mode. */

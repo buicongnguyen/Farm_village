@@ -15,7 +15,7 @@ import { VI_EXPLORE } from '../src/i18n/vi-explore.mjs';
 import { KO_EXPLORE } from '../src/i18n/ko-explore.mjs';
 import { JA_EXPLORE } from '../src/i18n/ja-explore.mjs';
 
-const room = JSON.parse(readFileSync(new URL('../public/assets/models/interior-farmhouse.json', import.meta.url)));
+const room = JSON.parse(readFileSync(new URL('../public/assets/models/interior-cottage.json', import.meta.url)));
 const NOW = 1_800_000_000_000, MIN = 60_000;
 installExplore();
 function fixture() { const s = newGame(NOW, 123, { restore: true }); s.cond.house = { level: 0, ms: 0 }; startExplore(s, [51, 125], room); assert.ok(act(s, 'enterFarmhouse', {}, NOW).ok); return s; }

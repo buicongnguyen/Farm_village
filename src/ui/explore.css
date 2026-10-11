@@ -45,3 +45,19 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 .explore-card[data-object="kitchen"], .explore-card[data-object="desk"], .explore-card[data-object="table"], .explore-card[data-object="wardrobe"] { top: auto; bottom: 92px; max-height: 46%; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }
+
+/* Indoor furniture labels belong to the objects; only those clear of controls and other labels appear. */
+.home-pins { position: fixed; inset: 0; pointer-events: none; z-index: 8; }
+.home-pins[hidden], .home-pins button[hidden] { display: none; }
+body.panel-open .home-pins, body:has(.modal) .home-pins { visibility: hidden; }
+.home-pins button { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; min-height: 44px; min-width: 44px;
+  max-width: 160px; padding: 4px 10px; border-radius: 16px; border: 2px solid #fff2d6bb; color: #fffdf6;
+  background: #593923cc; font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; text-shadow: 0 1px 2px #21160e; box-shadow: 0 2px 5px #0003; }
+.home-pins button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+body.explore-inside .explore-controls.compact { max-width: min(94%, 550px); }
+body.explore-inside .explore-side { max-width: calc(100% - 24px); }
+@media (max-width: 600px) { body.explore-inside .explore-controls.compact.joy { left: auto; right: 12px; transform: none; bottom: 28px; max-width: calc(100% - 166px); } }
+
+/* Indoor notices keep a clear lane below the room rather than covering the furniture. */
+body.explore-inside:not(.panel-open) .hud .toasts { bottom: max(188px, calc(env(safe-area-inset-bottom) + 180px)); }
+@media (max-height: 520px) { body.explore-inside .home-pins { display: none; } }
