@@ -8,6 +8,9 @@ const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 /** What each site is for, in one line. */
 const ABOUT = { dock: 'A deck and a pier on the brook. The rare fish bite here twice as often as at a pond.',
   stage: 'A new stage for the village square, where the old one burned. The Harvest Festival is held from it.' };
+/** Where each site is, in one line. */
+const WHERE = { dock: 'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.',
+  stage: 'Its place is the north side of the village square, where the burned platform stands.' };
 export function renderSite(s, kind) {
   const def = BUILDINGS[kind]; if (!def?.site) return '';
   if (siteBuilt(s, kind)) return `<p>${t(ABOUT[kind] ?? '')}</p><p class="hint">${t('It is already built')}</p>`;
@@ -16,6 +19,7 @@ export function renderSite(s, kind) {
   const reqs = [[s.level >= def.level, t('Reach level {level}', { level: def.level })], [s.coins >= price, `${coinMark()} ${num(price)}`, t('Not enough coins')], ...(other ? [[false, t(other.reason, tParams(other.params))]] : [])];
   const missing = reqs.find(r => !r[0]);
   return `<div class="site-top">${iconHtml(kind, '', 'tile-icon')}<p>${t(ABOUT[kind] ?? '')}</p></div>
+    ${WHERE[kind] ? `<p class="hint">${glyph('explore', 'g')} ${t(WHERE[kind])}</p>` : ''}
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     <button class="btn primary wide${missing ? ' blocked' : ''}" data-do="siteBuild" data-kind="${kind}" ${missing ? `data-why="${esc((missing[2] ?? missing[1]).replace(/<[^>]*>/g, '').trim())}"` : ''}>${t('Build')} · ${coinMark()} ${num(price)}</button>`;
 }

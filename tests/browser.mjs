@@ -1262,6 +1262,31 @@ await check('the coupon: a code in Settings switches the tester tools on; coins 
   await ctx.close();
 });
 
+// Buildings with one fixed place (the boat dock, the festival stage) are in the Build menu: a tap goes to the place
+// and opens its panel, which says where it is.
+await check('the Build menu lists the boat dock and the festival stage; a tap shows the place and its panel (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 12; s.coins = 9000; farm.game.tick(); });
+  await page.click('.hud [data-act="build"]'); await page.waitForSelector('.sheet.build .tabs');
+  await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect(await page.locator('.sheet.build .card[data-kind="stage"]').count() === 1 && await page.locator('.sheet.build .card[data-kind="cannery"]').count() === 0, 'the stage is missing, or the cannery (built by the story) is listed');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Show the place'), 'the dock card does not offer its place');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}build-sites.png` });
+  for (const [kind, words] of [['dock', 'road bridge'], ['stage', 'village square']]) {
+    await page.evaluate(() => { if (!document.querySelector('.sheet.build:not([hidden])')) document.querySelector('.hud [data-act="build"]').click(); });
+    await page.waitForSelector(`.sheet.build .card[data-kind="${kind}"]`); await page.click(`.sheet.build .card[data-kind="${kind}"]`);
+    await page.waitForSelector(`[data-do="siteBuild"][data-kind="${kind}"]`);
+    expect((await page.textContent('.panel-body')).includes(words), `${kind}: its panel does not say where the place is`);
+    await page.waitForFunction(k => { const c = farm.world.cam; return !c.flight && (k === 'dock' ? c.z < 60 : c.z > 180); }, kind, { timeout: 10000 });   // the view has gone to the place
+    await page.click(`[data-do="siteBuild"][data-kind="${kind}"]`); await page.waitForFunction(k => (farm.state().counts[k] ?? 0) === 1, kind);
+    await page.evaluate(() => farm.closeCards());
+  }
+  await page.click('.hud [data-act="build"]'); await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Built'), 'a built dock is not marked');
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

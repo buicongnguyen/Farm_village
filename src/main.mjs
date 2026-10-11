@@ -248,6 +248,7 @@ const openOffer = () => {
   import('./ui/offer.mjs').then(m => m.showOffer(game, { onAnswer: () => flyTo((MEADOW.x0 + MEADOW.x1 + 1) / 2 * CELL, (MEADOW.z1 + 1) * CELL, Math.min(world.cam.span, 44)) })).catch(() => hud.toast(t('Could not open it. Check your connection.'), 'warn'));
 };
 panels.onOffer = openOffer; hud.onOffer = openOffer;
+build.onSite = kind => panels.onSite(kind);
 panels.onSite = kind => {
   if (!SITES.some(x => x.kind === kind) || !BUILDINGS[kind]?.site) return;
   if (build.open) build.close(); radial.hide(); siteView(kind); panels.show('site', kind);

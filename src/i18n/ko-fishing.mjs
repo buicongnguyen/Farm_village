@@ -881,4 +881,8 @@ export const KO_FISHING = {
   'Coupon code': '쿠폰 코드',
   'Enter a code': '코드 입력',
   'Use': '사용',
+  'Built': '지었어요',
+  'Show the place': '자리 보기',
+  'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': '자리는 농장 북쪽, 다리 바로 동쪽의 개울가예요. 표지판이 서 있어요.',
+  'Its place is the north side of the village square, where the burned platform stands.': '자리는 마을 광장 북쪽, 불탄 무대가 있는 곳이에요.',
 };

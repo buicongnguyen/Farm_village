@@ -881,4 +881,8 @@ export const JA_FISHING = {
   'Coupon code': 'クーポンコード',
   'Enter a code': 'コードを入力',
   'Use': '使う',
+  'Built': '建設ずみ',
+  'Show the place': '場所を見る',
+  'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': '場所は農場の北、橋のすぐ東の小川の岸です。立て札が目じるしです。',
+  'Its place is the north side of the village square, where the burned platform stands.': '場所は村の広場の北がわ、焼けた舞台のあるところです。',
 };

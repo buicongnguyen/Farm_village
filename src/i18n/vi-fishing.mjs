@@ -881,4 +881,8 @@ export const VI_FISHING = {
   'Coupon code': 'Mã coupon',
   'Enter a code': 'Nhập mã',
   'Use': 'Dùng',
+  'Built': 'Đã xây',
+  'Show the place': 'Xem vị trí',
+  'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': 'Vị trí của nó ở bờ suối, ngay phía đông cây cầu, phía bắc trang trại. Có một tấm biển đánh dấu.',
+  'Its place is the north side of the village square, where the burned platform stands.': 'Vị trí của nó ở phía bắc quảng trường làng, chỗ cái bục bị cháy.',
 };
