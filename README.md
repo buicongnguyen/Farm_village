@@ -1,7 +1,7 @@
 # Farm Village
 
 The next game after Willowmere: a cozy, single-player farm and village game in the browser, where you lead your family
-and grow your village. Version 0.4.0 adds the orchard, Biscuit’s kennel, roadmap and clinic on a review branch; see CHANGELOG.md. The main branch publishes the live site after PR review. **Play it: https://buicongnguyen.github.io/Farm_village/**
+and grow your village. The whole story is in the game: twenty chapters, from the key under the seed tin to the lights of two villages; see CHANGELOG.md and docs/plan/README.md. The main branch publishes the live site after PR review. **Play it: https://buicongnguyen.github.io/Farm_village/**
 
 ## Play and develop
 

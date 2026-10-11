@@ -59,6 +59,30 @@
   "rough": 0.75
  },
  {
+  "id": "goat_feed",
+  "src": "raw:items",
+  "root": "goat_feed",
+  "preset": "goods"
+ },
+ {
+  "id": "goat_milk",
+  "src": "raw:items",
+  "root": "goat_milk",
+  "preset": "goods"
+ },
+ {
+  "id": "butter",
+  "src": "raw:items",
+  "root": "butter",
+  "preset": "dish"
+ },
+ {
+  "id": "cheese",
+  "src": "raw:items",
+  "root": "cheese",
+  "preset": "dish"
+ },
+ {
   "id": "bread",
   "src": "raw:items",
   "root": "bread",
@@ -149,6 +173,18 @@
   "id": "cow_barn",
   "src": "raw:farm-kit",
   "root": "cow_barn",
+  "preset": "building"
+ },
+ {
+  "id": "goat_barn",
+  "src": "raw:decor",
+  "root": "goat_barn",
+  "preset": "building"
+ },
+ {
+  "id": "dairy",
+  "src": "raw:decor",
+  "root": "dairy",
   "preset": "building"
  },
  {
@@ -430,6 +466,199 @@
    "Villager hair": "#7A3E1E",
    "Villager shirt": "#FF8A2A",
    "Villager trousers": "#3B6FB6"
+  }
+ },
+ {
+  "id": "oak_float",
+  "src": "raw:items",
+  "root": "oak_float",
+  "preset": "goods"
+ },
+ {
+  "id": "heron_feather",
+  "src": "raw:items",
+  "root": "heron_feather",
+  "preset": "goods"
+ },
+ {
+  "id": "spring_water",
+  "src": "raw:items",
+  "root": "spring_water",
+  "preset": "goods"
+ },
+ {
+  "id": "halt",
+  "src": "raw:decor",
+  "root": "halt",
+  "view": [-34, 26],
+  "preset": "building"
+ },
+ {
+  "id": "hotel",
+  "src": "raw:decor",
+  "root": "hotel",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
+  "id": "apartment",
+  "src": "raw:decor",
+  "root": "apartment",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
+  "id": "quay",
+  "src": "raw:decor",
+  "root": "quay_bollard",
+  "view": [-28, 18],
+  "preset": "building"
+ },
+ {
+  "id": "person:tuyet",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8C39E",
+   "Villager hair": "#E8E4DA",
+   "Villager shirt": "#3D7BD0",
+   "Villager trousers": "#FFF4E2"
+  }
+ },
+ {
+  "id": "cooperative_board",
+  "src": "raw:decor",
+  "root": "cooperative_board",
+  "view": [-24, 14],
+  "preset": "building"
+ },
+ {
+  "id": "person:priya",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#D9A27C",
+   "Villager hair": "#1A1A22",
+   "Villager shirt": "#E0496B",
+   "Villager trousers": "#3A6B4A"
+  }
+ },
+ {
+  "id": "person:twins",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#F0C9A8",
+   "Villager hair": "#A8642C",
+   "Villager shirt": "#FFCF3F",
+   "Villager trousers": "#2F4F8A"
+  }
+ },
+ {
+  "id": "cannery",
+  "src": "raw:decor",
+  "root": "cannery",
+  "view": [-32, 24],
+  "preset": "building"
+ },
+ {
+  "id": "beehive",
+  "src": "raw:decor",
+  "root": "beehive",
+  "view": [-30, 20],
+  "preset": "building"
+ },
+ {
+  "id": "canned_corn",
+  "src": "raw:items",
+  "root": "canned_corn",
+  "preset": "goods"
+ },
+ {
+  "id": "canned_tomato",
+  "src": "raw:items",
+  "root": "canned_tomato",
+  "preset": "goods"
+ },
+ {
+  "id": "honey",
+  "src": "raw:items",
+  "root": "honey",
+  "preset": "goods"
+ },
+ {
+  "id": "honey_cake",
+  "src": "raw:items",
+  "root": "honey_cake",
+  "preset": "dish"
+ },
+ {
+  "id": "person:albright",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#EDC3A4",
+   "Villager hair": "#4A4A5C",
+   "Villager shirt": "#6B7280",
+   "Villager trousers": "#374151"
+  }
+ },
+ {
+  "id": "stage",
+  "src": "raw:decor",
+  "root": "stage",
+  "view": [-30, 22],
+  "preset": "building"
+ },
+ {
+  "id": "person:ellis",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E3B48C",
+   "Villager hair": "#E9E6E1",
+   "Villager shirt": "#4F9A52",
+   "Villager trousers": "#5A3A2A"
+  }
+ },
+ {
+  "id": "dock",
+  "src": "raw:decor",
+  "root": "dock",
+  "view": [-34, 30],
+  "preset": "building"
+ },
+ {
+  "id": "person:bea",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#EDC3A4",
+   "Villager hair": "#7A4A26",
+   "Villager shirt": "#F2A93B",
+   "Villager trousers": "#4A4A5C"
+  }
+ },
+ {
+  "id": "person:pearl",
+  "src": "3D_game_scene/public/models/villager-woman.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#2A2A36",
+   "Villager shirt": "#2F4F8A",
+   "Villager trousers": "#24324F"
+  }
+ },
+ {
+  "id": "person:hugo",
+  "src": "3D_game_scene/public/models/villager-man.glb",
+  "portrait": true,
+  "recolor": {
+   "Skin": "#E8B98F",
+   "Villager hair": "#6B4A2E",
+   "Villager shirt": "#FFF4E2",
+   "Villager trousers": "#B98A4E"
   }
  },
  {
@@ -891,6 +1120,83 @@
   "why": "side-on view shows the stripes and the fins"
  },
  {
+  "id": "clownfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_clown",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "rainbowfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_rainbow",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "koi",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_koi",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "eel",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_eel",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "pike",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_icepike",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "sunfish",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_sunfish",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
+  "id": "pond_giant",
+  "src": "3d_farmer_fish_sell/public/assets/models/fish.glb",
+  "root": "fish_guardian",
+  "view": [
+   -90,
+   28
+  ],
+  "preset": "fish",
+  "why": "new pond species: side-on shows the pattern"
+ },
+ {
   "id": "herb",
   "src": "raw:items",
   "root": "item_herb",
@@ -902,6 +1208,36 @@
   "root": "item_ginseng",
   "preset": "goods",
   "rough": 0.5
+ },
+ {
+  "id": "tomato",
+  "src": "raw:items",
+  "root": "tomato",
+  "preset": "goods"
+ },
+ {
+  "id": "potato",
+  "src": "raw:items",
+  "root": "potato",
+  "preset": "goods"
+ },
+ {
+  "id": "cabbage",
+  "src": "raw:items",
+  "root": "cabbage",
+  "preset": "goods"
+ },
+ {
+  "id": "onion",
+  "src": "raw:items",
+  "root": "onion",
+  "preset": "goods"
+ },
+ {
+  "id": "chili",
+  "src": "raw:items",
+  "root": "chili",
+  "preset": "goods"
  },
  {
   "id": "orange",
@@ -994,6 +1330,274 @@
   "id": "noodle_factory",
   "src": "raw:decor",
   "root": "noodle_factory",
+  "preset": "building"
+ },
+ {
+  "id": "police",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "police",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "company",
+  "src": "3d_farmer_fish_sell/public/assets/models/town.glb",
+  "root": "company",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "hospital",
+  "src": "raw:decor",
+  "root": "hospital",
+  "view": [
+   -30,
+   18
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "hen",
+  "src": "self:public/assets/models/rigged/chicken.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "cow",
+  "src": "self:public/assets/models/rigged/cow.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "goat",
+  "src": "self:public/assets/models/rigged/goat.glb",
+  "view": [
+   -40,
+   18
+  ],
+  "margin": 1.05
+ },
+ {
+  "id": "ui:today",
+  "src": "raw:items",
+  "root": "ui_today",
+  "preset": "token"
+ },
+ {
+  "id": "ui:projects",
+  "src": "raw:decor",
+  "root": "scaffold",
+  "view": [
+   -30,
+   22
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "ui:mail",
+  "src": "raw:items",
+  "root": "ui_mail",
+  "preset": "goods"
+ },
+ {
+  "id": "tool:demolish",
+  "src": "raw:items",
+  "root": "tool_demolish",
+  "preset": "tool"
+ },
+ {
+  "id": "ui:harvest_all",
+  "src": "raw:items",
+  "root": "ui_harvest_all",
+  "preset": "goods"
+ },
+ {
+  "id": "maple",
+  "src": "raw:decor",
+  "root": "tree2_maple",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "birch",
+  "src": "raw:decor",
+  "root": "tree2_birch",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "cypress",
+  "src": "raw:decor",
+  "root": "tree2_cypress",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "fir",
+  "src": "raw:decor",
+  "root": "tree2_fir",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "great_oak",
+  "src": "raw:decor",
+  "root": "tree2_oak",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lemon_tree",
+  "src": "raw:decor",
+  "root": "tree2_lemon",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "plum_tree",
+  "src": "raw:decor",
+  "root": "tree2_plum",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "mango_tree",
+  "src": "raw:decor",
+  "root": "tree2_mango",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "grape_arbor",
+  "src": "raw:decor",
+  "root": "tree2_grape",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "longan_tree",
+  "src": "raw:decor",
+  "root": "tree2_longan",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lychee_tree",
+  "src": "raw:decor",
+  "root": "tree2_lychee",
+  "view": [
+   -30,
+   16
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "lemon",
+  "src": "raw:items",
+  "root": "item_lemon",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "plum",
+  "src": "raw:items",
+  "root": "item_plum",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "mango",
+  "src": "raw:items",
+  "root": "item_mango",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "grape",
+  "src": "raw:items",
+  "root": "item_grape",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "longan",
+  "src": "raw:items",
+  "root": "item_longan",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "lychee",
+  "src": "raw:items",
+  "root": "item_lychee",
+  "preset": "goods",
+  "rough": 0.4
+ },
+ {
+  "id": "ribbon_gold",
+  "src": "raw:items",
+  "root": "ribbon_gold",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_silver",
+  "src": "raw:items",
+  "root": "ribbon_silver",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_bronze",
+  "src": "raw:items",
+  "root": "ribbon_bronze",
+  "preset": "goods"
+ },
+ {
+  "id": "ribbon_board",
+  "src": "raw:decor",
+  "root": "ribbon_board",
+  "view": [-24, 14],
   "preset": "building"
  }
 ]

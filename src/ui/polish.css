@@ -64,7 +64,11 @@ body.panel-open .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }   /* buil
 .set-row { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; } .set-row > b { min-width: 104px; }
 .set-row .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .set-row input[type="range"] { flex: 1; min-width: 150px; accent-color: var(--leaf); height: 32px; }
+.set-row input.name-input { flex: 1; min-width: 110px; max-width: 220px; height: 36px; padding: 0 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; font: inherit; font-weight: 800; color: inherit; }
 .test-head { color: #c4363a !important; } .test-row .btn { flex: 1 1 140px; }
+.test-jump .tab[disabled] { opacity: .55; }
+/* shown only when the game was opened with ?tester: a screenshot from a tester's farm is never taken for normal play */
+.tester-tag { position: fixed; left: 50%; top: 2px; transform: translateX(-50%); z-index: 6; padding: 0 8px; border-radius: 8px; background: rgba(196, 54, 58, .88); color: #fff; font: 700 11px/16px system-ui, sans-serif; letter-spacing: .04em; pointer-events: none; }
 .album { display: grid; gap: 6px; }
 .album .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .chapter-tile { background: linear-gradient(#fff, #fff7e6); border: 3px solid var(--line); border-radius: 16px; padding: 6px; display: grid; gap: 2px; justify-items: center; text-align: center; box-shadow: 0 3px 0 #d3a868; align-content: start; }
@@ -82,6 +86,19 @@ body.panel-open .guide { bottom: calc(var(--sheet-h, 196px) + 10px); }   /* buil
 
 @media (min-width: 900px) and (min-height: 600px) {
   .sheet { left: calc(50% - min(400px, 46vw)); right: calc(50% - min(400px, 46vw)); border-radius: 26px 26px 0 0; }
+  /* Desktop menus are a column on the right (after Zoo Garden), so the middle of the view, where your character and the
+     farm are, stays clear. The build tray stays a short strip along the bottom: it is a toolbar for placing on the map. */
+  :root { --side: min(440px, 36vw); }
+  .sheet.panel { left: auto; right: 0; top: 0; bottom: 0; width: var(--side); max-height: none; border-radius: 26px 0 0 26px; border-right: 0; border-bottom: 4px solid var(--edge);
+    box-shadow: -5px 0 0 #ffffff60 inset, -6px 0 22px #0000004d; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .sheet.panel.pop { animation: side-in .28s cubic-bezier(.3, 1.2, .5, 1); }
+  .sheet.panel .order-list, .sheet.panel .friends, .sheet.panel .letters { grid-template-columns: 1fr; }
+  /* with a menu open: the farm buttons slide left of it instead of jumping up; the left of the HUD stays as it is */
+  body.panel-open .hud .hud-tools, body.panel-open .hud-tools { bottom: max(34px, calc(env(safe-area-inset-bottom) + 26px)); right: calc(var(--side) * var(--hud-text, 1) + 18px); }
+  body.panel-open .hud .hud-tracker { display: grid; } body.panel-open .hud .hud-status { display: flex; }
+  body.panel-open .hud .next-chip:not([hidden]) { display: flex; left: calc((100vw - var(--side)) / 2); }
+  body.panel-open .hud .toasts { top: auto; bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px)); left: calc((100vw - var(--side) * var(--hud-text, 1)) / 2); }
+  body.panel-open .guide { bottom: max(10px, env(safe-area-inset-bottom)); max-width: min(450px, calc(100vw - var(--side) - 280px)); }
   .place-bar { bottom: calc(var(--build-h, min(46vh, 196px)) + 14px); }
   .friends, .letters { grid-template-columns: 1fr 1fr; }
 }
@@ -184,7 +201,9 @@ body.reduced-motion .next-chip { animation: none; }
 .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 54px); }
 .hud-status { display: grid; gap: 4px; justify-items: start; max-width: min(60vw, 250px); margin-top: 2px; }
 .status-row { display: flex; align-items: center; gap: 6px; font: 800 12.5px/1.15 'Nunito', sans-serif; color: #5a3410; background: #fff8e4ee; border: 2px solid #e2b977; border-radius: 12px; padding: 3px 9px 3px 5px; box-shadow: 0 2px 0 #b8741a66; cursor: pointer; text-align: left; }
-.status-row.hot { border-color: #ffb92e; background: #fff1c2; animation: row-bob 2.4s ease-in-out infinite; }
+.status-row.hot { border-color: #ffb92e; background: #fff1c2; }
+/* Only a biting fish moves (docs/HUD-STANDARD.md: one thing in motion at a time); other ready pills just glow. */
+.status-row.hot[data-status="pond"] { animation: row-bob 2.4s ease-in-out infinite; }
 .status-row .mini, .status-row .g { width: 20px; height: 20px; flex: none; }
 .status-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px; }
 body.reduced-motion .status-row.hot { animation: none; }
@@ -216,7 +235,7 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 @media (max-height: 520px) {
   .hud-status { max-width: 200px; gap: 3px; }
   .status-row { font-size: 11px; padding: 2px 8px 2px 4px; }
-  .status-row[data-status="projects"] { display: none; }
+  .status-row[data-status="projects"]:not(.hot) { display: none; }   /* short screens: the Projects pill shows only when a step is ready (the banner still opens the roadmap) */
   .status-row .mini, .status-row .g { width: 16px; height: 16px; }
   .next-chip { left: 12px; transform: none; bottom: 10px; font-size: 11.5px; padding: 4px 10px; max-width: 44vw; animation: none; }
   .hud-right { top: calc(max(10px, env(safe-area-inset-top)) + 42px); }
@@ -227,3 +246,28 @@ body.panel-open .hud-topright, body.panel-open .hud-status { display: none; }
 .plan-step img, .plan-step .icon { width: 18px; height: 18px; }
 .toast.tappable { pointer-events: auto; cursor: pointer; text-decoration: underline dotted; }
 button.village-name { border: 0; cursor: pointer; }
+
+/* Tidy order board: fewer rows per card. Name and hearts share a line, smaller faces and plan steps, and the saying is
+   dropped on phones (the card already shows who, what and the reward). Ready orders are sorted first (panel-renderers). */
+.order { min-width: 0; } .order .who { min-width: 0; }
+.order .who-name { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; flex: 1 1 0; overflow: hidden; }
+.order .who .reward { flex: none; }
+.order .who-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order button.good { padding: 2px 4px; min-width: 50px; min-height: 0; gap: 0; }
+.order .item-token { width: 34px; height: 34px; }
+.order .item-token img.mini { width: 28px; height: 28px; }
+.order .reward img, .order .reward svg { width: 22px; height: 22px; }
+.order .who .face, .order .who img.face { width: 32px; height: 32px; }
+.order .who b { font-size: 15px; }
+.order-plan .plan-step { font-size: 12px; padding: 1px 6px; min-height: 0; }
+.order-plan .plan-step img { width: 18px; height: 18px; }
+@media (max-width: 560px) { .order .line { display: none; } }
+@keyframes side-in { from { transform: translateX(40px); opacity: .4; } }
+/* key hints on the place bar, for a mouse and keyboard only */
+.place-bar kbd { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .place-bar .round { position: relative; }
+  .place-bar kbd { display: block; position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); padding: 0 5px; border-radius: 6px; background: #3b2a1acc; color: #fff; font: 800 10px/14px 'Nunito', sans-serif; white-space: nowrap; pointer-events: none; }
+}
+/* with a mouse the tab strip cannot be dragged sideways: on a wide screen every build tab is shown, on two rows if need be */
+@media (min-width: 900px) and (hover: hover) { .build-top .tabs { flex-wrap: wrap; overflow: visible; } }

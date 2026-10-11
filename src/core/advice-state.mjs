@@ -30,6 +30,9 @@ export function normalizeAdvice(s) {
   const validKey = key => {
     const split = key.indexOf(':'), id = key.slice(0, split), context = key.slice(split + 1);
     if (split < 1 || !own(ADVICE_TOPICS, id) || !context) return false;
+    // Optional branches have a small authored set of contexts, never a timestamp/round/stock-count key.
+    // Keep their acknowledgements through temporary blockers so restored availability does not nag again.
+    if (ADVICE_TOPICS[id].contexts) return ADVICE_TOPICS[id].contexts.includes(context);
     if (context.startsWith('order/')) return (s.orders?.cards ?? []).some(o => o.id === context.split('/')[1]);
     if (context.startsWith('building/')) return own(s.placed ?? {}, context.split('/')[1]);
     return context === 'pond' || context === 'fruit-stand' || celebrations.includes(id) && context === 'earned';

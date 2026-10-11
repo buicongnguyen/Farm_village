@@ -11,7 +11,7 @@ import * as W from '../content/world.mjs';
 // Saturated, warm toon palette (no tone mapping: colour comes from here, not from post-processing). The ground adds
 // value-noise variation around these means (ground.mjs), so they are the average colour of each surface.
 export const GROUND_COLORS = {
-  grass: '#6db446', meadow: '#74b44a', wildMeadow: '#6aa83a', path: '#dfbd87', road: '#d6ad78', tilled: '#7a4a2a',
+  grass: '#62b83c', meadow: '#6cba46', wildMeadow: '#6aa83a', path: '#e8c28a', road: '#dca870', tilled: '#7a4a2a',
   water: '#299ead', bank: '#d8bf86', plaza: '#dcc59a', weeds: '#6fb03d', rock: '#72bd3e', yard: '#b98a62',
 };
 
@@ -62,7 +62,8 @@ export class WorldView {
   /** The look of fixed ground (roads, brook, meadow); the game layers the player's cells on top. */
   fixedLook(x, z) {
     if (W.isBrook(x, z)) return { color: GROUND_COLORS.bank };   // the water itself is the brook mesh
-    if (W.isRoad(x, z)) return { color: GROUND_COLORS.road };
+    if (W.isRoad(x, z)) return { color: GROUND_COLORS.road, cobble: true };
+    if (W.isPondPath(x, z)) return { color: GROUND_COLORS.path };
     // the farmhouse forecourt: the grout under its stone tiles (dress.mjs draws the tiles), and one step of path from it
     // to the road in line with the path over to the farm
     const Y = W.HOME_YARD; if (x >= Y.x0 && x <= Y.x1 && z >= Y.z0 && z <= Y.z1) return { color: GROUND_COLORS.yard, grain: 0.04 };
@@ -132,7 +133,7 @@ export class WorldView {
         for (const f of this.frameListeners) f(dt, now);
         this.govern(dt);
         this.ground.flush(); this.batches.flush();
-        this.renderer.render(this.scene, this.cam.camera);
+        this.renderer.render(this.presentation?.scene ?? this.scene, this.presentation?.camera ?? this.cam.camera);
       }
       requestAnimationFrame(loop);
     };

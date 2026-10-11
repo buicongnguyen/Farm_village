@@ -148,6 +148,24 @@ await check('three trucks at the market hold the phone budgets at every zoom; PC
   }
 });
 
+await check('a convoy keeps its gaps while it drives off and comes home (no truck drives through another)', async () => {
+  const { ctx, page, errors } = await open('pc');
+  await page.evaluate(() => { const s = farm.state(), t = s.truck; t.fleet = [{ ...t, load: [] }, { ...t, load: [] }]; });
+  const gaps = [];
+  for (const k of [0.04, 0.1, 0.16, 0.84, 0.9, 0.96]) {   // the drive-off and the drive-home legs of one trip
+    const xs = await page.evaluate(async k => {
+      const s = farm.state(), trip = 50_000, now = farm.game.now;
+      for (const u of [s.truck, ...s.truck.fleet]) { u.away = true; u.backAt = now + (1 - k) * trip; }
+      await new Promise(r => setTimeout(r, 120));
+      return ['truck', 'truck1', 'truck2'].map(id => farm.world.batches.items.get(id)?.x ?? null);
+    }, k);
+    expect(xs.every(x => x !== null), `a truck is missing at k=${k}: ${xs}`);
+    gaps.push(xs[1] - xs[0], xs[2] - xs[1]);
+  }
+  expect(Math.min(...gaps) > 4.5, `trucks close in on each other: gaps ${gaps.map(g => g.toFixed(1)).join(', ')} m`);
+  expect(!errors.length, errors.join(' | ')); await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} fleet checks passed`);

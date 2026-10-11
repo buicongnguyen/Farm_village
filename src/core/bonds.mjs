@@ -8,7 +8,7 @@
 import { HEART_SCENES, WISHES } from '../content/hearts.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { CHAPTERS } from '../content/story.mjs';
-import { VILLAGERS, FAMILIES, allPeople } from '../content/people.mjs';
+import { VILLAGERS, FAMILIES, allPeople, hasArrived } from '../content/people.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BONDS, CHARM_MILESTONES } from '../content/economy.mjs';
@@ -46,7 +46,7 @@ export function residents(s, now = Infinity) {
 }
 /** Who can receive a gift now: villagers who are in the village (not your own family) and residents. */
 export function giftable(s, now = Infinity) {
-  const villagers = VILLAGERS.filter(v => !v.family && !v.noGifts && (!v.arrives || (s.counts[v.arrives] ?? 0) > 0)).map(v => v.id);
+  const villagers = VILLAGERS.filter(v => !v.family && !v.noGifts && hasArrived(s, v)).map(v => v.id);
   return [...villagers, ...residents(s, now).map(r => r.id)];
 }
 /** The story's scene at 3, 6 or 9 hearts. Optional state selects a context variant without changing its reward. */
@@ -118,10 +118,11 @@ function checkWishes(ctx, events) {
 }
 
 // ── Letters ──
-/** The highest chapter reached: the cards already seen, or any whose test now passes. */
+/** The highest chapter reached: the cards already seen, and after them every chapter in a row whose deed is done (a
+ *  later deed done early does not count until the chapters before it are). */
 export function chapterReached(s) {
   let c = s.story?.chapter ?? 0;
-  for (const ch of CHAPTERS) { try { if (ch.id > c && ch.when?.(s)) c = ch.id; } catch { /* a chapter test that needs more state */ } }
+  for (const ch of CHAPTERS) { if (ch.id <= c) continue; let ok = false; try { ok = ch.id === c + 1 && !!ch.when?.(s); } catch { /* a chapter test that needs more state */ } if (!ok) break; c = ch.id; }
   return c;
 }
 const statOf = (s, key) => key.split('.').reduce((o, k) => o?.[k], s.stats) ?? 0;
@@ -138,11 +139,14 @@ export function letterDue(s, letter, chapter = null) {
   return whenDue(s, letter.when ?? {}, letter.from, chapter) && (!letter.also || whenDue(s, letter.also, letter.from, chapter));
 }
 /** Earliest unread prerequisite, or null. A legacy read letter already counts as a known fact. */
+/** A letter written from somewhere its writer no longer is (`until`: the chapter that ends it) is not posted any more. */
+export const letterLapsed = (s, letter) => !!letter?.until && (s.story?.chapter ?? 0) >= letter.until;
 export function letterPrerequisite(s, id, seen = new Set()) {
   if (seen.has(id)) return id; // malformed cyclic content cannot silently unlock itself
   seen.add(id);
   for (const before of letterOf(id)?.after ?? []) {
     if ((s.mail ?? []).some(m => m.id === before && m.read)) continue;
+    if (letterLapsed(s, letterOf(before)) && !(s.mail ?? []).some(m => m.id === before)) continue;   // never posted and never will be
     return letterPrerequisite(s, before, seen) ?? before;
   }
   return null;
@@ -154,13 +158,31 @@ export function postLetters(ctx) {
   const { s, now } = ctx, mail = (s.mail ??= []), letters = data().letters; if (!letters.length) return;
   const sent = new Set(mail.map(m => m.id)), chapter = chapterReached(s);
   for (const letter of letters) {
-    if (!letter?.id || sent.has(letter.id) || !letterReady(s, letter, chapter)) continue;
+    if (!letter?.id || sent.has(letter.id) || letterLapsed(s, letter) || !letterReady(s, letter, chapter)) continue;
     sent.add(letter.id);
     mail.unshift({ id: letter.id, from: letter.from, at: now, read: false });
     ctx.emit('letter', { id: letter.id, from: letter.from });
   }
 }
-export const letterOf = id => data().letters.find(l => l.id === id) ?? null;
+// Thank-you notes (after Hay Day's mailbox): every fourth order filled for the same person, they post a short note with a
+// small present. Ids are 'thanks:<person>:<n>'; the words and the present rotate. Old read notes are thinned out.
+export const THANKS = { every: 4, keep: 6, texts: ['Thank you for filling my orders so kindly. Here is a little something from our kitchen.',
+  'You always bring just what I asked for. I put a small present in with this note.', 'The whole house says thank you. Please take this, with our love.'],
+  gifts: [{ coins: 15 }, { goods: { chicken_feed: 2 } }, { goods: { wheat: 4 } }] };
+function thankYou(ctx, events) {
+  for (const e of events) if (e.type === 'orderFilled' && e.from) {
+    const { s } = ctx, b = bondOf(s, e.from); b.orders = (b.orders ?? 0) + 1;
+    if (b.orders % THANKS.every) continue;
+    const id = `thanks:${e.from}:${b.orders / THANKS.every}`, mail = (s.mail ??= []);
+    const old = mail.filter(m => m.read && m.id.startsWith('thanks:'));
+    for (const m of old.slice(THANKS.keep - 1)) mail.splice(mail.indexOf(m), 1);
+    mail.unshift({ id, from: e.from, at: ctx.now, read: false }); ctx.emit('letter', { id, from: e.from });
+  }
+}
+export const letterOf = id => {
+  if (typeof id === 'string' && id.startsWith('thanks:')) { const [, from, n] = id.split(':'), k = (+n || 1) % THANKS.texts.length; return { id, from, text: THANKS.texts[k], reward: THANKS.gifts[k] }; }
+  return data().letters.find(l => l.id === id) ?? null;
+};
 export const unread = s => (s.mail ?? []).filter(m => !m.read).length;
 
 // ── Village charm ──
@@ -180,6 +202,7 @@ export function afterAction(ctx) {
   const events = [...ctx.events];
   checkWishes(ctx, events);
   if (events.some(e => CHARM_EVENTS.has(e.type))) checkCharm(ctx);
+  thankYou(ctx, events);
   postLetters(ctx);
 }
 const charmChecked = new WeakSet();
@@ -216,5 +239,12 @@ export const actions = {
     const reward = grant(ctx, letter.reward);
     ctx.emit('letterRead', { id, from: m.from, reward });
     return { reward };
+  },
+  /** Open every unread thank-you note at once (they all say much the same): each still gives its own small present. */
+  readThanks(ctx) {
+    const notes = (ctx.s.mail ?? []).filter(m => !m.read && typeof m.id === 'string' && m.id.startsWith('thanks:') && letterOf(m.id));
+    if (!notes.length) return ctx.fail('That letter is gone');
+    for (const m of notes) { m.read = true; ctx.emit('letterRead', { id: m.id, from: m.from, reward: grant(ctx, letterOf(m.id).reward) }); }
+    return { count: notes.length };
   },
 };

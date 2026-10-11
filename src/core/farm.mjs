@@ -1,8 +1,11 @@
 // Crop beds: plant (uses one crop from the barn, wheat is free), grow on real time, harvest two (DESIGN 5).
 import { CROPS, TUTORIAL_FIRST_GROW_MS } from '../content/goods.mjs';
-import { XP } from '../content/economy.mjs';
+import { XP, WATERED } from '../content/economy.mjs';
+import { wateredBed } from './grid.mjs';
 import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
+import { cropOpen } from './learning-state.mjs';
+export { cropOpen } from './learning-state.mjs';
 
 export const bedState = (s, id, now) => {
   const b = s.beds[id]; if (!b) return { state: 'empty' };
@@ -18,6 +21,7 @@ export const actions = {
     const { s, now } = ctx, c = CROPS[crop];
     if (!c) return ctx.fail('Unknown crop');
     if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level, crop, lock: 'level' });
+    if (!cropOpen(s, crop)) return ctx.fail('Restore the potting bench to grow strawberries');
     let planted = 0;
     for (const bid of ids) {
       if (s.placed[bid]?.kind !== 'bed' || s.beds[bid]) continue;
@@ -26,8 +30,9 @@ export const actions = {
         else if (s.coins >= c.value) s.coins -= c.value;
         else { if (!planted) return ctx.fail('Not enough coins'); break; }
       }
-      const first = crop === 'wheat' && s.story.firstWheat;
-      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : c.growMs) };
+      const first = crop === 'wheat' && s.story.firstWheat, bed = s.placed[bid], watered = !first && wateredBed(s, bed.x, bed.z);   // a pond nearby waters it (chapter 7)
+      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : watered ? Math.round(c.growMs * WATERED.grow) : c.growMs), ...(watered ? { watered: true } : {}) };
+      if (watered) s.stats.watered = (s.stats.watered ?? 0) + 1;
       planted++;
     }
     if (!planted) return ctx.fail('Nothing to plant here');
@@ -40,7 +45,7 @@ export const actions = {
     const { s, now } = ctx; let done = 0, sold = 0;
     for (const bid of ids) {
       const b = s.beds[bid]; if (!b || b.doneAt > now) continue;
-      sold += barn.addOrSell(s, b.crop, 2); delete s.beds[bid]; done++;
+      sold += barn.addOrSell(s, b.crop, 2); (s.stats.grown ??= {})[b.crop] = (s.stats.grown[b.crop] ?? 0) + 2; delete s.beds[bid]; done++;
       ctx.emit('harvested', { id: bid, crop: b.crop, count: 2 });
     }
     if (!done) return ctx.fail('Nothing is ready yet');

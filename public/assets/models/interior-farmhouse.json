@@ -1,0 +1,520 @@
+{
+ "schemaVersion": 1,
+ "roomId": "farmhouse_main",
+ "site": "farmhouse",
+ "units": "metres, Y up, yaw radians",
+ "bounds": {
+  "room": {
+   "min": [
+    -4,
+    -3
+   ],
+   "max": [
+    4,
+    3
+   ]
+  },
+  "wallHeight": 2.8,
+  "wallThickness": 0.15,
+  "innerFloor": {
+   "min": [
+    -3.85,
+    -2.85
+   ],
+   "max": [
+    3.85,
+    2.85
+   ]
+  },
+  "avatarCentre": {
+   "min": [
+    -3.55,
+    -2.55
+   ],
+   "max": [
+    3.55,
+    2.55
+   ]
+  },
+  "avatar": {
+   "radius": 0.3,
+   "height": 1.8
+  },
+  "entranceCorridor": {
+   "min": [
+    -0.65,
+    1.15
+   ],
+   "max": [
+    0.65,
+    2.7
+   ]
+  }
+ },
+ "zones": {
+  "home_living": {
+   "min": [
+    -3.85,
+    -1.0
+   ],
+   "max": [
+    -0.9,
+    2.85
+   ]
+  },
+  "home_kitchen": {
+   "min": [
+    -0.9,
+    -2.85
+   ],
+   "max": [
+    3.85,
+    0.9
+   ]
+  },
+  "home_study": {
+   "min": [
+    -3.85,
+    -2.85
+   ],
+   "max": [
+    -0.9,
+    -1.0
+   ],
+   "also": [
+    "farmhouse_wardrobe"
+   ]
+  }
+ },
+ "meshes": [
+  {
+   "node": "farmhouse_interior_floor",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 0,
+   "midNode": "farmhouse_interior_floor_mid"
+  },
+  {
+   "node": "farmhouse_interior_back",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 0,
+   "midNode": "farmhouse_interior_back_mid"
+  },
+  {
+   "node": "farmhouse_interior_left",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 0,
+   "midNode": "farmhouse_interior_left_mid"
+  },
+  {
+   "node": "farmhouse_interior_front",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 0,
+   "midNode": "farmhouse_interior_front_mid"
+  },
+  {
+   "node": "farmhouse_interior_right",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 0,
+   "midNode": "farmhouse_interior_right_mid"
+  },
+  {
+   "node": "farmhouse_sofa",
+   "position": [
+    -3.15,
+    0,
+    -0.6
+   ],
+   "yaw": 1.571,
+   "midNode": "farmhouse_sofa_mid"
+  },
+  {
+   "node": "farmhouse_wardrobe",
+   "position": [
+    3.2,
+    0,
+    1.5
+   ],
+   "yaw": -1.571,
+   "midNode": "farmhouse_wardrobe_mid"
+  },
+  {
+   "node": "farmhouse_table",
+   "position": [
+    0.25,
+    0,
+    -0.3
+   ],
+   "yaw": 0.0,
+   "midNode": "farmhouse_table_mid"
+  },
+  {
+   "node": "farmhouse_kitchen",
+   "position": [
+    2.45,
+    0,
+    -2.25
+   ],
+   "yaw": 0.0,
+   "midNode": "farmhouse_kitchen_mid"
+  },
+  {
+   "node": "farmhouse_desk",
+   "position": [
+    -1.4,
+    0,
+    -2.25
+   ],
+   "yaw": 0.0,
+   "midNode": "farmhouse_desk_mid"
+  },
+  {
+   "node": "farmhouse_memory_shelf",
+   "position": [
+    -3.15,
+    0,
+    1.775
+   ],
+   "yaw": 1.571,
+   "midNode": "farmhouse_memory_shelf_mid"
+  }
+ ],
+ "colliders": [
+  {
+   "id": "farmhouse_sofa",
+   "min": [
+    -3.65,
+    -1.8
+   ],
+   "max": [
+    -2.65,
+    0.6
+   ]
+  },
+  {
+   "id": "farmhouse_wardrobe",
+   "min": [
+    2.75,
+    0.65
+   ],
+   "max": [
+    3.65,
+    2.35
+   ]
+  },
+  {
+   "id": "farmhouse_table",
+   "min": [
+    -0.75,
+    -1.25
+   ],
+   "max": [
+    1.25,
+    0.65
+   ]
+  },
+  {
+   "id": "farmhouse_kitchen",
+   "min": [
+    1.25,
+    -2.7
+   ],
+   "max": [
+    3.65,
+    -1.8
+   ]
+  },
+  {
+   "id": "farmhouse_desk",
+   "min": [
+    -2.2,
+    -2.7
+   ],
+   "max": [
+    -0.6,
+    -1.8
+   ]
+  },
+  {
+   "id": "farmhouse_memory_shelf",
+   "min": [
+    -3.65,
+    1.25
+   ],
+   "max": [
+    -2.65,
+    2.3
+   ]
+  },
+  {
+   "id": "wall_back",
+   "min": [
+    -4,
+    -3
+   ],
+   "max": [
+    4,
+    -2.85
+   ]
+  },
+  {
+   "id": "wall_left",
+   "min": [
+    -4,
+    -3
+   ],
+   "max": [
+    -3.85,
+    3
+   ]
+  },
+  {
+   "id": "wall_right",
+   "min": [
+    3.85,
+    -3
+   ],
+   "max": [
+    4,
+    3
+   ]
+  },
+  {
+   "id": "wall_front_left",
+   "min": [
+    -4,
+    2.85
+   ],
+   "max": [
+    -0.8,
+    3
+   ]
+  },
+  {
+   "id": "wall_front_right",
+   "min": [
+    0.8,
+    2.85
+   ],
+   "max": [
+    4,
+    3
+   ]
+  }
+ ],
+ "interactions": [
+  {
+   "id": "farmhouse_sofa",
+   "anchor": "farmhouse_sofa.interact",
+   "stand": [
+    -2.0,
+    0,
+    -0.6
+   ],
+   "focus": [
+    -3.15,
+    0.95,
+    -0.6
+   ]
+  },
+  {
+   "id": "farmhouse_wardrobe",
+   "anchor": "farmhouse_wardrobe.interact",
+   "stand": [
+    2.1,
+    0,
+    1.5
+   ],
+   "focus": [
+    3.2,
+    1.3,
+    1.5
+   ]
+  },
+  {
+   "id": "farmhouse_table",
+   "anchor": "farmhouse_table.interact",
+   "stand": [
+    0.25,
+    0,
+    1.35
+   ],
+   "focus": [
+    0.25,
+    0.85,
+    -0.3
+   ]
+  },
+  {
+   "id": "farmhouse_kitchen",
+   "anchor": "farmhouse_kitchen.interact",
+   "stand": [
+    2.4,
+    0,
+    -1.1
+   ],
+   "focus": [
+    2.45,
+    1.0,
+    -2.25
+   ]
+  },
+  {
+   "id": "farmhouse_desk",
+   "anchor": "farmhouse_desk.interact",
+   "stand": [
+    -1.4,
+    0,
+    -1.1
+   ],
+   "focus": [
+    -1.4,
+    0.9,
+    -2.25
+   ]
+  },
+  {
+   "id": "farmhouse_memory_shelf",
+   "anchor": "farmhouse_memory_shelf.interact",
+   "stand": [
+    -2.0,
+    0,
+    1.775
+   ],
+   "focus": [
+    -3.15,
+    1.2,
+    1.775
+   ]
+  },
+  {
+   "id": "farmhouse_exit",
+   "anchor": "farmhouse_interior_floor.exit",
+   "stand": [
+    0,
+    0,
+    2.45
+   ],
+   "focus": [
+    0,
+    1.05,
+    3
+   ]
+  }
+ ],
+ "entry": {
+  "anchor": "farmhouse_interior_floor.entry",
+  "position": [
+   0,
+   0,
+   2.15
+  ],
+  "facing": [
+   0,
+   0,
+   -1
+  ]
+ },
+ "exit": {
+  "id": "farmhouse_exit",
+  "anchor": "farmhouse_interior_floor.exit",
+  "stand": [
+   0,
+   0,
+   2.45
+  ],
+  "doorway": {
+   "centre": [
+    0,
+    0,
+    3
+   ],
+   "width": 1.6,
+   "height": 2.2
+  }
+ },
+ "camera": {
+  "anchor": "farmhouse_interior_floor.camera",
+  "targetAnchor": "farmhouse_interior_floor.camera_target",
+  "position": [
+   9,
+   10,
+   11
+  ],
+  "target": [
+   0,
+   0.6,
+   0
+  ],
+  "padding": 0.1,
+  "projection": "orthographic"
+ },
+ "hiddenWalls": {
+  "full": [
+   "farmhouse_interior_front",
+   "farmhouse_interior_right"
+  ],
+  "mid": [
+   "farmhouse_interior_front_mid",
+   "farmhouse_interior_right_mid"
+  ]
+ },
+ "seats": [
+  {
+   "id": "farmhouse_sofa",
+   "node": "farmhouse_sofa.seat",
+   "midNode": "farmhouse_sofa_mid.seat",
+   "position": [
+    -2.991,
+    0,
+    -0.6
+   ],
+   "facing": [
+    1.0,
+    0,
+    0.0
+   ],
+   "returnStand": [
+    -2.0,
+    0,
+    -0.6
+   ],
+   "cushionTop": 0.46,
+   "actorHeight": 1.8,
+   "clip": "Sit",
+   "measured": {
+    "man": {
+     "hipHeight": 0.459,
+     "hipForward": -0.039,
+     "hipHeightShare": 0.255,
+     "hipForwardShare": -0.0218
+    },
+    "woman": {
+     "hipHeight": 0.433,
+     "hipForward": 0.012,
+     "hipHeightShare": 0.2408,
+     "hipForwardShare": 0.0066
+    }
+   }
+  }
+ ]
+}

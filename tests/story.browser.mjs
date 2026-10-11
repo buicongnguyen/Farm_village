@@ -1,5 +1,5 @@
-// Story suite (docs/STORY.md): every chapter card, Ada's guide card and three order cards fit a 390 px phone in English
-// and Vietnamese, with nothing cut off. Screenshots (story-*.png) go to SHOTS_DIR (default: the system temp folder).
+// Story suite (docs/STORY.md): every chapter card, the guide and three order cards fit a 390 px phone in all four
+// editions, with nothing cut off. Screenshots (story-*.png) go to SHOTS_DIR (default: the system temp folder).
 // Run after `npm run build:test` and serving dist: GAME_URL=http://127.0.0.1:5274/ node tests/story.browser.mjs
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -33,10 +33,13 @@ const fits = (page, sel, { scrolls = false } = {}) => page.evaluate(([sel, scrol
   return bad.join('; ');
 }, [sel, scrolls]);
 import { CHAPTERS } from '../src/content/story.mjs';
-import { VI } from '../src/i18n/vi.mjs';
-const tr = (lang, en) => lang === 'vi' ? VI[en] ?? en : en;
+import { personName } from '../src/content/character-names.mjs';
+import { LANGUAGES, loadLanguage, tIn } from '../src/kit/i18n.mjs';
+await Promise.all(LANGUAGES.map(({ id }) => loadLanguage(id)));
+const LOCALES = LANGUAGES.map(({ id }) => id);
+const tr = tIn;
 
-for (const lang of ['en', 'vi']) {
+for (const lang of LOCALES) {
   await check(`chapter cards 1–5 fit a phone (${lang})`, async () => {
     const { ctx, page } = await open(lang);
     for (let n = 1; n <= 5; n++) {
@@ -50,7 +53,7 @@ for (const lang of ['en', 'vi']) {
       // the card as the guide draws it today, then with Ada's line added (the ui package's chapter-card hook): both must fit
       let bad = await fits(page, '.modal .card-modal'); expect(!bad, `chapter ${n}: ${bad}`);
       await page.evaluate(([who, line]) => document.querySelector('.modal .chapter [data-close]').insertAdjacentHTML('beforebegin',
-        `<p class="ada" style="font-style:italic"><b>${who}:</b> “${line}”</p>`), [tr(lang, 'Ada'), tr(lang, CHAPTERS[n - 1].ada)]);
+        `<p class="ada" style="font-style:italic"><b>${who}:</b> “${line}”</p>`), [personName('ada', lang), tr(lang, CHAPTERS[n - 1].ada)]);
       bad = await fits(page, '.modal .card-modal'); expect(!bad, `chapter ${n} with Ada's line: ${bad}`);
       await page.screenshot({ path: join(SHOTS, `story-ch${n}-${lang}.png`) });
       await page.click('.modal [data-close]');

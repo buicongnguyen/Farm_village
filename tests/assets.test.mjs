@@ -31,7 +31,7 @@ test('every KIND_MODELS and EARLY model exists in its GLB, with its authored _mi
     const r = roots(spec.kit);
     assert.ok(r[spec.node], `${name}: ${spec.node} missing from ${spec.kit}.glb`);
   }
-  for (const c of CROP_MODELS) for (const st of ['sprout', 'mid', 'ripe']) assert.ok(roots('farm-kit')[`crop_${c}_${st}_mid`], `crop_${c}_${st}_mid missing`);
+  for (const c of CROP_MODELS) for (const st of ['sprout', 'mid', 'ripe']) assert.ok(roots(KIND_MODELS[`crop:${c}:${st}`].kit)[`crop_${c}_${st}_mid`], `crop_${c}_${st}_mid missing`);
 });
 
 test('every ANCHORS model is drawn by the game and its farm-kit anchors exist as empties in the GLB', () => {
@@ -77,6 +77,11 @@ test('every good, building and tool has an icon whose file exists', () => {
   assert.equal(files.length, Object.keys(ICONS).length, 'every icon file is listed in ICONS');
 });
 
+test('every icon has its 64 px small variant under assets/icons/sm (AR-012)', async () => {
+  const { SMALL_ICONS } = await import('../src/content/icons.mjs');
+  for (const [id, url] of Object.entries(SMALL_ICONS)) assert.ok(existsSync(new URL(url.replace('./', ''), PUBLIC)), `${id}: ${url} is missing`);
+  assert.equal(Object.keys(SMALL_ICONS).length, Object.keys(ICONS).length);
+});
 test('the lucky-find keepsakes (AR-009): handheld pieces within the prop budget, standing on the ground, each with its icon', () => {
   const j = kit('discovery-props');
   assert.deepEqual(KITS['discovery-props'], ICON_IDS.keepsakes);
@@ -95,12 +100,12 @@ test('pieces stay within their triangle budgets: ripe crop 1,500, prop 1,200, bu
   const over = [];
   for (const [name, spec] of Object.entries(KIND_MODELS)) {
     const t = roots(spec.kit)[spec.node].triangles;
-    const cap = name.startsWith('crop:') ? 1500 : spec.lod === 'static' && spec.kit !== 'town' && !/^(fence|gate|lamp|bench|produce|scarecrow|hay|flowerpot|street|window|door|doormat|path|sale|bunting|banner)/.test(name) ? 8000 : spec.kit === 'town' ? 11000 : spec.lod === 'tree' ? 3500 : spec.lod === 'animal' ? 2000 : 1200;
+    const cap = name === 'farmhouse:3' ? 9000 /* the one grand farmhouse (Starline home_t3): a single instance */ : name.startsWith('crop:') ? 1500 : spec.lod === 'static' && spec.kit !== 'town' && !/^(fence|gate|lamp|bench|produce|scarecrow|hay|flowerpot|street|window|door|doormat|path|sale|bunting|banner)/.test(name) ? 8000 : spec.kit === 'town' ? 11000 : spec.lod === 'tree' ? 3500 : spec.lod === 'animal' ? 2000 : 1200;
     if (t > cap) over.push(`${name} (${spec.node}): ${t} > ${cap}`);
   }
   for (const n of KITS.props) { const t = roots('props')[n].triangles; if (t > 1200) over.push(`props ${n}: ${t}`); }
   for (const c of CROP_MODELS) {
-    const near = roots('farm-kit')[`crop_${c}_ripe`].triangles, mid = roots('farm-kit')[`crop_${c}_ripe_mid`].triangles;
+    const near = roots(KIND_MODELS[`crop:${c}:ripe`].kit)[`crop_${c}_ripe`].triangles, mid = roots(KIND_MODELS[`crop:${c}:ripe`].kit)[`crop_${c}_ripe_mid`].triangles;
     if (mid > near * 0.5) over.push(`crop_${c}_ripe_mid (${mid}) should be at most half of the near model (${near})`);
   }
   for (const n of ['feed_mill', 'bakery', 'coop']) { const t = roots('farm-kit')[n].triangles; if (t < 2500) over.push(`${n} is only ${t} triangles (rebuilt buildings are 3–5k)`); }

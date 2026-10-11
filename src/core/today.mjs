@@ -22,6 +22,8 @@ export function tickToday(ctx) {
   const first = !s.today.day;
   s.today.day = key; s.today.giftDay = first ? 0 : (s.today.giftDay + 1) % GIFTS.length; s.today.claimed = false; s.today.seen = false;
   s.today.days = (s.today.days ?? 0) + 1;
+  // the evening report (core/report.mjs) starts again each day
+  s.today.earnedBase = s.stats.coinsEarned ?? 0; s.today.earned = {}; s.today.hands = {}; s.today.wages = 0; s.today.reportSeen = false;
   ctx.emit('newDay', { day: key, gift: GIFTS[s.today.giftDay], days: s.today.days });
   plantGardenFlower(ctx, key);
 }
@@ -66,7 +68,19 @@ export const actions = {
     const chapter = CHAPTERS.find(c => c.id === id), st = ctx.s.story;
     const seen = st.chapter ?? 0;
     if (!chapter || id > seen && (id !== seen + 1 || !chapter.when(ctx.s))) return ctx.fail('Unknown story moment');
-    st.chapter = Math.max(st.chapter ?? 0, id); return { chapter: st.chapter };
+    const first = id > (st.chapter ?? 0); st.chapter = Math.max(st.chapter ?? 0, id);
+    if (first) ctx.emit('chapterClosed', { id });
+    // chapter 8: the water rights are bought back and the sluice opens (content/economy.mjs SLUICE), once and for good
+    if (st.chapter >= 8 && !ctx.s.firsts?.sluice) { (ctx.s.firsts ??= {}).sluice = ctx.now; ctx.emit('sluiceOpened'); }
+    // chapter 9: the hands' thirty tasks of chapter 10 are counted from here
+    if (st.chapter >= 9 && st.handBase == null) st.handBase = ctx.s.stats.handTasks ?? 0;
+    // chapter 20: the story is told to its end. Nothing is taken away and no timer stops (core/ending.mjs)
+    if (st.chapter >= 20 && !st.ended) { st.ended = ctx.now; ctx.emit('storyEnded'); }
+    // chapter 19: the county's award: a plaque goes up at the bridge (view/land-view.mjs) and the valley is looked over once
+    if (st.chapter >= 19 && !ctx.s.firsts?.award) { (ctx.s.firsts ??= {}).award = ctx.now; ctx.emit('valleyAwarded'); }
+    // chapter 12: the gate comes off the old towpath, and the far bank of the brook can be walked (core/walk.mjs)
+    if (st.chapter >= 12 && !ctx.s.firsts?.bridge) { (ctx.s.firsts ??= {}).bridge = ctx.now; ctx.emit('bridgeOpened'); }
+    return { chapter: st.chapter };
   },
   /** A story beat (content/story.mjs BEATS) was shown: { id }. Each beat plays once; s.story.beats lists the seen ids. */
   beatSeen(ctx, { id }) {

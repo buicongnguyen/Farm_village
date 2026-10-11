@@ -1,6 +1,10 @@
 # Hollowbrook: playful names in each language
 
-Status: **naming direction confirmed; individual names proposed, 2026-10-08**. The user confirmed that names should be playful and fun, and that affectionate home names are welcome. Each language may use a different native name for the same character. The previous Althea/Oswin/Sylvie/Tavi proposal and its formal-name rules are withdrawn. This document does not change or deploy runtime names.
+Edition follow-up, 2026-10-09: [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) records complete Korean/Japanese translation
+and runtime support. The original naming-only implementation steps below describe PR #34. Independent human
+native-speaker editing is recommended as a later quality pass; no such review is claimed by this implementation.
+
+Status: **current cast selected for implementation, 2026-10-09**. The user explicitly requested the runtime change; [LOCALIZED-CAST.md](LOCALIZED-CAST.md) records its implementation and verification. The user confirmed that names should be playful and fun, and that affectionate home names are welcome. Each language may use a different native name for the same character. The previous Althea/Oswin/Sylvie/Tavi proposal and its formal-name rules are withdrawn. The current cast below is the implementation contract; the later cast remains proposed.
 
 ## 1. The direction the user chose
 
@@ -29,9 +33,9 @@ The useful pattern is a familiar word with a little personality, movement, sound
 - **Korean:** NAMEChart records [하루](https://www.namechart.kr/name/하루) for both boys and girls and [미소](https://www.namechart.kr/name/미소) as an established personal name. These are usage references, not a cuteness ranking. [The National Institute of Korean Language](https://krdict.korean.go.kr/eng/dicSearch/SearchView?ParaWordNo=59246&nation=eng) also documents 미소 as the word for a smile. Short local aliases can work without inventing surnames or hanja meanings.
 - **Japanese:** [Benesse/Tamahiyo's 2025 name survey](https://st.benesse.ne.jp/ninshin/name/) includes ひなた among readings used by both boys and girls. [Anicom's dog-name survey](https://www.anicom-sompo.co.jp/news-release/2025/20241030/) supports food-style pet names such as こむぎ and きなこ. Names below use readable kana; they do not assert a particular kanji spelling or meaning.
 
-The individual assignments below are **creative proposals informed by those patterns**, not a list copied from any one source. Korean and Japanese need a native-speaker dialogue review before those full language editions ship.
+The individual assignments below are **creative proposals informed by those patterns**, not a list copied from any one source. Korean and Japanese benefit from independent native-speaker dialogue review; the edition follow-up documents the editorial and automated checks actually completed.
 
-## 3. Proposed current cast
+## 3. Selected current cast
 
 The IDs are existing identities, not words the player should see. Relationship labels in this table are display examples; dialogue must adapt them to the listener. In particular, the player's child calls Ada and Ellis **cụ** in Vietnamese, even when their player-facing cards use bà/ông.
 
@@ -63,7 +67,7 @@ The home family in Vietnamese would be **Bà Mận, Ông Quế, Mơ, and Bắp**
 
 Each existing household keeps its stable identity and membership: `tran`, `okafor`, `lindqvist`, and `reyes`. Do not infer new ethnicity, nationality, marriage, or parentage from a localized alias. Where a household caption needs localization, a friendly label based on a member's name is possible, such as “Nhà chú Mộc” / “Chip's family”; treat that as display text, not a change to the saved family ID or established family history.
 
-## 4. Named animal proposals
+## 4. Named animals
 
 | Existing identity | English | Vietnamese | Korean | Japanese |
 |---|---|---|---|---|
@@ -109,7 +113,7 @@ Examples for a future writing pass, **not implemented dialogue**:
 
 Useful business advice, discoveries, and congratulations still use the existing shared game facts and stable topic IDs. Nicknames do not justify repeated generic jokes, premature story spoilers, invented lucky rewards, or a second advice system. English and Vietnamese must remain equally adaptive.
 
-## 7. Implementation plan after the individual set is settled
+## 7. Implementation contract
 
 1. **One identity registry.** Store localized short names by stable character ID, with separate relationship/profession formatting. Prepare `en`, `vi`, `ko`, and `ja` values. English and Vietnamese are currently the complete UI languages; a Korean/Japanese name table alone must not expose a half-translated language option.
 2. **Explicit authored references.** Use identity tokens in new source content, resolved through the selected locale. Do not globally replace words in rendered strings: “Mai” can mean tomorrow in Vietnamese, and the player's text must remain untouched.
@@ -126,9 +130,9 @@ Useful business advice, discoveries, and congratulations still use the existing 
 - [x] Confirmed the user's preference for playful, fun home names and independent names per language.
 - [x] Inspected the reachable Zoo Pet reference and separated observed names from our proposals.
 - [x] Researched local naming patterns and prepared the revised candidate sheet.
-- [ ] Settle individual names after the user reviews the proposed style and cast.
-- [ ] Implement localized name resolution and authored story updates.
-- [ ] Complete save-compatibility, pronoun, bilingual browser, and phone-layout checks.
-- [ ] Commit/review/deploy the eventual runtime change and verify the live names.
+- [x] Adopt the proposed current cast following the user’s request to implement the naming change (2026-10-09).
+- [x] Implement localized name resolution and authored story updates.
+- [x] Complete save-compatibility, pronoun, bilingual browser, and phone-layout checks.
+- [x] Prepare the reviewed runtime release; its PR records publication and live verification.
 
-No character rename has been deployed by this planning update. [STORY.md](STORY.md) still documents the live cast and pronouns until the implementation pass updates it coherently.
+The implementation on `codex/localized-cast` updates [STORY.md](STORY.md) alongside the authored text. Validation and publication are tracked in [LOCALIZED-CAST.md](LOCALIZED-CAST.md); do not infer that the separate later cast or full Korean/Japanese editions have shipped.

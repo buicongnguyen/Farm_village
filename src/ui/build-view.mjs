@@ -5,10 +5,12 @@
 import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
-import { CELL } from '../content/world.mjs';
-import { canPlace, canPlaceEdge, occupant } from '../core/grid.mjs';
+import { CELL, RUINS, ruinAt, SITES } from '../content/world.mjs';
+import { buyableParcels } from '../core/build.mjs';
+import { canPlace, canPlaceEdge, occupant, cellType } from '../core/grid.mjs';
+import { ruinStands } from '../core/ruins.mjs';
 import { mayBuild } from '../core/projects.mjs';
-import { placementPrice } from '../core/build.mjs';
+import { placementPrice, civicRebuildPlan } from '../core/build.mjs';
 import { CLEAR } from '../content/economy.mjs';
 import { charmPreview } from '../core/homes.mjs';
 import { sfx } from '../kit/sound.mjs';
@@ -26,6 +28,17 @@ export class BuildView {
     root.appendChild(this.bar);
     this.el.addEventListener('click', e => this.click(e));
     this.bar.addEventListener('click', e => this.click(e));
+    this.el.addEventListener('wheel', e => { const strip = e.target.closest?.('.tabs'); if (strip) strip.scrollLeft += e.deltaY || e.deltaX; }, { passive: true });   // a mouse wheel moves the tab strip sideways
+    // Desktop: the ghost follows the mouse, so the keyboard lands it. Enter or Space places, R turns, Esc cancels.
+    addEventListener('keydown', e => {
+      if (!this.open || e.repeat || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal:not([hidden])') || e.target?.closest?.('input, textarea, select')) return;
+      const k = e.key.toLowerCase(), placing = this.mode === 'place' || this.mode === 'moving';
+      if (k === 'escape') this.mode ? this.cancel() : this.close();
+      else if (placing && (k === 'enter' || k === ' ')) this.confirm();
+      else if (placing && k === 'r' && !QUICK(this.kind) && !BUILDINGS[this.kind]?.civicSite) { this.rot = (this.rot + 1) % 4; this.refreshGhost(); }
+      else return;
+      e.preventDefault(); e.stopPropagation(); document.activeElement?.blur?.();
+    }, true);
     game.on(() => { if (this.open) { this.render(); this.refreshGhost(); } });
   }
   toggle() { this.open ? this.close() : this.show(); }
@@ -48,6 +61,7 @@ export class BuildView {
     this.game.do('endBuild');
   }
   click(e) {
+    if (e.target.closest('[data-land]')) { this.onLand?.(); return; }
     const b = e.target.closest('[data-cat],[data-kind],[data-tool],[data-bar]'); if (!b) return;
     sfx('click');
     if (b.dataset.cat) { this.cat = b.dataset.cat; this.render(); }
@@ -61,15 +75,31 @@ export class BuildView {
   }
   render() {
     const s = this.game.s, cats = CATEGORIES.map(c => `<button data-cat="${c.id}" class="tab${c.id === this.cat ? ' on' : ''}">${t(c.name)}</button>`).join('');
-    const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat).map(([kind, d]) => {
+    const items = Object.entries(BUILDINGS).filter(([kind, d]) => d.cat === this.cat && (!d.site || SITES.some(x => x.kind === kind && !x.hidden))).map(([kind, d]) => {
+      if (d.lot) {   // it stands on a lot of the quay, across the brook: the card leads to the quay's panel
+        const open = !!s.firsts?.bridge, level = s.level < d.level;
+        const note = !open ? `${glyph('lock', 'g')} ${t('The far bank opens in chapter 12 · tap to see the way')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('On the quay')}`;
+        return `<button class="card site-card${open ? '' : ' locked'}" data-kind="${kind}">${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small></button>`;
+      }
+      if (d.site) {   // it is built at its own place, from its own panel: the card leads there
+        const built = (s.counts[kind] ?? 0) > 0, level = s.level < d.level;
+        const note = built ? `${glyph('check', 'g')} ${t('Built')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('Show the place')}`;
+        return `<button class="card site-card${built ? ' stored' : ''}" data-kind="${kind}">${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small></button>`;
+      }
       const may = mayBuild(s, kind), level = s.level < d.level, price = placementPrice(s, kind), stored = d.edge ? 0 : s.stored?.[kind] ?? 0;
       const locked = level || !may.ok;
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
       return `<button class="card${kind === this.kind ? ' on' : ''}${locked ? ' locked' : ''}${stored ? ' stored' : ''}" data-kind="${kind}" ${locked ? 'aria-disabled="true"' : ''}>${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small>${stored ? `<i class="badge">${stored}</i>` : ''}</button>`;
     }).join('');
+    // the Farm tab begins with the land itself: the next field for sale (a tap goes there and opens its panel)
+    const land = this.cat === 'farm' ? (() => { const lots = buyableParcels(s), all = s.parcels.length >= 16, next = lots[0];
+      const note = all ? `${glyph('check', 'g')} ${t('Every field is yours')}` : !next ? `${glyph('lock', 'g')} ${t('No field for sale yet')}` : next.ok ? `${coinMark()} ${num(next.price)} · ${t('Show the place')}` : `${glyph('lock', 'g')} ${t(next.reason, tParams(next.params))}`;
+      return `<button class="card site-card${all ? ' stored' : ''}" data-land="1">${iconHtml('sale_sign', '', 'icon')}<b>${t('A new field')}</b><small>${note}</small><i class="badge">${s.parcels.length}/16</i></button>`; })() : '';
     const tools = TOOLS.map(tl => `<button class="round small tool${this.mode === tl.id ? ' on' : ''}" data-tool="${tl.id}" aria-label="${t(tl.name)}" title="${t(tl.name)}">${iconHtml(tl.icon, '', 'btn-icon')}</button>`).join('');
     const scroll = this.el.querySelector('.tabs')?.scrollLeft;
-    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${items}</div>`;
+    const tabsAt = this.el.querySelector('.tabs')?.scrollLeft ?? 0;   // the tab strip keeps its place when the sheet is redrawn
+    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${land}${items}</div>`;
+    this.el.querySelector('.tabs').scrollLeft = tabsAt;
     // keep the chosen category in view (the tab row scrolls on a phone)
     const tabs = this.el.querySelector('.tabs'), on = tabs.querySelector('.tab.on');
     if (scroll != null) tabs.scrollLeft = scroll;
@@ -80,11 +110,20 @@ export class BuildView {
   }
   select(kind) {
     const s = this.game.s, d = BUILDINGS[kind], may = mayBuild(s, kind);
+    if (d.site) { this.onSite?.(kind); return; }
+    if (d.lot) { if (s.firsts?.bridge) this.onQuay?.(); else this.onStory?.(); return; }   // not open yet: the story's next step is shown (main.mjs)
     if (s.level < d.level) { this.hud.refuse('Reach level {level} first', { level: d.level, kind, lock: 'level' }); return; }
     if (!may.ok) { this.hud.refuse(may.reason, may.params); return; }
     Object.assign(this, { mode: 'place', kind, rot: 0, moving: null });
     // start the ghost at the middle of the screen, so it is visible straight away
     this.at = this.world.cellAt(innerWidth / 2, innerHeight * 0.42); this.side = 'n';
+    if (d.civicSite) {
+      const site = RUINS.find(r => r.kind === kind), [w, depth] = footprint(kind, site.rot);
+      this.rot = site.rot;
+      const x = site.x + Math.floor((w - 1) / 2), z = site.z + Math.floor((depth - 1) / 2);
+      this.at = { x, z, point: { x: (x + .5) * CELL, z: (z + .5) * CELL } };
+      this.world.cam.flyTo?.((site.x + w / 2) * CELL, (site.z + depth / 2) * CELL, Math.min(this.world.cam.span, 40));
+    }
     this.render(); this.refreshGhost();
   }
   tool(id) { Object.assign(this, { mode: id, kind: null, moving: null }); this.ghost.hide(); this.render(); this.renderBar(); }
@@ -100,7 +139,10 @@ export class BuildView {
     const s = this.game.s, kind = this.kind; if (!kind || !this.at) return { ok: false };
     if (BUILDINGS[kind].edge) { const e = this.edgeAt(this.at); return { ...canPlaceEdge(s, kind, e.x, e.z, e.side), edge: e }; }
     const a = this.anchor(kind, this.at, this.rot);
-    return { ...(this.moving ? canPlace(s, kind, a.x, a.z, this.rot, { ignore: this.moving }) : canPlace(s, kind, a.x, a.z, this.rot)), a };
+    // a civic building has one site: its rebuild moves paths and loose things off it and lays the door path (core/build.mjs)
+    if (BUILDINGS[kind].civicSite && !this.moving) { const plan = civicRebuildPlan(s, kind); return { ok: plan.ok, reason: plan.reason, params: plan.params, civic: true, a }; }
+    const r = this.moving ? canPlace(s, kind, a.x, a.z, this.rot, { ignore: this.moving }) : canPlace(s, kind, a.x, a.z, this.rot);
+    return { ...r, a };
   }
   refreshGhost() {
     if (this.mode !== 'place' && this.mode !== 'moving') { this.ghost.hide(); return; }
@@ -113,13 +155,13 @@ export class BuildView {
     const s = this.game.s, placing = this.mode === 'place' || this.mode === 'moving';
     this.bar.hidden = !this.open || !this.mode;
     const hint = this.mode === 'clear' ? t('Tap weeds or rocks to clear them ({price} coins each)', { price: CLEAR.weeds })
-      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building to take it down for part of its price')
+      : this.mode === 'move' ? t('Tap something to move it') : this.mode === 'store' ? t('Tap something to put it in storage') : this.mode === 'demolish' ? t('Tap a building, an old ruin or a path to take it away')
       : c.ok ? (this.moving ? t('Moving is free') : `${t(BUILDINGS[this.kind].name)} · ${coinMark()} ${num(placementPrice(s, this.kind))}${this.charmNote(c)}`) : c.reason ? t(c.reason, tParams(c.params)) : t('Tap where it should go');
     const big = placing && !QUICK(this.kind);
     this.bar.innerHTML = `<div class="reason ${placing && !c.ok ? 'bad' : ''}">${hint}</div><div class="bar-buttons">
       <button class="round small" data-bar="undo" aria-label="${t('Undo')}">${glyph('undo', 'g')}</button>
-      ${big ? `<button class="round small" data-bar="rotate" aria-label="${t('Rotate')}">${glyph('rotate', 'g')}</button><button class="round small ok" data-bar="ok" aria-label="${t('Place')}" ${c.ok ? '' : 'disabled'}>${glyph('check', 'g')}</button>` : ''}
-      <button class="round small close" data-bar="cancel" aria-label="${t('Cancel')}">${glyph('close', 'g')}</button></div>`;
+      ${big ? `<button class="round small" data-bar="rotate" aria-label="${t('Rotate')}">${glyph('rotate', 'g')}<kbd>R</kbd></button><button class="round small ok" data-bar="ok" aria-label="${t('Place')}" ${c.ok ? '' : 'disabled'}>${glyph('check', 'g')}<kbd>Enter</kbd></button>` : ''}
+      <button class="round small close" data-bar="cancel" aria-label="${t('Cancel')}">${glyph('close', 'g')}<kbd>Esc</kbd></button></div>`;
   }
   charmNote(c) {
     if (!c.a) return ''; const p = charmPreview(this.game.s, this.kind, c.a.x, c.a.z, this.rot);
@@ -128,13 +170,20 @@ export class BuildView {
   /** Open build mode with `kind` chosen and its ghost at a suggested cell (from the projects panel). */
   start(kind, at) { if (!this.open) this.show(); this.select(kind); if (at) { this.at = at; this.refreshGhost(); } }
   /** Pointer moved over the map (mouse hover) — only moves the ghost. */
-  hover(cell) { if (!cell || (this.mode !== 'place' && this.mode !== 'moving')) return; this.at = cell; this.refreshGhost(); }
+  hover(cell) { if (!cell || (this.mode !== 'place' && this.mode !== 'moving') || BUILDINGS[this.kind]?.civicSite) return; this.at = cell; this.refreshGhost(); }   // a civic building stays on its old site
   /** A tap on the map while build mode is open. */
   tap(cell) {
     if (!cell) return;
     const s = this.game.s;
     if (this.mode === 'clear') { this.game.do('clear', { x: cell.x, z: cell.z }); return; }
-    if (this.mode === 'demolish') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('demolish', { id }); else this.hud.refuse('Nothing to demolish'); return; }
+    if (this.mode === 'demolish') {   // a building, a path tile, or an old ruin
+      const id = occupant(s, cell.x, cell.z), type = cellType(s, cell.x, cell.z), old = ruinAt(cell.x, cell.z);
+      if (id) this.game.do('demolish', { id });
+      else if (type === 'path') this.game.do('clear', { x: cell.x, z: cell.z });
+      else if (old && ruinStands(s, old.kind)) this.game.do('clearRuin', { kind: old.kind });
+      else this.hud.refuse(type === 'road' ? 'The village road stays where it is' : 'Nothing to demolish');
+      return;
+    }
     if (this.mode === 'store') { const id = occupant(s, cell.x, cell.z); if (id) this.game.do('store', { id }); else this.hud.refuse('Nothing to store'); return; }
     if (this.mode === 'move') {
       const id = occupant(s, cell.x, cell.z); if (!id) { this.hud.refuse('Nothing to move'); return; }
@@ -144,12 +193,16 @@ export class BuildView {
       const id = occupant(s, cell.x, cell.z); if (id) { const p = s.placed[id]; Object.assign(this, { mode: 'moving', kind: p.kind, rot: p.rot, moving: id, at: cell }); this.refreshGhost(); }
       return;
     }
+    if (BUILDINGS[this.kind]?.civicSite) { this.confirm(); return; }   // it can only go on its old site: any tap confirms it there
     const sameSpot = this.at && this.at.x === cell.x && this.at.z === cell.z;
     this.at = cell;
     if (QUICK(this.kind) || sameSpot) this.confirm(); else this.refreshGhost();
   }
   confirm() {
-    const c = this.check(); if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
+    let c = this.check();
+    // a civic building stands on its old site: if all it lacks is the path tile at its door, lay that tile with it
+    if (c.civic) { if (this.game.do('rebuildCivic', { kind: this.kind }).ok) this.cancel(); else this.refreshGhost(); return; }   // a refusal is shown by the HUD
+    if (!c.ok) { this.refreshGhost(); if (c.reason) this.hud.refuse(c.reason, c.params); return; }
     if (c.edge) this.game.do('placeEdge', { kind: this.kind, ...c.edge });
     else if (this.moving) { const r = this.game.do('move', { id: this.moving, x: c.a.x, z: c.a.z, rot: this.rot }); if (r.ok) { this.mode = 'move'; this.moving = null; this.kind = null; this.ghost.hide(); this.renderBar(); } return; }
     else { const r = this.game.do('place', { kind: this.kind, x: c.a.x, z: c.a.z, rot: this.rot }); if (r.ok && !QUICK(this.kind)) { this.cancel(); return; } }

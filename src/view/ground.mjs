@@ -111,7 +111,8 @@ export class Ground {
     for (let z = 0; z < S; z++) for (let x = 0; x < S; x++) {
       const look = looks[(z + 1) * W + x + 1], y = look.y ?? 0;
       // tended land: a faint 2 × 2-cell plot grid (each cell has its own vertices, so the step stays crisp)
-      const plot = look.tended ? (((Math.floor((cx + x) / 2) + Math.floor((cz + z) / 2)) & 1) ? 1.025 : 0.975) : 1;
+      // cobbled roads (vivid pass): every cell a slightly different stone shade, so the road reads as laid stone
+      const plot = look.tended ? (((Math.floor((cx + x) / 2) + Math.floor((cz + z) / 2)) & 1) ? 1.025 : 0.975) : look.cobble ? 0.9 + 0.16 * noise((cx + x) * 1.7 + .3, (cz + z) * 1.7 - .6) : 1;
       const x0 = (cx + x) * CELL, z0 = (cz + z) * CELL, x1 = x0 + CELL, z1 = z0 + CELL;
       pos.set([x0, y, z0, x0, y, z1, x1, y, z1, x0, y, z0, x1, y, z1, x1, y, z0], i);
       const vs = [x, z, x, z + 1, x + 1, z + 1, x, z, x + 1, z + 1, x + 1, z];

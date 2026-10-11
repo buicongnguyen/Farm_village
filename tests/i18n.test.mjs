@@ -7,6 +7,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { VI } from '../src/i18n/vi.mjs';
 import { PIP_LINES } from '../src/content/chatter.mjs';
+import { VILLAGERS, JUNE_TIPS } from '../src/content/people.mjs';
+import { CHARACTER_NAMES, PET_NAMES, FAMILY_NAMES, resolveNames } from '../src/content/character-names.mjs';
 import * as content from '../src/content/index.mjs';
 
 // `orders`: each person's order lines; `ada`: Ada's line on a chapter card; `caption`: story panels; `tip`/`tips`: June;
@@ -50,6 +52,64 @@ test('Vietnamese lines keep the same placeholders', () => {
   const names = s => [...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(',');
   const wrong = Object.entries(VI).filter(([en, vi]) => names(en) !== names(vi)).map(([en]) => en);
   assert.deepEqual(wrong, []);
+});
+
+const identityTokens = text => [...text.matchAll(/\{(person|pet|family):([^{}]+)\}/g)].map(match => ({ token: match[0], type: match[1], parts: match[2].split(':') }));
+const identities = text => [...new Set(identityTokens(text).map(({ type, parts }) => `${type}:${parts[0]}`))].sort();
+
+test('Vietnamese preserves referenced identities while allowing natural short and titled forms', () => {
+  // The partner sometimes uses her own name where English says I/we. Only her actual authored speech may do so.
+  const juneLines = contentStrings(VILLAGERS.find(person => person.id === 'june'));
+  for (const line of Object.values(JUNE_TIPS)) juneLines.add(line);
+  const collect = value => {
+    if (!value || typeof value !== 'object') return;
+    if (value.who === 'june' && typeof value.text === 'string') juneLines.add(value.text);
+    if (value.person === 'june' && typeof value.line === 'string') juneLines.add(value.line);
+    for (const child of Object.values(value)) collect(child);
+  };
+  collect(content);
+  for (const [en, vi] of Object.entries(VI)) {
+    const source = identities(en), translated = identities(vi);
+    const expected = juneLines.has(en) && !source.includes('person:june') && translated.includes('person:june')
+      ? [...source, 'person:june'].sort() : source;
+    assert.deepEqual(translated, expected, en);
+  }
+});
+
+test('all authored identity tokens resolve in every prepared locale and name captions have Vietnamese coverage', async () => {
+  const strings = contentStrings(content);
+  for (const line of Object.values(PIP_LINES).flat()) strings.add(line);
+  for (const [en, vi] of Object.entries(VI)) { strings.add(en); strings.add(vi); }
+  for (const file of await files('src')) {
+    const source = await readFile(file, 'utf8');
+    for (const match of source.matchAll(/(?:\bt\(|ctx\.fail\()\s*(['"])((?:\\.|(?!\1).)*)\1/g))
+      strings.add(match[2].replace(/\\(['"\\])/g, '$1'));
+  }
+  let checked = 0;
+  for (const text of strings) for (const { token, type, parts } of identityTokens(text)) {
+    const [id, form] = parts, table = type === 'person' ? CHARACTER_NAMES : type === 'pet' ? PET_NAMES : FAMILY_NAMES;
+    assert.ok(Object.hasOwn(table, id), `unknown identity ${token} in ${text}`);
+    assert.ok(type === 'family' ? parts.length === 1 : parts.length === 2 && ['short', 'display'].includes(form), `invalid identity form ${token}`);
+    for (const lang of ['en', 'vi', 'ko', 'ja']) assert.ok(resolveNames(token, lang) && resolveNames(token, lang) !== token, `${lang}: ${token}`);
+    checked++;
+  }
+  for (const text of strings) for (const lang of ['en', 'vi', 'ko', 'ja'])
+    assert.doesNotMatch(resolveNames(text, lang), /\{(?:person|pet|family):/, `${lang}: unresolved or malformed identity in ${text}`);
+  assert.ok(checked > 100, 'identity references disappeared from the authored story');
+});
+
+test('current authored story and screen keys use identities instead of literal former cast names', async () => {
+  const strings = contentStrings(content);
+  for (const line of Object.values(PIP_LINES).flat()) strings.add(line);
+  for (const file of await files('src')) {
+    const source = await readFile(file, 'utf8');
+    for (const match of source.matchAll(/(?:\bt\(|ctx\.fail\()\s*(['"])((?:\\.|(?!\1).)*)\1/g))
+      strings.add(match[2].replace(/\\(['"\\])/g, '$1'));
+  }
+  // This checks authored English keys, not translated prose (Mai can mean tomorrow) or player-supplied text.
+  // Legacy saved phrase aliases are intentionally absent: they are compatibility keys, not current content.
+  const oldNames = /\b(?:Ada|Ellis|June|Pip|Minh|Lan|Bo|Grace|Sam|Zara|Elin|Olaf|Marisol|Tomas|Pia|Cora|Hazel|Mai|Gus|Biscuit|Cloud|Drizzle|Captain|Miso|Tran|Okafor|Lindqvist|Reyes)\b/;
+  for (const text of strings) assert.doesNotMatch(text, oldNames, text);
 });
 
 // Tutorial emphasis carries the action instructions. Keeping balanced tags prevents a translated line from

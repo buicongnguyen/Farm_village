@@ -2,7 +2,7 @@
 // list, the mailbox with Ellis's and the villagers' letters, and the story cards for heart scenes, a family's arrival and
 // the short story beats, all in the chapter-card layout (modal.mjs). Words come from content/hearts.mjs, letters.mjs
 // and story.mjs; the rules from core/bonds.mjs.
-import { t, num, getLanguage } from '../kit/i18n.mjs';
+import { t, num, getLocale } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { allPeople, FAMILIES } from '../content/people.mjs';
 import { ARRIVALS } from '../content/hearts.mjs';
@@ -60,10 +60,11 @@ export function renderGift(s, person, now) {
 export function renderMail(s, now) {
   const rent = rentWaiting(s, now), rank = m => m.read ? 2 : letterPrerequisite(s, m.id) ? 1 : 0;
   const mail = [...s.mail ?? []].sort((a, b) => rank(a) - rank(b));
-  const when = at => new Date(at).toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-GB', { day: 'numeric', month: 'short' });
+  const when = at => new Date(at).toLocaleDateString(getLocale(), { day: 'numeric', month: 'short' });
   return `${rent ? `<div class="rent-row">${glyph('mail', 'g big')}<div><b>${t('Rent from your cottages')}</b><small>${coinMark()} ${num(rent)}</small></div><button class="btn primary" data-do="collectRent">${t('Collect')}</button></div>` : ''}
-    <div class="letters">${mail.map(m => `<button class="letter-row ${m.read ? '' : 'new'}" data-do="readLetter" data-id="${m.id}">${faceHtml(m.from)}<span class="lr-text"><b>${t('From {name}', { name: nameOf(m.from) })}</b><small>${!m.read && letterPrerequisite(s, m.id) ? t('Read the earlier letter first') : when(m.at)}</small></span>${m.read ? '' : `<i class="badge">${t('New')}</i>`}</button>`).join('')
-      || `<p class="empty">${t('No letters yet. Ada says the post is slow up here.')}</p>`}</div>`;
+    ${mail.filter(m => !m.read && m.id.startsWith('thanks:')).length > 1 ? `<button class="btn primary wide" data-do="readThanks">${glyph('mail', 'g')} ${t('Open all {count} thank-you notes', { count: mail.filter(m => !m.read && m.id.startsWith('thanks:')).length })}</button>` : ''}
+    <div class="letters">${mail.map(m => `<button class="letter-row ${m.read ? '' : 'new'}" data-do="readLetter" data-id="${m.id}">${faceHtml(m.from)}<span class="lr-text"><b>${t('From {name}', { name: nameOf(m.from) })}</b><small>${!m.read && letterPrerequisite(s, m.id) ? t('Read the earlier letter first') : `${when(m.at)}${!m.read && letterOf(m.id)?.reward ? ` · ${t('A gift is inside')}` : ''}`}</small></span>${!m.read && letterOf(m.id)?.reward ? glyph('gift', 'g') : ''}${m.read ? '' : `<i class="badge">${t('New')}</i>`}</button>`).join('')
+      || `<p class="empty">${t('No letters yet. {person:ada:short} says the post is slow up here.')}</p>`}</div>`;
 }
 export const unreadCount = unread;
 
@@ -118,9 +119,9 @@ export class Bonds {
       for (const e of r.events ?? []) {
         if (e.type === 'heartScene') showHeartScene(e);
         else if (e.type === 'familyArrived') showArrival(e.family);
-        else if (e.type === 'letter') hud.toast(t('A letter from {name} is in the mailbox', { name: nameOf(e.from) }), 'info', { icon: 'mail' });
+        else if (e.type === 'letter') hud.toast(t('A letter from {name} is in the mailbox', { name: nameOf(e.from) }), 'info', { icon: 'mail', to: 'mail' });
         else if (e.type === 'gifted') hud.toast(e.liked ? t('{name} loves it!', { name: nameOf(e.person) }) : t('{name} says thank you', { name: nameOf(e.person) }), 'good', { icon: 'heart' });
-        else if (e.type === 'wishGranted') hud.toast(t('Wish granted: {name} is delighted', { name: nameOf(e.person) }), 'good', { icon: 'charm' });
+        else if (e.type === 'wishGranted') hud.toast(t('Wish granted: {name} is delighted', { name: nameOf(e.person) }), 'good', { icon: 'charm', to: 'friends' });
       }
     });
   }

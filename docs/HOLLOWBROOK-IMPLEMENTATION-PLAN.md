@@ -1,12 +1,31 @@
 # Hollowbrook — consolidated implementation plan
 
+Current language follow-up, 2026-10-09: `codex/korean-japanese` adds complete Korean/Japanese editions for the current
+game, with four-language menus, independent catalog downloads and unchanged progression. See
+[LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for implementation and verification. Meadow/dairy, later cast and later
+chapters remain separate gameplay tasks. The naming-only descriptions below record the scope of PR #34.
+
+Current naming follow-up, 2026-10-09: `codex/localized-cast` implements independent English/Vietnamese names for the
+current cast, named pets and households, with explicit story references and old-save text compatibility.
+**Implemented and locally validated**; checks and release handoff are in [LOCALIZED-CAST.md](LOCALIZED-CAST.md). Korean/Japanese aliases
+are prepared data only; full language editions and later cast introductions are separate work. No new region,
+production chain, chapter or reward is completed by this naming pass.
+
+Previous follow-up, 2026-10-09: [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31), `codex/clearer-guidance-art`, is implemented and validated. It adds compact HUD/contextual guidance and integrates the hospital footprint correction and AR-013 bench art; see [the release scope](CLEARER-GUIDANCE-AND-ART.md). The first garden lesson, bench rules, project-only energy, strawberries, school baskets and AR-011/AR-012 first delivery shipped in PR #28 at `027ec20`. [Meadow/dairy](MEADOW-DAIRY-SCOPE.md) is the next scoped art/gameplay contract, with gameplay and tuning reserved for a separate release.
+
+Historical release records below retain the original checks and branch references through PR #26; their test counts and then-pending work do not describe PR #31.
+
+Implementation update, 2026-10-09: [guidance, land and the food story](GUIDANCE-LAND-FOOD-DELIVERY.md) are live through PR #24, following the picnic trail/AR-010 release in PR #18. The [production and village growth slice](PRODUCTION-AND-VILLAGE-GROWTH.md) is implemented and validated, starting from `4377129` and integrating main `1add9a4`: independent trays, source-aware orders, explicit lake/plaza shop sales and the first optional hospital/police/company tier. **355/355 native tests, all pace targets, all 23 component browser suites, 28/28 smoke checks and eight production contexts pass.** The component result includes the corrected old cast fixture (9/9) after the initial 22/23 run and affected final-build reruns. All 20 new checks pass; production contexts cover four new growth and four existing optional flows in English/Vietnamese at 390/1280 px. Steady school/clinic remain day 3; production first-load code is **1,094,983 bytes**. The release PR records CI, Pages deployment and live verification.
+
+Historical “covered land planned” paragraphs below describe earlier releases. One covered plot, ingredient/use cards, the first skill/project-energy loop and school baskets now exist. Broader regions, selective scenery clearing, more skills, later civic tiers and later story chapters remain planned. AR-011's hospital tier and AR-012's menu pictures/small-icon URLs shipped in PR #28; the hospital-fit correction and compact HUD/status layout are in PR #31 with completed validation.
+
 Date: 2026-10-08 (Asia/Seoul)
 
 Historical release baseline: **profiles and four discoveries shipped through PR #4 at `ab6b230`; adaptive advice and AR-009 icon integration are implemented and validated for [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6).** The baseline [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. Merging into main triggers deployment; the [Pages workflow history](https://github.com/buicongnguyen/Farm_village/actions/workflows/pages.yml) records the production result. PRs #1 and #2 shipped the orchard logic and AR-001 look/feedback; PR #3 (`a1607de`) closes AR-001. The opening keeps 500 coins, three farm profiles and four one-time finds capped at 110 coins per save, with earned/read memories. The advice implementation adds 18 topic types and persistent acknowledgment/deferral; covered land, skills/project energy, vehicles and later regions remain planned. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) and [CODEX-TASKS.md](CODEX-TASKS.md) for scope and validation.
 
-Latest implementation update: **the picnic trail and AR-010 integration are complete and validated for [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18)**. Staged box/tin world taps, three bilingual memories, one stored flowerpot, earned/read progress and arrival-gated favours are implemented. Current main content is preserved: updated icons, lower truck prices, herb/ginseng, orange/coconut/willow, the juice press/noodle factory and growth/company plans. Validation: 261 native tests, pace targets, 19 component suites, 28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [DISCOVERY-TRAIL.md](DISCOVERY-TRAIL.md) gives the scope; the PR records deployment/live acceptance. Covered-area progression, selective scenery clearing, skills/project energy, major vehicle restoration and later chapters remain planned. Earlier branch/status paragraphs below are historical.
+Previous release, PR #18: **the picnic trail and AR-010 integration are complete and validated for [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18)**. Staged box/tin world taps, three bilingual memories, one stored flowerpot, earned/read progress and arrival-gated favours were implemented. That release preserved updated icons, lower truck prices, herb/ginseng, orange/coconut/willow, the juice press/noodle factory and growth/company plans. Validation: 261 native tests, pace targets, 19 component suites, 28 smoke checks, 8 final discovery checks and four local production acceptance contexts. [DISCOVERY-TRAIL.md](DISCOVERY-TRAIL.md) gives its scope; the PR records deployment/live acceptance. Covered-area progression was still planned at that point; the current update above implements its first bounded branch. Selective scenery clearing, skills/project energy, major vehicle restoration and later chapters remain planned. Earlier branch/status paragraphs below are historical.
 
-Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Visitor/saved-news review fixes (`b03c38c`) and profiles/discoveries shipped in PR #4. That advice delivery used `codex/village-advice`, based on main at `ab6b230`; the current picnic integration baseline is recorded above.
+Repository: `Farm_village`, Three.js and plain JavaScript ESM. The original review used `codex/v0.4-orchard` at `f0d8886`; the completed orchard, roadmap, kennel, clinic and first contextual-dialogue pass are now live. Visitor/saved-news review fixes (`b03c38c`) and profiles/discoveries shipped in PR #4. The advice delivery used `codex/village-advice`, based on main at `ab6b230`. The later production/civic work used `codex/production-village-growth`; current work is on `codex/clearer-guidance-art`. Unrelated mobile changes in the original checkout remain untouched.
 
 Coordination update, 2026-10-08: the user asked to continue implementation and deploy ready changes; the PR #4 baseline is live. The next bounded delivery implements adaptive business/blocker/activity advice and three earned celebration memories, with 72 bilingual content/control strings and save version 7. Validation: 229 native tests on the combined advice/art tree and all pace targets pass, steady school and clinic day 3; all 17 component browser suites and 28/28 smoke checks passed on the advice build. Final first-load code: 1,005,608 bytes test / 1,004,534 bytes production. Advice/discovery suites were rerun in both languages after icon integration; a dedicated AR-009 check passed all 12 cards across phone/desktop and English/Vietnamese, including fit, 256 px icons, no payment on reading, no GLB loading and no errors. Claude Code owns art and visual treatment, and Codex owns logic, UI behavior, story and Vietnamese under [AGENTS.md](../AGENTS.md). AR-001 is closed; the [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) WebP icons are integrated for PR #6, while its GLB remains available for future 3D presentation. The [reference-game comparison](REFERENCE-GAME-COMPARISON.md) separates observed reference behavior from recommended future work.
 
@@ -50,13 +69,13 @@ Let care add pleasant responses without introducing animal suffering, crop damag
 | Notification treatment | Small vivid badge on an existing entry point | Discovery unread count shipped in PR #4; combined unread advice/discoveries and saved deferral are implemented and validated for PR #6 |
 | Land | Cover unbought or undiscovered areas; buying or exploring reveals useful content gradually | Confirmed direction |
 | Vehicles | Consider bicycle, tractor, motorbike, car, and truck activities | Requested direction; roles and sequence proposed |
-| Skills | Learn new planting, cooking, product-making, and repair capabilities | Requested direction; progression model proposed |
+| Skills | Learn new planting, cooking, product-making, and repair capabilities | First Garden repairs lesson and strawberry unlock shipped in PR #28; further branches proposed |
 | Energy | **Larger exploration and repair projects only; everyday play remains available** | Explicitly confirmed by the user |
-| Energy numbers | Capacity, costs, recovery rate, and rest duration | Unset; tune with actual project content |
+| Energy numbers | Capacity, costs, recovery rate, and rest duration | First loop shipped in PR #28: 100 reserve, +1/minute, free 30-second rest for up to +60; bench costs 50 total. Further projects need their own tuning |
 | Story theme | “Where the Brook Begins”: family, the brook, and a village remembering its past | Recommended synthesis of Claude's research; detailed canon below is proposed |
 | Lantern festival | Develop the planned restored Harvest Festival into a visible gathering, with a possible Mid-Autumn-inspired lantern activity | Recommended later scope, not a confirmed calendar event |
 | Housing | Farm-focused opening; consider substantial later housing investments | Evaluation needed; no approved blanket price increase |
-| School | Existing route, eventual entry, optional learning activities and contests | Requested direction; one classroom activity recommended first |
+| School | Existing route, eventual entry, optional learning activities and contests | Picture-basket activity shipped in PR #28; enterable interior, more subjects and contests remain proposed |
 
 Superseded ideas: a 1,000-coin start, a zero-coin start funded by an introductory jackpot, a 1,000-coin opening treasure, the pale primary palette, and energy costs for all everyday actions. Do not reintroduce them from older notes.
 
@@ -64,20 +83,21 @@ The earlier 500-versus-1,000 simulation was a historical, single-seed experiment
 
 ## 3. Baseline to preserve
 
-| Area | Current foundation (orchard, profiles and finds live) | Implication for new work |
+| Area | Foundation, with unreleased branch work explicitly marked | Implication for new work |
 |---|---|---|
 | Core architecture | Rules in `src/core` behind `act()`/`tick()`; data in `src/content`; views/UI separate | Extend the same boundaries |
 | Main progression | Sequential farm projects, families, school, then clinic | Add optional branches without new mandatory gates |
 | Roadmap | Current stage goal and next three unlocks already implemented | Extend it with truthful context; do not rebuild a second roadmap |
-| Farm profiles and finds | Three isolated local farms; four one-time discoveries; earned/retired/read state and optional memories | Review-branch scope only; keep profile state and payments independent |
+| Farm profiles and finds | Three isolated local farms; four one-time discoveries; earned/retired/read state and optional memories, all live | Keep profile state and payments independent |
 | Orchard and Biscuit | Cherry tree, fruit stand, kennel and crow protection implemented | Give these existing objects more contextual meaning |
-| Land | 4 × 4 parcel grid; currently at most two owned parcels; second parcel costs 500 at level 4 and must be adjacent | Land discovery remains planned; more purchasable land needs explicit progression work |
+| Land | 4 × 4 parcel grid; at most two owned parcels; second parcel costs 500 at level 4; PR #24 adds useful clear ground and one optional planting-marker memory | Preserve old parcel choices; more purchasable land and broader reveals need explicit progression work |
 | Existing cover | Unowned parcels have tall grass, saplings, rocks, fences and signs | Replace abrupt purchase dressing changes with deliberate reveals |
 | Clearing | Owned/buildable weeds and rocks, including batches | Wild scenery trees are not presently harvestable obstacles |
-| Vehicles | Working animated delivery truck; sourced tractor model available | Preserve truck use; tractor gameplay and other vehicle systems are new |
-| Buildings | Cottage repair, farmhouse repair/upgrades, civic tidy-up, school and clinic projects | Police/company reopening and playable interiors remain future work |
+| Vehicles | Working animated truck fleet and optional company requests using those same trucks are live | Preserve ordinary deliveries; tractor gameplay and other vehicle systems remain new work |
+| Buildings | Cottage/farmhouse repairs, school, clinic, hospital upgrade and fixed-site police/company reopening are live | Later visual tiers and playable interiors remain future work; PR #31's hospital footprint correction is implemented and validated |
+| Production and customers | Juice press (level 6), noodle factory (8), Lan's picnic menu, parallel trays and explicit kiosk/plaza basket sales are live | Keep saved batch schedules, held goods and quotes accurate; avoid a simultaneous global rebalance |
 | Fishing | Permanent village pond available from the opening | Do not put existing fishing behind new land, skill, or energy gates |
-| Experience | General XP and level unlocks already exist | Dedicated skill tracks and energy are new |
+| Experience | General XP, level unlocks, the first permanent Garden repairs lesson and project-only energy already exist | Extend optional skills without spending general XP or adding energy costs to everyday play |
 | School | Level 6, two families with children, 24 bread, 10 corn bread and 4,000 coins after prior projects | Protect its timing and ingredient availability |
 | Clinic | Later project with four settled families, 12 bread, nine cherries, and clinic construction | Preserve its relationship to housing and the orchard |
 
@@ -192,7 +212,7 @@ Defer literal aging of Pip, adding the player's absent parent, and a four-genera
 
 ### Dialogue work
 
-The table records the original review targets. The live first logic pass fixed order-first chatter, June's branch, actionable advice, school/clinic context, unsupported watering reminders and the silent player's tap. Persistent earned/read records for four discoveries shipped in PR #4. The current advice branch implements saved topic/context acknowledgment and deferral; broader object discovery states and more character-specific dialogue remain planned.
+The table records the original review targets. The live first logic pass fixed order-first chatter, June's branch, actionable advice, school/clinic context, unsupported watering reminders and the silent player's tap. Persistent earned/read records for four discoveries shipped in PR #4; saved topic/context acknowledgment and deferral shipped in PR #6. Subsequent releases added the picnic trail, one land memory and garden/school memories; wider object interactions and more character-specific dialogue remain planned.
 
 | Situation to review | Required behavior |
 |---|---|
@@ -215,15 +235,22 @@ Every shipped screen string, `t()` key, refusal from `ctx.fail()`, and content l
 
 **English must be equally adaptive.** Select a stable topic/scene ID from the farm's state, then render its authored English or natural Vietnamese version. Both languages use the same prerequisites, useful-action ranking, blockers, clue order, achievement state, reward eligibility and repetition policy. Vietnamese may change sentence structure and forms of address; neither locale may invent a missing building, reward or relationship.
 
-Changing language must preserve progress, reward markers and conversation/news history. Store stable IDs and context versions, not rendered sentences; unread state, cooldowns and dismissal must remain unchanged by language switches. The current advice branch implements persisted read/postponed IDs for its 18 topic types; ordinary conversation bags and previous-topic variation remain session-only. Wider conversation history and any future cooldown system remain planned. Existing news remains bounded event data, with compatibility handling for older payloads.
+Changing language must preserve progress, reward markers and conversation/news history. Store stable IDs and context versions, not rendered sentences; unread state, cooldowns and dismissal must remain unchanged by language switches. PR #6 implemented persisted read/postponed IDs for its initial 18 topic types; PR #31 extends those IDs for existing activities. Ordinary conversation bags and previous-topic variation remain session-only. Wider conversation history and any future cooldown system remain planned. Existing news remains bounded event data, with compatibility handling for older payloads.
 
 Acceptance: exercise each new condition before/after completion in **both** languages, including unavailable ingredients, a removed/broken building, a completed clue, an already claimed reward and a repeated visit. Test the selected topic as well as its rendered sentence. A changed greeting must not masquerade as new advice. Verify phone fit and that switching locale cannot repeat a reward.
 
-The first logic pass supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The shipped follow-up review covers visitors whose farm facts change while they walk. The current advice branch adds the first persistent advice-card lifecycle and retained first-bread/school/clinic memories. Broader scene systems and story chapters beyond the existing chapter 5 remain future work.
+The first logic pass supplies shared selectors for English/Vietnamese advice, school/clinic context and ordered clues. The shipped follow-up review covers visitors whose farm facts change while they walk. PR #6 added the first persistent advice-card lifecycle and retained first-bread/school/clinic memories. Broader scene systems and story chapters beyond the existing chapter 5 remain future work.
 
-See [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) for the full cast proposal, including replacing Pip. Names there are proposed display text, not yet applied. Stable IDs, family relationships, pronouns and the player's chosen name must survive the eventual change.
+The current cast's playful aliases from [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md) are implemented in the
+[localized-name follow-up](LOCALIZED-CAST.md), with final verification/publication pending. Authored references use
+stable identity tokens; person/family IDs, relationships, pronouns and the player's chosen name remain unchanged.
+Korean/Japanese entries prepare names only. Later characters remain proposals until their introductions are written.
 
-Key relationships: Ada **bà–cháu**, Ellis **ông–cháu**, Gus **bác–cháu**, June refers to herself as **June** and addresses the player as **mình**, Pip uses **con**, and Bo uses **cháu**. Ellis and Gus never use **tôi** for themselves. Hollowbrook is **Thung Suối**; Biscuit keeps his name. Follow the full cast table in STORY.md.
+Key relationships by permanent ID: `ada` (Bà Mận) **bà–cháu**, `ellis` (Ông Quế) **ông–cháu**, `gus` (Bác Khoai)
+**bác–cháu**, `june` refers to herself as **Mơ** and addresses the player as **mình**, `pip` (Bắp) uses **con**, and
+`bo` (Sóc) uses **cháu**. Bắp calls the elders **cụ Mận / cụ Quế**. `ellis` and `gus` never use **tôi** for themselves.
+Hollowbrook is **Thung Suối**; the dog is Biscuit in English and Đậu / Cún Đậu in Vietnamese. Follow the full alias,
+kinship and medical-role guidance in [STORY.md](STORY.md).
 
 Draft contextual example after a tractor becomes visible:
 
@@ -446,6 +473,8 @@ Reuse the old tractor-seat story and the children's existing old-mill curiosity.
 
 ## 11. Skills and project-only energy
 
+Implemented baseline: PR #28 shipped the Garden repairs lesson, three-step bench, strawberry unlock and energy/free-rest loop. [LEARNING-GARDEN-SCHOOL.md](LEARNING-GARDEN-SCHOOL.md) records exact costs and gates. The broader branches and tuning directions below are proposals for further work, not a request to reimplement that baseline.
+
 ### Permanent learning
 
 Keep three compact proposed branches:
@@ -492,7 +521,9 @@ School Lane and Civic Row already exist. Village Street starts damaged; School L
 
 Learn basic farm capabilities before the school opens. Otherwise school-required bread could depend on attending a school that requires bread to reopen. Cora's teaching begins after her arrival. A simple optional pre-opening family activity can preview the learning interest without pretending the full classroom is available.
 
-First interior scope: one usable classroom, one replayable activity, clear return to the village. Candidate activities include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
+Updated user decision, 2026-10-09: the first Explore interior is the farmhouse, with a design-only handoff and Claude's AR-015 art contract. [EXPLORE-MODE.md](EXPLORE-MODE.md) specifies direct controls, the cutaway room, safe entry/exit, small activities, saves and English/Vietnamese copy. Gameplay implementation remains a later pass. This replaces the earlier classroom-first order.
+
+The school follows the farmhouse with one usable classroom, the existing replayable picture-basket activity, and a clear return to the village. Further candidates include counting/matching produce, a nature collection puzzle, or optional English–Vietnamese words. Use an approachable version with optional harder challenges; do not require real-world homework to advance farming.
 
 The first completion can give a modest keepsake and a specific Cora/child reaction. Repeat contests should be enjoyable without repeatedly paying the existing 1,500-coin school festival reward. Budget any new rewards explicitly.
 
@@ -514,11 +545,16 @@ Prefer shared rule calculations over UI estimates that can disagree with the act
 
 ### Saved concepts and later schema work
 
-The current slice persists bounded discovery progress plus separate earned, retired and read IDs per farm profile. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the implemented API and migration. The remaining concepts below are future schema responsibilities, not finalized field names:
+Live saves already retain per-profile discovery/trail progress, read/deferred advice, one land discovery and the
+three picnic deliveries. PR #26's save version 10 added stable production tray metadata, shared shop
+request/cooldown records and bounded civic/company progress/payment ledgers. Existing serial batch deadlines stay
+intact and loading grants no new reward. See [PROFILES-AND-DISCOVERIES.md](PROFILES-AND-DISCOVERIES.md) for the original
+discovery API and [PRODUCTION-AND-VILLAGE-GROWTH.md](PRODUCTION-AND-VILLAGE-GROWTH.md) for that migration behavior.
+PR #28's version 11 added bounded learning/project-energy and school records; PR #31 retains version 11 and adds only finite advice topic IDs. The concepts below describe extensions beyond those saved records, not replacement field names:
 
 - Further discoveries: extend stable IDs and eligibility without reopening already settled rewards.
 - Regions: knowledge, access, ownership through existing parcel rules, and optional restoration stages.
-- News: stable topic/event IDs, unread/read/deferred state, bounded history and suppression context.
+- Further news: extend existing stable IDs and unread/read/deferred history without recreating earned rewards.
 - Skills: reliable practice totals, completed lessons, learned capabilities.
 - Projects: committed resources, completed steps, active work and cancellation policy.
 - Energy: current amount, capacity source, recovery timestamp, and versioned migration treatment.
@@ -533,7 +569,7 @@ Preserve existing abilities and access on migration. The current discovery migra
 
 ## 14. Implementation phases
 
-Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1's bounded first pass and AR-001 are live. Phase 3's four-find subset plus profiles is also live. The initial persistent advice subset of phase 2 is implemented and validated for PR #6; item-use cards, additional interactions and later phases remain planned.
+Each phase should produce a playable result on a branch, with its own rules tests and browser checks. Assign release numbers when work begins; these phases do not claim that all content fits into one update. Phases 0–1, the profiles/four-find subset of phase 3, and phase 2's adaptive advice are live. PR #18 adds the accessible porch/pond trail; PR #24 adds ingredient/use cards, one useful covered plot and the connected food story. The current production/shop/civic slice extends existing business activities; it does not complete all of a later phase or chapter.
 
 Implementation phases are delivery groupings, independent of Journey stage and chapter numbers. For example, implementation phase 7 includes the later story's stage 6 water resolution.
 
@@ -550,7 +586,26 @@ Implementation phases are delivery groupings, independent of Journey stage and c
 
 **Art track:** AR-001 established the richer palette, path-value separation, lighting and collection feedback. AR-009 supplies the discovery keepsakes; its WebP icons are integrated for PR #6 and its packed GLB is not loaded by those discovery cards. AR-010 is delivered through PR #13: a separate five-node exploration kit and ribbon icon. Codex integrated stage-dependent box/tin placement and explicit world inspection routes; future objects stay hidden and unpickable, and the pink butterfly-shaped ribbon matches the bilingual story. Combined rendering, loading, save and tap checks passed; the discovery delivery report records the results. Apply the established treatment to cover/reveals in phase 4 and vehicles/interiors as they arrive; review normal phone play after each asset addition.
 
-**Completed slices:** clue-order and truthful-feedback fixes, the look pass, contextual conversations, three local farm profiles, four saved one-time discoveries, adaptive advice and the working truck fleet. **Current slice:** one connected picnic memory, arrival-gated favours and integrated AR-010 world props. The eight-stage story rewrite, broad item-use expansion, major vehicle restoration and energy/skills remain future work. Later rows, especially phase 7, are groups of separate releases, not one PR or a size estimate.
+**Completed live slices:** clue-order and truthful-feedback fixes, the look pass, contextual conversations, three
+profiles, four bounded finds, adaptive advice, the truck fleet, the connected picnic trail/AR-010, arrival-gated
+favours, ingredient/use guidance, one covered plot and Lan's three-batch food story. **PR #26 also shipped:**
+parallel trays with legacy-save compatibility, actual shop customers, source-aware orders and the first
+hospital/police/company loop. It kept the existing early prices, 500-coin opening and 110-coin discovery cap.
+
+**Completed PR #28:** [garden learning and school baskets](LEARNING-GARDEN-SCHOOL.md) added one permanent repair
+lesson, a useful potting-bench project with generous project-only energy/free rest, strawberries, and the first
+replayable classroom activity. It integrates AR-011's hospital tier and AR-012's menu/small-icon delivery. Its release
+PR records combined checks and deployment; later phase outcomes are still separate work.
+
+**Current validated follow-up, [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31):** [clearer guidance and delivered art](CLEARER-GUIDANCE-AND-ART.md) integrates
+AR-013, the hospital footprint correction, compact HUD/status layout and contextual invitations to existing activities.
+The [meadow/dairy contract](MEADOW-DAIRY-SCOPE.md) supplies first-delivery art IDs and proposed prices for a separate release.
+
+**Separate remaining work:** further skill branches, meadow/dairy gameplay, broader regions, more school activities,
+useful vehicle restoration and later chapters. Pearl/Bea's
+introductions, Ellis's permanent return, the water-rights repair sequence and the visible festival are not completed
+by optional company contracts. Later rows, especially phase 7, are groups of separate releases, not one PR or a size
+estimate.
 
 For every phase, record: accepted scope, content changes, saved-state migration, economy changes, player-visible result, rules/browser checks, and remaining tuning questions. Avoid combining a global rebalance with several new systems in the same first release.
 
@@ -638,11 +693,11 @@ The art lane uses `art/blender/build_farm_kit.py`, renders icons through `art/bl
 
 Use port **5241** for logic checks and **5242** for art. Stop only the server process the lane started. Preserve the shared first-load code budget of **1.1 MB**, alongside draw/triangle limits.
 
-**AR-001 is complete and live**; its old [handoff](CLAUDE-HANDOFF.md) is historical. [AR-009's discovery brief](CLAUDE-DISCOVERY-HANDOFF.md) is delivered and its icons are integrated for PR #6; production acceptance is recorded in the asset queue after verification. AR-002 remains proposed until meadow/dairy is chosen for a release. Narrow AR-003 by actual recipe needs; finalize the story before AR-004; make AR-005 reusable across Ellis appearances; avoid duplicating existing fades in AR-006. AR-007 has no approved release date. AR-008 requires the user's explicit decision; leave crop faces out of this pass. The current scope does not approve the rest of the queue.
+**AR-001 is complete and live**; its old [handoff](CLAUDE-HANDOFF.md) is historical. [AR-009's discovery brief](CLAUDE-DISCOVERY-HANDOFF.md) is delivered and its icons shipped in PR #6. AR-002's narrowed first goat/dairy delivery is requested in [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md); its cat, land-deed and larger-region pieces remain proposed. Narrow AR-003 by actual recipe needs; finalize the story before AR-004; make AR-005 reusable across Ellis appearances; avoid duplicating existing fades in AR-006. AR-007 has no approved release date. AR-008 requires the user's explicit decision; leave crop faces out of this pass. The current scope does not approve the rest of the queue.
 
 After an implemented phase, update [CHANGELOG.md](../CHANGELOG.md) and the status table in [JOURNEY.md](JOURNEY.md) to describe what actually ships. This plan does not mark proposed work complete or authorize a production release during the documentation step.
 
-The current four discovery amounts and triggers are chosen and implemented as a bounded 110-coin subset, with 500 starting coins preserved. This does not settle the remaining tuning: future discoveries, cover density and placement, energy capacity/cost/recovery, a first useful repair activity, skill milestones, later housing prices, and school rewards still need their own prototypes and validation.
+The current four discovery amounts and triggers are chosen and implemented as a bounded 110-coin subset, with 500 starting coins preserved. PR #28 also established the first useful repair activity, permanent lesson and energy/recovery values. Remaining tuning concerns future discoveries, cover density and placement, additional energy projects and skills, later housing prices, further school activities and the separately proposed dairy economy; those need their own prototypes and validation.
 
 ## 17. Research and supporting notes
 

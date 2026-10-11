@@ -1,8 +1,10 @@
 // Browser suite. Builds nothing itself: run `npm run build:test`, serve dist (node scripts/serve-dist.mjs 5241),
-// then `npm run test:browser`. GAME_URL overrides the address; GPU=0 uses the software renderer.
+// then `npm run test:browser`. GAME_URL overrides the address; GPU=0 uses the software renderer; ONLY="text" runs the
+// checks whose name contains it.
 // Each check is a function; the suite grows with the milestones.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { GOODS } from '../src/content/goods.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const SHOTS = process.env.SHOTS ?? 'test-results/ui/'; mkdirSync(SHOTS, { recursive: true });
 const gpu = process.env.GPU !== '0';
@@ -23,9 +25,10 @@ async function open(device = 'pc', query = '', { intro = false } = {}) {
   return { ctx, page, errors };
 }
 async function check(name, f) {
+  if (process.env.ONLY && !name.includes(process.env.ONLY)) return;   // ONLY="chapter 9" runs the checks whose name has that text
   const t0 = Date.now();
   try { await f(); results.push([name, 'ok', Date.now() - t0]); console.log(`ok   ${name}`); }
-  catch (e) { results.push([name, 'FAIL', Date.now() - t0, e.message]); console.log(`FAIL ${name}\n     ${e.message}`); }
+  catch (e) { results.push([name, 'FAIL', Date.now() - t0, e.message]); console.log(`FAIL ${name}\n     ${e.message}${process.env.STACK ? `\n${(e.stack ?? '').split('\n').filter(l => l.includes('browser.mjs')).join('\n')}` : ''}`); }   // STACK=1 says which line
 }
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 
@@ -90,6 +93,47 @@ await check('build mode: ghost, rotate and confirm a feed mill (landscape)', asy
   expect(await page.evaluate(() => farm.build.check().ok), `no rotation fits (first try ok: ${before})`);
   await page.click('[data-bar="ok"]');
   expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'feed mill not placed');
+  await ctx.close();
+});
+await check('build mode on a keyboard: R turns the ghost, Enter lands it, Esc cancels and then closes (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await prep(page);
+  await page.evaluate(() => { const g = farm.game; for (let i = 0; i < 6; i++) g.do('place', { kind: 'bed', x: 33 + i, z: 57 }); g.s.level = 3; g.s.xp = 100; farm.build.select('feed_mill'); });
+  await tapCell(page, 40, 64);
+  const rot = await page.evaluate(() => farm.build.rot); await page.keyboard.press('r');
+  expect(await page.evaluate(() => farm.build.rot) === (rot + 1) % 4, 'R did not turn the ghost');
+  for (let i = 0; i < 4 && !(await page.evaluate(() => farm.build.check().ok)); i++) await page.keyboard.press('r');
+  expect(await page.evaluate(() => farm.build.check().ok), 'no rotation fits');
+  await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'Enter did not place the feed mill');
+  await page.evaluate(() => farm.build.select('feed_mill')); await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => farm.build.open && !farm.build.mode), 'Esc did not cancel the placement');
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => !farm.build.open), 'a second Esc did not close build mode');
+  expect(await page.evaluate(() => farm.state().counts.feed_mill) === 1, 'a key placed a second building');
+  await ctx.close();
+});
+await check('barn: holding a Sell button keeps selling until you let go; a short click still sells one (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await prep(page);
+  await page.evaluate(() => { farm.game.s.barn.items.wheat = 60; farm.panels.show('barn'); });
+  await page.waitForSelector('.good-tile[data-good="wheat"]');
+  const wheat = () => page.evaluate(() => farm.state().barn.items.wheat);
+  await page.click('.good-tile[data-good="wheat"]'); expect(await wheat() === 59, `a click sold ${60 - await wheat()}`);
+  const box = await page.locator('.good-tile[data-good="wheat"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down(); await page.waitForTimeout(1500); await page.mouse.up();
+  const after = await wheat(); expect(after <= 55 && after >= 45, `holding for 1.5 s left ${after} of 59`);
+  await page.waitForTimeout(500); expect(await wheat() === after, 'it went on selling after the button was let go');
+  await page.click('.good-tile[data-good="wheat"]'); expect(await wheat() === after - 1, 'the next click did not sell one');
+  await ctx.close();
+});
+await check('with a mouse, a click on the world beside an open menu only leaves the menu (pc)', async () => {
+  const { ctx, page } = await open('pc');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('barn'); }); await page.waitForSelector('.sheet.panel:not([hidden])');
+  const spot = await page.evaluate(() => { for (let y = 260; y < 640; y += 40) for (let x = 120; x < 760; x += 40) if (document.elementFromPoint(x, y)?.tagName === 'CANVAS') return [x, y]; return null; });
+  expect(!!spot, 'no free world beside the menu'); await page.mouse.click(...spot); await page.waitForTimeout(300);
+  expect(await page.evaluate(() => !farm.panels.open), `the click outside at ${spot} did not close the menu`);
+  expect(await page.evaluate(() => !document.querySelector('.radial:not([hidden]) button') && !farm.panels.open), 'the same click also opened something in the world');
   await ctx.close();
 });
 await check('build mode: move and store (pc)', async () => {
@@ -164,6 +208,7 @@ await check('first session: a truly modal chapter card, then the camera flies to
 await check('settings: a slider keeps its place while the clock redraws the panels', async () => {
   const { ctx, page } = await open('phone');
   await page.click('[data-act="settings"]');
+  await page.locator('[data-range="sound"]').waitFor();
   const same = await page.evaluate(async () => { const el = document.querySelector('[data-range="sound"]'); el.focus(); await new Promise(r => setTimeout(r, 2300)); return document.querySelector('[data-range="sound"]') === el; });
   expect(same, 'the sound slider was replaced by a redraw');
   await ctx.close();
@@ -176,8 +221,11 @@ await check('settings: text size, language and day and night from the settings p
   await page.click('[data-key="daylight"][data-value="always"]');
   expect(await page.evaluate(() => farm.state().settings.daylight) === 'always', 'daylight not saved');
   await page.click('[data-key="lang"][data-value="vi"]');
+  await page.waitForFunction(() => document.documentElement.lang === 'vi');
   expect((await page.textContent('.panel-head h2')).includes('Cài đặt'), 'language not switched');
   await page.click('[data-key="lang"][data-value="en"]');
+  await page.waitForFunction(() => document.documentElement.lang === 'en');
+  expect(await page.textContent('.panel-head h2') === 'Settings', 'English settings did not return');
   await ctx.close();
 });
 
@@ -324,7 +372,9 @@ await check('icons: the order board, barn, build catalogue and bakery show rende
   const panels = [['orders', () => farm.panels.show('orders')], ['barn', () => farm.panels.show('barn')], ['production', id => farm.panels.show('production', id)],
     ['build', () => { farm.panels.close(); farm.build.show(); farm.build.cat = 'charm'; farm.build.render(); }]];
   for (const [name, show] of panels) {
-    await page.evaluate(show, bakery); await page.waitForTimeout(200);
+    await page.evaluate(show, bakery);
+    if (name !== 'build') await page.waitForFunction(() => !!farm.panels.renderer);
+    await page.waitForTimeout(200);
     const c = await iconCount(page, name === 'build' ? '.sheet.build' : '.sheet.panel');
     expect(!c.missing && c.imgs >= 3 && c.emoji === 0, `${name}: ${JSON.stringify(c)}`);
   }
@@ -377,7 +427,8 @@ for (const device of ['phone', 'pc']) await check(`expansion: tap a For-sale par
   await page.click('.radial-btn[data-act="buyParcel"]');
   const after = await page.evaluate(() => ({ parcels: farm.state().parcels.length, coins: farm.state().coins, signs: farm.world.locked?.signs, outline: farm.world.scene.getObjectByName('parcel-outline')?.visible }));
   expect(after.parcels === before.parcels + 1 && after.coins === 400, `not bought: ${JSON.stringify({ before, after })}`);
-  expect(after.signs === 0 && !after.outline, `the sign or outline stayed: ${JSON.stringify(after)}`);
+  // every parcel of the farm can be bought now: the signs move on to the land next to the new parcel
+  expect(after.signs >= 3 && !after.outline && await page.evaluate(() => farm.buyable?.().every(p => !farm.state().parcels.includes(p.parcel)) ?? true), `the signs did not move on or the outline stayed: ${JSON.stringify(after)}`);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
@@ -434,13 +485,805 @@ await check('Vietnamese: every panel fits a 390 px phone with no text sticking o
   const ids = await page.evaluate(() => ({ bakery: Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'bakery'), home: Object.keys(farm.state().homes)[0] }));
   const bad = [];
   for (const [kind, arg] of [['orders'], ['barn'], ['production', ids.bakery], ['today'], ['projects'], ['cottage', ids.home], ['cart'], ['mail'], ['friends'], ['gift', 'ada'], ['album'], ['settings']]) {
-    await page.evaluate(([k, a]) => farm.panels.show(k, a), [kind, arg]); await page.waitForTimeout(120);
+    await page.evaluate(([k, a]) => farm.panels.show(k, a), [kind, arg]);
+    await page.waitForFunction(() => !!farm.panels.renderer); await page.waitForTimeout(120);
     const b = await overflow(page, '.sheet.panel'); if (b) bad.push(`${kind}: ${b}`);
     await page.screenshot({ path: `${SHOTS}ui-vi-${kind}.png` });
   }
   await page.evaluate(() => { farm.panels.close(); farm.build.show(); });
   const b = await overflow(page, '.sheet.build'); if (b) bad.push(`build: ${b}`);
   expect(!bad.length, bad.join('\n     '));
+  await ctx.close();
+});
+
+await check('tester tools: ?tester shows the tag; coins, levels and a chapter jump work from Settings, and the farm reopens at that chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  expect(await page.locator('.tester-tag').count() === 1, 'no tester tag');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.test-jump');
+  const before = await page.evaluate(() => ({ coins: farm.state().coins, level: farm.state().level }));
+  await page.click('[data-test="coins"]');
+  expect(await page.evaluate(() => farm.state().coins) === before.coins + 10000, 'the coins button gave nothing');
+  await Promise.all([page.waitForEvent('load'), page.click('[data-test="jump:6"]')]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  const s = await page.evaluate(() => { const st = farm.state(); return { chapter: st.story.chapter, school: st.counts.school ?? 0, clinic: st.counts.clinic ?? 0, families: Object.values(st.homes).filter(h => h.arrived).length, level: st.level, step: st.projects.step }; });
+  expect(s.chapter === 5 && s.school >= 1 && s.clinic >= 1 && s.families === 4 && s.level >= 6, `after the jump: ${JSON.stringify(s)}`);
+  expect(await page.locator('.tester-tag').count() === 1, 'the tools did not stay for the tab');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('settings'); }); await page.waitForSelector('.test-jump');
+  expect(await page.locator('[data-test="jump:6"]').isDisabled(), 'chapter 6 can still be jumped to');
+  await page.click('[data-test="levels"]');
+  expect(await page.evaluate(() => farm.state().level) === s.level + 5, 'the levels button gave nothing');
+  await page.screenshot({ path: `${SHOTS}tester-settings.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 6: a market day starts by itself, the good of the day sells for double, and three fields close the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  // the tester's jump saves the farm and opens it again at the start of chapter 6
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:6'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForSelector('[data-status="marketday"]', { timeout: 15000 });
+  await page.waitForFunction(() => farm.people?.walkers?.has('hugo') && [...farm.world.batches.items.keys()].some(k => String(k).startsWith('market-flags-')), null, { timeout: 30000 });
+  const day = await page.evaluate(() => { const s = farm.state(); return { good: s.marketDay.good, flags: [...farm.world.batches.items.keys()].filter(k => String(k).startsWith('market-flags-')).length, chapter: s.story.chapter, step: s.projects.step }; });
+  expect(day.good && GOODS[day.good] && day.flags === 6 && day.chapter === 5, `market day: ${JSON.stringify(day)}`);
+  await page.evaluate(() => farm.focus(77, 94, 26)); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}market-day-square.png` });
+  // the pill opens the barn; the good of the day wears its badge and pays double
+  await page.evaluate(g => { farm.closeCards(); const s = farm.state(); s.barn.cap = 500; s.barn.items[g] = 12; s.barn.items.wheat = 8; }, day.good);
+  await page.click('[data-status="marketday"]'); await page.waitForSelector('.good-tile.day .day-badge');
+  expect(await page.locator('.market-day.on').count() === 1 && await page.locator('.good-tile.day').count() === 1, 'the barn does not show the market day');
+  await page.screenshot({ path: `${SHOTS}market-day-barn.png` });
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.good-tile.day');
+  const after = await page.evaluate(() => ({ coins: farm.state().coins, days: farm.state().stats.marketDays }));
+  expect(after.coins === coins + 2 * GOODS[day.good].value && after.days === 1, `one ${day.good}: ${coins} -> ${after.coins}, days ${after.days}`);
+  await page.click('[data-do="sellGood"][data-good="wheat"]');
+  expect(await page.evaluate(() => farm.state().coins) === after.coins + GOODS.wheat.value, 'another good was paid double');
+  // two more fields: the chapter card
+  await page.evaluate(() => { farm.panels.close(); const g = farm.game; g.s.coins += 20000; for (const parcel of ['1,2', '0,1']) g.do('buyParcel', { parcel }); });
+  await page.waitForSelector('.chapter-modal', { timeout: 15000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Market day') && card.includes('Barley') && card.includes('Bramble'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-6-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 6);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 7: the dock is built from its site panel, the brook by it can be fished, and the police post closes the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:7'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 20000; g.do('testAddLevels', { levels: 6 }); farm.closeCards(); });
+  // a sign waits on the site; its panel builds the dock where it belongs
+  await page.waitForFunction(() => farm.world.batches.items.has('sitesign:dock'), null, { timeout: 30000 });
+  await page.evaluate(() => { farm.closeCards(); farm.panels.onSite('dock'); }); await page.waitForSelector('[data-do="siteBuild"]');
+  expect(!(await page.locator('[data-do="siteBuild"]').getAttribute('data-why')), 'the Build button is blocked at level 12 with coins');
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}dock-site-panel.png` });
+  await page.click('[data-do="siteBuild"]');
+  await page.waitForFunction(() => (farm.state().counts.dock ?? 0) === 1 && !farm.world.batches.items.has('sitesign:dock'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'dock'));
+  await page.waitForFunction(id => farm.world.batches.items.has(id), id, { timeout: 30000 });   // the model is in the late kit
+  // the brook by the dock is fishing water: fish swim there, the pond panel is the dock's, a cast is a river line
+  expect(await page.evaluate(id => farm.pondFish.ponds().some(p => p.id === id), id), 'no fish in the brook by the dock');
+  await page.evaluate(id => { farm.closeCards(); farm.panels.show('pond', id); }, id); await page.waitForSelector('[data-pond]');
+  expect((await page.textContent('.panel:not([hidden]) .panel-head, .panel:not([hidden]) h2')).includes('Boat dock'), 'the pond panel is not the dock\'s');
+  expect((await page.textContent('[data-pond]')).includes('twice as often'), 'the panel does not say what the brook is good for');
+  await page.evaluate(id => { farm.panels.close(); farm.game.do('castLine', { pond: id, foot: true }); }, id);
+  expect(await page.evaluate(() => farm.state().fishing.line?.river === true), 'not a river line');
+  await page.evaluate(() => { farm.game.do('pullLine'); farm.focus(33, 12, 18); }); await page.waitForTimeout(1200); await page.screenshot({ path: `${SHOTS}dock-on-the-brook.png` });
+  // the police post: the chapter card, then the constable is in the village
+  await page.evaluate(() => farm.game.do('rebuildCivic', { kind: 'police' }));
+  await page.waitForSelector('.chapter-modal', { timeout: 15000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Safe streets') && card.includes('Constable Sage') && card.includes('Skipper'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-7-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 7 && farm.people?.walkers?.has('pearl'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 8: the first company delivery closes the chapter, the sluice opens, the mill wheel turns and the manager is on the board (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:8'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // the old mill stands by the brook from the start, its wheel still
+  await page.waitForFunction(() => !!farm.world.oldMill?.wheel, null, { timeout: 40000 });
+  const before = await page.evaluate(() => ({ target: farm.world.oldMill.target, full: farm.world.brook.uniforms.uFull.value, sluice: farm.state().firsts.sluice ?? null }));
+  expect(before.target === 0 && before.full === 0 && before.sluice === null, `before the chapter: ${JSON.stringify(before)}`);
+  await page.evaluate(() => { farm.closeCards(); farm.focus(41, 8, 16); }); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}old-mill-still.png` });
+  // the tester's "Finish this chapter" does the deed; the card appears as in play
+  await page.evaluate(() => farm.panels.onTest('finish'));
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Work for everyone') && card.includes('Rusty') && card.includes('wheel'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-8-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 8 && !!farm.state().firsts.sluice && farm.world.oldMill.target > 0 && farm.world.brook.uniforms.uFull.value === 1, null, { timeout: 15000 });
+  await page.waitForFunction(() => farm.world.oldMill.speed > 0.3, null, { timeout: 15000 });   // it creaks up to speed
+  await page.evaluate(() => { farm.closeCards(); farm.focus(41, 8, 16); }); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}old-mill-turning.png` });
+  // the manager speaks on the village board, and is in the village
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('villageGrowth'); }); await page.waitForSelector('.board-voice', { timeout: 20000 });
+  expect((await page.textContent('.board-voice')).includes('Penny'), 'the manager is not on the board');
+  await page.waitForFunction(() => farm.people?.walkers?.has('bea'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 9: the stage is rebuilt on the square, the Harvest Festival gathers the village under lanterns, and Oak comes home (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(11, 0, 0, 0) - Date.now()));   // by day, so the evening is the festival's doing
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:9'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 50000; g.s.barn.cap = 5000; Object.assign(g.s.barn.items, { bread: 6, corn_bread: 5, apple_juice: 4, apple: 9, egg: 9, carrot: 9, wheat: 20 }); });
+  // what is left of the old stage stands on the square; its panel builds the new one
+  await page.waitForFunction(() => farm.world.batches.items.get('sitesign:stage')?.model === 'stage_burned', null, { timeout: 40000 });
+  await page.evaluate(() => farm.focus(41, 100, 22)); await page.waitForTimeout(900); await page.screenshot({ path: `${SHOTS}stage-burned.png` });
+  await page.evaluate(() => farm.panels.onSite('stage')); await page.waitForSelector('[data-do="siteBuild"]'); await page.click('[data-do="siteBuild"]');
+  await page.waitForFunction(() => (farm.state().counts.stage ?? 0) === 1 && !farm.world.batches.items.has('sitesign:stage'));
+  // the festival panel: the feast from the barn, then the evening
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('festival'); }); await page.waitForSelector('[data-do="holdFestival"]');
+  expect(await page.locator('.feast .slot.ready').count() === 6 && !(await page.locator('[data-do="holdFestival"]').isDisabled()), 'the feast is not laid');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}festival-panel.png` });
+  const hearts = await page.evaluate(() => farm.state().people.lan?.hearts ?? 0);
+  await page.click('[data-do="holdFestival"]');
+  await page.waitForSelector('[data-status="festival"]', { timeout: 10000 });
+  const on = await page.evaluate(() => ({ night: farm.world.daylight.nightness, glows: farm.world.daylight.glowCount.bulbs, lan: farm.state().people.lan?.hearts ?? 0, n: farm.state().stats.harvestFestivals ?? 0 }));
+  expect(on.night > 0.2 && on.glows >= 20 && on.lan === hearts + 1 && on.n === 0, `the evening: ${JSON.stringify(on)}`);
+  // people walk to the square and face the stage
+  await page.waitForFunction(() => [...farm.people.walkers.values()].filter(w => w.party && !w.route.length && w.z > 198 && w.z < 210 && w.x > 74 && w.x < 90).length >= 4, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); farm.panels.close(); farm.focus(41, 101, 20); }); await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}festival-evening.png` });
+  // the evening ends (the tester's Finish every timer), the chapter card, Bramble's scene, and Oak is home
+  await page.evaluate(() => { farm.game.do('testFinishTimers'); farm.game.tick(); });
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The village sings again') && card.includes('Bramble') && card.includes('lantern'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-9-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  await page.waitForFunction(() => farm.state().story.chapter === 9 && farm.world.daylight.nightness < 0.05, null, { timeout: 15000 });   // day again
+  await page.waitForFunction(() => farm.people.walkers.has('ellis'), null, { timeout: 30000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+await check('chapter 10: hired villagers are named and seen at work, the evening sums add up, and three hands close the chapter (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:10'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 30000; g.s.barn.cap = 5000; g.s.story.firstWheat = false; });
+  // hire three hands in Friends: each shows the villager who took the job
+  await page.evaluate(() => farm.panels.show('friends')); await page.waitForSelector('[data-do="hireHand"][data-role="field"]');
+  for (const role of ['field', 'animals', 'workshop']) { await page.click(`[data-do="hireHand"][data-role="${role}"]`); await page.waitForSelector(`[data-do="releaseHand"][data-role="${role}"]`); }
+  const names = await page.locator('.hand.on b').allTextContents();
+  expect(names.length === 3 && names[0].includes('Chip') && names[1].includes('Clover') && names[2].includes('Honey'), `the hands: ${names.join(' | ')}`);
+  expect(await page.locator('.hand.on .hand-face').count() === 3, 'the hired hands have no faces');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}hands-named.png` });
+  // a round of work: the field hand harvests, and Chip walks to the bed
+  await page.waitForFunction(() => farm.people?.walkers?.has('minh'), null, { timeout: 40000 });
+  const tasks = await page.evaluate(async () => {
+    const g = farm.game, s = g.s; farm.panels.close(); farm.closeCards();
+    g.do('plant', { ids: Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]), crop: 'wheat' }); g.do('testFinishTimers'); g.tick();
+    const off = +(sessionStorage.getItem('fv-clock-offset') ?? 0); farm.setClockOffset(off + 61000); g.do('testFinishTimers'); g.tick();
+    return s.stats.handTasks ?? 0;
+  });
+  expect(tasks > 0, 'the hands did nothing');
+  await page.waitForFunction(() => { const w = farm.people.walkers.get('minh'); return w && (w.route.length > 0 || w.todo?.act === 'sweep' || w.clipFor === 'Sweep'); }, null, { timeout: 15000 });
+  // the evening: the pill offers the day's sums; the report shows the total, the hands and Maple's advice
+  await page.evaluate(() => { const g = farm.game; g.s.barn.items.wheat = 20; g.do('sellGood', { good: 'wheat', n: 10 }); farm.setClockOffset(new Date().setHours(18, 30, 0, 0) - Date.now()); });
+  await page.waitForSelector('[data-status="report"]', { timeout: 15000 });
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());   // the scene for three hands may be on screen
+  await page.click('[data-status="report"]');
+  await page.waitForSelector('.report-total');
+  const report = await page.evaluate(() => ({ total: document.querySelector('.report-total b').textContent, hands: document.querySelectorAll('.report-hands li').length, advice: !!document.querySelector('.report-advice'), seen: farm.state().today.reportSeen }));
+  expect(report.total !== '0' && report.hands >= 1 && report.advice, `the report: ${JSON.stringify(report)}`);
+  await page.waitForFunction(() => farm.state().today.reportSeen === true); await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}evening-report.png` });
+  expect(await page.locator('[data-status="report"]').count() === 0, 'the pill stays after the report was read');
+  // thirty tasks: the chapter card
+  await page.evaluate(() => { farm.panels.close(); farm.panels.onTest('finish'); });
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Hands to help') && card.includes('One neighbour takes the far beds') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-10-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 10);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 11 (docs/plan/ch11-the-man-from-the-city.md): the one choice, played once each way.
+for (const [kind, choice] of [['pc', 'meadow'], ['phone', 'factory']]) await check(`chapter 11: Mr Albright's offer, the ${choice} answer, what it opens and the card that reads by it (${kind})`, async () => {
+  const { ctx, page, errors } = await open(kind, '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:11'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // he is at the gate with his car, his stakes stand on the meadow, and a pill says an offer is waiting
+  await page.waitForFunction(() => farm.people?.walkers?.has('albright') && farm.world.batches.items.has('meadow:stakes') && farm.world.batches.items.has('meadow:car'), null, { timeout: 40000 });
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 30000; g.s.barn.cap = 5000; });
+  await page.waitForSelector('[data-status="offer"]');
+  // the Valley panel: the beauty and its parts, and a way to the offer
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley [data-do="offer"]');
+  const before = await page.evaluate(() => ({ rank: document.querySelector('.valley-rank h3').textContent, rows: document.querySelectorAll('.valley-parts li').length, leaves: document.querySelectorAll('.valley-leaves i.on').length }));
+  expect(before.rows >= 3 && before.leaves >= 1 && before.rank.length > 2, `the valley panel: ${JSON.stringify(before)}`);
+  await page.click('.valley [data-do="offer"]'); await page.waitForSelector('.offer-modal .offer-choice');
+  expect(await page.locator('.offer-choice').count() === 2 && await page.locator('.offer-choice li').count() === 6, 'two answers, three lines each');
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}offer-${kind}.png` });
+  const fits = await page.evaluate(() => { const r = document.querySelector('.offer-modal .card-modal').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1 && r.top >= 0; });
+  expect(fits, 'the offer card runs off the screen');
+  // "Let me think" answers nothing
+  await page.click('.offer-think'); await page.waitForFunction(() => !document.querySelector('.offer-modal'));
+  expect(await page.evaluate(() => farm.state().story.albright == null), 'thinking gave an answer');
+  // from the pill: pick, go back, pick again, and say yes
+  await page.click('[data-status="offer"]'); await page.waitForSelector('.offer-choice');
+  await page.click(`[data-pick="${choice}"]`); await page.waitForSelector(`[data-answer="${choice}"]`);
+  expect((await page.textContent('.offer.sure')).includes('This cannot be changed'), 'no warning before the answer');
+  await page.click('[data-back]'); await page.waitForSelector('.offer-choice'); await page.click(`[data-pick="${choice}"]`);
+  await page.click(`[data-answer="${choice}"]`);
+  await page.waitForFunction(c => farm.state().story.albright === c, choice);
+  // the chapter card reads by the answer
+  await page.waitForSelector('.chapter-modal', { timeout: 20000 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The man from the city') && card.includes(choice === 'meadow' ? 'stays a meadow' : 'brick by brick') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-11-${choice}.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 11);
+  await page.waitForTimeout(800); await page.evaluate(() => farm.closeCards());
+  // he has gone, with his car and his stakes; the meadow shows the answer
+  await page.waitForFunction(() => !farm.people.walkers.has('albright') && !farm.world.batches.items.has('meadow:car') && !farm.world.batches.items.has('meadow:stakes'), null, { timeout: 15000 });
+  expect(await page.locator('[data-status="offer"]').count() === 0, 'the pill stays after the answer');
+  if (choice === 'meadow') {
+    await page.waitForFunction(() => [...farm.world.batches.items.keys()].filter(k => k.startsWith('meadow:f')).length >= 60 && farm.world.batches.items.has('meadow:hive2'), null, { timeout: 15000 });
+    // beehives are open: one on the farm makes honey
+    const honey = await page.evaluate(() => {
+      const g = farm.game, s = g.s; let id = null;
+      for (let z = 30; z <= 85 && !id; z++) for (let x = 34; x <= 93 && !id; x++) { const r = g.do('place', { kind: 'beehive', x, z }); if (r.ok) id = r.id; }
+      if (!id) return 'no room for a hive';
+      const made = g.do('produce', { building: id, recipe: 'honey' }); g.do('testFinishTimers'); g.tick(); g.do('collectProducts', { building: id });
+      return made.ok ? s.barn.items.honey ?? 0 : made.reason;
+    });
+    expect(honey === 1, `honey: ${honey}`);
+  } else {
+    const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'cannery'));
+    expect(!!id && await page.evaluate(k => farm.world.batches.items.get(k)?.model === 'cannery', id), 'the cannery does not stand on the meadow');
+    await page.evaluate(k => farm.panels.show('production', k), id); await page.waitForSelector('.sheet.panel [data-do="produce"]');
+    expect((await page.textContent('.sheet.panel')).includes('Canned corn'), 'the cannery lists no tins');
+    // make it a green one from the Valley panel: the penalty goes, young trees stand round it
+    await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('[data-do="greenCannery"]');
+    const was = await page.evaluate(() => farm.state().coins);
+    await page.click('[data-do="greenCannery"]'); await page.waitForFunction(() => farm.state().valley?.green === true);
+    expect(await page.evaluate(() => farm.state().coins) === was - 6000, 'making it green cost something else');
+    await page.waitForFunction(() => farm.world.batches.items.has('meadow:tree0') && !document.querySelector('[data-do="greenCannery"]'), null, { timeout: 8000 });
+  }
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(61, 19, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}meadow-${choice}.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 12 (docs/plan/ch12-one-river-many-farms.md): the newcomers call, the co-operative is founded at its board,
+// a shared order is filled, and the card takes the gate off the towpath.
+await check('chapter 12: two growers call, the co-operative is founded and fills an order, and the towpath opens (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:12'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // the board stands on the square and the towpath's gate is shut; nobody can stand on the far bank
+  await page.waitForFunction(() => farm.world.batches.items.get('story:board')?.model === 'cooperative_board' && farm.world.batches.items.get('story:gate')?.model === 'towpath_gate', null, { timeout: 40000 });
+  const far = await page.evaluate(() => farm.people.canStand(50 * 2 + 1, 8 * 2 + 1));
+  expect(far === false, 'the far bank is open before the chapter');
+  // the two growers call (a tester does not wait for them): the twins come as two
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 30000; g.s.barn.cap = 5000; g.tick(); g.do('testFinishTimers'); g.tick(); });
+  await page.waitForFunction(() => ['priya', 'twins'].every(id => (farm.state().neighbours[id]?.total ?? 0) >= 1), null, { timeout: 15000 });
+  await page.waitForFunction(() => farm.people.walkers.has('visit:priya') && farm.people.walkers.has('visit:twins') && farm.people.walkers.has('visit:twins:2'), null, { timeout: 15000 });
+  await page.waitForSelector('.modal', { timeout: 15000 });   // the idea
+  expect((await page.textContent('.modal')).includes('Juniper'), 'the idea scene does not show');
+  await page.evaluate(() => farm.closeCards());
+  // the panel before founding: who has called, and the gift
+  await page.evaluate(() => farm.panels.show('cooperative')); await page.waitForSelector('.coop [data-do="foundCooperative"]');
+  expect(await page.locator('.coop-callers li.done').count() === 2 && await page.locator('.coop-members span').count() === 4, 'callers and members');
+  expect(await page.locator('[data-do="foundCooperative"]').isDisabled(), 'founding without the gift');
+  await page.evaluate(() => { const s = farm.state(); Object.assign(s.barn.items, { bread: 12, cheese: 6, apple_juice: 6 }); farm.game.tick(); });
+  await page.waitForFunction(() => !document.querySelector('[data-do="foundCooperative"]')?.disabled);
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}cooperative-founding.png` });
+  await page.click('[data-do="foundCooperative"]');
+  await page.waitForSelector('.coop-line'); await page.evaluate(() => farm.closeCards());
+  expect(await page.locator('.coop-line').count() === 3, 'the order has three lines');
+  expect(await page.evaluate(() => { const s = farm.state(); return (s.barn.items.bread ?? 0) === 0 && (s.barn.items.cheese ?? 0) === 0; }), 'the gift was not taken');
+  // send a little, then all: the neighbours' third is drawn, the line fills
+  const first = await page.evaluate(() => { const s = farm.state(); for (const l of s.cooperative.order.lines) s.barn.items[l.good] = (s.barn.items[l.good] ?? 0) + (l.need - l.pledged); farm.game.tick(); return s.cooperative.order.lines[0]; });
+  await page.waitForFunction(g => !document.querySelector(`.coop-line[data-good="${g}"] [data-n]`)?.disabled, first.good);
+  await page.waitForTimeout(400); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}cooperative-order.png` });
+  expect(await page.locator('.coop-line .theirs').count() === 3, 'the neighbours share is not drawn');
+  await page.click(`.coop-line[data-good="${first.good}"] [data-n]`);
+  await page.waitForFunction(g => farm.state().cooperative.order.lines.find(l => l.good === g).sent > 0, first.good);
+  for (let i = 0; i < 3; i++) {
+    const good = await page.evaluate(() => { const o = farm.state().cooperative.order; return o?.lines.find(l => l.need - l.pledged - l.sent > 0)?.good ?? null; });
+    if (!good) break;
+    await page.click(`.coop-line[data-good="${good}"] .btn.primary`);
+    await page.waitForFunction(g => { const o = farm.state().cooperative.order; return !o || o.lines.find(l => l.good === g).need - o.lines.find(l => l.good === g).pledged - o.lines.find(l => l.good === g).sent === 0; }, good);
+  }
+  await page.waitForFunction(() => farm.state().cooperative.filled === 1);
+  // the chapter card, and what closing it does
+  await page.evaluate(() => farm.panels.close());
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('One river, many farms') && card.includes('Bramble first') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-12-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 12 && farm.state().firsts.bridge > 0);
+  await page.waitForFunction(() => farm.world.batches.items.get('story:gate')?.model === 'towpath_gate_open', null, { timeout: 8000 });
+  expect(await page.evaluate(() => farm.people.canStand(50 * 2 + 1, 8 * 2 + 1)), 'the far bank cannot be walked after the chapter');
+  await page.waitForTimeout(800); await page.evaluate(() => { farm.closeCards(); farm.focus(36, 8, 22); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}towpath-open.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 13 (docs/plan/ch13-the-far-bank.md, act4-far-bank.md): the quay is paved, a quay house goes up on a lot,
+// its keeper arrives, the card shows, and the rent comes into the mailbox.
+await check('chapter 13: the quay is paved, a quay house is built on a lot, the keeper arrives and the rent comes in (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:13'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => farm.world.batches.items.get('story:gate')?.model === 'towpath_gate_open' && !!farm.world.wildDecor, null, { timeout: 40000 });
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 40000; g.s.barn.cap = 5000; });
+  const inZone = () => [...farm.world.batches.items].filter(([id, it]) => id.startsWith('wild') && it.x >= 44 * 2 && it.x < 100 * 2 && it.z >= 1 * 2 && it.z < 8 * 2).length;
+  const wildBefore = await page.evaluate(inZone);
+  expect(await page.evaluate(() => farm.people.canStand(60 * 2 + 1, 6 * 2 + 1)) === false, 'the quay can be walked before it is paved');
+  // the quay's panel: what paving takes, then pave it
+  await page.evaluate(() => farm.panels.show('quay')); await page.waitForSelector('.quay [data-do="paveQuay"]');
+  expect(await page.locator('.quay .req.ok').count() === 3, 'the paving checklist is not all met');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}quay-paving.png` });
+  await page.click('.quay [data-do="paveQuay"]'); await page.waitForFunction(() => farm.state().firsts.quay > 0);
+  await page.waitForFunction(() => ['quay:sign0', 'quay:sign6', 'quay:lamp0', 'quay:b0'].every(id => farm.world.batches.items.has(id)), null, { timeout: 20000 });
+  const wildAfter = await page.evaluate(inZone);
+  expect(wildAfter === 0, `wild trees still stand on the riverside: ${wildAfter} (there were ${wildBefore})`);
+  expect(await page.evaluate(() => farm.people.canStand(60 * 2 + 1, 6 * 2 + 1)), 'the paved quay cannot be walked');
+  await page.waitForTimeout(1200); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}quay-paved.png` });
+  // seven lots; pick the second and build a quay house on it
+  await page.evaluate(() => farm.panels.show('quay')); await page.waitForSelector('.quay-lots .quay-lot');
+  expect(await page.locator('.quay-lot').count() === 7 && await page.locator('.quay-lot.taken').count() === 0, 'seven free lots');
+  await page.click('.quay-lot[data-lot="q2"]'); await page.waitForSelector('.quay-lot.on[data-lot="q2"]');
+  await page.waitForTimeout(500); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}quay-lot.png` });
+  await page.click('[data-do="buildOnLot"][data-lot="q2"][data-kind="apartment"]');
+  await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'apartment' && p.lot === 'q2'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'apartment'));
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'apartment' && !farm.world.batches.items.has('quay:sign1') && farm.world.batches.items.has('quay:sign0'), id, { timeout: 15000 });
+  expect(await page.evaluate(() => farm.state().stats.returned) === 4, 'four families did not come back');
+  await page.waitForFunction(() => farm.people.walkers.has('tuyet'), null, { timeout: 15000 });
+  // the chapter card
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The far bank') && card.includes('Nana Snow') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-13-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 13);
+  // rent: half an hour later the quay house has paid three times; its panel collects it
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 31 * 60000); farm.game.tick(); });
+  await page.evaluate(() => farm.panels.show('quay', 'q2')); await page.waitForSelector('.quay [data-do="collectRent"]:not([disabled])');
+  expect((await page.textContent('.quay')).includes('660'), `three payments are not waiting: ${(await page.textContent('.quay')).slice(0, 160)}`);
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.quay [data-do="collectRent"]'); await page.waitForFunction(c => farm.state().coins >= c + 660, coins);
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(54, 6, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}quay-house.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 14 (docs/plan/ch14-rooms-with-a-view.md): the hotel is built on a lot, guests arrive, one is served
+// breakfast, the desk is collected, a floor is added, and the tenth guest closes the chapter.
+await check('chapter 14: the hotel is built on the quay, guests come, breakfast is served, the desk pays and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:14'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => farm.world.batches.items.has('quay:sign1') && !farm.world.batches.items.has('quay:sign0'), null, { timeout: 40000 });   // the quay house stands on the first lot
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 5000; });
+  // the quay's panel offers both riverside buildings on a free lot: build the hotel on the third
+  await page.evaluate(() => farm.panels.show('quay', 'q3')); await page.waitForSelector('[data-do="buildOnLot"][data-kind="hotel"]');
+  expect(await page.locator('[data-do="buildOnLot"][data-kind="apartment"]').count() === 1 && await page.locator('.quay-kind').count() >= 2, 'the free lot does not offer the quay house and the hotel');   // and the halt, from chapter 15 on
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}quay-hotel-lot.png` });
+  await page.click('[data-do="buildOnLot"][data-lot="q3"][data-kind="hotel"]');
+  await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'hotel' && p.lot === 'q3'));
+  const id = await page.evaluate(() => Object.keys(farm.state().placed).find(k => farm.state().placed[k].kind === 'hotel'));
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'hotel', id, { timeout: 15000 });
+  // the first guests: a tester does not wait for them
+  await page.evaluate(() => { const g = farm.game; g.tick(); g.do('testFinishTimers'); g.tick(); });
+  await page.waitForFunction(() => (farm.state().hotel?.rooms ?? []).some(Boolean));
+  await page.waitForFunction(() => farm.people.walkers.has('guest0'), null, { timeout: 15000 });
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());
+  // breakfast: the pill shows when the wish is in the barn; the panel serves it
+  const wish = await page.evaluate(() => { const s = farm.state(), g = s.hotel.rooms.find(Boolean); s.barn.items[g.wish] = (s.barn.items[g.wish] ?? 0) + 2; farm.game.tick(); return g.wish; });
+  await page.waitForSelector('[data-status="hotel"]', { timeout: 15000 });
+  await page.click('[data-status="hotel"]'); await page.waitForSelector('.hotel .rooms .room');
+  expect(await page.locator('.room').count() === 6 && await page.locator('.room.free').count() === 5, 'six rooms, one taken');
+  expect((await page.textContent('.hotel-says')).length > 12, 'the guest says nothing');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}hotel-panel.png` });
+  await page.click('.room [data-do="serveGuest"]'); await page.waitForSelector('.room.served');
+  expect(await page.evaluate(w => farm.state().barn.items[w], wish) === 1, 'one breakfast was not taken from the barn');
+  expect(await page.locator('[data-status="hotel"]').count() === 0, 'the breakfast pill stays after serving');
+  // the guest leaves and pays double tip at the desk; collect it
+  const held = await page.evaluate(() => { const g = farm.game; g.do('testFinishTimers'); g.tick(); return g.s.hotel.held; });
+  expect(held >= 120 + 2 * 40, `the desk holds ${held}`);
+  await page.waitForSelector('.hotel [data-do="collectHotel"]:not([disabled])');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.click('.hotel [data-do="collectHotel"]'); await page.waitForFunction(c => farm.state().coins > c, coins);
+  // a floor more: nine rooms, and the taller model
+  await page.click('.hotel [data-do="upgradeHotel"]'); await page.waitForFunction(() => farm.state().hotel.level === 1);
+  await page.waitForFunction(k => farm.world.batches.items.get(k)?.model === 'hotel_t1', id, { timeout: 15000 });
+  expect(await page.locator('.room').count() === 9, 'nine rooms after the upgrade');
+  // ten guests close the chapter
+  await page.evaluate(() => farm.panels.close());
+  for (let i = 0; i < 30 && await page.evaluate(() => (farm.state().stats.guests ?? 0) < 10); i++) await page.evaluate(() => { const g = farm.game; farm.closeCards(); g.do('testFinishTimers'); g.tick(); });   // (close the scenes first: the chapter card must stay)
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Rooms with a view') && card.includes('Nana Snow') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-14-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 14);
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.panels.close(); farm.focus(64, 6, 30); });
+  await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}hotel.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 15 (docs/plan/ch15-the-evening-train.md): the halt is built on a lot, the train rolls in, a wagon is
+// filled, the train leaves and pays, and the card shows.
+await check('chapter 15: the halt is built, the train comes, a wagon is filled and paid when it leaves, and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(17, 30, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:15'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  // the old rails lie along the north edge behind the lots
+  await page.waitForFunction(() => farm.world.batches.items.get('quay:t30')?.model === 'track_old' && !!farm.world.train, null, { timeout: 40000 });
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 9000; });
+  expect(await page.evaluate(() => farm.world.train.phase) === 'away', 'a train before there is a halt');
+  // build the halt on the last lot: the rails are relaid
+  await page.evaluate(() => farm.panels.show('quay', 'q7')); await page.waitForSelector('[data-do="buildOnLot"][data-kind="halt"]');
+  await page.click('[data-do="buildOnLot"][data-lot="q7"][data-kind="halt"]');
+  await page.waitForFunction(() => Object.values(farm.state().placed).some(p => p.kind === 'halt' && p.lot === 'q7'));
+  await page.waitForFunction(() => farm.world.batches.items.get('quay:t30')?.model === 'track', null, { timeout: 15000 });
+  // the train: a tester brings it at once; it rolls in from the east and stops behind the halt
+  await page.waitForTimeout(500); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.tick(); g.do('testFinishTimers'); g.tick(); });
+  await page.waitForFunction(() => !!farm.state().train?.here);
+  await page.waitForFunction(() => farm.world.train.group?.visible && ['in', 'stop'].includes(farm.world.train.phase), null, { timeout: 15000 });
+  await page.waitForSelector('[data-status="train"]', { timeout: 15000 });
+  await page.waitForFunction(() => farm.world.train.phase === 'stop', null, { timeout: 20000 });
+  const stop = await page.evaluate(() => ({ x: farm.world.train.group.position.x, want: (Object.values(farm.state().placed).find(p => p.kind === 'halt').x + 3) * 2 }));
+  expect(Math.abs(stop.x - stop.want) < 0.5, `the train stopped at ${stop.x}, not ${stop.want}`);
+  await page.evaluate(() => { farm.closeCards(); farm.focus(97, 3, 28); }); await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}train-at-halt.png` });
+  // the halt's panel: three wagons; load one a little, then fill it
+  await page.click('[data-status="train"]'); await page.waitForSelector('.train .coop-line');
+  expect(await page.locator('.train .coop-line').count() === 3, 'the train has three wagons');
+  const w = await page.evaluate(() => { const s = farm.state(), w = s.train.here.wagons[1]; s.barn.items[w.good] = (s.barn.items[w.good] ?? 0) + w.need; farm.game.tick(); return w; });
+  await page.waitForFunction(() => !document.querySelector('.coop-line[data-wagon="1"] [data-n]')?.disabled);
+  await page.click('.coop-line[data-wagon="1"] [data-n]'); await page.waitForFunction(() => farm.state().train.here.wagons[1].have > 0);
+  if (await page.evaluate(() => { const w = farm.state().train.here.wagons[1]; return w.have < w.need; })) await page.click('.coop-line[data-wagon="1"] .btn.primary');   // (a small wagon is full after the first ten)
+  await page.waitForSelector('.coop-line[data-wagon="1"].full');
+  expect(await page.evaluate(() => farm.world.train.wagons[1].full.visible && !farm.world.train.wagons[1].empty.visible), 'the full wagon does not show its load');
+  await page.waitForTimeout(400); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}train-panel.png` });
+  // it leaves: the wagon is paid, the train pulls out to the west, the pill goes
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.evaluate(() => { farm.panels.close(); const g = farm.game; g.do('testFinishTimers'); g.tick(); });
+  await page.waitForFunction(c => farm.state().coins > c && !farm.state().train.here, coins);
+  expect(await page.evaluate(() => farm.state().stats.trains) === 1, 'the train was not counted');
+  await page.waitForFunction(() => ['out', 'away'].includes(farm.world.train.phase), null, { timeout: 8000 });
+  expect(await page.locator('[data-status="train"]').count() === 0, 'the train pill stays after it left');
+  // the chapter card
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The evening train') && card.includes('Dash') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-15-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 15);
+  await page.waitForFunction(() => farm.world.train.phase === 'away' && !farm.world.train.group.visible, null, { timeout: 20000 });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 16 (docs/plan/ch16-where-the-brook-begins.md): the walk upriver, stop by stop, and the card at the spring.
+await check('chapter 16: the walk upriver is taken in three stops, each with its deed and keepsake, and the card shows (phone)', async () => {
+  const { ctx, page, errors } = await open('phone', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:16'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForFunction(() => !!farm.state().upriver, null, { timeout: 20000 });
+  await page.waitForTimeout(800); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 40000; g.s.barn.cap = 5000; g.s.barn.items = {}; });
+  // the panel: the first stop asks for a picnic, the others wait
+  await page.evaluate(() => farm.panels.show('upriver')); await page.waitForSelector('.upriver .stop.next');
+  expect(await page.locator('.stop').count() === 3 && await page.locator('.stop.later').count() === 2, 'three stops, two of them further up the path');
+  expect(await page.locator('[data-do="visitStop"]').isDisabled(), 'the weir without a picnic');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}upriver-start.png` });
+  await page.evaluate(() => { Object.assign(farm.state().barn.items, { bread: 3, cheese: 1, apple_juice: 2 }); farm.game.tick(); });
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"]')?.disabled);
+  await page.click('[data-do="visitStop"][data-stop="weir"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 1);
+  await page.waitForSelector('.modal', { timeout: 15000 }); expect((await page.textContent('.modal')).includes('Eleven stones'), 'the scene at the weir');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('upriver'); }); await page.waitForSelector('.stop.done');
+  expect((await page.textContent('.stop.done')).includes('old float') && await page.locator('.stop.done .keepsake img').count() === 1, 'the weir shows no keepsake');
+  // the heron pool: a fish landed at the boat dock since the weir
+  expect(await page.locator('[data-do="visitStop"][data-stop="heron"]').isDisabled(), 'the heron pool before a fish is landed');
+  await page.evaluate(() => { const s = farm.state(); s.stats.riverFish = (s.stats.riverFish ?? 0) + 1; farm.game.tick(); });
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"][data-stop="heron"]')?.disabled);
+  await page.click('[data-do="visitStop"][data-stop="heron"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 2);
+  await page.waitForSelector('.modal', { timeout: 15000 }); expect((await page.textContent('.modal')).includes('forty'), 'the scene at the heron pool');
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('upriver'); }); await page.waitForSelector('[data-do="visitStop"][data-stop="spring"]');
+  // the spring: ten trees planted (really planted, on the farm)
+  const planted = await page.evaluate(() => { const g = farm.game; let n = 0; for (let z = 30; z <= 85 && n < 10; z++) for (let x = 34; x <= 93 && n < 10; x++) if (g.do('place', { kind: 'pine_tree', x, z }).ok) n++; return n; });
+  expect(planted === 10, `planted ${planted} trees`);
+  await page.waitForFunction(() => !document.querySelector('[data-do="visitStop"][data-stop="spring"]')?.disabled);
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}upriver-spring.png` });
+  await page.click('[data-do="visitStop"][data-stop="spring"]'); await page.waitForFunction(() => farm.state().upriver.stops.length === 3);
+  await page.evaluate(() => farm.panels.close());
+  // the scene at the spring, then the chapter card
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('Where the brook begins') && card.includes('Oak') && card.includes('Sunny') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-16-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 16);
+  await page.waitForTimeout(600); await page.evaluate(() => farm.closeCards());
+  await page.evaluate(() => farm.panels.show('upriver')); await page.waitForSelector('.upriver .stop.done');
+  expect(await page.locator('.stop.done').count() === 3 && await page.locator('.stop.done img[src*="ch16"]').count() === 3, 'the three stops keep their pictures');
+  const fits = await page.evaluate(() => [...document.querySelectorAll('.stop')].every(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1; }));
+  expect(fits, 'a stop runs off the phone screen');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}upriver-done.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 17 (docs/plan/ch17-a-share-for-everyone.md): the valley company is founded, the valley has a value, a
+// dividend is collected, and the card shows.
+await check('chapter 17: the valley company is founded, the value shows in the top bar, a dividend is collected and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:17'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200); await page.evaluate(() => { farm.closeCards(); const g = farm.game; g.s.coins = 60000; g.s.barn.cap = 5000; g.tick(); });
+  expect(!(await page.textContent('.tracker-name')).includes('·'), 'a value in the top bar before there is a company');
+  // the Valley panel has a second page now: what founding takes
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-tabs .tab');
+  await page.click('.valley-tabs [data-do="valleyValue"]'); await page.waitForSelector('[data-do="foundValley"]');
+  expect(await page.locator('.valley .req').count() === 5 && await page.locator('.valley .req.ok').count() === 5, 'the founding list is not all met');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}company-founding.png` });
+  await page.click('[data-do="foundValley"]'); await page.waitForFunction(() => farm.state().valley?.founded > 0);
+  expect(Math.abs(await page.evaluate(() => farm.state().coins) - 40000) < 200, 'the founding sum was not taken');
+  // the value: a big number with its parts, goodwill and a share for every household; and in the top bar
+  await page.waitForSelector('.value-big');
+  const value = await page.evaluate(() => ({ big: document.querySelector('.value-big').textContent.trim(), rows: document.querySelectorAll('.valley.value .report-row').length, shares: document.querySelectorAll('.shares .mini-face').length, top: document.querySelector('.tracker-name').textContent }));
+  expect(/\d/.test(value.big) && value.rows >= 5 && value.shares >= 10 && value.top.includes('·') && value.top.includes(value.big), `the value: ${JSON.stringify(value)}`);
+  await page.waitForFunction(() => farm.world.batches.items.has('story:flag'), null, { timeout: 15000 });
+  await page.waitForTimeout(500); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}company-value.png` });
+  // the chapter card
+  await page.evaluate(() => farm.panels.close());
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 30000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('A share for everyone') && card.includes('Penny') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-17-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 17);
+  // an hour on: the dividend waits (as much as can), a pill offers it, and a tap collects it
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 61 * 60000); farm.game.tick(); });
+  await page.waitForSelector('[data-status="dividend"]', { timeout: 15000 });
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.evaluate(() => farm.closeCards()); await page.click('[data-status="dividend"]');
+  await page.waitForFunction(c => farm.state().coins > c, coins);
+  expect(await page.locator('[data-status="dividend"]').count() === 0, 'the dividend pill stays after collecting');
+  await page.evaluate(() => { farm.closeCards(); farm.focus(85, 107, 18); }); await page.waitForTimeout(1500); await page.screenshot({ path: `${SHOTS}company-flag.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 18 (docs/plan/ch18-the-valley-fair.md): entries are chosen, the fair is held, the judging shows a verdict and a
+// ribbon, the square fills with stalls and visitors, the fair ends and the card shows.
+await check('chapter 18: entries are chosen, the fair is held, a verdict and a ribbon show, the square fills and the card shows (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:18'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game, s = g.s; s.coins = 30000; s.barn.cap = 5000; Object.assign(s.barn.items, { pumpkin: 12, wheat: 12, bread: 12, apple_pie: 6, perch: 6, carp: 6 }); (s.stats.grown ??= {}).bread = 500; g.tick(); });
+  // the ribbon board stands on the square from the founding of the company; the panel has a card for every class
+  await page.waitForFunction(() => farm.world.batches.items.has('fair:board'), null, { timeout: 30000 });
+  await page.evaluate(() => farm.panels.show('fair')); await page.waitForSelector('.fair-class');
+  expect(await page.locator('.fair-class').count() === 3 && await page.locator('.fair-options .slot.on').count() === 3, 'three classes with an entry chosen in each');
+  expect(await page.locator('.fair-options .stars').count() >= 6, 'the entries show their stars');
+  // Honey has a soft spot for bread, and the farm knows its bread: choose it for the kitchen
+  await page.click('.fair-class[data-cls="kitchen"] [data-good="bread"]');
+  await page.waitForFunction(() => document.querySelector('.fair-class[data-cls="kitchen"] .slot.on')?.dataset.good === 'bread');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-entries.png` });
+  const before = await page.evaluate(() => ({ coins: farm.state().coins, bread: farm.state().barn.items.bread }));
+  await page.click('[data-do="holdFair"]'); await page.waitForFunction(() => farm.state().fair?.n === 1);
+  expect(await page.evaluate(() => farm.state().barn.items.bread) === before.bread - 3, 'the entry did not leave the barn');
+  // the judging, class by class: a gold ribbon for the bread, Honey's verdict, four entries in order with ours first
+  await page.waitForSelector('.fair-result[data-cls="kitchen"].gold', { timeout: 15000 });
+  await page.waitForFunction(() => document.querySelectorAll('.fair-result').length === 3 && !document.querySelector('.fair-result.judging'), null, { timeout: 15000 });
+  const kitchen = await page.evaluate(() => { const el = document.querySelector('.fair-result[data-cls="kitchen"]'); return { text: el.textContent, places: el.querySelectorAll('.fair-places li').length, first: el.querySelector('.fair-places li').className, ribbon: !!el.querySelector('img.fair-ribbon') }; });
+  expect(kitchen.text.includes('grandmother’s kitchen') && kitchen.text.includes('Honey') && kitchen.places === 4 && kitchen.first === 'ours' && kitchen.ribbon, `the kitchen's result: ${JSON.stringify(kitchen)}`);
+  expect(await page.evaluate(() => farm.state().fair.ribbons) >= 1 && await page.evaluate(() => farm.state().coins) > before.coins - 1500, 'no ribbon or no prize');
+  await page.waitForTimeout(400); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-judging.png` });
+  // while it runs: a pill counts it down, the stalls and the judging table stand, visitors walk in and everyone gathers
+  await page.waitForSelector('[data-status="fair"]', { timeout: 15000 });
+  await page.waitForFunction(() => ['fair:table', 'fair:0', 'fair:1'].every(id => farm.world.batches.items.has(id)), null, { timeout: 30000 });
+  await page.waitForFunction(() => farm.people.walkers.has('fairgoer0') && farm.people.walkers.has('fairgoer5'), null, { timeout: 20000 });
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.focus(41, 101, 34); }); await page.waitForTimeout(9000);
+  await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-square.png` });
+  expect(await page.evaluate(() => [...farm.people.walkers.values()].filter(w => w.party).length) >= 6, 'nobody gathered on the square');
+  // the fair ends: it is counted, the stalls come down, the board stays, and the chapter card shows
+  await page.evaluate(() => { farm.closeCards(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 4 * 60000); farm.game.tick(); });
+  await page.waitForFunction(() => farm.state().stats.fairs === 1, null, { timeout: 15000 });
+  await page.waitForFunction(() => !farm.world.batches.items.has('fair:table') && !farm.world.batches.items.has('fair:0') && farm.world.batches.items.has('fair:board'), null, { timeout: 20000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The valley fair') && card.includes('Honey') && card.includes('Skipper') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-18-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 18);
+  // afterwards the valleys rest: the panel keeps the last fair's results under the next one's entries
+  await page.waitForTimeout(600); await page.evaluate(() => { farm.closeCards(); farm.panels.show('fair'); }); await page.waitForSelector('.fair-result');
+  expect(await page.locator('[data-do="holdFair"][disabled]').count() === 1 && await page.locator('.fair-class').count() === 3 && await page.locator('.fair-class img.fair-ribbon').count() >= 1, 'the resting panel: no button to wait behind, or no ribbon kept');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}fair-resting.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 19 (docs/plan/ch19-the-green-valley.md): the green goals show and one is reached, the valley earns a title,
+// the deed is done, the card shows, the plaque goes up at the bridge and the valley is looked over.
+await check('chapter 19: a green goal is reached, the valley gets a title, the card shows and the plaque goes up at the bridge (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:19'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  // something in the valley is worn: the "nothing left worn" goal is open; the others are counted
+  await page.evaluate(() => { farm.closeCards(); const g = farm.game, s = g.s; s.coins = 30000; delete s.valley.goals; const id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bakery') ?? Object.keys(s.placed)[0]; s.cond[id] = { level: 1 }; g.tick(); });
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-tabs [data-do="valleyGreen"]');
+  expect(await page.locator('.valley-tabs .tab').count() === 3, 'the Valley panel does not have its three pages');
+  await page.click('.valley-tabs [data-do="valleyGreen"]'); await page.waitForSelector('.green-goals li');
+  expect(await page.locator('.green-goals li').count() === 6 && await page.locator('.green-goals li.done[data-goal="care"]').count() === 0, 'six goals, the worn one open');
+  expect(await page.locator('.valley.green .req').count() === 2 && await page.locator('.valley.green .req.ok').count() < 2, 'the prize shows its two needs, not both met yet');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-goals.png` });
+  // mend it: the goal is reached, paid once, and adds to the beauty
+  const before = await page.evaluate(() => ({ coins: farm.state().coins }));
+  await page.evaluate(() => { const s = farm.state(); for (const id of Object.keys(s.cond)) delete s.cond[id]; farm.game.tick(); });
+  await page.waitForSelector('.green-goals li.done[data-goal="care"]', { timeout: 15000 });
+  expect(await page.evaluate(() => farm.state().coins) >= before.coins + 400, 'the goal did not pay');
+  await page.evaluate(() => farm.panels.show('valley')); await page.waitForSelector('.valley-parts');
+  expect((await page.textContent('.valley-parts')).includes('Green goals reached'), 'the beauty page does not count the goals');
+  // the valley's value has passed its first mark: a title is given (ticks hand them out one at a time)
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.['title:100000']; }, null, { timeout: 15000, polling: 500 });
+  // the tester finishes the chapter: trees and flowers enough, and the name of the valley past the green mark
+  await page.evaluate(() => { farm.panels.close(); farm.closeCards(); farm.panels.onTest('finish'); });
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.greenValley; }, null, { timeout: 15000, polling: 500 });
+  // the chapter card (the title cards before it are closed as they come)
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const card = await page.textContent('.chapter-modal');
+  expect(card.includes('The green valley') && card.includes('Mr Albright') && card.includes('better than his drawings') && card.includes('Granny Maple'), `the card: ${card.slice(0, 200)}`);
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-19-card.png` });
+  await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 19 && !!farm.state().firsts.award);
+  // the plaque goes up at the bridge, and the valley is looked over: the view ends on the plaque
+  await page.waitForFunction(() => farm.world.batches.items.has('meadow:plaque'), null, { timeout: 20000 });
+  await page.waitForFunction(() => { farm.closeCards(); const c = farm.world.cam, it = farm.world.batches.items.get('meadow:plaque'); return Math.hypot(c.x - it.x, c.z - it.z) < 3 && !c.flight; }, null, { timeout: 40000, polling: 500 });
+  await page.waitForTimeout(900); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-plaque.png` });
+  // afterwards the goals page shows every goal reached, the prize won and where the plaque stands
+  await page.evaluate(() => farm.panels.show('valleyGreen')); await page.waitForSelector('.green-goals li');
+  expect(await page.locator('.green-goals li.done').count() === 6 && await page.locator('.valley.green .req.ok').count() === 2, 'the goals and the prize are not all met after the award');
+  expect((await page.textContent('.valley.green')).includes('The plaque stands at the bridge'), 'the goals page does not tell of the plaque');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}green-prize.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Chapter 20 (docs/plan/ch20-the-lights-of-two-villages.md): the valley reaches a billion, the five closing cards show
+// one after another, the story ends, the valley album reads a chapter again, and the game goes on.
+await check('chapter 20: the five closing cards, the end, the valley album, and the game goes on (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore&tester');
+  await page.evaluate(() => farm.setClockOffset(new Date().setHours(10, 0, 0, 0) - Date.now()));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => farm.panels.onTest('jump:20'))]);
+  await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => farm.state().story.chapter) === 19 && await page.evaluate(() => !farm.state().story.ended), 'the jump did not stop before the last chapter');
+  // the tester finishes the chapter: the valley's name grows to a billion, its last title
+  await page.evaluate(() => { farm.closeCards(); farm.panels.onTest('finish'); });
+  await page.waitForFunction(() => { farm.game.tick(); return !!farm.state().firsts?.['title:1000000000']; }, null, { timeout: 15000, polling: 500 });
+  // card 1: the porch, with the chapter's own words
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal')].some(m => m.classList.contains('chapter-modal')) || (farm.closeCards(), false), null, { timeout: 40000, polling: 500 });
+  const first = await page.textContent('.chapter-modal');
+  expect(first.includes('The lights of two villages') && first.includes('Granny Maple counts the lights') && first.includes('Chapter 20'), `the first card: ${first.slice(0, 200)}`);
+  expect(await page.locator('.chapter-modal .closing-dots i').count() === 5 && await page.locator('.chapter-modal .closing[data-step="1"]').count() === 1, 'the first card does not show five steps');
+  await page.waitForFunction(() => { const img = document.querySelector('.chapter-modal figure.on img'); return img && img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
+  await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-20-card.png` });
+  await page.click('.chapter-modal [data-close]');
+  // cards 2 and 3: the old village, the far bank
+  await page.waitForSelector('.closing[data-step="2"]'); expect((await page.textContent('.closing-modal')).includes('The old village'), 'card 2');
+  await page.click('.closing-modal [data-close]');
+  await page.waitForSelector('.closing[data-step="3"]'); expect((await page.textContent('.closing-modal')).includes('Pine Ridge'), 'card 3');
+  await page.click('.closing-modal [data-close]');
+  // card 4: the names of everyone who came back, with their portraits, and Granny Maple's last word
+  await page.waitForSelector('.closing[data-step="4"]');
+  const names = await page.evaluate(() => ({ faces: document.querySelectorAll('.closing-cast img').length, text: document.querySelector('.closing-modal').textContent }));
+  expect(names.faces >= 20 && names.text.includes('Granny Maple') && names.text.includes('Skipper') && names.text.includes('Nana Snow') && names.text.includes('families who came home') && names.text.includes('waiting for someone to stay'), `the names: ${names.faces} ${names.text.slice(0, 160)}`);
+  await page.waitForTimeout(500); await page.screenshot({ path: `${SHOTS}closing-names.png` });
+  await page.click('.closing-modal [data-close]');
+  // card 5: thanks. The story is not over until this card is closed
+  await page.waitForSelector('.closing[data-step="5"]');
+  expect((await page.textContent('.closing-modal')).includes('Thank you for staying') && await page.evaluate(() => farm.state().story.chapter) === 19, 'card 5, or the end came early');
+  await page.waitForTimeout(400); await page.screenshot({ path: `${SHOTS}closing-thanks.png` });
+  await page.click('.closing-modal [data-closing="album"]');
+  await page.waitForFunction(() => farm.state().story.chapter === 20 && farm.state().story.ended > 0);
+  // the valley has its evening, and the album opens: twenty chapters, the titles, the end
+  expect(await page.evaluate(() => farm.world.closing === true), 'the evening of the ending did not begin');
+  await page.waitForSelector('.valley-album .album-chapter');
+  const album = await page.evaluate(() => ({ chapters: document.querySelectorAll('.album-chapter').length, titles: document.querySelectorAll('.album-titles li').length, text: document.querySelector('.valley-album').textContent }));
+  expect(album.chapters === 20 && album.titles === 5 && album.text.includes('The story was told to its end') && album.text.includes('What the valley chose'), `the album: ${JSON.stringify(album).slice(0, 200)}`);
+  await page.waitForTimeout(600); await page.screenshot({ path: `${SHOTS}valley-album.png` });
+  // a chapter read again: its card, and closing it changes nothing
+  await page.click('.album-chapter[data-id="11"]'); await page.waitForSelector('.chapter-modal.replay');
+  expect((await page.textContent('.chapter-modal.replay')).includes('The man from the city'), 'chapter 11 does not read again');
+  await page.click('.chapter-modal.replay [data-close]'); await page.waitForFunction(() => !document.querySelector('.chapter-modal'));
+  expect(await page.evaluate(() => farm.state().story.chapter) === 20, 'reading a chapter again changed the story');
+  // the last card does not come back, the album is in Settings too, and the game goes on
+  await page.evaluate(() => { farm.panels.close(); farm.game.tick(); }); await page.waitForTimeout(1500);
+  expect(await page.locator('.closing-modal').count() === 0, 'the closing cards came back');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-do="valleyAlbum"]');
+  await page.evaluate(() => farm.panels.show('roadmap')); await page.waitForSelector('.journey [data-do="valleyAlbum"]');
+  expect(await page.locator('.journey [data-do="fair"]').count() === 1, 'the Roadmap does not lead to the fair');
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.evaluate(() => { farm.panels.close(); farm.setClockOffset(+(sessionStorage.getItem('fv-clock-offset') ?? 0) + 61 * 60000); farm.game.tick(); farm.game.do('collectDividend'); });
+  expect(await page.evaluate(() => farm.state().coins) > coins, 'no dividend after the end: something stopped');
+  await page.evaluate(() => { farm.closeCards(); farm.focus(60, 52, 150); }); await page.waitForTimeout(2500); await page.screenshot({ path: `${SHOTS}closing-evening.png` });
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// The coupon (docs/plan/00-tester-tools.md): a wrong code does nothing, the test build's own code switches the tools on
+// for the farm, coins are added by amount, and instant mode finishes what the farm has started.
+await check('the coupon: a code in Settings switches the tester tools on; coins by amount; instant mode (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-coupon]');
+  await page.fill('.settings [data-coupon]', 'open sesame'); await page.click('.settings [data-do="coupon"]'); await page.waitForTimeout(500);
+  expect(await page.evaluate(() => !farm.state().tester?.coupon) && await page.locator('.settings [data-coupon]').count() === 1, 'a wrong code was taken');
+  await page.fill('.settings [data-coupon]', ' Test-Coupon '); await page.click('.settings [data-do="coupon"]');
+  await page.waitForFunction(() => farm.state().tester?.coupon > 0); await page.waitForSelector('.settings .coupon-on');
+  expect(await page.locator('.settings [data-coupon]').count() === 0 && await page.locator('.tester-tag').count() === 1, 'the coupon row stays, or the Tester tag is missing');
+  // any amount of coins
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.fill('.settings [data-coins]', '250000'); await page.click('.settings [data-test="addcoins"]');
+  await page.waitForFunction(c => farm.state().coins === c + 250000, coins);
+  // instant mode: a crop planted an hour away is ripe at once, and the switch shows On
+  const bed = await page.evaluate(() => { const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); s.beds[id] = { crop: 'wheat', doneAt: farm.game.now + 3600000 }; return id; });
+  await page.click('.settings [data-test="instant:on"]');
+  await page.waitForFunction(id => farm.state().tester.instant === true && farm.state().beds[id].doneAt <= farm.game.now, bed);
+  await page.waitForSelector('.settings .tab.on[data-test="instant:on"]');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}settings-coupon.png` });
+  await page.click('.settings [data-test="instant:off"]'); await page.waitForFunction(() => farm.state().tester.instant === false);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Buildings with one fixed place (the boat dock, the festival stage) are in the Build menu: a tap goes to the place
+// and opens its panel, which says where it is.
+await check('the Build menu lists the boat dock and the festival stage; a tap shows the place and its panel (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 15; s.coins = 9000; farm.game.tick(); });
+  await page.click('.hud [data-act="build"]'); await page.waitForSelector('.sheet.build .tabs');
+  await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect(await page.locator('.sheet.build .card[data-kind="stage"]').count() === 1 && await page.locator('.sheet.build .card[data-kind="cannery"]').count() === 0, 'the stage is missing, or the cannery (built by the story) is listed');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Show the place'), 'the dock card does not offer its place');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}build-sites.png` });
+  for (const [kind, words] of [['dock', 'road bridge'], ['stage', 'village square']]) {
+    await page.evaluate(() => { if (!document.querySelector('.sheet.build:not([hidden])')) document.querySelector('.hud [data-act="build"]').click(); });
+    await page.waitForSelector(`.sheet.build .card[data-kind="${kind}"]`); await page.click(`.sheet.build .card[data-kind="${kind}"]`);
+    await page.waitForSelector(`[data-do="siteBuild"][data-kind="${kind}"]`);
+    expect((await page.textContent('.panel-body')).includes(words), `${kind}: its panel does not say where the place is`);
+    await page.waitForFunction(k => { const c = farm.world.cam; return !c.flight && (k === 'dock' ? c.z < 60 : c.z > 180); }, kind, { timeout: 10000 });   // the view has gone to the place
+    await page.click(`[data-do="siteBuild"][data-kind="${kind}"]`); await page.waitForFunction(k => (farm.state().counts[k] ?? 0) === 1, kind);
+    await page.evaluate(() => farm.closeCards());
+  }
+  await page.click('.hud [data-act="build"]'); await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Built'), 'a built dock is not marked');
+  expect(!errors.length, errors.join('\n'));
   await ctx.close();
 });
 

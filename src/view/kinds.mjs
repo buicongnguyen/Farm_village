@@ -6,6 +6,8 @@
 export const KIND_MODELS = {
   coop:      { kit: 'farm-kit', node: 'coop', authored: true, lod: 'static' },
   cow_barn:  { kit: 'farm-kit', node: 'cow_barn', authored: true, lod: 'static' },
+  goat_barn: { kit: 'decor', node: 'goat_barn', authored: true, lod: 'static', late: true },   // v0.5 (decor kit: loaded after the first scene)
+  dairy:     { kit: 'decor', node: 'dairy', authored: true, lod: 'static', late: true },
   feed_mill: { kit: 'farm-kit', node: 'feed_mill', authored: true, lod: 'static' },
   feed_mill_sails: { kit: 'farm-kit', node: 'feed_mill_sails', authored: true, lod: 'static', ao: 0 },
   bakery:    { kit: 'farm-kit', node: 'bakery', authored: true, lod: 'static' },
@@ -14,6 +16,32 @@ export const KIND_MODELS = {
   fruit_stand: { kit: 'farm-kit', node: 'fruit_stand', authored: true, lod: 'static' },
   kennel: { kit: 'farm-kit', node: 'kennel', authored: true, lod: 'static' },
   clinic: { kit: 'town', node: 'hospital', width: 7.8, lod: 'static', late: true },
+  // AR-011: the clinic's hospital upgrade (s.growth.hospitalAt); same 4 x 3 footprint, door at the front centre. Codex selects it.
+  // Tree pack 2: later trees, one or two per chapter (docs/ASSET-REQUESTS.md AR-014). Codex adds the catalogue and the levels.
+  maple: { kit: 'decor', node: 'tree2_maple', width: 3.4, lod: 'tree', late: true },
+  birch: { kit: 'decor', node: 'tree2_birch', height: 5.4, lod: 'tree', late: true },
+  cypress: { kit: 'decor', node: 'tree2_cypress', height: 4.8, lod: 'tree', late: true },
+  fir: { kit: 'decor', node: 'tree2_fir', height: 7.2, lod: 'tree', late: true },
+  great_oak: { kit: 'decor', node: 'tree2_oak', width: 6.6, lod: 'tree', late: true },
+  lemon_tree: { kit: 'decor', node: 'tree2_lemon', width: 3.4, lod: 'tree', late: true },
+  'lemon_tree:bare': { kit: 'decor', node: 'tree2_lemon_bare', width: 3.4, lod: 'tree', late: true },
+  plum_tree: { kit: 'decor', node: 'tree2_plum', width: 3.4, lod: 'tree', late: true },
+  'plum_tree:bare': { kit: 'decor', node: 'tree2_plum_bare', width: 3.4, lod: 'tree', late: true },
+  mango_tree: { kit: 'decor', node: 'tree2_mango', width: 4.2, lod: 'tree', late: true },
+  'mango_tree:bare': { kit: 'decor', node: 'tree2_mango_bare', width: 4.2, lod: 'tree', late: true },
+  grape_arbor: { kit: 'decor', node: 'tree2_grape', width: 2.0, lod: 'static', late: true },
+  'grape_arbor:bare': { kit: 'decor', node: 'tree2_grape_bare', width: 2.0, lod: 'static', late: true },
+  longan_tree: { kit: 'decor', node: 'tree2_longan', width: 3.6, lod: 'tree', late: true },
+  'longan_tree:bare': { kit: 'decor', node: 'tree2_longan_bare', width: 3.6, lod: 'tree', late: true },
+  lychee_tree: { kit: 'decor', node: 'tree2_lychee', width: 3.6, lod: 'tree', late: true },
+  'lychee_tree:bare': { kit: 'decor', node: 'tree2_lychee_bare', width: 3.6, lod: 'tree', late: true },
+  // AR-013: the old potting bench's three stages (fixed site, learning-site.mjs); Codex maps stage -> model
+  potting_bench_overgrown: { kit: 'decor', node: 'potting_bench_overgrown', authored: true, lod: 'static', late: true },
+  potting_bench_repaired: { kit: 'decor', node: 'potting_bench_repaired', authored: true, lod: 'static', late: true },
+  potting_bench_done: { kit: 'decor', node: 'potting_bench_done', authored: true, lod: 'static', late: true },
+  'clinic:hospital': { kit: 'decor', node: 'hospital', authored: true, lod: 'static', late: true },
+  police: { kit: 'town', node: 'police', width: 6, lod: 'static', late: true }, // existing model, stand-in for AR-011
+  company: { kit: 'town', node: 'company', width: 8, lod: 'static', late: true }, // existing model, stand-in for AR-011
   stall:     { kit: 'market-stall', node: 'market-stall', width: 3.8, lod: 'static' },
   market:    { kit: 'market-stall', node: 'market-stall', width: 5.4, lod: 'static' },
   pond:      { kit: 'farm-kit', node: 'pond', authored: true, lod: 'static' },
@@ -45,6 +73,35 @@ export const KIND_MODELS = {
   'produce:milk': { kit: 'animal-produce', node: 'milk', height: 0.5, lod: 'static' },
   // decorations and fruit trees the play package adds (drawn as soon as their kind exists in BUILDINGS)
   fountain:     { kit: 'decor', node: 'fountain', authored: true, lod: 'static', late: true },
+  halt:         { kit: 'decor', node: 'halt', authored: true, lod: 'static', late: true },   // chapter 15: a platform and a little station; the train stops behind it
+  track:        { kit: 'decor', node: 'track', authored: true, lod: 'static', late: true },   // four metres of railway, relaid
+  track_old:    { kit: 'decor', node: 'track_old', authored: true, lod: 'static', late: true },   // the same, rusty in the grass
+  hotel:        { kit: 'decor', node: 'hotel', authored: true, lod: 'static', late: true },   // chapter 14: three floors; hotel_t1 and hotel_t2 have one and two more
+  hotel_t1:     { kit: 'decor', node: 'hotel_t1', authored: true, lod: 'static', late: true },
+  hotel_t2:     { kit: 'decor', node: 'hotel_t2', authored: true, lod: 'static', late: true },
+  apartment:    { kit: 'decor', node: 'apartment', authored: true, lod: 'static', late: true },   // chapter 13: the quay house, on a lot of the far bank
+  quay_bollard: { kit: 'decor', node: 'quay_bollard', authored: true, lod: 'static', late: true },   // along the water side of the paved quay
+  company_flag: { kit: 'decor', node: 'company_flag', authored: true, lod: 'static', late: true },   // chapter 17: beside the office door once the valley company is founded
+  barn_silo: { kit: 'rural-extra', node: 'silo', height: 7.2, lod: 'static', late: true },             // the barn as it is upgraded (land-view drawBarn)
+  barn_hay: { kit: 'rural-extra', node: 'hay_round', width: 1.7, lod: 'static', late: true },
+  barn_tractor: { kit: 'rural-extra', node: 'tractor', width: 3.4, lod: 'static', late: true },
+  plaque: { kit: 'decor', node: 'plaque', authored: true, lod: 'static', late: true },                 // chapter 19: the county's plaque at the bridge
+  path_stone: { kit: 'decor', node: 'path_stone', authored: true, lod: 'static', late: true },         // chapter 19: the path through the flower meadow
+  ribbon_board: { kit: 'decor', node: 'ribbon_board', authored: true, lod: 'static', late: true },   // chapter 18: the fair's board on the village square
+  fair_stall: { kit: 'decor', node: 'fair_stall', authored: true, lod: 'static', late: true },       // chapter 18: stalls round the square while a fair runs
+  fair_stall_b: { kit: 'decor', node: 'fair_stall_b', authored: true, lod: 'static', late: true },
+  fair_cart: { kit: 'props', node: 'cart', width: 2.6, lod: 'static', late: true },                   // chapter 18: a cart from each valley, west of the square
+  judging_table: { kit: 'decor', node: 'judging_table', authored: true, lod: 'static', late: true }, // chapter 18: on the square while a fair runs
+  cooperative_board: { kit: 'decor', node: 'cooperative_board', authored: true, lod: 'static', late: true },   // chapter 12: on the village square
+  towpath_gate: { kit: 'decor', node: 'towpath_gate', authored: true, lod: 'static', late: true },   // shut across the old towpath until chapter 12 is seen
+  towpath_gate_open: { kit: 'decor', node: 'towpath_gate_open', authored: true, lod: 'static', late: true },
+  survey_stakes: { kit: 'decor', node: 'survey_stakes', authored: true, lod: 'static', late: true },   // chapter 11: on the meadow while the offer is open
+  car:          { kit: 'decor', node: 'car', authored: true, lod: 'static', late: true },   // Mr Albright's, on the verge by the gate
+  cannery:      { kit: 'decor', node: 'cannery', authored: true, lod: 'static', late: true },   // chapter 11: on the brook meadow, if the offer is taken
+  beehive:      { kit: 'decor', node: 'beehive', authored: true, lod: 'static', late: true },   // chapter 11: for the kept meadow
+  stage:        { kit: 'decor', node: 'stage', authored: true, lod: 'static', late: true },          // chapter 9: the festival stage on the square
+  stage_burned: { kit: 'decor', node: 'stage_burned', authored: true, lod: 'static', late: true },   // what is left of the old one, until it is rebuilt
+  dock:         { kit: 'decor', node: 'dock', authored: true, lod: 'static', late: true },   // chapter 7: the pier reaches north of its footprint, over the brook
   bunting:      { kit: 'decor', node: 'bunting', authored: true, lod: 'static', late: true },
   banner:       { kit: 'decor', node: 'banner', authored: true, lod: 'static', late: true },
   picket:       { kit: 'farm-kit', node: 'picket_straight', authored: true, lod: 'static' },
@@ -65,6 +122,9 @@ export const KIND_MODELS = {
   // dressing drawn by land-view (not placeable)
   scaffold:     { kit: 'decor', node: 'scaffold', authored: true, lod: 'static', late: true },
   juice_press:  { kit: 'decor', node: 'juice_press', authored: true, lod: 'static', late: true },
+  lake_kiosk_fish: { kit: 'decor', node: 'lake_kiosk_fish', authored: true, lod: 'static', late: true },   // lakeside shops (dress.mjs)
+  lake_kiosk_flowers: { kit: 'decor', node: 'lake_kiosk_flowers', authored: true, lod: 'static', late: true },
+  lake_kiosk_snacks: { kit: 'decor', node: 'lake_kiosk_snacks', authored: true, lod: 'static', late: true },
   noodle_factory: { kit: 'decor', node: 'noodle_factory', authored: true, lod: 'static', late: true },
   window_box:   { kit: 'decor', node: 'window_box', authored: true, lod: 'static', late: true },
   door_lantern: { kit: 'decor', node: 'door_lantern', authored: true, lod: 'static', late: true },
@@ -82,9 +142,10 @@ export const EARLY = {
 };
 
 // ── Crops: three growth stages, authored at their real size in farm-kit.glb ──
-export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng'];
+export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng', 'tomato', 'potato', 'cabbage', 'onion', 'chili'];
+const LATE_CROPS = new Set(['tomato', 'potato', 'cabbage', 'onion', 'chili']);   // in the decor kit, after the first scene (carrot leaves stand in until then)
 export const CROP_STAGES = ['sprout', 'mid', 'ripe'];
-for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
+for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = LATE_CROPS.has(c) ? { kit: 'decor', node: `crop_${c}_${st}`, authored: true, lod: 'crop', late: true } : { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
 for (const c of CROP_MODELS) KIND_MODELS[`crop:${c}`] = KIND_MODELS[`crop:${c}:ripe`];     // v0.1 names (life-view's cropStage)
 KIND_MODELS['crop:sprout'] = KIND_MODELS['crop:wheat:sprout'];
 /**
@@ -101,6 +162,13 @@ export function cropLook(crop, progress) {
 /** Cottages cycle through the town's five house styles. */
 export const COTTAGE_STYLES = ['house_gable', 'house_front', 'house_hip', 'house_tall', 'house_round'];
 for (const h of COTTAGE_STYLES) KIND_MODELS[`cottage_${h}`] = { kit: 'town', node: h, width: 5.6, lod: 'static', late: true };
+// The farmhouse grows with its comfort level (content/world.mjs HOME_GARDEN): bigger homes at levels 4 and 7, garden pieces between.
+KIND_MODELS['farmhouse:2'] = { kit: 'rural-extra', node: 'home_t2', width: 9.8, lod: 'static', late: true };
+KIND_MODELS['farmhouse:3'] = { kit: 'rural-extra', node: 'home_t3', width: 10.6, lod: 'static', late: true };
+for (const piece of ['home_pool', 'home_loungers', 'home_gazebo', 'home_flag']) KIND_MODELS[piece] = { kit: 'decor', node: piece, authored: true, lod: 'static', late: true };
+// Rental cottages have a shape of their own for each furnish level (art/blender/build_farm_kit.py rental()); the town
+// houses above stand in until the decor kit has loaded.
+for (const tier of [0, 1, 2]) KIND_MODELS[`cottage_t${tier}`] = { kit: 'decor', node: `cottage_t${tier}`, authored: true, lod: 'static', late: true };
 export const modelFor = (kind, id) => kind === 'cottage' ? `cottage_${COTTAGE_STYLES[(parseInt(id.slice(1), 10) || 0) % COTTAGE_STYLES.length]}` : kind;
 
 /** The size argument for models.mjs fit()/tiers() from a KIND_MODELS entry. */
@@ -123,6 +191,11 @@ export const KITS = {
 
 // <anchors> generated by art/blender/anchors.mjs — do not edit by hand
 export const ANCHORS = {
+  "goat_barn": {"window":[[1.45,1.175,1.41,0,1],[2.21,1.175,0,1,0]],"door":[[0,0.2,1.42]]},
+  "dairy": {"window":[[-1.4,1.27,1.45,0,1],[1.4,1.325,1.46,0,1],[-2.26,1.4,0,-1,0],[2.26,1.4,0,1,0]],"door":[[0,0.28,1.47]],"chimney":[[-1.4,3.9,-0.5]]},
+  "cottage_t0": {"window":[[0.8,1.35,1.66,0,1],[-1.96,1.375,0,-1,0],[1.96,1.375,0,1,0],[0,1.35,-1.66,0,-1]],"chimney":[[1.15,4.053,-0.5]]},
+  "cottage_t1": {"window":[[0.25,1.35,1.76,0,1],[-2.86,1.375,0,-1,0],[-1.65,1.35,-1.76,0,-1],[0.15,1.35,-1.76,0,-1],[1.9,1.3,1.31,0,1],[2.66,1.3,-0.1,1,0],[1.9,1.3,-1.51,0,-1]],"chimney":[[0.55,4.225,-0.5]]},
+  "cottage_t2": {"window":[[-1.75,3.5,1.91,0,1],[-1.75,3.5,-1.91,0,-1],[0.25,3.5,1.91,0,1],[0.25,3.5,-1.91,0,-1],[0.25,1.35,1.81,0,1],[-2.86,1.375,0,-1,0],[-1.65,1.35,-1.81,0,-1],[0.15,1.35,-1.81,0,-1],[1.9,1.3,1.36,0,1],[2.66,1.3,-0.1,1,0],[1.9,1.3,-1.56,0,-1]],"chimney":[[0.55,6.312,-0.5]]},
   "feed_mill": {"window":[[-0.75,2.025,1.16,0,1], [0.75,2.025,1.16,0,1], [-1.26,1.95,0.2,-1,0], [0,3.05,1.15,0,1]],"door":[[0,0.32,1.17]],"sails":[[0,3.3,1.6]],"chimney":[[-0.65,4.15,-0.65]]},
   "bakery": {"window":[[1.25,1.25,1.4,0,1], [-1.55,1.35,1.41,0,1], [-2.36,1.45,0,-1,0], [2.36,1.45,0,1,0]],"door":[[-0.2,0.3,1.42]],"chimney":[[1.5,4.45,-0.5]]},
   "coop": {"window":[[0.72,1.17,-0.015,0,1]],"door":[[0,0,0.775]]},
@@ -135,7 +208,12 @@ export const ANCHORS = {
   "cottage_house_hip": {"window":[[-2.606,1.381,-0.39,-1,-0.02], [-1.137,1.381,1.647,-0.024,1], [2.599,1.381,-0.39,1,-0.02], [1.28,1.575,1.703,0.228,0.974], [-0.004,2.903,1.435,0,1]]},
   "cottage_house_tall": {"window":[[1.043,1.303,1.85,0.015,1], [2.438,1.303,-0.29,1,0], [-1.126,1.672,1.908,-0.228,0.974], [-2.438,2.681,-0.29,-1,0], [-1.118,2.681,1.85,-0.021,1], [1.043,2.681,1.85,0.021,1], [2.438,2.681,-0.29,1,0], [2.4,4.155,-0.299,0.974,-0.227]]},
   "cottage_house_round": {"window":[[-1.614,1.381,0.764,-0.841,0.54], [1.43,1.381,-1.551,0.746,-0.666], [1.614,1.381,0.764,0.841,0.54], [0,1.55,1.673,0,1]]},
-  "farmhouse": {"window":[[0,2.538,2.085,0,1], [-4.089,2.67,-1.21,-0.997,-0.075], [-2.725,2.67,2.085,-0.08,0.997], [2.725,2.67,2.085,0.08,0.997], [4.089,2.67,-1.21,0.997,-0.075], [-4.075,5.06,-0.949,-0.982,-0.191], [4.075,5.06,-0.949,0.982,-0.191]]}
+  "farmhouse": {"window":[[0,2.538,2.085,0,1], [-4.089,2.67,-1.21,-0.997,-0.075], [-2.725,2.67,2.085,-0.08,0.997], [2.725,2.67,2.085,0.08,0.997], [4.089,2.67,-1.21,0.997,-0.075], [-4.075,5.06,-0.949,-0.982,-0.191], [4.075,5.06,-0.949,0.982,-0.191]]},
+  "apartment": {"window":[[-3,1.9,1.92,0,1],[3,1.9,1.92,0,1],[-3.6,4.905,1.91,0,1],[-1.2,4.905,1.91,0,1],[1.2,4.905,1.91,0,1],[3.6,4.905,1.91,0,1],[-3.6,7.505,1.91,0,1],[-1.2,7.505,1.91,0,1],[1.2,7.505,1.91,0,1],[3.6,7.505,1.91,0,1],[5.11,4.905,-2.7,1,0],[5.11,4.905,0.1,1,0],[5.11,7.505,-2.7,1,0],[5.11,7.505,0.1,1,0]],"door":[[0,0.3,1.92]]},
+  "hotel": {"window":[[-3.9,1.9,1.71,0,1],[-2.2,1.9,1.71,0,1],[2.2,1.9,1.71,0,1],[3.9,1.9,1.71,0,1],[-4,4.975,1.71,0,1],[-2,4.975,1.71,0,1],[0,4.975,1.71,0,1],[2,4.975,1.71,0,1],[4,4.975,1.71,0,1],[5.31,4.975,-2.7,1,0],[5.31,4.975,-0.1,1,0],[-4,7.475,1.71,0,1],[-2,7.475,1.71,0,1],[0,7.475,1.71,0,1],[2,7.475,1.71,0,1],[4,7.475,1.71,0,1],[5.31,7.475,-2.7,1,0],[5.31,7.475,-0.1,1,0]],"door":[[0,0.3,1.72]]},
+  "hotel_t1": {"window":[[-3.9,1.9,1.71,0,1],[-2.2,1.9,1.71,0,1],[2.2,1.9,1.71,0,1],[3.9,1.9,1.71,0,1],[-4,4.975,1.71,0,1],[-2,4.975,1.71,0,1],[0,4.975,1.71,0,1],[2,4.975,1.71,0,1],[4,4.975,1.71,0,1],[5.31,4.975,-2.7,1,0],[5.31,4.975,-0.1,1,0],[-4,7.475,1.71,0,1],[-2,7.475,1.71,0,1],[0,7.475,1.71,0,1],[2,7.475,1.71,0,1],[4,7.475,1.71,0,1],[5.31,7.475,-2.7,1,0],[5.31,7.475,-0.1,1,0],[-4,9.975,1.71,0,1],[-2,9.975,1.71,0,1],[0,9.975,1.71,0,1],[2,9.975,1.71,0,1],[4,9.975,1.71,0,1],[5.31,9.975,-2.7,1,0],[5.31,9.975,-0.1,1,0]],"door":[[0,0.3,1.72]]},
+  "hotel_t2": {"window":[[-3.9,1.9,1.71,0,1],[-2.2,1.9,1.71,0,1],[2.2,1.9,1.71,0,1],[3.9,1.9,1.71,0,1],[-4,4.975,1.71,0,1],[-2,4.975,1.71,0,1],[0,4.975,1.71,0,1],[2,4.975,1.71,0,1],[4,4.975,1.71,0,1],[5.31,4.975,-2.7,1,0],[5.31,4.975,-0.1,1,0],[-4,7.475,1.71,0,1],[-2,7.475,1.71,0,1],[0,7.475,1.71,0,1],[2,7.475,1.71,0,1],[4,7.475,1.71,0,1],[5.31,7.475,-2.7,1,0],[5.31,7.475,-0.1,1,0],[-4,9.975,1.71,0,1],[-2,9.975,1.71,0,1],[0,9.975,1.71,0,1],[2,9.975,1.71,0,1],[4,9.975,1.71,0,1],[5.31,9.975,-2.7,1,0],[5.31,9.975,-0.1,1,0],[-4,12.475,1.71,0,1],[-2,12.475,1.71,0,1],[0,12.475,1.71,0,1],[2,12.475,1.71,0,1],[4,12.475,1.71,0,1],[5.31,12.475,-2.7,1,0],[5.31,12.475,-0.1,1,0]],"door":[[0,0.3,1.72]]},
+  "halt": {"window":[[-3.1,1.7,-0.99,0,1],[-2.09,1.7,-2.6,1,0]],"door":[[-4.6,0.5,-1]]},
 };
 // </anchors>
 

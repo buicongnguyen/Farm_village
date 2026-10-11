@@ -1,24 +1,254 @@
-// Test-mode helpers for the Settings "Test" section (shown only in test builds) and for browser tests. They run through
-// act() like any action, so the views and the save hear about them.
-import { LEVELS } from '../content/economy.mjs';
+// Test-mode helpers for the Settings "Test" section (test builds, and the public game opened with ?tester) and for
+// browser tests. They run through act() like any action, so the views and the save hear about them.
+import { LEVELS, MARKET_DAY, PARCELS, FAIR, BEAUTY, VALLEY } from '../content/economy.mjs';
+import { GREEN_GOALS } from '../content/valley.mjs';
+import { VALUE_TITLES } from '../content/journey.mjs';
+import { beautyOf, valueOf } from './valley.mjs';
+import { planDay } from './neighbours.mjs';
+import { actions as riverside, freeLots } from './riverside.mjs';
+import { RIVERSIDE } from '../content/economy.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { CELL_TYPES } from './state.mjs';
 import { N } from '../content/world.mjs';
 import * as grid from './grid.mjs';
-import { xpFor } from './levels.mjs';
+import { xpFor, unlocksAt } from './levels.mjs';
 import { nextFamily, arriveNext, tickHomes } from './homes.mjs';
+import { RUINS, START_PARCEL, parcelOrigin } from '../content/world.mjs';
+import { CHAPTERS, BEATS } from '../content/story.mjs';
+import { actions as build, buyableParcels } from './build.mjs';
+import { marketOpen, tickMarketDay } from './market-day.mjs';
+import { actions as sites } from './sites.mjs';
+import { normalizeGrowth } from './growth-state.mjs';
+import { actions as animals } from './animals.mjs';
+import { advance } from './projects.mjs';
+import { tickCondition } from './condition.mjs';
+import { isWorking } from './working.mjs';
+import { hash } from './rng.mjs';
+import { FESTIVAL_DAY } from '../content/economy.mjs';
+
+// ── The coupon (docs/plan/00-tester-tools.md C) ──
+// A code typed in Settings switches the tester's tools on for that farm, for good: the same tools ?tester shows, without
+// the address. Codes are kept as hashes, so the words themselves are not in the source or the bundle.
+//   s.tester = { coupon: when a code was used, instant: instant mode on }
+export const COUPONS = { 970821704: { tester: true } };
+export const couponKey = code => hash('coupon', String(code ?? '').trim().toLowerCase());
+/** Has this farm its tester tools from a coupon? */
+export const testerOn = s => !!s.tester?.coupon;
+/** Called first by tick(): in instant mode nothing the farm starts has to be waited for. Crops, fruit, animals, workshops,
+ *  repairs, trucks and arriving families are done at once, and the rests between festivals, fairs and shared orders are
+ *  over. What is running (a festival, a fair, a market day, a train at the halt, a hotel stay) keeps its time. */
+export function tickTester(ctx) {
+  const { s, now } = ctx; if (!s.tester?.instant) return;
+  for (const b of Object.values(s.beds ?? {})) if (b.doneAt > now) b.doneAt = now;
+  for (const t of Object.values(s.trees ?? {})) if (t.doneAt > now) t.doneAt = now;
+  for (const list of Object.values(s.animals ?? {})) for (const a of list) if (a.doneAt != null && a.doneAt > now) a.doneAt = now;
+  for (const q of Object.values(s.production ?? {})) for (const j of q.queue ?? []) if (j.doneAt > now) j.doneAt = now;
+  for (const r of Object.values(s.repairing ?? {})) if (r.doneAt > now) r.doneAt = now;
+  for (const h of Object.values(s.homes ?? {})) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); }
+  for (const u of s.truck ? [s.truck, ...(s.truck.fleet ?? [])] : []) if (u.away && u.backAt > now) u.backAt = now;
+  if (s.cooperative?.founded && !s.cooperative.order && s.cooperative.nextAt > now) s.cooperative.nextAt = now;
+  for (const [f, rest] of [[s.festival, FESTIVAL_DAY.everyMs], [s.fair, FAIR.everyMs]]) if (f && Number.isFinite(f.at) && Number.isFinite(f.until) && now >= f.until && f.at + rest > now) f.at = now - rest;
+}
 
 /** The highest level any content needs (everything is open from here). */
 export const TOP_LEVEL = Math.max(8, ...[CROPS, RECIPES, ANIMALS, FRUITS, BUILDINGS].flatMap(o => Object.values(o).map(v => v.level ?? 0)));
 
+// ── Jumping to a chapter (docs/plan/00-tester-tools.md A) ──
+// JUMPS[n] brings a farm to the START of chapter n: every earlier chapter's deed is done. Each entry only tops the farm
+// up (it never takes anything away), uses the real actions where it can, and builds on the entries before it.
+// A chapter's pull request adds the entry for the chapter after it.
+const upTo = ({ s }, level) => { if (s.level < level) { s.level = level; s.xp = Math.max(s.xp, xpFor(level)); } };
+/** The build order stands at this step, at least; with `full`, the step's goods are handed over too. */
+function stepTo(ctx, id, full = false) {
+  const { s, now } = ctx, i = STEPS.findIndex(st => st.id === id);
+  if (s.projects.step < i) { for (const st of STEPS.slice(s.projects.step, i)) (s.firsts ??= {})[`project:${st.id}`] ??= now; s.projects.step = i; s.projects.delivered = {}; }
+  if (full && s.projects.step === i) s.projects.delivered = { ...(STEPS[i].deliver ?? {}) };
+}
+/** One working `kind`, for free: a broken one is mended, a missing one is built on its old site or the nearest free
+ *  spot. Returns its id, or null when there is no room for it. */
+function give(ctx, kind) {
+  const { s, now } = ctx, ids = Object.keys(s.placed).filter(id => s.placed[id].kind === kind);
+  const works = ids.find(id => isWorking(s, id)); if (works) return works;
+  if (ids.length) { (s.repairing ??= {})[ids[0]] = { doneAt: now }; tickCondition(ctx); return ids[0]; }
+  upTo(ctx, BUILDINGS[kind].level ?? 1);
+  const coins = s.coins; s.coins += 1e7;
+  const site = RUINS.find(r => r.kind === kind), o = parcelOrigin(START_PARCEL);
+  let out = null;
+  if (site) {
+    const door = grid.doorCell(kind, site.x, site.z, site.rot);
+    if (door && !grid.reachesRoad(s, door[0], door[1])) build.place(ctx, { kind: 'path', x: door[0], z: door[1] });
+    out = build.place(ctx, { kind, x: site.x, z: site.z, rot: site.rot });
+  }
+  if (!out || out.ok === false) {
+    const at = BUILDINGS[kind].area === 'village' ? grid.findSpot(s, kind, 46, 96, { rot: 2 }) : grid.findSpot(s, kind, o.x + 8, o.z + 8, { rot: 2 });
+    out = at ? build.place(ctx, { kind, ...at }) : null;
+  }
+  s.coins = coins;
+  return out && out.ok !== false ? out.id : null;
+}
+/** At least `n` families living in the village. */
+function families(ctx, n) {
+  const { s, now } = ctx, here = () => Object.values(s.homes).filter(h => h.family && h.arrived).length;
+  for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); }
+  tickHomes(ctx);
+  for (let i = 0; i < 8 && here() < n; i++) if (actions.testAddFamily(ctx).ok === false) break;
+}
+/** At least `n` fields: the next ones beside the farm, for free. */
+function fields(ctx, n) {
+  const { s } = ctx; upTo(ctx, PARCELS.level);
+  for (let i = 0; i < 16 && s.parcels.length < n; i++) {
+    const next = buyableParcels(s)[0]; if (!next) break;
+    const coins = s.coins; s.coins += next.price; const out = build.buyParcel(ctx, { parcel: next.parcel }); s.coins = coins;
+    if (out.ok === false) break;
+  }
+}
+export const JUMPS = {
+  2: ctx => upTo(ctx, 2),   // chapter 1 opens the game: nothing to do for it
+  3: ctx => { upTo(ctx, 3); stepTo(ctx, 'mill_coop'); give(ctx, 'feed_mill'); const coop = give(ctx, 'coop'); if (coop && !ctx.s.animals[coop]?.length) animals.buyAnimal(ctx, { home: coop }); },
+  4: ctx => { upTo(ctx, 4); stepTo(ctx, 'cottage1'); families(ctx, 1); },
+  5: ctx => { upTo(ctx, 6); stepTo(ctx, 'cottage2', true); families(ctx, 2); advance(ctx); stepTo(ctx, 'school', true); give(ctx, 'school'); },
+  6: ctx => { stepTo(ctx, 'cottages34'); families(ctx, 4); advance(ctx); stepTo(ctx, 'clinic', true); give(ctx, 'clinic'); give(ctx, 'market'); },   // the market square too: chapter 6 is played there
+  // chapter 6 is behind: a market day sold on, and three fields
+  // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
+  12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
+  // chapter 20 is behind: the valley's name has grown to a billion and it has every title
+  21: ctx => { const { s, now } = ctx; for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.lights; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+    for (const x of VALUE_TITLES) (s.firsts ??= {})[`title:${x.at}`] ??= now; },
+  // chapter 19 is behind: the green goals are reached, the valley is a picture postcard (trees and flowers planted on
+  // free ground as far as it takes) and its name has grown past the green mark (hotel guests enough for the goodwill)
+  20: ctx => { const { s, now } = ctx; if (s.firsts?.greenValley) return;
+    for (const g of GREEN_GOALS) ((s.valley ??= {}).goals ??= {})[g.id] ??= now;
+    for (const id of Object.keys(s.cond ?? {})) if ((s.cond[id]?.level ?? 0) >= 1) delete s.cond[id];
+    if (s.story.albright === 'factory') s.valley.green ??= now;
+    const o = parcelOrigin(START_PARCEL), coins = s.coins; s.coins += 1e7;
+    for (const kind of ['round_tree', 'flowers']) for (let i = 0; i < 60 && beautyOf(s).rank < BEAUTY.ranks.length - 1; i++) { const at = grid.findSpot(s, kind, o.x + 8, o.z + 8); if (!at || build.place(ctx, { kind, ...at }).ok === false) break; }
+    s.coins = coins;
+    for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.green; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+    (s.firsts ??= {}).greenValley ??= now; },
+  // chapter 18 is behind: a fair was held to its end and a ribbon won (the valleys have rested since)
+  19: ctx => { const { s, now } = ctx, f = (s.fair ??= { n: 0, ribbons: 0, best: {}, entry: {} }); if ((s.stats.fairs ?? 0) >= 1 && f.ribbons >= 1) return;
+    Object.assign(f, { n: Math.max(1, f.n ?? 0), at: now - FAIR.everyMs, until: now - FAIR.everyMs + FAIR.lastsMs, ribbons: Math.max(1, f.ribbons ?? 0) }); f.over = f.n; (f.best ??= {}).kitchen ??= 'gold';
+    s.stats.fairs = Math.max(1, s.stats.fairs ?? 0); },
+  // chapter 17 is behind: the valley company is founded
+  18: ctx => { const { s, now } = ctx; give(ctx, 'company'); if (!s.valley?.founded) { (s.valley ??= {}).founded = now; s.valley.dividendFrom = now; } },
+  // chapter 16 is behind: the three stops upriver are walked
+  17: ctx => { const { s, now } = ctx, u = (s.upriver ??= { stops: [], trees0: 0, fish0: 0 }); for (const id of ['weir', 'heron', 'spring']) if (!u.stops.includes(id)) { u.stops.push(id); (s.firsts ??= {})[`upriver:${id}`] = now; } },
+  // chapter 15 is behind: the halt stands on a free lot and one train has left with a full wagon
+  16: ctx => {
+    const { s } = ctx; upTo(ctx, BUILDINGS.halt.level);
+    if (!(s.counts.halt > 0)) { const coins = s.coins; s.coins += BUILDINGS.halt.cost; riverside.buildOnLot(ctx, { lot: freeLots(s)[0]?.id, kind: 'halt' }); s.coins = coins; }
+    s.stats.trains = Math.max(1, s.stats.trains ?? 0);
+  },
+  // chapter 14 is behind: the hotel stands on the second lot and ten guests have stayed
+  15: ctx => {
+    const { s, now } = ctx; upTo(ctx, BUILDINGS.hotel.level);
+    if (!(s.counts.hotel > 0)) { const coins = s.coins; s.coins += BUILDINGS.hotel.cost; riverside.buildOnLot(ctx, { lot: freeLots(s)[0]?.id, kind: 'hotel' }); s.coins = coins; }
+    s.stats.guests = Math.max(10, s.stats.guests ?? 0);
+  },
+  // chapter 13 is behind: the quay is paved and the first quay house stands on its first lot
+  14: ctx => {
+    const { s, now } = ctx; (s.firsts ??= {}).bridge ??= now; upTo(ctx, BUILDINGS.apartment.level);
+    if (!s.firsts.quay) { const coins = s.coins; s.coins += RIVERSIDE.quay.cost; riverside.paveQuay(ctx); s.coins = coins; }
+    if (!(s.counts.apartment > 0)) { const coins = s.coins; s.coins += BUILDINGS.apartment.cost; riverside.buildOnLot(ctx, { lot: 'q1', kind: 'apartment' }); s.coins = coins; }
+  },
+  // chapter 12 is behind: both newcomers have called, the co-operative is founded and one shared order filled
+  13: ctx => {
+    const { s, now } = ctx;
+    for (const id of ['priya', 'twins']) { const n = (s.neighbours[id] ??= { friendship: 0, total: 0, ...planDay(s, id, now) }); n.total = Math.max(1, n.total ?? 0); n.visits = []; n.visited = 0; }
+    const c = (s.cooperative ??= { founded: now, n: 0, filled: 0, nextAt: now, order: null });
+    if (!c.filled) { c.filled = 1; c.n = Math.max(1, c.n); c.order = null; c.nextAt = now; s.stats.cooperativeOrders = 1; }
+  },
+  // chapter 10 is behind: three hands hired (the field, the animals, the workshop) and thirty tasks done by them
+  11: ctx => { const { s, now } = ctx; give(ctx, 'school'); for (const role of ['field', 'animals', 'workshop']) (s.hands ??= {})[role] ??= { since: now }; s.stats.handTasks = Math.max((s.story.handBase ?? 0) + 30, s.stats.handTasks ?? 0); },
+  // chapter 9 is behind: the festival stage stands and a Harvest Festival has been held to its end
+  10: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.stage.level); const coins = s.coins; s.coins += BUILDINGS.stage.cost; sites.buildSite(ctx, { kind: 'stage' }); s.coins = coins;
+    s.stats.harvestFestivals = Math.max(1, s.stats.harvestFestivals ?? 0); },
+  // chapter 8 is behind: two food factories, the company office, and its first delivery paid
+  9: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.company.level); give(ctx, 'juice_press'); give(ctx, 'noodle_factory'); give(ctx, 'company');
+    const g = normalizeGrowth(s); s.growth = { ...g, sent: Math.max(1, g.sent), returned: Math.max(1, g.returned), settled: Math.max(1, g.settled) }; },
+  // chapter 7 is behind: the police post works and the boat dock stands
+  8: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.police.level); give(ctx, 'police'); upTo(ctx, BUILDINGS.dock.level); const coins = s.coins; s.coins += BUILDINGS.dock.cost; sites.buildSite(ctx, { kind: 'dock' }); s.coins = coins; },
+  7: ctx => { const { s, now } = ctx; upTo(ctx, MARKET_DAY.level); give(ctx, 'market'); fields(ctx, 3); s.stats.marketDays = Math.max(1, s.stats.marketDays ?? 0); (s.firsts ??= {}).marketDay ??= now; },
+};
+/** The chapters a tester can jump to. */
+export const JUMP_CHAPTERS = Object.keys(JUMPS).map(Number).sort((a, b) => a - b);
+/** The level a chapter's own deed asks for, where the jump before it does not reach it: a tester who jumps there can play it at once. */
+const PLAY_LEVEL = { 7: BUILDINGS.police.level, 8: BUILDINGS.company.level, 9: BUILDINGS.stage.level, 13: BUILDINGS.apartment.level, 14: BUILDINGS.hotel.level, 15: BUILDINGS.halt.level };
+
 export const actions = {
+  /** Use a coupon code: { code }. A known code switches the tester's tools on for this farm, once and for good. */
+  redeemCoupon(ctx, { code } = {}) {
+    if (!COUPONS[couponKey(code)]) return ctx.fail('That code is not known');
+    if (testerOn(ctx.s)) return ctx.fail('This farm has its tester tools already');
+    (ctx.s.tester ??= {}).coupon = ctx.now; ctx.emit('couponRedeemed');
+    return { tester: true };
+  },
+  /** Instant mode on or off: { on } (tickTester). */
+  testInstant(ctx, { on } = {}) {
+    const t = (ctx.s.tester ??= {}); t.instant = on === true || on === 'true';
+    ctx.emit('instantMode', { on: t.instant }); tickTester(ctx);
+    return { instant: t.instant };
+  },
+  /** Coins to try things with: { coins }. */
+  testAddCoins(ctx, { coins = 10000 } = {}) {
+    if (!Number.isSafeInteger(coins) || coins <= 0 || coins > 1e9) return ctx.fail('Unknown amount');
+    ctx.s.coins += coins; ctx.emit('coins', { coins });
+    return { coins: ctx.s.coins };
+  },
+  /** Levels at once: { levels }. Every level on the way is announced as a real level-up. */
+  testAddLevels(ctx, { levels = 5 } = {}) {
+    const { s } = ctx;
+    if (!Number.isSafeInteger(levels) || levels <= 0 || levels > LEVELS.max) return ctx.fail('Unknown amount');
+    if (s.level >= LEVELS.max) return ctx.fail('This is the top level');
+    const to = Math.min(LEVELS.max, s.level + levels);
+    while (s.level < to) { s.level++; ctx.emit('levelUp', { level: s.level, unlocks: unlocksAt(s.level) }); }
+    s.xp = Math.max(s.xp, xpFor(s.level));
+    return { level: s.level };
+  },
+  /** Do the deed of the chapter in progress, as the jump past it would arrange it, without marking its card seen: the
+   *  card then appears as in play. */
+  testFinishChapter(ctx) {
+    const { s } = ctx, n = (s.story.chapter ?? 0) + 1;
+    if (!Object.hasOwn(JUMPS, n + 1)) return ctx.fail('Unknown chapter');
+    for (const k of JUMP_CHAPTERS) if (k <= n + 1) { JUMPS[k](ctx); advance(ctx); }
+    s.undo = [];
+    return { chapter: n, done: !!CHAPTERS.find(c => c.id === n)?.when(s) };
+  },
+  /** Start the next market day now (core/market-day.mjs): the timetable moves, nothing else. */
+  testMarketDay(ctx) {
+    const { s, now } = ctx; if (!marketOpen(s)) return ctx.fail('The square holds market days from level {level}', { level: MARKET_DAY.level });
+    const m = (s.marketDay ??= { shift: 0 }), t = Math.max(0, now - s.createdAt + m.shift);
+    m.shift += MARKET_DAY.everyMs - (t % MARKET_DAY.everyMs);
+    tickMarketDay(ctx);
+    return { good: s.marketDay.good ?? null };
+  },
+  /** Bring the farm to the start of a chapter: { chapter }. Only forward. Returns the deeds it could not arrange, if any. */
+  testJumpChapter(ctx, { chapter } = {}) {
+    const { s } = ctx;
+    if (!Number.isSafeInteger(chapter) || !Object.hasOwn(JUMPS, chapter)) return ctx.fail('Unknown chapter');
+    if ((s.story.chapter ?? 0) >= chapter - 1) return ctx.fail('This farm is already there');
+    for (const n of JUMP_CHAPTERS) if (n <= chapter) { JUMPS[n](ctx); advance(ctx); }
+    if (PLAY_LEVEL[chapter]) upTo(ctx, PLAY_LEVEL[chapter]);
+    // the story so far is behind the player: no stack of old cards, no tutorial, and a purse to start the chapter with
+    s.story.chapter = Math.max(s.story.chapter ?? 0, chapter - 1); s.story.tutorial = 99;
+    if (s.story.chapter >= 8) (s.firsts ??= {}).sluice ??= ctx.now;   // what seeing chapter 8 does (core/today.mjs)
+    if (s.story.chapter >= 19) (s.firsts ??= {}).award ??= ctx.now;   // and chapter 19: the plaque at the bridge
+    if (s.story.chapter >= 20) s.story.ended ??= ctx.now;   // and chapter 20: the story is told
+    if (s.story.chapter >= 12) (s.firsts ??= {}).bridge ??= ctx.now;   // and chapter 12
+    s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
+    s.coins = Math.max(s.coins, 2500 * chapter); s.undo = [];   // enough for the chapter's own deed (the halt, the valley company)
+    const missing = CHAPTERS.filter(c => c.id < chapter && !c.when(s)).map(c => c.id);
+    ctx.emit('testJumped', { chapter, missing });
+    return { chapter, missing };
+  },
   /** Unlock everything: every level's content, every project step reached, and coins to try it all. */
   testUnlockAll(ctx, { coins = 10000 } = {}) {
     const { s } = ctx, from = s.level;
-    if (s.level < TOP_LEVEL) { s.level = TOP_LEVEL; s.xp = Math.max(s.xp, xpFor(TOP_LEVEL)); }
-    s.projects.step = STEPS.length - 1; s.projects.delivered = { ...(STEPS[STEPS.length - 1].deliver ?? {}) };
+    if (s.level < TOP_LEVEL && Number.isSafeInteger(coins) && coins >= 0 && coins <= 1e9) { s.level = TOP_LEVEL; s.xp = Math.max(s.xp, xpFor(TOP_LEVEL)); }
+    if (!Number.isSafeInteger(coins) || coins < 0 || coins > 1e9) return ctx.fail('Unknown amount');
+    const clinic = STEPS.findIndex(st => st.id === 'clinic'); if (s.projects.step < clinic) { s.projects.step = clinic; s.projects.delivered = { ...(STEPS[clinic].deliver ?? {}) }; }
     s.coins += coins;
     ctx.emit('testUnlocked', { from, level: s.level, coins });
     return { level: s.level };
@@ -31,6 +261,11 @@ export const actions = {
     for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null && a.doneAt > now) { a.doneAt = now; n++; }
     for (const q of Object.values(s.production)) for (const j of q.queue) if (j.doneAt > now) { j.doneAt = now; n++; }
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); n++; }
+    if (s.festival && s.festival.until > now) { s.festival.until = now; n++; }   // the Harvest Festival's evening too
+    if (s.cooperative?.founded && !s.cooperative.order && s.cooperative.nextAt > now) { s.cooperative.nextAt = now; n++; }   // the co-operative's next order
+    if (s.train) { if (s.train.here && s.train.here.until > now) { s.train.here.until = now; n++; } else if (!s.train.here && s.train.nextAt > now) { s.train.nextAt = now; n++; } }   // the train at the halt leaves; else the next one comes
+    if (s.hotel) { for (const g of s.hotel.rooms) if (g && g.until > now) { g.until = now; n++; } if (s.hotel.nextAt > now) { s.hotel.nextAt = now; n++; } }   // the hotel's guests leave, and the next one is at the door
+    for (const id of ['priya', 'twins']) { const nb = s.neighbours?.[id]; if (nb && !nb.total && nb.visited < (nb.visits?.length ?? 0)) { nb.visits = nb.visits.map(v => Math.min(v, now)); n++; } }   // a newcomer's first call
     tickHomes(ctx);
     ctx.emit('timersFinished', { count: n });
     return { finished: n };

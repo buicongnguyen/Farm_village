@@ -1,7 +1,7 @@
 // Build-mode actions: place, move, store, clear cells, fences, land parcels and the barn upgrade (DESIGN 4).
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR, XP, PARCELS, BARN, DEMOLISH } from '../content/economy.mjs';
-import { N, FARM, PARCEL } from '../content/world.mjs';
+import { N, FARM, PARCEL, RUINS } from '../content/world.mjs';
 import { CELL_TYPES, overgrow } from './state.mjs';
 import * as grid from './grid.mjs';
 import { mayBuild, projectCost, advance } from './projects.mjs';
@@ -9,6 +9,8 @@ import { gainXp, xpFor } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
 import { plantTree } from './trees.mjs';
 import { suspendFruitSales, resumeFruitSales } from './orchard.mjs';
+import { afterParcelBought } from './land-discovery.mjs';
+import { normalizeGrowth, stamp } from './growth-state.mjs';
 
 export const priceOf = (s, kind) => {
   const def = BUILDINGS[kind], n = s.counts[kind] ?? 0;
@@ -32,6 +34,41 @@ const staleUndo = (s, e) => e.type === 'cell' ? grid.cellType(s, e.x, e.z) !== e
   : e.type === 'edge' ? s.fences[grid.edgeKey(e.x, e.z, e.side)] !== e.kind : !s.placed[e.id];
 /** Everything in the state that belongs to a placed item (crops, animals, queue, family) moves or goes with it. */
 const CONTENTS = ['beds', 'animals', 'production', 'homes', 'trees'];
+/** Why a placed thing cannot go into storage, or null. */
+export function storeWhy(s, id) {
+  const p = s.placed[id];
+  if (BUILDINGS[p.kind].garden) return 'The streak garden keeps its flowers';
+  if (BUILDINGS[p.kind].lot) return 'Buildings on the quay stay where they are';
+  if (s.homes[id]?.family) return 'A family lives here: move the cottage instead';
+  if (s.beds[id]) return 'Harvest the crop first';
+  if (s.animals[id]?.length) return 'The animals live here: move it instead';
+  if (s.production[id]?.queue.length) return 'Collect what is being made first';
+  if (BUILDINGS[p.kind].project === 'school' || BUILDINGS[p.kind].cat === 'projects') return 'Village buildings can be moved, not stored';
+  return null;
+}
+/**
+ * What rebuilding a police post or company office on its old site takes. Paths laid across the site, weeds, and loose
+ * things that can be stored are moved out of the way by the rebuild itself, and the path tile at the door is laid with
+ * it, so a cluttered site never blocks the rebuild. Pure: { ok, reason?, params?, site, ids, cells, door, price, moved }.
+ */
+export function civicRebuildPlan(s, kind) {
+  const def = BUILDINGS[kind], site = RUINS.find(r => r.kind === kind);
+  if (!def?.civicSite || !site) return { ok: false, reason: 'Unknown item' };
+  const may = mayBuild(s, kind); if (!may.ok) return may;
+  const ids = new Set(), cells = []; let extra = 0;
+  for (const [x, z] of grid.cellsOf(kind, site.x, site.z, site.rot)) {
+    const id = grid.occupant(s, x, z), type = grid.cellType(s, x, z);
+    if (id) ids.add(id);
+    if (type === 'path') cells.push([x, z]); else if (type === 'weeds' || type === 'rock') { cells.push([x, z]); extra += CLEAR[type]; }
+  }
+  for (const id of ids) if (storeWhy(s, id)) return { ok: false, reason: 'Move {name} off the old site first', params: { name: BUILDINGS[s.placed[id].kind].name } };
+  const can = grid.canPlace(s, kind, site.x, site.z, site.rot, { clearing: ids }); if (!can.ok) return can;
+  const at = grid.doorCell(kind, site.x, site.z, site.rot), door = at && !grid.reachesRoad(s, at[0], at[1]) ? at : null;
+  if (door) { if (!grid.canPlace(s, 'path', door[0], door[1], 0).ok) return { ok: false, reason: 'Needs a path from the door to the road' }; extra += placementPrice(s, 'path'); }
+  const price = placementPrice(s, kind) + extra;
+  if (s.coins < price) return { ok: false, reason: 'Not enough coins' };
+  return { ok: true, site, ids: [...ids], cells, door, price, moved: ids.size + cells.length };
+}
 
 /**
  * Land the player could buy next (for the For-sale signs and the parcel menu): parcels next to the farm that are not owned,
@@ -74,7 +111,8 @@ export const actions = {
     // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.
     const built = (s.stats.built ??= {}); let xp = 0;
     if ((def.cost || def.project) && s.counts[kind] > (built[kind] ?? 0)) { built[kind] = s.counts[kind]; xp = XP.build; gainXp(ctx, xp); }
-    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, fruitSold: def.fruitStand ? s.stats.fruitSold : undefined });
+    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, fruitSold: def.fruitStand ? s.stats.fruitSold : undefined,
+      ...(def.civicSite ? { growthSent: normalizeGrowth(s).sent } : {}) });
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
     return { id, price };
@@ -89,6 +127,15 @@ export const actions = {
     Object.assign(p, { x, z, rot }); grid.touch(s);
     ctx.emit('moved', { id, x, z, rot });
     return { id };
+  },
+  /** Rebuild a police post or company office on its old site, moving what is in the way first: { kind } (civicRebuildPlan). */
+  rebuildCivic(ctx, { kind }) {
+    const plan = civicRebuildPlan(ctx.s, kind); if (!plan.ok) return ctx.fail(plan.reason, plan.params);
+    for (const id of plan.ids) actions.store(ctx, { id });
+    if (plan.cells.length) actions.clear(ctx, { cells: plan.cells });
+    if (plan.door) actions.place(ctx, { kind: 'path', x: plan.door[0], z: plan.door[1] });
+    const out = actions.place(ctx, { kind, x: plan.site.x, z: plan.site.z, rot: plan.site.rot });
+    return out?.ok === false ? out : { ...out, moved: plan.moved };
   },
   /** Undo the last build action and give its price back. */
   undo(ctx) {
@@ -107,6 +154,13 @@ export const actions = {
       delete s.fences[key]; count(s, e.kind, -1); ctx.emit('fenceChanged', { x: e.x, z: e.z, side: e.side, kind: null });
     } else {
       const p = s.placed[e.id];
+      // Dispatch bonuses and paid staff work survive removal: a used civic building cannot be fully refunded.
+      if (p.kind === 'clinic' && normalizeGrowth(s).hospitalAt !== null) return ctx.fail('It is in use now: move it instead');
+      if (BUILDINGS[p.kind].civicSite) {
+        const growth = normalizeGrowth(s);
+        if (e.civicUsed || growth.sent > (stamp(e.growthSent) ? e.growthSent : 0)
+          || (p.kind === 'company' && Object.values(growth.staff).some(Boolean))) return ctx.fail('It is in use now: move it instead');
+      }
       if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived || (s.trees[e.id] && (s.trees[e.id].picked ?? (s.trees[e.id].first ? 0 : 1)) > 0)
         || (BUILDINGS[p.kind].fruitStand && (s.fruitStand.items.length || s.fruitStand.coins || s.stats.fruitSold > (e.fruitSold ?? 0)))) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);
@@ -126,12 +180,7 @@ export const actions = {
   /** Put a placed item away. Its price is kept as a stored credit so placing it again is free. */
   store(ctx, { id }) {
     const { s } = ctx, p = typeof id === 'string' && Object.hasOwn(s.placed, id) ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to store');
-    if (BUILDINGS[p.kind].garden) return ctx.fail('The streak garden keeps its flowers');
-    if (s.homes[id]?.family) return ctx.fail('A family lives here: move the cottage instead');
-    if (s.beds[id]) return ctx.fail('Harvest the crop first');
-    if (s.animals[id]?.length) return ctx.fail('The animals live here: move it instead');
-    if (s.production[id]?.queue.length) return ctx.fail('Collect what is being made first');
-    if (BUILDINGS[p.kind].project === 'school' || BUILDINGS[p.kind].cat === 'projects') return ctx.fail('Village buildings can be moved, not stored');
+    const why = storeWhy(s, id); if (why) return ctx.fail(why);
     if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);
     if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
     for (const k of CONTENTS) delete s[k]?.[id];
@@ -145,7 +194,7 @@ export const actions = {
     cells = Array.isArray(cells) ? cells.filter(c => Array.isArray(c) && spot(c[0], c[1])) : [];
     const { s } = ctx; let cleared = 0, spent = 0, lifted = 0;
     for (const [cx, cz] of cells) {
-      const type = grid.cellType(s, cx, cz), land = grid.landOf(s, cx, cz);
+      const type = grid.cellType(s, cx, cz), land = grid.landOf(s, cx, cz) ?? (grid.isVerge(s, cx, cz) ? 'verge' : null);
       if (!land) continue;
       if (type === 'path') { if (grid.occupant(s, cx, cz)) continue; setCell(s, cx, cz, 'grass'); count(s, 'path', -1); lifted++; ctx.emit('cellChanged', { x: cx, z: cz }); continue; }
       if (type !== 'weeds' && type !== 'rock') continue;
@@ -187,14 +236,15 @@ export const actions = {
     if (!s.parcels.some(p => { const [qx, qz] = p.split(',').map(Number); return Math.abs(qx - px) + Math.abs(qz - pz) === 1; })) return ctx.fail('Buy land next to your farm');
     if (s.level < PARCELS.level) return ctx.fail('Reach level {level} first', { level: PARCELS.level, lock: 'level' });
     const price = PARCELS.cost(s.parcels.length + 1); if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; s.parcels.push(parcel); overgrow(s, parcel); grid.touch(s);
+    s.coins -= price; s.parcels.push(parcel); overgrow(s, parcel); afterParcelBought(ctx, parcel); grid.touch(s);
     ctx.emit('parcelBought', { parcel, x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL });
     return { price, parcel };
   },
   upgradeBarn(ctx) {
     const { s } = ctx, price = BARN.upgradeCost(s.barn.upgrades);
+    if (s.barn.cap >= BARN.max) return ctx.fail('The barn is as big as it can be');
     if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; s.barn.upgrades++; s.barn.cap += BARN.step;
+    s.coins -= price; s.barn.upgrades++; s.barn.cap = Math.min(BARN.max, s.barn.cap + BARN.step);
     ctx.emit('barnUpgraded', { cap: s.barn.cap });
     return { cap: s.barn.cap };
   },

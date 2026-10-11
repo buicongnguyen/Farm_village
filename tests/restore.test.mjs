@@ -121,6 +121,8 @@ test('the farmhouse can be repaired and upgraded; each level adds barn room', ()
   must(s, 'repair', { id: 'house' }); assert.equal(levelOf(s, 'house'), 0, 'a worn house is mended at once');
   must(s, 'upgradeHouse', {}); assert.equal(s.house.level, 2); assert.equal(s.barn.cap, cap + HOUSE.barn);
   must(s, 'upgradeHouse', {}); assert.equal(s.house.level, 3);
+  s.level = 20; s.coins = 1e6; while (s.house.level < HOUSE.levels) must(s, 'upgradeHouse', {});
+  assert.equal(s.house.level, 10); assert.equal(s.barn.cap, cap + 9 * HOUSE.barn);
   assert.equal(act(s, 'upgradeHouse', {}, T0).reason, 'Already the best it can be');
   const t = fresh(); t.level = 1; t.coins = 5000;
   assert.equal(act(t, 'upgradeHouse', {}, T0).reason, 'Reach level {level} first');

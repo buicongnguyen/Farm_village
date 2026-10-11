@@ -8,8 +8,15 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import { newDiscoveries, normalizeDiscoveries } from './discoveries.mjs';
 import { newAdvice, normalizeAdvice } from './advice-state.mjs';
 import { newExploration, normalizeExploration } from './exploration.mjs';
+import { newLandDiscovery, normalizeLandDiscovery } from './land-discovery.mjs';
+import { newContracts, normalizeContracts } from './contracts.mjs';
+import { normalizeProduction } from './production-state.mjs';
+import { normalizeShops } from './shops-state.mjs';
+import { newGrowth, normalizeGrowth } from './growth-state.mjs';
+import { newLearning, normalizeLearning } from './learning-state.mjs';
+import { newSchool, normalizeSchool } from './school-state.mjs';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 11;
 export const CELL_TYPES = { grass: 0, weeds: 1, rock: 2, path: 3, tilled: 4 };
 
 /** A new game. `restore: true` opens on the run-down village that is already there (PLAN-v0.3); without it the land is empty (tests, the rules simulation). */
@@ -38,6 +45,12 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     hurry: { day: '', left: 0, extra: 0 },   // the daily hurry token
     album: { fish: {}, fruit: {} },          // collections: what has been caught and picked
     exploration: newExploration(), // optional old-object trail, independent of the paid introductory finds
+    landDiscovery: newLandDiscovery(),
+    contracts: newContracts(),
+    shops: {},
+    growth: newGrowth(),
+    learning: newLearning(),
+    schoolActivity: newSchool(),
     discoveries: newDiscoveries(),          // capped effort counters; earned, retired and acknowledged one-time finds
     advice: newAdvice(),                    // stable read/deferred contexts and bounded celebration records, never rendered text
     fishing: { line: null, coins: 0, caught: 0, feeAt: 0 },   // the fish pond (fishing.mjs)
@@ -102,6 +115,12 @@ export function migrate(save) {
   if (save.version < 7) save.version = 7;
   // v7 → v8: old farms may start the optional picnic trail; migration never grants its reward.
   if (save.version < 8) save.version = 8;
+  // v8 → v9: optional land keepsake and food requests start unpaid; loading never rewards or changes owned terrain.
+  if (save.version < 9) save.version = 9;
+  // v9 → v10: independent production trays keep old completion times; optional shop/civic progress starts empty.
+  if (save.version < 10) save.version = 10;
+  // v10 → v11: optional skills, project energy and classroom rounds start without granting progress or rewards.
+  if (save.version < 11) save.version = 11;
   const s = withDefaults(save);
   if (old && Object.keys(s.placed ?? {}).length) s.needsPlaces = true;   // core/act.mjs finds the room on the next tick
   return s;
@@ -115,14 +134,25 @@ export function withDefaults(s) {
   // The first orchard build accidentally let pet homes acquire ordinary building wear.
   for (const [id, p] of Object.entries(s.placed ?? {})) if (BUILDINGS[p.kind]?.pet && [1, 2].includes(s.cond?.[id]?.level) && !s.repairing?.[id]) delete s.cond[id];
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
+  s.today.earnedBase ??= s.stats?.coinsEarned ?? 0;   // the evening report (core/report.mjs): an old save's day starts counting now
   s.stats = { ...fresh.stats, ...s.stats };
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };
   if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger
   s.village.milestones ??= []; s.village.decor ??= [];
+  // market day (core/market-day.mjs): absent until the square holds its first one; a damaged record starts again
+  const md = s.marketDay; if (md != null) { const whole = v => v === undefined || Number.isSafeInteger(v);
+    if (typeof md !== 'object' || Array.isArray(md) || !Number.isFinite(md.shift) || md.shift < 0 || !whole(md.n) || !whole(md.sold) || !whole(md.over) || (md.good != null && typeof md.good !== 'string') || (md.next != null && typeof md.next !== 'string')) delete s.marketDay; }
   for (const b of Object.values(s.people)) b.scenes ??= [];
   s.discoveries = normalizeDiscoveries(s);
   s.advice = normalizeAdvice(s);
   s.exploration = normalizeExploration(s);
+  s.landDiscovery = normalizeLandDiscovery(s);
+  s.contracts = normalizeContracts(s);
+  s.production = normalizeProduction(s);
+  s.shops = normalizeShops(s);
+  s.growth = normalizeGrowth(s);
+  s.learning = normalizeLearning(s);
+  s.schoolActivity = normalizeSchool(s);
   return s;
 }

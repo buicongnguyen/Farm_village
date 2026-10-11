@@ -117,7 +117,7 @@ button.round[disabled] { filter: saturate(.25); opacity: .55; }
 .place-bar .reason { font-weight: 900; font-size: 14px; line-height: 1.2; min-width: min(160px, 40vw); }
 .place-bar .reason.bad { color: #b3381a; }
 .place-bar .bar-buttons { display: flex; gap: 6px; flex: none; }
-@media (orientation: landscape) and (max-height: 500px) {
+@media (orientation: landscape) and (max-height: 520px) {
   .sheet { max-height: 62vh; left: auto; width: min(430px, 50vw); border-radius: 26px 0 0 0; border-right: 0; }
   .card { width: 96px; min-height: 108px; } .card img.icon { width: 50px; height: 50px; }
   .place-bar { left: 12px; transform: none; bottom: 12px; max-width: 40vw; }
@@ -138,6 +138,74 @@ button.round[disabled] { filter: saturate(.25); opacity: .55; }
 .profile-heading small { margin-left: auto; }
 .profile-details { gap: 4px; }
 .profile-player, .profile-card p, .profile-card small { overflow-wrap: anywhere; }
+
+/* Compact HUD. Reuse the delivered colours; these rules change spacing, type and targets only.
+   Enlarge HUD text itself instead of zooming its fixed viewport out past the screen at 130%. */
+.hud.hud { --hud-text: 1; }
+body[data-text="1.15"] .hud.hud { --hud-text: 1.15; zoom: 1; }
+body[data-text="1.3"] .hud.hud { --hud-text: 1.3; zoom: 1; }
+.hud .hud-top { left: max(12px, env(safe-area-inset-left)); width: min(250px, calc(100vw - 116px - env(safe-area-inset-left) - env(safe-area-inset-right))); gap: 5px; pointer-events: none; }
+.hud .hud-top > * { pointer-events: auto; }
+.hud .hud-stats { max-width: 100%; }
+.hud .hud-stats .level { flex: none; }
+.hud .hud-stats .level b { font-size: calc(22px * var(--hud-text)); }
+.hud .hud-stats .pill.coins { min-width: 0; max-width: calc(100% - 38px); transform: none; font-size: calc(17px * var(--hud-text)); }
+.hud .coins b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud .coins .pill-icon { flex: none; }
+.hud button.hud-tracker { width: 100%; min-height: 44px; display: grid; align-content: center; gap: 1px; padding: 4px 10px; text-align: left; transform: none; font-size: calc(12px * var(--hud-text)); line-height: 1.2; }
+.hud .tracker-name { font-size: calc(11px * var(--hud-text)); }
+.hud .tracker-goal { overflow-wrap: anywhere; }
+.hud .hud-status { width: 100%; max-width: none; margin: 0; display: flex; flex-wrap: wrap; gap: 5px; }
+.hud .status-row { position: relative; min-width: 44px; min-height: 44px; max-width: 100%; padding: 3px 9px 3px 5px; gap: 5px; animation: none; }
+.hud .status-row .mini { width: 22px; height: 22px; }
+.hud .status-row .status-copy { min-width: 0; display: flex; align-items: baseline; gap: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 200px; }
+.hud .status-copy b { font-size: calc(11px * var(--hud-text)); line-height: 1.15; }
+.hud .status-copy small { font-size: calc(11px * var(--hud-text)); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.hud .status-row .badge { font-size: calc(10px * var(--hud-text)); }
+.hud .hud-topright { right: max(12px, env(safe-area-inset-right)); gap: 6px; }
+.hud .hud-topright .round.small { width: 44px; height: 44px; }
+.hud .hud-right { right: max(12px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 56px); gap: 10px; }
+.hud .hud-right .round { width: 48px; height: 48px; }
+.hud .hud-right .round .btn-icon { width: 30px; height: 30px; }
+.hud .hud-label { position: absolute; top: calc(100% + 2px); left: 50%; transform: translateX(-50%); display: block; width: max-content; max-width: 64px; font-size: calc(10.5px * var(--hud-text)); font-weight: 1000; line-height: 1.1; text-align: center; pointer-events: none; text-shadow: 0 1px var(--paper), 1px 0 var(--paper), -1px 0 var(--paper), 0 -1px var(--paper); }
+.hud .hud-tools { right: max(18px, env(safe-area-inset-right)); bottom: max(34px, calc(env(safe-area-inset-bottom) + 26px)); gap: 32px; }
+.hud .hud-tools .hud-label { max-width: none; white-space: nowrap; padding: 2px 5px; border-radius: 8px; background: var(--panel-bg); }
+.hud .next-chip { width: max-content; min-height: 44px; max-width: min(520px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))); bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px)); font-size: calc(12px * var(--hud-text)); white-space: normal; text-align: left; }
+.hud .next-chip b { flex: none; }
+.hud .next-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+/* Notices: one centred lane, low in the middle (Zoo Garden's place for them), big enough to read at a glance. Each one
+   that leads somewhere shows a chevron and opens its detail on a tap. They move to the top when a sheet is open. */
+.hud .toasts { left: 50%; top: auto; bottom: max(176px, calc(env(safe-area-inset-bottom) + 168px)); transform: translateX(-50%); width: min(86vw, 420px); justify-items: center; gap: 6px; }
+.hud .toast { font-size: calc(14px * var(--hud-text)); padding: 7px 14px 7px 8px; border-width: 3px; border-radius: 16px; gap: 8px; box-shadow: 0 4px 0 var(--edge-dark), 0 8px 14px #0000003a; max-width: 100%; }
+.hud .toast .toast-icon { width: 28px; height: 28px; }
+.hud .toast { min-width: 0; } .hud .toast .msg { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.toast .go, .recent-row .go { flex: none; font-size: 1.5em; font-weight: 1000; line-height: .8; }
+.hud .toast.tappable { text-decoration: none; }
+body.fishing-active .hud .toasts, body.explore-active .hud .toasts { bottom: max(280px, calc(env(safe-area-inset-bottom) + 272px)); }
+.hud[data-mode="build"] .toasts { top: max(84px, calc(env(safe-area-inset-top) + 76px)); bottom: auto; }
+.recent { margin: 0 0 10px; } .recent summary { cursor: pointer; font-weight: 900; padding: 4px 2px; }
+.recent-row[disabled] { opacity: 1; cursor: default; } .recent-row .mini { width: 28px; height: 28px; flex: none; }
+body.panel-open .hud .hud-tools { bottom: calc(var(--sheet-h) * var(--hud-text) + 32px); }
+body.panel-open .hud .hud-tracker, body.panel-open .hud .hud-right { display: none; }
+body.panel-open .hud .toasts { bottom: auto; top: min(calc(100vh - var(--sheet-h) * var(--hud-text) + 74px), calc(100vh - 180px)); }   /* just inside the open sheet's top (the raised buttons fill the space above it), never off the bottom */
+.hud[data-mode="build"] .hud-tools { bottom: calc(var(--build-h, min(46vh, 196px)) * var(--hud-text) + 32px); }
+@media (max-width: 560px) and (orientation: portrait) {
+  .hud .hud-right { right: max(14px, env(safe-area-inset-right)); gap: 22px; }
+  .hud .hud-label { max-width: 68px; }
+}
+@media (max-height: 520px) {
+  .hud .hud-top { width: min(250px, 42vw); }
+  .hud .status-row[data-status="marketday"] .status-copy b, .hud .status-row[data-status="festival"] .status-copy b { display: none; }   /* short screens: the good's picture and the time left say it (chapter 6) */
+  .hud .hud-right { gap: 10px; }
+  .hud .next-chip { left: max(12px, env(safe-area-inset-left)); transform: none; bottom: max(12px, env(safe-area-inset-bottom)); max-width: 44vw; animation: none; }
+  .hud[data-mode="build"] .hud-tools { bottom: 32px; right: calc(min(430px, 50vw) + 12px); }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud .toasts { left: calc(max(12px, env(safe-area-inset-left)) + min(250px, 42vw) + 16px); transform: none; top: max(10px, env(safe-area-inset-top)); bottom: auto; width: min(320px, calc(100vw - min(250px, 42vw) - 280px)); justify-items: stretch; }   /* between the status stack and the top-right buttons */
+  body.panel-open .hud .hud-tools, .hud[data-mode="build"] .hud-tools { bottom: max(34px, calc(env(safe-area-inset-bottom) + 26px)); right: calc(min(430px, 50vw) * var(--hud-text) + 18px); }
+  .hud[data-mode="build"] .hud-status { display: none; }
+  body.panel-open .hud .toasts, .hud[data-mode="build"] .toasts { left: max(12px, env(safe-area-inset-left)); transform: none; bottom: auto; top: calc(var(--hud-stack-bottom, 140px) + 12px); width: min(260px, calc(100vw - min(430px, 50vw) * var(--hud-text) - 32px)); justify-items: stretch; }
+}
 .profile-card .btn { min-height: 44px; white-space: normal; }
 .profile-progress span { display: inline-flex; align-items: center; gap: 4px; }
 .discovery-memory { min-height: 44px; width: 100%; text-align: left; }
@@ -147,3 +215,18 @@ button.round[disabled] { filter: saturate(.25); opacity: .55; }
 .discovery-detail .scene-line { display: flex; gap: 10px; align-items: flex-start; text-align: left; }
 .discovery-detail .scene-line > div { min-width: 0; }
 .discovery-detail .scene-line .face { flex: none; }
+
+/* the main menu (main.mjs mainMenu): language and farm profile before the game starts */
+.main-menu { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; overflow: auto; padding: 16px;
+  background: radial-gradient(circle at 50% 30%, #bfe88a, #6db446 70%); }
+.main-menu-card { width: min(520px, 100%); background: #fff8e8; border: 4px solid var(--line, #5b3418); border-radius: 26px;
+  padding: 18px 16px; box-shadow: 0 8px 0 #0002; text-align: center; }
+.main-menu .logo { font-size: 2.2rem; margin-bottom: 10px; }
+.main-menu .menu-lang { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 6px 0 14px; }
+.main-menu .profile-list { text-align: left; }
+
+/* Pond timing layout reuses the game's existing palette; controls stay in place while the marker moves. */
+.fishing-meter { position: relative; height: 38px; margin: 12px 8px 18px; border: 3px solid var(--edge); border-radius: 12px; background: var(--paper-2); }
+.fishing-band { position: absolute; top: 0; bottom: 0; background: var(--leaf); border-inline: 2px solid var(--leaf-dark); }
+.fishing-marker { position: absolute; top: -6px; bottom: -6px; width: 6px; transform: translateX(-50%); background: var(--ink); border: 1px solid var(--paper); border-radius: 4px; }
+[data-reel-feedback]:empty { display: none; }

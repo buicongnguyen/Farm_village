@@ -4,6 +4,10 @@ import { RUINS, TIDY } from '../content/world.mjs';
 import { gainXp } from './levels.mjs';
 
 export const tidied = (s, kind) => !!s.village?.tidied?.[kind];
+/** Taken down for good: the ruin no longer stands on its lot (the Demolish tool, or after its rebuilt building was demolished). */
+export const cleared = (s, kind) => !!s.village?.cleared?.[kind];
+/** Does the old ruin still stand there (not rebuilt, not cleared away)? */
+export const ruinStands = (s, kind) => RUINS.some(r => r.kind === kind) && !(s.counts[kind] > 0) && !cleared(s, kind);
 export const actions = {
   tidyRuin(ctx, { kind }) {
     const { s, now } = ctx; if (!RUINS.some(r => r.kind === kind)) return ctx.fail('Unknown place');
@@ -13,5 +17,14 @@ export const actions = {
     s.coins -= TIDY.coins; (s.village.tidied ??= {})[kind] = now; gainXp(ctx, TIDY.xp);
     ctx.emit('ruinTidied', { kind });
     return { ok: true };
+  },
+  /** Take an old ruin down (free): { kind }. The lot of a police post or company office stays kept for its rebuild; a school or clinic lot becomes free village land. */
+  clearRuin(ctx, { kind }) {
+    const { s, now } = ctx; if (!RUINS.some(r => r.kind === kind)) return ctx.fail('Unknown place');
+    if ((s.counts[kind] ?? 0) > 0) return ctx.fail('It is already rebuilt');
+    if (cleared(s, kind)) return ctx.fail('Nothing to demolish');
+    (s.village.cleared ??= {})[kind] = now;
+    ctx.emit('ruinCleared', { kind });
+    return { kind };
   },
 };

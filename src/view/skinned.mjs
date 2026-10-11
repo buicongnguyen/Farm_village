@@ -26,14 +26,14 @@ export const RIGS = {
   cat:    { file: 'cat', height: 0.85, walk: 0.8, bake: 'Idle' },
   crow:   { file: 'crow', height: 0.75, walk: 0.6, bake: 'Idle' },
   rabbit: { file: 'rabbit', height: 0.8, walk: 1.2, bake: 'Idle' },
-  man:    { file: 'villager-man', height: 2.3, walk: 2.1, bake: 'Idle', tint: true },
-  woman:  { file: 'villager-woman', height: 2.2, walk: 2.05, bake: 'Idle', tint: true },
-  kid:    { file: 'villager-kid', height: 1.6, walk: 1.75, bake: 'Idle', tint: true },
-  hana:   { file: 'hana', height: 2.1, walk: 2.0, bake: 'Idle', tint: true },
+  man:    { file: 'villager-man', height: 2.3, walk: 2.0, bake: 'Idle', tint: true },
+  woman:  { file: 'villager-woman', height: 2.2, walk: 1.83, bake: 'Idle', tint: true },
+  kid:    { file: 'villager-kid', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },
+  hana:   { file: 'hana', height: 2.1, walk: 1.98, bake: 'Idle', tint: true },
 };
 // Clothes slots that can be recoloured, by material name. Their vertices are baked white (keeping the shading), and the
 // tint colour multiplies them back: per instance in a batch, per material on a skinned actor.
-const SLOTS = [['hair', /hair/i], ['top', /shirt|dress|headscarf/i], ['bottom', /trousers|apron/i]];
+const SLOTS = [['hair', /hair/i], ['top', /shirt|dress|headscarf/i], ['bottom', /trousers|apron/i], ['skin', /^skin$/i]];   // skin: the look of each language edition (people-view.mjs)
 // A wanted clip that a rig does not have falls back along these lists.
 const FALLBACK = {
   Walk: ['Walk', 'Hop', 'Swim', 'Idle'], Run: ['Run', 'Walk'], Graze: ['Graze', 'Snuffle', 'Idle'], Peck: ['Idle'],
@@ -52,7 +52,7 @@ function mergeRig(def, gltf) {
   const root = gltf.scene; root.updateMatrixWorld(true);
   const meshes = []; root.traverse(o => { if (o.isSkinnedMesh) meshes.push(o); });
   const slotOf = name => { const i = SLOTS.findIndex(([, re]) => re.test(name)); return def.tint && i >= 0 ? i + 1 : 0; };
-  const tint = { hair: new THREE.Color(1, 1, 1), top: new THREE.Color(1, 1, 1), bottom: new THREE.Color(1, 1, 1) };
+  const tint = { hair: new THREE.Color(1, 1, 1), top: new THREE.Color(1, 1, 1), bottom: new THREE.Color(1, 1, 1), skin: new THREE.Color(1, 1, 1) };
   const parts = meshes.map(m => {
     const src = m.geometry, n = src.attributes.position.count, mat = Array.isArray(m.material) ? m.material[0] : m.material;
     const base = mat?.color ?? new THREE.Color(1, 1, 1), slot = slotOf(mat?.name ?? ''), ao = src.attributes.color;
@@ -238,18 +238,18 @@ function castMaterial(tinted, uniforms = null) {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>
 attribute float aSlot;
 #ifdef USE_INSTANCING
-attribute vec3 iHair; attribute vec3 iTop; attribute vec3 iBottom;
+attribute vec3 iHair; attribute vec3 iTop; attribute vec3 iBottom; attribute vec3 iSkin;
 #else
-uniform vec3 uHair; uniform vec3 uTop; uniform vec3 uBottom;
+uniform vec3 uHair; uniform vec3 uTop; uniform vec3 uBottom; uniform vec3 uSkin;
 #endif`).replace('#include <color_vertex>', `#include <color_vertex>
 #ifdef USE_INSTANCING
-  vec3 tH = iHair, tT = iTop, tB = iBottom;
+  vec3 tH = iHair, tT = iTop, tB = iBottom, tS = iSkin;
 #else
-  vec3 tH = uHair, tT = uTop, tB = uBottom;
+  vec3 tH = uHair, tT = uTop, tB = uBottom, tS = uSkin;
 #endif
-  vColor.rgb *= aSlot > 2.5 ? tB : aSlot > 1.5 ? tT : aSlot > 0.5 ? tH : vec3(1.0);`);
+  vColor.rgb *= aSlot > 3.5 ? tS : aSlot > 2.5 ? tB : aSlot > 1.5 ? tT : aSlot > 0.5 ? tH : vec3(1.0);`);
   };
-  m.customProgramCacheKey = () => 'cast-tint';
+  m.customProgramCacheKey = () => 'cast-tint4';
   return m;
 }
 let crowdTint = null;
@@ -312,7 +312,7 @@ export class Cast {
     let a = spares.pop();
     if (!a) {
       const root = cloneSkinned(rig.template); let mesh = null; root.traverse(o => { if (o.isSkinnedMesh) mesh = o; });
-      const uniforms = rig.def.tint ? { uHair: { value: new THREE.Color() }, uTop: { value: new THREE.Color() }, uBottom: { value: new THREE.Color() } } : null;
+      const uniforms = rig.def.tint ? { uHair: { value: new THREE.Color() }, uTop: { value: new THREE.Color() }, uBottom: { value: new THREE.Color() }, uSkin: { value: new THREE.Color() } } : null;
       mesh.material = castMaterial(!!rig.def.tint, uniforms); mesh.frustumCulled = false;
       const bones = {}; root.traverse(o => { if (o.isBone) bones[o.name] = o; });
       a = { rig, root, mesh, uniforms, bones, mixer: new THREE.AnimationMixer(root), actions: new Map(), clip: null, current: null, once: null };
@@ -322,7 +322,7 @@ export class Cast {
     }
     a.subject = s; s.actor = a; a.root.visible = true; a.clip = null; a.once = null; a.current = null;
     a.mixer.stopAllAction();
-    if (a.uniforms) for (const k of ['hair', 'top', 'bottom']) a.uniforms[`u${k[0].toUpperCase()}${k.slice(1)}`].value.set(s.tint?.[k] ?? rig.tint[k]);
+    if (a.uniforms) for (const k of ['hair', 'top', 'bottom', 'skin']) a.uniforms[`u${k[0].toUpperCase()}${k.slice(1)}`].value.set(s.tint?.[k] ?? rig.tint[k]);
     this.drive(a, 0, true);
   }
   release(a) {
@@ -414,7 +414,7 @@ export class Cast {
     const g = tinted ? geo.clone() : geo, mesh = new THREE.InstancedMesh(g, mat, cap);
     mesh.count = 0; mesh.frustumCulled = false; mesh.userData.cast = key; mesh.userData.blobInst = rig.blob;   // a contact shadow per instance
     let tints = null;
-    if (tinted) tints = ['hair', 'top', 'bottom'].map(slot => { const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3).fill(1), 3); g.setAttribute(`i${slot[0].toUpperCase()}${slot.slice(1)}`, a); return [slot, a]; });
+    if (tinted) tints = ['hair', 'top', 'bottom', 'skin'].map(slot => { const a = new THREE.InstancedBufferAttribute(new Float32Array(cap * 3).fill(1), 3); g.setAttribute(`i${slot[0].toUpperCase()}${slot.slice(1)}`, a); return [slot, a]; });
     if (lod === 2) for (let i = 0; i < cap; i++) mesh.setColorAt(i, rig.color);
     this.world.scene.add(mesh);
     const c = { rig, lod, f, cap, mesh, tints }; this.crowds.set(key, c);

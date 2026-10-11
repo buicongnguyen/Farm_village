@@ -7,8 +7,16 @@ import { XP } from '../content/economy.mjs';
 import * as barn from './barn.mjs';
 import { committedCount } from './working.mjs';
 import { gainXp } from './levels.mjs';
+import { civicBuildReason } from './village-growth.mjs';
 
 export const stepIndex = id => STEPS.findIndex(st => st.id === id);
+/** Where the checklist starts: the first step that locks nothing (content/projects.mjs). Steps before it run in order
+ *  and are kept by position (s.projects.step). From here on a step is kept by id (s.firsts['project:<id>']) and is
+ *  ticked off whenever it is true, so a later chapter can add a step anywhere in this part without moving an old farm. */
+export const TAIL = STEPS.findIndex(st => !st.builds.length);
+const stamped = (s, step) => !!s.firsts?.[`project:${step.id}`];
+/** Is this step behind the player? (For the list in Village projects.) */
+export const stepDone = (s, id) => { const i = stepIndex(id); return i >= 0 && (i < TAIL ? i < s.projects.step : stamped(s, STEPS[i])); };
 export const currentStep = s => STEPS[s.projects.step] ?? null;
 export const reached = (s, id) => s.projects.step >= stepIndex(id);
 export const completed = (s, id) => s.projects.step > stepIndex(id);
@@ -33,6 +41,10 @@ export function allowance(s, kind) {
 /** Can this kind be placed at all right now (ignoring the spot)? { ok, reason, params } */
 export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   const def = BUILDINGS[kind];
+  if (def.choice && s.story?.albright !== def.choice) return { ok: false, reason: 'This belongs to the other answer you could have given', params: { kind, lock: 'choice' } };
+  if (def.lot) return (s.counts[kind] ?? 0) >= (def.max ?? Infinity) ? { ok: false, reason: 'The quay has all of these it can hold', params: { kind, lock: 'max' } } : { ok: true };   // core/riverside.mjs judges the rest
+  if (def.site) return (s.counts[kind] ?? 0) > 0 ? { ok: false, reason: 'It is already built', params: { kind, lock: 'max' } } : { ok: true };   // core/sites.mjs judges the rest
+  const civicReason = civicBuildReason(s, kind); if (civicReason) return { ok: false, reason: civicReason };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
   if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name, project: def.after, kind, lock: 'project' } };
@@ -50,17 +62,27 @@ export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
 export const projectCost = (s, kind) => { const step = currentStep(s); return step?.builds.includes(kind) && step.cost ? step.cost : 0; };
 /** Move past every step whose `done` test passes. */
 export function advance(ctx) {
-  const { s } = ctx;
-  while (currentStep(s) && currentStep(s).done(s)) {
-    const step = currentStep(s); s.projects.step++; s.projects.delivered = {};
+  const { s } = ctx, finished = [];
+  const finish = step => {
     (s.firsts ??= {})[`project:${step.id}`] ??= ctx.now;   // stamped here, so the cart (the day after the school) sees it in the same action
-    gainXp(ctx, XP.build * 4); ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });
+    gainXp(ctx, XP.build * 4); finished.push(step);
+  };
+  while (s.projects.step < TAIL && currentStep(s).done(s)) { const step = currentStep(s); s.projects.step++; s.projects.delivered = {}; finish(step); }
+  // the checklist: whatever is true is ticked off (once: the stamp is the record), also while an earlier step is still open
+  // (a farm that ran ahead of its projects did the market day or the first delivery long before the pointer came here)
+  for (const step of STEPS.slice(TAIL)) if (!stamped(s, step) && step.done(s)) finish(step);
+  if (s.projects.step >= TAIL) {
+    // the step shown is the first still open
+    // the story's steps first: an optional one (a quiet day at the pond, a second truck, the hospital) is shown only when nothing else is open
+    const story = STEPS.findIndex((st, i) => i >= TAIL && !st.optional && !stamped(s, st)), open = story >= 0 ? story : STEPS.findIndex((st, i) => i >= TAIL && !stamped(s, st)), at = open < 0 ? STEPS.length : open;
+    if (at !== s.projects.step) { s.projects.step = at; s.projects.delivered = {}; }
   }
+  for (const step of finished) ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });
 }
 /** Where a missing good is made, for "show the way" (DESIGN 11): a building kind, or 'farm' for crops. */
 export function madeAt(good) {
   if (RECIPES[good]) return RECIPES[good].at;
-  if (good === 'egg') return 'coop'; if (good === 'milk') return 'cow_barn';
+  if (good === 'egg') return 'coop'; if (good === 'milk') return 'cow_barn'; if (good === 'goat_milk') return 'goat_barn';
   if (FRUITS[good]) return FRUITS[good].tree;
   return 'farm';
 }

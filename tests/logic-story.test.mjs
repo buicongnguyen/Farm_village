@@ -8,6 +8,7 @@ import { sceneFor, letterDue, letterReady, letterPrerequisite, useBondsData } fr
 import { LETTERS } from '../src/content/letters.mjs';
 import { HEART_SCENES } from '../src/content/hearts.mjs';
 import { BEATS } from '../src/content/story.mjs';
+import { resolveNames } from '../src/content/character-names.mjs';
 import { game, must, setLevel, T0, HOUR } from './helpers.mjs';
 
 const clueIds = ['ellis-1', 'ellis-2', 'ellis-3', 'ellis-4', 'ellis-5', 'ellis-6', 'gus-3', 'ellis-7', 'ellis-8'];
@@ -107,7 +108,7 @@ test('the authored Ellis/Gus thread is acyclic, ordered and remains an unresolve
   const text = LETTERS.filter(l => clueIds.includes(l.id)).map(l => l.text).join(' ');
   assert.doesNotMatch(text, /key under the bell|paid me to lock|Open the sluice|Back at the gate at last/);
   assert.match(LETTERS.find(l => l.id === 'ellis-8').text, /school celebration.*still upriver/);
-  const mai = LETTERS.find(l => l.id === 'mai-1').text;
+  const mai = resolveNames(LETTERS.find(l => l.id === 'mai-1').text, 'en');
   assert.match(mai, /Cloud and Drizzle/); assert.doesNotMatch(mai, /Biscuit|Pancake/);
 });
 

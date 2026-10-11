@@ -6,6 +6,7 @@ import { newGame } from '../src/core/state.mjs';
 import { pack, unpack } from '../src/kit/save.mjs';
 import { setLanguage, t } from '../src/kit/i18n.mjs';
 import { CHARM_MILESTONES } from '../src/content/economy.mjs';
+import { personName } from '../src/content/character-names.mjs';
 import { game, must, T0 } from './helpers.mjs';
 
 // These renderers return HTML strings; their sound import only registers a visibility listener.
@@ -58,17 +59,18 @@ test('Today renders earned heart and charm thresholds in both languages, includi
   const savedNews = structuredClone(s.news);
   for (const lang of ['en', 'vi']) {
     await setLanguage(lang);
+    const name = personName('lan', lang);
     const html = text(renderToday(s, T0));
-    for (const count of [3, 6]) assert.ok(html.includes(t('{name} and you: {count} hearts', { name: 'Lan', count })));
+    for (const count of [3, 6]) assert.ok(html.includes(t('{name} and you: {count} hearts', { name, count })));
     assert.ok(html.includes(t('Village charm {charm}: {name} goes up', { charm: 20, name: t('Village banner') })));
     assert.ok(!html.includes(String(T0)), 'a saved date must never appear as a heart/charm count');
-    assert.equal(text(NEWS.heartScene({ type: 'heartScene', person: 'lan', at: 3 })), t('{name} and you: {count} hearts', { name: 'Lan', count: 3 }));
+    assert.equal(text(NEWS.heartScene({ type: 'heartScene', person: 'lan', at: 3 })), t('{name} and you: {count} hearts', { name, count: 3 }));
     const legacy = { type: 'heartScene', person: 'lan', at: T0 };
     // Two thresholds earned at once cannot be recovered from the same date: keep their old news readable.
-    assert.equal(text(NEWS.heartScene(legacy, s)), `${t('Heart scene')} · Lan`);
+    assert.equal(text(NEWS.heartScene(legacy, s)), `${t('Heart scene')} · ${name}`);
     const distinct = { ...s, firsts: { ...s.firsts, 'heart:lan:3': T0 - 1 } };
-    assert.equal(text(NEWS.heartScene(legacy, distinct)), t('{name} and you: {count} hearts', { name: 'Lan', count: 6 }));
-    assert.equal(text(NEWS.heartScene(legacy, { firsts: {} })), `${t('Heart scene')} · Lan`);
+    assert.equal(text(NEWS.heartScene(legacy, distinct)), t('{name} and you: {count} hearts', { name, count: 6 }));
+    assert.equal(text(NEWS.heartScene(legacy, { firsts: {} })), `${t('Heart scene')} · ${name}`);
     for (const m of CHARM_MILESTONES) {
       assert.equal(text(NEWS.charmMilestone({ type: 'charmMilestone', at: T0, decor: m.decor, charm: 47 })), t('Village charm {charm}: {name} goes up', { charm: m.at, name: t(m.name) }));
     }

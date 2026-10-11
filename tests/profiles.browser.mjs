@@ -6,14 +6,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { newGame } from '../src/core/state.mjs';
 import { pack } from '../src/kit/save.mjs';
-import { VI } from '../src/i18n/vi.mjs';
+import { loadVietnamese, tIn } from '../src/kit/i18n.mjs';
 
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const shots = join(tmpdir(), 'farm-village-profiles'); mkdirSync(shots, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.GPU === '0'
   ? ['--enable-unsafe-swiftshader'] : ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 const expect = (ok, why) => { if (!ok) throw Error(why); };
-const tr = (lang, text) => lang === 'vi' ? VI[text] ?? text : text;
+await loadVietnamese();
+const tr = tIn;
 const key = n => `farm-village:save:${n}`;
 let failures = 0;
 
@@ -53,7 +54,7 @@ async function ready(page) {
   await page.evaluate(() => { clearInterval(farm.game.timer); farm.skipIntro(); farm.closeCards(); farm.panels.close(); });
 }
 async function picker(page) {
-  await page.click('[data-act="profiles"]');
+  await page.evaluate(() => farm.panels.show('profiles'));
   await page.waitForSelector('.panel[data-kind="profiles"] [data-profile-picker]');
 }
 async function switchTo(page, n) {
@@ -72,11 +73,9 @@ async function identity(page) {
 }
 async function phoneFit(page) {
   expect(await page.evaluate(() => {
-    const panel = document.querySelector('.panel[data-kind="profiles"]'), hud = document.querySelector('[data-act="profiles"]');
-    const p = panel.getBoundingClientRect(), h = hud.getBoundingClientRect();
-    return p.left >= -1 && p.right <= innerWidth + 1 && p.bottom <= innerHeight + 1 && panel.scrollWidth <= panel.clientWidth + 1
-      && h.width >= 44 && h.height >= 44 && h.left >= 0 && h.right <= innerWidth;
-  }), 'profile picker or HUD does not fit a phone');
+    const panel = document.querySelector('.panel[data-kind="profiles"]'), p = panel.getBoundingClientRect();
+    return p.left >= -1 && p.right <= innerWidth + 1 && p.bottom <= innerHeight + 1 && panel.scrollWidth <= panel.clientWidth + 1;
+  }), 'profile picker does not fit a phone');
   expect(await page.locator('.profile-card .btn').evaluateAll(buttons => buttons.every(b => b.getBoundingClientRect().height >= 44)), 'profile actions are smaller than 44 px');
 }
 
@@ -109,7 +108,6 @@ for (const lang of ['en', 'vi']) {
     expect(JSON.stringify(await identity(page)) === JSON.stringify(second), 'Profile 2 progress did not survive switching');
     await page.reload(); await ready(page);
     expect(JSON.stringify(await identity(page)) === JSON.stringify(second), 'Profile 2 progress did not survive reload');
-    expect(await page.textContent('[data-act="profiles"] .badge') === '2', 'HUD profile badge is wrong');
     await picker(page); await switchTo(page, 3);
     expect(JSON.stringify(await identity(page)) === JSON.stringify(third), 'Profile 3 progress did not survive switching');
     expect(!errors.length, errors.join(' | '));

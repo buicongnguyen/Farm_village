@@ -7,7 +7,7 @@ import { FAMILIES, NEIGHBOURS } from '../content/people.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { BUILDINGS, COTTAGE_LEVELS } from '../content/buildings.mjs';
 import { RENT, BONDS, CHARM_MILESTONES } from '../content/economy.mjs';
-import { currentStep, stepReady, deliveredAll, mayBuild, madeAt } from '../core/projects.mjs';
+import { currentStep, stepReady, deliveredAll, mayBuild, madeAt, stepDone } from '../core/projects.mjs';
 import { charmOf, rentPerHour, rentWaiting, needsOf } from '../core/homes.mjs';
 import { levelOf, isRepairing } from '../core/working.mjs';
 import { board } from '../core/today.mjs';
@@ -17,6 +17,7 @@ import * as barn from '../core/barn.mjs';
 import { goodIcon, iconHtml, faceHtml, glyph, coinMark } from './icon.mjs';
 import { thingName } from './repair-ui.mjs';
 import { explorationStep } from '../content/exploration.mjs';
+import { LAND_BRANCH } from '../content/land.mjs';
 import { familyRows, wishLine, nameOf } from './bonds-panels.mjs';
 import { renderDiscoveries } from './discovery-panels.mjs';
 import { discoveryOf } from '../content/discoveries.mjs';
@@ -34,6 +35,10 @@ function heartThreshold(e, s) {
 }
 /** One line of village news for each kind of event (act.mjs NEWS). */
 export const NEWS = {
+  hospitalUpgraded: () => `${iconHtml('clinic', '', 'mini')} ${t('Our little hospital')}`,
+  companyDelivered: e => `${iconHtml('truck', '', 'mini')} ${t('Company delivery returned: {coins} coins waiting at the market', { coins: num(e.coins) })}`,
+  landDiscovered: () => `${iconHtml('bench', '', 'mini')} ${t('A little discovery: {name}', { name: t(LAND_BRANCH.discovery.title) })}`,
+  contractDelivered: e => `${iconHtml('noodles', '', 'mini')} ${t('Picnic delivery received: {coins} coins', { coins: num(e.coins ?? 0) })}`,
   explorationStep: e => `${iconHtml('lucky_box', '', 'mini')} ${t('A little discovery: {name}', { name: t(explorationStep(e.step)?.title ?? 'Picnic trail') })}`,
   discovery: e => `${glyph('gift', 'g')} ${t('Lucky find: {name}', { name: t(discoveryOf(e.id)?.title ?? 'Lucky discovery') })}`,
   repaired: e => `${glyph('wrench', 'g')} ${t('Repaired: {name}', { name: thingName(null, e.id) ?? t(BUILDINGS[e.kind]?.name ?? '') })}`,
@@ -75,6 +80,8 @@ export function renderToday(s, now) {
     <div class="gift">${glyph('gift', 'g big')}<div><b>${t("Today's gift")}</b><small>${giftText(b.gift)}</small></div>
       ${b.claimed ? `<span class="done">${glyph('check', 'g')} ${t('Claimed')}</span>` : `<button class="btn primary" data-do="claimGift">${t('Claim')}</button>`}</div>
     ${days ? `<div class="streak">${iconHtml('garden_flower', '', 'mini')}<span>${t('Streak garden: day {count}', { count: days })}</span></div>` : ''}
+    ${(s.story.chapter ?? 0) >= 9 ? `<button class="next-project" data-do="report">${glyph('clock', 'g')} ${t('Today on the farm')}</button>` : ''}
+    ${(s.story.chapter ?? 0) >= 11 ? `<button class="next-project" data-do="cooperative">${iconHtml('cooperative_board', '', 'mini')} ${t('The co-operative')}${s.cooperative?.order ? ` <small>${t('An order is posted')}</small>` : ''}</button>` : ''}
     ${cartHere(s) ? `<button class="next-project" data-do="cart">${glyph('cart', 'g')} ${t('The market cart is at the gate')} <small>${t('{count} crates to fill', { count: cratesLeft(s) })}</small></button>` : ''}
     ${mail ? `<button class="next-project" data-do="mail">${glyph('mail', 'g')} ${t('{count} new letters', { count: mail })}</button>` : ''}
     ${ready.length ? `<h3>${t('While you were away')}</h3><ul class="ready">${ready.map(([i, r]) => `<li>${i}<span>${r}</span></li>`).join('')}</ul>` : ''}
@@ -87,7 +94,7 @@ export function renderToday(s, now) {
 
 export function renderProjects(s, now) {
   const step = currentStep(s);
-  const list = STEPS.map((st, i) => `<li class="${i < s.projects.step ? 'done' : i === s.projects.step ? 'now' : ''}">${glyph(i < s.projects.step ? 'check' : i === s.projects.step ? 'play' : 'dot', 'g')} ${t(st.name)}</li>`).join('');
+  const list = STEPS.map((st, i) => { const done = stepDone(s, st.id), now = !done && i === s.projects.step; return done ? `<li class="done">${glyph('check', 'g')} ${t(st.name)}</li>` : `<li class="${now ? 'now' : ''}"><button class="step-where" data-do="stepWhere" data-step="${st.id}">${glyph(now ? 'play' : 'dot', 'g')} ${t(st.name)} <i>›</i></button></li>`; }).join('');   // a step not done yet: a tap shows where it is done (main.mjs)
   if (!step) return `<p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
   const ready = stepReady(s, now), reqs = [];
   if (step.needs.level) reqs.push([s.level >= step.needs.level, t('Reach level {level}', { level: step.needs.level })]);
@@ -98,13 +105,13 @@ export function renderProjects(s, now) {
     const way = left > 0 && have < left ? `<button class="link" data-do="showWay" data-at="${at}">${t('Made at: {place}', { place: at === 'farm' ? t('Farm') : t(BUILDINGS[at].name) })}</button>` : '';
     return `<div class="need-row"><span class="good ${given >= n ? 'ok' : have >= left ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${given}/${n}</span><small>${t(GOODS[g].name)} · ${t('{count} in the barn', { count: have })}</small>${way}</div>`;
   }).join('');
-  const kind = step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
+  const kind = step.site ?? step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
   // in the restored village the work is repairing what stands: the button takes you to the run-down thing
   const run = s.mode === 'restore' ? step.builds.find(k => Object.keys(s.placed).some(id => s.placed[id].kind === k && levelOf(s, id) >= 3 && !isRepairing(s, id))) : null, runMay = run && mayBuild(s, run, { repair: true });
   return `<button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     ${goods ? `<div class="needs-list">${goods}</div>${ready.ok && !deliveredAll(s, step) ? `<button class="btn primary wide" data-do="projectDeliver">${t('Deliver goods')}</button>` : ''}` : ''}
-    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, tParams(runMay.params))}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}</p>` : ''}` : `<p class="hint">${t('Use build mode to finish this step.')}</p>`}
+    ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, tParams(runMay.params))}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}</p>` : ''}` : step.panel ? `<button class="btn primary wide" data-do="stepPanel" data-panel="${step.panel}" ${ready.ok ? '' : 'disabled'}>${t('Show me')}</button>` : step.builds.length ? `<p class="hint">${t('Use build mode to finish this step.')}</p>` : ''}
   </div><ul class="steps">${list}</ul>`;
 }
 

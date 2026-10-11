@@ -2,7 +2,7 @@
 // id, 'tool:*', 'ui:*', 'person:*', 'family:*'); for interface symbols the kit has no picture of (calendar, gear, letter,
 // lock, close ...) it draws a small glossy SVG in the same toy style: thick brown outline, bright fill, a white shine.
 // The emoji is only the last resort for an id nobody knows. 'coin' and 'xp' also find 'ui:coin' and 'ui:xp'.
-import { iconUrl } from '../content/icons.mjs';
+import { iconUrl, SMALL_ICONS } from '../content/icons.mjs';
 import { GOODS } from '../content/goods.mjs';
 
 const O = '#5b3418';   // outline
@@ -19,6 +19,7 @@ export const GLYPHS = {
   gift: svg(`<rect x="7" y="19" width="34" height="22" rx="4" fill="#ff6f91" stroke="${O}" stroke-width="3"/><rect x="5" y="13" width="38" height="8" rx="3" fill="#ff8fab" stroke="${O}" stroke-width="3"/><rect x="21" y="13" width="6" height="28" fill="#ffd25a" stroke="${O}" stroke-width="2.5"/><path d="M24 13c-3-6-11-7-10-2 1 3 6 2 10 2zm0 0c3-6 11-7 10-2-1 3-6 2-10 2z" fill="#ffd25a" stroke="${O}" stroke-width="2.5"/>`),
   charm: svg(`<path d="M24 4l4.6 13.4L42 22l-13.4 4.6L24 40l-4.6-13.4L6 22l13.4-4.6z" fill="#ffcf3f" stroke="${O}" stroke-width="3"/><path d="M38 32l1.6 4.4L44 38l-4.4 1.6L38 44l-1.6-4.4L32 38l4.4-1.6z" fill="#ff8fc7" stroke="${O}" stroke-width="2"/>`),
   clock: svg(`<circle cx="24" cy="26" r="17" fill="#fffaf0" stroke="${O}" stroke-width="3"/><circle cx="24" cy="26" r="13" fill="none" stroke="#ef5b4c" stroke-width="2.5"/><path d="M24 17v9l6 4" fill="none" stroke="${O}" stroke-width="3.5"/><rect x="20" y="4" width="8" height="5" rx="2" fill="#ef5b4c" stroke="${O}" stroke-width="2.5"/>`),
+  explore: svg(`<circle cx="24" cy="24" r="18" fill="#fffaf0" stroke="${O}" stroke-width="3"/><path d="M31 13l-4 12-10 10 4-12z" fill="#ef5b4c" stroke="${O}" stroke-width="2.5"/><path d="M21 23l6 2-10 10z" fill="#45a6f0" stroke="${O}" stroke-width="2.5"/><circle cx="24" cy="24" r="2" fill="${O}"/>`),
   rotate: svg(`<path d="M36.5 18A14 14 0 1 0 38 30" fill="none" stroke="${O}" stroke-width="9"/><path d="M36.5 18A14 14 0 1 0 38 30" fill="none" stroke="#45a6f0" stroke-width="5"/><path d="M42 7l-1.5 14.5L27 16z" fill="#45a6f0" stroke="${O}" stroke-width="3"/>`),
   close: svg(`<path d="M14 14l20 20M34 14L14 34" stroke="${O}" stroke-width="10"/><path d="M14 14l20 20M34 14L14 34" stroke="#fff" stroke-width="5"/>`),
   check: svg(`<path d="M10 25l9 9 19-20" fill="none" stroke="${O}" stroke-width="10"/><path d="M10 25l9 9 19-20" fill="none" stroke="#7ee04f" stroke-width="5"/>`),
@@ -45,12 +46,17 @@ export const GLYPHS = {
   demolish: svg(`<rect x="6" y="9" width="26" height="13" rx="3" fill="#ef7a4c" stroke="${O}" stroke-width="3" transform="rotate(25 19 15)"/><path d="M22 24l15 15" stroke="${O}" stroke-width="10"/><path d="M22 24l15 15" stroke="#d9894a" stroke-width="5"/><path d="M33 38l9 3-3 3z" fill="#ffc93c" stroke="${O}" stroke-width="2"/>`),
   home: svg(`<path d="M6 24L24 9l18 15" fill="#ef5b4c" stroke="${O}" stroke-width="3"/><rect x="11" y="22" width="26" height="19" fill="#fff4dc" stroke="${O}" stroke-width="3"/><rect x="20" y="29" width="8" height="12" fill="#c77d3e" stroke="${O}" stroke-width="2.5"/>`),
 };
-const ALIAS = { coin: 'ui:coin', xp: 'ui:xp', barn: 'ui:barn', orders: 'ui:orders' };
+const ALIAS = { coin: 'ui:coin', xp: 'ui:xp', barn: 'ui:barn', orders: 'ui:orders', today: 'ui:today', projects: 'ui:projects', mail: 'ui:mail', demolish: 'tool:demolish' };
+const SMALL_CLASSES = new Set(['mini', 'mark', 'seed', 'status-icon', 'mini-face']);
 const glyphName = id => (typeof id === 'string' ? id.replace(/^(ui|glyph):/, '') : '');
 /** The rendered icon for an id (an <img>), else an SVG symbol, else the emoji. `cls` is the element's class. */
 export const iconHtml = (id, emoji = '', cls = 'icon') => {
   const u = id && (iconUrl(id) ?? (ALIAS[id] && iconUrl(ALIAS[id])));
-  if (u) return `<img class="${cls}" src="${u}" alt="" draggable="false" decoding="async">`;
+  if (u) {
+    const small = String(cls).split(/\s+/).some(name => SMALL_CLASSES.has(name));
+    const smallUrl = small && (SMALL_ICONS[id] ?? SMALL_ICONS[`person:${id}`] ?? SMALL_ICONS[ALIAS[id]]);
+    return `<img class="${cls}" src="${smallUrl || u}" alt="" draggable="false" decoding="async">`;
+  }
   const g = GLYPHS[glyphName(id)];
   if (g) return `<span class="${cls} glyph">${g}</span>`;
   return emoji ? `<span class="${cls} emoji">${emoji}</span>` : '';

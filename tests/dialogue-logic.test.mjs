@@ -93,7 +93,7 @@ test('Mai and Gus use every eligible remark, rotate visits, and keep the three-v
     const start = id === 'gus' ? 4 : 1;
     const visits = Array.from({ length: remarks.length }, (_, i) => commentFor(s, id, start + i));
     assert.deepEqual(new Set(visits.map(v => v.text)), new Set(info.remarks.map(r => r.text)));
-    assert.ok(visits.every(v => !v.text.includes('{family}') || v.params.family === 'The Okafor family'));
+    assert.ok(visits.every(v => !v.text.includes('{family}') || v.params.family === '{family:okafor}'));
   }
   for (let n = 1; n <= 3; n++) assert.equal(commentFor(s, 'gus', n).text, NEIGHBOURS.find(p => p.id === 'gus').arc[n - 1].text);
   assert.equal(JSON.stringify(s), before, 'comments must not advance the economy RNG or alter the save');
@@ -123,7 +123,7 @@ test('Pip names only the first two hens, keeps names after reload, and distingui
 });
 
 
-test('June never points at an orphan, broken or repairing crop bed, animal home or workshop', () => {
+test('June avoids absent sources and disabled new work, while paid workshop products remain collectible during repairs', () => {
   const s = game();
   s.beds.bed = { crop: 'wheat', doneAt: T0 };
   s.animals.coop = [{ kind: 'hen', doneAt: T0 }];
@@ -132,11 +132,13 @@ test('June never points at an orphan, broken or repairing crop bed, animal home 
   for (const [id, kind] of [['bed', 'bed'], ['coop', 'coop'], ['mill', 'feed_mill']]) {
     s.placed[id] = { kind, x: 0, z: 0 }; s.cond[id] = { level: 3 };
   }
-  for (const key of ['harvest', 'collect', 'products']) assert.ok(!keys(s).includes(key), 'broken ' + key);
+  for (const key of ['harvest', 'collect']) assert.ok(!keys(s).includes(key), 'broken ' + key);
+  assert.ok(keys(s).includes('products'), 'finished products are collectible even from a broken workshop');
   s.cond = {};
   for (const key of ['harvest', 'collect', 'products']) assert.ok(keys(s).includes(key), 'available ' + key);
   for (const id of ['bed', 'coop', 'mill']) s.repairing[id] = { doneAt: T0 + 1000 };
-  for (const key of ['harvest', 'collect', 'products']) assert.ok(!keys(s).includes(key), 'repairing ' + key);
+  for (const key of ['harvest', 'collect']) assert.ok(!keys(s).includes(key), 'repairing ' + key);
+  assert.ok(keys(s).includes('products'), 'repairs do not remove paid finished products');
   delete s.beds.bed; assert.ok(!keys(s).includes('plant'));
   s.animals.coop[0].doneAt = null; s.barn.items.chicken_feed = 1;
   assert.ok(!keys(s).includes('feed'));

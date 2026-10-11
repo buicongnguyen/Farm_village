@@ -25,14 +25,16 @@ export const BUILDINGS = {
   fence:      { name: 'Fence', cat: 'paths', edge: true, area: 'any', level: 2, cost: 3, model: 'pen_fence' },
   gate:       { name: 'Gate', cat: 'paths', edge: true, area: 'any', level: 2, cost: 10, model: 'pen_gate' },
   // Animals
-  coop:       { name: 'Coop', cat: 'animals', size: [2, 2], area: 'farm', level: 2, cost: 40, door: true, animals: 'hen', project: 'mill_coop', max: 2, model: 'coop' },
+  coop:       { name: 'Coop', cat: 'animals', size: [2, 2], area: 'farm', level: 2, cost: 40, door: true, animals: 'hen', project: 'mill_coop', max: 4, model: 'coop' },
   cow_barn:   { name: 'Cow barn', cat: 'animals', size: [3, 2], area: 'farm', level: 6, cost: 0, door: true, animals: 'cow', after: 'school', max: 1, model: 'cow_shelter' },
-  kennel:     { name: "Biscuit's kennel", cat: 'animals', size: [1, 1], area: 'any', level: 5, cost: 90, pet: true, max: 1, model: 'kennel', charm: 2 },
+  goat_barn:  { name: 'Goat barn', cat: 'animals', size: [3, 2], area: 'farm', level: 8, cost: 450, door: true, animals: 'goat', after: 'school', max: 1, model: 'goat_barn' },
+  kennel:     { name: "{pet:dog:short}'s kennel", cat: 'animals', size: [1, 1], area: 'any', level: 5, cost: 90, pet: true, max: 1, model: 'kennel', charm: 2 },
   // Production
   feed_mill:  { name: 'Feed mill', cat: 'production', size: [2, 2], area: 'farm', level: 2, cost: 30, door: true, produces: true, project: 'mill_coop', max: 1, model: 'feed_mill', charm: -1 },
   // food factories (docs/VILLAGE-GROWTH-PLAN.md, stage 3b): the same farm goods processed for more profit
   juice_press: { name: 'Juice press', cat: 'production', size: [2, 2], area: 'farm', level: 6, cost: 600, door: true, produces: true, max: 1, model: 'juice_press' },
   noodle_factory: { name: 'Noodle factory', cat: 'production', size: [3, 2], area: 'farm', level: 8, cost: 1200, door: true, produces: true, max: 1, model: 'noodle_factory', charm: -1 },
+  dairy:      { name: 'Dairy', cat: 'production', size: [3, 2], area: 'farm', level: 8, cost: 750, door: true, produces: true, after: 'school', max: 1, model: 'dairy' },
   bakery:     { name: 'Bakery', cat: 'production', size: [3, 2], area: 'farm', level: 3, cost: 150, door: true, produces: true, after: 'mill_coop', max: 1, model: 'bakery', charm: -1 },
   stall:      { name: 'Roadside stall', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, stall: true, max: 1, model: 'market-stall' },
   fruit_stand:{ name: 'Fruit stand', cat: 'production', size: [2, 1], area: 'any', level: 4, cost: 80, door: true, fruitStand: true, max: 1, model: 'fruit_stand', charm: 1 },
@@ -61,6 +63,23 @@ export const BUILDINGS = {
   garden_flower: { name: 'Garden flower', cat: 'garden', size: [1, 1], area: 'any', level: 1, cost: 0, garden: true, model: 'flowers' },
   // Village projects (placed through the build order, DESIGN 11)
   clinic:     { name: 'Clinic', cat: 'projects', size: [4, 3], area: 'village', level: 6, cost: 600, door: true, project: 'clinic', max: 1, model: 'hospital', charm: 4 },
+  // Chapter 7: built on its own site on the brook (core/sites.mjs), never placed by hand; you fish from it (core/pond-bank.mjs)
+  dock:       { name: 'Boat dock', cat: 'projects', size: [2, 2], area: 'bank', level: 10, cost: 800, site: true, max: 1, model: 'dock' },
+  // Chapter 11, the one choice (core/valley.mjs). The cannery stands on the meadow by the brook if the player takes Mr
+  // Albright's offer (built by the answer, never by hand); beehives are for the player who keeps the meadow (`choice`).
+  cannery:    { name: 'Cannery', cat: 'projects', size: [5, 4], area: 'bank', level: 1, cost: 0, site: true, max: 1, produces: true, model: 'cannery' },
+  // The riverside town (Act IV, core/riverside.mjs): built on a lot of the paved quay from the quay's panel, never moved
+  // (`lot`). The quay house (chapter 13): a tea shop below, four flats above for families who come back (`flats`).
+  apartment:  { name: 'Quay house', cat: 'projects', size: [6, 5], area: 'riverside', level: 15, cost: 9000, door: true, lot: true, flats: 4, max: 3, model: 'apartment', charm: 3 },
+  // The hotel (chapter 14, core/hotel.mjs): guests come for the valley's beauty. One, on any lot; a floor more with each upgrade.
+  hotel:      { name: 'Hotel', cat: 'projects', size: [6, 5], area: 'riverside', level: 16, cost: 14000, door: true, lot: true, max: 1, model: 'hotel', charm: 4 },
+  // The railway halt (chapter 15, core/train.mjs): a platform and a little station on a lot of the quay; the train stops behind it.
+  halt:       { name: 'Railway halt', cat: 'projects', size: [6, 5], area: 'riverside', level: 17, cost: 18000, lot: true, max: 1, model: 'halt', charm: 2 },
+  beehive:    { name: 'Beehive', cat: 'production', size: [1, 1], area: 'farm', level: 10, cost: 250, produces: true, max: 5, choice: 'meadow', model: 'beehive', charm: 2 },
+  // Chapter 9: rebuilt on the village square where the old one burned (core/sites.mjs); the Harvest Festival is held from it
+  stage:      { name: 'Festival stage', cat: 'projects', size: [4, 2], area: 'village', level: 15, cost: 1500, site: true, max: 1, model: 'stage' },
+  police:     { name: 'Police post', cat: 'projects', size: [4, 3], area: 'village', level: 12, cost: 2200, door: true, civicSite: true, max: 1, model: 'police', charm: 4 },
+  company:    { name: 'Company office', cat: 'projects', size: [4, 3], area: 'village', level: 15, cost: 3000, door: true, civicSite: true, max: 1, model: 'company', charm: 2 },
   school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 6, cost: 0, door: true, project: 'school', max: 1, model: 'school' },
 };
 export const COTTAGE_LEVELS = [{ name: 'Basic' }, { name: 'Cozy' }, { name: 'Deluxe' }];

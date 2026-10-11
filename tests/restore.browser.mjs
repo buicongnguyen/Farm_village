@@ -30,7 +30,8 @@ const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 const tap = async (page, x, z) => {
   // walkers wander over the spot and a tap on a person talks to them: send them indoors so the tap reaches the thing
   for (let i = 0; i < 6; i++) { if (!(await page.isVisible('.modal [data-close]'))) break; await page.click('.modal [data-close]'); await page.waitForTimeout(150); }   // story cards the player would close
-  const p = await page.evaluate(([x, z]) => { farm.people?.walkers.forEach(w => { w.indoors = true; }); farm.focusVisible(x, z); return farm.cellToScreen(x, z); }, [x, z]);
+  const p = await page.evaluate(([x, z]) => { farm.people?.walkers.forEach(w => { w.indoors = true; }); farm.hud?.el.querySelector('.toasts')?.replaceChildren();   // a tappable notice over the spot would take the tap
+    farm.focusVisible(x, z); return farm.cellToScreen(x, z); }, [x, z]);
   await page.waitForTimeout(40); await page.mouse.click(p.x, p.y); await page.waitForTimeout(120);
 };
 const idOf = (page, kind, n = 0) => page.evaluate(([kind, n]) => Object.keys(farm.state().placed).filter(id => farm.state().placed[id].kind === kind)[n], [kind, n]);
@@ -75,8 +76,9 @@ await check('a damaged road and the worn farmhouse can be repaired from their me
   expect(await page.isVisible('.radial-btn[data-act="repair"]'), 'no Repair on the damaged road');
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !!farm.state().repairing.road_south), 'the road repair did not start');
+  await page.evaluate(() => { farm.game.s.cond.house = { level: 1, ms: 3 * 3600e3 }; });   // a visiting neighbour may have mended it in the meantime (that is the feature)
   await tap(page, 22, 62);                               // the farmhouse
-  expect(await page.isVisible('.radial-btn[data-act="repair"]'), 'no Repair on the worn farmhouse');
+  expect(await page.isVisible('.radial-btn[data-act="repair"]'), `no Repair on the worn farmhouse (${await page.evaluate(() => JSON.stringify({ radial: [...document.querySelectorAll('.radial:not([hidden]) .radial-btn')].map(b => b.dataset.act), panel: document.querySelector('.panel:not([hidden])')?.dataset.kind ?? null, modal: !!document.querySelector('.modal'), house: farm.state().cond.house, repairing: Object.keys(farm.state().repairing ?? {}), explore: document.body.classList.contains('explore-active') }))})`);
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !farm.state().cond.house), 'a worn house is mended at once');
   await tap(page, 22, 62);
@@ -110,6 +112,8 @@ await check('first session in the restored village: harvest, deliver the first o
   await page.click('[data-act="orders"]'); await page.click('.order.can [data-do="deliver"]');
   expect(await step() === 2, `step after the order: ${await step()}`);
   await page.evaluate(() => document.querySelector('.panel [data-do="close"]')?.click());
+  await page.waitForSelector('.modal [data-close]'); // the first-loaf scene waits for the order sheet to close
+  await page.locator('.modal [data-close]').last().click();
   for (const kind of ['feed_mill', 'coop']) { const id = await idOf(page, kind), [cx, cz] = await cellOf(page, id); await tap(page, cx, cz); await page.click('.radial-btn[data-act="repair"]'); }
   await page.evaluate(() => farm.setClockOffset(40_000 + 100_000));
   await page.waitForFunction(() => farm.state().projects.step > 2, null, { timeout: 8000 });
@@ -165,18 +169,32 @@ await check('the village pond: fish pictures swim in it; tap it, cast a line, re
   await page.waitForTimeout(2500);
   await page.waitForFunction(() => farm.pondFish.count >= 7, null, { timeout: 15000 }).catch(() => {});
   expect(await page.evaluate(() => farm.pondFish.count) >= 7, 'no fish swim in the village pond');
-  await tap(page, 15, 42);   // the village pond by the farmhouse await page.waitForSelector('[data-do="castLine"]', { state: 'attached', timeout: 5000 });
-  await page.evaluate(() => document.querySelector('[data-do="castLine"]').click());
+  await tap(page, 15, 42);   // the village pond by the farmhouse
+  await page.waitForSelector('[data-do="castLine"]:not([disabled])', { state: 'visible', timeout: 5000 });
+  await page.waitForFunction(() => farm.people?.walkers.has('you'), null, { timeout: 15000 });
+  await page.evaluate(() => {
+    const p = farm.people;
+    // This smoke case needs a free bank. Reservation/crowding behavior has its own pond-fishing suite.
+    // Family members otherwise choose random outings near the camera and can occupy the staged player's spot.
+    for (const w of p.walkers.values()) {
+      p.cancelTrip(w); Object.assign(w, { x: 59, z: 131, indoors: false, once: 'Idle', onceUntil: p.time + 9999 });
+    }
+    Object.assign(p.walkers.get('you'), { x: 37, z: 85, once: null, stay: 9999 }); farm.panels.render();
+  });
+  await page.locator('[data-do="castLine"]:not([data-bait])').click();
+  await page.waitForFunction(() => !!farm.state().fishing.line);
   expect(await page.evaluate(() => !!farm.state().fishing.line), 'the line was not cast');
   await page.evaluate(() => farm.setClockOffset(100_000)); await page.waitForTimeout(1500);
   expect(await page.evaluate(() => farm.marks.collect().coin.length) > 0, 'no coin marker over the biting pond');
-  await page.evaluate(() => document.querySelector('[data-do="reelIn"]').click());
+  await page.evaluate(() => farm.panels.show('pond'));   // casting closes the sheet so the cast can be watched
+  await page.waitForSelector('[data-do="reelIn"][data-steady="1"]', { timeout: 5000 });
+  await page.evaluate(() => document.querySelector('[data-do="reelIn"][data-steady="1"]').click());
   expect(await page.evaluate(() => farm.state().fishing.caught) === 1, 'no fish was reeled in');
   // tap Pip (picked straight from the people view), then the pond: Pip walks off to fish
   await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('pip'); p.selectedUntil = performance.now() + 9000; });
   await tap(page, 15, 42);
   expect(await page.evaluate(() => !!farm.people.walkers.get('pip').target && farm.people.walkers.get('pip').fishing), 'Pip was not sent fishing');
-  await page.evaluate(() => { const p = farm.people; p.selected = p.walkers.get('you'); p.selectedUntil = performance.now() + 9000; });
+  await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('you'); p.selectedUntil = performance.now() + 9000; });
   await tap(page, 15, 42);
   expect(await page.evaluate(() => !!farm.people.walkers.get('you').goal), 'you were not sent fishing');
   expect(!errors.length, errors.join(' | '));

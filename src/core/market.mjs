@@ -5,15 +5,22 @@
 // collected together. Without a `truck` index, loading picks the first truck at the market with room, filling loads
 // every idle truck, and sending sends every loaded one, so a one-truck farm plays exactly as before.
 import { TRUCK } from '../content/economy.mjs';
-import { GOODS, CROPS } from '../content/goods.mjs';
+import { GOODS, CROPS, RECIPES } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { workingCount, isWorking } from './working.mjs';
+import { growthTruckPayment, collectGrowthTruck, companyKeep } from './village-growth.mjs';
+import { marketDayOf, marketBonus, countMarketDay, marketExtra } from './market-day.mjs';
 
 export const truckOf = s => { const t = (s.truck ??= { level: 1, away: false, backAt: 0, load: [], coins: 0, fleet: [] }); t.fleet ??= []; return t; };
 /** Every truck, the first one (`s.truck`) included. */
 export const trucksOf = s => { const t = truckOf(s); return [t, ...t.fleet]; };
 export const loadUnits = t => t.load.reduce((n, i) => n + i.n, 0);
 export const loadValue = t => t.load.reduce((n, i) => n + (GOODS[i.good]?.value ?? 0) * i.n, 0);
+/** What a truck brings home for its load: with the good of the day at its bonus when it is (or was) sent on a market day. */
+export function truckPays(s, u, now) {
+  const d = u.away ? null : marketDayOf(s, now), market = u.away ? u.market : d?.active ? { good: d.good, bonus: d.bonus } : null;
+  return Math.round((loadValue(u) + marketExtra(u.load, market)) * TRUCK.pay);
+}
 /** Goods per trip; every truck has the size of the first one (`t` may be any truck record holding `level`). */
 export const capacity = t => TRUCK.capacity[Math.min(t.level ?? 1, TRUCK.capacity.length) - 1];
 export const roomIn = (s, u) => Math.max(0, capacity(truckOf(s)) - loadUnits(u));
@@ -30,13 +37,21 @@ export function blocked(s) {
   if (!isWorking(s, 'road_south')) return 'Repair the village street first';
   return null;
 }
-/** How much of a good "Fill" leaves in the barn: what the open orders ask for, never any feed (the animals eat it),
- *  and one seed per bed for crops that cost money to plant. */
+/** How much of a good "Fill" (and the truck driver) leaves in the barn: what the open orders ask for, never any feed (the
+ *  animals eat it), one seed per bed for crops that cost money to plant, and what the workshops cook with (kitchenKeep). */
 export function keepFor(s, good) {
   if (GOODS[good]?.kind === 'feed') return Infinity;
   let keep = 0;
   for (const c of s.orders?.cards ?? []) keep += c.need?.[good] ?? 0;
   if (CROPS[good] && !CROPS[good].free) keep += Object.values(s.placed).filter(p => p.kind === 'bed').length;
+  return keep + kitchenKeep(s, good) + companyKeep(s, good);   // and what the company's open request asks for
+}
+/** What the farm's own workshops cook with stays too: for every recipe of a building that stands on the farm, enough of
+ *  each ingredient for KITCHEN_BATCHES batches (the largest such amount, not the sum: recipes share their ingredients). */
+export const KITCHEN_BATCHES = 3;
+export function kitchenKeep(s, good) {
+  let keep = 0;
+  for (const r of Object.values(RECIPES)) { const n = r.needs?.[good]; if (n && (s.counts?.[r.at] ?? 0) > 0) keep = Math.max(keep, n * KITCHEN_BATCHES); }
   return keep;
 }
 /** Goods "Fill" may load, most plentiful first: [[good, n], ...]. */
@@ -53,8 +68,8 @@ export function tickTruck(ctx) {
   const { s, now } = ctx; if (!s.truck) return;
   trucksOf(s).forEach((u, i) => {
     if (!u.away || u.backAt > now) return;
-    const coins = Math.round(loadValue(u) * TRUCK.pay);
-    u.away = false; u.coins = (u.coins ?? 0) + coins; u.load = []; s.stats.trips = (s.stats.trips ?? 0) + 1;
+    const coins = growthTruckPayment(ctx, u) ?? Math.round((loadValue(u) + marketExtra(u.load, u.market)) * TRUCK.pay);
+    delete u.market; u.away = false; u.coins = (u.coins ?? 0) + coins; u.load = []; s.stats.trips = (s.stats.trips ?? 0) + 1;
     ctx.emit('truckBack', { coins, truck: i });
   });
 }
@@ -75,6 +90,9 @@ export const actions = {
     ctx.emit('truckLoaded', { good, n, truck: i });
     return { loaded: n, truck: i };
   },
+  /** Hold the hired driver back, or let them work again: { on }. A held driver still brings in the takings, but loads and
+   *  sends nothing, so the barn fills for a request or a project. Your own Fill and Send work as always. */
+  holdTrucks(ctx, { on } = {}) { if (on) ctx.s.truckHold = true; else delete ctx.s.truckHold; ctx.emit('trucksHeld', { on: !!on }); return { on: !!on }; },
   /** Fill trucks at the market with spare goods (spareForTrucks), most plentiful first: { truck? } (all idle trucks). */
   fillTruck(ctx, { truck } = {}) {
     const { s } = ctx, why = blocked(s); if (why) return ctx.fail(why);
@@ -100,27 +118,36 @@ export const actions = {
     if (chosen?.away) return ctx.fail('The truck is away');
     const go = (chosen ? [chosen] : all).filter(u => !u.away && u.load.length);
     if (!go.length) return ctx.fail(all.every(u => u.away) ? (all.length > 1 ? 'All the trucks are away' : 'The truck is away') : 'Load the truck first');
+    const day = marketDayOf(s, now);
     for (const u of go) {
       u.away = true; u.backAt = now + TRUCK.tripMs;
       ctx.emit('truckSent', { units: loadUnits(u), truck: all.indexOf(u) });
+      // a truck that leaves on a market day with the good of the day is paid the bonus for it when it is back.
+      // Sent by the hired driver it earns the same and the day counts too (chapter 6): the farm sold the good of the day.
+      if (day.active && u.load.some(row => row.good === day.good)) {
+        u.market = { good: day.good, bonus: day.bonus };
+        const first = countMarketDay(ctx); if (!ctx.byHand) ctx.emit('marketDaySale', { good: day.good, truck: all.indexOf(u), first });
+      }
     }
     return { backAt: now + TRUCK.tripMs, sent: go.length };
   },
   /** Collect every truck's takings at once. */
   collectTruck(ctx) {
     const { s } = ctx, coins = truckCoins(s); if (!coins) return ctx.fail('Nothing sold yet');
-    for (const u of trucksOf(s)) u.coins = 0;
+    for (const u of trucksOf(s)) { if (u.coins > 0) collectGrowthTruck(s, u); u.coins = 0; }
     s.coins += coins; s.stats.coinsEarned += coins;
     ctx.emit('coins', { coins });
     return { coins };
   },
   /** Sell goods from the barn at the base price, any time: { good, n } (n = all when omitted). */
   sellGood(ctx, { good, n }) {
-    const { s } = ctx; if (!GOODS[good]) return ctx.fail('Unknown good');
+    const { s, now } = ctx; if (!GOODS[good]) return ctx.fail('Unknown good');
     const have = barn.free(s, good); n = n == null ? have : Math.floor(Number(n)); if (!(n >= 1) || n > have) return ctx.fail('Missing goods');
-    barn.take(s, { [good]: n }); const coins = n * GOODS[good].value; s.coins += coins; s.stats.coinsEarned += coins;
+    const bonus = marketBonus(s, good, now);   // the good of the day pays double on a market day
+    barn.take(s, { [good]: n }); const coins = n * GOODS[good].value * bonus; s.coins += coins; s.stats.coinsEarned += coins;
     ctx.emit('coins', { coins });
-    return { coins };
+    if (bonus > 1) ctx.emit('marketDaySale', { good, n, coins, first: countMarketDay(ctx) });
+    return { coins, bonus };
   },
   /** Make every truck bigger (TRUCK.capacity). */
   upgradeTruck(ctx) {

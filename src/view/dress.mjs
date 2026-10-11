@@ -12,7 +12,8 @@
 // It draws; it never changes the rules state.
 import * as THREE from 'three';
 import * as W from '../content/world.mjs';
-import { occupant } from '../core/grid.mjs';
+import { occupant, cellsOf } from '../core/grid.mjs';
+import { marketDayOf } from '../core/market-day.mjs';
 import { buyableParcels } from '../core/build.mjs';
 import { Backdrop, WIND, merge, part, decorMaterial, template, Builder } from './backdrop.mjs';
 import { Brook, brookCentre, POND_SHAPE } from './brook.mjs';
@@ -33,8 +34,12 @@ export function reserved(x, z) {
   if (z >= 88 && z <= 89 && x >= 30) return true;                         // the verge between the farm and the village road
   if (x >= 30 && x <= 31 && z >= 22 && z <= 89) return true;               // the verge between the road and the farm
   if (W.NEIGHBOUR_SIGNS.some(s => Math.abs(s.x - x) <= 2 && Math.abs(s.z - z) <= 2)) return true;
+  if (z <= W.TRACK.z + 1) return true;                                     // the railway along the north edge (chapter 15), and room beside it
+  if (W.inTowpath(x, z) || W.inTowpath(x, z + 1) || W.inTowpath(x, z + 2)) return true;   // the old towpath on the far bank (chapter 12), and room for the crowns beside it
   return false;
 }
+/** The footprints of the story's fixed sites (the boat dock) and scenery (the old mill): wild scatter keeps off them. */
+const SITE_BOXES = W.SITES.map(st => ({ x0: st.x, x1: st.x + st.size[0] - 1, z0: st.z, z1: st.z + st.size[1] - 1 })).concat(W.OLD_MILL.box, W.MEADOW);   // and off the old mill on the bank, and the brook meadow (chapter 11)
 /** Within two cells of a road (trees and bushes keep their crowns off it). */
 const nearRoad = (x, z) => W.ROADS.some(r => x >= r.x0 - 2 && x <= r.x1 + 2 && z >= r.z0 - 2 && z <= r.z1 + 2);
 /** Grove density, 0..1: high in the woods, low in clearings (seeded; the same in every game). */
@@ -85,6 +90,11 @@ export function planWilds() {
     const z = brookCentre(xm) + side * (6.4 + rand() * 1.4), cx = Math.floor(xm / CELL), cz = Math.floor(z / CELL);
     if (!W.isRoad(cx, cz) && !W.inFarm(cx, cz) && !W.nearHome(cx, cz)) out.flowers.push({ x: xm, z, c: pick(FLOWER_COLORS), s: 0.9 + rand() * 0.3 });
   }
+  // Clear the public approach and the separate fishing places without reseeding the rest of the scenery.
+  for (const [kind, items] of Object.entries(out)) out[kind] = items.filter(t => {
+    const margin = kind === 'trees' ? 2.3 * t.s : kind === 'bushes' ? 1.1 * t.s : kind === 'rocks' ? t.s : 0.6;
+    return [W.POND_PATH, W.POND_SHORE, ...SITE_BOXES].every(p => t.x + margin < p.x0 * CELL || t.x - margin > (p.x1 + 1) * CELL || t.z + margin < p.z0 * CELL || t.z - margin > (p.z1 + 1) * CELL);
+  });
   return out;
 }
 
@@ -146,6 +156,23 @@ function placeTrees(world, plan) {
   }
   for (const t of plan.bushes) { b.set(`wild${n++}`, { model: 'bush', x: t.x, z: t.z, rot: rand() * 6.28, scale: t.s }); world.ground.stampShade(t.x, t.z, 1.1 * t.s, 0.1); }
   for (const t of plan.rocks) b.set(`wild${n++}`, { model: 'rock', x: t.x, z: t.z, rot: rand() * 6.28, scale: t.s });
+}
+/** Take the wild scatter off land that has just been built on (the riverside, once its quay is paved): its trees,
+ *  bushes and rocks leave the batches, the merged flowers and tufts are rebuilt without the ones inside, and the shade
+ *  under the trees is stamped again. inside(cellX, cellZ). Returns how many batch items went. */
+export function clearWilds(world, inside, { keepDecor = false } = {}) {
+  const plan = world.wilds; if (!plan) return 0;
+  const out = t => inside(Math.floor(t.x / CELL), Math.floor(t.z / CELL));
+  const b = world.batches; let n = 0, removed = 0;
+  for (const list of [plan.trees, plan.bushes, plan.rocks]) for (const t of list) { const id = `wild${n++}`; if (!t.gone && out(t)) { t.gone = true; b.remove(id); removed++; } }   // the ids follow placeTrees' order
+  if (keepDecor) { if (removed) { world.ground.clearShade(); for (const t of plan.trees) if (!t.gone) world.ground.stampShade(t.x + 0.6, t.z + 0.4, 2.3 * t.s, 0.16); for (const t of plan.bushes) if (!t.gone) world.ground.stampShade(t.x, t.z, 1.1 * t.s, 0.1); world.ground.markAll(); } return removed; }   // flowers and tufts stay: they are walked over
+  for (const key of ['flowers', 'tufts', 'mushrooms']) plan[key] = plan[key].filter(t => !out(t));
+  if (world.wildDecor) { for (const m of world.wildDecor) { world.scene.remove(m); m.geometry.dispose(); } world.wildDecor = placeDecor(world, plan); }
+  world.ground.clearShade();
+  for (const t of plan.trees) if (!t.gone) world.ground.stampShade(t.x + 0.6, t.z + 0.4, 2.3 * t.s, 0.16);
+  for (const t of plan.bushes) if (!t.gone) world.ground.stampShade(t.x, t.z, 1.1 * t.s, 0.1);
+  world.ground.markAll();
+  return removed;
 }
 /** Flowers, tufts and mushrooms merged into a few meshes. */
 function placeDecor(world, plan) {
@@ -265,11 +292,23 @@ async function dressVillage(world, game) {
     ['plaza-bench1', { model: 'deco_bench', x: (P.x0 + 0.6) * CELL, z: (W.WELL.z) * CELL, rot: Math.PI / 2 }],
     ['plaza-bench2', { model: 'deco_bench', x: (P.x1 + 0.4) * CELL, z: (W.WELL.z) * CELL, rot: -Math.PI / 2 }],
     ['plaza-bench3', { model: 'deco_bench', x: W.WELL.x * CELL, z: (P.z1 + 0.4) * CELL, rot: Math.PI }],
-    ['plaza-lamp1', { model: 'deco_lamp', x: (P.x0 + 0.35) * CELL, z: (W.WELL.z - 1.6) * CELL, rot: 0 }],
+    ['plaza-lamp1', { model: 'deco_lamp', x: (P.x0 + 0.35) * CELL, z: (W.WELL.z - 0.7) * CELL, rot: 0 }],
     ['plaza-lamp2', { model: 'deco_lamp', x: (P.x1 + 0.65) * CELL, z: (W.WELL.z + 1.6) * CELL, rot: 0 }],
+    // market stalls in the plaza's corners (vivid pass): striped awnings, goods, a busy village square
+    ...(world.batches.has('stall') ? [['plaza-stall1', { model: 'stall', x: (P.x0 + 1) * CELL, z: (P.z1) * CELL, rot: 3 * Math.PI / 4 }],   // the south corners: the north edge is the festival stage's (W.SITES)
+      ['plaza-stall3', { model: 'stall', x: (P.x1) * CELL, z: (P.z1) * CELL, rot: -3 * Math.PI / 4 }]] : []),
     // a bench at the south edge of the farmhouse forecourt, between its planters
     ['home-bench', { model: 'deco_bench', x: ((W.HOME_YARD.x0 + W.HOME_YARD.x1 + 1) / 2) * CELL, z: (W.HOME_YARD.z1 + 0.6) * CELL, rot: Math.PI }],
   ];
+  // little shops along the village pond's north and south shores, facing the water, each with a deck to stand on
+  // (decor models load late: placed when they are in)
+  const shops = [['lake_kiosk_fish', W.POND.x0 + 0.5, W.POND.z0 - 1.6, 0], ['lake_kiosk_snacks', W.POND.x1 - 0.5, W.POND.z0 - 1.6, 0],
+    ['lake_kiosk_flowers', W.POND.x0 + 0.5, W.POND.z1 + 2.6, Math.PI], ['lake_kiosk_fish', W.POND.x1 - 0.5, W.POND.z1 + 2.6, Math.PI]];
+  const placeShops = (tries = 0) => {
+    if (!shops.every(([m]) => world.batches.has(m))) { if (tries < 60) setTimeout(() => placeShops(tries + 1), 500); return; }
+    shops.forEach(([model, x, z, rot], i) => world.batches.set(`lake-shop${i}`, { model, x: x * CELL, z: z * CELL, rot }));
+  };
+  placeShops();
   // the verge between the farm and the village road: shade trees and lamp posts, alternating
   for (let x = 34, k = 0; x < 96; x += 6, k++) {
     if (k % 2) items.push([`verge-lamp${k}`, { model: 'deco_lamp', x: (x + 0.5) * CELL, z: 89.4 * CELL, rot: 0 }]);
@@ -320,10 +359,25 @@ async function dressMilestones(world, game) {
       if (isNew && fresh.includes(decorId)) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 });   // a milestone just reached pops in
     }
   };
-  show();
+  // Market day (chapter 6): flags along both long sides of the market square while the day runs.
+  const marketFlags = pop => {
+    const s = game.s, day = marketDayOf(s, game.now), p = day.active ? Object.values(s.placed).find(q => q.kind === 'market') : null, want = new Map();
+    if (p && b.has('village_bunting')) {
+      const cells = cellsOf('market', p.x, p.z, p.rot ?? 0), xs = cells.map(c => c[0]), zs = cells.map(c => c[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, z0 = Math.min(...zs), z1 = Math.max(...zs) + 1, wide = x1 - x0 >= z1 - z0, n = Math.max(1, Math.round((wide ? x1 - x0 : z1 - z0) / 2));
+      for (let i = 0; i < n; i++) for (const side of [0, 1]) {
+        const along = ((wide ? x0 : z0) + (i + 0.5) * (wide ? x1 - x0 : z1 - z0) / n) * CELL, across = (side ? (wide ? z1 : x1) + 0.2 : (wide ? z0 : x0) - 0.2) * CELL;
+        want.set(`market-flags-${side}${i}`, { model: 'village_bunting', x: wide ? along : across, z: wide ? across : along, rot: wide ? 0 : Math.PI / 2 });
+      }
+    }
+    for (const id of [...b.items.keys()]) if (String(id).startsWith('market-flags-') && !want.has(id)) b.remove(id);
+    for (const [id, it] of want) { const isNew = !b.items.has(id); b.set(id, it); if (isNew && pop) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 }); }
+  };
+  show(); marketFlags(false);
   game.on(r => {
     const ev = r.events ?? [], fresh = ev.filter(e => e.type === 'charmMilestone').map(e => e.decor);
     if (fresh.length || ev.some(e => ['placed', 'moved', 'stored', 'loaded'].includes(e.type))) show(fresh);
+    if (ev.some(e => ['marketDayStarted', 'marketDayEnded', 'placed', 'moved', 'stored', 'loaded', 'repaired'].includes(e.type))) marketFlags(ev.some(e => e.type === 'marketDayStarted'));
   });
 }
 
@@ -365,5 +419,7 @@ export async function dressWorld(world, game) {
     world.daylight?.apply(); fit(world.cam);
   })();
   // after that: the village's heavier models and the windmill's rotor
-  world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam)), spinRotor(world)]).catch(e => console.warn('world dressing', e));
+  world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam))
+    .then(() => import('./old-mill.mjs')).then(({ OldMill }) => { world.oldMill = new OldMill(world, game); })
+    .then(() => import('./train-view.mjs')).then(({ TrainView }) => { world.train = new TrainView(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
 }

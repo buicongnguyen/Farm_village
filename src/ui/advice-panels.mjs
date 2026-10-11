@@ -3,6 +3,7 @@
 import { adviceCards, adviceOf, earnedCelebrations } from '../core/advice.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { isWorking } from '../core/working.mjs';
+import { explorationStep } from '../content/exploration.mjs';
 import { t, tParams } from '../kit/i18n.mjs';
 import { iconHtml, faceHtml } from './icon.mjs';
 import { nameOf } from './bonds-panels.mjs';
@@ -40,7 +41,7 @@ export function renderAdviceDetail(s, ref, now) {
     <h3>${iconHtml(card.icon, '', 'mini')} ${text(card, 'title')}</h3>
     <div class="scene-line">${faceHtml(card.person)}<div><b>${esc(nameOf(card.person))}</b><p>${text(card, 'line')}</p></div></div>
     <h3>${t('Why this helps')}</h3><p>${text(card, 'reason')}</p>
-    <div class="today"><button class="btn primary wide" data-do="showAdvice" ${attrs(card)}>${t('Show me')}</button>
+    <div class="today"><button class="btn go wide" data-do="showAdvice" ${attrs(card)}>${t('Show me')}</button>
       <button class="btn wide" data-do="${card.deferred ? 'restoreAdvice' : 'deferAdvice'}" ${attrs(card)}>${t(card.deferred ? 'Bring this idea back' : 'Maybe later')}</button>
       <button class="btn ghost wide" data-do="adviceToday">${t('Back to Today')}</button></div>
     </article>`;
@@ -84,6 +85,20 @@ export function followAdvice(panels, ref) {
     panels.close(); panels.onBuildKind?.(target.buildingKind);
   } else if (target.kind === 'pond') {
     if (panels.onShowWay) { panels.close(); panels.onShowWay('pond'); } else panels.show('pond');
+  } else if (target.kind === 'exploration') {
+    const step = explorationStep(target.step); if (!step) return stale(panels);
+    if (panels.onExplorePlace) { panels.close(); panels.onExplorePlace(step.location); }
+    else panels.show('exploration', step.location);
+  } else if (target.kind === 'land') {
+    if (panels.onLandVisit) { panels.close(); panels.onLandVisit(target.parcel); }
+    else panels.show('land', target.parcel);
+  } else if (target.kind === 'learning') {
+    if (panels.onLearningVisit) { panels.close(); panels.onLearningVisit(); }
+    else panels.show('learning');
+  } else if (target.kind === 'school-activity') panels.show('schoolActivity');
+  else if (target.kind === 'repair' || target.kind === 'cell') {
+    if (!panels.onAdviceTarget) return stale(panels);
+    panels.close(); panels.onAdviceTarget(target);
   } else if (target.kind === 'fruit-stand') panels.show('fruit_stand');
   else if (target.kind === 'album') panels.show('album');
   else return stale(panels);

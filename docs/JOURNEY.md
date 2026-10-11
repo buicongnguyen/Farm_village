@@ -70,6 +70,12 @@ The gaps this plan closes (from the evaluation of 2026-10-07):
 Each stage has one clear goal on screen, one new kind of fun, and one story chapter. Levels are targets for the
 economy simulation (`npm run sim`), not promises.
 
+The later bounded growth slice implements some business systems earlier than this original stage ladder: juice
+press at level 6, noodle factory at 8, hospital at 10, police at 12 and company at 15. The first two factories are
+already live; the civic/company slice is implemented and validated. These mechanics do not complete the later story
+chapters, automated job roster or water-rights resolution. Exact implemented gates are in
+[VILLAGE-GROWTH-PLAN.md](VILLAGE-GROWTH-PLAN.md).
+
 Future cast proposals: **Priya** is a grower from a neighbouring farm, and **the twins** are two growers from another
 valley holding. Their names, voices and first-meeting scenes must be settled before implementation. Introduce each
 through an actual visit before any later co-operative dialogue assumes the player knows them; these are not current
@@ -106,7 +112,7 @@ the burned festival stage) runs through it and ends in Act III. Acts IV–V are 
 ### Act I · Homecoming (chapters 1–4, done)
 The key under the seed tin, the first harvest, the first family, the school bell. Ellis writes from upriver.
 
-### Act II · The valley wakes (chapters 5–9, from `STORY.md`)
+### Act II · The valley wakes (chapters 5–9, built)
 | # | Title | Opens | Story |
 |---|---|---|---|
 | 5 | Someone to care for us | Stage 2: the orchard | Marisol brings Dr Hazel home and the clinic reopens. Grace the vet sets up in its back room, and suggests a kennel for Biscuit. Ada plants a cherry tree "for the grandchildren's grandchildren". |
@@ -118,23 +124,30 @@ The key under the seed tin, the first harvest, the first family, the school bell
 (Stage 5, the village to be proud of, runs alongside chapters 7–8: the playground, the school activities and the
 farmhouse rooms open as families settle.)
 
-### Act III · The brook co-operative (chapters 10–12)
+### Act III · The brook co-operative (chapters 10–12, built)
 | # | Title | Story |
 |---|---|---|
-| 10 | Hands to help | The first hired villagers: Minh as builder, Lan as baker, Sam (who loves the long way home) as the truck driver. Bea teaches you to read the evening report. |
-| 11 | The man from the city | Mr Albright of the flour company offers a fortune to build a big factory on the meadow. You may say yes (fast money, a grey building, the meadow gone) or no (a slower contract, the meadow stays). Both paths finish the story; the green one keeps the beauty bonus and Mai's friendship. |
-| 12 | One river, many farms | Mai, Gus, Priya and the twins join a co-operative. Together you open the road over the hills. |
+| 10 | Hands to help | Neighbours take on the beds, the ovens and the truck; Granny Maple adds up the day on the back of an envelope. Counted from the festival on. |
+| 11 | The man from the city | Mr Albright offers to build a cannery on the brook meadow. Yes: the cannery, good wages, the meadow gone. No: the meadow stays, with wildflowers and bees. The one real choice of the story. |
+| 12 | One river, many farms | Daisy, Bramble, Juniper and the twins found a co-operative with you and fill shared orders. The gate comes off the old towpath: the far bank is open. |
 
-### Act IV · Over the hills (chapters 13–16)
-Pine Ridge, a mountain village emptier than Hollowbrook ever was. Its keeper is Nana Tuyết, Ada's old friend from
-school. You build a highland ranch (horses, sheep), tea terraces, and a train halt. Ellis guides you on the old fishing
-paths; Pip finds the spring the brook comes from.
+### Act IV · Across the river (chapters 13–16, built)
+| # | Title | Story |
+|---|---|---|
+| 13 | The far bank | The old quay is paved and the first quay house built; families come home. Nana Snow keeps the quay. |
+| 14 | Rooms with a view | A hotel on the quay; guests come for the valley's beauty and want breakfast from the farm. |
+| 15 | The evening train | The halt reopens and wagons leave full. |
+| 16 | Where the brook begins | Grandpa Oak and Sunny walk upriver in three stops, to the spring. This spring he went up because the brook had dropped again; he found the gate padlocked. |
 
-### Act V · The valley of plenty (chapters 17–20)
-Two villages, one valley. The co-operative becomes a company the whole valley owns a share of. A valley fair, the Green
-Valley award, and a closing card on the night the company's value reaches a billion: Ada, Ellis, June and Pip on the
-porch, the lights of both villages below. Ada: "Your grandfather said the fish would tell him when to come home. I think
-the whole valley told you."
+### Act V · The valley of plenty (chapters 17–20, built)
+| # | Title | Story |
+|---|---|---|
+| 17 | A share for everyone | The co-operative, the office and the quay become one company that every household owns a share of. The valley has a value. |
+| 18 | The valley fair | Three valleys bring their best; Clover, Honey and Skipper judge. A ribbon comes home. (Pine Ridge is one of the rival valleys.) |
+| 19 | The green valley | Green goals, titles as the value grows, and the county's prize; Mr Albright comes back as a hotel guest. |
+| 20 | The lights of two villages | The value reaches a billion. Five closing cards; Granny Maple: "The valley was never empty, dear. It was only waiting for someone to stay." |
+
+The text of every card is in `src/content/story.mjs`; that file wins where this one differs.
 
 **Story rules (in addition to `STORY.md`)**
 - Nobody is a villain. Mr Albright is a businessman who learns something; Gus is grumpy, never mean.
@@ -199,30 +212,63 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Current language follow-up, 2026-10-09: complete Korean/Japanese editions are implemented on `codex/korean-japanese`.
+Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
+All four menus, catalogs, local names, dates and number formats share the same saved farms and story logic.
+[LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) records verification and release status. This does not complete any
+new gameplay stage; the preceding naming-only scope below belongs to PR #34.
+
+Current naming follow-up, 2026-10-09: [PR #34](https://github.com/buicongnguyen/Farm_village/pull/34), `codex/localized-cast`, implements the current cast's independent English and
+Vietnamese aliases, explicit story references and old-save text compatibility. **Implemented and locally validated**;
+see [LOCALIZED-CAST.md](LOCALIZED-CAST.md) for checks and release handoff. Korean/Japanese names are prepared aliases only. This does not
+introduce later characters, add language-menu options or complete any remaining roadmap stage.
+
+Current follow-up, 2026-10-09: [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) is implemented and validated for compact HUD/contextual guidance, the hospital footprint correction and AR-013 bench art. [Scope](CLEARER-GUIDANCE-AND-ART.md). PR #28 already shipped garden learning, project-only energy/free rest, strawberries, school baskets and AR-011/AR-012's first delivery. The [first goat/dairy contract](MEADOW-DAIRY-SCOPE.md) is separately scoped; its gameplay is not part of PR #31.
+
+Historical PR #26 validation record, 2026-10-09: [parallel trays, village shops and civic/company growth](PRODUCTION-AND-VILLAGE-GROWTH.md)
+are implemented and validated on `codex/production-village-growth`, starting from `4377129` and integrating main
+`1add9a4`. **355/355 native tests, all 23 component suites, 28/28 smoke checks and eight production contexts pass.**
+Pace targets pass with steady school/clinic day 3; production first-load code is 1,094,983 bytes. The 23-suite result
+includes the corrected cast fixture (9/9) after the initial 22/23 run and affected final-build reruns. All 20 new
+checks and the eight production contexts cover English/Vietnamese at 390/1280 px. The release PR records CI, Pages
+deployment and live verification. The picnic trail/AR-010 (PR #18) and guidance/covered plot/picnic
+menu (PR #24) were already live at that baseline. Skills/project energy and AR-011/AR-012 integration were then
+separate tasks; PR #28 and the current follow-up supersede those pending statuses. Later chapters remain future work.
+
 Baseline release: [PR #4 — profiles and lucky discoveries](https://github.com/buicongnguyen/Farm_village/pull/4), merged at `ab6b230`; [Pages deployment 37728932775](https://github.com/buicongnguyen/Farm_village/actions/runs/37728932775) passed. **Adaptive advice and AR-009 discovery icons are live** through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6), merged as `a8b45988a8ff1549b10a164c48a5fda814b23eca`. [Pages deployment 37733300401](https://github.com/buicongnguyen/Farm_village/actions/runs/37733300401) passed, followed by production acceptance in eight isolated browser contexts: four fresh starts and four with explicit save fixtures, covering phone-sized/desktop viewports and both English and Vietnamese. UI/art and error checks passed; AR-009 is done. This verification used browser viewports, not physical devices.
 
 Release status, 2026-10-08: the orchard logic is live through PR #1 and Claude's AR-001 look/feedback pass through PR #2. PR #3 closes AR-001 after production checks; PR #4 adds profiles and discoveries to main at `ab6b230`. The [consolidated plan](HOLLOWBROOK-IMPLEMENTATION-PLAN.md) and [Codex task list](CODEX-TASKS.md) distinguish those completed releases from later expansion.
 
 Follow-up review shipped in PR #4: `b03c38c` fixes in-transit visitor taps, refreshes observations at speech time, and corrects saved heart/charm news counts. Further changes remove obsolete hen translations and clarify Pia's role. English and Vietnamese share adaptive rules; the [character naming plan](CHARACTER-NAMING-PLAN.md) proposes a complete cast, including replacing Pip, while retaining stable save/art IDs. Proposed human names and future chapters are not implemented by this review.
 
-The live profile/discovery slice supplies three local farms and four one-time discoveries, with the unchanged 500-coin opening plus at most 110 discovery coins per save. Today/Album cards retain earned memories and read state. See [Profiles and discoveries](PROFILES-AND-DISCOVERIES.md) for behavior and migration. Its release validation passed 211 rules tests, all pace targets, all component browser suites after fixture corrections, and 28/28 smoke checks. Steady school and clinic day 3; test build 986,313 bytes, production 985,234 bytes. Phone/PC rendering budgets passed. [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) is the next art brief; do not repeat completed AR-001.
+The historical PR #4 profile/discovery slice supplied three local farms and four one-time discoveries, with the unchanged 500-coin opening plus at most 110 discovery coins per save. Today/Album cards retain earned memories and read state. See [Profiles and discoveries](PROFILES-AND-DISCOVERIES.md) for behavior and migration. Its release validation passed 211 rules tests, all pace targets, all component browser suites after fixture corrections, and 28/28 smoke checks. Steady school and clinic day 3; test build 986,313 bytes, production 985,234 bytes. Phone/PC rendering budgets passed. [AR-009](CLAUDE-DISCOVERY-HANDOFF.md) was the next art brief then and subsequently shipped in PR #6.
+
+The following PR #6 record preserves its own test counts and then-planned work; the current status above and table below take precedence.
 
 The advice delivery adds 18 English/Vietnamese topic types, saved read/postponed states, truthful production and business guidance, and three one-time celebration memories. Previews spend no resources; save version 7 preserves old farms. Validation: 229 native tests on the combined advice/art tree and all pace targets pass, steady school/clinic day 3; all 17 component browser suites passed on the advice build. Smoke checks: **28/28 passed on the advice build**. Final first-load code: **1,005,608 bytes** test / **1,004,534 bytes** production. AR-009 integration checks: **English/Vietnamese advice and discovery suites passed again after integration; 12 keepsake cards passed on phone/desktop in both languages (fit, exact 256 px icons, no extra payment, no GLB request and no errors)**. Cards use the new WebP keepsake icons; the registered GLB is not loaded by current discovery views. This is an interface/progression follow-up within the existing chapters 1–5, not completion of the later stages. Covered land, skills/project energy, school activities and meadow progression remain planned. See the observed [reference-game comparison](REFERENCE-GAME-COMPARISON.md) for further design evaluation.
 
-Current picnic integration baseline: main `e8f09a5` includes newer icons, lower truck prices, herb/ginseng, orange/coconut/willow content and growth plans. AR-010 asset creation is complete. The earlier 261-native / 19-component / 28-smoke results predate this main/art integration and do not certify the current tree. Covered land, project-only energy and later chapter rows below remain separate planned work.
+Completed picnic release: [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18) integrated AR-010 and passed its combined checks. The full 261-native / 19-component / 28-smoke run preceded the final factory-content merge; native/pace, affected art/orchard/discovery, all smoke checks and local production acceptance passed again afterward. The PR records successful Pages deployment and live acceptance. The former “waiting for integration” note is obsolete.
+
+Completed guidance follow-up: ingredient source/return guidance, one usable covered-land branch and an optional three-batch food story shipped in [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24), based on main `b0172d6`. All 304 native tests, pace targets, 21 component browser suites, 28 smoke checks and four local production contexts passed. [Delivery details](GUIDANCE-LAND-FOOD-DELIVERY.md) describe that release; the PR records deployment/live acceptance. The new civic/company slice above has its own checks.
 
 | Stage | Status |
 |---|---|
-| 1. Homecoming | done (v0.3) |
+| Cross-stage follow-up: Korean/Japanese editions | Live through [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35) (`ceef19c`): 428 native tests, pace, 34 component suites, 28 smoke checks, 54 local production contexts and 46 live contexts pass; CI and Pages passed. Complete current catalogs, four-language menus and formatting, safe switching and unchanged saved progression. [Scope and release checks](LANGUAGE-EDITIONS.md). |
+| 1. Homecoming | done (v0.3); public access is live through [PR #37](https://github.com/buicongnguyen/Farm_village/pull/37). Fishing follow-up validated for [PR #42](https://github.com/buicongnguyen/Farm_village/pull/42): floating platform removed, separate reserved places, visible tackle and no-loss timing challenge; 494 native tests, pace, 36 component suites and 28 smoke checks pass. [Fishing scope and release](POND-FISHING.md). |
 | 2. The orchard | done: live 2026-10-08 (v0.4 logic in PR #1, AR-001 look pass in PR #2) |
 | Cross-stage follow-up: profiles and discoveries | live through PR #4 (`ab6b230`); three profiles, four finds, saved memories |
 | Cross-stage follow-up: adaptive advice and discovery icons | live through [PR #6](https://github.com/buicongnguyen/Farm_village/pull/6) (`a8b4598`); Pages and eight-context production acceptance passed; AR-009 done |
-| Cross-stage planning: playful localized names | User confirmed playful home-name direction; four-language candidate sheet and compatibility plan in [CHARACTER-NAMING-PLAN.md](CHARACTER-NAMING-PLAN.md). Individual names proposed; no runtime rename deployed. |
-| Cross-stage follow-up: picnic discovery trail | Implemented and validated in [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md); deployment acceptance is recorded in the PR. |
-| 3. The meadow | not started |
+| Cross-stage follow-up: playful localized names | Implemented and validated on `codex/localized-cast`: 417 native tests, pace, 32 component suites, 28 smoke checks and 14 production contexts pass. [Scope and release handoff](LOCALIZED-CAST.md). Current English/Vietnamese cast, pets and household labels use explicit identity references; old orders/wishes keep their saved facts. Korean/Japanese aliases are prepared data only; later cast, full translations and the wider roadmap remain separate work. |
+| Cross-stage follow-up: picnic discovery trail | Live through [PR #18](https://github.com/buicongnguyen/Farm_village/pull/18): staged porch/pond props, three bilingual memories, one stored flowerpot, saved read/reward state and arrival-gated favours. [Scope and checks](DISCOVERY-TRAIL.md). |
+| Cross-stage follow-up: guidance, covered land and food story | Live through [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24): truthful ingredient help and return flow; one 500-coin parcel with usable clearing and bench memory; three connected picnic food deliveries and bilingual scenes. [Scope and release checks](GUIDANCE-LAND-FOOD-DELIVERY.md). |
+| Cross-stage follow-up: parallel trays and useful shops | Implemented and validated: independent trays with legacy timing, obtainable orders, lake/plaza customers and held-stock-safe quotes. Combined validation: 355 native, pace, 23 component suites, 28 smoke checks and eight production contexts. Release PR records deployment/live verification. |
+| Cross-stage follow-up: hospital/police/company first tier | Implemented and validated at levels 10/12/15: civic gates, one worker/manager, labels, real fleet contracts and earned memories. [Scope](PRODUCTION-AND-VILLAGE-GROWTH.md); later chapters and art tiers remain planned. |
+| Cross-stage follow-up: garden learning and school baskets | Implemented and validated: permanent garden-repair lesson, three-step potting bench, project-only energy/free rest, strawberry crop and replayable school counting with earned memories. Includes AR-011/AR-012 integration; 389 native, 28 component suites and 28 smoke checks pass. [Delivery record](LEARNING-GARDEN-SCHOOL.md) and [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) track publication. Dedicated bench art is AR-013; this does not complete the meadow or later chapters. |
+| 3. The meadow | Gameplay not started; first goat/dairy art delivery requested with exact IDs in [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md). Cat, land deeds and the larger region remain separate proposals. |
+| Cross-stage follow-up: clearer guidance and delivered art | Implemented and validated for PR #31: compact HUD, contextual discovery/repair/school advice, hospital footprint fix and three potting-bench art states. 407 native tests, pace, 31 component suites, 28 smoke checks and 16 local production contexts pass; the PR records publication/live checks. [Scope and checks](CLEARER-GUIDANCE-AND-ART.md). Meadow gameplay remains separate; its first art contract is [scoped](MEADOW-DAIRY-SCOPE.md). |
 | 4. Down to the river | not started |
-| 5. A village to be proud of | not started |
-| 6. Hollowbrook Farm Co. | not started |
+| 5. A village to be proud of | First Explore slice implemented with AR-015/PR #43: public-porch entry, direct movement, safe exit, sofa/rest and saved garden-drawing memory in all four editions. [Scope, controls and validation](EXPLORE-MODE.md#implemented-first-slice--2026-10-09). School/other interiors and additional activities remain planned; this does not complete the stage. |
+| 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
 

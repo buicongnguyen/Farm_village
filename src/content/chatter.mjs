@@ -80,7 +80,7 @@ export const PIP_LINES = {
   animalArrived: ['Welcome to the farm, new friend!'],
   collected: ['Fresh from the farm!'],
   familyArrived: ['New neighbours! I hope they have a kid my age.'],
-  orderFilled: ['Ada says a thank you is the best payment. Coins are nice too.'],
+  orderFilled: ['{person:ada:short} says a thank you is the best payment. Coins are nice too.'],
   levelUp: ['Level up! Does that mean I get a bigger room?'],
   projectDone: ['Hooray! Everyone come and look!'],
 };

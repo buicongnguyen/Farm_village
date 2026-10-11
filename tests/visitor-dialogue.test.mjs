@@ -29,13 +29,13 @@ test('tapping an incoming neighbour consumes one observation without breaking th
   const s = game(), { view, w, spoken } = fixture(s, 'gus', 1), before = JSON.stringify(s);
   const gus = NEIGHBOURS.find(n => n.id === 'gus');
   view.talk(w);
-  assert.deepEqual(spoken, [gus.arc[0].text], 'retain the visit arc even if later visits are already saved');
+  assert.deepEqual(spoken, [t(gus.arc[0].text)], 'retain the visit arc even if later visits are already saved');
   assert.equal(w.heard, undefined, 'the observation must not consume the introduction');
   assert.doesNotThrow(() => view.liveVillager(w, 1, false));
   assert.equal(w.stage, 'talking');
   assert.equal(spoken.length, 1, 'arrival must not repeat an observation already heard on the way in');
   view.talk(w);
-  assert.equal(spoken[1], gus.line, 'ordinary conversation remains available after the visit line');
+  assert.equal(spoken[1], t(gus.line), 'ordinary conversation remains available after the visit line');
   assert.equal(JSON.stringify(s), before, 'a conversation cannot grant another visit or reward');
 });
 
@@ -63,5 +63,5 @@ test('an automatic arrival consumes its observation before subsequent taps', () 
   view.liveVillager(w, 1, false);
   view.talk(w);
   const gus = NEIGHBOURS.find(n => n.id === 'gus');
-  assert.deepEqual(spoken, [gus.arc[1].text, gus.line]);
+  assert.deepEqual(spoken, [t(gus.arc[1].text), t(gus.line)]);
 });

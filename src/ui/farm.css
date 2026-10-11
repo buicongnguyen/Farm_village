@@ -2,8 +2,9 @@
 .badge { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; border-radius: 11px; background: linear-gradient(#ff6b7f, var(--berry)); color: #fff; border: 2px solid #fff;
   font: 1000 12px/18px 'Nunito', sans-serif; font-style: normal; padding: 0 5px; text-align: center; box-shadow: 0 2px 0 #9c1f35; }
 .badge[hidden] { display: none; }
-.badge.cap { background: linear-gradient(#8fd060, #5a9a33); box-shadow: 0 2px 0 #36651b; font-size: 11px; right: -14px; top: auto; bottom: -6px; white-space: nowrap; }
-.badge.cap.full { background: linear-gradient(#ff6b7f, var(--berry)); box-shadow: 0 2px 0 #9c1f35; }
+/* The barn's fill is status, not a badge: neutral cream, amber when nearly full (red is only for unread news). */
+.badge.cap { background: linear-gradient(#fffdf6, #f3e3c3); color: #5a3410; border-color: #c99a5a; box-shadow: 0 2px 0 #a8743a; font-size: 11px; right: -14px; top: auto; bottom: -6px; white-space: nowrap; }
+.badge.cap.full { background: linear-gradient(#ffd866, #ffb92e); color: #5a3410; border-color: #fff; box-shadow: 0 2px 0 #b8741a; }
 .badge.cap.bounce { animation: bounce .45s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes bounce { 35% { transform: translateY(-6px) scale(1.15); } }
 
@@ -44,15 +45,53 @@
 .good-tile { position: relative; border: 3px solid var(--line); background: linear-gradient(#fff, #fff7e6); border-radius: 16px; padding: 6px 4px 7px; display: grid; justify-items: center; gap: 1px;
   font: 800 12px 'Nunito', sans-serif; color: var(--ink); box-shadow: 0 3px 0 #d3a868; }
 button.good-tile { cursor: pointer; }
+.good-cell { display: grid; gap: 4px; align-content: start; }
+.good-cell > .good-tile { width: 100%; }
+.sell-ten { min-height: 30px; padding: 3px 4px; border: 2px solid #d9861c; border-radius: 11px; background: linear-gradient(#ffd98a, #ffb84a); box-shadow: 0 2px 0 #b06a10; color: #5a3306; font: 900 12px/1.1 'Nunito', sans-serif; cursor: pointer; white-space: nowrap; }
+.sell-ten:active { transform: translateY(2px); box-shadow: none; }
+.sell-ten img, .sell-ten svg { width: 13px; height: 13px; vertical-align: -2px; }
 .good-tile img.icon { width: 50px; height: 50px; }
 .good-tile b { font-size: 17px; font-weight: 1000; }
 .good-tile small { color: var(--ink-2); text-align: center; line-height: 1.15; }
+/* today's sums (chapter 10) */
+.report-total { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin: 0 0 10px; font-size: 15px; }
+.report-total b { font-size: 26px; font-weight: 1000; }
+.report-row { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(40px, 1fr) auto; align-items: center; gap: 8px; margin: 5px 0; }
+.report-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-row.best b { color: #1f8a3b; }
+.report-hands { list-style: none; margin: 4px 0; padding: 0; display: grid; gap: 4px; }
+.report-hands li { display: flex; align-items: center; gap: 8px; }
+.report-hands li span { flex: 1 1 auto; min-width: 0; }
+.report-hands .mini-face, .hand .hand-face { width: 34px; height: 34px; flex: none; border-radius: 50%; }
+.report-advice { margin-top: 10px; }
+/* the Harvest Festival's panel (chapter 9) */
+.feast { justify-content: center; }
+.feast-gives { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; font-weight: 800; }
+.feast-gives img.mini { width: 22px; height: 22px; }
+.festival-on { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.festival-on img { width: 84px; height: 84px; flex: none; }
+.festival-on p { margin: 2px 0 0; }
+/* a named voice on the village board (chapter 8: the office manager) */
+.board-voice { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.board-voice .mini-face { width: 34px; height: 34px; flex: none; }
+/* a fixed site's panel (chapter 7: the boat dock) */
+.site-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.site-top p { margin: 0; }
+.site-top img { width: 84px; height: 84px; flex: none; }
+/* market day (chapter 6): the good of the day */
+.good-tile.day { border-color: #f0a020; box-shadow: 0 3px 0 #b86f10; background: linear-gradient(#fffdf2, #ffe9a8); }
+.day-badge { position: absolute; top: -9px; right: -7px; z-index: 1; min-width: 30px; padding: 1px 6px; border: 2px solid #fff; border-radius: 12px; background: #e8463c; color: #fff; font: 1000 13px/18px var(--font, inherit); font-style: normal; box-shadow: 0 2px 0 #9a2a22; transform: rotate(8deg); }
+.market-day { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.market-day span { flex: 1 1 auto; min-width: 0; }
+.market-day small { white-space: nowrap; font-weight: 800; }
+.market-day.on { border-color: #f0a020; background: linear-gradient(#fff6d6, #ffe08a); box-shadow: 0 2px 0 #b86f10; }
+.market-day img.mini { width: 28px; height: 28px; flex: none; }
 .good-tile.liked { border-color: #ff8fa6; box-shadow: 0 3px 0 #c43c5d; background: linear-gradient(#fff, #fff0f3); }
 .good-tile .love { position: absolute; top: -7px; right: -5px; width: 22px; height: 22px; }
 .queue { display: flex; gap: 8px; flex-wrap: wrap; }
 /* the market trucks: one row each (panels.mjs, market) */
 .trucks { display: grid; gap: 6px; margin: 4px 0 8px; }
-.truck-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 10px; border-radius: 14px; background: linear-gradient(#fff, #fff4dd); border: 3px solid var(--line); box-shadow: 0 3px 0 #d3a868; }
+.truck-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; padding: 6px 10px; border-radius: 14px; background: linear-gradient(#fff, #fff4dd); border: 3px solid var(--line); box-shadow: 0 3px 0 #d3a868; }
 .truck-row b { white-space: nowrap; }
 .truck-row span { flex: 1; min-width: 0; text-align: right; font-size: 0.92em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .truck-row.away { background: #5e3a1812; box-shadow: none; border-style: dashed; }
@@ -66,6 +105,33 @@ button.good-tile { cursor: pointer; }
 .slot.buy { cursor: pointer; border-style: dashed; border-color: var(--leaf); } .slot.buy .g { width: 26px; height: 26px; }
 .slot small { font-size: 11px; font-weight: 1000; position: relative; z-index: 1; }
 .recipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 8px; }
+.recipe-group { min-width: 0; display: grid; align-content: start; gap: 6px; }
+.recipe-group .recipe { width: 100%; }
+.recipe-help .link { min-height: 44px; }
+.shop-card { display: grid; gap: 8px; padding: 12px 0; border-bottom: 2px solid var(--line); }
+.shop-card .link { min-height: 44px; text-align: left; }
+.shop-offer { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.shop-offer span { min-width: 0; overflow-wrap: anywhere; }
+.slot small { text-align: center; }
+button.good { min-height: 44px; cursor: pointer; }
+.order button.good { flex-direction: column; padding: 4px 6px; min-width: 60px; }
+.item-token { display: grid; place-items: center; width: 42px; height: 42px; }
+.item-token img.mini { width: 38px; height: 38px; margin: 0; }
+.village-growth { min-width: 0; overflow-wrap: anywhere; }
+.village-growth .set-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.village-growth .btn { margin-block: 4px; white-space: normal; }
+.village-growth summary { cursor: pointer; }
+.learning-project, .learning-memory { min-width: 0; overflow-wrap: anywhere; }
+.learning-project .btn { margin-block: 4px; white-space: normal; }
+.lesson-answers { display: grid; gap: 6px; }
+.project-energy { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.project-energy .cap-bar { max-width: 240px; }
+.garden-steps { display: grid; gap: 8px; padding-left: 24px; }
+.garden-steps li small { display: block; }
+.garden-steps li img { vertical-align: middle; }
+.learning-memories { display: grid; gap: 8px; }
+.help-return { position: fixed; z-index: 18; top: max(90px, calc(env(safe-area-inset-top) + 72px)); left: 50%; transform: translateX(-50%); max-width: calc(100vw - 120px); }
+.help-return[hidden] { display: none; }
 .recipe { border: 3px solid var(--line); background: linear-gradient(#fff, #fff7e6); border-radius: 16px; padding: 7px; display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; text-align: left;
   font: 800 13px 'Nunito', sans-serif; color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 #d3a868; align-items: center; }
 .recipe.can { border-color: var(--leaf); box-shadow: 0 3px 0 var(--leaf-dark); }
@@ -96,6 +162,8 @@ button.good-tile { cursor: pointer; }
 .radial-btn { position: absolute; left: -32px; top: -32px; width: 64px; height: 64px; border-radius: 50%; border: 4px solid var(--edge); background: radial-gradient(circle at 50% 30%, #fff, var(--paper) 60%, var(--paper-2));
   box-shadow: 0 4px 0 var(--edge-dark), 0 7px 12px #0004; display: grid; place-items: center; padding: 0; cursor: pointer; transform: translate(var(--x), var(--y)); }
 .radial-btn img.icon, .radial-btn .icon.glyph { width: 44px; height: 44px; margin-top: -6px; }
+/* every picture in a radial button fits its circle (the All buttons pass crop and tree icons with other classes) */
+.radial-btn > img, .radial-btn > .icon, .radial-btn > svg { width: 44px; height: 44px; max-width: 44px; max-height: 44px; object-fit: contain; margin-top: -6px; }
 .radial-btn .corner { position: absolute; right: -4px; top: -4px; width: 22px; height: 22px; }
 .radial-btn small { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font: 1000 12px 'Nunito', sans-serif; white-space: nowrap; background: #fff; border: 2px solid var(--edge); border-radius: 9px; padding: 0 6px; display: flex; align-items: center; gap: 2px; }
 .radial-btn small img.mark { width: 15px; height: 15px; }
@@ -112,3 +180,179 @@ button.good-tile { cursor: pointer; }
 @keyframes shake { 50% { transform: rotate(-12deg); } }
 @keyframes swing { 50% { transform: rotate(-28deg); } }
 .fly { position: fixed; z-index: 8; font-size: 26px; pointer-events: none; transition: transform .7s cubic-bezier(.5, -0.2, .6, 1), opacity .7s; margin: -13px 0 0 -13px; }
+.hands { display: grid; gap: 6px; margin-bottom: 12px; }
+.hand { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; padding: 6px 8px; border: 3px solid var(--line); border-radius: 14px; background: linear-gradient(#fff, #fff7e6); }
+.hand.on { border-color: var(--leaf); }
+.hand img.icon { width: 40px; height: 40px; }
+.hand small { display: block; color: var(--ink-2); line-height: 1.2; }
+/* market square: a truck's load as small chips on its own card, the two main actions side by side, upgrades small below */
+.truck-load { flex: 1 0 100%; display: flex; flex-wrap: wrap; gap: 4px; }
+.truck-load i { display: inline-flex; align-items: center; gap: 2px; padding: 1px 7px 1px 3px; border-radius: 999px; background: #fff; border: 2px solid var(--line); font: 900 12px/1 'Nunito', sans-serif; font-style: normal; }
+.truck-load img.icon { width: 20px; height: 20px; }
+.market-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+.market-actions:empty { display: none; }
+.market-actions .btn { min-height: 44px; }
+.market-actions.upgrades .btn { display: grid; justify-items: center; gap: 2px; font-size: 13px; padding: 6px 8px; }
+.market-actions.upgrades .btn b { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.market-actions.upgrades .btn small { display: inline-flex; align-items: center; gap: 3px; opacity: .85; white-space: nowrap; }
+.hint.small { font-size: 12px; opacity: .8; margin: 4px 0 0; }
+/* Mr Albright's offer (chapter 11): one card, two big answers, "Let me think" */
+.offer { display: grid; gap: 10px; justify-items: center; text-align: center; }
+.offer-says { display: flex; gap: 10px; align-items: center; margin: 0; padding: 8px 12px; border: 3px solid var(--line); border-radius: 16px; background: #fff; text-align: left; font-style: italic; }
+.offer-says .face { width: 58px; height: 58px; flex: none; border-radius: 50%; }
+.offer-says b { display: block; font-style: normal; }
+.offer-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.offer-choice { display: grid; justify-items: center; align-content: start; gap: 4px; padding: 10px 10px 12px; border: 3px solid var(--line); border-radius: 20px; background: linear-gradient(#fffdf4, #ffeec2); box-shadow: 0 5px 0 #c99a4a; color: var(--ink); font: inherit; cursor: pointer; }
+.offer-choice[data-pick="meadow"] { background: linear-gradient(#f6ffe9, #d6f5b0); box-shadow: 0 5px 0 #6aa83a; }
+.offer-choice:active { transform: translateY(3px); box-shadow: none; }
+.offer-choice img.tile-icon { width: 96px; height: 96px; }
+.offer-choice b { font-size: 19px; font-weight: 1000; }
+.offer-choice ul { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; text-align: left; font-size: 13.5px; line-height: 1.25; }
+.offer-choice li { display: flex; gap: 6px; align-items: flex-start; }
+.offer-choice li .g { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.offer-choice li.minus { color: #a8452a; }
+.offer-think { min-width: 220px; }
+.offer.sure h2 { margin: 0; }
+.offer.sure img.family-art { width: 150px; height: 150px; }
+.offer.sure .btn { min-width: 260px; }
+@media (max-width: 560px) { .offer-choices { grid-template-columns: 1fr; } .offer-choice { grid-template-columns: 76px 1fr; justify-items: start; column-gap: 10px; text-align: left; } .offer-choice img.tile-icon { width: 76px; height: 76px; grid-row: 1 / span 2; } .offer-choice b { align-self: end; } }
+@media (max-height: 520px) { .offer-choice img.tile-icon { width: 60px; height: 60px; } .offer-says { display: none; } .offer { gap: 6px; } }
+/* the Valley panel (chapter 11) */
+.valley-rank { text-align: center; }
+.valley-rank h3 { margin: 4px 0 0; font-size: 21px; }
+.valley-rank p { margin: 2px 0 6px; color: var(--ink-2); }
+.valley-rank progress { width: 100%; }
+.valley-leaves { display: flex; justify-content: center; gap: 6px; }
+.valley-leaves i { width: 22px; height: 22px; border-radius: 2px 60% 2px 60%; background: #d9d2c0; border: 2px solid #b9b09a; transform: rotate(-12deg); }
+.valley-leaves i.on { background: linear-gradient(135deg, #a5e35a, #3fae1f); border-color: #2b7d16; }
+.valley-pays { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 8px 0; font-weight: 800; }
+.valley-parts { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.valley-parts li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 12px; background: #fff7e6; }
+.valley-parts li span { flex: 1 1 auto; min-width: 0; }
+.valley-parts li b { font-weight: 1000; color: #1f8a3b; }
+.valley-parts li.minus b { color: #c0392b; }
+.valley-parts img.mini { width: 26px; height: 26px; flex: none; }
+/* the co-operative's panel (chapter 12) */
+.coop-members { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; margin: 6px 0 8px; }
+.coop-members span { display: grid; justify-items: center; gap: 2px; font-size: 12px; }
+.coop-members .mini-face { width: 44px; height: 44px; border-radius: 50%; }
+.coop-callers { list-style: none; margin: 4px 0 8px; padding: 0; display: grid; gap: 4px; }
+.coop-callers li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 12px; background: #fff7e6; }
+.coop-callers li span { flex: 1 1 auto; min-width: 0; }
+.coop-callers li b { font-weight: 800; color: var(--ink-2); }
+.coop-callers li.done b { color: #1f8a3b; }
+.coop-callers .mini-face { width: 34px; height: 34px; flex: none; border-radius: 50%; }
+.coop-line { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: 6px 0; padding: 6px 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffdf4; }
+.coop-line.full { background: #eefbe0; border-color: #9fd36a; }
+.coop-line img.icon { width: 44px; height: 44px; }
+.coop-fill { display: grid; gap: 3px; min-width: 0; }
+.coop-fill small { color: var(--ink-2); line-height: 1.2; }
+.coop-fill .progress { position: relative; display: flex; width: 100%; height: 12px; }
+.coop-fill .progress > i { display: block; height: 100%; }
+.coop-fill .progress > i.theirs { background: linear-gradient(#ffd98a, #ffb84a); }
+.coop-send { display: grid; gap: 4px; }
+.coop-send .btn { min-width: 84px; }
+.coop-done .g { width: 26px; height: 26px; }
+/* the quay's panel (Act IV, chapter 13) */
+.quay-lots { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin: 0 0 10px; }
+.quay-lot { display: grid; place-items: center; aspect-ratio: 1; min-width: 0; padding: 0; border: 3px solid var(--line); border-radius: 12px; background: #fff7e6; color: var(--ink-2); font: 900 16px/1 'Nunito', sans-serif; cursor: pointer; }
+.quay-lot.taken { background: #eefbe0; border-color: #9fd36a; }
+.quay-lot.on { border-color: var(--edge); box-shadow: 0 3px 0 var(--edge); transform: translateY(-2px); }
+.quay-lot img.mini { width: 80%; height: 80%; }
+.quay-kind { margin: 8px 0; padding: 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffdf4; }
+.quay-kind .site-top p { margin: 2px 0 0; }
+.quay-keeper { display: flex; align-items: center; gap: 8px; margin: 6px 0; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.quay-keeper .mini-face { width: 38px; height: 38px; flex: none; border-radius: 50%; }
+/* the hotel's panel (chapter 14) */
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; margin: 8px 0; }
+.room { position: relative; display: grid; justify-items: center; align-content: start; gap: 2px; min-height: 104px; padding: 16px 4px 6px; border: 3px solid #b98a62; border-radius: 40px 40px 10px 10px; background: linear-gradient(#fff4dc, #ffe2b0); }
+.room > b { position: absolute; top: 3px; font-size: 11px; color: var(--ink-2); }
+.room.free { background: #f3ead8; border-style: dashed; color: var(--ink-2); align-content: center; }
+.room.served { background: linear-gradient(#f2ffe0, #d6f5b0); border-color: #6aa83a; }
+.room img.mini { width: 34px; height: 34px; }
+.room small { display: flex; align-items: center; gap: 2px; font-size: 11px; }
+.room small .g { width: 11px; height: 11px; }
+.room .btn.small { min-height: 26px; padding: 2px 8px; font-size: 12px; }
+.room-done .g { width: 22px; height: 22px; }
+.hotel-says { margin: 6px 0; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; font-style: italic; }
+/* the walk upriver (chapter 16) */
+.upriver-who { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 14px; background: #fff7e6; }
+.upriver-who .mini-face { width: 38px; height: 38px; flex: none; border-radius: 50%; }
+.stop { margin: 8px 0; padding: 8px 10px; border: 2px solid var(--line); border-radius: 16px; background: #fffdf4; }
+.stop h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 6px; }
+.stop p { margin: 2px 0 6px; }
+.stop.done { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 10px; background: #eefbe0; border-color: #9fd36a; }
+.stop.done img { width: 132px; height: 74px; object-fit: cover; border-radius: 10px; border: 2px solid #fff; }
+.stop.later { background: #f3ead8; border-style: dashed; color: var(--ink-2); }
+.stop .keepsake { display: flex; align-items: center; gap: 6px; margin: 0; }
+.stop .keepsake img.mini { width: 30px; height: 30px; }
+.stop .req img.mini { width: 22px; height: 22px; vertical-align: -5px; }
+@media (max-width: 420px) { .stop.done { grid-template-columns: 1fr; } .stop.done img { width: 100%; height: 96px; } }
+/* the Valley panel's second page: the company and the valley's value (chapter 17) */
+.valley-tabs { margin: 0 0 10px; }
+.value-big { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 30px; font-weight: 1000; }
+.value-big img.mark { width: 28px; height: 28px; }
+.valley.value .report-row { grid-template-columns: 26px minmax(0, 1.2fr) minmax(40px, 1fr) auto; }
+.valley.value .report-row img.mini { width: 24px; height: 24px; }
+.coop-members.shares { gap: 4px; }
+.coop-members.shares .mini-face { width: 34px; height: 34px; }
+/* the valley fair (chapter 18): class cards with their judge and entries, and the judging's results */
+.fair-class, .fair-result { border: 2px solid var(--line); border-radius: 16px; background: #fffaf0; padding: 8px 10px; margin: 8px 0; }
+.fair-head { display: flex; align-items: center; gap: 10px; }
+.fair-head .mini-face { width: 44px; height: 44px; border-radius: 50%; flex: none; }
+.fair-head > div { flex: 1; min-width: 0; display: grid; }
+.fair-head small { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 12px; opacity: .85; }
+.fair-head small img.icon { width: 20px; height: 20px; }
+.fair-head > img.icon { width: 40px; height: 40px; flex: none; }
+img.fair-ribbon { width: 46px; height: 46px; flex: none; }
+.fair-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.fair-options .slot { width: 62px; height: 66px; cursor: pointer; }
+.fair-options .slot img.icon { width: 34px; height: 34px; }
+.fair-options .slot.on { border-color: var(--leaf); box-shadow: 0 3px 0 #2f8a3b, 0 0 0 3px #7bdb4f66; background: linear-gradient(#fff, #e9ffd9); }
+.stars { font-size: 10px; letter-spacing: -1px; color: #f5a81e; line-height: 1; } .stars i { color: #d9c7a3; font-style: normal; }
+.fair-result.gold { border-color: var(--gold); background: linear-gradient(#fffbe6, #fff1c2); }
+.fair-result.silver { border-color: #a9b6c8; background: linear-gradient(#fbfdff, #edf2f8); }
+.fair-result.bronze { border-color: #d98a55; background: linear-gradient(#fffaf5, #fde9d8); }
+.fair-result.judging { opacity: .8; border-style: dashed; }
+.fair-result .verdict { margin: 6px 0; font-style: italic; }
+.fair-places { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+.fair-places li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(60px, 1.2fr); align-items: center; gap: 8px; font-size: 13px; }
+.fair-places li.ours { font-weight: 900; }
+.fair-places li.ours .progress > i { background: var(--gold); }
+.fair-prizes { flex-wrap: wrap; }
+/* the green goals (chapter 19): a checklist with progress, a count and what each pays */
+.green-goals { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.green-goals li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 8px; border: 2px solid var(--line); border-radius: 14px; background: #fffaf0; }
+.green-goals li.done { border-color: var(--leaf); background: linear-gradient(#fbfff5, #e9ffd9); }
+.green-goals li > div { display: grid; gap: 3px; min-width: 0; }
+.green-goals li b { font-size: 13px; line-height: 1.2; }
+.green-goals li > span { font-weight: 900; font-size: 13px; }
+.green-goals li small { display: flex; align-items: center; gap: 2px; font-weight: 800; opacity: .8; }
+.green-goals li.done small { opacity: .45; }
+/* the ending (chapter 20): the closing cards' step dots, the cast and the last buttons; the valley album's tiles */
+.closing-dots { display: flex; justify-content: center; gap: 6px; margin: 10px 0 8px; }
+.closing-dots i { width: 8px; height: 8px; border-radius: 50%; background: #d9c7a3; }
+.closing-dots i.on { background: var(--gold); width: 20px; border-radius: 6px; }
+.closing-cast { max-height: 58vh; overflow-y: auto; gap: 6px 8px; }
+.closing-cast .mini-face { width: 40px; height: 40px; }
+.closing-cast span small { font-size: 10px; }
+@media (max-width: 560px) { .closing-cast { gap: 4px 5px; } .closing-cast .mini-face { width: 34px; height: 34px; } .closing-cast span small { font-size: 9px; padding-inline: 6px; } }
+.closing-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 2px; }
+.album-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; margin: 8px 0; }
+.album-chapter { display: grid; gap: 2px; padding: 6px; border: 2px solid var(--line); border-radius: 14px; background: #fffaf0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.album-chapter img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 9px; }
+.album-chapter small { opacity: .7; font-size: 11px; font-weight: 800; }
+.album-chapter b { font-size: 13px; line-height: 1.2; }
+.album-titles { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.album-titles li { display: flex; align-items: center; gap: 8px; }
+.album-titles li small { margin-left: auto; opacity: .7; }
+/* a need that is not met and can be worked on somewhere: a row that is a button */
+button.req.link { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: #fff3d6; border: 2px solid var(--line); border-radius: 12px; padding: 5px 9px; margin: 3px 0; cursor: pointer; }
+/* Village projects: a line not done yet is a button that shows where it is done */
+.steps .step-where, .journey-milestones .step-where { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; padding: 4px 2px; min-height: 36px; cursor: pointer; border-radius: 10px; }
+.steps .step-where:hover, .steps .step-where:focus-visible, .journey-milestones .step-where:hover { background: #fff3d6; }
+.steps .step-where i, .journey-milestones .step-where i { margin-left: auto; font-style: normal; opacity: .6; }
+/* the company's request on the village board: first, framed, with what is missing in red */
+.company-request { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 10px; background: #fff8e6; }
+.company-request .req.ok { color: #2e7d32; } .company-request .req.short b { color: #c62828; }
+.company-request small.hint { display: block; margin: 0 0 6px 28px; }

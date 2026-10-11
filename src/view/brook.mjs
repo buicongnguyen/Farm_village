@@ -2,10 +2,10 @@
 // out across the hills; the pond in the woods is the same water. A cheap shader paints deep to shallow across the
 // channel, sine highlights drifting downstream and foam at the banks, and at night turns black-blue. Everything else is
 // one merged, vertex-coloured mesh: the wet sandy bank, bank stones, swaying reeds, lily pads, the plank bridge where
-// the road crosses, stepping stones north of the farm and the pond's dock. Ducks paddle on the pond (one instanced draw).
+// the road crosses and stepping stones north of the farm. Ducks paddle on the pond (one instanced draw).
 // Draws: water 1, props 1, ducks 1. Triangles: about 6k in all.
 import * as THREE from 'three';
-import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, POND_DOCK, ROADS, inVillage, nearHome } from '../content/world.mjs';
+import { CELL, SKIRT, brookCurve, BRIDGE, STEPPING_STONES, POND, ROADS, inVillage, nearHome } from '../content/world.mjs';
 import { HAZE, MAP, merge, part, swayByHeight, decorMaterial } from './backdrop.mjs';
 import { grassTone, MID_TONE, noise, wildTint } from './ground.mjs';
 import { GROUND_COLORS } from './world-view.mjs';
@@ -20,7 +20,7 @@ const slope = xm => (brookCentre(xm + 0.05) - brookCentre(xm - 0.05)) / 0.1;
 export const POND_SHAPE = { x: (POND.x0 + POND.x1 + 1) / 2 * CELL, z: (POND.z0 + POND.z1 + 1) / 2 * CELL, rx: (POND.x1 - POND.x0 + 1) * CELL / 2 + 0.3, rz: (POND.z1 - POND.z0 + 1) * CELL / 2 + 0.3 };
 
 const WATER = {
-  day: { deep: '#216778', shallow: '#3fb8c0', foam: '#f4fbff', glint: '#d9fbff' },
+  day: { deep: '#1474b8', shallow: '#3ccbe0', foam: '#f4fbff', glint: '#e6fdff' },   // vivid pass: deep blue to turquoise
   night: { deep: '#0a1424', shallow: '#13294a', foam: '#3a5a86', glint: '#6f8fc4' },
 };
 const lin = c => new THREE.Color(c);
@@ -29,7 +29,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 /** The water material: shared by the brook and the pond. uNight 0..1 comes from daylight. */
 function waterMaterial() {
   const uniforms = {
-    uTime: { value: 0 }, uNight: { value: 0 }, uHaze: HAZE,
+    uTime: { value: 0 }, uNight: { value: 0 }, uFull: { value: 0 }, uHaze: HAZE,
     uDeep: { value: lin(WATER.day.deep) }, uShallow: { value: lin(WATER.day.shallow) }, uFoam: { value: lin(WATER.day.foam) }, uGlint: { value: lin(WATER.day.glint) },
     uDeepN: { value: lin(WATER.night.deep) }, uShallowN: { value: lin(WATER.night.shallow) }, uFoamN: { value: lin(WATER.night.foam) }, uGlintN: { value: lin(WATER.night.glint) },
   };
@@ -44,7 +44,7 @@ void main(){
   gl_Position = projectionMatrix * viewMatrix * w;
 }`,
     fragmentShader: /* glsl */`
-uniform float uTime, uNight;
+uniform float uTime, uNight, uFull;   // uFull 0..1: the sluice is open (chapter 8): faster, brighter water
 uniform vec3 uDeep, uShallow, uFoam, uGlint, uDeepN, uShallowN, uFoamN, uGlintN, uHaze;
 varying vec2 vFlow; varying vec3 vWorld;
 float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -60,9 +60,10 @@ void main(){
   col *= 0.94 + 0.12 * vn(vWorld.xz * 0.12 + vec2(uTime * 0.05, 0.0));
   // highlights: broken sine streaks drifting downstream
   float n = vn(vec2(vFlow.x * 0.25, vFlow.y * 2.5) + vec2(-uTime * 0.35, 0.0));
-  float s = sin(vFlow.x * 1.1 - uTime * 2.4 + n * 5.0 + vFlow.y * 2.0);
-  float streak = smoothstep(0.9, 0.985, s) * smoothstep(0.95, 0.3, across) * (0.55 + 0.45 * n);
-  col = mix(col, glintC, streak * 0.55);
+  float s = sin(vFlow.x * 1.1 - uTime * (2.4 + uFull * 2.2) + n * 5.0 + vFlow.y * 2.0);
+  float streak = smoothstep(0.9 - uFull * 0.14, 0.985, s) * smoothstep(0.95, 0.3, across) * (0.55 + 0.45 * n);
+  col = mix(col, glintC, streak * (0.55 + uFull * 0.2));
+  col = mix(col, shallow, uFull * 0.18 * (1.0 - uNight));
   // foam: a lacy band at the banks
   float edge = 0.86 + (vn(vec2(vFlow.x * 0.9 - uTime * 0.6, vFlow.y * 3.0)) - 0.5) * 0.16;
   float foam = smoothstep(edge, edge + 0.07, across);
@@ -149,7 +150,7 @@ function bankGeometry() {
   return ni;
 }
 
-/** Stones, reeds and lily pads along the brook and round the pond; the bridge, the stepping stones and the dock. */
+/** Stones, reeds and lily pads along the brook and round the pond; the river bridge and stepping stones. */
 function propsGeometry() {
   const parts = [], rock = new THREE.OctahedronGeometry(1, 0), box = new THREE.BoxGeometry(1, 1, 1), pad = new THREE.CircleGeometry(1, 7, 0.4, Math.PI * 2 - 0.5).rotateX(-Math.PI / 2);
   const reedBlade = new THREE.ConeGeometry(0.11, 1, 3, 1, true).translate(0, 0.5, 0), cattail = new THREE.CylinderGeometry(0.09, 0.09, 0.32, 4, 1, true);
@@ -176,10 +177,10 @@ function propsGeometry() {
     else if (roll < 0.74) { const [px, pz] = at(side * (WATER_HALF + 0.2 + rand() * 1.1)); reeds(px, pz, 1.1 + rand() * 0.6); }
     else { const [px, pz] = at(side * (1.2 + rand() * 1.5)); lily(px, pz, 0.38 + rand() * 0.22); if (rand() < 0.6) { const [qx, qz] = at(side * (1 + rand() * 1.4)); lily(qx + 0.8, qz, 0.3 + rand() * 0.15); } }
   }
-  // the pond: reeds and stones round the rim (not at the dock), lily pads on the water
+  // the pond: reeds and stones round the rim (leaving the fishing bank clear), lily pads on the water
   const P = POND_SHAPE;
   for (let s = 0; s < 22; s++) {
-    const a = s / 22 * Math.PI * 2 + rand() * 0.2; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < 0.5) continue;   // east side: the dock
+    const a = s / 22 * Math.PI * 2 + rand() * 0.2; if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a))) < 0.5) continue;   // east side: the fishing bank
     const r = 1.0 + rand() * 0.12, px = P.x + Math.cos(a) * P.rx * r, pz = P.z + Math.sin(a) * P.rz * r;
     if (s % 3 === 0) stone(px, pz, 0.35 + rand() * 0.35); else reeds(px, pz, 1.0 + rand() * 0.7);
   }
@@ -197,11 +198,6 @@ function propsGeometry() {
     }
     for (const sz of [-1, 1]) for (const sx of [x0 + 0.3, x1 - 0.3]) parts.push(part(box, '#6e4a2c', sx, 0.1, zc + sz * (WATER_HALF - 0.3), 0, 0.35, 0.5, 0.35));
   }
-  // the pond's dock: planks out over the water on posts
-  { const dx = POND_DOCK.x * CELL + 0.6, dz = (POND_DOCK.z + 0.5) * CELL;
-    for (let i = 0; i < 7; i++) parts.push(part(box, i % 2 ? '#c08850' : '#b07a45', dx - i * 0.62, 0.32, dz, 0, 0.56, 0.12, 1.7));
-    for (const [ox, oz] of [[-0.6, -0.8], [-0.6, 0.8], [-3.8, -0.8], [-3.8, 0.8]]) parts.push(part(box, '#6e4a2c', dx + ox, 0.25, dz + oz, 0, 0.18, 0.7, 0.18));
-  }
   return merge(parts);
 }
 
@@ -216,6 +212,8 @@ export class Brook {
     world.onFrame((dt, now) => this.frame(dt, now));
   }
   setNight(k) { this.uniforms.uNight.value = k; }
+  /** 0..1: how full the brook runs (1 once the sluice is open, chapter 8). */
+  setFull(k) { this.uniforms.uFull.value = k; }
   async loadDucks() {
     const kit = await loadKit('farm'), geo = fit(bake(kit.duck), { height: 0.62 });
     this.ducks = new THREE.InstancedMesh(geo, decorMaterial(), 3); this.ducks.name = 'pond-ducks'; this.ducks.frustumCulled = false;

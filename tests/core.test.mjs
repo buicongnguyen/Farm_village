@@ -82,6 +82,7 @@ test('the barn caps storage; the harvest that does not fit is sold on the spot, 
   const r = act(s, 'harvest', { ids: beds }, T0 + HOUR);
   const coins = s.coins; assert.equal(r.ok, true); assert.ok(s.barn.items.wheat <= 50, 'never over the cap'); assert.ok(s.coins > coins || s.stats.coinsEarned > 0, 'the extra is sold');
   s.coins = 500; must(s, 'upgradeBarn', {}); assert.equal(s.barn.cap, 150);
+  { const big = game(); big.coins = 1e6; big.barn.cap = 23950; assert.equal(act(big, 'upgradeBarn', {}, T0).ok, true); assert.equal(big.barn.cap, 24000); const c = big.coins; assert.equal(act(big, 'upgradeBarn', {}, T0).ok, false, 'the barn grew past 24000'); assert.equal(big.coins, c); }
   s.barn.items.wheat = 20; const c2 = s.coins; must(s, 'sellGood', { good: 'wheat', n: 5 }); assert.equal(s.barn.items.wheat, 15); assert.equal(s.coins, c2 + 5 * 2);
 });
 
@@ -105,10 +106,10 @@ test('animals need no fence work: buy hens, then they eat feed and give produce'
   assert.equal(s.barn.items.egg, 2);
 });
 
-test('production queues run one after another and need free slots', () => {
+test('production trays run concurrently and need free slots', () => {
   const s = game(); const { mill } = millAndCoop(s); s.barn.items.wheat = 30;
   const a = must(s, 'produce', { building: mill, recipe: 'chicken_feed' }), b = must(s, 'produce', { building: mill, recipe: 'chicken_feed' });
-  assert.equal(b.doneAt - a.doneAt, RECIPES.chicken_feed.timeMs);
+  assert.equal(b.doneAt, a.doneAt); assert.notEqual(b.slot, a.slot);
   assert.equal(act(s, 'produce', { building: mill, recipe: 'chicken_feed' }).reason, 'The queue is full');
   must(s, 'buySlot', { building: mill });
   must(s, 'produce', { building: mill, recipe: 'chicken_feed' });
@@ -379,6 +380,7 @@ test('fruit trees: placed once, fruit after a while, then regrow every few hours
   const t = game(); tutorial(t); setLevel(t, 6); t.counts.bakery = 1;
   for (let i = 0; i < 40; i++) assert.ok(!['apple', 'peach', 'apple_pie'].some(g => makeCard(t, T0).need[g]));
   t.counts.apple_tree = 1; let seen = false;
+  t.placed.orderApple = { kind: 'apple_tree', x: 40, z: 66, rot: 0 }; t.trees.orderApple = { doneAt: T0 + FRUITS.apple.firstMs };
   for (let i = 0; i < 200 && !seen; i++) seen = ['apple', 'apple_pie'].some(g => makeCard(t, T0).need[g]);
   assert.ok(seen, 'with a tree, apples can be ordered');
 });
@@ -389,10 +391,10 @@ test('apple pie is baked at the bakery and pays more than its inputs', () => {
   assert.ok(R.apple_pie.value > inputs);
 });
 
-test('levelUp.unlocks matches the content level fields', () => {
+test('levelUp.unlocks matches content level fields without promising separately learned crops', () => {
   for (let L = 2; L <= 10; L++) {
     const u = unlocksAt(L), at = o => Object.keys(o).filter(k => o[k].level === L).sort();
-    assert.deepEqual([...u.crops].sort(), at(C)); assert.deepEqual([...u.fruits].sort(), at(FRUITS));
+    assert.deepEqual([...u.crops].sort(), at(C).filter(id => !C[id].skill)); assert.deepEqual([...u.fruits].sort(), at(FRUITS));
     assert.deepEqual([...u.recipes].sort(), at(R)); assert.deepEqual([...u.animals].sort(), at(A));
     assert.deepEqual([...u.buildings].sort(), at(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden));
     assert.equal(u.list.length, u.crops.length + u.fruits.length + u.recipes.length + u.animals.length + u.buildings.length);
@@ -435,7 +437,7 @@ test('neighbour comments fill {count} and {family} from the land; one neighbourV
   try {
     const c = commentFor(s, 'mai');
     assert.equal(c.text, 'Say hello to the {family} family.', 'no hens yet, so the hen line is not said');
-    assert.equal(c.params.family, 'Okafor'); assert.equal(newestFamily(s), 'Okafor');
+    assert.equal(c.params.family, '{family:okafor}'); assert.equal(newestFamily(s), '{family:okafor}');
     mai.arc = ['First visit line', 'Second visit line'];
     assert.equal(commentFor(s, 'mai', 2).text, 'Second visit line');
     assert.notEqual(commentFor(s, 'mai', 3).text, 'Second visit line');
@@ -524,7 +526,7 @@ test('parcels: buyableParcels lists the land next to the farm; buyParcel emits p
   assert.ok(buyableParcels(s).every(p => p.ok));
   const r = must(s, 'buyParcel', { parcel: '1,2' });
   assert.equal(events(r, 'parcelBought')[0].parcel, '1,2');
-  assert.deepEqual(buyableParcels(s), [], 'v0.1 sells one more parcel');
+  assert.ok(buyableParcels(s).length >= 3 && buyableParcels(s).every(p => p.price === 2000 && p.parcel !== '1,2'), 'more land stays for sale next to what you own');
 });
 
 test('village charm milestones put up bunting once, for good', () => {

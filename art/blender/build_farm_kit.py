@@ -45,6 +45,15 @@ for n, c in {
         'herb': '#6FA86A', 'herbl': '#9CCB8A', 'herbd': '#4E7E4A', 'root': '#F2D9A8',
         # keepsakes (AR-009)
         'cloth': '#6F9FD8', 'clothd': '#5281BE', 'clothl': '#9DC2EC', 'pebble': '#7D8BA6',
+        # tree pack 2 (later trees, one or two per chapter)
+        'maple': '#F0502A', 'maplel': '#FF9A2E', 'mapled': '#C8322A', 'birch': '#F4F1E6', 'birchm': '#3A3D4A', 'birchleaf': '#B8E04A',
+        'birchleafl': '#DCF07A', 'cypress': '#2E7A4A', 'cypressl': '#4E9E5A', 'fir': '#1F6E58', 'firl': '#36907A', 'oak': '#5C9E3A',
+        'oakl': '#86C24A', 'oakd': '#3E7A30', 'lemon': '#FFE23A', 'plum': '#7A3AA8', 'pluml': '#A45ED0', 'mango': '#FFB22E',
+        'mangor': '#FF6A3A', 'grape': '#6A3AA8', 'grapel': '#9A62D8', 'longan': '#D8B070', 'lychee': '#F0425E', 'rope': '#E8C88A',
+        # farmhouse interior (AR-015)
+        'plank': '#D8935A', 'plankd': '#B87445', 'seam': '#8A5230', 'wallin': '#FFF1D6', 'wainscot': '#7FC4B4', 'wainscotd': '#4E9E8E',
+        'rug': '#E0563B', 'rugl': '#F6B04A', 'sofa': '#3E8FD0', 'sofal': '#7DB8EA', 'sofad': '#2B6CA8', 'pillow': '#FFC83A',
+        'quilt': '#FF7FB5', 'tile': '#F3F6FA', 'tiled': '#C9D3DE', 'copper': '#D9773A',
         }.items():
     C[n] = mat('FK ' + n, c, .55)
 
@@ -277,11 +286,110 @@ def ginseng(stage, lod=0):
                 p.append(sp(.045, -.18, x - .06, y + .04, .05, 'root', sides=5, lean=(-.06, 0)))
     return p
 
-CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng}
+# ---- more vegetables (v0.5): tomato, potato, cabbage, onion, chili. Same three stages and two levels of detail.
+def veg_grid(lod, n=2, pitch=.62, seed=5):
+    rnd = random.Random(seed + lod)
+    pts = [((i - (n - 1) / 2) * pitch + rnd.uniform(-.05, .05), (j - (n - 1) / 2) * pitch + rnd.uniform(-.05, .05)) for j in range(n) for i in range(n)]
+    return pts[::2] if lod and len(pts) > 3 else pts, rnd
+
+def tomato(stage, lod=0):
+    """Staked tomato plants: a leafy bush on a cane, hung with red fruit when ripe."""
+    pts, rnd = veg_grid(lod, 2, .66, 31); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.3, 3.3): p.append(lf((x, y, 0), a + k, .22, .1, 'leafl', lift=.16, droop=0))
+            continue
+        ripe = stage == 'ripe'; h = .78 if ripe else .5
+        p.append(cl('cane', .022, h + .18, x + .05, y, 0, 'woodl', verts=4))
+        for i in range(5 if lod == 0 else 3):
+            a = i * 1.26 + k
+            p.append(lf((x, y, .1 + i * h / 6), a, .3 if ripe else .24, .14, 'leaf' if i % 2 else 'leafl', lift=.14 + i * .03, droop=.1))
+        p.append(ball('crown', .15 if ripe else .11, x, y, h, 'leaf', sub=1, sc=(1, 1, .8)))
+        if ripe:
+            for i in range(4 if lod == 0 else 2):
+                a = i * 1.7 + k * .9
+                p.append(ball('tomato', .085, x + math.cos(a) * .16, y + math.sin(a) * .16, .24 + (i % 3) * .17, 'fruitred', sub=1))
+    return p
+
+def potato(stage, lod=0):
+    """Potato plants: low leafy mounds on a heaped ridge; ripe, a few potatoes show in the soil and little white flowers above."""
+    pts, rnd = veg_grid(lod, 2, .66, 37); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.6, 2.7, 4.6)[:3 if lod == 0 else 2]: p.append(lf((x, y, 0), a + k, .2, .11, 'leafl', lift=.12, droop=0))
+            continue
+        ripe = stage == 'ripe'
+        p.append(ball('ridge', .26, x, y, .0, 'soill', sub=1, sc=(1.2, 1.2, .3)))
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k
+            p.append(lf((x, y, .05), a, .34 if ripe else .26, .16, 'leafw' if i % 2 else 'leaf', lift=.2 if ripe else .15, droop=.12))
+        p.append(ball('heart', .14 if ripe else .1, x, y, .2 if ripe else .15, 'leaf', sub=1, sc=(1, 1, .7)))
+        if ripe:
+            for i in range(3 if lod == 0 else 1):
+                a = i * 2.1 + k
+                p.append(ball('potato', .085, x + math.cos(a) * .27, y + math.sin(a) * .27, .05, 'sack', sub=1, sc=(1.3, 1, .8)))
+            if lod == 0:
+                for a in (.8, 3.6): p.append(ball('bloom', .045, x + math.cos(a + k) * .12, y + math.sin(a + k) * .12, .36, 'bloom', sub=0))
+    return p
+
+def cabbage(stage, lod=0):
+    """Cabbages: a rosette of broad leaves that closes into a pale round head."""
+    pts, rnd = veg_grid(lod, 2, .7, 41); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0, 2.1, 4.2)[:3 if lod == 0 else 2]: p.append(lf((x, y, 0), a + k, .2, .14, 'wgreenl', lift=.1, droop=0))
+            continue
+        ripe = stage == 'ripe'
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k * .7
+            p.append(lf((x, y, .02), a, .36 if ripe else .28, .26, 'leaf' if i % 2 else 'wgreen', lift=.12, droop=.05))
+        if ripe:
+            p += [ball('head', .2, x, y, .2, 'wgreenl', sub=2 if lod == 0 else 1, sc=(1, 1, .88)), ball('cap', .13, x + .02, y, .31, 'herbl', sub=1, sc=(1, 1, .5))]
+        else:
+            p.append(ball('bud', .1, x, y, .12, 'wgreenl', sub=1))
+    return p
+
+def onion(stage, lod=0):
+    """Onions: stiff green tubes in close rows; ripe, the purple bulbs shoulder out of the soil."""
+    pts, rnd = veg_grid(lod, 3, .44, 43); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            p.append(cl('shoot', .018, .16, x, y, 0, 'leafl', verts=4, rt=.006)); continue
+        ripe = stage == 'ripe'; h = .5 if ripe else .34
+        for i in range(3 if lod == 0 else 2):
+            a = i * 2.1 + k
+            p.append(sp(.03, h - i * .06, x + math.cos(a) * .03, y + math.sin(a) * .03, .04, 'leaf' if i % 2 else 'leafl', sides=4, lean=(math.cos(a) * .12, math.sin(a) * .12)))
+        if ripe:
+            p.append(ball('bulb', .1, x, y, .05, 'violet', sub=1, sc=(1, 1, .85)))
+            if lod == 0: p.append(ball('bulbtop', .05, x, y, .13, 'bloom', sub=0, sc=(1, 1, .6)))
+    return p
+
+def chili(stage, lod=0):
+    """Chili bushes: small dark-leaved bushes, hung with bright red pods when ripe."""
+    pts, rnd = veg_grid(lod, 2, .66, 47); p = []
+    for k, (x, y) in enumerate(pts):
+        if stage == 'sprout':
+            for a in (0.4, 3.4): p.append(lf((x, y, 0), a + k, .2, .09, 'leafl', lift=.15, droop=0))
+            continue
+        ripe = stage == 'ripe'; h = .5 if ripe else .36
+        p.append(cl('stem', .025, h, x, y, 0, 'stem', verts=4))
+        for i in range(6 if lod == 0 else 4):
+            a = i * 1.05 + k
+            p.append(lf((x, y, h * .45 + (i % 3) * .08), a, .26, .11, 'leafw' if i % 2 else 'leaf', lift=.1, droop=.14))
+        p.append(ball('top', .13, x, y, h, 'leafw', sub=1, sc=(1.1, 1.1, .7)))
+        if ripe:
+            for i in range(5 if lod == 0 else 3):
+                a = i * 1.26 + k * .6
+                p.append(cone('pod', .035, .2, (x + math.cos(a) * .17, -(y + math.sin(a) * .17), h * .62 - (i % 2) * .08), C['fruitred'], verts=5, rot=(math.pi, 0, 0)))
+    return p
+
+CROPS = {'wheat': wheat, 'carrot': carrot, 'corn': corn, 'pumpkin': pumpkin, 'strawberry': strawberry, 'herb': herb, 'ginseng': ginseng,
+         'tomato': tomato, 'potato': potato, 'cabbage': cabbage, 'onion': onion, 'chili': chili}
+LATE_CROPS = {'tomato', 'potato', 'cabbage', 'onion', 'chili'}   # these load with the decor kit, after the first scene
 for crop, gen in CROPS.items():
     for stage in ('sprout', 'mid', 'ripe'):
-        piece(f'crop_{crop}_{stage}', gen(stage, 0))
-        piece(f'crop_{crop}_{stage}_mid', gen(stage, 1))
+        piece(f'crop_{crop}_{stage}', gen(stage, 0), decor if crop in LATE_CROPS else None)
+        piece(f'crop_{crop}_{stage}_mid', gen(stage, 1), decor if crop in LATE_CROPS else None)
 
 # =================================================================== bed rim with furrows (one per crop bed, 2 m cell)
 def bed_rim():
@@ -609,9 +717,9 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred'))
+piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred', nfruit=10, fr=.27, out=1.3))   # fruit on the canopy, not inside it
 piece('cute_apple_bare', cute('ab', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach'))
+piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach', nfruit=10, fr=.27, out=1.3))
 piece('cute_peach_bare', cute('pb', 'leafwl', 'leafw', 'leafwd'))
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
 # tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
@@ -734,6 +842,629 @@ def fountain():
         p.append(ball('lf', .16, math.cos(a + .35) * 1.48, math.sin(a + .35) * 1.48, .1, 'leaf', sub=0, sc=(1, 1, .6)))
     return p
 piece('fountain', fountain(), decor)
+
+def dock():
+    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 3.8 m out over the
+    brook toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
+    coil and a fish crate. Stands on y = 0; the water is just above it (0.05)."""
+    p = []
+    for i in range(9):   # the deck on the bank
+        y = -1.8 + i * .45
+        p.append(bx('plank', 3.7, .41, .1, 0, y, .32, 'woodl' if i % 3 else 'wood', bev=0.))
+    for x in (-1.5, 1.5):
+        p.append(bx('beam', .2, 3.9, .22, x, 0, .1, 'woodd', bev=0.))
+    for x in (-1.7, 1.7):
+        for y in (-1.8, 1.8):
+            p.append(bx('foot', .26, .26, .34, x, y, 0, 'woodd', bev=0.))
+    for i in range(9):   # the pier over the water
+        y = -2.25 - i * .42
+        p.append(bx('plank', 2.1, .38, .1, 0, y, .32, 'wood' if i % 3 else 'woodl', bev=0.))
+    for x in (-.9, .9):
+        p.append(bx('beam', .18, 3.9, .2, x, -3.9, .12, 'woodd', bev=0.))
+        for y in (-2.6, -4.2, -5.7):
+            p.append(cl('pile', .13, 1.55, x * 1.2, y, -.9, 'wooddd', verts=7))
+    for x in (-1.08, 1.08):   # mooring posts at the end, a rope between them
+        p.append(cl('post', .11, .62, x, -5.7, .6, 'woodd', verts=7))
+        p.append(ball('cap', .13, x, -5.7, 1.26, 'wood', sub=1))
+    p.append(st((-1.08, -5.7, 1.0), (1.08, -5.7, 1.0), .035, 'rope', sides=4, rt=.035))
+    # the rowing boat, moored at the pier's right side
+    bx0, by0 = 2.05, -4.0
+    hull = lathe('hull', [(0, 0), (.7, .04), (1.0, .34), (1.0, .44), (.9, .44), (.86, .14), (0, .1)], (bx0, -by0, -.08), C['teal'], segments=14, smooth_angle=40)
+    hull.scale = (.6, 1.45, 1)
+    p.append(hull)
+    p.append(bx('thwart', 1.02, .24, .06, bx0, by0 - .55, .2, 'woodl', bev=0.))
+    p.append(bx('thwart', 1.02, .24, .06, bx0, by0 + .5, .2, 'woodl', bev=0.))
+    p.append(st((bx0 - .25, by0 - 1.0, .3), (bx0 + .3, by0 + 1.0, .42), .03, 'wood', sides=4, rt=.03))
+    p.append(bx('blade', .16, .4, .04, bx0 + .33, by0 + 1.12, .4, 'woodl', bev=0.))
+    p.append(st((1.08, -5.7, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
+    # on the deck: a lantern post, a rope coil, a crate with the catch, a rod against the rail
+    p.append(cl('lamppost', .07, 2.0, -1.6, 1.6, .42, 'iron', verts=6))
+    p.append(bx('arm', .5, .07, .07, -1.36, 1.6, 2.36, 'iron', bev=0.))
+    p.append(bx('lantern', .22, .22, .3, -1.14, 1.6, 2.0, 'lampglow', bev=.02))
+    p.append(bx('lcap', .3, .3, .06, -1.14, 1.6, 2.3, 'iron', bev=0.))
+    for i in range(3):
+        p.append(cl('coil', .27 - i * .03, .07, 1.3, 1.3, .42 + i * .07, 'rope', verts=10))
+    p.append(bx('crate', .62, .5, .4, -1.15, -.9, .42, 'woodl', bev=.02))
+    p.append(ball('fish', .13, -1.22, -.9, .88, 'sky', sub=1, sc=(1.7, .7, .5)))
+    p.append(ball('fish', .11, -1.0, -.78, .9, 'glass', sub=1, sc=(1.6, .7, .5)))
+    p.append(st((1.6, -1.5, .42), (1.78, -1.1, 2.1), .025, 'woodd', sides=4, rt=.015))
+    return p
+piece('dock', dock(), decor)
+
+WHEEL_X, WHEEL_Z, WHEEL_R = .5, 1.2, 1.55   # the wheel's hub on the mill's front wall (src/view/old-mill.mjs HUB mirrors these)
+def old_mill():
+    """The old water mill on the brook's north bank (chapter 8): a stone base, a plastered upper floor with dark timber
+    framing, old red shingles with moss, the door and a hoist on the right gable end, and the axle through the front wall
+    (the plan's +y, the game's south) where the wheel hangs over the water. 5 x 4 m; origin at the base centre. The
+    wheel is its own piece."""
+    p = []
+    W, D = 5.0, 4.0
+    p.append(bx('base', W, D, 1.3, 0, 0, 0, 'stone', bev=.06, seg=2))
+    for i in range(6):   # lighter and darker stones on the right end, so the base reads as masonry
+        p.append(bx('stoneb', .06, .6, .3, W / 2 + .005, -D / 2 + .5 + i * .62, .16 + (i % 3) * .34, 'stonel' if i % 2 else 'stoned', bev=.02))
+    p.append(bx('upper', W - .2, D - .2, 1.7, 0, 0, 1.3, 'plaster', bev=.04, seg=2))
+    p += timber_wall(W - .2, 1.7, 0, D / 2 - .1, 1.3, 'front', 'woodd', posts=4)
+    p += timber_wall(D - .2, 1.7, W / 2 - .1, 0, 1.3, 'right', 'woodd', posts=3)
+    p += timber_wall(D - .2, 1.7, -W / 2 + .1, 0, 1.3, 'left', 'woodd', posts=3)
+    p += roof_rows(W - .2, D - .2, 1.5, 0, 0, 3.0, 'roofd', 'brickd', rows=5, over=.3, thick=.1)
+    for x, y, zz, r in ((-1.4, .9, 3.75, .34), (.9, 1.4, 3.3, .3), (1.7, -.8, 3.95, .28), (-.4, -1.5, 3.3, .32), (-2.0, -.3, 4.3, .22)):   # moss on the old roof
+        p.append(ball('moss', r, x, y, zz, 'leafwd', sub=1, sc=(1.5, 1.2, .35)))
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-(D - .2) / 2, 0), ((D - .2) / 2, 0), (0, 1.5)], .1, (sd * ((W - .2) / 2 - .05), 0, 3.0), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    # the right gable end faces the lane across the water: the door, a window above it and the hoist
+    p += [bx('door', .08, .95, 1.75, W / 2 + .01, -.7, 0, 'woodd', bev=.02), bx('lintel', .1, 1.2, .14, W / 2 + .03, -.7, 1.75, 'wooddd', bev=.02),
+          bx('step', .5, 1.3, .12, W / 2 + .3, -.7, 0, 'stonel', bev=.02)]
+    wp, _ = window(W / 2 - .08, .75, 1.8, .6, .6, 'right', shutters=None); p += wp
+    wp, _ = window(-1.85, D / 2 - .08, 1.85, .5, .55, 'front', shutters='teald'); p += wp
+    p += [bx('hoist', 1.0, .14, .14, W / 2 + .3, -.7, 3.55, 'woodd', bev=.02), st((W / 2 + .72, -.7, 3.55), (W / 2 + .72, -.7, 2.7), .02, 'rope', sides=3, rt=.02),
+          ball('sack', .26, W / 2 + .72, -.7, 2.55, 'sack', sub=1, sc=(1, 1, 1.3)),
+          ball('sack', .3, W / 2 + .4, .5, .28, 'sack', sub=1, sc=(1, 1.1, 1.2)), ball('sack', .28, W / 2 + .5, 1.0, .26, 'sackd', sub=1, sc=(1, 1.1, 1.2))]
+    p.append(cl('axle', .14, 1.1, 0, 0, 0, 'wooddd', verts=8, rot=(math.pi / 2, 0, 0)))
+    p[-1].location = (WHEEL_X, -(D / 2 + .3), WHEEL_Z)
+    for sx in (-1, 1):   # the stone cheeks of the wheel pit, either side of the wheel
+        p.append(bx('cheek', .3, 1.0, .9, WHEEL_X + sx * 1.95, D / 2 + .5, -.3, 'stoned', bev=.04))
+    return p
+piece('old_mill', old_mill(), decor)
+
+def old_mill_wheel():
+    """The mill's water wheel, on its own so it can turn: built round its hub at the origin, the axle along the plan's y."""
+    p = []
+    for y in (-.24, .24):
+        for k in range(16):
+            a0, a1 = k / 16 * math.tau, (k + 1) / 16 * math.tau
+            p.append(st((math.cos(a0) * WHEEL_R, y, math.sin(a0) * WHEEL_R), (math.cos(a1) * WHEEL_R, y, math.sin(a1) * WHEEL_R), .07, 'woodd', sides=4, rt=.07))
+        for k in range(8):
+            a = k / 8 * math.tau
+            p.append(st((math.cos(a) * .2, y, math.sin(a) * .2), (math.cos(a) * (WHEEL_R - .05), y, math.sin(a) * (WHEEL_R - .05)), .05, 'wood', sides=4, rt=.05))
+    for k in range(12):
+        a = k / 12 * math.tau
+        p.append(box('paddle', (.42, .56, .06), (math.cos(a) * (WHEEL_R - .12), 0, math.sin(a) * (WHEEL_R - .12)), C['woodl'], bev=0., seg=1, rot=(0, -a, 0)))
+    p.append(cl('hub', .22, .7, 0, 0, 0, 'wooddd', verts=8, rot=(math.pi / 2, 0, 0)))
+    p[-1].location = (0, 0, 0)
+    return p
+piece('old_mill_wheel', old_mill_wheel(), decor)
+
+def stage():
+    """The festival stage (chapter 9): a timber platform on the village square (4 x 2 cells: everything inside x +-3.9,
+    y +-1.9), a striped skirt and canopy, a painted backdrop with a sun, three steps at the front (+y), and two lantern
+    poles with a string of coloured lanterns across the front."""
+    p = []
+    W, D, H = 7.4, 3.4, .7
+    p.append(bx('deck', W, D, .16, 0, 0, H - .16, 'woodl', bev=.03))
+    for i in range(10):
+        p.append(bx('skirt', W / 10 - .03, .06, H - .18, -W / 2 + W / 20 + i * W / 10, D / 2 - .03, 0, 'red' if i % 2 else 'cream', bev=0.))
+    for x in (-W / 2 + .2, W / 2 - .2):
+        for y in (-D / 2 + .2, D / 2 - .2):
+            p.append(bx('leg', .24, .24, H - .1, x, y, 0, 'woodd', bev=0.))
+            p.append(bx('post', .16, .16, 3.0, x, y, H, 'woodd', bev=.02))
+    for k in range(3):
+        p.append(bx('step', 1.9, .36, .52 - k * .18, 0, D / 2 + .18 + k * .36, 0, 'wood', bev=.02))
+    for i in range(8):   # the canopy: red and cream stripes, a little higher at the back
+        p.append(bx('stripe', W / 8 + .02, D + .5, .1, -W / 2 + W / 16 + i * W / 8, 0, H + 3.0, 'red' if i % 2 else 'cream', bev=0.))
+    for i in range(16):
+        p.append(bx('valance', W / 16 - .02, .05, .28 if i % 2 else .2, -W / 2 + W / 32 + i * W / 16, D / 2 + .26, H + 2.74 + (0 if i % 2 else .08), 'cream' if i % 2 else 'red', bev=0.))
+    p.append(bx('backdrop', W - .5, .08, 2.7, 0, -D / 2 + .2, H, 'teal', bev=.02))
+    p.append(ball('sun', .62, 0, -D / 2 + .27, H + 1.55, 'sun', sub=2, sc=(1, .16, 1)))
+    for k in range(8):
+        a = k / 8 * math.tau
+        p.append(bx('ray', .12, .06, .34, math.cos(a) * .95, -D / 2 + .27, H + 1.38 + math.sin(a) * .95, 'gold', bev=0.))
+    for sx in (-1, 1):   # lantern poles in front of the corners
+        p.append(cl('pole', .07, 3.5, sx * (W / 2 + .35), D / 2 + .5, 0, 'woodd', verts=6))
+        p.append(ball('poletop', .16, sx * (W / 2 + .35), D / 2 + .5, 3.56, 'lampglow', sub=1))
+    p.append(st((-(W / 2 + .35), D / 2 + .5, 3.4), (W / 2 + .35, D / 2 + .5, 3.4), .025, 'rope', sides=3, rt=.025))
+    for i in range(7):
+        x = -W / 2 + .35 + i * (W - .7) / 6
+        p.append(ball('lantern', .17, x, D / 2 + .5, 3.18, ('pink', 'sun', 'sky', 'mint', 'red', 'violet', 'sun')[i], sub=1, sc=(1, 1, 1.25)))
+    return p
+piece('stage', stage(), decor)
+
+def stage_burned():
+    """What is left of the old festival stage: a blackened platform with a broken corner, two charred posts, a fallen
+    beam, an ash heap and weeds growing through. Same footprint as the stage."""
+    p = [bx('deck', 6.6, 3.0, .14, -.3, 0, .34, 'charcoal', bev=.02), bx('deckhole', 1.8, 1.1, .16, 2.2, -.7, .2, 'wooddd', bev=.02, rot=.25)]
+    for x, y in ((-3.3, -1.3), (-3.3, 1.3), (0, -1.3), (0, 1.3), (2.6, 1.3)):
+        p.append(bx('leg', .24, .24, .34, x, y, 0, 'charcoal', bev=0.))
+    p += [bx('post', .18, .18, 1.9, -3.3, -1.3, .4, 'charcoal', bev=.02), bx('post', .18, .18, 1.1, 0, -1.3, .4, 'wooddd', bev=.02),
+          bx('beam', 3.2, .18, .18, -1.2, .5, .5, 'wooddd', bev=.02, rot=.45), bx('beam', 1.6, .16, .16, 2.6, .9, .1, 'charcoal', bev=.02, rot=-.6),
+          ball('ash', .5, 2.3, -.5, .12, 'stoned', sub=1, sc=(1.4, 1, .35)), ball('ash', .3, 1.5, .2, .42, 'iron', sub=1, sc=(1.2, 1, .3))]
+    for x, y in ((-2.2, 1.6), (3.3, -1.4), (.8, 1.7), (-3.6, .2)):
+        p.append(ball('weed', .22, x, y, .16, 'leaf', sub=1, sc=(1, 1, 1.3)))
+        p.append(ball('weed', .16, x + .2, y - .1, .12, 'leafw', sub=0, sc=(1, 1, 1.2)))
+    return p
+piece('stage_burned', stage_burned(), decor)
+
+def cannery():
+    """The cannery (chapter 11, if the player takes the offer): a brick hall on the brook meadow, 5 x 4 cells (everything
+    inside x +-4.9, y +-3.9), a saw-tooth roof with skylights facing the front (+y), a loading bay, and on the east side
+    a tall chimney with a sooty cap and two silver tanks. A handsome building: its owner is not a barbarian."""
+    p = []
+    W, D, H, X, Y = 7.0, 5.6, 3.2, -.7, -.4
+    F = Y + D / 2   # the front wall
+    p.append(bx('base', W + .3, D + .3, .3, X, Y, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('hall', W, D, H, X, Y, .3, 'brick', bev=.05, seg=2))
+    for i in range(5):   # pilasters along the front and a stone cornice
+        p.append(bx('pilaster', .3, .1, H, X - W / 2 + .2 + i * (W - .4) / 4, F + .03, .3, 'brickd', bev=.02))
+    p.append(bx('cornice', W + .16, D + .16, .16, X, Y, H + .22, 'stonel', bev=.03))
+    for k in range(3):   # the saw-tooth roof: three teeth, each with its glass wall to the front
+        y = Y - D / 2 + (k + .5) * D / 3
+        p.append(extrude_outline('tooth', [(-D / 6, 0), (D / 6, 0), (-D / 6, 1.0)], W + .1, (X, -y, H + .36), C['roofd' if k % 2 else 'roof'], rot=(0, 0, math.pi / 2), bev=.02))
+        p.append(bx('skylight', W - .6, .06, .62, X, y + D / 6, H + .56, 'glassd', bev=0.))
+        for i in range(5):
+            p.append(bx('skybar', .06, .08, .7, X - (W - .6) / 2 + i * (W - .6) / 4, y + D / 6 + .01, H + .52, 'white', bev=0.))
+    p += [bx('bay', 2.4, .12, 2.3, X - 1.9, F + .05, .3, 'wooddd', bev=.02), bx('baytop', 2.7, .2, .2, X - 1.9, F + .08, 2.6, 'stonel', bev=.02),
+          bx('dock', 3.0, 1.2, .5, X - 1.9, F + .7, 0, 'stone', bev=.04), bx('awning', 3.0, 1.3, .1, X - 1.9, F + .65, 2.95, 'teal', bev=.02)]
+    for i in range(4):   # planks on the bay door
+        p.append(bx('plank', .04, .04, 2.2, X - 2.8 + i * .6, F + .12, .32, 'woodd', bev=0.))
+    for x in (X + .9, X + 2.5):
+        wp, _ = window(x, F + .02, 1.5, .9, 1.0, 'front', shutters=None); p += wp
+    wp, _ = window(X + W / 2 + .02, 1.3, 1.5, .9, 1.0, 'right', shutters=None); p += wp
+    p += [bx('sign', 2.7, .1, .5, X + 1.7, F + .06, 2.72, 'cream', bev=.02), bx('signline', 2.1, .04, .1, X + 1.7, F + .12, 2.92, 'red', bev=0.)]
+    for i in range(3):   # a tin, a tin, a tin on the sign
+        p.append(cl('signtin', .1, .2, X + 1.1 + i * .6, F + .14, 2.76, 'stonel' if i != 1 else 'sun', verts=8))
+    # the east yard: the chimney at the back, banded, sooty at the top; two tanks and their pipe
+    E = X + W / 2 + 1.0
+    p += [cl('stack', .46, 5.8, E, -2.6, .3, 'brickd', verts=10, rt=.3), bx('stackbase', 1.1, 1.1, .5, E, -2.6, 0, 'stone', bev=.04),
+          cl('band', .36, .16, E, -2.6, 4.6, 'stonel', verts=10), cl('lip', .34, .22, E, -2.6, 6.1, 'charcoal', verts=10)]
+    for y in (-.9, .4):
+        p += [cl('tank', .52, 2.3, E, y, .25, 'stonel', verts=12), ball('tanktop', .52, E, y, 2.55, 'stonel', sub=1, sc=(1, 1, .45)), cl('tankband', .54, .1, E, y, 1.3, 'iron', verts=12),
+              cl('tankfoot', .56, .25, E, y, 0, 'stoned', verts=12)]
+    p += [st((E, -.9, 2.7), (E, .4, 2.7), .06, 'iron', sides=5), st((E - .5, -.25, 2.7), (X + W / 2, -.25, 2.7), .06, 'iron', sides=5), st((E, -.25, 2.7), (E - .5, -.25, 2.7), .06, 'iron', sides=5)]
+    for i in range(3):   # crates on the loading dock
+        p.append(bx('crate', .6, .5, .45, X - 2.8 + i * .75, F + .8, .5, 'woodl' if i % 2 else 'wood', bev=.02))
+    return p
+piece('cannery', cannery(), decor)
+
+def beehive():
+    """A beehive (chapter 11, for the kept meadow): two white boxes on a wooden stand under a little pitched roof, an
+    entrance slit and a landing board. One cell; about 0.9 m tall."""
+    p = [bx('stand', .62, .62, .08, 0, 0, .16, 'woodd', bev=.01)]
+    for x in (-.24, .24):
+        for y in (-.24, .24):
+            p.append(bx('leg', .08, .08, .18, x, y, 0, 'woodd', bev=0.))
+    p += [bx('box1', .56, .56, .3, 0, 0, .24, 'white', bev=.02), bx('box2', .56, .56, .26, 0, 0, .55, 'cream', bev=.02), bx('band', .58, .58, .03, 0, 0, .535, 'sun', bev=0.),
+          bx('slit', .26, .02, .04, 0, .285, .28, 'charcoal', bev=0.), bx('board', .34, .12, .03, 0, .33, .24, 'woodl', bev=0.),
+          gable('roof', .58, .58, .2, 0, 0, .81, 'teal', over=.06, bev=.01)]
+    for x, y, zz in ((.2, .36, .5), (-.25, .4, .72), (.05, .44, .95)):   # three bees about
+        p.append(ball('bee', .035, x, y, zz, 'sun', sub=0, sc=(1.4, 1, 1)))
+    return p
+piece('beehive', beehive(), decor)
+
+def survey_stakes():
+    """Mr Albright's survey of the cannery's place (chapter 11, while his offer is open): corner stakes with red ribbons,
+    string between them, and a drawing board on a stand. Covers the cannery's 10 x 8 m lot."""
+    p = []
+    X, Y = 4.7, 3.7
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            p += [bx('stake', .09, .09, .9, sx * X, sy * Y, 0, 'woodl', bev=0.), bx('ribbon', .04, .3, .16, sx * X, sy * Y + .16, .7, 'red', bev=0.)]
+    for sy in (-1, 1):
+        p.append(bx('string', 2 * X, .025, .025, 0, sy * Y, .62, 'paper', bev=0.))
+    for sx in (-1, 1):
+        p.append(bx('string', .025, 2 * Y, .025, sx * X, 0, .62, 'paper', bev=0.))
+    for i in range(3):   # pegs along the front string
+        p.append(bx('peg', .07, .07, .5, -2.4 + i * 2.4, Y, 0, 'woodl', bev=0.))
+    # the drawing board: an easel with the plan of a factory pinned to it
+    p += [st((-.45, 2.2, 0), (-.3, 2.0, 1.5), .035, 'woodd', sides=4), st((.45, 2.2, 0), (.3, 2.0, 1.5), .035, 'woodd', sides=4), st((0, 1.4, 0), (0, 1.95, 1.5), .035, 'woodd', sides=4),
+          box('board', (1.2, .06, .85), (0, -2.1, 1.05), C['paper'], bev=.01, seg=1, rot=(-.18, 0, 0)), box('plan', (.8, .03, .34), (0, -2.15, .98), C['brick'], bev=0., seg=1, rot=(-.18, 0, 0)),
+          box('planstack', (.1, .03, .5), (.28, -2.16, 1.14), C['brickd'], bev=0., seg=1, rot=(-.18, 0, 0)), box('planline', (1.0, .03, .04), (0, -2.14, .76), C['sky'], bev=0., seg=1, rot=(-.18, 0, 0))]
+    return p
+piece('survey_stakes', survey_stakes(), decor)
+
+def car():
+    """Mr Albright's motor car (chapter 11): a small round saloon from the city, deep teal with a cream roof, parked on
+    the verge by the farm gate while his offer is open. Its nose points to the front (+y). About 3.4 m long."""
+    p = [bx('body', 1.5, 3.3, .62, 0, 0, .3, 'teald', bev=.16, seg=2), bx('cabin', 1.36, 1.7, .56, 0, -.25, .86, 'cream', bev=.18, seg=2),
+         bx('windscreen', 1.2, .05, .36, 0, .6, .92, 'glass', bev=.02), bx('rear', 1.2, .05, .34, 0, -1.1, .94, 'glass', bev=.02),
+         bx('bumperf', 1.56, .12, .14, 0, 1.68, .34, 'stonel', bev=.04), bx('bumperr', 1.56, .12, .14, 0, -1.68, .34, 'stonel', bev=.04),
+         bx('grille', .7, .05, .22, 0, 1.66, .56, 'stonel', bev=.02), bx('plate', .4, .03, .12, 0, -1.67, .56, 'paper', bev=0.)]
+    for sx in (-1, 1):
+        p += [bx('sideglass', .04, 1.3, .32, sx * .69, -.25, .94, 'glass', bev=.01), ball('lamp', .13, sx * .5, 1.64, .66, 'lampglow', sub=1, sc=(1, .5, 1)),
+              ball('tail', .09, sx * .55, -1.66, .62, 'red', sub=1, sc=(1, .5, 1)), bx('step', .1, 1.5, .06, sx * .78, -.1, .3, 'stonel', bev=.02)]
+        for sy in (-1.05, 1.05):
+            p += [cl('wheel', .34, .22, sx * .72, sy, .34 - .11, 'charcoal', verts=10, rot=(0, math.pi / 2, 0)), cl('hub', .16, .24, sx * .72, sy, .34 - .12, 'stonel', verts=6, rot=(0, math.pi / 2, 0)),
+                  bx('arch', .16, .86, .1, sx * .72, sy, .66, 'teal', bev=.04)]
+    return p
+piece('car', car(), decor)
+
+def cooperative_board():
+    """The co-operative's notice board (chapter 12): two posts, a board under a little teal roof, pinned notes, five
+    pennants in the farms' colours along the eave and a crate at its foot. One cell; faces the front (+y)."""
+    p = [bx('post', .12, .12, 2.0, -.78, 0, 0, 'woodd', bev=0.), bx('post', .12, .12, 2.0, .78, 0, 0, 'woodd', bev=0.),
+         bx('board', 1.5, .08, 1.0, 0, .02, .8, 'cork', bev=.02), bx('rail', 1.7, .1, .08, 0, .02, .74, 'wood', bev=0.),
+         gable('roof', 1.7, .5, .32, 0, 0, 2.0, 'teal', over=.1, bev=0.), bx('eave', 1.86, .06, .06, 0, .32, 1.97, 'teald', bev=0.)]
+    for i, (mt, x, z, w, h) in enumerate((('paper', -.48, 1.42, .34, .3), ('sun', -.05, 1.5, .3, .24), ('paper', .4, 1.4, .36, .34), ('pink', -.42, .98, .3, .26), ('paper', .02, 1.02, .4, .3), ('mint', .46, .96, .28, .24))):
+        p.append(bx('note', w, .02, h, x, .07, z - h / 2, mt, bev=0., rot=(.06 if i % 2 else -.05)))
+    for i, mt in enumerate(('sun', 'violet', 'red', 'sky', 'leaf')):   # one pennant for every farm on the river
+        p.append(extrude_outline('pennant', [(-.11, 0), (.11, 0), (0, -.26)], .02, (-.62 + i * .31, -.36, 1.96), C[mt], bev=0.))
+    p += [bx('crate', .5, .4, .34, .95, .42, 0, 'woodl', bev=.02), ball('sack', .2, .95, .42, .5, 'sack', sub=1, sc=(1.1, .9, .8)), ball('tuft', .16, -.9, .2, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('cooperative_board', cooperative_board(), decor)
+
+def towpath_gate(open_=False):
+    """The old towpath's gate on the far bank (chapter 12): two stout posts four metres apart and a five-bar field gate
+    between them, with a faded "closed" board and grass grown up through it. Open: the leaf is swung back along the
+    path on its hinge post, the board is gone. The gate lies along x."""
+    p = []
+    for x in (-2.05, 2.05):
+        p += [bx('post', .22, .22, 1.45, x, 0, 0, 'woodd', bev=.02), ball('cap', .15, x, 0, 1.5, 'wooddd', sub=0, sc=(1, 1, .6))]
+    L = 3.8
+    def leaf():
+        q = [bx('stile', .1, .08, 1.1, -L / 2 + .05, 0, .12, 'wood', bev=0.), bx('stile', .1, .08, 1.1, L / 2 - .05, 0, .12, 'wood', bev=0.)]
+        for k in range(4):
+            q.append(bx('bar', L, .06, .09, 0, 0, .16 + k * .32, 'woodl' if k % 2 else 'wood', bev=0.))
+        q.append(box('brace', (L * 1.02, .05, .08), (0, 0, .68), C['woodd'], bev=0., seg=1, rot=(0, -math.atan2(.96, L), 0)))
+        return q
+    if open_:
+        for o in leaf():   # swung a quarter turn about the hinge post at x = -L/2, to lie along the path
+            o.rotation_euler[2] += math.pi / 2 - .12
+            x, y = o.location[0] + L / 2, o.location[1]
+            c, s_ = math.cos(math.pi / 2 - .12), math.sin(math.pi / 2 - .12)
+            o.location[0], o.location[1] = -L / 2 + x * c - y * s_, x * s_ + y * c
+            p.append(o)
+    else:
+        p += leaf()
+        p += [bx('closed', .9, .04, .42, 0, .06, .5, 'white', bev=0.), bx('closedline', .7, .03, .1, 0, .09, .66, 'red', bev=0.), cl('chain', .05, .3, 1.9, .06, .6, 'iron', verts=5)]
+        for i, x in enumerate((-1.3, -.4, .6, 1.4)):   # grass grown up through the bars
+            p.append(ball('tuft', .2, x, (.12 if i % 2 else -.1), .1, 'leaf' if i % 2 else 'leafw', sub=0, sc=(1.2, .8, 1.5)))
+    return p
+piece('towpath_gate', towpath_gate(False), decor)
+piece('towpath_gate_open', towpath_gate(True), decor)
+
+def apartment():
+    """The quay house (chapter 13): three storeys on the far bank. A tea shop below, painted teal, with a striped awning
+    and two tables on the quay; two floors of flats above with shuttered windows, a long balcony and flower boxes; a
+    tiled roof with a chimney. 6 x 5 cells (everything inside x +-5.8, y +-4.8); the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    W, D, Y = 10.0, 6.2, -1.3          # the house stands at the back of its lot: the front of the lot is its terrace
+    F = Y + D / 2                       # the front wall
+    H0, H1 = 3.0, 2.6                   # the shop's height, and each floor above it
+    Z1 = .3 + H0 + .18                  # where the flats begin
+    top = Z1 + 2 * H1
+    p += [bx('base', W + .5, D + .5, .3, 0, Y, 0, 'stone', bev=.05, seg=2), bx('terrace', W + .5, 2.6, .16, 0, F + 1.4, 0, 'stonel', bev=.03),
+          bx('shop', W, D, H0, 0, Y, .3, 'teald', bev=.04), bx('band', W + .2, D + .2, .18, 0, Y, .3 + H0, 'stonel', bev=.03),
+          bx('floors', W, D, 2 * H1, 0, Y, Z1, 'plaster', bev=.04), bx('cornice', W + .24, D + .24, .16, 0, Y, top, 'stonel', bev=.03)]
+    p += roof_rows(W, D, 2.1, 0, Y, top + .16, 'roof', 'roofl', rows=5, over=.3)
+    for sd in (-1, 1):   # the gable ends, and a chimney on the east one
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 2.1)], .12, (sd * (W / 2 - .06), -Y, top + .16), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    p += [bx('chimney', .7, .7, 2.2, W / 2 - 1.5, Y - 1.2, top + .5, 'brick', bev=.03), bx('chimneycap', .86, .86, .14, W / 2 - 1.5, Y - 1.2, top + 2.7, 'charcoal', bev=.02)]
+    # the tea shop: a door between two big windows, a sign board and a striped awning over the terrace
+    p += [bx('door', 1.1, .1, 2.1, 0, F + .04, .3, 'cream', bev=.02), bx('doorglass', .7, .06, .9, 0, F + .09, 1.3, 'glass', bev=.01), ball('knob', .06, .36, F + .12, 1.2, 'gold', sub=0)]
+    A['door'].append((0, F + .12, .3))
+    for x in (-3.0, 3.0):
+        p += [bx('shopframe', 3.0, .1, 1.9, x, F + .03, .95, 'cream', bev=.02), bx('shopglass', 2.7, .08, 1.6, x, F + .07, 1.1, 'glass', bev=.01), bx('shopsill', 3.1, .22, .1, x, F + .1, .88, 'stonel', bev=.02)]
+        A['window'].append((x, F + .12, 1.9, 0, 1))
+        for k, mt in enumerate(('sun', 'pink', 'white', 'sun')):   # teapots and cakes in the window
+            p.append(ball('ware', .14, x - 1.0 + k * .66, F + .02, 1.28, mt, sub=0))
+    p += [bx('signboard', 3.6, .1, .5, 0, F + .06, .3 + H0 - .34, 'cream', bev=.02), cl('teapot', .17, .22, 0, F + .16, .3 + H0 - .2, 'red', verts=8, rot=(math.pi / 2, 0, 0))]
+    for i in range(10):   # the awning: ten stripes sloping down over the terrace
+        p.append(box('awning', (W / 10, 1.7, .07), (-W / 2 + (i + .5) * W / 10, -(F + .78), .3 + H0 - .62), C['red' if i % 2 else 'white'], bev=0., seg=1, rot=(-.24, 0, 0)))
+    for x in (-W / 2 + .1, W / 2 - .1):
+        p.append(st((x, F + 1.55, .16), (x, F + 1.55, .3 + H0 - .86), .04, 'iron', sides=4))
+    # the flats: four shuttered windows on each floor; a long balcony on the first, flower boxes on the second
+    for f in range(2):
+        z = Z1 + f * H1 + .8
+        for x in (-3.6, -1.2, 1.2, 3.6):
+            wp, c = window(x, F + .02, z, .9, 1.25, 'front', shutters='teal' if f == 0 else 'sky', box=(['pink', 'sun', 'white'] if f == 1 else None)); p += wp; A['window'].append(c)
+    zb = Z1 + .34
+    p += [bx('balcony', W - .8, .8, .1, 0, F + .4, zb, 'stonel', bev=.02), bx('rail', W - .8, .05, .06, 0, F + .78, zb + .8, 'iron', bev=0.)]
+    for k in range(13):
+        p.append(bx('bar', .04, .04, .74, -(W - .8) / 2 + .05 + k * (W - .9) / 12, F + .78, zb + .08, 'iron', bev=0.))
+    for k, mt in enumerate(('pink', 'sun', 'white', 'pink', 'sun')):
+        p.append(ball('pot', .16, -3.9 + k * 1.95, F + .66, zb + .26, mt, sub=0))
+    # the east and west walls: two windows on each floor (the east ones show)
+    for sd, face in ((1, 'right'), (-1, 'left')):
+        for f in range(2):
+            for y in (Y - 1.4, Y + 1.4):
+                wp, c = window(sd * (W / 2 + .02), y, Z1 + f * H1 + .8, .9, 1.25, face); p += wp
+                if sd > 0: A['window'].append(c)
+    # two tea tables on the terrace, a bench, and a tub of flowers at the door
+    for x in (-3.2, 3.2):
+        p += [cl('table', .5, .06, x, F + 1.6, .86, 'cream', verts=10), cl('tableleg', .06, .7, x, F + 1.6, .16, 'iron', verts=5), cl('cup', .08, .08, x + .16, F + 1.5, .92, 'white', verts=6)]
+        for dx in (-.75, .75):
+            p += [cl('stool', .2, .06, x + dx, F + 1.7, .56, 'woodl', verts=8), cl('stoolleg', .05, .4, x + dx, F + 1.7, .16, 'woodd', verts=5)]
+    p += [cl('tub', .3, .4, 1.1, F + .45, .16, 'woodd', verts=8), ball('tubflower', .3, 1.1, F + .45, .68, 'pink', sub=1, sc=(1, 1, .7)), ball('tubleaf', .34, 1.1, F + .45, .56, 'leaf', sub=0, sc=(1.1, 1.1, .5))]
+    anchors['apartment'] = A
+    return p
+piece('apartment', apartment(), decor)
+
+def quay_bollard():
+    """A mooring bollard for the water side of the paved quay (Act IV): a stout stone post with an iron cap, a coil of
+    rope round it and a ring. About 0.8 m tall."""
+    return [cl('post', .2, .7, 0, 0, 0, 'stone', verts=8, rt=.17), cl('cap', .24, .1, 0, 0, .7, 'iron', verts=8), ball('top', .2, 0, 0, .8, 'iron', sub=0, sc=(1, 1, .5)),
+            cl('rope', .26, .12, 0, 0, .26, 'rope', verts=8), cl('rope2', .25, .1, 0, 0, .37, 'rope', verts=8), bx('foot', .56, .56, .08, 0, 0, 0, 'stonel', bev=.02)]
+piece('quay_bollard', quay_bollard(), decor)
+
+C['hotelwall'] = mat('FK hotelwall', '#FFD0DC', .55)   # the hotel: rose plaster
+C['hotelwalld'] = mat('FK hotelwalld', '#F2A9BD', .55)
+def hotel(floors=2, name='hotel'):
+    """The hotel on the quay (chapter 14): a rose-plastered house with a teal roof. Below, a cream ground floor with an
+    arched door under a striped awning and a terrace with tables on the quay; above, `floors` floors of five tall
+    windows with little balconies; a sign with a gold bell on the roof's front. Upgrades add a floor (floors 2, 3, 4).
+    6 x 5 cells (everything inside x +-5.8, y +-4.8); the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    W, D, Y = 10.4, 6.0, -1.4
+    F = Y + D / 2
+    H0, H1 = 3.2, 2.5
+    Z1 = .3 + H0 + .2
+    top = Z1 + floors * H1
+    p += [bx('base', W + .5, D + .5, .3, 0, Y, 0, 'stone', bev=.05, seg=2), bx('terrace', W + .5, 2.7, .16, 0, F + 1.45, 0, 'stonel', bev=.03),
+          bx('ground', W, D, H0, 0, Y, .3, 'cream', bev=.04), bx('band', W + .24, D + .24, .2, 0, Y, .3 + H0, 'white', bev=.03),
+          bx('floors', W, D, floors * H1, 0, Y, Z1, 'hotelwall', bev=.04), bx('cornice', W + .3, D + .3, .2, 0, Y, top, 'white', bev=.03)]
+    for i in range(1, floors):   # a thin white course between floors
+        p.append(bx('course', W + .08, D + .08, .08, 0, Y, Z1 + i * H1 - .04, 'white', bev=0.))
+    for sx in (-1, 1):           # corner pilasters
+        p.append(bx('pilaster', .36, .14, floors * H1, sx * (W / 2 - .18), F + .04, Z1, 'hotelwalld', bev=.02))
+    p += roof_rows(W, D, 1.7, 0, Y, top + .2, 'teal', 'teald', rows=4, over=.32)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.7)], .12, (sd * (W / 2 - .06), -Y, top + .2), C['hotelwall'], rot=(0, 0, math.pi / 2), bev=.01))
+    # the sign over the cornice: a cream board with a gold bell
+    p += [bx('sign', 3.4, .14, .8, 0, F - .1, top + .3, 'cream', bev=.03), bx('signframe', 3.6, .1, 1.0, 0, F - .16, top + .2, 'teald', bev=.02),
+          ball('bell', .22, 0, F + .02, top + .72, 'gold', sub=1, sc=(1, .6, 1)), cl('bellfoot', .26, .06, 0, F + .02, top + .5, 'gold', verts=8, rot=(0, 0, 0)), ball('clapper', .07, 0, F + .04, top + .46, 'sun', sub=0)]
+    # the ground floor: an arched door between two pairs of tall windows, under a striped awning
+    p += [bx('door', 1.5, .1, 2.3, 0, F + .04, .3, 'teald', bev=.02), cl('arch', .75, .1, 0, F + .04, 2.6, 'teald', verts=12, rot=(math.pi / 2, 0, 0)),
+          bx('doorglass', .5, .06, 1.3, -.36, F + .09, .9, 'glass', bev=.01), bx('doorglass', .5, .06, 1.3, .36, F + .09, .9, 'glass', bev=.01), bx('step', 2.2, .7, .14, 0, F + .4, .16, 'stonel', bev=.02)]
+    A['door'].append((0, F + .12, .3))
+    for x in (-3.9, -2.2, 2.2, 3.9):
+        wp, c = window(x, F + .02, 1.0, 1.0, 1.8, 'front', shutters=None); p += wp; A['window'].append(c)
+    for i in range(8):
+        p.append(box('awning', (4.4 / 8, 1.5, .07), (-2.2 + (i + .5) * 4.4 / 8, -(F + .7), .3 + H0 - .3), C['sun' if i % 2 else 'white'], bev=0., seg=1, rot=(-.26, 0, 0)))
+    for x in (-2.15, 2.15):
+        p.append(st((x, F + 1.38, .16), (x, F + 1.38, .3 + H0 - .5), .04, 'iron', sides=4))
+    # the floors of rooms: five tall windows each, with a little balcony under every one
+    for f in range(floors):
+        z = Z1 + f * H1 + .55
+        for x in (-4.0, -2.0, 0, 2.0, 4.0):
+            wp, c = window(x, F + .02, z, .95, 1.45, 'front', shutters=None); p += wp; A['window'].append(c)
+            p += [bx('balcony', 1.3, .36, .07, x, F + .2, z - .12, 'white', bev=0.), bx('balrail', 1.3, .04, .34, x, F + .36, z - .08, 'teal', bev=0.)]
+        for sd, face in ((1, 'right'), (-1, 'left')):
+            for y in (Y - 1.3, Y + 1.3):
+                wp, c = window(sd * (W / 2 + .02), y, z, .9, 1.45, face); p += wp
+                if sd > 0: A['window'].append(c)
+    # the terrace: three tables with sun-yellow parasols, and two tubs of flowers at the door
+    for x in (-3.6, 0, 3.6):
+        if x == 0: continue
+        p += [cl('table', .55, .06, x, F + 1.7, .86, 'white', verts=10), cl('tableleg', .06, .7, x, F + 1.7, .16, 'iron', verts=5),
+              cl('parasolpole', .04, 1.5, x, F + 1.7, .92, 'woodd', verts=4), cl('parasol', 1.0, .5, x, F + 1.7, 2.3, 'sun' if x < 0 else 'pink', verts=8, rt=.05)]
+        for dx in (-.8, .8):
+            p += [cl('chair', .2, .06, x + dx, F + 1.9, .56, 'teal', verts=8), cl('chairleg', .05, .4, x + dx, F + 1.9, .16, 'iron', verts=4)]
+    for x in (-1.3, 1.3):
+        p += [cl('tub', .3, .42, x, F + .5, .3, 'white', verts=8), ball('tubflower', .32, x, F + .5, .86, 'pink' if x < 0 else 'sun', sub=1, sc=(1, 1, .7)), ball('tubleaf', .36, x, F + .5, .74, 'leaf', sub=0, sc=(1.1, 1.1, .5))]
+    anchors[name] = A
+    return p
+piece('hotel', hotel(2, 'hotel'), decor)
+piece('hotel_t1', hotel(3, 'hotel_t1'), decor)
+piece('hotel_t2', hotel(4, 'hotel_t2'), decor)
+
+def halt():
+    """The railway halt (chapter 15): a platform along the back of its lot (-y, by the rails) under a teal canopy on
+    slender posts, a small station house with a clock at the west end, a name board, a signal, benches and goods
+    waiting. Low and open, so the train behind it shows. 6 x 5 cells; the front (+y) faces the quay."""
+    p, A = [], {'window': [], 'door': []}
+    p += [bx('forecourt', 11.2, 6.0, .12, 0, 1.6, 0, 'stonel', bev=.03), bx('platform', 11.6, 2.8, .5, 0, -3.4, 0, 'stone', bev=.04),
+          bx('edge', 11.6, .22, .52, 0, -4.7, 0, 'sun', bev=0.), bx('ramp', 2.0, 1.0, .26, 3.0, -1.6, 0, 'stone', bev=.03)]
+    # the canopy: a teal roof on six posts, with a scalloped valance
+    for x in (-1.2, 1.8, 4.8):
+        for y in (-4.3, -2.5):
+            p.append(bx('post', .12, .12, 2.7, x, y, .5, 'white', bev=0.))
+    p += [bx('canopy', 7.4, 2.9, .12, 1.8, -3.4, 3.2, 'teal', bev=.02), bx('canopyrim', 7.5, 3.0, .08, 1.8, -3.4, 3.14, 'teald', bev=0.)]
+    for i in range(12):
+        p.append(extrude_outline('valance', [(-.3, 0), (.3, 0), (0, -.28)], .04, (-1.75 + i * .645, 1.95, 3.14), C['white'], bev=0.))
+    # the station house: red roof, a door to the quay, a clock in the gable
+    HX, HY, HW, HD, HH = -3.9, -2.6, 3.4, 3.0, 2.5
+    p.append(bx('house', HW, HD, HH, HX, HY, .5, 'plaster', bev=.04))
+    p += roof_rows(HW, HD, 1.2, HX, HY, .5 + HH, 'roof', 'roofl', rows=3, over=.25)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-HD / 2, 0), (HD / 2, 0), (0, 1.2)], .1, (HX + sd * (HW / 2 - .05), -HY, .5 + HH), C['plaster'], rot=(0, 0, math.pi / 2), bev=.01))
+    F = HY + HD / 2
+    p += [bx('door', .9, .08, 1.9, HX - .7, F + .03, .5, 'teald', bev=.02), bx('steps', 1.4, .9, .26, HX - .7, F + .45, .12, 'stone', bev=.03)]
+    A['door'].append((HX - .7, F + .1, .5))
+    wp, c = window(HX + .8, F + .02, 1.2, .9, 1.0, 'front', shutters=None); p += wp; A['window'].append(c)
+    wp, c = window(HX + HW / 2 + .02, HY, 1.2, .9, 1.0, 'right'); p += wp; A['window'].append(c)
+    p += [cl('clock', .42, .08, HX + HW / 2 + .1, HY, .5 + HH + .25, 'white', verts=12, rot=(0, math.pi / 2, 0)), cl('clockrim', .48, .05, HX + HW / 2 + .08, HY, .5 + HH + .25, 'gold', verts=12, rot=(0, math.pi / 2, 0)),
+          bx('hand', .03, .04, .3, HX + HW / 2 + .16, HY, .5 + HH + .25, 'charcoal', bev=0.), bx('hand2', .03, .22, .04, HX + HW / 2 + .16, HY + .1, .5 + HH + .25, 'charcoal', bev=0.)]
+    # the name board, the signal, lamps, benches, goods waiting for the train
+    p += [bx('board', 2.6, .1, .6, 1.8, -2.3, 2.0, 'cream', bev=.02), bx('boardline', 2.2, .04, .1, 1.8, -2.24, 2.42, 'teald', bev=0.), bx('boardpost', .1, .1, 1.6, .7, -2.3, .5, 'woodd', bev=0.), bx('boardpost', .1, .1, 1.6, 2.9, -2.3, .5, 'woodd', bev=0.)]
+    p += [bx('signalpost', .14, .14, 4.2, 5.4, -4.2, .5, 'white', bev=0.), bx('signalarm', 1.3, .06, .3, 4.9, -4.2, 4.3, 'red', bev=0., rot=0.), bx('signaltip', .3, .07, .3, 4.3, -4.2, 4.3, 'white', bev=0.), ball('signallamp', .14, 5.4, -4.12, 4.0, 'lampglow', sub=0)]
+    for x in (-5.2, 5.2):
+        p += [bx('lamppost', .1, .1, 2.6, x, .2, .12, 'iron', bev=0.), ball('lamp', .2, x, .2, 2.85, 'lampglow', sub=1)]
+    for x in (.3, 3.3):
+        p += [bx('bench', 1.3, .4, .08, x, -2.9, .9, 'woodl', bev=.01), bx('benchback', 1.3, .06, .4, x, -2.72, 1.0, 'woodl', bev=.01), bx('benchleg', .08, .36, .4, x - .5, -2.9, .5, 'iron', bev=0.), bx('benchleg', .08, .36, .4, x + .5, -2.9, .5, 'iron', bev=0.)]
+    for i, (x, y, mt) in enumerate(((-.9, -3.9, 'wood'), (-.2, -4.0, 'woodl'), (-.6, -3.3, 'woodl'))):
+        p.append(bx('crate', .6, .55, .5, x, y, .5 if i < 2 else .5, mt, bev=.02))
+    p += [ball('sack', .26, -1.5, -3.3, .72, 'sack', sub=1, sc=(1.1, .9, .85)), ball('sack', .24, -1.9, -3.8, .7, 'sackd', sub=1, sc=(1, 1, .8)),
+          cl('tub', .3, .4, -4.4, .9, .12, 'woodd', verts=8), ball('tubflower', .3, -4.4, .9, .62, 'sun', sub=1, sc=(1, 1, .7)), cl('tub', .3, .4, 2.0, 1.0, .12, 'woodd', verts=8), ball('tubflower', .3, 2.0, 1.0, .62, 'pink', sub=1, sc=(1, 1, .7))]
+    anchors['halt'] = A
+    return p
+piece('halt', halt(), decor)
+
+def track(old=False):
+    """Four metres of railway along x (chapter 15): two rails on six sleepers over a bed of ballast. Old: rusty rails
+    in the grass, no ballast, a sleeper missing and tufts between. The rails are 1.8 m apart (a toy's wide gauge); their
+    tops are at z 0.26."""
+    rail, sleeper = ('brickd', 'wooddd') if old else ('stonel', 'woodd')
+    p = [] if old else [bx('bed', 4.0, 2.8, .08, 0, 0, 0, 'stoned', bev=0.)]
+    for i in range(6):
+        if old and i == 3: continue
+        p.append(bx('sleeper', .26, 2.3, .1, -1.67 + i * .667, 0, .06, sleeper, bev=0.))
+    for y in (-.9, .9):
+        p.append(bx('rail', 4.0, .09, .12, 0, y, .14, rail, bev=0.))
+    if old:
+        for x, y in ((-.9, .2), (.7, -.3), (1.6, .5)):
+            p.append(ball('tuft', .2, x, y, .1, 'leaf', sub=0, sc=(1.1, .9, 1.3)))
+    return p
+piece('track', track(False), decor)
+piece('track_old', track(True), decor)
+
+def axle(name, r, h, x, y, zc, mt, verts=12):
+    """A cylinder lying along y (a wheel) with its centre at height zc."""
+    return cl(name, r, h, x, y, zc - h / 2, mt, verts=verts, rot=(math.pi / 2, 0, 0))
+def along(name, r, h, x, y, zc, mt, verts=14):
+    """A cylinder lying along x (a boiler, a band) with its centre at (x, zc)."""
+    return cl(name, r, h, x, y, zc - h / 2, mt, verts=verts, rot=(0, math.pi / 2, 0))
+def train_wheels(xs, r, y=.9, mt='red'):
+    p = []
+    for x in xs:
+        for sy in (-1, 1):
+            p += [axle('wheel', r, .16, x, sy * y, .26 + r, mt), axle('tyre', r + .04, .1, x, sy * (y - .02), .26 + r, 'charcoal')]
+    return p
+def train_engine():
+    """The evening train's engine (chapter 15): a little tank engine in teal and red with brass bands, a tall chimney
+    and a gold dome. It lies along x, its nose to -x (it comes from the east); the rails' tops are at z 0.26. About
+    5.4 m long and 3.9 m to the top of the chimney."""
+    B = 1.3              # the running plate
+    T = B + .2           # its top
+    zc = T + .8          # the boiler's centre line
+    p = [bx('frame', 5.0, 1.9, .2, 0, 0, B, 'charcoal', bev=.02), along('boiler', .78, 3.1, -.75, 0, zc, 'teal'), along('smokebox', .82, .55, -2.2, 0, zc, 'charcoal'),
+         along('front', .66, .08, -2.5, 0, zc, 'iron', verts=12), cl('chimney', .2, .82, -2.1, 0, zc + .74, 'charcoal', verts=10), cl('chimneytop', .3, .16, -2.1, 0, zc + 1.5, 'gold', verts=10),
+         ball('dome', .34, -.9, 0, zc + .82, 'gold', sub=1, sc=(1, 1, .9)), ball('lamp', .17, -2.58, 0, zc + .2, 'lampglow', sub=1), bx('buffer', .16, 1.7, .2, -2.56, 0, B, 'red', bev=.02),
+         bx('guard', .34, 1.7, .34, -2.74, 0, .4, 'red', bev=.06)]
+    for x in (-1.6, -.4, .5):   # brass bands round the boiler
+        p.append(along('band', .8, .08, x, 0, zc, 'gold'))
+    for sy in (-1, 1):
+        p += [bx('tank', 2.2, .3, .9, -.6, sy * .82, T, 'teald', bev=.03), along('bufferhead', .16, .1, -2.68, sy * .6, B + .1, 'iron', verts=8), bx('rod', 2.4, .06, .1, -.4, sy * 1.02, .26 + .5 - .05, 'stonel', bev=0.)]
+    # the cab: red, with a cream roof and windows
+    p += [bx('cab', 1.5, 1.9, 1.7, 1.55, 0, T, 'red', bev=.04), bx('cabroof', 1.9, 2.1, .12, 1.55, 0, T + 1.72, 'cream', bev=.04), bx('bunker', .7, 1.7, 1.0, 2.5, 0, T, 'redd', bev=.03),
+          bx('coal', .56, 1.5, .16, 2.5, 0, T + .98, 'charcoal', bev=.02), bx('cabfront', .05, 1.2, .5, .78, 0, T + .95, 'glass', bev=.01)]
+    for sy in (-1, 1):
+        p.append(bx('cabwindow', .7, .05, .6, 1.55, sy * .96, T + .8, 'glass', bev=.01))
+    p += train_wheels((-1.5, -.4, .7), .5) + train_wheels((2.3,), .36)
+    return p
+piece('train_engine', train_engine(), decor)
+
+def train_wagon(full=False):
+    """A goods wagon for the evening train (chapter 15): a plank body on four wheels, along x. Full: crates stand in it
+    and sacks, hay and a churn show over the brim. About 4.7 m."""
+    F = 1.08   # the floor
+    p = [bx('floor', 4.5, 1.9, .16, 0, 0, F, 'charcoal', bev=.02)]
+    for sy in (-1, 1):
+        for k in range(3):
+            p.append(bx('plank', 4.5, .1, .3, 0, sy * .9, F + .16 + k * .32, 'wood' if k % 2 == 0 else 'woodl', bev=.01))
+        for x in (-2.15, 0, 2.15):
+            p.append(bx('stay', .1, .06, 1.0, x, sy * .97, F + .14, 'iron', bev=0.))
+    for sx in (-1, 1):
+        p += [bx('end', .1, 1.9, 1.0, sx * 2.2, 0, F + .16, 'woodd', bev=.01), bx('buffer', .16, 1.6, .16, sx * 2.34, 0, F, 'red', bev=.02), bx('coupling', .5, .1, .1, sx * 2.5, 0, F + .04, 'iron', bev=0.)]
+    p += train_wheels((-1.4, 1.4), .4, mt='stoned')
+    if full:
+        for x, y, w, mt in ((-1.5, -.35, .8, 'woodl'), (-1.45, .45, .7, 'wood'), (-.55, .1, .9, 'wood'), (.4, -.4, .8, 'woodl'), (.45, .45, .7, 'woodl'), (1.4, 0, .9, 'wood')):
+            p.append(bx('crate', w, .7, .8, x, y, F + .16, mt, bev=.02))
+        p += [ball('sack', .36, -.6, -.2, F + 1.2, 'sack', sub=1, sc=(1.2, 1, .8)), ball('sack', .34, .5, .1, F + 1.18, 'sackd', sub=1, sc=(1.1, 1, .8)), bx('hay', .9, .8, .5, 1.4, 0, F + .96, 'hay', bev=.04),
+              cl('churn', .22, .6, -1.5, .1, F + .96, 'stonel', verts=8), cl('churntop', .14, .12, -1.5, .1, F + 1.56, 'stonel', verts=8)]
+    return p
+piece('train_wagon', train_wagon(False), decor)
+piece('train_wagon_full', train_wagon(True), decor)
+
+def company_flag():
+    """The valley company's flag (chapter 17): a tall white pole on a stone plinth with a brass plate, and a green flag
+    with a gold leaf on it. Stands at the office's corner. About 5 m tall. The cloth flies at 45 degrees to the plinth,
+    so it faces the camera where the plinth stands square to the building."""
+    p = [bx('plinth', .7, .7, .4, 0, 0, 0, 'stone', bev=.04), bx('plate', .46, .04, .26, 0, .36, .08, 'gold', bev=.01), cl('pole', .05, 4.6, 0, 0, .4, 'white', verts=6), ball('knob', .1, 0, 0, 5.05, 'gold', sub=1)]
+    a = math.radians(45); ca, sa = math.cos(a), math.sin(a)
+    for i in range(4):   # the flag, in four panels that ripple
+        cx, cy = .25 + i * .4, .03 * (1 if i % 2 else -1)
+        p.append(box('flag', (.4, .04, 1.0), (cx * ca - cy * sa, cx * sa + cy * ca, 4.35), C['leaf' if i % 2 == 0 else 'oakl'], bev=0., seg=1, rot=(0, 0, a + .1 * (1 if i % 2 else -1))))
+    for r, cx, z, sc in ((.22, .82, 4.34, (1.3, .34, .8)), (.13, 1.06, 4.5, (1.2, .5, .8))):   # the gold leaf, showing on both sides
+        p.append(ico('leafmark', r, (cx * ca, cx * sa, z), C['gold'], subdiv=1, scale=sc, rot=(0, 0, a)))
+    return p
+piece('company_flag', company_flag(), decor)
+
+# ── Chapter 18, the valley fair: stalls in two colours, the judging table and the ribbon board ──
+def rosette(x, y, z, mt, tails, r=.17):
+    """A prize rosette facing the front: a pleated disc, a button and two tails. (x, z) its middle, y its plane."""
+    return [ball('rosette', r, x, y, z, mt, sub=1, sc=(1, .22, 1)), ball('button', r * .45, x, y + .03, z, 'white', sub=1, sc=(1, .3, 1)),
+            box('tail', (r * .5, .02, r * 1.7), (x - r * .32, -y, z - r * 1.5), C[tails], bev=0., seg=1, rot=(0, .22, 0)),
+            box('tail', (r * .5, .02, r * 1.7), (x + r * .32, -y, z - r * 1.5), C[tails], bev=0., seg=1, rot=(0, -.22, 0))]
+def fair_stall(mt, goods):
+    """A fair stall: four posts, a counter with a cloth skirt, a striped awning that slopes to the front with a scalloped
+    edge, the valley's best on the counter and a crate beside it. About 2.9 x 2 m, 2.6 m tall; faces the front."""
+    p = [bx('post', .1, .1, 2.0, sx * 1.2, sy * .62, 0, 'woodd', bev=0.) for sx in (-1, 1) for sy in (-1, 1)]
+    p += [bx('post', .1, .1, .5, sx * 1.2, -.62, 2.0, 'woodd', bev=0.) for sx in (-1, 1)]
+    p += [bx('counter', 2.6, .8, .1, 0, .3, .86, 'woodl', bev=.02), bx('skirt', 2.6, .04, .82, 0, .7, .04, 'white', bev=0.), bx('hem', 2.6, .05, .12, 0, .71, .04, mt, bev=0.),
+          bx('back', 2.5, .05, 1.0, 0, -.62, .9, 'cream', bev=0.)]
+    n = 7; w = 2.9 / n
+    for i in range(n):
+        x = -1.45 + w * (i + .5); col = C[mt if i % 2 == 0 else 'white']
+        p.append(box('awning', (w, 2.0, .06), (x, 0, 2.3), col, bev=0., seg=1, rot=(.24, 0, 0)))
+        p.append(extrude_outline('scallop', [(-w / 2, 0), (w / 2, 0), (w / 2, -.14), (0, -.26), (-w / 2, -.14)], .04, (x, -.97, 2.08), col, bev=0.))
+    xs = (-.9, -.3, .35, .95)
+    for x, g in zip(xs, goods):
+        if g == 'pumpkin': p += [ball('pumpkin', .24, x, .3, 1.14, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .03, .1, x, .3, 1.3, 'stem', verts=5)]
+        elif g == 'loaf': p += [bx('board', .5, .34, .04, x, .3, .96, 'wood', bev=0.), ball('loaf', .2, x, .3, 1.1, 'bread', sub=1, sc=(1.25, .8, .6))]
+        elif g == 'jar': p += [cl('jar', .13, .3, x, .3, .96, 'sun', verts=8), cl('lid', .14, .05, x, .3, 1.26, 'red', verts=8)]
+        elif g == 'apples': p += [bx('tray', .5, .36, .1, x, .3, .96, 'woodd', bev=0.)] + [ball('apple', .1, x + dx, .3 + dy, 1.12, 'fruitred', sub=1) for dx, dy in ((-.13, -.07), (.1, -.06), (-.02, .09))]
+        elif g == 'cabbage': p += [ball('cabbage', .2, x, .3, 1.12, 'leafl', sub=1, sc=(1, 1, .85)), ball('heart', .12, x, .3, 1.2, 'wgreenl', sub=1)]
+        elif g == 'fish': p += [cl('plate', .26, .03, x, .3, .96, 'white', verts=10), ball('fish', .2, x, .3, 1.04, 'sky', sub=1, sc=(1.5, .5, .5)), ball('tailfin', .1, x + .3, .3, 1.05, 'glassd', sub=0, sc=(.6, .3, 1))]
+    p += [bx('crate', .6, .5, .4, 1.75, .45, 0, 'woodl', bev=.02), ball('gourd', .22, 1.75, .45, .56, 'pumpkinl', sub=1, sc=(1, 1, .8)), ball('tuft', .16, -1.6, .5, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('fair_stall', fair_stall('red', ('pumpkin', 'apples', 'loaf', 'jar')), decor)
+piece('fair_stall_b', fair_stall('sky', ('fish', 'cabbage', 'jar', 'pumpkin')), decor)
+
+def judging_table():
+    """The judging table: a long table under a white cloth with a gold runner, the three classes laid out on it (a
+    pumpkin, a loaf on its board, a fish on a plate), a gold cup, and three rosettes pinned along the front. 3.2 x 1 m."""
+    p = [bx('leg', .08, .08, .8, sx * 1.45, sy * .38, 0, 'woodd', bev=0.) for sx in (-1, 1) for sy in (-1, 1)]
+    p += [bx('cloth', 3.2, 1.0, .08, 0, 0, .8, 'white', bev=.02), bx('drape', 3.2, .04, .62, 0, .5, .2, 'white', bev=0.), bx('runner', 3.2, .3, .02, 0, 0, .88, 'gold', bev=0.),
+          bx('drapes', .04, 1.0, .5, -1.6, 0, .32, 'stonel', bev=0.), bx('drapes', .04, 1.0, .5, 1.6, 0, .32, 'stonel', bev=0.)]
+    p += [ball('pumpkin', .3, -1.0, 0, 1.12, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .035, .12, -1.0, 0, 1.32, 'stem', verts=5), ball('pumpkin2', .18, -.55, .2, 1.03, 'pumpkinl', sub=1, sc=(1, 1, .8)),
+          bx('board', .62, .4, .04, 0, 0, .9, 'wood', bev=0.), ball('loaf', .24, 0, 0, 1.06, 'bread', sub=1, sc=(1.25, .8, .6)), ball('bun', .12, .02, .3, .98, 'breadl', sub=1, sc=(1, 1, .7)),
+          cl('plate', .34, .03, .95, 0, .9, 'white', verts=12), ball('fish', .26, .95, 0, 1.0, 'sky', sub=1, sc=(1.5, .5, .5)), ball('tailfin', .13, 1.34, 0, 1.01, 'glassd', sub=0, sc=(.6, .3, 1)),
+          cl('cupfoot', .1, .05, 1.42, .3, .9, 'gold', verts=8), cl('cupstem', .03, .14, 1.42, .3, .95, 'gold', verts=6), cl('cup', .13, .2, 1.42, .3, 1.09, 'gold', verts=8, rt=.09)]
+    for x, mt, tails in ((-1.0, 'gold', 'red'), (0, 'stonel', 'sky'), (1.0, 'copper', 'leaf')): p += rosette(x, .54, .56, mt, tails)
+    return p
+piece('judging_table', judging_table(), decor)
+
+def ribbon_board():
+    """The fair's ribbon board (chapter 18): two posts, a white board under a little red roof with a gold header, three big
+    rosettes (gold, silver, bronze) with their tails, pennants along the eave and a prize pumpkin at its foot. One cell;
+    faces the front."""
+    p = [bx('post', .12, .12, 2.1, -.82, 0, 0, 'woodd', bev=0.), bx('post', .12, .12, 2.1, .82, 0, 0, 'woodd', bev=0.),
+         bx('board', 1.56, .08, 1.14, 0, .02, .78, 'white', bev=.02), bx('header', 1.56, .1, .2, 0, .03, 1.74, 'gold', bev=0.), bx('rail', 1.76, .1, .08, 0, .02, .72, 'wood', bev=0.),
+         gable('roof', 1.78, .52, .34, 0, 0, 2.1, 'red', over=.1, bev=0.), bx('eave', 1.94, .06, .06, 0, .33, 2.07, 'redd', bev=0.)]
+    for x, mt, tails in ((-.48, 'gold', 'red'), (0, 'stonel', 'sky'), (.48, 'copper', 'leaf')): p += rosette(x, .1, 1.42, mt, tails, r=.2)
+    for i, mt in enumerate(('sun', 'sky', 'pink', 'mint', 'violet')):
+        p.append(extrude_outline('pennant', [(-.11, 0), (.11, 0), (0, -.26)], .02, (-.62 + i * .31, -.37, 2.06), C[mt], bev=0.))
+    p += [ball('pumpkin', .26, .98, .42, .2, 'pumpkin', sub=1, sc=(1, 1, .8)), cl('stem', .03, .1, .98, .42, .4, 'stem', verts=5), ball('tuft', .16, -.95, .2, .04, 'leaf', sub=0, sc=(1.4, 1, .6))]
+    return p
+piece('ribbon_board', ribbon_board(), decor)
+
+# ── Chapter 19, the green valley: the county's plaque at the bridge, and a stepping stone for the meadow's path ──
+def plaque():
+    """The county's plaque (chapter 19): a boulder with a slanted brass plate (a leaf and three lines of writing), a
+    laurel wreath round it, and flowers at its foot. About 1.5 m wide and 1.4 m tall; faces the front."""
+    p = [ball('boulder', .62, 0, 0, .5, 'stone', sub=1, sc=(1.15, .8, .95)), ball('boulder2', .36, -.62, .1, .26, 'stoned', sub=1, sc=(1.1, .9, .8)), ball('boulder3', .3, .66, .14, .22, 'stonel', sub=1, sc=(1.1, .9, .8)),
+         box('plate', (.86, .05, .56), (0, -.5, .66), C['gold'], bev=.01, seg=1, rot=(-.42, 0, 0)), box('rim', (.94, .03, .64), (0, -.47, .65), C['woodd'], bev=0., seg=1, rot=(-.42, 0, 0)),
+         ball('leafmark', .1, -.26, .56, .78, 'leafd', sub=1, sc=(1.3, .3, .8))]
+    for i, w in enumerate((.36, .5, .42)): p.append(box('line', (w, .02, .045), (.1 + (w - .5) / 2, -.535 + i * .03, .78 - i * .12), C['woodd'], bev=0., seg=1, rot=(-.42, 0, 0)))
+    for i in range(9):   # the wreath: leaves in an arch over the plate
+        a = math.pi * (.08 + .84 * i / 8)
+        p.append(ball('laurel', .13, math.cos(a) * .64, .42, .62 + math.sin(a) * .5, 'leaf' if i % 2 else 'leafl', sub=0, sc=(1.2, .5, .8)))
+    for x, y, mt in ((-.78, .5, 'sun'), (-.5, .62, 'pink'), (.56, .6, 'bloom'), (.84, .46, 'violet'), (.2, .7, 'sun')):
+        p += [cl('stalk', .02, .22, x, y, 0, 'stem', verts=4), ball('petal', .09, x, y, .26, mt, sub=0, sc=(1, 1, .6))]
+    return p
+piece('plaque', plaque(), decor)
+def path_stone():
+    """A flat stepping stone for a path through grass: pale, a little uneven, 0.8 m across."""
+    return [ball('stone', .4, 0, 0, .03, 'stonel', sub=1, sc=(1, .85, .16)), ball('chip', .16, .34, .26, .02, 'stone', sub=0, sc=(1, .9, .2))]
+piece('path_stone', path_stone(), decor)
 
 def bunting(span=4.0):
     """Two poles with a sagging string of bright flags between them."""
@@ -865,6 +1596,518 @@ def obstacle_log():
     return p
 piece('obstacle_log', obstacle_log(), decor)
 
+
+
+# small lakeside shops (user idea): a kiosk with a striped awning, a counter of goods and a little plank deck in front
+# where people stand to buy; front +z (the deck side faces the water)
+def kiosk(awn, goods):
+    p = [bx('deck', 2.4, 1.2, .12, 0, .9, 0, 'woodl', bev=.02), bx('base', 2.0, 1.4, .2, 0, -.2, 0, 'stone', bev=.03),
+         bx('body', 1.8, 1.2, 1.1, 0, -.25, .2, 'cream', bev=.04), bx('counter', 2.0, .4, .12, 0, .38, 1.0, 'wood', bev=.02),
+         bx('back', 1.8, .12, 1.2, 0, -.85, 1.3, 'wood', bev=.02)]
+    for x in (-.88, .88):
+        p.append(bx('post', .1, .1, 1.5, x, .5, .2, 'woodd'))
+    for i in range(6):
+        p.append(bx('awning', .36, 1.5, .1, -.9 + .36 * i + .18, -.05, 2.05, awn if i % 2 == 0 else 'white', rot=0))
+    for i in range(5):
+        p.append(ball('good', .11, -.6 + i * .3, .38, 1.18, goods[i % len(goods)], sub=1))
+    p.append(bx('sign', 1.0, .06, .32, 0, .62, 1.7, awn, bev=.02))
+    return p
+piece('lake_kiosk_fish', kiosk('teal', ['water', 'sky', 'waterl']), decor)
+piece('lake_kiosk_flowers', kiosk('pink', ['pink', 'sun', 'violet', 'red']), decor)
+piece('lake_kiosk_snacks', kiosk('sun', ['bread', 'breadl', 'pumpkin', 'fruitred']), decor)
+
+
+# =================================================================== rental cottages: three shapes, one per furnish level
+# A cottage you let: every level is a different, better building, and each has the hanging ROOMS sign (a board with a
+# golden key) by its door, so it reads as a place to stay. 3 x 3 cells (6 x 6 m); everything stays inside +-2.8 m; the
+# door faces the front (+y on the plan). Cottages face the lane, so the default camera looks at the BACK: it gets
+# windows, a garden bench and (on the best one) a balcony. Origin at the footprint centre, on the ground.
+def back_window(x, y, z, w, h, shutters='teal'):
+    """A window on the back wall (the wall at plan y, facing -y)."""
+    p = [bx('wframe', w + .14, .08, h + .14, x, y - .02, z - .07, 'white', bev=.02), bx('glass', w, .06, h, x, y - .05, z, 'glass', bev=.01),
+         bx('mull', .05, .05, h, x, y - .08, z, 'white', bev=0), bx('mull', w, .05, .05, x, y - .08, z + h / 2 - .025, 'white', bev=0)]
+    if shutters:
+        for sd in (-1, 1):
+            p.append(bx('shutter', w * .48, .05, h + .04, x + sd * (w / 2 + w * .26 + .05), y - .04, z - .02, shutters, bev=.015))
+    return p, (x, y - .09, z + h / 2, 0, -1)
+
+def rooms_sign(x, y):
+    """The sign of a house that lets rooms: a post, an iron arm and a hanging board with a golden key."""
+    p = [bx('signpost', .1, .1, 2.0, x, y, 0, 'woodd', bev=.02), bx('signarm', .62, .06, .06, x + .3, y, 1.86, 'iron', bev=0),
+         bx('signboard', .54, .07, .44, x + .34, y, 1.34, 'woodl', bev=.03), bx('signface', .44, .09, .34, x + .34, y, 1.39, 'paper', bev=.02)]
+    for sx in (.14, .54):
+        p.append(bx('chain', .03, .03, .1, x + sx, y, 1.78, 'iron', bev=0))
+    for side in (-1, 1):   # the key shows on both faces of the board
+        p += [cl('keyring', .075, .03, x + .22, y + side * .05, 1.56, 'gold', verts=10, rot=(math.pi / 2, 0, 0)),
+              bx('keyshaft', .22, .03, .04, x + .38, y + side * .05, 1.54, 'gold', bev=0), bx('keybit', .04, .03, .09, x + .46, y + side * .05, 1.46, 'gold', bev=0)]
+    p.append(ball('signtuft', .16, x, y, .05, 'leaf', sub=1, sc=(1.4, 1.4, .6)))
+    return p
+
+def rental(tier):
+    p, A = [], {'window': []}
+    W, D, H = ((3.7, 3.1, 2.0), (4.0, 3.3, 2.2), (4.0, 3.4, 2.2))[tier]
+    roof, roof2 = (('hay', 'hayd'), ('roof', 'roofd'), ('teal', 'teald'))[tier]
+    shut = ('teal', 'sky', 'red')[tier]
+    cx = -.75 if tier else 0          # the main block sits a little left once there is a wing on the right
+    p.append(bx('plinth', W + .3, D + .3, .25, cx, 0, 0, 'stone', bev=.06, seg=2))
+    p.append(bx('walls', W, D, H, cx, 0, .25, 'plaster', bev=.05, seg=2))
+    p.append(bx('skirt', W + .06, D + .06, .45, cx, 0, .25, 'stonel' if tier else 'cream', bev=.03))
+    p += timber_wall(W, H - .5, cx, D / 2, .7, 'front', 'woodd', posts=4)
+    for sd, face in ((-1, 'left'), (1, 'right')):
+        p += timber_wall(D, H - .5, cx + sd * W / 2, 0, .7, face, 'woodd', posts=3)
+    for i in range(5):   # the back wall's frame
+        p.append(bx('bpost', .12, .06, H - .5, cx - W / 2 + W * i / 4, -D / 2 - .04, .7, 'woodd', bev=.015))
+    top = .25 + H
+    if tier == 2:   # an upper floor, jettied out a little, with its own frame
+        U = 1.9
+        p.append(bx('jetty', W + .3, D + .3, .16, cx, 0, top, 'woodd', bev=.03))
+        p.append(bx('upper', W + .2, D + .2, U, cx, 0, top + .16, 'cream', bev=.05, seg=2))
+        p += timber_wall(W + .2, U - .2, cx, D / 2 + .1, top + .2, 'front', 'woodd', posts=4)
+        for i in range(5):
+            p.append(bx('upost', .12, .06, U - .2, cx - (W + .2) / 2 + (W + .2) * i / 4, -D / 2 - .14, top + .2, 'woodd', bev=.015))
+        for sd, face in ((-1, 'left'), (1, 'right')):
+            p += timber_wall(D + .2, U - .2, cx + sd * (W + .2) / 2, 0, top + .2, face, 'woodd', posts=3)
+        for x in (-1.0, 1.0):
+            wp, c = window(cx + x, D / 2 + .12, top + .7, .6, .7, 'front', shutters=shut, box=['pink', 'sun', 'white']); p += wp; A['window'].append(c)
+            wp, c = back_window(cx + x, -D / 2 - .12, top + .7, .6, .7, shutters=shut); p += wp; A['window'].append(c)
+        # the balcony on the back, where the camera looks: a deck on brackets, a rail and a door
+        p += [bx('deck', 1.9, .8, .1, cx, -D / 2 - .5, top + .1, 'wood', bev=.02), bx('bdoor', .7, .08, 1.5, cx, -D / 2 - .13, top + .2, shut, bev=.02),
+              bx('bdoorwin', .4, .05, .5, cx, -D / 2 - .17, top + 1.0, 'glass', bev=.01), bx('rail', 1.9, .06, .07, cx, -D / 2 - .87, top + .85, 'woodd', bev=.01)]
+        for i in range(6):
+            p.append(bx('baluster', .06, .06, .7, cx - .9 + i * .36, -D / 2 - .87, top + .18, 'white', bev=0))
+        for x in (-.9, .9):
+            p += [bx('railside', .06, .75, .07, cx + x, -D / 2 - .5, top + .85, 'woodd', bev=.01), bx('bracket', .08, .6, .12, cx + x * .8, -D / 2 - .4, top - .06, 'woodd', bev=.01)]
+        top += .16 + U; W += .2; D += .2
+    rh = (1.55, 1.5, 1.55)[tier]
+    p += roof_rows(W, D, rh, cx, 0, top, roof, roof2, rows=(4, 5, 5)[tier], over=.3 if tier == 0 else .26, thick=.16 if tier == 0 else .09)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, rh)], .1, (cx + sd * (W / 2 - .05), 0, top), C['plaster' if tier < 2 else 'cream'], rot=(0, 0, math.pi / 2), bev=.01))
+        p.append(bx('gwin', .06, .4, .4, cx + sd * (W / 2 + .02), 0, top + .35, 'glassd', bev=.01))
+    if tier == 2: W -= .2; D -= .2
+    # door and front windows
+    dx = cx + (-.9 if tier == 0 else -.6)
+    p += [bx('doorframe', 1.0, .1, 1.65, dx, D / 2 + .02, .25, 'woodd', bev=.03), bx('door', .8, .1, 1.5, dx, D / 2 + .06, .25, shut, bev=.02),
+          cl('knob', .04, .05, dx + .26, D / 2 + .13, .95, 'gold', verts=6, rot=(math.pi / 2, 0, 0)), bx('doorwin', .36, .05, .36, dx, D / 2 + .1, 1.25, 'glass', bev=.01),
+          bx('step', 1.2, .5, .14, dx, D / 2 + .3, 0, 'stonel', bev=.03)]
+    A['door'] = [(dx, D / 2 + .12, .25)]
+    wp, c = window(cx + (.8 if tier == 0 else 1.0), D / 2 + .02, 1.0, .7, .7, 'front', shutters=shut, box=['pink', 'sun', 'violet']); p += wp; A['window'].append(c)
+    for sd in (-1, 1):
+        if tier and sd > 0: continue   # the wing covers the right wall
+        wp, c = window(cx + sd * (W / 2 + .02), 0, 1.05, .6, .65, 'right' if sd > 0 else 'left'); p += wp; A['window'].append(c)
+    for x in ((-.9, .9) if tier else (0,)):
+        wp, c = back_window(cx + x, -D / 2 - .02, 1.0, .65, .7, shutters=shut); p += wp; A['window'].append(c)
+    if tier:   # a lean-to wing on the right with its own window, and a porch over the door
+        wx, ww, wd, wh = cx + W / 2 + .65, 1.3, D - .7, 1.75
+        p += [bx('wingbase', ww + .2, wd + .2, .25, wx, -.1, 0, 'stone', bev=.05), bx('wing', ww, wd, wh, wx, -.1, .25, 'cream', bev=.05, seg=2),
+              box('wingroof', (ww + .5, wd + .5, .12), (wx + .05, .1, .25 + wh + .32), C[roof], bev=.03, seg=1, rot=(0, .42, 0)),
+              box('wingroof2', (ww + .56, .14, .14), (wx + .05, -(-.1 + wd / 2 + .25), .25 + wh + .32), C[roof2], bev=.02, seg=1, rot=(0, .42, 0))]
+        wp, c = window(wx, -.1 + wd / 2 + .02, 1.0, .6, .6, 'front', shutters=shut, box=['red', 'white', 'sun']); p += wp; A['window'].append(c)
+        wp, c = window(wx + ww / 2 + .02, -.1, 1.0, .55, .6, 'right'); p += wp; A['window'].append(c)
+        wp, c = back_window(wx, -.1 - wd / 2 - .02, 1.0, .55, .6, shutters=shut); p += wp; A['window'].append(c)
+        p += [box('porch', (1.5, .95, .1), (dx, -(D / 2 + .5), 2.12), C[roof], bev=.02, seg=1, rot=(-.3, 0, 0)), bx('porchtrim', 1.5, .06, .1, dx, D / 2 + .96, 1.93, roof2, bev=.01)]
+        for x in (-.65, .65):
+            p.append(bx('porchpost', .09, .09, 1.75, dx + x, D / 2 + .9, .14, 'white', bev=.01))
+    # chimneys
+    for i, (x, y) in enumerate(((cx + W / 2 - .7, -.5),) + (((cx - W / 2 + .7, .4),) if tier == 2 else ())):
+        ch = top + rh * .55
+        p += [bx('chimney', .5, .5, ch - top + .9, x, y, top - .1, 'brick', bev=.03), bx('chband', .6, .6, .1, x, y, ch + .7, 'brickd', bev=.02), bx('chtop', .4, .4, .14, x, y, ch + .8, 'charcoal', bev=.02)]
+        if i == 0: A['chimney'] = [(x, y, ch + .95)]
+    # what makes it a place to stay: the ROOMS sign by the door; a garden bench and flowers at the back
+    p += rooms_sign(cx - W / 2 - .15 if tier == 0 else dx - 1.35, D / 2 + .75)
+    bxx = cx - .2
+    p += [bx('bench', 1.1, .32, .07, bxx, -D / 2 - .5, .4, 'wood', bev=.01), bx('benchback', 1.1, .06, .4, bxx, -D / 2 - .36, .5, 'wood', bev=.01)]
+    for x in (-.48, .48):
+        p.append(bx('benchleg', .07, .3, .4, bxx + x, -D / 2 - .5, 0, 'woodd', bev=0))
+    for k in range(3 + tier * 2):
+        fx = cx - W / 2 + .3 + k * .42
+        p += [ball('bedleaf', .16, fx, -D / 2 - .28, .12, 'leaf', sub=1, sc=(1.2, 1, .7)), ball('bedflower', .09, fx, -D / 2 - .3, .3, ('pink', 'sun', 'white', 'red', 'violet')[k % 5], sub=0)]
+    if tier == 0:   # a little woodpile and a barrel: a humble first let
+        p += [cl('barrel', .26, .6, cx + W / 2 + .45, .9, 0, 'wood', verts=10, rt=.22), cl('hoop', .275, .06, cx + W / 2 + .45, .9, .28, 'iron', verts=10)]
+        for k in range(3):
+            p.append(cl('log', .11, .7, 0, 0, 0, 'woodl' if k % 2 else 'wood', verts=7, rot=(0, math.pi / 2, 0))); p[-1].location = (cx + W / 2 + .5, .2 - k * .0, .12 + k * .2)
+    return p, A
+
+for tier in range(3):
+    parts, A = rental(tier)
+    piece(f'cottage_t{tier}', parts, decor)
+    anchors[f'cottage_t{tier}'] = A
+
+# =================================================================== meadow and dairy (v0.5): goat barn and dairy
+# Both are 3 x 2 cells (6 x 4 m): everything inside x +-2.9, y +-1.9; origin at the base centre; a clear doorway at the
+# front centre (+y on the plan). See docs/MEADOW-DAIRY-SCOPE.md.
+def goat_barn():
+    """A low honey-coloured goat shelter with a mossy green roof, a wide open doorway, a hay rack, a climbing box and a trough."""
+    p, A = [], {'window': []}
+    W, D, H = 4.2, 2.6, 1.6
+    p.append(bx('base', W + .24, D + .24, .2, 0, 0, 0, 'stone', bev=.05, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .2, 'woodl', bev=.05, seg=2))
+    for i in range(12):
+        p.append(bx('board', .05, .04, H - .1, -W / 2 + .18 + i * (W - .36) / 11, D / 2 + .02, .25, 'wood', bev=0))
+        p.append(bx('boardb', .05, .04, H - .1, -W / 2 + .18 + i * (W - .36) / 11, -D / 2 - .02, .25, 'wood', bev=0))
+    for x in (-W / 2, W / 2):
+        p.append(bx('corner', .14, D + .08, H, x, 0, .2, 'woodd', bev=.03))
+    p += roof_rows(W, D, 1.05, 0, 0, H + .2, 'leafw', 'leafwd', rows=4, over=.26, thick=.11)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.05)], .1, (sd * (W / 2 - .05), 0, H + .2), C['woodl'], rot=(0, 0, math.pi / 2), bev=.01))
+        p.append(bx('vent', .06, .36, .3, sd * (W / 2 + .02), 0, H + .45, 'woodd', bev=.01))
+    # the wide doorway at the front centre, dark inside, with a half door standing open
+    p += [bx('doorway', 1.3, .08, 1.25, 0, D / 2 + .01, .2, 'wooddd', bev=.02), bx('lintel', 1.5, .1, .12, 0, D / 2 + .03, 1.45, 'woodd', bev=.02),
+          bx('halfdoor', .62, .06, .7, -.98, D / 2 + .3, .2, 'leafwd', bev=.02, rot=.9), bx('ramp', 1.3, .5, .08, 0, D / 2 + .32, .12, 'wood', bev=.01)]
+    A['door'] = [(0, D / 2 + .12, .2)]
+    wp, c = window(1.45, D / 2 + .02, .95, .5, .45, 'front', shutters='leafwd'); p += wp; A['window'].append(c)
+    wp, c = window(W / 2 + .02, 0, .95, .5, .45, 'right'); p += wp; A['window'].append(c)
+    # hay rack on the left wall, a climbing box and a trough in front, a salt lick, hay on the roof edge
+    p += [bx('rack', .9, .26, .5, -1.45, D / 2 + .16, .75, 'woodd', bev=.02), ball('hay', .3, -1.45, D / 2 + .2, 1.2, 'hay', sub=1, sc=(1.5, .7, .7)),
+          bx('trough', .9, .32, .22, 1.5, D / 2 + .42, .02, 'woodd', bev=.03), bx('troughin', .78, .22, .08, 1.5, D / 2 + .42, .2, 'water', bev=.01),
+          bx('climb', .6, .5, .42, -1.5, D / 2 + .5, 0, 'wood', bev=.03), bx('climb2', .4, .34, .3, -1.5, D / 2 + .5, .42, 'woodl', bev=.03)]
+    for k in range(4):
+        p.append(ball('moss', .16, -1.5 + k * 1.0, -.2 + (k % 2) * .5, H + .9 - abs(-.2 + (k % 2) * .5) * .7, 'leafwl', sub=1, sc=(1.6, 1, .5)))
+    return p, A
+
+def dairy():
+    """The dairy: a whitewashed creamery with a blue roof, a cheese-wheel sign over the door, milk churns, a cooling
+    shelf with cheeses in the window and a small chimney."""
+    p, A = [], {'window': []}
+    W, D, H = 4.3, 2.7, 2.1
+    p.append(bx('base', W + .3, D + .3, .28, 0, 0, 0, 'stonel', bev=.06, seg=2))
+    p.append(bx('walls', W, D, H, 0, 0, .28, 'white', bev=.05, seg=2))
+    p.append(bx('band', W + .06, D + .06, .55, 0, 0, .28, 'sky', bev=.03))
+    p += roof_rows(W, D, 1.25, 0, 0, H + .28, 'sky', 'glassd', rows=5, over=.24)
+    for sd in (-1, 1):
+        p.append(extrude_outline('gend', [(-D / 2, 0), (D / 2, 0), (0, 1.25)], .1, (sd * (W / 2 - .05), 0, H + .28), C['white'], rot=(0, 0, math.pi / 2), bev=.01))
+    # door at the front centre under a round cheese sign
+    p += [bx('doorframe', 1.0, .1, 1.62, 0, D / 2 + .02, .28, 'woodd', bev=.03), bx('door', .8, .1, 1.48, 0, D / 2 + .06, .28, 'sky', bev=.02),
+          bx('doorwin', .4, .05, .4, 0, D / 2 + .1, 1.22, 'glass', bev=.01), cl('knob', .04, .05, .26, D / 2 + .13, .98, 'gold', verts=6, rot=(math.pi / 2, 0, 0)),
+          bx('step', 1.2, .45, .14, 0, D / 2 + .28, .1, 'stone', bev=.03),
+          cl('sign', .34, .1, 0, D / 2 + .08, 2.06, 'sun', verts=14, rot=(math.pi / 2, 0, 0)), cl('signrim', .37, .06, 0, D / 2 + .06, 2.06, 'orange', verts=14, rot=(math.pi / 2, 0, 0))]
+    for (x, z, r) in ((-.12, 2.14, .06), (.1, 2.0, .08), (.14, 2.2, .045)):
+        p.append(ball('signhole', r, x, D / 2 + .15, z, 'hayd', sub=0, sc=(1, .4, 1)))
+    A['door'] = [(0, D / 2 + .12, .28)]
+    # a shop window with cheeses on a shelf (left), a shuttered window (right), side windows
+    p += [bx('dframe', 1.2, .1, .95, -1.4, D / 2 + .02, .8, 'woodd', bev=.03), bx('dglass', 1.04, .07, .8, -1.4, D / 2 + .05, .87, 'glass', bev=.01),
+          bx('dshelf', 1.1, .3, .06, -1.4, D / 2 + .15, .86, 'woodl', bev=.01)]
+    for i in range(3):
+        p.append(cl('wheel', .15, .12, -1.75 + i * .35, D / 2 + .16, .92, 'sun' if i % 2 else 'hay', verts=10))
+    A['window'].append((-1.4, D / 2 + .1, 1.27, 0, 1))
+    wp, c = window(1.4, D / 2 + .02, 1.0, .6, .65, 'front', shutters='sky', box=['white', 'sun', 'pink']); p += wp; A['window'].append(c)
+    for sd in (-1, 1):
+        wp, c = window(sd * (W / 2 + .02), 0, 1.15, .5, .5, 'right' if sd > 0 else 'left'); p += wp; A['window'].append(c)
+    # milk churns by the door, a crate, the chimney
+    for (x, y, h) in ((.95, D / 2 + .3, .62), (1.3, D / 2 + .36, .5)):
+        p += [cl('churn', .17, h, x, y, .02, 'stonel', verts=10, rt=.15), cl('churnneck', .1, .14, x, y, h + .02, 'stonel', verts=8), cl('churnlid', .13, .05, x, y, h + .16, 'stoned', verts=8)]
+    p += [bx('crate', .5, .36, .32, -.95, D / 2 + .32, .02, 'wood', bev=.02), bx('crateslat', .52, .38, .05, -.95, D / 2 + .32, .16, 'woodd', bev=0),
+          bx('chimney', .5, .5, 1.5, -1.4, -.5, H + .4, 'brick', bev=.03), bx('chband', .6, .6, .1, -1.4, -.5, H + 1.55, 'brickd', bev=.02), bx('chtop', .4, .4, .12, -1.4, -.5, H + 1.65, 'charcoal', bev=.02)]
+    A['chimney'] = [(-1.4, -.5, H + 1.8)]
+    return p, A
+
+for name, gen in (('goat_barn', goat_barn), ('dairy', dairy)):
+    parts, A = gen()
+    piece(name, parts, decor)
+    anchors[name] = A
+
+# =================================================================== the farmhouse garden (v0.5): what a better house brings
+# Drawn round the farmhouse by its comfort level (src/content/world.mjs HOME_GARDEN). Origins at the footprint centre.
+def home_pool():
+    """A swimming pool, 6 x 4 m: a pale stone rim, bright water with two lane ripples, steps with a rail, a beach ball."""
+    p = [bx('rim', 5.8, 3.8, .18, 0, 0, 0, 'stonel', bev=.06, seg=2), bx('tile', 5.2, 3.2, .1, 0, 0, .1, 'sky', bev=.02),
+         bx('water', 5.0, 3.0, .06, 0, 0, .16, 'water', bev=.01), bx('shine', 1.6, .12, .02, -1.0, .5, .215, 'waterl', bev=0),
+         bx('shine2', 1.1, .1, .02, 1.1, -.6, .215, 'waterl', bev=0), bx('shine3', .7, .08, .02, .2, 1.0, .215, 'waterl', bev=0)]
+    for k in range(3):
+        p.append(bx('step', .9, .3, .05, -2.0, 1.2 - k * .3, .2 - k * .0, 'white', bev=.01))
+    for y in (1.35, .75):
+        p += [cl('railpost', .035, .7, -2.55, y, .18, 'stoned', verts=6), cl('railtop', .035, .5, 0, 0, 0, 'stoned', verts=6, rot=(0, math.pi / 2, 0))]
+        p[-1].location = (-2.3, -y, .88)
+    p += [ball('ball', .26, 1.5, .6, .44, 'white', sub=2), ball('ballr', .262, 1.5, .6, .44, 'red', sub=2, sc=(1, .28, 1)), ball('ringf', .34, -.4, -.7, .26, 'pink', sub=2, sc=(1, 1, .32))]
+    for x in (-2.75, 2.75):
+        p.append(ball('potleaf', .22, x, -1.75, .34, 'leaf', sub=1, sc=(1, 1, 1.2))); p.append(cl('pot', .18, .24, x, -1.75, .18, 'roof', verts=8, rt=.22))
+    return p
+
+def home_loungers():
+    """Two sun loungers under a striped parasol with a little table and drinks, 4 x 2 m."""
+    p = []
+    for x, mt in ((-1.0, 'sky'), (1.0, 'pink')):
+        p += [bx('bed', .7, 1.7, .1, x, 0, .3, 'white', bev=.03), bx('cushion', .6, 1.2, .08, x, -.2, .4, mt, bev=.03),
+              box('back', (.7, .6, .1), (x, -.85, .56), C['white'], bev=.03, seg=1, rot=(.75, 0, 0)), box('backc', (.6, .5, .08), (x, -.83, .63), C[mt], bev=.03, seg=1, rot=(.75, 0, 0))]
+        for yy in (-.7, .7):
+            p.append(bx('leg', .6, .06, .3, x, yy, 0, 'woodl', bev=0))
+    p += [cl('pole', .04, 2.3, 0, -.2, 0, 'woodd', verts=6), cl('table', .28, .05, 0, .5, .45, 'woodl', verts=10), cl('tleg', .04, .45, 0, .5, 0, 'woodd', verts=6),
+          cl('glass', .06, .16, -.08, .5, .5, 'orange', verts=8), cl('glass2', .06, .16, .1, .55, .5, 'mint', verts=8)]
+    for i in range(8):   # the parasol: eight gores, red and white
+        a = i * math.tau / 8
+        g = box('gore', (.95, .62, .05), (math.cos(a) * .55, .2 + math.sin(a) * .55, 2.12), C['red' if i % 2 else 'white'], bev=.01, seg=1, rot=(0, .32, a))
+        p.append(g)
+    p.append(ball('cap', .08, 0, -.2, 2.32, 'gold', sub=1))
+    return p
+
+def home_gazebo():
+    """A white garden gazebo, 4 x 4 m: a round deck, six posts with a rail, a teal cone roof with a gold ball, a bench inside."""
+    p = [cl('deck', 1.8, .22, 0, 0, 0, 'woodl', verts=12, bev=.03), cl('deckrim', 1.86, .08, 0, 0, .16, 'white', verts=12)]
+    for i in range(6):
+        a = i * math.tau / 6 + math.pi / 6
+        x, y = math.cos(a) * 1.6, math.sin(a) * 1.6
+        p.append(cl('post', .07, 2.1, x, y, .22, 'white', verts=8))
+        if i != 4:   # an opening at the front
+            b = (i + 1) * math.tau / 6 + math.pi / 6
+            mx, my = (x + math.cos(b) * 1.6) / 2, (y + math.sin(b) * 1.6) / 2
+            r = bx('rail', 1.6, .06, .07, mx, my, .85, 'white', bev=.01, rot=-(a + b) / 2 + math.pi / 2); p.append(r)
+    p += [cl('eave', 2.0, .14, 0, 0, 2.3, 'white', verts=12), cl('roof', 2.05, 1.1, 0, 0, 2.42, 'teal', verts=12, rt=.12), cl('roofband', 2.08, .1, 0, 0, 2.4, 'teald', verts=12),
+          ball('finial', .14, 0, 0, 3.6, 'gold', sub=1), bx('seat', 1.4, .4, .08, 0, -.9, .62, 'wood', bev=.02), bx('seatback', 1.4, .08, .4, 0, -1.1, .7, 'wood', bev=.02)]
+    for x in (-.6, .6):
+        p.append(bx('seatleg', .08, .36, .4, x, -.9, .22, 'woodd', bev=0))
+    for i in range(5):
+        a = i * math.tau / 5
+        p.append(ball('rose', .13, math.cos(a) * 1.95, math.sin(a) * 1.95, .3, ('pink', 'red', 'white', 'sun', 'violet')[i], sub=1))
+        p.append(ball('roseleaf', .2, math.cos(a) * 1.95, math.sin(a) * 1.95, .14, 'leaf', sub=1, sc=(1.2, 1.2, .7)))
+    return p
+
+def home_flag():
+    """A tall white flagpole on a stone foot with a long red-and-gold pennant and a gold ball."""
+    p = [cl('foot', .34, .26, 0, 0, 0, 'stone', verts=10, bev=.03), cl('pole', .05, 5.2, 0, 0, .2, 'white', verts=8), ball('ball', .12, 0, 0, 5.48, 'gold', sub=1)]
+    for k in range(5):
+        p.append(box('flag', (.44, .04, .7 - k * .1), (.26 + k * .42, 0, 4.86 - k * .03), C['red' if k % 2 == 0 else 'sun'], bev=.01, seg=1, rot=(0, 0, math.sin(k * 1.3) * .12)))
+    return p
+
+for name, gen in (('home_pool', home_pool), ('home_loungers', home_loungers), ('home_gazebo', home_gazebo), ('home_flag', home_flag)):
+    piece(name, gen(), decor)
+
+# =================================================================== the hospital (AR-011): the clinic's upgrade, 4 x 3 cells
+def hospital():
+    """The village hospital (the clinic's upgrade): a two-storey cream building with a teal roof and a big red-cross sign,
+    a covered entrance at the front centre (the clinic's doorway), an ambulance bay on the right and flower beds along
+    the front. Everything stays inside the 8 x 6 m (4 x 3 cell) footprint; the base fills it, so the origin is its centre."""
+    p = [bx('plinth', 7.8, 5.8, .2, 0, 0, 0, 'stonel', bev=.04),
+         bx('ground', 5.6, 3.8, 2.6, -.9, -.8, .2, 'plaster', bev=.06), bx('band', 5.7, 3.9, .2, -.9, -.8, 2.8, 'teal', bev=.03),
+         bx('upper', 5.0, 3.2, 2.1, -.9, -.95, 3.0, 'cream', bev=.06), bx('roofslab', 5.3, 3.5, .25, -.9, -.95, 5.1, 'teald', bev=.06),
+         bx('roofcap', 4.0, 2.2, .45, -.9, -.95, 5.35, 'teal', bev=.12)]
+    # the red cross sign on the upper front, over the entrance
+    p += [bx('signbg', 1.3, .12, 1.3, 0, .68, 3.4, 'white', bev=.06), bx('crossv', .28, .16, .95, 0, .72, 3.57, 'red', bev=.03),
+          bx('crossh', .95, .16, .28, 0, .72, 3.9, 'red', bev=.03)]
+    # entrance at the front centre: glass doors, a teal canopy on two white pillars
+    p += [bx('door', 1.4, .1, 2.0, 0, 1.12, .2, 'glass', bev=.03), bx('doorframe', 1.6, .12, .15, 0, 1.13, 2.2, 'white', bev=.02),
+          bx('canopy', 2.6, 1.3, .16, 0, 1.75, 2.45, 'teal', bev=.04), bx('step', 2.0, .6, .08, 0, 1.5, .2, 'stone', bev=.02)]
+    for x in (-1.1, 1.1):
+        p.append(cl('pillar', .09, 2.25, x, 2.25, .2, 'white', verts=8))
+    for x in (-3.0, -2.1, -1.2):
+        p.append(bx('win', .55, .1, .85, x, 1.12, 1.1, 'glass', bev=.03))
+    for x in (-3.0, -2.1, 1.1):
+        p.append(bx('win2', .55, .1, .75, x, .67, 3.6, 'glassd', bev=.03))
+    # ambulance bay on the right: painted bay lines and a small white van with a red stripe
+    p += [bx('bayl', .08, 2.6, .02, 2.25, -.5, .2, 'white', bev=0), bx('bayr', .08, 2.6, .02, 3.65, -.5, .2, 'white', bev=0),
+          bx('van', 1.05, 1.9, .85, 2.95, -.7, .22, 'white', bev=.12), bx('vancab', .98, .65, .55, 2.95, -.05, 1.0, 'white', bev=.1),
+          bx('vanstripe', 1.07, 1.92, .13, 2.95, -.7, .62, 'red', bev=.02), bx('vanwin', .9, .05, .32, 2.95, .3, 1.1, 'glass', bev=.02)]
+    for x in (-2.9, 2.9):
+        p.append(bx('bed', 1.4, .5, .22, x, 2.5, .2, 'soil', bev=.04))
+        for k in range(4):
+            p.append(ball('fl', .11, x - .5 + k * .33, 2.5, .5, ('pink', 'sun', 'red', 'white')[k], sub=1))
+    return p
+piece('hospital', hospital(), decor)
+
+
+# =================================================================== the old potting bench (AR-013): three stages
+# Fixed optional project by the farmhouse (src/content/learning-site.mjs). About 2.4 x 1.4 m, origin at the base centre,
+# front +z. Stage 0 overgrown, stage 1 uncovered and mended (the faded strawberry label lies on it), stage 2 finished.
+def potting_bench(stage):
+    W, D = 2.2, 1.0
+    old = stage == 0
+    wood, dark = ('woodd', 'wooddd') if old else ('wood', 'woodd')
+    p = []
+    for x in (-W / 2 + .08, W / 2 - .08):
+        for y in (-D / 2 + .08, D / 2 - .08):
+            tilt = .12 if old and x > 0 and y > 0 else 0
+            p.append(bx('leg', .1, .1, .9 - tilt, x, y, 0, dark, bev=.01))
+    p.append(bx('top', W, D, .08, 0, 0, .9 if not old else .86, wood, bev=.02, rot=.04 if old else 0))
+    p.append(bx('shelf', W - .2, D - .2, .05, 0, 0, .3, dark, bev=.01))
+    p.append(bx('backboard', W, .08, .55, 0, -D / 2 + .04, .98, wood, bev=.02))
+    if not old:
+        p.append(bx('rail', W - .3, .05, .05, 0, -D / 2 + .1, 1.35, 'iron', bev=0))
+        for x in (-.6, -.2, .3):
+            p.append(cl('hook', .02, .08, x, -D / 2 + .1, 1.25, 'iron', verts=4))
+        p.append(bx('trowel', .05, .25, .04, -.6, -D / 2 + .13, 1.05, 'iron', bev=.01))
+    if stage == 0:   # weeds and long grass over the frame, a broken plank on the ground
+        for k in range(14):
+            a = k * 2.4; r = .2 + (k % 4) * .22
+            x, y = math.cos(a) * r, math.sin(a) * r * .3
+            up = math.pi / 2 if k % 2 else -math.pi / 2   # blades lean along the bench, not out of its envelope
+            p.append(lf((x, y, 0), (0 if x < 0 else math.pi) + (k % 3 - 1) * .3, .32 + (k % 3) * .08, .13, 'leaf' if k % 2 else 'leafwd', lift=.55, droop=.05))
+        for x in (-.7, .5):
+            p.append(ball('clump', .26, x, .3, .1, 'leafwd', sub=1, sc=(1.2, .9, .7)))
+        p.append(bx('plank', .8, .16, .05, .5, .5, 0, 'woodd', bev=.01, rot=.25))
+        p.append(cl('oldpot', .14, .2, -.6, 0, .34, 'brickd', verts=8, rt=.17))
+    if stage >= 1:   # mended: clean pots on the shelf
+        for i, x in enumerate((-.7, -.35, 0, .35)):
+            p.append(cl('pot', .11, .16, x, .05, .35, 'brick', verts=8, rt=.14))
+    if stage == 1:   # the saved old strawberry label lies on the top
+        p += [bx('label', .2, .06, .02, .3, .2, .94, 'paper', bev=.005, rot=.4), bx('labelberry', .06, .03, .022, .26, .21, .945, 'berry', bev=0, rot=.4),
+              bx('stake', .03, .22, .02, .38, .2, .94, 'woodl', bev=0, rot=.4)]
+        p.append(ball('leafbits', .1, -.8, .5, .02, 'leafwd', sub=1, sc=(1.5, 1, .3)))
+    if stage == 2:   # finished: seed trays of seedlings, a strawberry plant in a pot, a watering can
+        for i, x in enumerate((-.55, .15)):
+            p.append(bx('tray', .6, .4, .08, x, .1, .98, 'charcoal', bev=.01))
+            for k in range(6):
+                p.append(lf((x - .2 + (k % 3) * .2, .02 + (k // 3) * .18, 1.06), k * 1.3, .1, .06, 'leafl', lift=.08, droop=.0))
+        p += [cl('bigpot', .16, .22, .7, .1, .98, 'brick', verts=10, rt=.2), ball('plant', .18, .7, .1, 1.3, 'leaf', sub=1, sc=(1, 1, .7)),
+              ball('berry1', .05, .78, .22, 1.24, 'berry', sub=1), ball('berry2', .045, .62, .2, 1.22, 'berryl', sub=1)]
+        p += [cl('can', .13, .22, -.75, .35, 0, 'teal', verts=10), st((-.62, .35, .16), (-.45, .35, .26), .02, 'teal', sides=4)]
+    return p
+piece('potting_bench_overgrown', potting_bench(0), decor)
+piece('potting_bench_repaired', potting_bench(1), decor)
+piece('potting_bench_done', potting_bench(2), decor)
+
+# =================================================================== tree pack 2: the later trees (one or two per chapter)
+# Charm: maple (meadow), birch (river), cypress (village), fir (hills), great oak (valley landmark, 2 x 2 cells).
+# Fruit (each with a _bare twin after picking): lemon, plum, mango, grape arbour, longan, lychee.
+# Origin at the trunk base, front +z. Late decor.glb, so nothing here adds to the first load.
+def hang(x, y, z, mt, n=5, r=.09, mt2=None):
+    """A hanging bunch of small round fruit (longan, lychee, grapes): rows that narrow toward the bottom."""
+    p, k = [], 0
+    for row, m in enumerate((3, 2, 1) if n <= 6 else (4, 3, 2, 1)):
+        for j in range(m):
+            a = j / m * math.tau + row * .7; rr = r * .9 * (m > 1)
+            p.append(ball('fr', r, x + math.cos(a) * rr, y + math.sin(a) * rr, z - row * r * 1.5, mt if (k % 3 or not mt2) else mt2, sub=0)); k += 1
+    return p
+def fruit_on(n, mt, r, out, z0=2.4, dz=.8, mt2=None, sc=None, start=.4):
+    """Fruit dotted round the outside of a cute canopy (on it, never inside it)."""
+    p = []
+    for i in range(n):
+        a = i / n * math.tau + start; rr = (1.55 + .25 * (i % 2)) * out; z = z0 + dz * ((i * 3) % 4) / 3
+        p.append(ball('fruit', r, math.cos(a) * rr * .8, math.sin(a) * rr * .8, z, mt2 if mt2 and i % 3 == 0 else mt, sub=1, sc=sc))
+    return p
+
+def maple():
+    """Maple (charm, the meadow chapter): a cute round tree in fiery red, orange and gold, a few leaves on the grass."""
+    p = cute('m', 'maple', 'maplel', 'mapled')
+    for i in range(5):
+        a = i * 1.3; r = 1.0 + .3 * (i % 3)
+        p.append(lf((math.cos(a) * r, math.sin(a) * r, .02), a * 2, .22, .16, 'maplel' if i % 2 else 'maple', lift=0, droop=0))
+    return p
+piece('tree2_maple', maple(), decor)
+
+def birch():
+    """Birch (charm, by the river): a slim white trunk with dark marks, a tall light lime-gold canopy."""
+    p = [cl('trunk', .24, 3.4, 0, 0, 0, 'birch', verts=8, rt=.17)]
+    for i, z in enumerate((.6, 1.1, 1.7, 2.3, 2.9)):
+        p.append(bx('mark', .2, .05, .06, .02 * (i % 2), .2 - .02 * i, z, 'birchm', bev=0, rot=i * 1.7))
+    p.append(st((0, 0, 2.6), (.6, .1, 3.2), .07, 'birch', sides=5))
+    for x, y, z, r, mt in ((0, 0, 4.0, 1.1, 'birchleaf'), (.4, .2, 3.3, .85, 'birchleafl'), (-.35, -.15, 3.4, .85, 'birchleaf'),
+                           (.05, .05, 4.8, .75, 'birchleafl')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1, 1, 1.15)))
+    return p
+piece('tree2_birch', birch(), decor)
+
+def cypress():
+    """Cypress (charm, the village chapter): a tall narrow column of deep green, for lining lanes and the square."""
+    p = [cl('trunk', .18, .6, 0, 0, 0, 'woodd', verts=6, rt=.14)]
+    for i, (r, z) in enumerate(((.62, 1.2), (.7, 2.0), (.62, 2.9), (.48, 3.7), (.3, 4.4))):
+        p.append(ball('col', r, 0, 0, z, 'cypress' if i % 2 == 0 else 'cypressl', sub=2, sc=(1, 1, 1.5)))
+    return p
+piece('tree2_cypress', cypress(), decor)
+
+def fir():
+    """Fir (charm, over the hills to Pine Ridge): taller and bluer than the round pine, six drooping tiers."""
+    p = [cl('trunk', .32, 1.0, 0, 0, 0, 'woodd', verts=8, rt=.26)]
+    for i in range(6):
+        r = 1.75 - i * .26; z = .8 + i * .95
+        p.append(cl('tier', r, 1.25, 0, 0, z, 'fir' if i % 2 == 0 else 'firl', verts=12, rt=r * .22, bev=.25))
+    p.append(cone_tip())
+    return p
+def cone_tip():
+    return ball('tip', .28, 0, 0, 7.1, 'firl', sub=1, sc=(1, 1, 1.6))
+piece('tree2_fir', fir(), decor)
+
+def great_oak():
+    """The great oak (the valley landmark, 2 x 2 cells, one per farm): a thick flared trunk, a wide layered canopy and
+    a rope swing on the front branch."""
+    p = [cl('trunk', .75, 3.0, 0, 0, 0, 'woodd', verts=10, rt=.55), cl('flare', 1.05, .4, 0, 0, 0, 'wooddd', verts=10, rt=.75)]
+    for a in (0, 2.1, 4.2):
+        p.append(st((math.cos(a) * .7, math.sin(a) * .7, .15), (math.cos(a) * 1.3, math.sin(a) * 1.3, 0), .2, 'woodd', sides=5, rt=.08))
+    p += [st((0, 0, 2.6), (1.6, .4, 3.6), .22, 'woodd', sides=6, rt=.14), st((0, 0, 2.6), (-1.5, -.3, 3.7), .22, 'woodd', sides=6, rt=.14),
+          st((.1, .1, 2.6), (.2, 1.6, 3.2), .2, 'woodd', sides=6, rt=.13)]
+    for x, y, z, r, mt in ((0, 0, 4.6, 2.0, 'oak'), (1.8, .4, 4.0, 1.5, 'oakl'), (-1.8, -.3, 4.1, 1.5, 'oak'), (.2, -1.6, 4.2, 1.4, 'oakd'),
+                           (.1, 1.5, 4.0, 1.3, 'oakl'), (.3, .2, 5.7, 1.4, 'oakl')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1, 1, .85)))
+    for x in (-.35, .35):   # the swing hangs from the front branch
+        p.append(st((x, 1.45, 3.1), (x, 1.45, .55), .025, 'rope', sides=3))
+    p.append(bx('seat', .9, .3, .07, 0, 1.45, .5, 'wood', bev=.02))
+    return p
+piece('tree2_oak', great_oak(), decor)
+
+def lemon(ripe=True):
+    """Lemon tree (fruit): a compact glossy dark tree with bright oval lemons, a little smaller than the orange."""
+    p = cute('l', 'leafwd', 'leafw', 'leafdd')
+    if ripe: p += fruit_on(10, 'lemon', .22, 1.3, sc=(1, 1, 1.35))
+    return p
+piece('tree2_lemon', lemon(), decor)
+piece('tree2_lemon_bare', lemon(False), decor)
+
+def plum(ripe=True):
+    """Plum tree (fruit; Granny Ada's terrible jam): a fresh green canopy hung with deep purple plums."""
+    p = cute('pl', 'leafwl', 'leafw', 'leafwd')
+    if ripe: p += fruit_on(11, 'plum', .23, 1.3, mt2='pluml')
+    return p
+piece('tree2_plum', plum(), decor)
+piece('tree2_plum_bare', plum(False), decor)
+
+def mango(ripe=True):
+    """Mango tree (fruit): a big dense dark dome, long mangoes blushing orange-red hanging on short stalks."""
+    p = [cl('trunk', .45, 2.2, 0, 0, 0, 'wood', verts=8, rt=.32), cl('root', .65, .25, 0, 0, 0, 'woodd', verts=8, rt=.45)]
+    for x, y, z, r, mt in ((0, 0, 3.4, 1.9, 'leafwd'), (1.1, .3, 2.9, 1.2, 'leafw'), (-1.1, .2, 2.9, 1.2, 'leafwd'), (.1, 1.0, 2.8, 1.1, 'leafw'),
+                           (0, -.1, 4.4, 1.1, 'leafw')):
+        p.append(ball('puff', r, x, y, z, mt, sub=2, sc=(1.1, 1.1, .8)))
+    if ripe:
+        for i in range(8):
+            a = i / 8 * math.tau + .2; rr = 2.25 + .15 * (i % 2); z = 1.95 + .3 * (i % 3)
+            x, y = math.cos(a) * rr, math.sin(a) * rr
+            p.append(st((x * .95, y * .95, z + .35), (x, y, z + .12), .02, 'stem', sides=3))
+            p.append(ball('mango', .2, x, y, z, 'mango' if i % 2 else 'mangor', sub=1, sc=(.85, .85, 1.4)))
+    return p
+piece('tree2_mango', mango(), decor)
+piece('tree2_mango_bare', mango(False), decor)
+
+def grape_arbor(ripe=True):
+    """Grape arbour (fruit vine, 1 cell): a little wooden pergola roofed with vine leaves, purple bunches hanging inside."""
+    p = []
+    for x in (-.8, .8):
+        for y in (-.8, .8):
+            p.append(bx('post', .18, .18, 2.3, x, y, 0, 'wood', bev=.02))
+    for y in (-.8, .8):
+        p.append(bx('beam', 2.0, .12, .14, 0, y, 2.3, 'woodd', bev=.02))
+    for i in range(5):
+        p.append(bx('slat', .1, 2.0, .08, -.8 + i * .4, 0, 2.44, 'wood', bev=.01))
+    for i, (x, y) in enumerate(((-.5, -.5), (.4, -.6), (-.6, .4), (.5, .5), (0, 0), (0, -.8), (0, .8), (-.85, 0), (.85, 0))):
+        p.append(ball('vine', .55, x, y, 2.6, 'leafw' if i % 2 else 'leafwl', sub=1, sc=(1, 1, .45)))
+    for x in (-.8, .8):   # the vine climbs the front posts
+        for k, z in enumerate((.7, 1.3, 1.9)):
+            p.append(ball('climb', .2, x + (.06 if k % 2 else -.06), .85, z, 'leafw' if k % 2 else 'leafwl', sub=1))
+    if ripe:
+        for x, y in ((-.45, 1.0), (.4, 1.0), (-1.0, .2), (1.0, -.1)):   # on the outer edges, where the camera sees them
+            p += hang(x, y, 2.3, 'grape', n=6, r=.11, mt2='grapel')
+    return p
+piece('tree2_grape', grape_arbor(), decor)
+piece('tree2_grape_bare', grape_arbor(False), decor)
+
+def longan(ripe=True):
+    """Longan tree (fruit, the hills chapter): a wide dark canopy with tan bunches of small round longans."""
+    p = cute('lg', 'leafdd', 'leafwd', 'pinew')
+    if ripe:
+        for i in range(4):
+            a = i / 4 * math.tau + .3; rr = 2.05
+            p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
+            p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'longan', n=6, r=.13)
+    return p
+piece('tree2_longan', longan(), decor)
+piece('tree2_longan_bare', longan(False), decor)
+
+def lychee(ripe=True):
+    """Lychee tree (fruit, the hills chapter): a bright green canopy with clusters of rosy-red lychees."""
+    p = cute('ly', 'leafw', 'leafwl', 'leafdd')
+    if ripe:
+        for i in range(4):
+            a = i / 4 * math.tau + .8; rr = 2.05
+            p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
+            p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'lychee', n=6, r=.13, mt2='berry')
+    return p
+piece('tree2_lychee', lychee(), decor)
+piece('tree2_lychee_bare', lychee(False), decor)
 
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():
@@ -1151,6 +2394,348 @@ def fruit_stand():
     return p
 piece('fruit_stand', fruit_stand())
 
+
+# =================================================================== the farmhouse interior (AR-015): one room for Explore
+# docs/ASSET-REQUESTS.md AR-015 is the contract. Room-local metres, glTF Y up, floor y = 0, door on +z. Shell roots share
+# the room origin; each prop is authored around its own base centre facing local +z, and interior-farmhouse.json gives
+# its room placement and yaw (applied once at runtime). Separate kit, loaded only on entry: nothing here is in KINDS.
+OUT_INTERIOR = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-farmhouse.glb')
+META_INTERIOR = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-farmhouse.json')
+RW, RD, WALL_H, WALL_T, DOOR_W, DOOR_H = 8.0, 6.0, 2.8, .15, 1.6, 2.2
+# id: room position (x, z), yaw, room collider (x0, x1, z0, z1), interaction stand (x, z), focus height (m)
+PROPS = {
+    'farmhouse_sofa': ((-3.15, -0.60), math.pi / 2, (-3.65, -2.65, -1.80, 0.60), (-2.00, -0.60), .95),
+    'farmhouse_wardrobe': ((3.20, 1.50), -math.pi / 2, (2.75, 3.65, 0.65, 2.35), (2.10, 1.50), 1.3),
+    'farmhouse_table': ((0.25, -0.30), 0., (-0.75, 1.25, -1.25, 0.65), (0.25, 1.35), .85),
+    'farmhouse_kitchen': ((2.45, -2.25), 0., (1.25, 3.65, -2.70, -1.80), (2.40, -1.10), 1.0),
+    'farmhouse_desk': ((-1.40, -2.25), 0., (-2.20, -0.60, -2.70, -1.80), (-1.40, -1.10), .9),
+    'farmhouse_memory_shelf': ((-3.15, 1.775), math.pi / 2, (-3.65, -2.65, 1.25, 2.30), (-2.00, 1.775), 1.2),
+}
+# The player's Sit clip, measured on the rigs as the game draws them (skinned meshes only, scaled by the Idle pose's
+# height, feet lifted to the floor; Sit mid-frame, the lowest 5 % of the hips bone's vertices): the hips rest at this
+# share of the actor's height, this share in front of the root (negative = behind). Feet hang 5-7 cm above the floor.
+SIT = {'man': (.2550, -.0218), 'woman': (.2408, .0066)}
+ACTOR_H = 1.8                       # the contract's test avatar
+SEAT_TOP = round(SIT['man'][0] * ACTOR_H, 2)       # cushion top: the man's hips land on it, the woman's 2.5 cm into it
+SEAT_Z = .12                        # cushion centre, prop-local +z
+
+def to_local(prop, x, z):
+    (px, pz), yaw = PROPS[prop][0], PROPS[prop][1]
+    dx, dz = x - px, z - pz
+    return dx * math.cos(yaw) - dz * math.sin(yaw), dx * math.sin(yaw) + dz * math.cos(yaw)
+def to_room(prop, lx, lz):
+    (px, pz), yaw = PROPS[prop][0], PROPS[prop][1]
+    return px + lx * math.cos(yaw) + lz * math.sin(yaw), pz - lx * math.sin(yaw) + lz * math.cos(yaw)
+
+def room_floor(lod=0):
+    """The floor: a warm plank slab (top at y = 0) with seams, and a round-cornered rug in the living zone."""
+    p = [bx('slab', RW, RD, .1, 0, 0, -.1, 'plank', bev=0)]
+    if lod == 0:
+        for i in range(1, 16):
+            p.append(bx('seam', .03, RD - .3, .004, -RW / 2 + i * .5, 0, 0, 'seam', bev=0))
+        for i in range(0, 16, 2):
+            p.append(bx('plankd', .47, RD - .3, .003, -RW / 2 + .25 + i * .5, 0, 0, 'plankd', bev=0))
+    p += [bx('rug', 2.3, 2.5, .02, -1.55, -.35, 0, 'rug', bev=.01 if lod == 0 else 0), bx('rugin', 1.9, 2.1, .022, -1.55, -.35, 0, 'rugl', bev=0)]
+    if lod == 0:
+        p.append(bx('mat', 1.2, .6, .02, 0, 2.45, 0, 'sack', bev=.01))        # a doormat on the entrance stand
+    return p
+
+def wall_x(name, side, lod=0):
+    """Left (-1) or right (+1) wall, thickness inward from x = +-4, with a wainscot band and one window."""
+    x = side * (RW / 2 - WALL_T / 2)
+    p = [bx(name, WALL_T, RD, WALL_H, x, 0, 0, 'wallin', bev=0), bx('wains', .04, RD - .3, .9, x - side * .09, 0, 0, 'wainscot', bev=0)]
+    if lod == 0:
+        p.append(bx('rail', .06, RD - .3, .06, x - side * .1, 0, .9, 'wainscotd', bev=0))
+    wz = 1.1 if side < 0 else -1.0   # the left window sits over the memory-shelf corner, leaving the sofa wall for a picture
+    p += [bx('win', .05, 1.2, 1.0, x - side * .09, wz, 1.2, 'glass', bev=0), bx('winframe', .07, 1.36, .1, x - side * .1, wz, 1.15, 'woodl', bev=0)]
+    if lod == 0:
+        for dz in (-.72, .72):
+            p.append(bx('curtain', .04, .3, 1.25, x - side * .11, wz + dz, 1.05, 'quilt' if side < 0 else 'sun', bev=0))
+        if side < 0:   # a little painted landscape over the sofa: sky, hills, a sun; no words
+            p += [bx('frame', .05, 1.0, .66, x - side * .1, -.6, 1.45, 'gold', bev=0), bx('sky', .03, .86, .52, x - side * .12, -.6, 1.52, 'sky', bev=0),
+                  bx('hill', .035, .86, .2, x - side * .125, -.6, 1.52, 'leafw', bev=0), bx('hill2', .036, .4, .3, x - side * .13, -.75, 1.52, 'leafwl', bev=0),
+                  ball('sunp', .07, x - side * .135, -.3, 1.88, 'sun', sub=1, sc=(.3, 1, 1))]
+    if lod == 0:
+        p += [bx('winframet', .07, 1.36, .1, x - side * .1, wz, 2.2, 'woodl', bev=0), bx('winbar', .06, .06, 1.0, x - side * .1, wz, 1.2, 'woodl', bev=0)]
+    return p
+
+def wall_back(lod=0):
+    p = [bx('back', RW, WALL_T, WALL_H, 0, -RD / 2 + WALL_T / 2, 0, 'wallin', bev=0), bx('wains', RW - .3, .04, .9, 0, -RD / 2 + .17, 0, 'wainscot', bev=0)]
+    if lod == 0:
+        p.append(bx('rail', RW - .3, .06, .06, 0, -RD / 2 + .18, .9, 'wainscotd', bev=0))
+    if lod == 0:   # a round wall clock without numbers, between the windows
+        p += [cl('clock', .24, .05, .55, -RD / 2 + .2, 1.95, 'woodd', verts=16, rot=(math.pi / 2, 0, 0)), cl('face', .2, .02, .55, -RD / 2 + .23, 1.95, 'cream', verts=16, rot=(math.pi / 2, 0, 0)),
+              bx('hand', .03, .02, .15, .55, -RD / 2 + .245, 1.95, 'charcoal', bev=0), bx('hand2', .11, .02, .03, .6, -RD / 2 + .245, 1.95, 'charcoal', bev=0)]
+    for wx in (-1.4, 2.45):   # windows over the desk and over the kitchen counter
+        p += [bx('win', 1.1, .05, .8, wx, -RD / 2 + .17, 1.45, 'glass', bev=0), bx('sill', 1.26, .12, .06, wx, -RD / 2 + .2, 1.4, 'woodl', bev=0)]
+        if lod == 0:
+            p += [bx('lintel', 1.26, .07, .08, wx, -RD / 2 + .19, 2.25, 'woodl', bev=0), bx('bar', .05, .06, .8, wx, -RD / 2 + .19, 1.45, 'woodl', bev=0)]
+            for dx in (-.68, .68):
+                p.append(bx('curtain', .26, .04, 1.05, wx + dx, -RD / 2 + .21, 1.25, 'pink' if wx < 0 else 'sun', bev=0))
+    return p
+
+def wall_front(lod=0):
+    """The front wall with the doorway (x -0.8..0.8, 2.2 m clear, no threshold); hidden at runtime, collision kept."""
+    side = (RW - DOOR_W) / 2
+    y = RD / 2 - WALL_T / 2
+    p = [bx('frontl', side, WALL_T, WALL_H, -(DOOR_W + side) / 2, y, 0, 'wallin', bev=0),
+         bx('frontr', side, WALL_T, WALL_H, (DOOR_W + side) / 2, y, 0, 'wallin', bev=0),
+         bx('lintel', DOOR_W, WALL_T, WALL_H - DOOR_H, 0, y, DOOR_H, 'wallin', bev=0)]
+    p += [bx('jambl', .1, .2, DOOR_H, -DOOR_W / 2 - .05, y, 0, 'woodd', bev=0), bx('jambr', .1, .2, DOOR_H, DOOR_W / 2 + .05, y, 0, 'woodd', bev=0),
+          bx('head', DOOR_W + .2, .2, .12, 0, y, DOOR_H, 'woodd', bev=0)]
+    if lod == 0:
+        p += [bx('wainsl', side - .15, .04, .9, -(DOOR_W + side) / 2 - .07, y - .09, 0, 'wainscot', bev=0),
+              bx('wainsr', side - .15, .04, .9, (DOOR_W + side) / 2 + .07, y - .09, 0, 'wainscot', bev=0)]
+    return p
+
+# --- props (prop-local, base centre, facing +z) ---
+def sofa(lod=0):
+    """Sofa (2.4 x 1.0): a chunky blue couch on a wooden plinth. The cushion top is SEAT_TOP, fitted to the Sit clip."""
+    b = .03 if lod == 0 else 0
+    p = [bx('plinth', 2.3, .9, .16, 0, 0, 0, 'woodd', bev=b), bx('base', 2.3, .9, SEAT_TOP - .3, 0, 0, .16, 'sofad', bev=b),
+         bx('cushion', 1.96, .66, .16, 0, SEAT_Z, SEAT_TOP - .16, 'sofa', bev=.06 if lod == 0 else 0),
+         bx('back', 2.3, .26, .62, 0, -.32, SEAT_TOP - .14, 'sofa', bev=.08 if lod == 0 else 0)]
+    for x in (-1.04, 1.04):
+        p.append(bx('arm', .22, .9, .32, x, 0, SEAT_TOP - .14, 'sofal', bev=.07 if lod == 0 else 0))
+    if lod == 0:
+        p += [bx('seamc', .02, .6, .02, 0, SEAT_Z, SEAT_TOP, 'sofad', bev=0),
+              ball('pillow', .2, -.62, -.08, SEAT_TOP + .17, 'pillow', sub=1, sc=(1, .55, 1)), ball('pillow2', .18, .66, -.1, SEAT_TOP + .15, 'quilt', sub=1, sc=(1, .55, 1)),
+              bx('throw', .5, .7, .02, .55, .02, SEAT_TOP + .005, 'cream', bev=0, rot=.12)]
+    return p
+def wardrobe(lod=0):
+    """Wardrobe (1.7 x 0.9): a tall painted cupboard with two doors, round knobs, a crown and feet."""
+    b = .03 if lod == 0 else 0
+    p = [bx('body', 1.6, .62, 1.95, 0, -.08, .1, 'wood', bev=b), bx('crown', 1.7, .7, .12, 0, -.08, 2.03, 'woodd', bev=b),
+         bx('doorl', .74, .04, 1.7, -.39, .2, .22, 'woodl', bev=0), bx('doorr', .74, .04, 1.7, .39, .2, .22, 'woodl', bev=0)]
+    for x in (-.7, .7):
+        p.append(bx('foot', .14, .14, .1, x, .1, 0, 'woodd', bev=0)); p.append(bx('footb', .14, .14, .1, x, -.35, 0, 'woodd', bev=0))
+    p += [cl('knobl', .04, .05, -.08, .23, 1.05, 'gold', verts=8, rot=(math.pi / 2, 0, 0)), cl('knobr', .04, .05, .08, .23, 1.05, 'gold', verts=8, rot=(math.pi / 2, 0, 0))]
+    if lod == 0:
+        for x in (-.39, .39):
+            p.append(bx('panel', .5, .02, .6, x, .225, 1.2, 'wood', bev=0)); p.append(bx('panel2', .5, .02, .6, x, .225, .45, 'wood', bev=0))
+        p += [bx('hatbox', .4, .36, .24, -.35, -.08, 2.15, 'quilt', bev=.03), bx('basket', .34, .3, .2, .4, -.08, 2.15, 'sack', bev=.03)]
+    return p
+def table(lod=0):
+    """Dining table with two chairs (2.0 x 1.9), plain illustrated seed packets and a jug of flowers on top."""
+    b = .02 if lod == 0 else 0
+    p = [bx('top', 1.5, .9, .08, 0, 0, .72, 'woodl', bev=b)]
+    for x in (-.65, .65):
+        for y in (-.35, .35):
+            p.append(bx('leg', .08, .08, .72, x, y, 0, 'wood', bev=0))
+    for y, face in ((-.72, 1), (.72, -1)):    # a chair behind and one in front of the table, tucked in
+        p += [bx('seat', .46, .4, .06, 0, y, .44, 'wood', bev=b), bx('cback', .46, .06, .5, 0, y - face * .17, .5, 'woodd', bev=b)]
+        for x in (-.18, .18):
+            for yy in (-.16, .16):
+                p.append(bx('cleg', .05, .05, .44, x, y + yy * .9, 0, 'woodd', bev=0))
+    if lod == 0:
+        p += [bx('cloth', 1.2, .5, .01, 0, 0, .8, 'cream', bev=0)]
+        for i, (x, c) in enumerate(((-.42, 'leafwl'), (-.18, 'sun'), (.08, 'pink'))):   # seed packets: a plain picture, no words
+            p += [bx('packet', .16, .22, .012, x, .12, .81, 'paper', bev=0, rot=(i - 1) * .2), ball('pic', .045, x, .14, .825, c, sub=1, sc=(1, 1, .3))]
+        p += [cl('jug', .08, .2, .45, -.12, .8, 'tile', verts=10, rt=.06), ball('bloom', .07, .45, -.12, 1.06, 'quilt', sub=1), ball('bloom2', .06, .52, -.08, 1.02, 'sun', sub=1)]
+    return p
+def kitchen(lod=0):
+    """Kitchen counter (2.4 x 0.9): cupboards, a tiled top with a sink and a little stove, copper pots, an unlettered
+    recipe book and a shelf of jars above."""
+    b = .02 if lod == 0 else 0
+    p = [bx('cab', 2.36, .6, .82, 0, -.12, 0, 'wainscot', bev=b), bx('ctop', 2.4, .66, .08, 0, -.12, .82, 'tile', bev=b),
+         bx('stove', .62, .5, .04, .72, -.14, .9, 'charcoal', bev=0), bx('sink', .5, .36, .03, -.55, -.12, .89, 'tiled', bev=0)]
+    for x in (-.9, -.3, .3, .9):
+        p.append(bx('door', .52, .03, .62, x, .19, .1, 'wainscotd' if lod else 'wainscot', bev=0))
+    p += [cl('pot', .14, .16, .6, -.12, .94, 'copper', verts=10), bx('book', .26, .2, .05, -.05, .05, .9, 'red', bev=.01, rot=.2)]   # the recipe book: a plain red cover
+    p += [bx('shelf', 2.0, .24, .04, 0, -.32, 1.55, 'woodl', bev=0)]
+    if lod == 0:
+        for x in (-.84, .84):
+            p.append(bx('knob', .05, .03, .05, x, .22, .55, 'gold', bev=0))
+        p += [cl('pot2', .11, .12, .86, -.1, .94, 'copper', verts=8), cl('tap', .02, .24, -.55, -.32, .9, 'iron', verts=6),
+              bx('bookpage', .24, .18, .01, -.05, .05, .955, 'paper', bev=0, rot=.2)]
+        for i, (x, c) in enumerate(((-.8, 'sun'), (-.5, 'berry'), (-.2, 'leafwl'), (.4, 'orange'), (.7, 'pink'))):
+            p.append(cl('jar', .07, .16, x, -.32, 1.59, c, verts=8)); p.append(cl('lid', .075, .03, x, -.32, 1.75, 'wood', verts=8))
+    return p
+def desk(lod=0):
+    """A small study desk (1.6 x 0.9) with a chair, a lamp and a closed planning journal (no words)."""
+    b = .02 if lod == 0 else 0
+    p = [bx('top', 1.3, .5, .06, 0, -.18, .74, 'woodl', bev=b), bx('drawers', .4, .46, .7, .4, -.18, .04, 'wood', bev=b)]
+    for x, y in ((-.6, -.38), (-.6, .02)):
+        p.append(bx('leg', .06, .06, .74, x, y, 0, 'wood', bev=0))
+    p += [bx('seat', .42, .38, .06, -.15, .25, .44, 'wood', bev=b), bx('cback', .42, .05, .44, -.15, .42, .5, 'woodd', bev=b)]
+    for x in (-.32, .02):
+        for y in (.1, .4):
+            p.append(bx('cleg', .05, .05, .44, x, y, 0, 'woodd', bev=0))
+    p += [bx('journal', .3, .22, .05, -.15, -.12, .8, 'cloth', bev=.01, rot=-.15), cl('lampbase', .08, .03, .45, -.26, .8, 'iron', verts=8)]
+    if lod == 0:
+        p += [cl('lampstem', .015, .35, .45, -.26, .83, 'iron', verts=5), cone('shade', .16, .18, (.45, .26, 1.24), C['sun'], verts=10),
+              bx('pencil', .02, .16, .02, .02, -.1, .8, 'sun', bev=0, rot=.6), bx('pulls', .12, .02, .03, .4, .06, .5, 'gold', bev=0),
+              bx('pulls2', .12, .02, .03, .4, .06, .25, 'gold', bev=0)]
+    return p
+def memory_shelf(lod=0):
+    """The family memory shelf (1.05 x 1.0): an open bookcase of keepsakes and framed pictures, a drawing partly tucked
+    behind a frame, and a basket on the floor in front."""
+    b = .02 if lod == 0 else 0
+    p = [bx('sidel', .06, .38, 1.9, -.48, -.3, 0, 'wood', bev=b), bx('sider', .06, .38, 1.9, .48, -.3, 0, 'wood', bev=b),
+         bx('backp', 1.0, .03, 1.9, 0, -.48, 0, 'woodd', bev=0)]
+    for z in (.05, .55, 1.05, 1.55, 1.88):
+        p.append(bx('board', 1.0, .38, .04, 0, -.3, z, 'woodl', bev=0))
+    p += [bx('frame', .3, .04, .36, -.2, -.25, 1.09, 'gold', bev=.01), bx('photo', .24, .02, .28, -.2, -.23, 1.13, 'sky', bev=0),
+          bx('drawing', .22, .01, .28, .05, -.3, 1.12, 'paper', bev=0, rot=.15),   # the tucked drawing, half behind the frame
+          bx('basket', .5, .36, .26, 0, .25, 0, 'sack', bev=.04 if lod == 0 else 0)]
+    if lod == 0:
+        for i, (x, c) in enumerate(((-.36, 'red'), (-.3, 'cloth'), (-.24, 'sun'), (-.18, 'leafwl'))):
+            p.append(bx('book', .055, .26, .34, x, -.3, .59, c, bev=0))
+        p += [bx('frame2', .26, .04, .3, .25, -.25, 1.59, 'woodd', bev=.01), bx('photo2', .2, .02, .22, .25, -.23, 1.63, 'pink', bev=0),
+              ball('vase', .1, .26, -.3, .7, 'teal', sub=1, sc=(1, 1, 1.4)), bx('box', .3, .24, .16, .2, -.3, .09, 'quilt', bev=.02),
+              ball('yarn', .09, -.1, .27, .3, 'pink', sub=1), cl('wool', .06, .1, .12, .3, .26, 'sun', verts=8), ball('ribbon', .06, -.3, -.25, .12, 'berry', sub=1)]
+    return p
+
+PROP_MODELS = {'farmhouse_sofa': sofa, 'farmhouse_wardrobe': wardrobe, 'farmhouse_table': table, 'farmhouse_kitchen': kitchen,
+               'farmhouse_desk': desk, 'farmhouse_memory_shelf': memory_shelf}
+SHELL = {'farmhouse_interior_floor': room_floor, 'farmhouse_interior_back': wall_back,
+         'farmhouse_interior_left': lambda lod=0: wall_x('left', -1, lod), 'farmhouse_interior_front': wall_front,
+         'farmhouse_interior_right': lambda lod=0: wall_x('right', 1, lod)}
+interior = []
+for name, f in {**SHELL, **PROP_MODELS}.items():
+    piece(name, f(0), interior); piece(name + '_mid', f(1), interior)
+
+def room_y(v):   # Blender (x, y, z up) -> room (x, y up, z front)
+    return [round(v[0], 3), round(v[2], 3), round(-v[1], 3)]
+def blender(x, y, z):   # room (x, y up, z front) -> Blender
+    return (x, -z, y)
+
+def interior_kit():
+    iobjs = build(interior)
+    by = {o.name: o for o in iobjs}
+    seat = {}
+    for sfx in ('', '_mid'):
+        fl = by['farmhouse_interior_floor' + sfx]
+        add_anchor(fl, 'entry', blender(0, 0, 2.15)); add_anchor(fl, 'exit', blender(0, 0, 2.45))
+        add_anchor(fl, 'camera', blender(9, 10, 11)); add_anchor(fl, 'camera_target', blender(0, .6, 0))
+        for pid, (pos, yaw, col, stand, fh) in PROPS.items():
+            o = by[pid + sfx]; lx, lz = to_local(pid, *stand)
+            add_anchor(o, 'interact', blender(lx, 0, lz)); add_anchor(o, 'focus', blender(0, fh, 0))
+        # the seat: the actor root that puts the Sit clip's hips on the cushion centre (feet on the floor)
+        root_z = SEAT_Z - SIT['man'][1] * ACTOR_H   # the root at floor height, so the hips sit on the cushion centre
+        add_anchor(by['farmhouse_sofa' + sfx], 'seat', blender(0, 0, root_z))
+        seat = {'local': [0, 0, round(root_z, 3)]}
+    bpy.context.view_layer.update()
+    # contract checks: every prop inside its collider after placement, the entrance corridor empty, budgets
+    report, full_tris, mid_tris = [], 0, 0
+    for o in iobjs:
+        t = triangles(o); mid = o.name.endswith('_mid'); base = o.name[:-4] if mid else o.name
+        if mid: mid_tris += t
+        else: full_tris += t
+        if base in PROPS:
+            assert t <= 1200, f'{o.name}: {t} triangles > 1.2k'
+            xs, zs = [], []
+            for v in o.data.vertices:
+                lx, lz = v.co.x, -v.co.y; rx, rz = to_room(base, lx, lz); xs.append(rx); zs.append(rz)
+            (x0, x1, z0, z1) = PROPS[base][2]
+            inside = min(xs) >= x0 - 1e-3 and max(xs) <= x1 + 1e-3 and min(zs) >= z0 - 1e-3 and max(zs) <= z1 + 1e-3
+            assert inside, f'{o.name} leaves its collider: x {min(xs):.2f}..{max(xs):.2f} (want {x0}..{x1}), z {min(zs):.2f}..{max(zs):.2f} (want {z0}..{z1})'
+            assert not (max(xs) > -.65 and min(xs) < .65 and max(zs) > 1.15 and min(zs) < 2.70), f'{o.name} blocks the entrance corridor'
+            report.append(f'{o.name}: {t} tris, room x {min(xs):.2f}..{max(xs):.2f}, z {min(zs):.2f}..{max(zs):.2f}')
+    shell_tris = sum(triangles(by[n]) for n in SHELL)
+    assert shell_tris <= 8000 and full_tris <= 16000 and mid_tris <= 8000, (shell_tris, full_tris, mid_tris)
+    # full and mid anchors agree, in room space
+    for pid in PROPS:
+        for lab in ('interact', 'focus'):
+            a, b = bpy.data.objects[f'{pid}.{lab}'].location, bpy.data.objects[f'{pid}_mid.{lab}'].location
+            assert (a - b).length < 1e-6, (pid, lab)
+    size = packed(iobjs, OUT_INTERIOR)
+    meta = interior_meta(seat)
+    with open(META_INTERIOR, 'w', encoding='utf-8', newline='\n') as f: json.dump(meta, f, indent=1)
+    print('\n'.join(report))
+    print(f'interior: shell {shell_tris}, full room {full_tris}, mid room {mid_tris} triangles; {size} bytes; metadata {os.path.getsize(META_INTERIOR)} bytes')
+
+def interior_meta(seat):
+    r = lambda v: round(v, 3)
+    meshes = [{'node': n, 'position': [0, 0, 0], 'yaw': 0, 'midNode': n + '_mid'} for n in SHELL]
+    meshes += [{'node': pid, 'position': [r(pos[0]), 0, r(pos[1])], 'yaw': r(yaw), 'midNode': pid + '_mid'} for pid, (pos, yaw, *_ ) in PROPS.items()]
+    half_t = WALL_T
+    walls = [{'id': 'wall_back', 'min': [-4, -3], 'max': [4, -3 + half_t]}, {'id': 'wall_left', 'min': [-4, -3], 'max': [-4 + half_t, 3]},
+             {'id': 'wall_right', 'min': [4 - half_t, -3], 'max': [4, 3]}, {'id': 'wall_front_left', 'min': [-4, 3 - half_t], 'max': [-DOOR_W / 2, 3]},
+             {'id': 'wall_front_right', 'min': [DOOR_W / 2, 3 - half_t], 'max': [4, 3]}]
+    colliders = [{'id': pid, 'min': [c[0], c[2]], 'max': [c[1], c[3]]} for pid, (_, _, c, _, _) in PROPS.items()] + walls
+    inter = []
+    for pid, (pos, yaw, col, stand, fh) in PROPS.items():
+        inter.append({'id': pid, 'anchor': f'{pid}.interact', 'stand': [stand[0], 0, stand[1]], 'focus': [r(pos[0]), fh, r(pos[1])]})
+    inter.append({'id': 'farmhouse_exit', 'anchor': 'farmhouse_interior_floor.exit', 'stand': [0, 0, 2.45], 'focus': [0, 1.05, 3]})
+    sx, sz = to_room('farmhouse_sofa', 0, seat['local'][2])
+    yaw = PROPS['farmhouse_sofa'][1]
+    return {'schemaVersion': 1, 'roomId': 'farmhouse_main', 'site': 'farmhouse', 'units': 'metres, Y up, yaw radians',
+            'bounds': {'room': {'min': [-4, -3], 'max': [4, 3]}, 'wallHeight': WALL_H, 'wallThickness': WALL_T,
+                       'innerFloor': {'min': [-3.85, -2.85], 'max': [3.85, 2.85]}, 'avatarCentre': {'min': [-3.55, -2.55], 'max': [3.55, 2.55]},
+                       'avatar': {'radius': .3, 'height': ACTOR_H}, 'entranceCorridor': {'min': [-.65, 1.15], 'max': [.65, 2.7]}},
+            'zones': {'home_living': {'min': [-3.85, -1.0], 'max': [-.9, 2.85]}, 'home_kitchen': {'min': [-.9, -2.85], 'max': [3.85, .9]},
+                      'home_study': {'min': [-3.85, -2.85], 'max': [-.9, -1.0], 'also': ['farmhouse_wardrobe']}},
+            'meshes': meshes, 'colliders': colliders, 'interactions': inter,
+            'entry': {'anchor': 'farmhouse_interior_floor.entry', 'position': [0, 0, 2.15], 'facing': [0, 0, -1]},
+            'exit': {'id': 'farmhouse_exit', 'anchor': 'farmhouse_interior_floor.exit', 'stand': [0, 0, 2.45],
+                     'doorway': {'centre': [0, 0, 3], 'width': DOOR_W, 'height': DOOR_H}},
+            'camera': {'anchor': 'farmhouse_interior_floor.camera', 'targetAnchor': 'farmhouse_interior_floor.camera_target',
+                       'position': [9, 10, 11], 'target': [0, .6, 0], 'padding': .1, 'projection': 'orthographic'},
+            'hiddenWalls': {'full': ['farmhouse_interior_front', 'farmhouse_interior_right'], 'mid': ['farmhouse_interior_front_mid', 'farmhouse_interior_right_mid']},
+            'seats': [{'id': 'farmhouse_sofa', 'node': 'farmhouse_sofa.seat', 'midNode': 'farmhouse_sofa_mid.seat',
+                       'position': [r(sx), 0, r(sz)], 'facing': [r(math.sin(yaw)), 0, r(math.cos(yaw))], 'returnStand': [-2.0, 0, -0.6],
+                       'cushionTop': SEAT_TOP, 'actorHeight': ACTOR_H, 'clip': 'Sit',
+                       'measured': {rig: {'hipHeight': r(h * ACTOR_H), 'hipForward': r(f * ACTOR_H), 'hipHeightShare': h, 'hipForwardShare': f} for rig, (h, f) in SIT.items()}}]}
+
+# =================================================================== the farmhouse room, level by level (v0.5)
+# What each level of the farmhouse adds INSIDE (src/content/explore.mjs HOME_COMFORT): one node per level, authored in
+# room coordinates (origin at the room centre on the floor, x right, plan y = room z toward the door), so the game adds
+# the node as it is. Pieces on the floor have a collider listed beside them in HOME_COMFORT; the entrance corridor
+# (x -0.65..0.65, z 1.15..2.7) stays empty. Its own small kit (interior-extras.glb), loaded with the room.
+BW, LW = -RD / 2 + WALL_T, -RW / 2 + WALL_T      # inner faces of the back and the left wall
+def picture(x, z, w, h, face, sky='sky', land='leafw'):
+    """A framed little landscape on the back wall (face 'back') or the left wall (face 'left')."""
+    if face == 'back':
+        return [bx('frame', w, .05, h, x, BW + .03, z, 'gold', bev=0), bx('sky', w - .12, .03, h - .12, x, BW + .05, z + .06, sky, bev=0),
+                bx('land', w - .12, .035, (h - .12) * .4, x, BW + .055, z + .06, land, bev=0)]
+    return [bx('frame', .05, w, h, LW + .03, x, z, 'gold', bev=0), bx('sky', .03, w - .12, h - .12, LW + .05, x, z + .06, sky, bev=0),
+            bx('land', .035, w - .12, (h - .12) * .4, LW + .055, x, z + .06, land, bev=0)]
+
+def comfort(level):
+    if level == 2:    # pictures: one by the desk window on the back wall, one on the left wall by the corner
+        return picture(-3.1, 1.25, .7, .55, 'back', 'sun', 'roof') + picture(-2.3, 1.3, .6, .5, 'left', 'waterl', 'leaf')
+    if level == 3:    # a tall potted plant in the back-left corner
+        p = [cl('pot', .22, .4, -3.3, -2.3, 0, 'roof', verts=10, rt=.27), cl('soil', .25, .04, -3.3, -2.3, .38, 'soil', verts=10), cl('trunk', .04, .9, -3.3, -2.3, .4, 'woodd', verts=6)]
+        for i in range(7):
+            a = i * 2.4
+            p.append(lf((-3.3, -2.3, 1.1 + (i % 3) * .14), a, .55, .22, 'leaf' if i % 2 else 'leafl', lift=.35, droop=.25))
+        return p
+    if level == 4:    # a floor lamp between the sofa and the memory shelf
+        return [cl('base', .16, .05, -3.35, .92, 0, 'woodd', verts=10), cl('stem', .03, 1.5, -3.35, .92, .05, 'gold', verts=6),
+                cl('shade', .2, .32, -3.35, .92, 1.5, 'sun', verts=10, rt=.3), cl('glow', .12, .05, -3.35, .92, 1.48, 'lampglow', verts=8)]
+    if level == 5:    # a second rug, between the table and the wardrobe
+        return [bx('rug', 2.0, 1.5, .02, 1.75, 1.2, 0, 'teal', bev=.01), bx('rugin', 1.7, 1.2, .022, 1.75, 1.2, 0, 'mint', bev=0),
+                bx('rugline', 1.4, .9, .024, 1.75, 1.2, 0, 'white', bev=0), bx('rugmid', 1.2, .7, .026, 1.75, 1.2, 0, 'mint', bev=0)]
+    if level == 6:    # a big painting on the back wall, between the desk window and the clock
+        return picture(-.28, 1.3, .85, .7, 'back', 'sky', 'leafw') + [ball('sun', .08, -.05, BW + .06, 1.82, 'sun', sub=1, sc=(1, .3, 1)), bx('hill', .4, .04, .3, -.45, BW + .058, 1.36, 'leafwl', bev=0)]
+    if level == 7:    # an upright piano against the right wall (no stool: the way to the kitchen stays open)
+        x, y = RW / 2 - WALL_T - .32, -.25
+        p = [bx('body', .5, 1.4, 1.15, x, y, 0, 'wooddd', bev=.03), bx('lid', .56, 1.46, .06, x, y, 1.15, 'woodd', bev=.02), bx('keybed', .3, 1.3, .08, x - .36, y, .68, 'woodd', bev=.01),
+             bx('keys', .2, 1.22, .03, x - .38, y, .76, 'white', bev=0), bx('sheet', .02, .34, .26, x - .26, y, .9, 'paper', bev=0),
+             cl('candle', .03, .16, x, y + .5, 1.21, 'cream', verts=6), ball('flame', .04, x, y + .5, 1.42, 'lampglow', sub=0)]
+        for k in range(7):
+            p.append(bx('black', .12, .06, .02, x - .34, y - .5 + k * .17, .79, 'charcoal', bev=0))
+        return p
+    if level == 8:    # a chandelier over the middle of the room
+        p = [cl('chain', .02, .5, 0, .3, 2.3, 'gold', verts=6), cl('hub', .1, .12, 0, .3, 2.2, 'gold', verts=8), cl('ring', .5, .04, 0, .3, 2.1, 'gold', verts=12)]
+        for i in range(6):
+            a = i * math.tau / 6
+            p += [cl('cup', .06, .08, math.cos(a) * .5, .3 + math.sin(a) * .5, 2.12, 'gold', verts=6), ball('flame', .07, math.cos(a) * .5, .3 + math.sin(a) * .5, 2.27, 'lampglow', sub=1, sc=(1, 1, 1.3))]
+        return p
+    if level == 9:    # a grandfather clock in the front-left corner
+        return [bx('case', .46, .34, 2.0, -3.6, 2.62, 0, 'wooddd', bev=.03), bx('hood', .54, .4, .14, -3.6, 2.62, 2.0, 'woodd', bev=.03), cl('face', .17, .04, -3.34, 2.62, 1.62, 'cream', verts=14, rot=(0, math.pi / 2, 0)),
+                bx('door', .03, .2, .8, -3.36, 2.62, .5, 'glassd', bev=0), cl('bob', .07, .03, -3.35, 2.62, .72, 'gold', verts=10, rot=(0, math.pi / 2, 0)), bx('rod', .02, .02, .5, -3.35, 2.62, .78, 'gold', bev=0)]
+    if level == 10:   # a golden trophy on a pedestal by the door
+        return [bx('plinth', .5, .5, .7, 1.6, 2.5, 0, 'stonel', bev=.04), bx('cap', .58, .58, .08, 1.6, 2.5, .7, 'stone', bev=.02), cl('foot', .12, .08, 1.6, 2.5, .78, 'gold', verts=10),
+                cl('stemt', .04, .16, 1.6, 2.5, .86, 'gold', verts=6), cl('cup', .12, .3, 1.6, 2.5, 1.02, 'gold', verts=10, rt=.22), ball('star', .09, 1.6, 2.5, 1.44, 'sun', sub=1),
+                cl('handl', .04, .2, 1.36, 2.5, 1.1, 'gold', verts=6), cl('handr', .04, .2, 1.84, 2.5, 1.1, 'gold', verts=6)]
+
+interior_extras = []
+for level in range(2, 11):
+    piece(f'home_L{level}', comfort(level), interior_extras)
+OUT_EXTRAS = os.path.join(ROOT, 'public', 'assets', 'models', 'interior-extras.glb')
+
 # =================================================================== export
 def build(group):
     objs = []
@@ -1204,5 +2789,8 @@ for o in kobjs:
 print(f'wrote {OUT_DISCOVERY} ({packed(kobjs, OUT_DISCOVERY)} bytes)')
 xobjs = build(exploration)   # the discovery trail (AR-010), world size
 print(f'wrote {OUT_EXPLORATION} ({packed(xobjs, OUT_EXPLORATION)} bytes)')
+interior_kit()   # the farmhouse interior (AR-015): its own kit and metadata
+eobjs = build(interior_extras)   # what each farmhouse level adds to the room
+print(f'wrote {OUT_EXTRAS} ({packed(eobjs, OUT_EXTRAS)} bytes)')
 json.dump(out, open(ANCHOR_JSON, 'w'), indent=1)
 print('anchors', ANCHOR_JSON)

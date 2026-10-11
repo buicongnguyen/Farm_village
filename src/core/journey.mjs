@@ -3,6 +3,7 @@ import { STAGES, JOURNEY_UNLOCKS } from '../content/journey.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { mayBuild } from './projects.mjs';
 import { workingCount } from './working.mjs';
+import { normalizeGrowth } from './growth-state.mjs';
 const tests = {
   farm: s => workingCount(s, 'feed_mill') > 0 && workingCount(s, 'coop') > 0,
   family: s => Object.values(s.homes).some(h => h.arrived),
@@ -10,11 +11,39 @@ const tests = {
   stand: s => workingCount(s, 'fruit_stand') > 0,
   kennel: s => workingCount(s, 'kennel') > 0,
   clinic: s => workingCount(s, 'clinic') > 0,
+  house5: s => !s.house || s.house.level >= 5,   // a farm without an upgradable farmhouse (not the restore mode) is not held back
+  goatbarn: s => workingCount(s, 'goat_barn') > 0,
+  cheese: s => (s.barn.items.cheese ?? 0) > 0 || !!s.firsts?.cheese || (s.stats?.cheeseMade ?? 0) > 0,
+  hand: s => Object.keys(s.hands ?? {}).length > 0,
+  marketday: s => (s.stats?.marketDays ?? 0) >= 1,
+  fields3: s => s.parcels.length >= 3,
+  police: s => workingCount(s, 'police') > 0,
+  dock: s => (s.counts.dock ?? 0) > 0,
+  company: s => workingCount(s, 'company') > 0,
+  contract1: s => normalizeGrowth(s).settled >= 1,
+  stage: s => (s.counts.stage ?? 0) > 0,
+  festival: s => (s.stats?.harvestFestivals ?? 0) >= 1,
+  hands3: s => Object.keys(s.hands ?? {}).length >= 3,
+  tasks30: s => (s.story?.chapter ?? 0) >= 9 && (s.stats?.handTasks ?? 0) - (s.story?.handBase ?? 0) >= 30,
+  albright: s => !!s.story?.albright,
+  cooperative: s => !!s.cooperative?.founded,
+  quay: s => !!s.firsts?.quay,
+  quayHouse: s => (s.counts?.apartment ?? 0) >= 1,
+  hotel: s => (s.counts?.hotel ?? 0) >= 1,
+  guests10: s => (s.stats?.guests ?? 0) >= 10,
+  halt: s => (s.counts?.halt ?? 0) >= 1,
+  train1: s => (s.stats?.trains ?? 0) >= 1,
+  upriver: s => (s.upriver?.stops?.length ?? 0) >= 3,
+  valleyCompany: s => !!s.valley?.founded,
+  fairRibbon: s => (s.stats?.fairs ?? 0) >= 1 && (s.fair?.ribbons ?? 0) >= 1,
+  greenValley: s => !!s.firsts?.greenValley,
+  lights: s => !!s.story?.ended,
+  cooperativeOrder: s => (s.cooperative?.filled ?? 0) >= 1,
 };
 export function journeyOf(s) {
-  const homecoming = STAGES[0].milestones.every(m => tests[m.test](s));
-  const orchard = STAGES[1].milestones.every(m => tests[m.test](s));
-  const stage = !homecoming || s.level < 4 ? STAGES[0] : orchard ? STAGES[2] : STAGES[1];
+  // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one
+  const built = STAGES.filter(st => !st.planned), open = built.find((st, i) => !st.milestones.every(m => m.optional || tests[m.test](s)) || (i === 0 && s.level < 4));   // a side goal (optional) never holds the story's stage back
+  const stage = open ?? STAGES[built.length] ?? built.at(-1);
   const milestones = (stage.milestones ?? []).map(m => ({ ...m, done: tests[m.test](s) }));
   const unlocks = JOURNEY_UNLOCKS.filter(u => u.planned || !workingCount(s, u.kind)).slice(0, 3).map(u => ({ ...u, available: !u.planned && s.level >= BUILDINGS[u.kind].level && mayBuild(s, u.kind).ok }));
   return { stage, milestones, done: milestones.filter(m => m.done).length, total: milestones.length, unlocks };

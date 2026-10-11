@@ -10,6 +10,21 @@ export const FARMHOUSE = { x: 22, z: 62, model: 'home_t1', width: 9 };       // 
 /** The farmhouse forecourt (cells): stone tiles from the porch steps toward the road, with a bench and planters (view only;
  *  x 24–26 lie in the farmhouse's fixed footprint, so nothing can be built on them). */
 export const HOME_YARD = { x0: 24, x1: 26, z0: 60, z1: 64 };
+/** What each farmhouse level adds to the garden: { level, name, model, at: [cell x, cell z] (centre, may be fractional),
+ *  rot, scale?, block?: [x0, z0, x1, z1] cells nobody walks through }. Levels 4 and 7 make the house itself bigger. */
+export const HOME_GARDEN = [
+  { level: 2, name: 'Flower beds by the door', model: 'flowers', at: [24.5, 58.6], scale: 1.1 }, { level: 2, model: 'flowers', at: [24.5, 65.4], scale: 1.1 }, { level: 2, model: 'bush', at: [23.6, 58.5], scale: 0.7 }, { level: 2, model: 'bush', at: [23.6, 65.5], scale: 0.7 },
+  { level: 3, name: 'A bench and a lamp on the lawn', model: 'bench', at: [25.5, 56.5], rot: Math.PI }, { level: 3, model: 'lamp', at: [26.5, 56.5] },
+  { level: 4, name: 'A bigger farmhouse' },
+  { level: 5, name: 'A swimming pool', model: 'home_pool', at: [22.5, 54], block: [21, 53, 23, 54] },
+  { level: 6, name: 'Sun loungers and a parasol', model: 'home_loungers', at: [25.5, 54], block: [25, 53, 26, 54] },
+  { level: 7, name: 'A grand farmhouse' },
+  { level: 8, name: 'A fountain', model: 'fountain', at: [16, 67], block: [15, 66, 16, 67] },
+  { level: 9, name: 'A garden gazebo', model: 'home_gazebo', at: [16, 78], block: [15, 77, 16, 78] },
+  { level: 10, name: 'A flag over the farm', model: 'home_flag', at: [26.5, 66.5], block: [26, 66, 26, 66] },
+];
+/** Is this cell taken by something in the farmhouse garden at this house level? */
+export const homeGardenAt = (level, x, z) => HOME_GARDEN.some(g => g.block && level >= g.level && x >= g.block[0] && x <= g.block[2] && z >= g.block[1] && z <= g.block[3]);
 export const BARN = { x: 22, z: 72, model: 'barn', width: 8 };
 export const ORDER_BOARD = { x: 28, z: 58 };
 // Roads (2 cells wide) and the brook.
@@ -43,10 +58,75 @@ export const RUINS = [
 export const RUIN_NAMES = { school: 'The old school', clinic: 'The old clinic', police: 'The old police station', company: 'The old company office' };
 export const TIDY = { coins: 40, xp: 15 };
 /** The ruin whose footprint holds this cell, if any. */
+/** Fixed sites (core/sites.mjs): where the story's own buildings stand, outside the farm and the village lots.
+ *  The boat dock (chapter 7): on the south bank of the brook, a few steps east of the road bridge. */
+export const SITES = [
+  { kind: 'dock', x: 32, z: 13, rot: 0, size: [2, 2] },   // size: the building's footprint (content/buildings.mjs), for the scenery that keeps off it
+  // The festival stage (chapter 9): the north edge of the village square, facing the well. `ruin`: what stands there
+  // until it is rebuilt (the burned platform of the old stage) instead of a sign.
+  { kind: 'stage', x: 39, z: 98, rot: 0, size: [4, 2], ruin: 'stage_burned' },
+  // The cannery (chapter 11): on the meadow by the brook. `when`: only the answer to Mr Albright builds it
+  // (core/valley.mjs); no sign marks the place.
+  { kind: 'cannery', x: 55, z: 16, rot: 0, size: [5, 4], when: s => s.story?.albright === 'factory', hidden: true },
+];
+/** The meadow by the brook, north of the lane (chapter 11): kept open (wild scatter keeps off it). Wildflowers fill it
+ *  if the player keeps it; the cannery stands in the middle of it otherwise. Cells, inclusive. */
+export const MEADOW = { x0: 54, x1: 70, z0: 16, z1: 19 };
+export const inMeadow = (x, z) => x >= MEADOW.x0 && x <= MEADOW.x1 && z >= MEADOW.z0 && z <= MEADOW.z1;
+/** While Mr Albright's offer is open: the cell he waits on (by the farm gate), where his car stands on the verge (cells,
+ *  its middle), and where three white hives stand on the kept meadow afterwards. */
+export const ALBRIGHT = { stand: [30, 63], car: { x: 31, z: 67.3, rot: 0 }, hives: [[66.3, 18.4], [67.6, 18.9], [68.8, 18.3]] };
+/** The old water mill on the brook's north bank, across the water from the lane (scenery, view/old-mill.mjs): its middle
+ *  in metres, and the cells it covers (wild scatter keeps off them; nobody's land, so nothing can be built there). Its
+ *  wheel hangs over the brook on the south side, facing the usual view, and turns once the sluice is open (chapter 8). */
+export const OLD_MILL = { x: 82.5, z: 13.5, rot: 0, box: { x0: 39, x1: 43, z0: 5, z1: 7 } };
+export const inOldMill = (x, z) => x >= OLD_MILL.box.x0 && x <= OLD_MILL.box.x1 && z >= OLD_MILL.box.z0 && z <= OLD_MILL.box.z1;
+/** The bank by the dock: public ground, so anyone can walk to it from the brook road. */
+export const DOCK_BANK = { x0: 30, x1: 36, z0: 13, z1: 17 };
+export const isDockBank = (x, z) => x >= DOCK_BANK.x0 && x <= DOCK_BANK.x1 && z >= DOCK_BANK.z0 && z <= DOCK_BANK.z1;
 export const ruinAt = (x, z) => RUINS.find(r => { const [w, d] = r.kind === 'school' ? [5, 4] : [4, 3]; return x >= r.x && x < r.x + w && z >= r.z && z < r.z + d; }) ?? null;
 export const MAILBOX = { x: 27, z: 60 };
+/** The co-operative's notice board on the village square (chapter 12): one cell at the square's east edge, by the stage.
+ *  It stands from the day the idea comes (chapter 11 seen); a tap opens the co-operative. */
+export const COOPERATIVE_BOARD = { x: 43, z: 100, rot: 0 };
+/** The fair's ribbon board (chapter 18): one cell at the square's west edge, across from the co-operative's board. It
+ *  stands from the day the valley company is founded; a tap opens the fair. */
+export const FAIR_BOARD = { x: 38, z: 101, rot: 0 };
+/** The judging table while a fair runs: two cells of the square south-west of the well (x and x + 1), kept clear of people. */
+export const FAIR_TABLE = { x: 39, z: 102 };
+/** The old towpath on the far bank of the brook (chapter 12; Act IV builds the riverside town beyond it): two cells
+ *  wide along the north side of the water, from the brook road to the east edge of the farm, going round the old mill.
+ *  Kept clear of wild scatter from the start; open to walk once its gate is taken off (s.firsts.bridge). */
+export const TOWPATH = { x0: 30, x1: 99 };
+export function inTowpath(x, z) {
+  if (x < TOWPATH.x0 || x > TOWPATH.x1) return false;
+  const bank = brookZ(x) - BROOK_HALF, m = OLD_MILL.box;   // bank: the water's north row
+  if (x >= m.x0 - 1 && x <= m.x1 + 1) return z >= m.z0 - 2 && z < bank && (z < m.z0 || x < m.x0 || x > m.x1);   // behind the mill, and down again on either side
+  return z === bank - 1 || z === bank - 2;
+}
+/** The riverside (Act IV, docs/plan/act4-far-bank.md): the far bank east of the old mill. The quay is two rows of cobbles
+ *  from the mill to the east edge of the farm; north of it seven lots of 6 x 5 cells, two cells apart, each with its
+ *  door on the quay; south of it the strand runs down to the towpath. Row 0 is kept for the railway (chapter 15).
+ *  Nothing of it shows until the quay is paved (s.firsts.quay, core/riverside.mjs). */
+export const QUAY = { x0: 44, x1: 99, z0: 6, z1: 7 };
+export const inQuay = (x, z) => x >= QUAY.x0 && x <= QUAY.x1 && z >= QUAY.z0 && z <= QUAY.z1;
+export const LOTS = Array.from({ length: 7 }, (_, i) => ({ id: `q${i + 1}`, x: 46 + i * 8, z: 1, w: 6, d: 5 }));
+export const lotAt = (x, z) => LOTS.find(l => x >= l.x && x < l.x + l.w && z >= l.z && z < l.z + l.d) ?? null;
+/** The whole riverside zone: the lots and the lanes between them, the quay, and the strand down to the water's edge. */
+export const inRiverside = (x, z) => x >= QUAY.x0 && x <= QUAY.x1 && z >= 1 && z < brookZ(x) - BROOK_HALF;
+/** The railway (chapter 15): one row along the north edge of the map, behind the quay's lots. The rails lie rusty in
+ *  the grass from the day the quay is paved, and are relaid when the halt is built. Kept clear of wild scatter. */
+export const TRACK = { z: 0 };
+/** The towpath's gate, just east of the brook road: shut until chapter 12 is seen, then open for good. Cells; rot in quarter turns. */
+export const TOWPATH_GATE = { x: 32, z: brookZ(32) - BROOK_HALF - 1, rot: 1 };   // its middle, in cells: across both rows of the path, where the road's verge ends
 export const NEIGHBOUR_SIGNS = [{ id: 'mai', x: 30, z: 126 }, { id: 'gus', x: 2, z: 92 }, { id: 'priya', x: 126, z: 92 }, { id: 'twins', x: 30, z: 1 }];
 
+/** What a piece of land is good for, by where it lies (shown where it is for sale). */
+export function parcelNote(id) {
+  const [px, pz] = String(id).split(',').map(Number);
+  return px === FARM.parcels - 1 ? 'East meadow: room for goats and a dairy' : pz === 0 ? 'North field: nearest the brook'
+    : pz === FARM.parcels - 1 ? 'South field: close to the village street' : 'Open field: room for anything';
+}
 export const parcelOrigin = id => { const [px, pz] = id.split(',').map(Number); return { x: FARM.x0 + px * PARCEL, z: FARM.z0 + pz * PARCEL }; };
 export const parcelOf = (x, z) => {
   const px = Math.floor((x - FARM.x0) / PARCEL), pz = Math.floor((z - FARM.z0) / PARCEL);
@@ -63,18 +143,67 @@ export const nearHome = (x, z) => x >= 14 && x <= 31 && z >= 52 && z <= 80;
 export const brookCurve = x => 12 + Math.sin(x / 9) * 3;
 /** The plank bridge where the north–south road crosses the brook (cells). */
 export const BRIDGE = { x0: 28, x1: 29, z: brookZ(28.5) };
+/** The county's plaque (chapter 19): on the verge south-east of the bridge, by the dock (cells, its middle). A tap opens the green goals. */
+export const AWARD_PLAQUE = { x: 30.6, z: 15.4, rot: 0 };
 /** Stepping stones across the brook just north of the farm (cell x; z follows the brook). */
 export const STEPPING_STONES = { x: 47 };
 /** The duck pond in the woods west of the road, north of the farmhouse (cells, inclusive), and its little dock. */
 export const POND = { x0: 12, z0: 40, x1: 17, z1: 44 };
 export const POND_DOCK = { x: 18, z: 42, rot: Math.PI / 2 };
 export const isPond = (x, z) => x >= POND.x0 && x <= POND.x1 && z >= POND.z0 && z <= POND.z1;
+/** Public footpath from the dock to the brook road; walking here never requires buying or building on land. */
+export const POND_PATH = { x0: 18, x1: 27, z0: 42, z1: 43 };
+/** A small clear bank beside the approach, with three fishing places four metres apart. */
+export const POND_SHORE = { x0: 18, x1: 19, z0: 40, z1: 44 };
+export const POND_FISHING_SPOTS = [[18, 42], [18, 40], [18, 44]];
+/** The pond's water as drawn: an ellipse in metres (view/brook.mjs draws the same shape). The cells of POND are its box. */
+export const POND_WATER = { x: (POND.x0 + POND.x1 + 1) / 2 * CELL, z: (POND.z0 + POND.z1 + 1) / 2 * CELL, rx: (POND.x1 - POND.x0 + 1) * CELL / 2 + 0.3, rz: (POND.z1 - POND.z0 + 1) * CELL / 2 + 0.3 };
+/** A cell whose middle is in the water (the box's grassy corners are not). */
+export const isPondWater = (x, z) => isPond(x, z) && Math.hypot(((x + 0.5) * CELL - POND_WATER.x) / (POND_WATER.rx + 0.5), ((z + 0.5) * CELL - POND_WATER.z) / (POND_WATER.rz + 0.5)) < 1;
+/** The public bank all the way round the pond: three cells of open grass that the scenery already keeps clear, so
+ *  anyone can walk round the water and fish from any side. (The four lake kiosks stand on it; core/walk.mjs blocks them.) */
+export const POND_BANK = { x0: POND.x0 - 3, x1: POND.x1 + 3, z0: POND.z0 - 3, z1: POND.z1 + 3 };
+export const isPondBank = (x, z) => x >= POND_BANK.x0 && x <= POND_BANK.x1 && z >= POND_BANK.z0 && z <= POND_BANK.z1;
+export const isPondPath = (x, z) => [POND_PATH, POND_SHORE].some(p => x >= p.x0 && x <= p.x1 && z >= p.z0 && z <= p.z1);
 /** The village plaza (cells, inclusive): cobbles round the old well, between the cottage row and the ruins. */
 export const PLAZA = { x0: 38, z0: 98, x1: 43, z1: 103 };
 export const WELL = { x: 41, z: 101 };
+/** The south bank of the brook, from the water up to the north lane's verge: public ground, so the stepping stones lead
+ *  somewhere, the whole brook meadow can be walked and the brook can be followed (wild trees keep off it). */
+export const isBrookBank = (x, z) => x >= 30 && x <= 99 && z > brookZ(x) + BROOK_HALF && z < 18;
+/** The two cells between the east fields and the east road's verge: open, so a field's edge is not a wall. */
+export const isEastVerge = (x, z) => x >= 96 && x <= 97 && z >= 22 && z <= 89;
+/** The path upriver, west of the brook road along the south bank to the spring: open to walk once the walk upriver has
+ *  been made (chapter 16, s.upriver.stops). Four cells deep from the water. */
+export const inUpriverPath = (x, z) => x >= 0 && x <= 25 && z > brookZ(x) + BROOK_HALF && z <= brookZ(x) + BROOK_HALF + 4;
+/** The valley fair (chapter 18): where its stalls and the visitors' carts stand while it runs, outside the ring of grass
+ *  the crowd gathers on. x, z: the middle in cells; cells: what must be free grass for it to stand there (and what
+ *  nobody walks through while it does). */
+export const FAIR_SPOTS = (() => {
+  const P = PLAZA, out = [];
+  for (const [i, z] of [P.z0 + 1, P.z0 + 4].entries()) {   // west of the square, facing it; east of it, facing the usual view
+    out.push({ model: i ? 'fair_stall_b' : 'fair_stall', x: P.x0 - 2.5, z: z + 1, rot: Math.PI / 2, cells: [[P.x0 - 3, z], [P.x0 - 3, z + 1]] });
+    out.push({ model: i ? 'fair_stall' : 'fair_stall_b', x: P.x1 + 4.5, z: z + 0.5, rot: 0, cells: [[P.x1 + 3, z], [P.x1 + 4, z], [P.x1 + 5, z]] });
+  }
+  for (const [i, z] of [P.z0, P.z0 + 3, P.z0 + 6].entries()) out.push({ model: 'fair_cart', x: P.x0 - 4.5, z: z + 0.5, rot: Math.PI / 2 + (i - 1) * 0.3, cells: [[P.x0 - 5, z]] });   // a cart from each valley
+  return out;
+})();
+/** Posts and trunks that stand on open ground (view/dress.mjs, view/land-view.mjs): nobody walks through them either.
+ *  The lamps and trees of the verge north of the village street, the lamps by the brook road and on the square, the
+ *  valley company's flag. The order board stands on the road people walk to the dock, so it stays open. */
+export const POST_CELLS = new Set([...Array.from({ length: 11 }, (_, k) => [34 + 6 * k, k % 2 ? 89 : 88]), [30, 56], [30, 70], [30, 84], [38, 100], [43, 102]].map(c => c.join()));
+export const COMPANY_FLAG_CELL = [87, 106];
+/** The quay's own posts once it is paved: a lamp in the lane west of every lot, a bollard every fourth cell of the water
+ *  row, and a sale sign at the front of a lot (LOTS[i]) that is still free. */
+export const quayLampCell = l => [l.x - 1, QUAY.z0 - 1];
+export const isQuayBollard = (x, z) => z === QUAY.z1 && x > QUAY.x0 && x <= QUAY.x1 && (x - QUAY.x0 - 1) % 4 === 0;
+export const lotSignCell = l => [l.x + Math.floor(l.w / 2), l.z + l.d - 1];
 /** The arch over the farm entrance, between the road and the start parcel. */
 export const FARM_GATE = { x: 30.5, z: 64, rot: Math.PI / 2 };
 /** The windmill by the farmhouse (cells). */
 export const WINDMILL = { x: 17, z: 54, rot: 0.4 };
+/** Scenery that stands on open ground and is solid: nobody walks through it (core/walk.mjs). Cells. The well, the
+ *  windmill, the mailbox and the square's corner stalls (benches stay open: people sit on them). */
+export const SOLID_CELLS = new Set([[WELL.x, WELL.z], [WINDMILL.x, WINDMILL.z], [MAILBOX.x, MAILBOX.z], [PLAZA.x0 + 1, PLAZA.z1], [PLAZA.x1, PLAZA.z1]].map(c => c.join()));
 /** The land drawn around the map so its edge never shows (metres beyond the edge): low hills, then a far haze. */
 export const SKIRT = 72;

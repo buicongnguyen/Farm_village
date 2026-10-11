@@ -23,8 +23,8 @@ const HOME_FRAME = { tall: { x: 35.5, z: 60.5, span: 39 }, wide: { x: 29, z: 60,
 export const HUD_BUTTONS = ['build', 'orders', 'barn', 'projects', 'today', 'friends'];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 export class Guide {
-  constructor(root, { game, world, hud }) {
-    Object.assign(this, { game, world, hud, shown: new Set(), beats: new Set(), flying: false });
+  constructor(root, { game, world, hud, blocked = () => false }) {
+    Object.assign(this, { game, world, hud, blocked, shown: new Set(), beats: new Set(), flying: false });
     this.el = document.createElement('div'); this.el.className = 'guide'; this.el.hidden = true; root.appendChild(this.el);
     this.mark = document.createElement('div'); this.mark.className = 'pointer'; this.mark.hidden = true; this.mark.innerHTML = `<i class="ring"></i>${glyph('hand', 'hand')}`; root.appendChild(this.mark);
     this.el.addEventListener('click', e => {
@@ -38,14 +38,18 @@ export class Guide {
     });
     game.on(() => this.update());
     onModal(() => this.update());
-    world.onFrame(() => this.placeMarker());
+    world.onFrame(() => {
+      const blocked = this.blocked();
+      if (blocked !== this.wasBlocked) { this.wasBlocked = blocked; this.update(); }
+      this.placeMarker();
+    });
     this.update();
   }
   get s() { return this.game.s; }
   get index() { return this.s.story.tutorial ?? 0; }
   get step() { return tutorialOf(this.s)[this.index] ?? null; }
   /** The guide waits while a story card is open, before the first chapter has been read, and while the camera flies. */
-  get waiting() { return modalOpen() || (this.s.story.chapter ?? 0) < 1 || this.flying; }
+  get waiting() { return this.blocked() || modalOpen() || (this.s.story.chapter ?? 0) < 1 || this.flying; }
   update() {
     if (this.busy) return; this.busy = true;
     try { this.refresh(); } finally { this.busy = false; }
@@ -53,14 +57,14 @@ export class Guide {
   refresh() {
     // move past finished steps
     while (this.step && !this.step.last && this.step.done(this.s)) this.game.do('tutorial', { step: this.index + 1 });
-    this.chapters();
+    if (!this.blocked()) this.chapters();
     const step = this.step;
     this.hud.show(step ? step.hud : HUD_BUTTONS);
     if (!step || this.waiting) { this.el.hidden = true; this.mark.hidden = true; return; }
     const key = `${this.index}|${t(step.text)}`;
     if (this.el.hidden || this.key !== key) {
       this.key = key; this.el.classList.remove('expanded');
-      this.el.innerHTML = `${faceHtml('ada', 'face')}<div class="say"><b>${t('Ada')}</b><p>${t(step.text)}</p>
+      this.el.innerHTML = `${faceHtml('ada', 'face')}<div class="say"><b>${t('{person:ada:display}')}</b><p>${t(step.text)}</p>
         <div class="guide-buttons">${step.last ? `<button class="btn primary" data-g="skip">${t('Got it')}</button>` : `<button class="btn" data-g="next">${t('I know how')}</button><button class="btn ghost" data-g="skip">${t('Skip tutorial')}</button>`}</div></div>`;
       if (this.el.hidden) { this.el.hidden = false; this.el.classList.remove('enter'); void this.el.offsetWidth; this.el.classList.add('enter'); }
     }
@@ -72,7 +76,9 @@ export class Guide {
     const ch = CHAPTERS.find(c => c.id > (s.story.chapter ?? 0));
     if (ch && !this.shown.has(ch.id) && ch.when(s)) {
       this.shown.add(ch.id);
-      showModal(this.card(ch), { modal: true, cls: 'chapter-modal', onOpen: el => this.carousel(el), onClose: () => { this.game.do('chapterSeen', { id: ch.id }); if (ch.id === 1) this.begin(); } });
+      // the last chapter is five cards, not one (ui/closing.mjs, loaded when it comes); it is seen when the last is closed
+      if (ch.closing) import('./closing.mjs').then(m => m.showClosing(this.game, ch, { onSeen: () => this.game.do('chapterSeen', { id: ch.id }), onAlbum: () => this.onAlbum?.(), onPhoto: () => this.onPhoto?.() })).catch(() => this.shown.delete(ch.id));
+      else showModal(this.card(ch), { modal: true, cls: 'chapter-modal', onOpen: el => this.carousel(el), onClose: () => { this.game.do('chapterSeen', { id: ch.id }); if (ch.id === 1) this.begin(); } });
     }
     if ((s.story.chapter ?? 0) < 1) return;
     for (const beat of BEATS) {
@@ -83,13 +89,19 @@ export class Guide {
       showBeat(beat, () => this.game.do('beatSeen', { id: beat.id }));
     }
   }
+  /** A chapter that was seen, shown once more (the valley album). Nothing happens when it is closed. */
+  replay(id) {
+    const ch = CHAPTERS.find(c => c.id === id); if (!ch || id > (this.s.story.chapter ?? 0)) return;
+    showModal(this.card(ch), { cls: 'chapter-modal replay', onOpen: el => this.carousel(el) });
+  }
   card(ch) {
+    ch = { ...ch, ...ch.variants?.[this.s.story?.albright] };   // chapter 11 reads by the answer given (content/story.mjs `variants`)
     const panels = (ch.panels ?? []).slice(0, 3);
     const strip = panels.length ? `<div class="panels" data-n="${panels.length}">${panels.map((p, i) => `<figure class="${i ? '' : 'on'}"><img src="${p.img}" alt="${esc(t(p.caption))}" onerror="this.parentNode.remove()"><figcaption>${esc(t(p.caption))}</figcaption></figure>`).join('')}
       ${panels.length > 1 ? `<div class="dots">${panels.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}</div>` : '';
     return `<div class="chapter">${strip}<small>${t('Chapter {n}', { n: ch.id })}${ch.teaser ? ` · ${t('Coming soon')}` : ''}</small><h2>${t(ch.title)}</h2><p class="sub">${t(ch.subtitle)}</p>
       ${ch.id === 1 ? `<div class="ribbon">${t(VILLAGE_NAME)}</div>` : ''}<p>${t(ch.text)}</p>
-      ${ch.ada ? `<p class="ada">${faceHtml('ada', 'mini-face')}<span><b>${t('Ada')}:</b> “${esc(t(ch.ada))}”</span></p>` : ''}
+      ${ch.ada ? `<p class="ada">${faceHtml('ada', 'mini-face')}<span><b>${t('{person:ada:display}')}:</b> “${esc(t(ch.ada))}”</span></p>` : ''}
       <button class="btn primary big" data-close>${ch.id === 1 ? t('Begin') : t('Continue')}</button></div>`;
   }
   /** The story panels crossfade every few seconds (not with reduced motion); a missing picture has already dropped out. */

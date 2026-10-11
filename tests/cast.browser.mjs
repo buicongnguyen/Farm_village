@@ -3,6 +3,7 @@
 // SHOTS_DIR (default test-results/cast/).
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { personName } from '../src/content/character-names.mjs';
 const URL_ = process.env.GAME_URL ?? 'http://127.0.0.1:5241/';
 const SHOTS = (process.env.SHOTS_DIR ?? 'test-results/cast').replace(/\/?$/, '/'); mkdirSync(SHOTS, { recursive: true });
 const gpu = process.env.GPU !== '0';
@@ -101,7 +102,7 @@ await check('June and Pip are by the farmhouse after the tutorial, and Pip speak
     const g = farm.game; g.s.coins = 500; g.do('clear', { x: 34, z: 59 }); g.do('place', { kind: 'bed', x: 34, z: 59 });
     const id = Object.keys(g.s.placed).find(k => g.s.placed[k].kind === 'bed'); g.do('plant', { id, crop: 'wheat' }); g.s.beds[id].doneAt = g.now - 1; g.do('harvest', { id });
   });
-  await until(page, () => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith('Pip')), null, 5000);
+  await until(page, name => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith(name)), personName('pip'), 5000);
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
@@ -109,11 +110,13 @@ await check('June and Pip are by the farmhouse after the tutorial, and Pip speak
 await check('walkers swing their legs at normal zoom, and a still walker stands (phone, default span 70)', async () => {
   const { ctx, page, errors } = await open('phone');
   await page.evaluate(() => { const g = farm.game; g.s.level = 6; for (const x of [34, 38]) g.do('place', { kind: 'path', x, z: 92 }); g.do('testAddFamily'); g.do('testAddFamily'); document.querySelectorAll('.modal').forEach(m => m.remove()); });
+  // The opening is a close-up (LOD0): visible people can all be skinned, so no crowd batch exists yet.
+  // Establish the LOD under test before waiting for its baked crowd gaits.
+  await page.evaluate(() => farm.view(70));
   await until(page, () => farm.world.cast.stats().rigs.includes('woman'), null, 30000);
   // wait for the walk cycles to be baked (idle time after the rigs load)
   await until(page, () => ['man', 'woman', 'kid'].every(n => { const c = [...farm.world.cast.crowds.values()].find(x => x.rig.name === n); return !c || c.rig.gait; }) && [...farm.world.cast.crowds.values()].some(c => c.rig.gait), null, 30000);
   const seen = await page.evaluate(async () => {
-    farm.view(70);                                   // the default zoom: nobody is drawn skinned at this level of detail
     const frames = new Set(), still = [];
     for (let i = 0; i < 60; i++) {
       for (const w of farm.people.walkers.values()) { const sub = w.subject; if (!sub || w.indoors || sub.actor) continue; if (sub._mv > farm.world.cast.time) frames.add(`${w.id}:${Math.floor((sub._ph ?? 0) * 6)}`); else if (!w.route?.length && w.clip === 'Idle') still.push(w.id); }
@@ -131,7 +134,7 @@ await check('walkers swing their legs at normal zoom, and a still walker stands 
 await check('June gives a tip when the player seems stuck', async () => {
   const { ctx, page } = await open('pc');
   await page.evaluate(() => { farm.people.idleTipMs = 1500; });
-  await until(page, () => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith('June')), null, 8000);
+  await until(page, name => [...document.querySelectorAll('.bubble')].some(b => b.textContent.startsWith(name)), personName('june'), 8000);
   await ctx.close();
 });
 
@@ -187,7 +190,9 @@ await check('a tapped hen flaps and hops; crows land on open fields and leave fo
   await rigsReady(page, ['hen', 'crow']).catch(() => {});
   await page.evaluate(() => farm.view(15, 74, 133));
   await until(page, () => farm.world.cast.actors.some(a => a.subject?.animal && a.rig.name === 'hen'));
-  const p = await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor); const v = farm.world.cam.camera.position.clone().set(a.subject.x, 0.4, a.subject.z).project(farm.world.cam.camera); window.poked = a; return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; });
+  // hens range freely now: hold the chosen one still and bring the view to her before the tap
+  await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor); a.state = 'look'; a.target = null; a.until = farm.world.life.time + 60; farm.view(15, a.subject.x, a.subject.z); }); await page.waitForTimeout(500);
+  const p = await page.evaluate(() => { const a = [...farm.world.life.herds.values()].find(h => h.subject.actor && h.state === 'look' && !h.target) ?? [...farm.world.life.herds.values()].find(h => h.subject.actor); const v = farm.world.cam.camera.position.clone().set(a.subject.x, 0.4, a.subject.z).project(farm.world.cam.camera); window.poked = a; return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight }; });
   await page.mouse.click(p.x, p.y);
   expect(await page.evaluate(() => window.poked.hop > 0 && window.poked.subject.once?.clip === 'Flap'), 'the hen did not react to the tap');
   // a crow comes to the wheat (no scarecrow yet)

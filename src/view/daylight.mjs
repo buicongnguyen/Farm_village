@@ -3,7 +3,8 @@
 // never darker than the ground stays readable; windows glow warm and lamps throw pools of light. Dawn and dusk are warm.
 // The light is applied at once on load, when a setting changes and when the clock jumps, then follows the clock.
 import * as THREE from 'three';
-import { CELL, FARMHOUSE } from '../content/world.mjs';
+import { CELL, FARMHOUSE, SITES, PLAZA } from '../content/world.mjs';
+import { festivalActive } from '../core/festival.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import * as KINDS from './kinds.mjs';
 import { NIGHT } from '../kit/toon.mjs';
@@ -13,8 +14,8 @@ const KEYS = [   // hour → sky, hemisphere (sky, ground, intensity), sun or mo
   [4.5, '#0b1530', '#4f6ad8', '#26306a', 1.1, '#9fb2ff', 0.8],
   [5.5, '#2a3a6e', '#8a90c8', '#4a4058', 1.15, '#ffb07a', 0.95],
   [7, '#ffd2a1', '#f6ecdc', '#5e8f4a', 1.35, '#ffd29a', 2.0],
-  [10, '#9fd3f0', '#eaf0ff', '#6a9a48', 1.55, '#ffe9c4', 2.45],
-  [16, '#9fd3f0', '#eaf0ff', '#6a9a48', 1.55, '#ffe9c4', 2.45],
+  [10, '#6fc3f5', '#eaf0ff', '#5c9a3c', 1.42, '#fff0cc', 2.75],   // vivid pass: bluer sky, stronger warm sun, more contrast
+  [16, '#6fc3f5', '#eaf0ff', '#5c9a3c', 1.42, '#fff0cc', 2.75],
   [18.5, '#ffb37a', '#b8c8f0', '#4f6e5a', 1.5, '#ffc88c', 1.85],
   [20, '#1d2a5a', '#6a78c0', '#2c2f4a', 1.1, '#9fa8e0', 0.85],
   [21.5, '#0b1530', '#4f6ad8', '#26306a', 1.1, '#9fb2ff', 0.8],
@@ -73,9 +74,23 @@ class Glows {
   }
 }
 // farm buildings whose windows glow too (their doors get no porch light: only homes have one)
-const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn']);
+const LIT = new Set(['feed_mill', 'bakery', 'coop', 'cow_barn', 'dairy', 'apartment', 'hotel', 'halt']);
 const WARM = new THREE.Color('#ffb84a'), WINDOW = new THREE.Color('#ffc65a'), POOL = new THREE.Color('#ff9d3a');
 
+/** The Harvest Festival (chapter 9): the hour its evening is lit as, and its lanterns: two strings from the stage's front
+ *  corners out over the square, a row along the canopy, and warm pools of light on the cobbles. */
+const CLOSING_HOUR = 19.8;
+const FESTIVAL_HOUR = 20.4, FESTIVE = ['#ffb84a', '#ff7ab0', '#7fd8ff', '#ffe36a', '#9dff9a'].map(c => new THREE.Color(c));
+function festivalLights() {
+  const st = SITES.find(x => x.kind === 'stage'); if (!st) return [];
+  const x0 = st.x * CELL, x1 = (st.x + st.size[0]) * CELL, zf = (st.z + st.size[1]) * CELL, zs = (PLAZA.z1 + 1) * CELL, out = [];
+  for (const [xa, xb] of [[x0 - 0.6, PLAZA.x0 * CELL - 0.4], [x1 + 0.6, (PLAZA.x1 + 1) * CELL + 0.4]]) for (let i = 0; i <= 7; i++) {
+    const k = i / 7, sag = Math.sin(k * Math.PI) * 0.55;
+    out.push({ x: xa + (xb - xa) * k, y: 3.3 - sag, z: zf + 0.5 + (zs - zf - 0.5) * k, size: 0.5, tint: FESTIVE[i % FESTIVE.length], pool: i % 3 === 1 ? 3.4 : 0 });
+  }
+  for (let i = 0; i < 6; i++) out.push({ x: x0 + 0.7 + i * (x1 - x0 - 1.4) / 5, y: 3.9, z: zf + 0.25, size: 0.42, tint: FESTIVE[(i + 2) % FESTIVE.length], pool: i === 2 ? 5 : 0 });
+  return out;
+}
 export class Daylight {
   constructor(world, game) {
     Object.assign(this, { world, game, bucket: null });
@@ -88,15 +103,18 @@ export class Daylight {
     });
     game.on(r => {
       const ev = r.events ?? [];
-      if (ev.some(e => e.type === 'settingChanged' || e.type === 'loaded')) this.apply();
-      if (ev.some(e => ['placed', 'moved', 'stored', 'loaded', 'familyArrived', 'projectDone'].includes(e.type))) this.placeGlows();
+      if (ev.some(e => e.type === 'settingChanged' || e.type === 'loaded' || e.type === 'harvestFestivalStarted' || e.type === 'harvestFestivalEnded' || e.type === 'closingEvening')) { this.apply(); this.placeGlows(); }
+      if (ev.some(e => ['placed', 'moved', 'stored', 'loaded', 'familyArrived', 'projectDone', 'hotelUpgraded'].includes(e.type))) this.placeGlows();
     });
     world.onLampsChanged = () => this.placeGlows();
     this.placeGlows();
     this.apply();
   }
+  festive() { return festivalActive(this.game.s, this.game.now); }
   hour() {
     if (this.game.s.settings.daylight === 'always') return 12;
+    if (this.festive()) return FESTIVAL_HOUR;   // the Harvest Festival is an evening, whatever the clock says
+    if (this.world.closing) return CLOSING_HOUR;   // the evening of the ending (chapter 20): dusk and every light, for a while
     const d = new Date(this.game.now); return d.getHours() + d.getMinutes() / 60;
   }
   apply() {
@@ -141,7 +159,9 @@ export class Daylight {
       else if (p.kind === 'lamp') { bulbs.push([cx, lampTop, cz, 0.75, WARM]); pools.push([cx, 0.13, cz, 3.6, POOL]); }
       else { bulbs.push([cx, 2.85, cz, 0.8, WARM]); pools.push([cx, 0.13, cz, 4, POOL]); }   // street lamp (props kit, 3 m tall)
     }
+    for (let i = 0; i < 7; i++) { const it = b.items.get(`quay:lamp${i}`); if (it) { bulbs.push([it.x, 2.35, it.z, 0.75, WARM]); pools.push([it.x, 0.13, it.z, 3.6, POOL]); } }   // the quay's lamps (land-view drawRiverside)
     for (const l of this.world.lamps ?? []) if (b.items.has(l.id)) { bulbs.push([l.x, l.y, l.z, 0.75, WARM]); pools.push([l.x, 0.13, l.z, 3.6, POOL]); }
+    if (this.festive()) for (const l of festivalLights()) { bulbs.push([l.x, l.y, l.z, l.size, l.tint]); if (l.pool) pools.push([l.x, 0.13, l.z, l.pool, POOL]); }
     this.bulbs.set(bulbs); this.pools.set(pools);
     this.glowCount = { bulbs: bulbs.length, pools: pools.length };
   }

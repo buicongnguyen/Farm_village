@@ -1,7 +1,7 @@
 // Vietnamese lines added by the cast package (merged into VI in vi.mjs).
 export const VI_CAST = {
   // the family's names (used when the story's people list does not have them yet)
-  'June': 'June', 'Pip': 'Pip', 'Biscuit': 'Biscuit',
+  '{person:june:display}': '{person:june:display}', '{person:pip:display}': '{person:pip:display}', '{pet:dog:display}': '{pet:dog:display}',
   // Pip, when things happen
   'We did it! Our very first harvest!': 'Nhà mình làm được rồi! Vụ thu hoạch đầu tiên!',
   'I helped! Well, I watched.': 'Con cũng giúp mà! À, con đứng xem thôi.',
@@ -11,7 +11,7 @@ export const VI_CAST = {
   'Still warm! Eggs are amazing.': 'Còn ấm nè! Trứng kỳ diệu thật đó!',
   'Fresh from the farm!': 'Tươi ngon từ nông trại nhà mình!',
   'New neighbours! I hope they have a kid my age.': 'Hàng xóm mới! Mong là nhà đó có bạn bằng tuổi con.',
-  'Ada says a thank you is the best payment. Coins are nice too.': 'Cụ Ada bảo lời cảm ơn là phần thưởng quý nhất. Có xu cũng vui mà.',
+  '{person:ada:short} says a thank you is the best payment. Coins are nice too.': 'Cụ {person:ada:short} bảo lời cảm ơn là phần thưởng quý nhất. Có xu cũng vui mà.',
   'Level up! Does that mean I get a bigger room?': 'Lên cấp rồi! Vậy con được phòng to hơn không?',
   'Hooray! Everyone come and look!': 'Hoan hô! Mọi người ra xem đi!',
   'Can we get a pony one day? Or a goat? A goat would be fine.': 'Mai mốt mình nuôi ngựa lùn được không? Hay một con dê? Dê cũng được mà.',

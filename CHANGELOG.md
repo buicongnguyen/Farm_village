@@ -1,5 +1,254 @@
 # Changelog
 
+## The herd goes out to graze — 2026-10-11
+
+- Cows and goats graze every field the farm owns, fenced home or not; they keep off beds, buildings, weeds and rocks. Hens stay near the coop.
+
+## Upgrades for factories and animal homes — 2026-10-11
+
+- Every workshop and every animal home can be upgraded four times. Each upgrade doubles what one batch or one collection gives (×2, ×4, ×8, ×16) for the same ingredients, feed and time.
+- The button is in the workshop's panel and in the animal home's menu; a bale stands beside the building for every upgrade.
+
+## One feed, ten collections — 2026-10-11
+
+- Feeding an animal once is good for ten collections (eggs, milk, goat milk): it goes on giving and is hungry again after the tenth. The animal home's menu says how many are left.
+
+## The workshop hand leaves the request's goods — 2026-10-11
+
+- A hired workshop hand no longer cooks with goods the company's open request is waiting for (it turned the request's Noodles into Instant noodles, batch after batch).
+
+## Trucks leave the company's goods alone — 2026-10-11
+
+- The goods of the company's open request stay in the barn: "Fill" and the truck driver no longer take them to market.
+- Market square and the request card: "Pause the truck driver". A paused driver still brings in the takings but loads and sends nothing.
+
+## The company's request, made plain — 2026-10-11
+
+- The village board begins with the company's request: every good ticked or "N missing" with where it is made, what blocks it, and one button, "Complete the request: send the truck". Before the company takes requests, a checklist says what it still needs.
+- A truck that stands loaded at the market can take the request: its goods go back to the barn (the hired driver used to keep every truck loaded, so none was ever free).
+- Roadmap goals that are not done lead to where they are done. "The first big delivery" says how it is done.
+
+## Stuck project lines, hold to load — 2026-10-11
+
+- Village projects ticks a deed that is already done even while an earlier step is still open ("The first market day" and "The first big delivery" stayed open on farms that ran ahead).
+- A market day counts when the hired truck driver sends the good of the day, not only when you send it yourself.
+- Market square: hold a good's tile to keep loading it onto the truck.
+
+## Review, third pass — 2026-10-11
+
+- A blue star in the world shows where the story goes on.
+- Every field for sale has its own panel with a Buy button (it used to show the Sunlit clearing). Its big trees are cut when you buy it.
+- The festival stage no longer stands in the square's market stalls. The Reel button no longer covers Barn, Orders and Build on a PC.
+- Trucks filled with spare goods (and the truck driver) leave three batches of every cooking ingredient in the barn.
+- Lamps, bollards and sale signs are solid. Chapter cards 5, 6 and 7 no longer give away what comes later.
+
+## Review, second pass — 2026-10-11
+
+- After a chapter's card a notice says what the story asks next. "A third field" and the valley company's and the prize's needs are buttons that lead to the place.
+- The cannery's side of chapter 19 asks for the green cannery. Grandpa Oak's letters from upriver stop once he is home. Small story corrections.
+- The documents describe the game as it is.
+
+## Review after chapter 20 — 2026-10-11
+
+- **Explore**: the brook's south bank, the whole flower meadow, the verge by the east road and (after the walk upriver) the path to the spring can be walked. The well, the windmill, the mailbox, stalls, hives and the plaque are solid.
+- **Finding your way**: Village projects shows the story's step first; the quay's buildings are in the Build menu; the Roadmap follows the story and leads to the quay; new pills for the walk upriver and the valley company.
+- **Fixes**: a clock set back no longer locks the later chapters' timers; a long time away is not replayed at the hotel; letters wait for their chapter; small story corrections. See `docs/plan/95-review.md`.
+
+## The coupon code — 2026-10-11
+
+- **Coupon code** in Settings: the owner's code switches the tester tools on for that farm, without `?tester` in the address.
+- **The boat dock and the festival stage are in the Build menu** (Projects tab). They have one fixed place each: a tap takes the view there and opens the panel that builds it, which now says where the place is.
+- **Add coins**: any amount, typed in. **Instant mode**: nothing the farm starts has to be waited for, and festivals and fairs can be held again at once.
+
+## Chapter 20: The lights of two villages — 2026-10-11
+
+- **The ending**: when the valley is worth a billion, five closing cards come one after another: the porch, the old village, the far bank, everyone who came back (a portrait and a name for each) and thanks.
+- **The game goes on**: nothing stops after the last card. The valley has its evening first: dusk, every light, and a slow look along both banks.
+- **The valley album** (in the Album and in Settings): every chapter you have seen, to read again; what the valley chose; its titles with their dates.
+- The far woods no longer glow green at night.
+- The story is complete: all twenty chapters are in the game.
+
+## Chapter 19: The green valley — 2026-10-11
+
+- **Green goals**: a new page of the Valley panel with six goals (trees, flowers, ponds, benches and lamps, nothing left worn, and beehives or the green cannery by your answer to Mr Albright). Each pays once and adds to the valley's beauty for good.
+- **Titles**: the valley gets a new name as its value passes 100K, 1M, 10M and 100M.
+- **The county's prize**: a picture postcard valley worth 100M closes **chapter 19**. A plaque goes up at the bridge, the view flies once over the valley, the kept meadow fills with flowers (or the cannery's yard becomes an orchard), and Mr Albright comes back as a hotel guest.
+- At testing pace every deed done together now adds a fifth to the valley's name (it was 8%).
+
+## Chapter 18: The valley fair — 2026-10-11
+
+- **The valley fair**: once the valley company is founded, a ribbon board stands on the village square. Enter your best in three classes (Field, Kitchen, Pond) and open the fair.
+- **Three judges you know**: Clover, Honey and Skipper, each with a soft spot. The more of a thing you have grown, made or caught, the better it scores; stars hint at an entry's chances.
+- **Three rival valleys**, a little stronger at every fair. Gold, silver and bronze ribbons, each with a prize.
+- While it runs, the square fills: stalls, carts, the judging table, visitors from the three valleys and the whole village.
+- **Chapter 18** closes when a fair ends with a ribbon brought home.
+
+## Chapter 17: A share for everyone — 2026-10-11
+
+- **The valley company**: found it once the co-operative, the company office and a quay house stand (20,000 coins). Every household gets a share; a flag goes up at the office's corner.
+- **The valley's value**: one number for everything in the valley, shown beside the village's name in short form. The Valley panel's new **Value** page shows what it is made of and its **goodwill**, which grows with every market day sold on, shared order, loaded train, festival and handful of hotel guests.
+- **The dividend**: every ten minutes a small part of the valley's assets is set aside for you to collect.
+- **Chapter 17** closes with the founding. Act V has begun.
+
+## Chapter 16: Where the brook begins — 2026-10-11
+
+- **A walk upriver** with Grandpa Oak and Sunny, in three stops: the old weir (bring a picnic), the heron pool (land a fish at the boat dock first) and the spring (plant ten trees first). Nothing is timed.
+- Each stop plays a short scene and gives a **keepsake**: Oak's old float, a heron's feather, a bottle of spring water. The walk's panel keeps the pictures.
+- Reaching the spring makes the valley a little more beautiful for good, and closes **chapter 16**: at last, why Oak stayed away so long. Act IV is complete.
+
+## Chapter 15: The evening train — 2026-10-11
+
+- **The railway halt**: build it on a free lot of the quay (level 17, 18,000 coins). The old rails behind the quay are relaid.
+- **The train**: it rolls in from the east with a whistle, waits eight minutes behind the halt and comes again every twenty-five. Its **three wagons** each ask for one good in a large amount: load them from the barn. A full wagon pays its goods at 1.6 times their price, three full wagons add a bonus, and a train that leaves empty costs nothing.
+- **Chapter 15** closes when a train has left with a full wagon.
+
+## Chapter 14: Rooms with a view — 2026-10-11
+
+- **The hotel**: build it on a free lot of the quay (level 16, 14,000 coins). Guests come by themselves while a room is free, sooner the prettier the valley is; each stays a while, then pays for the room and leaves a tip that grows with the valley's beauty.
+- **Breakfast**: every guest wishes for one made food. Serve it from the barn and that guest tips double; a pill shows when a wish is in the barn. The coins wait at the desk until you collect them.
+- **Two more floors**: nine rooms, then twelve; the building grows a storey each time. Guests stroll on the quay and say what they saw from their window.
+- **Chapter 14** closes when the hotel stands and ten guests have stayed.
+
+## Chapter 13: The far bank — 2026-10-11
+
+- **The old quay**: once the towpath is open, pave the quay on the far bank east of the old mill (level 14, 2,500 coins). Cobbles, lamps and bollards appear along the water, the wild trees leave, and seven lots wait with a sign each.
+- **The quay house**: pick a lot in the quay's panel and build it (level 15, 9,000 coins; up to three). A tea shop below, four flats above. Four families come back to the valley with each house, and it pays rent into the mailbox: 220 coins every ten minutes.
+- **Nana Snow**, the keeper of the quay, arrives with the first house, sits by its door and passes on two letters from the families upstairs.
+- **Chapter 13** closes with the first quay house. Act IV has begun; the roadmap has a new stage, "Across the river".
+
+## Chapter 12: One river, many farms — 2026-10-11
+
+- **Two new neighbours**: Juniper of Hillside Orchard and the twins Pebble and Sprig of Brookhead Farm. They call soon after chapter 11, then visit, trade and post orders like Daisy and Bramble. The twins bring what your answer to Mr Albright did not give you: honey, or tins.
+- **The co-operative**: a notice board on the village square. Found it with a gift from the barn once both newcomers have called. Then it posts one **shared order** at a time: three goods in large amounts, a third of each brought by a neighbour, the rest sent from your barn a little at a time. It pays well, and the next comes fifteen minutes later.
+- **Chapter 12** closes with the first shared order. Closing its card takes the gate off the **old towpath**: the far bank of the brook can be walked, past the old mill and over the stepping stones.
+- Act III of the story is complete.
+
+## Chapter 11: The man from the city — 2026-10-11
+
+- **Mr Albright** arrives with an offer for the meadow between the north lane and the brook: his car stands by the farm gate, his survey stakes on the grass. A pill says an offer is waiting; he waits as long as you like.
+- **The one choice of the story**, on one card with "Let me think". **Build the cannery**: it goes up at his cost and turns corn and tomatoes into tins that sell dear; the valley is less beautiful until you make the cannery a green one (6,000 coins). **Keep the meadow**: wildflowers and three white hives, a more beautiful valley for good, beehives that make meadow honey, and honey cake at the bakery. The answer cannot be changed; both are good ones.
+- **The valley's beauty**: trees, flowers, ponds and the brook add to it; worn things and smoking factories take from it. Five ranks, from Bare to A picture postcard; every order pays 2 % more for each rank. The Valley panel (from the Roadmap, or a tap on the meadow) shows the parts and what would raise it most.
+- **Chapter 11** closes with the answer; its card, Granny Maple's line and its last picture read by what you chose.
+
+## Chapter 10: Hands to help — 2026-10-11
+
+- **The hired hands have names and faces**: Chip takes the field, Clover the animals, Honey the workshops, Poppy the orchard, Dash the truck, Skipper the fishing. After each round the villager walks to where the work was and is seen at it.
+- **Today on the farm**: what was earned today and from what, what each hand did, the wages paid, and one piece of advice from Granny Maple. In Friends and on the Today board; from six in the evening a pill offers it once a day.
+- **Chapter 10** closes with three hands hired and thirty tasks done by them. Act III of the story has begun.
+
+## Chapter 9: The village sings again — 2026-10-11
+
+- **The festival stage**: a burned platform stands on the village square where the old stage was; its panel builds the new one (level 12, 1,500 coins).
+- **The Harvest Festival**: tap the stage, lay a feast of six different foods from the barn, and hold it. For an evening the sky turns to dusk, lanterns glow over the square, the tune quickens, and the whole village gathers at the stage to cheer. The hat pays more than the feast cost and everyone gains a heart. It can be held again after the village has rested.
+- **Chapter 9** closes when the first festival is over: Bramble tells the truth about the night of the fire, and **Grandpa Oak comes home**. He walks about, fishes at the ponds and has things to say.
+- Act II of the story is complete.
+
+## Chapter 8: Work for everyone — 2026-10-11
+
+- **The old mill** stands on the far bank of the brook, its wheel still. **Chapter 8** closes when the company office works and its first big delivery is paid.
+- Closing the card **opens the sluice**: the brook runs faster and brighter, the mill wheel turns, and every batch a workshop starts from then on takes a tenth less time. The water story that began with Grandpa Oak's letters ends here.
+- **Penny, the office manager**, arrives with the company office and speaks on the village board. Three scenes follow their deeds; Oak writes that he is following the brook home.
+- Village projects: "The first big delivery". Tester (`?tester`): a **Finish this chapter** button.
+
+## Chapter 7: Safe streets — 2026-10-11
+
+- **The boat dock**: a deck and a pier on the brook, a few steps east of the road bridge, built from its own panel (level 10, 800 coins). Tap it to fish in the brook: the rare fish bite twice as often as at a pond. In Explore mode you can walk onto the deck and cast.
+- **Ponds water the beds**: a crop bed within three cells of a fish pond you built grows a fifth faster.
+- **Constable Sage** arrives with the rebuilt police post and writes three letters about the old reports: why the brook ran low the summer before the mill shut.
+- **Chapter 7** closes when the police post works and the dock stands. Three scenes follow their deeds. Roadmap: "Safe streets and work for all" is a real stage.
+
+## Chapter 6: Market day — 2026-10-11
+
+- The market square holds a **market day** every ten minutes for four (testing pace). One good, the good of the day, pays double: sold from the barn, or sent on a truck while the day runs. The first one begins as soon as a farm has level 6 and a working square. The barn and the market panel say what the next market day will ask for, so there is time to get ready.
+- A notice, flags over the square, a "Market day" pill with the time left, and a ×2 badge in the barn show it. **Barley the baker** arrives with the first market day and keeps a stall at the square.
+- **Chapter 6** closes when you have sold on a market day and own three fields. Five short scenes follow their deeds (the third field, the goat barn, first butter, bread-butter-cheese, the gate upriver). Land for sale now says what it is good for.
+- Village projects: the checklist after the clinic starts with "The first market day" and "A third field"; steps that are not about building have a "Show me" button instead of the build-mode hint. Roadmap: the stage "The valley wakes".
+- Plan: [docs/plan](docs/plan/README.md) has one file per step from here to the end of the story.
+
+## Tester tools — 2026-10-11
+
+- Open the game with `?tester` to get a Test section in Settings: jump to the start of a chapter, +10,000 coins, +5 levels, finish every timer, start a market day. A red Tester tag shows while it is on. A normal visit never sees it.
+- Every waiting time goes through one pace switch (`PACE` in `src/content/economy.mjs`); the game stays at testing pace until the release pass.
+- The village projects after the clinic are a checklist: each is ticked off when it is true, in any order, and paid once.
+
+## Explore: first playable farmhouse — 2026-10-09
+
+- Integrated Claude's AR-015 cutaway room after packed-model, geometry, anchor and budget checks; art PR #43 was merged first.
+- Tapping the farmhouse offers **Go inside**. Walk to its public porch, confirm entry, then use tap-to-walk, arrows/WASD or optional movement buttons. Furniture and walls block movement; Go outside walks to the exit, and Farm view provides a safe return.
+- Sit on the sofa for a quiet moment, optionally using the existing free project-rest timer. Read Bắp/Sunny's garden drawing at the memory shelf, replay it, or open the existing album. The memory is saved once with no additional coins or XP.
+- Explore rules/view code, room metadata and models load only on request. English, Vietnamese, Korean and Japanese share the same rules. Reload/profile changes clear transient room/input state; saved memories and control preference remain per farm.
+- This slice does not add other interiors, seed-packet activities, wardrobe actions or furniture placement. See [Explore mode](docs/EXPLORE-MODE.md#implemented-first-slice--2026-10-09).
+
+## Explore mode design and farmhouse art contract — 2026-10-09
+
+- Added a design-only plan for direct character controls, farmhouse entry/exit, small indoor activities, profile saves, HUD behavior and English/Vietnamese copy. Explore gameplay is not implemented by this update.
+- Requested AR-015: one 8 × 6 m cutaway farmhouse room, three open zones, six named interactive props, and explicit camera/door/navigation metadata. Claude owns the art; later logic implementation starts from [EXPLORE-MODE.md](docs/EXPLORE-MODE.md).
+
+## Fishing from the bank — 2026-10-09
+
+- Removed the floating platform at the village pond. A clear public bank has one player spot and two spaced visitor spots; reservations prevent people walking to the same seat. Built ponds also reserve separate reachable shores.
+- Fishing now shows a rod, line and float, with a visible cast on arrival. Tapping the pond or a float opens Cast/Reel controls even after sending a family member fishing. An unattended line stays safe and visible.
+- A ready catch offers a repeating timing challenge with a broad green band. Missed taps cost nothing; **Reel gently** skips timing for exactly the same fish and rewards. Reduced-motion play uses the gentle option. Both work with saved lines and all four language editions.
+- Bait is spent only after arrival. Seat reservations clear on cancellation or departure, and saved fishing trips resume without another cast or payment. [Scope and validation](docs/POND-FISHING.md).
+
+## Public pond access — 2026-10-09
+
+- The village dock has a permanent public footpath from the west road, including on existing saves. No land purchase, road construction or payment is needed.
+- Player, family and villager outings reach the dock itself and can return home. Routes respect buildings, covered land, rocks, animal pens, water and fences; a changed obstacle triggers a detour or cancels the trip safely.
+- Fishing casts happen only after the player arrives. New chores, nightfall, unreachable shores and moved/stored ponds clear pending actions; built ponds use an accessible shore and the correct facing direction.
+- Integrates and reviews Claude's route foundation from PR #33. Palette, models, profiles, saved progress and gameplay rewards are unchanged. Validation and release record: [POND-ACCESS-FIX.md](docs/POND-ACCESS-FIX.md).
+
+## Korean and Japanese editions — 2026-10-09
+
+- Complete Korean and Japanese catalogs cover the current interface, adaptive advice, chapters, letters, ingredient guidance, discoveries, civic projects and school games. Each uses its local cast names and preserves the same story facts, requirements and rewards.
+- Startup and Settings offer four languages, with saved/browser preferences, localized dates and numbers, and independently loaded catalogs. Failed or superseded switches keep the current edition usable; boot recovery works before the main game loads.
+- Typing a name with Korean/Japanese composition survives background farm updates. Player-entered text, existing saves, all three profiles, progress and economy stay compatible.
+- Villager speech uses actual screen bounds at enlarged text sizes, keeping translated bubbles within phone edges.
+- Validation: 428 native tests, pace, 34 component suites, 28 smoke checks and 54 local production contexts pass. Production first-load code is 1,093,080 bytes. [Scope and verification](docs/LANGUAGE-EDITIONS.md). Independent human native-speaker editing remains a future quality pass.
+- Live through PR #35 (`ceef19c`): CI, Pages and 46 live acceptance contexts pass. The post-deploy test harness drains intercepted requests before closing their browser context, fixing a cleanup race without changing game code.
+
+## Localized playful cast — 2026-10-09
+
+- English and Vietnamese now use the selected local aliases in speaker labels, story references, letters, family labels and named-animal text. Vietnamese keeps relationship titles and each speaker's pronouns; the desk-name joke and signatures work with the new names.
+- Explicit identity references preserve player-entered text and ordinary words. Exact compatibility entries render old saved order/wish sentences with current names without changing their goods, payments or progress.
+- Language switches clear earlier speech/toasts and translate delayed visitor messages when shown. Imported player-name entities stay literal in Settings. Story cards and Friends remain readable on phones at 130% text.
+- Korean/Japanese name mappings are prepared for the current cast; full UI translations remain separate work. Save/profile IDs and all art assets stay compatible. [Scope and verification](docs/LOCALIZED-CAST.md).
+
+## Clearer guidance and restoration art — implemented and validated (2026-10-09)
+
+- One roadmap tracker and compact status chips reduce duplicate HUD entries; labelled menu buttons, larger touch targets and stable timer controls improve phone use with enlarged text.
+- Contextual English/Vietnamese ideas lead to existing picnic clues, land inspection, garden work/free rest, school games and gentle fishing/stone/street opportunities. Reading or following an idea spends nothing; read/deferred topics persist and old business reminders make room for new activities.
+- Integrates Claude's hospital footprint correction (PR #29) and all three potting-bench models (PR #30), rebuilding their shared decor kit from the combined Blender source. Hospital bounds cover all rotations and adjacent placements; bench art preserves all three repair steps and handles late loading.
+- Existing saves, opening coins and lucky rewards are preserved. The next meadow/dairy art and logic contract is documented separately; its gameplay is not part of this release. See [delivery details](docs/CLEARER-GUIDANCE-AND-ART.md).
+- Validation: 407 native tests, pace targets, all 31 component browser suites, 28 smoke checks and 16 local production contexts pass. First-load production code is 1,083,777 bytes; phone rendering stays within its budgets. [PR #31](https://github.com/buicongnguyen/Farm_village/pull/31) records publication and live acceptance.
+
+## Garden repairs, strawberries and school baskets — implemented and validated (2026-10-09)
+
+- Minh's optional practical lesson leads to a three-step potting-bench restoration, two saved family memories and strawberries at level 4. The project costs 80 coins and 50 energy; its 100-point reserve recovers while away or through a free 30-second rest. Everyday farming, cooking, fishing, sales and normal repairs remain available at zero energy.
+- A working school offers replayable simple/challenge picture-basket rounds after Cora's introduction. Questions survive pauses, reloads and language changes. Free retries and one earned classroom memory add activity without recurring cash/XP rewards or consuming barn goods.
+- Save version 11 preserves old profiles, including farms created before restore mode; migration grants no extra rewards or terrain changes. Skill-aware crop choices, orders and ingredient guidance explain the strawberry unlock. English and Vietnamese share progression and each speaker's established voice.
+- Optional panel rendering loads on demand. Failed module loads can safely save and reopen the same profile; failed saves preserve the open game. Claude's AR-011/AR-012 art is integrated for the hospital tier, menu pictures and small icons. The bench uses existing art pending AR-013. [Detailed scope and release checks](docs/LEARNING-GARDEN-SCHOOL.md).
+- **Validation:** 389 native tests, pace targets, all 28 component browser suites, 28/28 smoke checks and 12/12 local production contexts pass. Older synchronous-loading/save-version test assumptions were corrected and their suites rerun. The new filled-farm tests stay within 93 draws / 253,830 triangles; existing budget suites pass too. Production first-load code is **1,073,842 bytes**. [PR #28](https://github.com/buicongnguyen/Farm_village/pull/28) records CI, deployment and live acceptance; Safari remains unverified because the local WebKit binary is unavailable.
+
+
+## Parallel trays, village shops and optional civic growth — implemented and validated (2026-10-09)
+
+- Production buildings use independent trays: each new batch starts immediately, and a short batch can be collected while a longer one continues. Ready goods keep their tray until collected. Save version 10 preserves legacy serial completion times and explains their reserved start times; purchased capacity and already-paid work survive reloads.
+- New random orders check renewable sources through the complete ingredient chain, including working makers, real beds/trees, animals/feed and learned recipes. Existing cards remain saved. Easy orders no longer count the same stored item more than once. Existing herb/ginseng, fruit and factory prices stay unchanged; [actual margins](docs/PRODUCT-CHAINS.md) replace the earlier blanket multiplier assumption.
+- The existing lake kiosks and plaza stalls now offer explicit small-basket sales through world taps or **Today → Village shops**. Quotes show available stock, base value and payment; sales preserve project-held goods, pay once, and wait 15 minutes for another request. Free replacements wait 5 minutes. Requests never expire or sell automatically, and ingredient guidance returns to the shop.
+- **Projects → Village growth** adds the first optional hospital upgrade (level 10), police post (12) and company office (15). Two working food factories enable one adult worker, one adult manager, three translated company labels and repeatable deliveries through the actual truck fleet. Staff help newly confirmed work; there are no recurring wages or automatic restocking. Four bilingual memories mark the hospital and first deliveries without replay rewards or later-chapter spoilers.
+- Order rows use circular item pictures and available/required counts. Existing town models support civic sites; the two authorized police/company icon copies are placeholders under AR-011. Dedicated civic art, AR-012 menu pictures/small icons and the full compact HUD pass remain separate work. The 500-coin opening, bounded lucky finds and existing school requirements stay unchanged.
+- **Validation:** 355/355 native tests; pace targets pass with steady school/clinic day 3; all 23 component browser suites verified, including all 20 new checks; 28/28 smoke checks; eight production acceptance contexts (four new growth and four existing optional flows, English/Vietnamese at 390/1280 px). The initial full run passed 22/23 suites; correcting the old cast fixture gave 9/9 cast checks, and affected art/orchard/shops/civic checks passed again on the final build. Production first-load code: **1,094,983 bytes**. Integrated main `1add9a4`; the release PR is the authoritative record for CI, Pages deployment and live verification. [Scope and release record](docs/PRODUCTION-AND-VILLAGE-GROWTH.md).
+
+## Ingredient guidance, a sunlit clearing and a picnic menu (2026-10-08)
+
+- Orders, recipes and picnic requests explain where missing goods come from, current blockers/costs, queued output and project-held stock. Source previews never spend or craft; a return control preserves the original request. Sheets suppress the tutorial pointer/incidental speech and defer earned story scenes until closed.
+- Restored farms can preview one level-4, 500-coin expansion with an included clear 4 × 4 patch. An optional local planting-marker discovery gives one stored bench and a saved bilingual family memory. Older second-parcel choices remain usable; loading never changes their terrain or pays a reward.
+- Lan's optional three-batch picnic menu connects carrot juice, fresh noodles and instant noodles to three saved scenes. Real deliveries pay 70, 150 and 300 coins once, with no deadline, extra delivery XP or normal-order-count changes. Finished goods remain deliverable after a maker is stored or breaks.
+- Save version 9 preserves per-profile progress/read state and repairs malformed backup reward stamps on successful new claims. Earned memories use the existing Today badge and Album. English/Vietnamese use identical requirements and accounting.
+- Includes Claude's latest item art through main `b0172d6`; the logic changes do not edit art assets. See [scope, review and release checks](docs/GUIDANCE-LAND-FOOD-DELIVERY.md).
+- **Validation:** 304 native tests, all pace targets, all 21 component browser suites and 28/28 smoke checks passed. All 15 new feature browser checks and four English/Vietnamese phone/desktop production contexts passed. First-load code: 1,069,742 bytes test / 1,068,656 bytes production. [PR #24](https://github.com/buicongnguyen/Farm_village/pull/24) records deployment and live acceptance.
+
 ## A picnic discovery trail and story-order fixes (2026-10-08)
 
 - After the first delivered order, explore the farmhouse porch, follow a note to the pond, and bring a picnic ribbon home. Three optional English/Vietnamese scenes form one happy family memory; completing it grants one flowerpot in storage. Start from Today or the farmhouse's **Explore the porch** menu.

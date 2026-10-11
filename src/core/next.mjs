@@ -8,6 +8,7 @@ import { isBroken, isRepairing, isWorking } from './working.mjs';
 import * as barn from './barn.mjs';
 import { questsOf, ready as questReady } from './quests.mjs';
 import { bestOrder, STEP_TEXT } from './plan.mjs';
+import { currentStep, TAIL as TAIL_AT } from './projects.mjs';
 import { rentWaiting } from './homes.mjs';
 import { MAILBOX, POND_DOCK } from '../content/world.mjs';
 import { trucksOf, truckCoins, roomIn, spareForTrucks, blocked as truckBlocked } from './market.mjs';
@@ -49,5 +50,6 @@ export function nextTask(s, now) {
   if (step && (step.how !== 'plant' || of((id, p) => p.kind === 'bed' && !s.beds[id]).length)) return { key: STEP_TEXT[step.how], params: { n: step.n, good: step.good }, at: null, way: step.at, icon: step.good, order: best.card.id };
   const empty = of((id, p) => p.kind === 'bed' && !s.beds[id])[0];
   if (empty) return { key: 'Plant the empty beds', at: at(empty), icon: 'wheat' };
+  const story = currentStep(s); if (story && s.projects.step >= TAIL_AT) return { key: story.name, at: null, icon: 'ui:projects', panel: 'projects', calm: true };
   return { key: Object.keys(s.beds).length || Object.keys(s.production).length ? 'All busy: enjoy the view' : 'Open the Today board', at: null, icon: 'today', panel: 'today', calm: true };
 }

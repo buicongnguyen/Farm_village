@@ -1,5 +1,5 @@
 // Three independent farms. The same renderer also serves boot recovery, before a Game exists.
-import { t, num, getLanguage } from '../kit/i18n.mjs';
+import { t, num, getLocale } from '../kit/i18n.mjs';
 import { listProfiles } from '../kit/save.mjs';
 import { START_RESTORE } from '../content/economy.mjs';
 import { iconHtml, coinMark } from './icon.mjs';
@@ -8,7 +8,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 const dateOf = value => {
   const date = new Date(value);
   return Number.isFinite(date.getTime()) && value > 0
-    ? date.toLocaleDateString(getLanguage() === 'vi' ? 'vi-VN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    ? date.toLocaleDateString(getLocale(), { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 };
 
 export function renderProfiles(s = null, profile = 1) {
