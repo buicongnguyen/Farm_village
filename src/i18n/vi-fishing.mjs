@@ -913,4 +913,5 @@ export const VI_FISHING = {
   'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': 'Bờ bên kia con suối mở ở chương 12, khi hợp tác xã được lập. Việc tiếp theo trong câu chuyện: {name}',
   'The far bank of the brook opens in chapter 12, when the co-operative is founded.': 'Bờ bên kia con suối mở ở chương 12, khi hợp tác xã được lập.',
   'Later in the story: {text}': 'Về sau trong câu chuyện: {text}',
+  'Tap a good to load ten. Hold it to keep loading.': 'Chạm vào một món để chất mười cái. Giữ để chất tiếp.',
 };

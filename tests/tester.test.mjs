@@ -114,7 +114,8 @@ test('a step added to the checklist later does not move an old farm, and a farm 
 test('the steps before the checklist still run in order, by position', () => {
   const s = restored(); assert.equal(s.projects.step, idx('mill_coop'));
   s.fishing.caught = 9; tick(s, T0 + MIN);
-  assert.equal(s.projects.step, idx('mill_coop'), 'a later deed does not skip the build order'); assert.ok(!stepDone(s, 'anglers'));
+  assert.equal(s.projects.step, idx('mill_coop'), 'a later deed does not skip the build order');
+  assert.ok(stepDone(s, 'anglers'), 'but it is ticked in the checklist: a farm that ran ahead is not shown a deed it did as open');
 });
 
 // ── The pace switch ──

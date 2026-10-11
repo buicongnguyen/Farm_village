@@ -913,4 +913,5 @@ export const JA_FISHING = {
   'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': '小川の向こう岸は、第12章で協同組合ができると開きます。物語の次の一歩：{name}',
   'The far bank of the brook opens in chapter 12, when the co-operative is founded.': '小川の向こう岸は、第12章で協同組合ができると開きます。',
   'Later in the story: {text}': '物語のもう少し先：{text}',
+  'Tap a good to load ten. Hold it to keep loading.': '品物をタップで10個積みます。長押しで積み続けます。',
 };

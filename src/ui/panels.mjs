@@ -27,7 +27,15 @@ export class Panels {
     root.appendChild(this.el);
     this.returnEl = document.createElement('button'); this.returnEl.className = 'btn help-return'; this.returnEl.hidden = true;
     this.returnEl.addEventListener('click', () => this.returnFromHelp()); root.appendChild(this.returnEl);
-    this.el.addEventListener('click', e => this.click(e));
+    this.el.addEventListener('click', e => { if (this.heldLoad) { this.heldLoad = false; return; } this.click(e); });
+    // the Market square: hold a good's tile and it keeps going onto the truck, ten at a time, until you let go
+    let hold = null; const stop = () => { clearTimeout(hold?.wait); clearInterval(hold?.every); hold = null; };
+    this.el.addEventListener('pointerdown', e => {
+      const b = e.target.closest?.('[data-do="loadTruck"]'); if (!b || e.button > 0) return; stop(); const good = b.dataset.good;
+      const more = () => { const n = Math.min(10, barn.free(this.game.s, good)); if (n < 1 || this.game.do('loadTruck', { good, n }).ok === false) stop(); else this.heldLoad = true; };
+      hold = { wait: setTimeout(() => { more(); if (hold) hold.every = setInterval(more, 180); }, 380) };
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'blur']) window.addEventListener(ev, stop);
     // Enter presses the one obvious button: a menu's single main button (Preview the rebuild, Deliver goods, Collect),
     // or the only choice of a round menu (Repair). Build mode has its own Enter (ui/build-view.mjs) and gets the key first.
     addEventListener('keydown', e => {
