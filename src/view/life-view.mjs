@@ -39,6 +39,8 @@ const pick = moves => { let r = Math.random(); for (const [m, p] of moves) if ((
 const HOP = 0.42;
 const PEN_CHANGES = new Set(['placed', 'stored', 'moved', 'demolished', 'fenceChanged', 'animalArrived', 'parcelBought']);
 
+/** The animals that go out to graze the farm's fields, and how far from their home (cells): the whole of a 4 × 4 farm. */
+const GRAZERS = { cow: 64, goat: 64 };
 export class LifeView {
   constructor(world, game) {
     Object.assign(this, { world, game, shown: new Map(), herds: new Map(), clock: 0, pens: new Map(), marks: new Map(), time: 0, ready: [] });
@@ -113,9 +115,11 @@ export class LifeView {
   /** Cells the animals of a home may walk on: the fenced area, or the home's own footprint if the fence is open. */
   penArea(home) {
     const s = this.s, p = s.placed[home]; if (!p) return [];
-    const key = `${home}|${Object.keys(s.fences).length}|${p.x},${p.z},${p.rot}`;
+    const key = `${home}|${Object.keys(s.fences).length}|${p.x},${p.z},${p.rot}|${s.parcels.length}|${Object.keys(s.placed).length}`;   // new land and new buildings change where the herd may graze
     if (this.pens.get(home)?.key === key) return this.pens.get(home).cells;
-    const pen = penOf(s, home), own = cellsOf(p.kind, p.x, p.z, p.rot), yard = pen.closed ? this.flood(home) : own, cells = pen.closed ? this.range(home, yard) : own;
+    const pen = penOf(s, home), own = cellsOf(p.kind, p.x, p.z, p.rot), yard = pen.closed ? this.flood(home) : own, grazer = !!GRAZERS[BUILDINGS[p.kind]?.animals];
+    // cows and goats go out to graze whether their home is fenced or not; hens without a closed pen stay by the coop
+    const cells = pen.closed || grazer ? this.range(home, yard) : own;
     const free = cells.filter(([x, z]) => !own.some(c => c[0] === x && c[1] === z));
     const out = free.length ? free : cells, set = new Set(out.map(c => `${c[0]},${c[1]}`));
     // the cells beside the home, where the animals gather to sleep
@@ -137,21 +141,24 @@ export class LifeView {
   /** Free range: from the pen the animals wander out through its GATE (never through a fence) over open farm ground
    *  near home; hens peck among the crop beds too, cows keep off them. So hens stroll the beds, and a cow can walk
    *  round to the coop's yard and back. Buildings, weeds and rocks, other people's land and the far farm stay out. */
-  range(home, pen) {
-    const s = this.s, p = s.placed[home], hens = ANIMALS[BUILDINGS[p.kind]?.animals]?.home === 'coop', R = hens ? 9 : 11;
+  range(home, pen, overFence = false) {
+    // cows and goats graze every field the farm owns (GRAZERS: how far from home, in cells); hens keep near the coop
+    const s = this.s, p = s.placed[home], hens = ANIMALS[BUILDINGS[p.kind]?.animals]?.home === 'coop', R = hens ? 9 : GRAZERS[BUILDINGS[p.kind]?.animals] ?? 11, most = hens ? 500 : 4000;
     const seen = new Set(pen.map(c => c.join(','))), stack = [...pen], cx = p.x + 1, cz = p.z + 1;
     const edge = (x, z, nx, nz) => nz === z - 1 ? `${x},${z},n` : nz === z + 1 ? `${x},${nz},n` : nx === x - 1 ? `${x},${z},w` : `${nx},${z},w`;
-    while (stack.length && seen.size < 500) {
+    while (stack.length && seen.size < most) {
       const [x, z] = stack.pop();
       for (const [nx, nz] of [[x + 1, z], [x - 1, z], [x, z + 1], [x, z - 1]]) {
         const k = `${nx},${nz}`; if (seen.has(k) || Math.abs(nx - cx) > R || Math.abs(nz - cz) > R) continue;
-        const fence = s.fences[edge(x, z, nx, nz)]; if (fence && fence !== 'gate') continue;
+        const fence = s.fences[edge(x, z, nx, nz)]; if (fence && fence !== 'gate' && !overFence) continue;
         if (landOf(s, nx, nz) !== 'farm') continue;
         const type = cellType(s, nx, nz); if (type === 'weeds' || type === 'rock') continue;
         const who = occupant(s, nx, nz); if (who && !(hens && s.placed[who]?.kind === 'bed')) continue;
         seen.add(k); stack.push([nx, nz]);
       }
     }
+    // a pen without a gate would keep a cow or a goat in for good: the herd is let out to the fields all the same
+    if (!hens && !overFence && seen.size <= pen.length) return this.range(home, pen, true);
     return [...seen].map(k => k.split(',').map(Number));
   }
   flood(home) {
@@ -182,7 +189,7 @@ export class LifeView {
         if (this.inPen(a.home, x, z, way.radius * 1.2)) a.target = [x, z];
       }
       if (!a.target) {   // no free spot close by: a cell of the range within a few steps (so nobody marches across the farm), else anywhere in it
-        const near = pen.cells.filter(c => Math.abs((c[0] + 0.5) * CELL - sub.x) < 7 && Math.abs((c[1] + 0.5) * CELL - sub.z) < 7), from = near.length ? near : pen.cells, c = from[Math.floor(Math.random() * from.length)];
+        const reach = GRAZERS[a.kind] ? 14 : 7, near = pen.cells.filter(c => Math.abs((c[0] + 0.5) * CELL - sub.x) < reach && Math.abs((c[1] + 0.5) * CELL - sub.z) < reach), from = near.length ? near : pen.cells, c = from[Math.floor(Math.random() * from.length)];
         a.target = [(c[0] + 0.5) * CELL, (c[1] + 0.5) * CELL];
       }
       a.until = this.time + 12;
