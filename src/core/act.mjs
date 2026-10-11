@@ -34,7 +34,7 @@ import { actions as trees } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
 import { actions as condition, tickCondition } from './condition.mjs';
-import { actions as testmode } from './testmode.mjs';
+import { actions as testmode, tickTester } from './testmode.mjs';
 import { actions as discoveries, normalizeDiscoveries, afterDiscoveries } from './discoveries.mjs';
 import { actions as advice, normalizeAdvice, afterAdvice } from './advice.mjs';
 import { actions as exploration } from './exploration.mjs';
@@ -80,7 +80,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickTester(ctx); tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   tickShops(ctx); tickLearning(ctx); afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now); tallyEarned(s, ctx.events); afterAdvice(ctx);

@@ -71,6 +71,8 @@ testing pace on purpose.
 
 ## 7. Last checks
 
+- Remove the owner's coupon (`COUPONS` in `src/core/testmode.mjs`) and decide whether `?tester` stays in the public game.
+
 - All 39 browser suites green three times in a row (fix the three flaky checks: backlog 11).
 - The four languages read through by a native speaker each, chapter cards first.
 - A fresh farm played from the title screen to chapter 20 by the owner at release pace, with notes.

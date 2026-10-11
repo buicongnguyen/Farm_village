@@ -17,9 +17,12 @@ const esc = value => String(value ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;'
 const TESTS = [['unlock', 'Unlock everything'], ['coins', '+10,000 coins'], ['levels', '+5 levels'], ['timers', 'Finish every timer'], ['family', 'Move a family in'], ['marketday', 'Start a market day'], ['finish', 'Finish this chapter'],
   ['step', 'Next tutorial step', 'build'], ['hour', 'Clock +1 hour', 'build'], ['day', 'Clock +1 day', 'build']];
 function renderTests(s) {
-  const seen = s.story.chapter ?? 0;
+  const seen = s.story.chapter ?? 0, instant = !!s.tester?.instant;
   return `<h3 class="test-head">${t('Test')}</h3><p class="hint">${TEST_MODE ? t('Only in test builds.') : t('Tester tools: this farm is for testing.')}</p>
     <div class="row test-row">${TESTS.filter(([, , only]) => TEST_MODE || !only).map(([id, label]) => `<button class="btn small" data-do="test" data-test="${id}">${t(label)}</button>`).join('')}</div>
+    <div class="set-row"><b>${t('Add coins')}</b><input class="name-input" data-coins type="number" inputmode="numeric" min="1" max="1000000000" step="1000" value="100000" aria-label="${t('Coins to add')}"><button class="btn small" data-do="test" data-test="addcoins">${t('Add')}</button></div>
+    <div class="set-row"><b>${t('Instant mode')}</b><div class="tabs">${[['on', 'On'], ['off', 'Off']].map(([v, label]) => `<button class="tab${instant === (v === 'on') ? ' on' : ''}" data-do="test" data-test="instant:${v}" aria-pressed="${instant === (v === 'on')}">${t(label)}</button>`).join('')}</div></div>
+    <p class="hint">${t('Instant mode: crops, trees, animals, workshops, repairs, trucks and new families do not have to be waited for, and a festival or a fair can be held again at once.')}</p>
     <div class="set-row"><b>${t('Jump to chapter')}</b><div class="tabs test-jump">${JUMP_CHAPTERS.filter(n => n <= CHAPTERS.length).map(n => `<button class="tab${seen >= n - 1 ? ' on' : ''}" data-do="test" data-test="jump:${n}"${seen >= n - 1 ? ' disabled' : ''} aria-label="${t('Chapter {n}', { n })}">${n}</button>`).join('')}</div></div>`;
 }
 export function renderSettings(s, profile, { tester = false } = {}) {
@@ -41,6 +44,8 @@ export function renderSettings(s, profile, { tester = false } = {}) {
     <p class="hint">${t('These controls affect only Profile {n}.', { n: profile })}</p>
     <div class="row"><button class="btn" data-do="export">${glyph('down', 'g')} ${t('Export save')}</button><label class="btn">${glyph('open', 'g')} ${t('Import save')}<input type="file" accept=".json,application/json" data-file hidden></label>
       <button class="btn ghost" data-do="newGame">${glyph('sprout', 'g')} ${t('Start over')}</button></div>
+    ${s.tester?.coupon ? `<p class="hint coupon-on">${glyph('check', 'g')} ${t('A coupon is in use on this farm: the tester tools are on.')}</p>`
+      : `<div class="set-row coupon-row"><b>${t('Coupon code')}</b><input class="name-input" data-coupon maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${t('Enter a code')}" aria-label="${t('Coupon code')}"><button class="btn small" data-do="coupon">${t('Use')}</button></div>`}
     ${TEST_MODE || tester ? renderTests(s) : ''}
   </div>`;
 }

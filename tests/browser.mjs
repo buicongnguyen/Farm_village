@@ -1237,6 +1237,31 @@ await check('chapter 20: the five closing cards, the end, the valley album, and 
   await ctx.close();
 });
 
+// The coupon (docs/plan/00-tester-tools.md): a wrong code does nothing, the test build's own code switches the tools on
+// for the farm, coins are added by amount, and instant mode finishes what the farm has started.
+await check('the coupon: a code in Settings switches the tester tools on; coins by amount; instant mode (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-coupon]');
+  await page.fill('.settings [data-coupon]', 'open sesame'); await page.click('.settings [data-do="coupon"]'); await page.waitForTimeout(500);
+  expect(await page.evaluate(() => !farm.state().tester?.coupon) && await page.locator('.settings [data-coupon]').count() === 1, 'a wrong code was taken');
+  await page.fill('.settings [data-coupon]', ' Test-Coupon '); await page.click('.settings [data-do="coupon"]');
+  await page.waitForFunction(() => farm.state().tester?.coupon > 0); await page.waitForSelector('.settings .coupon-on');
+  expect(await page.locator('.settings [data-coupon]').count() === 0 && await page.locator('.tester-tag').count() === 1, 'the coupon row stays, or the Tester tag is missing');
+  // any amount of coins
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.fill('.settings [data-coins]', '250000'); await page.click('.settings [data-test="addcoins"]');
+  await page.waitForFunction(c => farm.state().coins === c + 250000, coins);
+  // instant mode: a crop planted an hour away is ripe at once, and the switch shows On
+  const bed = await page.evaluate(() => { const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); s.beds[id] = { crop: 'wheat', doneAt: farm.game.now + 3600000 }; return id; });
+  await page.click('.settings [data-test="instant:on"]');
+  await page.waitForFunction(id => farm.state().tester.instant === true && farm.state().beds[id].doneAt <= farm.game.now, bed);
+  await page.waitForSelector('.settings .tab.on[data-test="instant:on"]');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}settings-coupon.png` });
+  await page.click('.settings [data-test="instant:off"]'); await page.waitForFunction(() => farm.state().tester.instant === false);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);

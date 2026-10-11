@@ -8,6 +8,7 @@ import './ui/village.css';
 import './ui/polish.css';
 import { Game } from './game.mjs';
 import { newGame } from './core/state.mjs';
+import { COUPONS, couponKey, testerOn } from './core/testmode.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { Marks } from './view/marks-view.mjs';
@@ -103,7 +104,9 @@ if (!(TEST_MODE && params.has('new')) && savedProfile.error) await recoverProfil
 // ?tester opens the tester's tools in the public game (docs/plan/00-tester-tools.md). Kept for the tab, so the reload
 // after a chapter jump still has them; a normal visit never sees them.
 const TESTER = (() => { try { if (params.has('tester')) sessionStorage.setItem('fv-tester', '1'); return sessionStorage.getItem('fv-tester') === '1'; } catch { return params.has('tester'); } })();
-if (TESTER) { const tag = document.createElement('div'); tag.className = 'tester-tag'; tag.textContent = t('Tester'); document.body.append(tag); }
+const testerTag = () => { if (document.querySelector('.tester-tag')) return; const tag = document.createElement('div'); tag.className = 'tester-tag'; tag.textContent = t('Tester'); document.body.append(tag); };
+if (TESTER) testerTag();
+if (TEST_MODE) COUPONS[couponKey('test-coupon')] = { tester: true };   // test builds know a code of their own, so the browser checks can type one
 // test builds can run the clock ahead (kept for the tab, so a reload sees the same time)
 const clockOffset = TEST_MODE ? +(sessionStorage.getItem('fv-clock-offset') ?? 0) : 0;
 // ?new starts a fresh farm (test builds only: in the public game a stray link must never replace a saved farm)
@@ -207,7 +210,9 @@ panels = new Panels(app, game, hud, {
   // a wish's Build button: the catalogue on that decoration
   onBuildKind: kind => { if (!BUILDINGS[kind]) return; build.cat = BUILDINGS[kind].cat; build.start(kind); },
   onPhoto: () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })),
-  onTest: TEST_MODE || TESTER ? what => testAction(what) : null,
+  onTest: what => testAction(what),
+  // the tester's tools show in a test build, with ?tester, or on a farm where the owner's coupon was used (Settings)
+  tester: () => TEST_MODE || TESTER || testerOn(game.s),
 });
 panels.profile = profile;
 hud.profile = profile; hud.update();
@@ -320,7 +325,8 @@ async function overview() {
   for (const [x, z, span] of [[64 * CELL, 56 * CELL, 120], [62 * CELL, 102 * CELL, 84], [72 * CELL, 5 * CELL, 84], last]) { if (!(await world.cam.flyTo(x, z, span, 2600))) return; await new Promise(done => setTimeout(done, 600)); }
 }
 game.on(r => { if (r.events?.some(e => e.type === 'valleyAwarded')) overview(); });
-const SOUNDS = { greenGoal: 'coin', valleyTitle: 'cheer', valleyAwarded: 'cheer', fairHeld: 'cheer', fairEnded: 'cheer', valleyFounded: 'cheer', upriverStop: 'cheer', trainArrived: 'whistle', trainLeft: 'whistle', hotelUpgraded: 'cheer', guestServed: 'pop', quayPaved: 'cheer', familiesReturned: 'cheer', cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
+game.on(r => { if (testerOn(game.s) && (r.events ?? []).some(e => e.type === 'couponRedeemed' || e.type === 'loaded')) testerTag(); });
+const SOUNDS = { couponRedeemed: 'cheer', greenGoal: 'coin', valleyTitle: 'cheer', valleyAwarded: 'cheer', fairHeld: 'cheer', fairEnded: 'cheer', valleyFounded: 'cheer', upriverStop: 'cheer', trainArrived: 'whistle', trainLeft: 'whistle', hotelUpgraded: 'cheer', guestServed: 'pop', quayPaved: 'cheer', familiesReturned: 'cheer', cooperativeFounded: 'cheer', cooperativeOrderDone: 'coin', bridgeOpened: 'cheer', albrightAnswered: 'cheer', canneryGreened: 'cheer', marketDayStarted: 'cheer', sluiceOpened: 'cheer', harvestFestivalStarted: 'cheer', harvested: 'pop', collected: 'pop', produced: 'pop', orderFilled: 'coin', rent: 'coin', coins: 'coin', placed: 'place', levelUp: 'level', projectDone: 'cheer', familyArrived: 'cheer', giftClaimed: 'coin', repaired: 'place', questDone: 'cheer', weeklyDone: 'cheer', festival: 'cheer', hurried: 'pop', familyTip: 'coin', barnSold: 'coin', fishCaught: 'pop', lineCast: 'click', truckBack: 'coin', truckSent: 'click', truckBought: 'cheer', repairStarted: 'click', demolished: 'place', houseUpgraded: 'level', neighbourRepair: 'cheer' };
 game.on(r => {
   land.apply(r.events ?? []);
   if (!r.ok && r.reason) sfx('error');
@@ -373,6 +379,7 @@ world.exploration = new ExplorationView(world, game);
 world.landDiscovery = new LandDiscoveryView(world, game);
 world.learning = new LearningView(world, game, land.later);
 game.start();
+if (testerOn(game.s)) testerTag();   // a farm with a coupon shows the tag from the start
 applySettings();
 saveSession = autosave(game, profile);
 if (!saveSession()) hud.toast(t('Could not save your farm. Please try again.'), 'warn');
@@ -488,6 +495,8 @@ function testAction(what) {
   const g = game;
   if (what === 'unlock') g.do('testUnlockAll');
   if (what === 'coins') g.do('testAddCoins');
+  if (what === 'addcoins') g.do('testAddCoins', { coins: Math.round(Number(document.querySelector('.settings [data-coins]')?.value)) });
+  if (what.startsWith('instant:')) g.do('testInstant', { on: what === 'instant:on' });
   if (what === 'levels') g.do('testAddLevels');
   if (what === 'marketday') g.do('testMarketDay');
   if (what === 'finish') { panels.close(); g.do('testFinishChapter'); }

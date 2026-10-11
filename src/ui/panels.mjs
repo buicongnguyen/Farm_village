@@ -21,8 +21,8 @@ export { goodIcon };
 /** Panels with nothing to count down. */
 const STILL = new Set(['exploration', 'profiles', 'settings', 'album', 'friends', 'gift', 'mail', 'advice', 'learningMemory', 'schoolActivity', 'schoolMemory']);
 export class Panels {
-  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto } = {}) {
-    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto });
+  constructor(root, game, hud, { onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto, tester } = {}) {
+    Object.assign(this, { game, hud, open: null, onBuild, onShowWay, onSave, onBuildKind, onAdviceTarget, onExplorePlace, onGoodHelpSource, onGoodHelpReturn, onLandVisit, onLearningVisit, onTest, onPhoto, tester });
     this.el = document.createElement('div'); this.el.className = 'sheet panel'; this.el.hidden = true;
     root.appendChild(this.el);
     this.returnEl = document.createElement('button'); this.returnEl.className = 'btn help-return'; this.returnEl.hidden = true;
@@ -50,7 +50,7 @@ export class Panels {
     if (fresh) { sfx('page'); this.el.scrollTop = 0; this.el.classList.remove('pop'); void this.el.offsetWidth; this.el.classList.add('pop'); }
   }
   /** Preserve a held slider or an active name/IME composition when background farm events arrive. */
-  holding() { return !!this.el.querySelector('input:active, input[data-name]:focus'); }
+  holding() { return !!this.el.querySelector('input:active, input[data-name]:focus, input[data-coupon]:focus, input[data-coins]:focus'); }
   close() { this.open = null; this.el.hidden = true; this.lift(); }
   /** Keep the HUD buttons above the sheet while it is open. */
   lift() {
@@ -209,7 +209,8 @@ export class Panels {
     else if (d.do === 'gift') { this.back = { ...this.open }; this.show('gift', d.person); }
     else if (d.do === 'giveGood') { const r = g.do('gift', { person: d.person, good: d.good }); if (r.ok) this.show(this.back?.kind ?? 'friends', this.back?.arg); }
     else if (d.do === 'wishBuild') { this.close(); this.onBuildKind?.(d.kind); }
-    else if (d.do === 'test') this.onTest?.(d.test);
+    else if (d.do === 'test') { if (this.tester?.()) { this.onTest?.(d.test); if (this.open?.kind === 'settings') this.render(); } }
+    else if (d.do === 'coupon') { if (g.do('redeemCoupon', { code: this.el.querySelector('[data-coupon]')?.value }).ok) this.render(); }   // a wrong code is told by the usual refusal notice
     else if (d.do === 'photo') { this.close(); this.onPhoto?.(); }
     else if (d.do === 'setting') { if (d.key === 'lang') { setLanguage(d.value).then(() => { if (this.holding()) this.languageRefresh = true; else this.render(); }, () => this.hud?.toast(t('Could not load this language. Check your connection.'), 'warn')); this.render(); } else g.do('setting', { key: d.key, value: d.value }); }
     else if (d.do === 'export' || d.do === 'newGame' || d.do === 'profile' || d.do === 'resetProfile') this.onSave?.(d.do, d.n);
