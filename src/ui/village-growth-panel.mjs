@@ -26,7 +26,8 @@ function requestCard(s, g) {
     ${away ? `<p class="board-voice">${t('The company truck is on its way')}</p>` : waiting ? `<p><b>${t('The truck is back with the payment.')}</b></p><button class="btn primary wide" data-do="growthMarket">${t('Collect at the market')}</button>`
       : `${requestRows(g)}<p>${t('Payment: {coins} coins', { coins: num(g.payment) })}</p>
       ${g.reason ? `<p class="hint">${t(g.reason)}</p>` : `<p class="hint">${t('Everything is in the barn. One truck takes it; the payment comes back with the truck.')}</p>`}
-      <button class="btn primary wide" data-do="sendCompanyDelivery" data-id="${g.next.id}" ${g.canSend ? '' : 'disabled'}>${t('Complete the request: send the truck')}</button>`}</div>`;
+      `}
+    <button class="btn ${away || waiting ? '' : 'primary '}wide" data-do="sendCompanyDelivery" data-id="${g.next.id}" ${g.canSend ? '' : 'disabled'}>${t('Complete the request: send the truck')}</button></div>`;
 }
 /** Before the company takes requests: the three things it needs, each ticked or open, so nobody has to guess. */
 function openingCard(s, g) {
@@ -36,8 +37,7 @@ function openingCard(s, g) {
     ${row(s.level >= GROWTH.company.level, t('Reach level {level}', { level: GROWTH.company.level }))}
     ${row(office, t('The company office is rebuilt and in working order'))}
     ${row(kinds.length >= GROWTH.company.factories, `${t('Two different food factories in working order ({n} of 2)', { n: Math.min(kinds.length, 2) })}${kinds.length ? ` · ${kinds.map(k => t(BUILDINGS[k].name)).join(', ')}` : ''}`)}
-    <p class="hint">${t('A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.')}</p>
-    ${office ? '' : `<button class="btn primary wide" data-do="growthSite" data-kind="company">${t('Visit the old company office')}</button>`}</div>`;
+    <p class="hint">${t('A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.')}</p></div>`;
 }
 const needs = (s, goods) => Object.entries(goods).map(([good, n]) => `<div class="set-row">${goodIcon(good, 'mini')} <span>${t(GOODS[good].name)} ${num(Math.min(n, barn.free(s, good)))}/${num(n)}</span>${goodHelpButton(good, n)}</div>`).join('');
 

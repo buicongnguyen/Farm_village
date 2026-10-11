@@ -927,5 +927,5 @@ export const VI_FISHING = {
   'The company sends big orders by truck once these three things are true:': 'Công ty sẽ gửi đơn hàng lớn bằng xe tải khi đủ ba điều sau:',
   'The company office is rebuilt and in working order': 'Văn phòng công ty đã được dựng lại và hoạt động tốt',
   'Two different food factories in working order ({n} of 2)': 'Hai xưởng thực phẩm khác loại đang hoạt động (đã có {n}/2)',
-  'A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.': 'Xưởng thực phẩm là xưởng như máy ép nước quả, xưởng mì hay xưởng sữa. Xưởng thức ăn chăn nuôi và lò bánh không được tính.',
+  'A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.': 'Xưởng thực phẩm là xưởng như máy ép nước quả, xưởng mì hay xưởng sữa. Cối xay cám và lò bánh không được tính.',
 };
