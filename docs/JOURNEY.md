@@ -112,7 +112,7 @@ the burned festival stage) runs through it and ends in Act III. Acts IV–V are 
 ### Act I · Homecoming (chapters 1–4, done)
 The key under the seed tin, the first harvest, the first family, the school bell. Ellis writes from upriver.
 
-### Act II · The valley wakes (chapters 5–9, from `STORY.md`)
+### Act II · The valley wakes (chapters 5–9, built)
 | # | Title | Opens | Story |
 |---|---|---|---|
 | 5 | Someone to care for us | Stage 2: the orchard | Marisol brings Dr Hazel home and the clinic reopens. Grace the vet sets up in its back room, and suggests a kennel for Biscuit. Ada plants a cherry tree "for the grandchildren's grandchildren". |
@@ -124,23 +124,30 @@ The key under the seed tin, the first harvest, the first family, the school bell
 (Stage 5, the village to be proud of, runs alongside chapters 7–8: the playground, the school activities and the
 farmhouse rooms open as families settle.)
 
-### Act III · The brook co-operative (chapters 10–12)
+### Act III · The brook co-operative (chapters 10–12, built)
 | # | Title | Story |
 |---|---|---|
-| 10 | Hands to help | The first hired villagers: Minh as builder, Lan as baker, Sam (who loves the long way home) as the truck driver. Bea teaches you to read the evening report. |
-| 11 | The man from the city | Mr Albright of the flour company offers a fortune to build a big factory on the meadow. You may say yes (fast money, a grey building, the meadow gone) or no (a slower contract, the meadow stays). Both paths finish the story; the green one keeps the beauty bonus and Mai's friendship. |
-| 12 | One river, many farms | Mai, Gus, Priya and the twins join a co-operative. Together you open the road over the hills. |
+| 10 | Hands to help | Neighbours take on the beds, the ovens and the truck; Granny Maple adds up the day on the back of an envelope. Counted from the festival on. |
+| 11 | The man from the city | Mr Albright offers to build a cannery on the brook meadow. Yes: the cannery, good wages, the meadow gone. No: the meadow stays, with wildflowers and bees. The one real choice of the story. |
+| 12 | One river, many farms | Daisy, Bramble, Juniper and the twins found a co-operative with you and fill shared orders. The gate comes off the old towpath: the far bank is open. |
 
-### Act IV · Over the hills (chapters 13–16)
-Pine Ridge, a mountain village emptier than Hollowbrook ever was. Its keeper is Nana Tuyết, Ada's old friend from
-school. You build a highland ranch (horses, sheep), tea terraces, and a train halt. Ellis guides you on the old fishing
-paths; Pip finds the spring the brook comes from.
+### Act IV · Across the river (chapters 13–16, built)
+| # | Title | Story |
+|---|---|---|
+| 13 | The far bank | The old quay is paved and the first quay house built; families come home. Nana Snow keeps the quay. |
+| 14 | Rooms with a view | A hotel on the quay; guests come for the valley's beauty and want breakfast from the farm. |
+| 15 | The evening train | The halt reopens and wagons leave full. |
+| 16 | Where the brook begins | Grandpa Oak and Sunny walk upriver in three stops, to the spring. This spring he went up because the brook had dropped again; he found the gate padlocked. |
 
-### Act V · The valley of plenty (chapters 17–20)
-Two villages, one valley. The co-operative becomes a company the whole valley owns a share of. A valley fair, the Green
-Valley award, and a closing card on the night the company's value reaches a billion: Ada, Ellis, June and Pip on the
-porch, the lights of both villages below. Ada: "Your grandfather said the fish would tell him when to come home. I think
-the whole valley told you."
+### Act V · The valley of plenty (chapters 17–20, built)
+| # | Title | Story |
+|---|---|---|
+| 17 | A share for everyone | The co-operative, the office and the quay become one company that every household owns a share of. The valley has a value. |
+| 18 | The valley fair | Three valleys bring their best; Clover, Honey and Skipper judge. A ribbon comes home. (Pine Ridge is one of the rival valleys.) |
+| 19 | The green valley | Green goals, titles as the value grows, and the county's prize; Mr Albright comes back as a hotel guest. |
+| 20 | The lights of two villages | The value reaches a billion. Five closing cards; Granny Maple: "The valley was never empty, dear. It was only waiting for someone to stay." |
+
+The text of every card is in `src/content/story.mjs`; that file wins where this one differs.
 
 **Story rules (in addition to `STORY.md`)**
 - Nobody is a villain. Mr Albright is a businessman who learns something; Gus is grumpy, never mean.

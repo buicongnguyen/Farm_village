@@ -1,5 +1,9 @@
 # Working on Farm Village
 
+> **Current practice (2026-10-11):** one agent (Claude Code) does art and logic; the lanes below describe how the project
+> began. The plan lives in `docs/plan/`. The first-load limit is the one in `scripts/build.mjs` (1,300,000 bytes).
+
+
 These rules are for every coding agent working in this repository (Codex, Claude Code or any other). Read them before
 you start a task.
 

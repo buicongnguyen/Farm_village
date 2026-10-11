@@ -37,12 +37,14 @@ function beautyPage(s) {
   </div>`;
 }
 const NEEDS = { chapter: 'Walk to where the brook begins', cooperative: 'Found the co-operative', office: 'Reopen the company office', quay: 'Build a house on the quay' };
+/** Where a need that is not met yet can be worked on: the panel it opens. */
+const NEED_TO = { chapter: 'upriver', cooperative: 'cooperative', office: 'villageGrowth', quay: 'quay' };
 const ASSETS = { coins: ['Coins in hand', 'ui:coin'], barn: ['Goods in the barn', 'ui:barn'], buildings: ['Everything built', 'bakery'], land: ['Land', 'sale_sign'], works: ['Works and upgrades', 'quay'],
   herd: ['The herd', 'hen'], beauty: ['Beauty', 'round_tree'] };
 function founding(s) {
   const plan = companyPlan(s);
   return `<div class="site-top">${iconHtml('company', '', 'tile-icon')}<p>${t('The co-operative, the office and the quay could be one company that belongs to everyone who works in it. Every household gets a share, and the valley gets one number: what it is worth.')}</p></div>
-    ${plan.needs.map(n => `<div class="req ${n.ok ? 'ok' : ''}">${glyph(n.ok ? 'check' : 'lock', 'g')} ${n.id === 'coins' ? `${coinMark()} ${num(plan.price)}` : t(NEEDS[n.id])}</div>`).join('')}
+    ${plan.needs.map(n => { const text = `${glyph(n.ok ? 'check' : 'lock', 'g')} ${n.id === 'coins' ? `${coinMark()} ${num(plan.price)}` : t(NEEDS[n.id])}`; return !n.ok && NEED_TO[n.id] ? `<button class="req link" data-do="${NEED_TO[n.id]}">${text} ›</button>` : `<div class="req ${n.ok ? 'ok' : ''}">${text}</div>`; }).join('')}
     <button class="btn primary wide" data-do="foundValley" ${plan.ok ? '' : 'disabled'}>${t('Found the valley company')} · ${coinMark()} ${num(plan.price)}</button>`;
 }
 function valuePage(s, now) {
@@ -70,13 +72,14 @@ function greenPage(s) {
   const goals = greenProgress(s), a = greenAward(s);
   const rows = goals.map(g => `<li class="${g.done ? 'done' : ''}" data-goal="${g.id}">${iconHtml(g.icon, '', 'mini')}<div><b>${t(g.name)}</b><i class="progress"><i style="width:${Math.round(g.have / g.need * 100)}%"></i></i></div>
     <span>${g.done ? glyph('check', 'g') : `${num(g.have)}/${num(g.need)}`}</span><small>${coinMark()}${num(g.coins)}</small></li>`).join('');
-  const need = (ok, text) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`;
+  const need = (ok, text, to) => ok || !to ? `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>` : `<button class="req link" data-do="${to}">${glyph('lock', 'g')} ${text} ›</button>`;
   return `<div class="valley green">
     <p>${t('The county gives a prize to its prettiest working valley. Each goal reached pays once and adds to the valley’s beauty for good.')}</p>
     <ul class="green-goals">${rows}</ul>
     <h3>${t('The county’s prize')}</h3>
-    ${need(a.rank >= a.rankNeed, `${t('A picture postcard valley')} · ${t(RANK_NAMES[a.rank])}`)}
-    ${need(a.value >= a.valueNeed, `${t('A valley worth {value}', { value: short(a.valueNeed) })} · ${coinMark()} ${short(a.value)}`)}
+    ${need(a.rank >= a.rankNeed, `${t('A picture postcard valley')} · ${t(RANK_NAMES[a.rank])}`, 'valley')}
+    ${need(a.value >= a.valueNeed, `${t('A valley worth {value}', { value: short(a.valueNeed) })} · ${coinMark()} ${short(a.value)}`, 'valleyValue')}
+    ${a.cannery ? need(a.green, t('The cannery made a green one'), 'valley') : ''}
     ${s.firsts?.award ? `<p class="hint">${glyph('check', 'g')} ${t('The plaque stands at the bridge: the prettiest working valley in the county.')}</p>` : ''}
   </div>`;
 }

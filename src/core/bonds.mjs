@@ -139,11 +139,14 @@ export function letterDue(s, letter, chapter = null) {
   return whenDue(s, letter.when ?? {}, letter.from, chapter) && (!letter.also || whenDue(s, letter.also, letter.from, chapter));
 }
 /** Earliest unread prerequisite, or null. A legacy read letter already counts as a known fact. */
+/** A letter written from somewhere its writer no longer is (`until`: the chapter that ends it) is not posted any more. */
+export const letterLapsed = (s, letter) => !!letter?.until && (s.story?.chapter ?? 0) >= letter.until;
 export function letterPrerequisite(s, id, seen = new Set()) {
   if (seen.has(id)) return id; // malformed cyclic content cannot silently unlock itself
   seen.add(id);
   for (const before of letterOf(id)?.after ?? []) {
     if ((s.mail ?? []).some(m => m.id === before && m.read)) continue;
+    if (letterLapsed(s, letterOf(before)) && !(s.mail ?? []).some(m => m.id === before)) continue;   // never posted and never will be
     return letterPrerequisite(s, before, seen) ?? before;
   }
   return null;
@@ -155,7 +158,7 @@ export function postLetters(ctx) {
   const { s, now } = ctx, mail = (s.mail ??= []), letters = data().letters; if (!letters.length) return;
   const sent = new Set(mail.map(m => m.id)), chapter = chapterReached(s);
   for (const letter of letters) {
-    if (!letter?.id || sent.has(letter.id) || !letterReady(s, letter, chapter)) continue;
+    if (!letter?.id || sent.has(letter.id) || letterLapsed(s, letter) || !letterReady(s, letter, chapter)) continue;
     sent.add(letter.id);
     mail.unshift({ id: letter.id, from: letter.from, at: now, read: false });
     ctx.emit('letter', { id: letter.id, from: letter.from });

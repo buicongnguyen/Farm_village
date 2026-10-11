@@ -897,4 +897,9 @@ export const JA_FISHING = {
   'The spring is a wet rock under a fern, and {person:pip:short} is not impressed until {person:ellis:short} says that every drop in the mill race started there. He went up this spring to learn why the brook had dropped again. He found the gate padlocked, and he stayed away, because he could not face coming home until it was open.': '泉は、シダの下のぬれた岩でした。{person:pip:short}はがっかりしますが、水車の水路の一滴一滴がここから始まったのだと{person:ellis:short}に聞いて、目をまるくします。じいちゃんはこの春、小川の水がなぜまた減ったのかを知りたくて川上へのぼりました。そして錠のかかった水門を見つけ、それが開くまでは家に帰れなくて、とどまっていたのです。',
   'Every drop in the mill race began under that fern. I sat here a long while this spring, when the brook dropped, working up the nerve to follow it down.': '水車の水路の一滴一滴は、あのシダの下から始まったんだ。この春、小川の水が減ったとき、流れをたどっておりていく勇気を出すのに、わしはここに長いことすわっていたよ。',
   'Off with the padlock, one good pull on the wheel, and the gate went up. It was never broken. Only shut.': '錠をはずして、ハンドルをぐいっと回したら、水門が上がったよ。こわれてなんかいなかった。しまっていただけさ。',
+  'Next in the story: {name}': '物語のつぎ: {name}',
+  'I have wanted to see that wheel move since the day it stopped. It is faster than I drew it.': 'あの水車が止まった日から、また回るところを見たかったんだ。ぼくが描いたのより速く回ってるよ。',
+  'Five farms in one valley, and each of us sends a half-empty cart to the city. What if we filled them together?': 'ひとつの谷に農場が五つ。それぞれが半分からっぽの荷車を町へ送っているのよ。みんなでいっぱいにしたらどうかしら？',
+  'You always did, boy. You were late with my newspaper every single morning.': 'おまえはいつもそうだったよ、ぼうや。毎朝、わたしの新聞をおくれて持ってきたものさ。',
+  'Thank you for the school. Thirty desks, one bell and three pupils so far. {person:bo:short} has already asked to be bell monitor. With thanks, {person:cora:display}': '学校をありがとうございます。机が三十、鐘がひとつ、生徒はいまのところ三人です。{person:bo:short}はもう、鐘の当番をやりたいと言っています。感謝をこめて、{person:cora:display}',
 };

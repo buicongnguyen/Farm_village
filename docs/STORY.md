@@ -131,6 +131,10 @@ and translate content names in message parameters with `tParams()` before substi
 
 ## 4. Chapters
 
+> **As built (2026-10-11):** all twenty chapters are in the game. Chapters 10 to 20 are built as told in
+> `docs/JOURNEY.md` section 3 and `docs/plan/ch10…ch20`; Grandpa Oak comes home when chapter 9 is seen. Where a row
+> below says "planned", read "built". The text itself is in `src/content/story.mjs`.
+
 Cards are data in `CHAPTERS`. Card 1 opens the game. Cards 2–4 close their chapter with Maple's line (`ada`). Card 5 closes the clinic chapter in v0.4. Each card can have up to three panels (`panels`, `public/assets/story/chN-M.webp`, made
 by `scripts/story-panels.mjs`). Short beats between cards are in `BEATS`.
 

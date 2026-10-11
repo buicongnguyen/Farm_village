@@ -1,6 +1,6 @@
 # Review after chapter 20: code, logic, story flow
 
-Status: **first pass done** (2026-10-11) · Depends on: chapter 20 · Before: the release pass
+Status: **done** (two passes, 2026-10-11); what is left is small and listed at the end · Depends on: chapter 20 · Before: the release pass
 
 The story is complete, so this step reads the whole of it again as one thing. Three reviews were made from the code
 (rules of chapters 11 to 20; the story's order and facts; how the player is led from chapter to chapter), and one
@@ -69,32 +69,24 @@ was fixed in this pass, and what is left, with the reason.
 - The barn shows its room: hay, a silo, more hay, a second silo and a tractor stand beside it as it is upgraded.
   The trucks grow a little with every truck upgrade. (The farmhouse, the cottages and the hotel already changed.)
 
+## Second pass (the owner: "fix the remaining defects and deploy")
+
+- Chapter 19 on the cannery's side asks for the green cannery its card describes (the Green goals page shows it).
+- Grandpa Oak's letters from upriver stop coming once he is home; the picnic plate scene is not played after that.
+- Chip's line at the wheel, the pupils in the teacher's letter, "five farms in one valley" and Nana Snow's line.
+- After a chapter's card a notice says what the story asks next and opens Village projects.
+- "A third field" has a button; the valley company's needs and the prize's needs are buttons to where they are met.
+- The story documents (`docs/JOURNEY.md` Acts III to V, `docs/STORY.md` section 4), `CLAUDE.md`, `AGENTS.md`,
+  `PROGRESS.md` and `README.md` say what is true now.
+- The first-load limit is 1,300,000 bytes: the story is complete, and the release pass moves story text behind
+  `import()` (`90-release-pass.md` section 5).
+
 ## Left open, and why
 
-**Story order**
-- Chapter 19's cannery card says the cannery is hidden by trees, but the deed does not ask for the green cannery.
-
-**Story facts (text in four languages; one sitting with the story bible)**
-- The water's timeline: Oak's letters, Constable Sage's letter, chapter 16 and the tutorial disagree on when the
-  sluice was shut and when Oak left. Pick one account and align the four texts.
-- The flour company is "revealed" three times (Oak's letter, card 6, Sage's letter); card 7 gives away the drawer
-  marked Gates before Sage's letters.
-- Small ones: card 5's cherries (already picked by then), Chip "since I was a boy", "seven pupils", "five farms on
-  one river", the cheese picnic scene after Oak is home, the festival poster found twice, Nana Snow's eleven years.
-- Oak's letters 2 to 9 can still arrive after he is home.
-
-**Guidance**
-- Chapter cards and scenes end with "Continue" only: a second button to the thing they announce.
-- No mark in the world on story objects (the two boards, the plaque, Grandpa Oak, the quay before it is paved).
-- Locked requirements that do not say how to meet them (valley company, the county's prize, the festival's feast,
-  company deliveries, "Reach level N" in Village projects).
-- "A third field" has no button; the market step does not say the market square must be mended first.
-
-**Documents**
-- `docs/JOURNEY.md` chapters 10 to 20 and its status table, and `docs/STORY.md` section 4, describe an older
-  plan (Pine Ridge as Act IV, a flour-company Albright). Rewrite both from `src/content/story.mjs`.
-- `CLAUDE.md`, `AGENTS.md`, `PROGRESS.md` and `README.md` describe the two-lane way of working and old versions.
-
-**Walking**
-- Lamps, the quay's bollards and sale signs, the order board, the company flag and the farm gate's posts can still
-  be walked through (thin things, or things on a road).
+- **Marks in the world** on story objects (the two boards, the plaque, Grandpa Oak, the quay before it is paved):
+  needs a small piece of art (a story mark) and a look at every chapter; a task of its own.
+- **Card 5's cherries, card 6 and 7 giving away the flour company and the drawer, the festival poster found twice**:
+  each is a rewrite of a whole chapter card in four languages; best done in the native read-through of the release pass.
+- **Thin things that can be walked through** (lamps, bollards, sale signs, the flag, the farm gate's posts, the order
+  board on the road): blocking a road or verge cell for a post would make people walk round nothing.
+- Locked rows that only name a level ("Reach level N") still do not say how to level up.
