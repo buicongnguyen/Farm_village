@@ -164,6 +164,7 @@ export class Hud {
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
     if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
+    if (e.type === 'couponRedeemed') this.toast(t('Tester tools are on for this farm. They are at the bottom of Settings'), 'good', { icon: 'ui:xp', to: 'settings' });
     if (e.type === 'greenGoal') this.toast(`${t('A green goal reached: {name}', { name: t(e.name) })} · +${num(e.coins)}`, 'good', { icon: 'round_tree', to: 'valleyGreen' });
     if (e.type === 'valleyTitle') this.toast(t('The valley has a new name: {title}', { title: t(e.name) }), 'good', { icon: 'company', to: 'valleyValue' });
     if (e.type === 'fairEnded') this.toast(t('The fair is over. Ribbons brought home: {count}', { count: e.ribbons }), 'good', { icon: 'ribbon_board', to: 'fair' });

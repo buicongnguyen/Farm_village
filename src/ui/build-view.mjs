@@ -5,7 +5,7 @@
 import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
-import { CELL, RUINS, ruinAt } from '../content/world.mjs';
+import { CELL, RUINS, ruinAt, SITES } from '../content/world.mjs';
 import { canPlace, canPlaceEdge, occupant, cellType } from '../core/grid.mjs';
 import { ruinStands } from '../core/ruins.mjs';
 import { mayBuild } from '../core/projects.mjs';
@@ -73,7 +73,12 @@ export class BuildView {
   }
   render() {
     const s = this.game.s, cats = CATEGORIES.map(c => `<button data-cat="${c.id}" class="tab${c.id === this.cat ? ' on' : ''}">${t(c.name)}</button>`).join('');
-    const items = Object.entries(BUILDINGS).filter(([, d]) => d.cat === this.cat && !d.site && !d.lot).map(([kind, d]) => {
+    const items = Object.entries(BUILDINGS).filter(([kind, d]) => d.cat === this.cat && !d.lot && (!d.site || SITES.some(x => x.kind === kind && !x.hidden))).map(([kind, d]) => {
+      if (d.site) {   // it is built at its own place, from its own panel: the card leads there
+        const built = (s.counts[kind] ?? 0) > 0, level = s.level < d.level;
+        const note = built ? `${glyph('check', 'g')} ${t('Built')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('Show the place')}`;
+        return `<button class="card site-card${built ? ' stored' : ''}" data-kind="${kind}">${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small></button>`;
+      }
       const may = mayBuild(s, kind), level = s.level < d.level, price = placementPrice(s, kind), stored = d.edge ? 0 : s.stored?.[kind] ?? 0;
       const locked = level || !may.ok;
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
@@ -94,6 +99,7 @@ export class BuildView {
   }
   select(kind) {
     const s = this.game.s, d = BUILDINGS[kind], may = mayBuild(s, kind);
+    if (d.site) { this.onSite?.(kind); return; }   // one fixed place: the view goes there and its panel opens (main.mjs)
     if (s.level < d.level) { this.hud.refuse('Reach level {level} first', { level: d.level, kind, lock: 'level' }); return; }
     if (!may.ok) { this.hud.refuse(may.reason, may.params); return; }
     Object.assign(this, { mode: 'place', kind, rot: 0, moving: null });

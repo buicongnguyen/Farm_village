@@ -25,6 +25,32 @@ import { actions as animals } from './animals.mjs';
 import { advance } from './projects.mjs';
 import { tickCondition } from './condition.mjs';
 import { isWorking } from './working.mjs';
+import { hash } from './rng.mjs';
+import { FESTIVAL_DAY } from '../content/economy.mjs';
+
+// ── The coupon (docs/plan/00-tester-tools.md C) ──
+// A code typed in Settings switches the tester's tools on for that farm, for good: the same tools ?tester shows, without
+// the address. Codes are kept as hashes, so the words themselves are not in the source or the bundle.
+//   s.tester = { coupon: when a code was used, instant: instant mode on }
+export const COUPONS = { 970821704: { tester: true } };
+export const couponKey = code => hash('coupon', String(code ?? '').trim().toLowerCase());
+/** Has this farm its tester tools from a coupon? */
+export const testerOn = s => !!s.tester?.coupon;
+/** Called first by tick(): in instant mode nothing the farm starts has to be waited for. Crops, fruit, animals, workshops,
+ *  repairs, trucks and arriving families are done at once, and the rests between festivals, fairs and shared orders are
+ *  over. What is running (a festival, a fair, a market day, a train at the halt, a hotel stay) keeps its time. */
+export function tickTester(ctx) {
+  const { s, now } = ctx; if (!s.tester?.instant) return;
+  for (const b of Object.values(s.beds ?? {})) if (b.doneAt > now) b.doneAt = now;
+  for (const t of Object.values(s.trees ?? {})) if (t.doneAt > now) t.doneAt = now;
+  for (const list of Object.values(s.animals ?? {})) for (const a of list) if (a.doneAt != null && a.doneAt > now) a.doneAt = now;
+  for (const q of Object.values(s.production ?? {})) for (const j of q.queue ?? []) if (j.doneAt > now) j.doneAt = now;
+  for (const r of Object.values(s.repairing ?? {})) if (r.doneAt > now) r.doneAt = now;
+  for (const h of Object.values(s.homes ?? {})) if (h.family && h.arrivesAt > now) { h.arrivesAt = now; h.rentFrom = Math.min(h.rentFrom, now); }
+  for (const u of s.truck ? [s.truck, ...(s.truck.fleet ?? [])] : []) if (u.away && u.backAt > now) u.backAt = now;
+  if (s.cooperative?.founded && !s.cooperative.order && s.cooperative.nextAt > now) s.cooperative.nextAt = now;
+  for (const [f, rest] of [[s.festival, FESTIVAL_DAY.everyMs], [s.fair, FAIR.everyMs]]) if (f && Number.isFinite(f.at) && Number.isFinite(f.until) && now >= f.until && f.at + rest > now) f.at = now - rest;
+}
 
 /** The highest level any content needs (everything is open from here). */
 export const TOP_LEVEL = Math.max(8, ...[CROPS, RECIPES, ANIMALS, FRUITS, BUILDINGS].flatMap(o => Object.values(o).map(v => v.level ?? 0)));
@@ -152,9 +178,22 @@ export const JUMP_CHAPTERS = Object.keys(JUMPS).map(Number).sort((a, b) => a - b
 const PLAY_LEVEL = { 14: BUILDINGS.hotel.level, 15: BUILDINGS.halt.level };
 
 export const actions = {
+  /** Use a coupon code: { code }. A known code switches the tester's tools on for this farm, once and for good. */
+  redeemCoupon(ctx, { code } = {}) {
+    if (!COUPONS[couponKey(code)]) return ctx.fail('That code is not known');
+    if (testerOn(ctx.s)) return ctx.fail('This farm has its tester tools already');
+    (ctx.s.tester ??= {}).coupon = ctx.now; ctx.emit('couponRedeemed');
+    return { tester: true };
+  },
+  /** Instant mode on or off: { on } (tickTester). */
+  testInstant(ctx, { on } = {}) {
+    const t = (ctx.s.tester ??= {}); t.instant = on === true || on === 'true';
+    ctx.emit('instantMode', { on: t.instant }); tickTester(ctx);
+    return { instant: t.instant };
+  },
   /** Coins to try things with: { coins }. */
   testAddCoins(ctx, { coins = 10000 } = {}) {
-    if (!Number.isSafeInteger(coins) || coins <= 0 || coins > 1e7) return ctx.fail('Unknown amount');
+    if (!Number.isSafeInteger(coins) || coins <= 0 || coins > 1e9) return ctx.fail('Unknown amount');
     ctx.s.coins += coins; ctx.emit('coins', { coins });
     return { coins: ctx.s.coins };
   },

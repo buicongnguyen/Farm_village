@@ -73,7 +73,7 @@ test('coins and levels for testers: real level-ups, bad amounts refused, the top
   const r = must(s, 'testAddLevels', {}); assert.equal(s.level, level + 5);
   assert.deepEqual(r.events.filter(e => e.type === 'levelUp').map(e => e.level), [1, 2, 3, 4, 5].map(n => level + n));
   assert.ok(s.xp >= LEVELS.xpFor(s.level));
-  for (const [a, p] of [['testAddCoins', { coins: -5 }], ['testAddCoins', { coins: '9' }], ['testAddCoins', { coins: 1e9 }], ['testAddLevels', { levels: 0 }], ['testAddLevels', { levels: 1.5 }]]) {
+  for (const [a, p] of [['testAddCoins', { coins: -5 }], ['testAddCoins', { coins: '9' }], ['testAddCoins', { coins: 1e9 + 1 }], ['testAddLevels', { levels: 0 }], ['testAddLevels', { levels: 1.5 }]]) {
     const before = JSON.stringify(s); assert.equal(act(s, a, p, T0).ok, false, `${a} ${JSON.stringify(p)}`); assert.equal(JSON.stringify(s), before);
   }
   must(s, 'testAddLevels', { levels: LEVELS.max }); assert.equal(s.level, LEVELS.max);

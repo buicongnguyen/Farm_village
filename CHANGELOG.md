@@ -1,5 +1,11 @@
 # Changelog
 
+## The coupon code — 2026-10-11
+
+- **Coupon code** in Settings: the owner's code switches the tester tools on for that farm, without `?tester` in the address.
+- **The boat dock and the festival stage are in the Build menu** (Projects tab). They have one fixed place each: a tap takes the view there and opens the panel that builds it, which now says where the place is.
+- **Add coins**: any amount, typed in. **Instant mode**: nothing the farm starts has to be waited for, and festivals and fairs can be held again at once.
+
 ## Chapter 20: The lights of two villages — 2026-10-11
 
 - **The ending**: when the valley is worth a billion, five closing cards come one after another: the porch, the old village, the far bank, everyone who came back (a portrait and a name for each) and thanks.

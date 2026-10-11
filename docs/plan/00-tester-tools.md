@@ -15,6 +15,23 @@ Open Settings and scroll to **Test**:
 The tools stay until the browser tab is closed. A visit without `?tester` never shows them. Use a spare farm
 (Farm 2 or 3 on the title screen) if you do not want to change your own.
 
+### The coupon code (added after chapter 20)
+
+The same tools without the address: open **Settings**, type the owner's coupon code in **Coupon code** at the bottom
+and press **Use**. The tools are then on for that farm for good (it is kept in the farm's save; other farms are not
+changed), the red "Tester" tag shows, and the Test section has two more things:
+
+- **Add coins**: type any amount (up to a billion at a time) and press **Add**.
+- **Instant mode** On / Off: while it is on, crops, trees, animals, workshops, repairs, trucks and new families do not
+  have to be waited for, and a festival or a fair can be held again at once. What is running (a festival, a fair, a
+  market day, a train at the halt, a hotel stay) keeps its time, so it can still be watched.
+- **Unlock everything**, **Jump to chapter**, **Finish this chapter** and the rest are as before.
+
+The code itself is not written in this repository: the game keeps only a number made from it (`COUPONS` in
+`src/core/testmode.mjs`; `couponKey(code)` makes the number). To change the code, replace that number. Test builds
+also know the code `test-coupon`, for the browser checks. The release pass removes or replaces the coupon before the
+game is sold.
+
 ## What was built, where it differs from the plan below
 
 - **A** as planned. The clock buttons (+1 hour, +1 day) and "Next tutorial step" stay in test builds only: moving the

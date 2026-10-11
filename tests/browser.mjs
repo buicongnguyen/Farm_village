@@ -1237,6 +1237,56 @@ await check('chapter 20: the five closing cards, the end, the valley album, and 
   await ctx.close();
 });
 
+// The coupon (docs/plan/00-tester-tools.md): a wrong code does nothing, the test build's own code switches the tools on
+// for the farm, coins are added by amount, and instant mode finishes what the farm has started.
+await check('the coupon: a code in Settings switches the tester tools on; coins by amount; instant mode (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => farm.panels.show('settings')); await page.waitForSelector('.settings [data-coupon]');
+  await page.fill('.settings [data-coupon]', 'open sesame'); await page.click('.settings [data-do="coupon"]'); await page.waitForTimeout(500);
+  expect(await page.evaluate(() => !farm.state().tester?.coupon) && await page.locator('.settings [data-coupon]').count() === 1, 'a wrong code was taken');
+  await page.fill('.settings [data-coupon]', ' Test-Coupon '); await page.click('.settings [data-do="coupon"]');
+  await page.waitForFunction(() => farm.state().tester?.coupon > 0); await page.waitForSelector('.settings .coupon-on');
+  expect(await page.locator('.settings [data-coupon]').count() === 0 && await page.locator('.tester-tag').count() === 1, 'the coupon row stays, or the Tester tag is missing');
+  // any amount of coins
+  const coins = await page.evaluate(() => farm.state().coins);
+  await page.fill('.settings [data-coins]', '250000'); await page.click('.settings [data-test="addcoins"]');
+  await page.waitForFunction(c => farm.state().coins === c + 250000, coins);
+  // instant mode: a crop planted an hour away is ripe at once, and the switch shows On
+  const bed = await page.evaluate(() => { const s = farm.state(), id = Object.keys(s.placed).find(k => s.placed[k].kind === 'bed'); s.beds[id] = { crop: 'wheat', doneAt: farm.game.now + 3600000 }; return id; });
+  await page.click('.settings [data-test="instant:on"]');
+  await page.waitForFunction(id => farm.state().tester.instant === true && farm.state().beds[id].doneAt <= farm.game.now, bed);
+  await page.waitForSelector('.settings .tab.on[data-test="instant:on"]');
+  await page.waitForTimeout(300); await page.evaluate(() => farm.closeCards()); await page.screenshot({ path: `${SHOTS}settings-coupon.png` });
+  await page.click('.settings [data-test="instant:off"]'); await page.waitForFunction(() => farm.state().tester.instant === false);
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
+// Buildings with one fixed place (the boat dock, the festival stage) are in the Build menu: a tap goes to the place
+// and opens its panel, which says where it is.
+await check('the Build menu lists the boat dock and the festival stage; a tap shows the place and its panel (pc)', async () => {
+  const { ctx, page, errors } = await open('pc', '?new&restore');
+  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 12; s.coins = 9000; farm.game.tick(); });
+  await page.click('.hud [data-act="build"]'); await page.waitForSelector('.sheet.build .tabs');
+  await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect(await page.locator('.sheet.build .card[data-kind="stage"]').count() === 1 && await page.locator('.sheet.build .card[data-kind="cannery"]').count() === 0, 'the stage is missing, or the cannery (built by the story) is listed');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Show the place'), 'the dock card does not offer its place');
+  await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}build-sites.png` });
+  for (const [kind, words] of [['dock', 'road bridge'], ['stage', 'village square']]) {
+    await page.evaluate(() => { if (!document.querySelector('.sheet.build:not([hidden])')) document.querySelector('.hud [data-act="build"]').click(); });
+    await page.waitForSelector(`.sheet.build .card[data-kind="${kind}"]`); await page.click(`.sheet.build .card[data-kind="${kind}"]`);
+    await page.waitForSelector(`[data-do="siteBuild"][data-kind="${kind}"]`);
+    expect((await page.textContent('.panel-body')).includes(words), `${kind}: its panel does not say where the place is`);
+    await page.waitForFunction(k => { const c = farm.world.cam; return !c.flight && (k === 'dock' ? c.z < 60 : c.z > 180); }, kind, { timeout: 10000 });   // the view has gone to the place
+    await page.click(`[data-do="siteBuild"][data-kind="${kind}"]`); await page.waitForFunction(k => (farm.state().counts[k] ?? 0) === 1, kind);
+    await page.evaluate(() => farm.closeCards());
+  }
+  await page.click('.hud [data-act="build"]'); await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
+  expect((await page.textContent('.sheet.build .card[data-kind="dock"]')).includes('Built'), 'a built dock is not marked');
+  expect(!errors.length, errors.join('\n'));
+  await ctx.close();
+});
+
 await browser.close();
 const failed = results.filter(r => r[1] !== 'ok');
 console.log(`\n${results.length - failed.length}/${results.length} passed`);
