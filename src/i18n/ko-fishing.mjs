@@ -935,4 +935,6 @@ export const KO_FISHING = {
   'The goods of this request are kept in the barn: the trucks do not take them to market.': '이 주문의 물건은 창고에 남겨 둬요. 트럭이 시장으로 가져가지 않아요.',
   'Made at the {place}: {needs} → {n}': '{place}에서 만들어요: {needs} → {n}',
   'Your {n} {other} do not count: they are a different good, cooked from {good}.': '가지고 있는 {other} {n}개는 세지 않아요. {good}(으)로 만든 다른 물건이에요.',
+  'One feed lasts {n} collections': '한 번 먹이면 {n}번 거둘 수 있어요',
+  'Fed for {n} more': '{n}번 더 거둘 수 있어요',
 };

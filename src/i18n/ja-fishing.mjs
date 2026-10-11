@@ -935,4 +935,6 @@ export const JA_FISHING = {
   'The goods of this request are kept in the barn: the trucks do not take them to market.': 'この注文の品物は納屋に取っておきます。トラックが市場へ持っていくことはありません。',
   'Made at the {place}: {needs} → {n}': '{place}で作ります：{needs} → {n}',
   'Your {n} {other} do not count: they are a different good, cooked from {good}.': 'お持ちの{other}{n}個は数えません。{good}から作る別の品物です。',
+  'One feed lasts {n} collections': 'えさ1回で{n}回とれます',
+  'Fed for {n} more': 'あと{n}回分おなかいっぱい',
 };

@@ -84,7 +84,8 @@ test('wheat, carrot seeds, feed, eggs and both live makers produce the full menu
   growTo('wheat', 22); growTo('carrot', 18);
   make('chicken_feed'); make('chicken_feed');
   for (let batch = 0; batch < 2; batch++) {
-    assert.equal(must(s, 'feed', { home: 'coop' }, now).fed, 2); now += ANIMALS.hen.everyMs;
+    if (batch === 0) assert.equal(must(s, 'feed', { home: 'coop' }, now).fed, 2);   // one feed lasts ten collections
+    now += ANIMALS.hen.everyMs;
     assert.equal(must(s, 'collect', { home: 'coop' }, now).collected, 2);
   }
   const before = { coins: s.coins, earned: s.stats.coinsEarned, orders: s.stats.ordersFilled };
@@ -106,7 +107,7 @@ test('wheat, carrot seeds, feed, eggs and both live makers produce the full menu
   }
   assert.equal(s.coins - before.coins, 520); assert.equal(s.stats.coinsEarned - before.earned, 520);
   assert.equal(s.stats.ordersFilled, before.orders); assert.equal(s.story.chapter, 3);
-  assert.deepEqual(s.barn.items, { chicken_feed: 2 });
+  assert.deepEqual(s.barn.items, { chicken_feed: 4 });
   assert.equal(contractStatus(s, now).complete, true); assert.equal(contractStatus(s, now).completedCount, 3);
   assert.equal(contractMemories(s).length, 3); assert.equal(unreadContracts(s), 3);
   assert.match(contractMemories(s).at(-1).memory.text, /Beside the pond/);

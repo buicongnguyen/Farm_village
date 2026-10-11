@@ -15,7 +15,7 @@ import { tidied, ruinStands } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
 import { plantPrice, cropOpen } from '../core/farm.mjs';
-import { animalPrice, animalState } from '../core/animals.mjs';
+import { animalPrice, animalState, FEED_MEALS } from '../core/animals.mjs';
 import { treeState } from '../core/trees.mjs';
 import { buyableParcels } from '../core/build.mjs';
 import { cartHere, CART_SPOT } from '../core/cart.mjs';
@@ -193,7 +193,9 @@ export class Radial {
       if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
-      info = true ? `${t(a.name)} ${list.length}/${a.perHome}` : t(pen.reason ?? 'The fence has a gap');
+      // how long the feed still lasts: the fewest collections any fed animal here has left
+      const fedLeft = list.filter(x => x.doneAt != null).map(x => x.meals ?? 1), least = fedLeft.length ? Math.min(...fedLeft) : 0;
+      info = `${t(a.name)} ${list.length}/${a.perHome} · ${hungry || !least ? t('One feed lasts {n} collections', { n: FEED_MEALS }) : t('Fed for {n} more', { n: least })}`;
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       if (s.mode === 'restore') { this.hide(); this.panels.show('land', land.parcel); return; }

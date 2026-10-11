@@ -935,4 +935,6 @@ export const VI_FISHING = {
   'The goods of this request are kept in the barn: the trucks do not take them to market.': 'Hàng của đơn này được giữ lại trong kho: xe tải không chở chúng ra chợ.',
   'Made at the {place}: {needs} → {n}': 'Làm tại {place}: {needs} → {n}',
   'Your {n} {other} do not count: they are a different good, cooked from {good}.': '{n} {other} của bạn không được tính: đó là món khác, được nấu từ {good}.',
+  'One feed lasts {n} collections': 'Cho ăn một lần được {n} lần thu hoạch',
+  'Fed for {n} more': 'Còn no thêm {n} lần',
 };

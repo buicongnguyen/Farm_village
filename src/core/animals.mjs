@@ -10,6 +10,14 @@ import { isWorking } from './working.mjs';
 const homesOf = (s, kind) => Object.entries(s.placed).filter(([, p]) => BUILDINGS[p.kind].animals === kind).map(([id]) => id);
 export const animalCount = (s, kind) => homesOf(s, kind).reduce((n, id) => n + (s.animals[id]?.length ?? 0), 0);
 export const animalPrice = (s, kind) => (animalCount(s, kind) < ANIMALS[kind].freeFirst ? 0 : ANIMALS[kind].price);
+/** One feed lasts FEED_MEALS collections: the animal goes on giving, one after another, and is hungry again after the last. */
+export const FEED_MEALS = 10;
+/** An animal's produce was taken: it starts on the next one while its feed lasts (`an.meals`: collections still paid for;
+ *  a save from before this rule has none and is hungry after this one), else it is hungry. */
+export function afterCollect(an, now) {
+  an.meals = Math.max(0, (an.meals ?? 1) - 1);
+  if (an.meals > 0) an.doneAt = now + ANIMALS[an.kind].everyMs; else { an.doneAt = null; delete an.meals; }
+}
 export const animalState = (a, now) => (a.doneAt == null ? 'hungry' : a.doneAt <= now ? 'ready' : 'busy');
 
 export const actions = {
@@ -28,14 +36,14 @@ export const actions = {
     ctx.emit('animalArrived', { home, kind });
     return { kind, price };
   },
-  /** Feed hungry animals: { home } (one home) or nothing (every home). Uses one feed each. */
+  /** Feed hungry animals: { home } (one home) or nothing (every home). Uses one feed each, good for FEED_MEALS collections. */
   feed(ctx, { home } = {}) {
     const { s, now } = ctx; let fed = 0, noFeed = false;
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
       if (an.doneAt != null || !isWorking(s, id)) continue;
       const a = ANIMALS[an.kind];
       if (!barn.take(s, { [a.eats]: 1 }, false)) { noFeed = true; continue; }
-      an.doneAt = now + a.everyMs; fed++;
+      an.doneAt = now + a.everyMs; an.meals = FEED_MEALS; fed++;
     }
     if (!fed) return ctx.fail(noFeed ? 'No feed in the barn: make some at the feed mill' : 'Nobody is hungry');
     ctx.emit('fed', { count: fed });
@@ -47,7 +55,7 @@ export const actions = {
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
       if (an.doneAt == null || an.doneAt > now) continue;
       sold += barn.addOrSell(s, ANIMALS[an.kind].gives, 1);
-      an.doneAt = null; got++;
+      afterCollect(an, now); got++;
       ctx.emit('collected', { home: id, good: ANIMALS[an.kind].gives });
     }
     if (!got) return ctx.fail('Nothing is ready yet');
