@@ -1,5 +1,11 @@
 # Changelog
 
+## Hired-work logic review — 2026-10-12
+
+- Animal hands now give the same ten collections per feed as manual feeding, skip homes under repair, and respect the wages left after collecting.
+- Workshop hands reserve company-request ingredients when restarting collected trays as well as when filling empty trays. Manual production remains a player choice.
+- Imported output-upgrade data is normalized before use, preventing invalid values from corrupting coins or product quantities.
+
 ## Branch integration and home-screen metadata — 2026-10-12
 
 - Integrated the preserved picnic-trail branch with current main; the trail itself already shipped in PR #18. Main’s chapters 1–20, translations, company reserves, feeding, output upgrades and grazing behavior are retained.

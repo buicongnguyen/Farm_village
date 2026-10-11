@@ -1,3 +1,4 @@
+import { normalizeOutput } from './output.mjs';
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
 import { START, START_RESTORE } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
@@ -150,6 +151,7 @@ export function withDefaults(s) {
   s.landDiscovery = normalizeLandDiscovery(s);
   s.contracts = normalizeContracts(s);
   s.production = normalizeProduction(s);
+  s.outputUp = normalizeOutput(s);
   s.shops = normalizeShops(s);
   s.growth = normalizeGrowth(s);
   s.learning = normalizeLearning(s);

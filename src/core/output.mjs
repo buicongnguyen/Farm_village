@@ -4,7 +4,18 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import { OUTPUT_UP } from '../content/economy.mjs';
 import { isWorking } from './working.mjs';
 
-export const outputLevel = (s, id) => Math.min(OUTPUT_UP.max, Math.max(0, Math.floor(s.outputUp?.[id] ?? 0)));
+export const outputLevel = (s, id) => {
+  const n = s.outputUp?.[id];
+  return Number.isSafeInteger(n) && n > 0 ? Math.min(OUTPUT_UP.max, n) : 0;
+};
+/** Optional imported data never supplies nonnumeric multipliers, inherited keys or upgrades for removed buildings. */
+export function normalizeOutput(s) {
+  const saved = s.outputUp;
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return {};
+  return Object.fromEntries(Object.keys(saved).filter(id => Object.hasOwn(s.placed ?? {}, id)
+    && (BUILDINGS[s.placed[id].kind]?.animals || BUILDINGS[s.placed[id].kind]?.produces) && outputLevel(s, id) > 0)
+    .map(id => [id, outputLevel(s, id)]));
+}
 /** How many times its plain amount a collection from this building gives: 1, 2, 4, 8, 16. */
 export const outputTimes = (s, id) => 2 ** outputLevel(s, id);
 /** What the next upgrade of this building is: { ok, level, next, times, price, reason, params } (next: null when at the top). */

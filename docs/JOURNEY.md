@@ -275,3 +275,5 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 ### Picnic branch integration — 2026-10-12
 
 The preserved `codex/picnic-discovery-trail` branch is synchronized with main. The picnic trail already shipped in PR #18; no additional trail or story rules were needed. This follow-up adds relative home-screen metadata and permits browser zoom. Current story completion and release-pass status are tracked in `docs/plan/README.md`.
+
+Review follow-up: hired feeding shares the ten-collection allowance and repair/wage gates; every automatic workshop start preserves company ingredients; imported output-upgrade values are normalized. These are corrections to existing systems, not new progression stages.
