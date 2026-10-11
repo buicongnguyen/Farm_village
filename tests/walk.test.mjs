@@ -125,3 +125,26 @@ test('the farmhouse yard and the family home spots are open ground, not part of 
   }
   for (const [dx, dz] of [[4, 0], [4, 3], [3, -4], [1, 5], [4, -3]]) assert.ok(stepCost(s, FARMHOUSE.x + dx, FARMHOUSE.z + dz) > 0, `home spot ${dx},${dz}`);
 });
+
+// The Explore check of 2026-10-11: ground that looked open but was shut, and scenery that could be walked through.
+test('the brook\'s south bank, the east verge and (after the walk) the path upriver are open; solid scenery is not', async () => {
+  const { stepCost, findRoute } = await import('../src/core/walk.mjs');
+  const W = await import('../src/content/world.mjs');
+  const { newGame } = await import('../src/core/state.mjs'); const { tick, act } = await import('../src/core/act.mjs');
+  const s = newGame(1760000000000, 4242, { restore: true }); tick(s, 1760000000000);
+  const x = W.STEPPING_STONES.x, south = W.brookZ(x) + 2;
+  assert.ok(stepCost(s, x, south) > 0, 'the stepping stones lead onto the south bank');
+  assert.ok(findRoute(s, [60, 20], [x, south], { exact: true }).length > 0, 'the north lane reaches the stepping stones');
+  for (let z = W.brookZ(62) + 2; z <= 19; z++) assert.ok(stepCost(s, 62, z) > 0, `the meadow at z ${z}`);
+  assert.equal(stepCost(s, 62, W.brookZ(62)), 0, 'the water is still water');
+  for (const z of [30, 50, 80]) for (const cx of [96, 97]) assert.ok(stepCost(s, cx, z) > 0, `the east verge at ${cx},${z}`);
+  // the path upriver opens with the walk
+  assert.equal(stepCost(s, 10, W.brookZ(10) + 3), 0); s.upriver = { stops: ['weir', 'heron', 'spring'], trees0: 0, fish0: 0 };
+  assert.ok(stepCost(s, 10, W.brookZ(10) + 3) > 0); assert.ok(findRoute(s, [28, 20], [2, W.brookZ(2) + 3], { exact: true }).length > 0, 'the brook road reaches the spring');
+  assert.equal(stepCost(s, 10, W.brookZ(10) + 7), 0, 'the woods beyond the path stay shut');
+  // solid scenery
+  for (const [cx, cz] of [[W.WELL.x, W.WELL.z], [W.WINDMILL.x, W.WINDMILL.z], [W.MAILBOX.x, W.MAILBOX.z]]) { assert.equal(stepCost(s, cx, cz), 0, `${cx},${cz} is solid`); assert.ok([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dz]) => stepCost(s, cx + dx, cz + dz) > 0), 'and can be stood beside'); }
+  const [px, pz] = [Math.floor(W.AWARD_PLAQUE.x), Math.floor(W.AWARD_PLAQUE.z)]; assert.ok(stepCost(s, px, pz) > 0); s.firsts.award = 1; assert.equal(stepCost(s, px, pz), 0, 'the plaque, once it stands');
+  const cart = W.FAIR_SPOTS.find(f => f.model === 'fair_cart').cells[0]; assert.ok(stepCost(s, ...cart) > 0); s.fair = { n: 1, at: 1, until: 2 }; assert.equal(stepCost(s, ...cart), 0, 'a fair cart while the fair runs'); s.fair.over = 1; assert.ok(stepCost(s, ...cart) > 0);
+  assert.ok(act);
+});
