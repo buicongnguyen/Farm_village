@@ -1,3 +1,4 @@
+import './mobile-game-init.mjs';
 // Boot: load the save, then the world, the land, life and people drawn from the rules state, the HUD, build mode, the
 // panels, the tap menu, the guide, day and night, sound, and autosave.
 import './style.css';

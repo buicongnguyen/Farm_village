@@ -215,3 +215,5 @@ The first playable version: from an overgrown farm to a village with a school.
   reduced motion, graphics quality, three save slots, export and import.
 - **Under the hood:** a large 128 × 128 map drawn in 3D like a 2.5D game with chunked levels of detail; a fully planted
   64 × 64 farm stays within phone budgets; autosave; time away counts.
+
+- iPhone interruption and fullscreen support (2026-10-08): cancel stale gestures on browser interruption; add fullscreen help, safe control margins, and relative home-screen metadata.

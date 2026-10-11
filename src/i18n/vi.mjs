@@ -1,3 +1,4 @@
+import { MOBILE_VI } from './mobile.mjs';
 import { VI_ADVICE } from './vi-advice.mjs';
 import { VI_EXPLORATION } from './vi-exploration.mjs';
 import { VI_ART } from './vi-art.mjs';
@@ -745,3 +746,5 @@ Object.assign(VI, {
   "Not by itself. With a bicycle bell and rather a lot of patience.": "Đâu có tự nhiên mà kêu. Nhờ một cái chuông xe đạp và bố kiên nhẫn lắm mới được đấy.",
   "Took the long way, did it, postman? ...Thank you.": "Lá thư cũng đi đường vòng hả, chú bưu tá? ...Cảm ơn nhé.",
 });
+
+Object.assign(VI, MOBILE_VI);

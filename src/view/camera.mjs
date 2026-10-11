@@ -130,6 +130,12 @@ export class GameCamera {
       if (pointers.size === 2) { const [a, b] = [...pointers.values()], dist = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) { this.span *= pinch / dist; this.soft = true; this.update(); } pinch = dist; track = []; }
     });
     const up = e => {
+      if (!pointers.has(e.pointerId)) return;
+      // A cancelled camera gesture must not create a fling or a late tap.
+      if (e.type !== 'pointerup') {
+        pointers.clear(); pinch = 0; track = []; this.dragging = false;
+        if (hooked) this.dragHook.end(); hooked = false; this.stop(); return;
+      }
       // a hooked press that never moved is a plain tap (it opens the menu); one that moved was a sweep
       if (hooked && hookMoved > 6) { hooked = false; pointers.delete(e.pointerId); this.dragging = false; this.dragHook.end(); return; }
       if (hooked) { hooked = false; this.dragHook.end(); }

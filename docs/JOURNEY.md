@@ -225,3 +225,7 @@ Current picnic integration baseline: main `e8f09a5` includes newer icons, lower 
 | 6. Hollowbrook Farm Co. | not started |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
+
+### Mobile compatibility follow-up — 2026-10-08
+
+Applied the 3d_astra mobile interruption and fullscreen protections. Existing progression and saves are preserved. Browser and build validation is recorded in the mobile compatibility report. Physical iPhone system gestures still require a device check.
