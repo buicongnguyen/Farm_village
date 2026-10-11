@@ -10,6 +10,9 @@ import { Game } from './game.mjs';
 import { newGame } from './core/state.mjs';
 import { COUPONS, couponKey, testerOn } from './core/testmode.mjs';
 import { buyableParcels } from './core/build.mjs';
+import { currentStep } from './core/projects.mjs';
+import { STEPS } from './content/projects.mjs';
+import { stepSpot } from './view/marks-view.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { Marks } from './view/marks-view.mjs';
@@ -116,7 +119,7 @@ const clock = () => Date.now() + clockOffset, emptyStart = TEST_MODE && params.h
 const game = new Game(TEST_MODE && params.has('new') ? (emptyStart ? newGame(clock()) : null) : savedProfile.state, clock);
 const world = new WorldView(app);
 const land = new LandView(world, game);
-const marks = new Marks(world, game, land);
+const marks = new Marks(world, game, land); world.marks = marks;
 import('./view/pond-fish.mjs').then(({ PondFish }) => new PondFish(world, game)).catch(() => {});   // sets world.pondFish
 const ghost = new Ghost(world);
 let build = null, panels = null, radial = null;
@@ -253,6 +256,19 @@ build.onSite = kind => panels.onSite(kind);
 // "A new field" in the Build menu: the view goes to the next field for sale and its panel opens
 panels.onLandNext = () => build.onLand();
 build.onLand = () => { const next = buyableParcels(game.s)[0]; if (!next) { hud.toast(t(game.s.parcels.length >= 16 ? 'Every field is yours' : 'No field for sale yet'), 'info', { icon: 'sale_sign' }); return; } panels.onLandVisit?.(next.parcel); };
+// a line of Village projects that is not done: the view goes to its place, or its menu opens, and a notice says what it asks
+panels.onStepWhere = id => {
+  const i = STEPS.findIndex(st => st.id === id), step = STEPS[i]; if (!step) return;
+  const later = i > game.s.projects.step, spot = stepSpot(game.s, step, true), text = t(game.s.mode === 'restore' && step.restore ? step.restore : step.text);
+  const say = later ? t('Later in the story: {text}', { text }) : text;
+  if (spot) { panels.close(); if (build.open) build.close(); radial.hide(); flyTo(spot[0], spot[2], Math.min(world.cam.span, 34)); hud.toast(`${t(step.name)} · ${say}`, 'info', { icon: 'ui:projects', to: 'projects' }); }
+  else if (!later && step.panel === 'landNext') { panels.close(); panels.onLandNext?.(); }
+  else if (!later && step.panel === 'offer') { panels.close(); panels.onOffer?.(); }
+  else if (!later && step.panel) panels.show(step.panel);
+  else hud.toast(`${t(step.name)} · ${say}`, 'info', { icon: 'ui:projects' });
+};
+// a quay building before the far bank is open: say what opens it and show the story's next step
+build.onStory = () => { if (build.open) build.close(); radial.hide(); panels.show('projects'); const step = currentStep(game.s); hud.toast(step ? t('The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}', { name: t(step.name) }) : t('The far bank of the brook opens in chapter 12, when the co-operative is founded.'), 'info', { icon: 'quay', to: 'projects' }); };
 build.onQuay = () => { if (build.open) build.close(); radial.hide(); panels.show('quay'); panels.onQuayLook?.(); };
 panels.onSite = kind => {
   if (!SITES.some(x => x.kind === kind) || !BUILDINGS[kind]?.site) return;

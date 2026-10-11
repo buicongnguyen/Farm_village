@@ -10,7 +10,45 @@ import { readyCount } from '../core/production.mjs';
 import { isBroken } from '../core/working.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { truckCoins } from '../core/market.mjs';
-import { MAILBOX, POND_DOCK } from '../content/world.mjs';
+import { MAILBOX, POND_DOCK, SITES, RUINS, COOPERATIVE_BOARD, FAIR_BOARD, ALBRIGHT, QUAY, LOTS, PARCEL } from '../content/world.mjs';
+import { currentStep, TAIL } from '../core/projects.mjs';
+import { buyableParcels } from '../core/build.mjs';
+
+/** Where the story's current step is worked on, in metres [x, y, z], or null: a blue star floats there. Only steps of
+ *  the checklist (after the clinic), and never an optional one: the star always means "the story goes on here". */
+export function storySpot(s) {
+  const step = currentStep(s); return !step || s.projects.step < TAIL || step.optional ? null : stepSpot(s, step);
+}
+/** Where a step of Village projects is worked on, in metres, or null when it has no one place. `any`: also a thing that
+ *  is built already and an early step's building (the panel's "where is this" tap), not only what the star marks. */
+export function stepSpot(s, step, any = false) {
+  const cell = (x, z, y = 4.6) => [x * CELL, y, z * CELL];
+  const placed = kind => { const p = Object.values(s.placed).find(q => q.kind === kind); if (!p) return null; const [w, d] = footprint(kind, p.rot); return cell(p.x + w / 2, p.z + d / 2, 6); };
+  const site = kind => { const st = SITES.find(x => x.kind === kind) ?? RUINS.find(x => x.kind === kind); if (!st) return null; const [w, d] = st.size ?? footprint(kind, st.rot ?? 0); return cell(st.x + w / 2, st.z + d / 2, 5.2); };
+  const lot = kind => placed(kind) ?? (() => { const taken = new Set(Object.values(s.placed).map(p => p.lot).filter(Boolean)), free = LOTS.find(l => !taken.has(l.id)); return free ? cell(free.x + free.w / 2, free.z + free.d / 2, 4) : null; })();
+  switch (step.id) {
+    case 'market_day': return placed('market');
+    case 'third_field': { const next = buyableParcels(s)[0]; return next ? cell(next.x + PARCEL / 2, next.z + PARCEL / 2, 4) : null; }
+    case 'juice': return placed('juice_press'); case 'noodles': return placed('noodle_factory');
+    case 'police': case 'dock': case 'company': case 'stage': return placed(step.id) ? (any ? placed(step.id) : null) : site(step.id);
+    case 'first_contract': return placed('company');
+    case 'harvest_festival': return placed('stage');
+    case 'albright': return s.story?.albright ? null : cell(ALBRIGHT.stand[0] + 0.5, ALBRIGHT.stand[1] + 0.5, 3.4);
+    case 'cooperative': case 'cooperative_order': return cell(COOPERATIVE_BOARD.x + 0.5, COOPERATIVE_BOARD.z + 0.5, 3.6);
+    case 'quay': return cell((QUAY.x0 + QUAY.x1 + 1) / 2, (QUAY.z0 + QUAY.z1 + 1) / 2, 3.4);
+    case 'quay_house': return lot('apartment'); case 'hotel': case 'ten_guests': return lot('hotel'); case 'halt': case 'first_train': return lot('halt');
+    case 'valley_company': return placed('company');
+    case 'valley_fair': return cell(FAIR_BOARD.x + 0.5, FAIR_BOARD.z + 0.5, 3.8);
+    case 'anglers': return any ? cell(POND_DOCK.x + 0.5, POND_DOCK.z + 0.5, 3) : null;
+    default: { if (!any) return null; const kind = step.site ?? step.builds?.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)); return kind ? placed(kind) ?? site(kind) : null; }   // hands, the walk upriver (a pill leads to Grandpa Oak), the green goals, the billion: no one place
+  }
+}
+function storyTexture() {   // a blue disc with a white star: "the story goes on here"
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+  g.fillStyle = '#2f8fe8'; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.translate(32, 33); g.fillStyle = '#fff'; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 8 : 18; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
 
 const CAP = 160, SIZE = 7;
 function alertTexture() {
@@ -37,12 +75,13 @@ function cloud(map) {
 }
 export class Marks {
   constructor(world, game, land) {
-    Object.assign(this, { world, game, land, acc: 0, list: { coin: [], alert: [] } });
+    Object.assign(this, { world, game, land, acc: 0, list: { coin: [], alert: [], story: [] } });
     const coin = new THREE.TextureLoader().load('./assets/icons/ui-coin.webp'); coin.colorSpace = THREE.SRGBColorSpace;
     this.coin = cloud(coin); this.alert = cloud(alertTexture()); this.glint = cloud(sparkleTexture()); this.glint.material.blending = THREE.AdditiveBlending;
     this.glint.material.color.set('#ffe9a8');   // a warm glint: gold light, not white
     this.backing = cloud(backingTexture()); this.backing.renderOrder = 19;
-    world.scene.add(this.backing, this.coin, this.alert, this.glint);
+    this.story = cloud(storyTexture());
+    world.scene.add(this.backing, this.coin, this.alert, this.glint, this.story);
     world.onFrame?.((dt, now) => this.frame(dt, now));
   }
   /** Where every marker belongs right now: { coin: [[x, y, z]], alert: [...] } (also read by the tests). */
@@ -65,20 +104,21 @@ export class Marks {
     }
     if ((s.fishing?.coins ?? 0) > 0 || (s.fishing?.line && s.fishing.line.doneAt <= now)) coin.push([(POND_DOCK.x + 0.5) * CELL, 2.2, (POND_DOCK.z + 0.5) * CELL]);   // the village pond
     if (rentWaiting(s, now) >= 10) coin.push([(MAILBOX.x + 0.5) * CELL, 2.2, (MAILBOX.z + 0.5) * CELL]);   // rent waiting in the mailbox
-    return { coin, alert };
+    const spot = storySpot(s);
+    return { coin, alert, story: spot ? [spot] : [] };
   }
   frame(dt, now) {
-    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = this.backing.visible = false; return; }   // (the lighting checks measure the world alone)
+    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = this.backing.visible = this.story.visible = false; return; }   // (the lighting checks measure the world alone)
     this.acc += dt; if (this.acc > 0.4 || !this.list.coin.length && !this.list.alert.length && this.acc > 0.1) { this.acc = 0; this.list = this.collect(); }
     const t = document.body.classList.contains('reduced-motion') ? 0 : performance.now() / 1000;
     const dim = 1 - 0.5 * (this.world.daylight?.nightness ?? 0);   // markers soften at night
-    for (const pts of [this.coin, this.alert]) pts.material.color.setScalar(dim);
+    for (const pts of [this.coin, this.alert, this.story]) pts.material.color.setScalar(dim);
     this.glint.material.color.set('#ffe9a8').multiplyScalar(dim);
-    for (const [key, pts] of [['coin', this.coin], ['alert', this.alert]]) {
-      const list = this.list[key], arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
+    for (const [key, pts] of [['coin', this.coin], ['alert', this.alert], ['story', this.story]]) {
+      const list = this.list[key] ?? [], arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { const [x, y, z] = list[i]; arr[i * 3] = x; arr[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); arr[i * 3 + 2] = z; }
       pts.geometry.attributes.position.needsUpdate = true; pts.geometry.setDrawRange(0, n); pts.visible = n > 0; pts.userData.n = n;
-      pts.material.size = SIZE * this.world.renderer.getPixelRatio() * (key === 'coin' ? 1 + 0.1 * Math.sin(t * 6) : 1);
+      pts.material.size = SIZE * this.world.renderer.getPixelRatio() * (key === 'coin' ? 1 + 0.1 * Math.sin(t * 6) : key === 'story' ? 7 + 0.5 * Math.sin(t * 4) : 1);
     }
     // the backing disc follows every coin (same bob), a little bigger
     { const bk = this.backing, ba = bk.geometry.attributes.position.array, bn = Math.min(CAP, this.list.coin.length);

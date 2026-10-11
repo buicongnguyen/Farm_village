@@ -5,7 +5,7 @@
 // collected together. Without a `truck` index, loading picks the first truck at the market with room, filling loads
 // every idle truck, and sending sends every loaded one, so a one-truck farm plays exactly as before.
 import { TRUCK } from '../content/economy.mjs';
-import { GOODS, CROPS } from '../content/goods.mjs';
+import { GOODS, CROPS, RECIPES } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { workingCount, isWorking } from './working.mjs';
 import { growthTruckPayment, collectGrowthTruck } from './village-growth.mjs';
@@ -37,13 +37,21 @@ export function blocked(s) {
   if (!isWorking(s, 'road_south')) return 'Repair the village street first';
   return null;
 }
-/** How much of a good "Fill" leaves in the barn: what the open orders ask for, never any feed (the animals eat it),
- *  and one seed per bed for crops that cost money to plant. */
+/** How much of a good "Fill" (and the truck driver) leaves in the barn: what the open orders ask for, never any feed (the
+ *  animals eat it), one seed per bed for crops that cost money to plant, and what the workshops cook with (kitchenKeep). */
 export function keepFor(s, good) {
   if (GOODS[good]?.kind === 'feed') return Infinity;
   let keep = 0;
   for (const c of s.orders?.cards ?? []) keep += c.need?.[good] ?? 0;
   if (CROPS[good] && !CROPS[good].free) keep += Object.values(s.placed).filter(p => p.kind === 'bed').length;
+  return keep + kitchenKeep(s, good);
+}
+/** What the farm's own workshops cook with stays too: for every recipe of a building that stands on the farm, enough of
+ *  each ingredient for KITCHEN_BATCHES batches (the largest such amount, not the sum: recipes share their ingredients). */
+export const KITCHEN_BATCHES = 3;
+export function kitchenKeep(s, good) {
+  let keep = 0;
+  for (const r of Object.values(RECIPES)) { const n = r.needs?.[good]; if (n && (s.counts?.[r.at] ?? 0) > 0) keep = Math.max(keep, n * KITCHEN_BATCHES); }
   return keep;
 }
 /** Goods "Fill" may load, most plentiful first: [[good, n], ...]. */

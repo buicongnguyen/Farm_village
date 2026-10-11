@@ -188,12 +188,22 @@ export const FAIR_SPOTS = (() => {
   for (const [i, z] of [P.z0, P.z0 + 3, P.z0 + 6].entries()) out.push({ model: 'fair_cart', x: P.x0 - 4.5, z: z + 0.5, rot: Math.PI / 2 + (i - 1) * 0.3, cells: [[P.x0 - 5, z]] });   // a cart from each valley
   return out;
 })();
+/** Posts and trunks that stand on open ground (view/dress.mjs, view/land-view.mjs): nobody walks through them either.
+ *  The lamps and trees of the verge north of the village street, the lamps by the brook road and on the square, the
+ *  valley company's flag. The order board stands on the road people walk to the dock, so it stays open. */
+export const POST_CELLS = new Set([...Array.from({ length: 11 }, (_, k) => [34 + 6 * k, k % 2 ? 89 : 88]), [30, 56], [30, 70], [30, 84], [38, 100], [43, 102]].map(c => c.join()));
+export const COMPANY_FLAG_CELL = [87, 106];
+/** The quay's own posts once it is paved: a lamp in the lane west of every lot, a bollard every fourth cell of the water
+ *  row, and a sale sign at the front of a lot (LOTS[i]) that is still free. */
+export const quayLampCell = l => [l.x - 1, QUAY.z0 - 1];
+export const isQuayBollard = (x, z) => z === QUAY.z1 && x > QUAY.x0 && x <= QUAY.x1 && (x - QUAY.x0 - 1) % 4 === 0;
+export const lotSignCell = l => [l.x + Math.floor(l.w / 2), l.z + l.d - 1];
 /** The arch over the farm entrance, between the road and the start parcel. */
 export const FARM_GATE = { x: 30.5, z: 64, rot: Math.PI / 2 };
 /** The windmill by the farmhouse (cells). */
 export const WINDMILL = { x: 17, z: 54, rot: 0.4 };
 /** Scenery that stands on open ground and is solid: nobody walks through it (core/walk.mjs). Cells. The well, the
  *  windmill, the mailbox and the square's corner stalls (benches stay open: people sit on them). */
-export const SOLID_CELLS = new Set([[WELL.x, WELL.z], [WINDMILL.x, WINDMILL.z], [MAILBOX.x, MAILBOX.z], [PLAZA.x0 + 1, PLAZA.z0 + 1], [PLAZA.x1, PLAZA.z0 + 1], [PLAZA.x1, PLAZA.z1]].map(c => c.join()));
+export const SOLID_CELLS = new Set([[WELL.x, WELL.z], [WINDMILL.x, WINDMILL.z], [MAILBOX.x, MAILBOX.z], [PLAZA.x0 + 1, PLAZA.z1], [PLAZA.x1, PLAZA.z1]].map(c => c.join()));
 /** The land drawn around the map so its edge never shows (metres beyond the edge): low hills, then a far haze. */
 export const SKIRT = 72;

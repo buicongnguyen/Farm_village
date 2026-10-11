@@ -26,7 +26,6 @@ export const JA_16 = {
   "Doctor": "お医者さん",
   "{person:hazel:display}": "{person:hazel:display}",
   "The clinic opens its doors again.": "診療所の扉が、もう一度開く。",
-  "Four families sign {person:marisol:short}’s list, and {person:hazel:display} comes home from the coast. The clinic opens, with {person:grace:short}’s vet room at the back. {person:hazel:short} pauses by the burned festival poster: she remembers treating {person:gus:short}’s hands that night. Outside, {person:ada:short} plants cherries for the grandchildren’s grandchildren.": "四つの家族が{person:marisol:short}のリストに名前を書き、{person:hazel:display}が海辺から帰ってきました。診療所が開き、奥には{person:grace:short}の動物診療室もできました。{person:hazel:display}は、焦げたお祭りのポスターの前で立ち止まります。あの夜、{person:gus:short}の手を治療したことを覚えているのです。外では{person:ada:display}が、孫たちの孫のためにサクランボの木を植えています。",
   "{person:hazel:short} is home, and {person:ellis:short} has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.": "{person:hazel:display}が帰ってきたから、{person:ellis:short}も釣り針の傷を隠せないわね。先生に、サクランボを摘んできてくれる？",
   "Cherries for the grandchildren’s grandchildren. {person:ellis:short} says that is a long time to wait for pie.": "孫たちの孫のための、サクランボよ。{person:ellis:short}ったら、パイを待つには長すぎるって。",
   "A fruit stand by the lane, love. Let the orchard pay for its own next tree.": "小道のそばに果物売り場を置こうか。果樹の売上で、次の木を買えたらいいね。",

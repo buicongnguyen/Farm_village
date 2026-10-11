@@ -94,7 +94,7 @@ export function renderToday(s, now) {
 
 export function renderProjects(s, now) {
   const step = currentStep(s);
-  const list = STEPS.map((st, i) => { const done = stepDone(s, st.id), now = !done && i === s.projects.step; return `<li class="${done ? 'done' : now ? 'now' : ''}">${glyph(done ? 'check' : now ? 'play' : 'dot', 'g')} ${t(st.name)}</li>`; }).join('');
+  const list = STEPS.map((st, i) => { const done = stepDone(s, st.id), now = !done && i === s.projects.step; return done ? `<li class="done">${glyph('check', 'g')} ${t(st.name)}</li>` : `<li class="${now ? 'now' : ''}"><button class="step-where" data-do="stepWhere" data-step="${st.id}">${glyph(now ? 'play' : 'dot', 'g')} ${t(st.name)} <i>›</i></button></li>`; }).join('');   // a step not done yet: a tap shows where it is done (main.mjs)
   if (!step) return `<p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
   const ready = stepReady(s, now), reqs = [];
   if (step.needs.level) reqs.push([s.level >= step.needs.level, t('Reach level {level}', { level: step.needs.level })]);

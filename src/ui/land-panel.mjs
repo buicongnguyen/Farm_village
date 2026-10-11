@@ -3,6 +3,8 @@ import { LAND_BRANCH } from '../content/land.mjs';
 import { CLEAR } from '../content/economy.mjs';
 import { parcelNote } from '../content/world.mjs';
 import { landBranchStatus, unreadLandDiscovery } from '../core/land-discovery.mjs';
+import { buyableParcels } from '../core/build.mjs';
+import { PARCEL } from '../content/world.mjs';
 import { t, num } from '../kit/i18n.mjs';
 import { coinMark, iconHtml, faceHtml } from './icon.mjs';
 import { nameOf } from './bonds-panels.mjs';
@@ -18,7 +20,24 @@ export function renderLandEntry(s, { album = false } = {}) {
     <span><b>${t(LAND_BRANCH.title)}</b><small>${t(label)}${unreadLandDiscovery(s) ? ` · ${t('New discovery')}` : ''}</small></span></button>`;
 }
 
+/** True when the panel is about another field than the Sunlit clearing (which is the first extra field only). */
+export const plainField = (s, parcel) => !!parcel && landBranchStatus(s, parcel).parcel !== parcel;
+/** Any other field: for sale next to the farm (price, what it is for, a Buy button), or already yours. */
+function renderField(s, parcel) {
+  const lot = buyableParcels(s).find(p => p.parcel === parcel);
+  if (s.parcels.includes(parcel)) return `<div class="land-branch"><p>${t('This field is yours. Clear the weeds and rocks, then plant or build on it.')}</p></div>`;
+  if (!lot) return `<div class="land-branch"><p class="hint">${t('Buy land next to your farm')}</p></div>`;
+  return `<div class="land-branch"><p class="land-note"><b>${t(parcelNote(parcel))}</b></p>
+    <p>${t('A field next to your farm: room for more beds, fruit trees, animals and workshops.')}</p>
+    <p><b>${t('{size} × {size} cells', { size: PARCEL })}</b> · ${t('{n} of 16 fields are yours', { n: s.parcels.length })}</p>
+    <p>${t('The big trees on it are cut for you when you buy it. Only weeds and rocks are left to clear.')}</p>
+    <p class="hint">${t('Weeds: {weeds} coins each · Rocks: {rocks} coins each', { weeds: CLEAR.weeds, rocks: CLEAR.rock })}</p>
+    ${lot.reason ? `<p class="hint">${t(lot.reason, lot.params ?? {})}</p>` : ''}
+    <button class="btn primary wide" data-do="landBuy" data-parcel="${parcel}" ${lot.ok ? '' : 'disabled'}>${t('Buy this plot for {coins} coins', { coins: num(lot.price) })}</button></div>`;
+}
+
 export function renderLandPanel(s, parcel) {
+  if (plainField(s, parcel)) return renderField(s, parcel);
   const status = landBranchStatus(s, parcel);
   if (!status.enabled) return `<p class="hint">${t('This clearing belongs to the restored village')}</p>`;
   const preview = !status.owned ? `<p class="land-note"><b>${t(parcelNote(status.parcel))}</b></p><p>${t(LAND_BRANCH.text)}</p><p>${t(LAND_BRANCH.purpose)}</p>

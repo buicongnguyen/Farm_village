@@ -81,12 +81,25 @@ was fixed in this pass, and what is left, with the reason.
 - The first-load limit is 1,300,000 bytes: the story is complete, and the release pass moves story text behind
   `import()` (`90-release-pass.md` section 5).
 
+## Third pass (the owner: "may you fix those issues", and what they met while playing)
+
+- **A mark in the world.** A blue star floats over the place the story's step is worked on (the stand, the two boards,
+  the quay and its lots, the sites, the next field): `storySpot` in `view/marks-view.mjs`. No star for an optional step.
+- **Cards 5, 6 and 7 and the poster line** no longer get ahead of the story: the cherries are in blossom, the gatepost
+  is too worn to read, Pearl reads something twice, Poppy frames the poster seen at the clinic.
+- **Posts are solid**: the verge's lamps and trees, the lamps by the brook road and on the square, the quay's lamps,
+  bollards and sale signs, the company's flag (`POST_CELLS` and the quay's helpers in `content/world.mjs`). The order
+  board stays open: it stands on the road people walk to the dock.
+- **The festival stage stood in two market stalls and a lamp.** The square's stalls are in its south corners now
+  (two, not three) and the lamp moved; `tests/square.test.mjs` keeps the stage's ground free.
+- **The Reel button** sat on Barn, Orders and Build on a wide window in the farm view; it sits above them.
+- **Any field can be bought from its panel.** After the first extra field the land panel always showed the Sunlit
+  clearing (the keepsake of the first one), with no Buy button. Other fields have their own panel: price, what it is
+  for, that its trees are cut on purchase, and Buy.
+- **The trucks leave what the workshops cook with**: three batches of every ingredient of every recipe the farm can
+  make stay in the barn (`kitchenKeep` in `core/market.mjs`), for "Fill" and for the truck driver.
+
 ## Left open, and why
 
-- **Marks in the world** on story objects (the two boards, the plaque, Grandpa Oak, the quay before it is paved):
-  needs a small piece of art (a story mark) and a look at every chapter; a task of its own.
-- **Card 5's cherries, card 6 and 7 giving away the flour company and the drawer, the festival poster found twice**:
-  each is a rewrite of a whole chapter card in four languages; best done in the native read-through of the release pass.
-- **Thin things that can be walked through** (lamps, bollards, sale signs, the flag, the farm gate's posts, the order
-  board on the road): blocking a road or verge cell for a post would make people walk round nothing.
 - Locked rows that only name a level ("Reach level N") still do not say how to level up.
+- The farm gate's posts and the order board can be walked through (both stand where people must pass).

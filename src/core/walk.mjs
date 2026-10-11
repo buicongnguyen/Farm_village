@@ -5,7 +5,7 @@
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside, isBrookBank, isEastVerge, inUpriverPath, SOLID_CELLS, FAIR_SPOTS, ALBRIGHT, AWARD_PLAQUE } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside, isBrookBank, isEastVerge, inUpriverPath, SOLID_CELLS, FAIR_SPOTS, ALBRIGHT, AWARD_PLAQUE, POST_CELLS, COMPANY_FLAG_CELL, LOTS, quayLampCell, isQuayBollard, lotSignCell } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -15,6 +15,8 @@ const FIXED = [FARMHOUSE, BARN].map(b => ({ x0: b.x - 3, z0: b.z - 3, x1: b.x + 
 const inFixed = (x, z) => FIXED.some(f => x >= f.x0 && x <= f.x1 && z >= f.z0 && z <= f.z1);
 // The four kiosks round the lake stand on the public bank: one cell each.
 const KIOSKS = new Set(SHOP_SITES.filter(k => k.id.startsWith('lake-')).map(k => `${Math.floor(k.x)},${Math.floor(k.z)}`));
+const taken = new WeakMap();   // the lots that are built on, per state and count of things placed
+const QUAY_TAKEN = s => { const n = Object.keys(s.placed).length, c = taken.get(s); if (c && c.n === n) return c.set; const set = new Set(Object.values(s.placed).map(p => p.lot).filter(Boolean)); taken.set(s, { n, set }); return set; };
 const FAIR_STALL_CELLS = new Set(FAIR_SPOTS.flatMap(spot => spot.cells.map(c => c.join())));
 const validCell = (x, z) => Number.isInteger(x) && Number.isInteger(z) && inMap(x, z);
 const validPoint = p => Array.isArray(p) && p.length === 2 && validCell(p[0], p[1]);
@@ -24,6 +26,13 @@ const roadside = (x, z) => ROAD_SEGMENTS.some(r => x >= r.x0 - 2 && x <= r.x1 + 
 /** What a step onto (x, z) costs: 1 road/path, 2 stepping stone, 3 grass, 8 crop bed; 0 = cannot stand there. */
 export function stepCost(s, x, z, blocked = null) {
   if (!validCell(x, z) || blocked?.has(`${x},${z}`)) return 0;
+  // posts and trunks: lamps, the verge's trees; the quay's bollards, lamps and sale signs; the company's flag
+  if (POST_CELLS.has(`${x},${z}`)) return 0;
+  if (s.firsts?.quay && z <= 7 && x >= 44) {
+    if (isQuayBollard(x, z)) return 0;
+    for (const l of LOTS) { const lamp = quayLampCell(l); if (lamp[0] === x && lamp[1] === z) return 0; const sign = lotSignCell(l); if (sign[0] === x && sign[1] === z && !QUAY_TAKEN(s).has(l.id)) return 0; }
+  }
+  if (s.valley?.founded && x === COMPANY_FLAG_CELL[0] && z === COMPANY_FLAG_CELL[1]) return 0;
   if (isRoad(x, z)) return 1;                                           // the road bridge crosses the brook
   if (s.firsts?.quay && inQuay(x, z)) return 1;                         // the paved quay on the far bank (Act IV)
   if (isBrook(x, z)) return x === STEPPING_STONES.x ? 2 : 0;

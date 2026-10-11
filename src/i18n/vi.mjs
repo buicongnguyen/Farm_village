@@ -694,7 +694,6 @@ Object.assign(VI, {
   "Doctor": "Bác sĩ",
   "{person:hazel:display}": "{person:hazel:display}",
   "The clinic opens its doors again.": "Trạm y tế lại mở cửa.",
-  "Four families sign {person:marisol:short}’s list, and {person:hazel:display} comes home from the coast. The clinic opens, with {person:grace:short}’s vet room at the back. {person:hazel:short} pauses by the burned festival poster: she remembers treating {person:gus:short}’s hands that night. Outside, {person:ada:short} plants cherries for the grandchildren’s grandchildren.": "Bốn gia đình ký tên ủng hộ cô {person:marisol:short}. Bác sĩ {person:hazel:short} từ miền biển trở về. Trạm y tế mở cửa, có phòng khám thú y của cô {person:grace:short} phía sau. Bên áp phích lễ hội cháy sém, bác sĩ {person:hazel:short} nhớ lại đêm chữa bỏng cho bác {person:gus:short}. Ngoài sân, bà {person:ada:short} trồng anh đào cho con cháu mai sau.",
   "{person:hazel:short} is home, and {person:ellis:short} has no excuse to hide that fishing-hook scar. Pick some cherries for her, dear.": "{person:hazel:short} về rồi, ông {person:ellis:short} hết cớ giấu vết sẹo do lưỡi câu gây ra. Cháu hái ít quả anh đào biếu bà ấy nhé.",
   "Cherries for the grandchildren’s grandchildren. {person:ellis:short} says that is a long time to wait for pie.": "Bà trồng anh đào cho con cháu mai sau. Ông {person:ellis:short} bảo đợi đến lúc đó mới có bánh ăn thì lâu quá.",
   "A fruit stand by the lane, love. Let the orchard pay for its own next tree.": "Mình đặt quầy trái cây bên ngõ nhé. Tiền bán quả sẽ mua thêm cây cho vườn.",

@@ -78,7 +78,7 @@ export class BuildView {
     const items = Object.entries(BUILDINGS).filter(([kind, d]) => d.cat === this.cat && (!d.site || SITES.some(x => x.kind === kind && !x.hidden))).map(([kind, d]) => {
       if (d.lot) {   // it stands on a lot of the quay, across the brook: the card leads to the quay's panel
         const open = !!s.firsts?.bridge, level = s.level < d.level;
-        const note = !open ? `${glyph('lock', 'g')} ${t('Across the brook, once the far bank is open')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('On the quay')}`;
+        const note = !open ? `${glyph('lock', 'g')} ${t('The far bank opens in chapter 12 · tap to see the way')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('On the quay')}`;
         return `<button class="card site-card${open ? '' : ' locked'}" data-kind="${kind}">${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small></button>`;
       }
       if (d.site) {   // it is built at its own place, from its own panel: the card leads there
@@ -111,7 +111,7 @@ export class BuildView {
   select(kind) {
     const s = this.game.s, d = BUILDINGS[kind], may = mayBuild(s, kind);
     if (d.site) { this.onSite?.(kind); return; }
-    if (d.lot) { if (s.firsts?.bridge) this.onQuay?.(); else this.hud.refuse('Across the brook, once the far bank is open'); return; }   // one fixed place: the view goes there and its panel opens (main.mjs)
+    if (d.lot) { if (s.firsts?.bridge) this.onQuay?.(); else this.onStory?.(); return; }   // not open yet: the story's next step is shown (main.mjs)
     if (s.level < d.level) { this.hud.refuse('Reach level {level} first', { level: d.level, kind, lock: 'level' }); return; }
     if (!may.ok) { this.hud.refuse(may.reason, may.params); return; }
     Object.assign(this, { mode: 'place', kind, rot: 0, moving: null });
