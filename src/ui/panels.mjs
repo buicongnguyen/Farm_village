@@ -195,6 +195,7 @@ export class Panels {
     else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');
     else if (d.do === 'fillTruck') g.do('fillTruck');
+    else if (d.do === 'holdTrucks') g.do('holdTrucks', { on: d.on === '1' });
     else if (d.do === 'buyTruck') g.do('buyTruck');
     else if (d.do === 'collectTruck') g.do('collectTruck');
     else if (d.do === 'upgradeTruck') g.do('upgradeTruck');

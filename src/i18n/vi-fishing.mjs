@@ -928,4 +928,9 @@ export const VI_FISHING = {
   'The company office is rebuilt and in working order': 'Văn phòng công ty đã được dựng lại và hoạt động tốt',
   'Two different food factories in working order ({n} of 2)': 'Hai xưởng thực phẩm khác loại đang hoạt động (đã có {n}/2)',
   'A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.': 'Xưởng thực phẩm là xưởng như máy ép nước quả, xưởng mì hay xưởng sữa. Cối xay cám và lò bánh không được tính.',
+  'Pause the truck driver': 'Cho tài xế tạm nghỉ',
+  'The driver is waiting · let the driver work again': 'Tài xế đang chờ · cho tài xế làm việc lại',
+  'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': 'Giờ không món nào tự rời kho nữa. Bạn vẫn có thể tự chất hàng và cho xe đi.',
+  'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': 'Tài xế tự chất hàng dư và cho xe đi. Cho tạm nghỉ để dồn hàng trong kho.',
+  'The goods of this request are kept in the barn: the trucks do not take them to market.': 'Hàng của đơn này được giữ lại trong kho: xe tải không chở chúng ra chợ.',
 };

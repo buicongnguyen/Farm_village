@@ -148,3 +148,15 @@ test('the next-task chip: a barn nearly full offers to fill the trucks, then to 
   s.barn.items = { wheat: 40 };
   assert.notEqual(nextTask(s, t + TRUCK.tripMs + 2)?.key, 'The barn is nearly full: load the trucks', 'a barn with room does not nag');
 });
+
+test('the company\'s open request stays in the barn, and a paused driver loads and sends nothing', async () => {
+  const { companyKeep } = await import('../src/core/village-growth.mjs');
+  const [s, t] = ready(); s.level = 16; let i = 0;
+  for (const kind of ['company', 'juice_press', 'noodle_factory']) { s.placed['zz' + kind] = { kind, x: 60 + 6 * i++, z: 40, rot: 0 }; s.counts[kind] = 1; }
+  assert.equal(companyKeep(s, 'carrot_juice'), 6); assert.equal(companyKeep(s, 'noodles'), 8); assert.equal(companyKeep(s, 'wheat'), 0);
+  s.orders.cards = []; s.barn.items = { carrot_juice: 6 + kitchenKeep(s, 'carrot_juice'), noodles: 8 + kitchenKeep(s, 'noodles') + 5 };
+  assert.deepEqual(spareForTrucks(s), [['noodles', 5]], 'only what is beyond the request is spare');
+  must(s, 'holdTrucks', { on: true }, t); assert.equal(s.truckHold, true);
+  assert.equal(unpack(pack(s)).truckHold, true, 'the pause survives a save');
+  must(s, 'holdTrucks', { on: false }, t); assert.equal(s.truckHold, undefined);
+});

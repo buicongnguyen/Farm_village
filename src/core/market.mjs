@@ -8,7 +8,7 @@ import { TRUCK } from '../content/economy.mjs';
 import { GOODS, CROPS, RECIPES } from '../content/goods.mjs';
 import * as barn from './barn.mjs';
 import { workingCount, isWorking } from './working.mjs';
-import { growthTruckPayment, collectGrowthTruck } from './village-growth.mjs';
+import { growthTruckPayment, collectGrowthTruck, companyKeep } from './village-growth.mjs';
 import { marketDayOf, marketBonus, countMarketDay, marketExtra } from './market-day.mjs';
 
 export const truckOf = s => { const t = (s.truck ??= { level: 1, away: false, backAt: 0, load: [], coins: 0, fleet: [] }); t.fleet ??= []; return t; };
@@ -44,7 +44,7 @@ export function keepFor(s, good) {
   let keep = 0;
   for (const c of s.orders?.cards ?? []) keep += c.need?.[good] ?? 0;
   if (CROPS[good] && !CROPS[good].free) keep += Object.values(s.placed).filter(p => p.kind === 'bed').length;
-  return keep + kitchenKeep(s, good);
+  return keep + kitchenKeep(s, good) + companyKeep(s, good);   // and what the company's open request asks for
 }
 /** What the farm's own workshops cook with stays too: for every recipe of a building that stands on the farm, enough of
  *  each ingredient for KITCHEN_BATCHES batches (the largest such amount, not the sum: recipes share their ingredients). */
@@ -90,6 +90,9 @@ export const actions = {
     ctx.emit('truckLoaded', { good, n, truck: i });
     return { loaded: n, truck: i };
   },
+  /** Hold the hired driver back, or let them work again: { on }. A held driver still brings in the takings, but loads and
+   *  sends nothing, so the barn fills for a request or a project. Your own Fill and Send work as always. */
+  holdTrucks(ctx, { on } = {}) { if (on) ctx.s.truckHold = true; else delete ctx.s.truckHold; ctx.emit('trucksHeld', { on: !!on }); return { on: !!on }; },
   /** Fill trucks at the market with spare goods (spareForTrucks), most plentiful first: { truck? } (all idle trucks). */
   fillTruck(ctx, { truck } = {}) {
     const { s } = ctx, why = blocked(s); if (why) return ctx.fail(why);

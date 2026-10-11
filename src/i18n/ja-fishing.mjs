@@ -928,4 +928,9 @@ export const JA_FISHING = {
   'The company office is rebuilt and in working order': '会社の事務所を建て直し、使える状態にする',
   'Two different food factories in working order ({n} of 2)': 'ちがう種類の食品工場が2つ動いている（2つのうち{n}つ）',
   'A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.': '食品工場とは、ジュースしぼり機、めん工場、乳製品工房のような工房のことです。飼料工場とパン屋は数えません。',
+  'Pause the truck driver': 'トラックの運転手を休ませる',
+  'The driver is waiting · let the driver work again': '運転手は待機中 · また働いてもらう',
+  'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': 'いまは納屋から勝手に出ていくものはありません。自分で積んで送り出すことはできます。',
+  'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': '運転手は余った品物を積んで、自分でトラックを出します。納屋に品物をためたいときは休ませましょう。',
+  'The goods of this request are kept in the barn: the trucks do not take them to market.': 'この注文の品物は納屋に取っておきます。トラックが市場へ持っていくことはありません。',
 };
