@@ -885,4 +885,10 @@ export const KO_FISHING = {
   'Show the place': '자리 보기',
   'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': '자리는 농장 북쪽, 다리 바로 동쪽의 개울가예요. 표지판이 서 있어요.',
   'Its place is the north side of the village square, where the burned platform stands.': '자리는 마을 광장 북쪽, 불탄 무대가 있는 곳이에요.',
+  'Across the brook, once the far bank is open': '개울 건너편, 건너편 둑이 열리면',
+  'On the quay': '부둣가에',
+  'Upriver': '개울 위쪽',
+  'Valley company': '골짜기 회사',
+  'My drawings had straighter lines. I find I do not miss them.': '제 도면은 선이 더 반듯했지요. 그런데 그립지가 않더군요.',
+  'The farm is too big for one pair of hands now, and nobody had to be asked twice. One neighbour takes the far beds, another the ovens, a third whatever needs doing. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.': '이제 농장은 두 손만으로는 벅찰 만큼 커졌고, 아무도 두 번 부탁받을 필요가 없었습니다. 한 이웃은 먼 밭을, 또 한 이웃은 화덕을, 다른 한 이웃은 손이 필요한 일을 맡습니다. 저녁이면 {person:ada:short} 할머니가 늘 그랬듯 봉투 뒷면에 하루 셈을 합니다.',
 };

@@ -249,6 +249,7 @@ const openOffer = () => {
 };
 panels.onOffer = openOffer; hud.onOffer = openOffer;
 build.onSite = kind => panels.onSite(kind);
+build.onQuay = () => { if (build.open) build.close(); radial.hide(); panels.show('quay'); panels.onQuayLook?.(); };
 panels.onSite = kind => {
   if (!SITES.some(x => x.kind === kind) || !BUILDINGS[kind]?.site) return;
   if (build.open) build.close(); radial.hide(); siteView(kind); panels.show('site', kind);

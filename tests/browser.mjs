@@ -684,7 +684,7 @@ await check('chapter 10: hired villagers are named and seen at work, the evening
   await page.evaluate(() => { farm.panels.close(); farm.panels.onTest('finish'); });
   await page.waitForSelector('.chapter-modal', { timeout: 20000 });
   const card = await page.textContent('.chapter-modal');
-  expect(card.includes('Hands to help') && card.includes('Chip') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
+  expect(card.includes('Hands to help') && card.includes('One neighbour takes the far beds') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
   await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-10-card.png` });
   await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 10);
   expect(!errors.length, errors.join('\n'));

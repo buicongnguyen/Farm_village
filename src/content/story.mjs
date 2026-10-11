@@ -70,7 +70,7 @@ export const CHAPTERS = [
   // Act III, the brook co-operative. The deed: three hands hired, and thirty tasks done by them
   // (docs/plan/ch10-hands-to-help.md).
   { id: 10, title: 'Hands to help', subtitle: 'Nobody had to be asked twice.', icon: '🤝',
-    text: 'The farm is too big for one pair of hands now, and nobody had to be asked twice. {person:minh:short} takes the far beds, {person:lan:short} the ovens, {person:sam:short} the truck. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.',
+    text: 'The farm is too big for one pair of hands now, and nobody had to be asked twice. One neighbour takes the far beds, another the ovens, a third whatever needs doing. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.',
     ada: 'A farm is run from the porch as much as from the field, dear. Sit down. Let me show you the sums.',
     panels: panels(10, ['Hands in the field.', 'The ovens, never cold.', 'The day, added up.']),
     when: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30 },
@@ -309,11 +309,11 @@ export const BEATS = [
     { who: 'tuyet', text: 'You always did, boy. You were late with my newspaper for eleven years.' },
   ] },
   // ── Chapter 14 (docs/plan/ch14-rooms-with-a-view.md): the hotel and its guests. ──
-  { id: 'first-guests', chapter: 14, when: s => (s.hotel?.n ?? 0) >= 1, lines: [
+  { id: 'first-guests', chapter: 14, when: s => (s.story.chapter ?? 0) >= 13 && (s.hotel?.n ?? 0) >= 1, lines: [
     { who: 'tuyet', text: 'Two with a suitcase between them, off the morning cart. They asked if the brook still talks at night.' },
     { who: 'lan', text: 'Guests! I shall bake. What do people from the city eat for breakfast? Never mind. They will eat mine.' },
   ] },
-  { id: 'full-house', chapter: 14, when: s => !!s.firsts?.fullHouse, lines: [
+  { id: 'full-house', chapter: 14, when: s => (s.story.chapter ?? 0) >= 13 && !!s.firsts?.fullHouse, lines: [
     { who: 'pip', text: 'Every room has somebody in it! I counted the shoes outside the doors.' },
     { who: 'june', text: 'A full house. The prettier we keep the valley, love, the faster the next ones come.' },
   ] },
@@ -391,7 +391,7 @@ export const BEATS = [
   { id: 'albright-returns', chapter: 19, when: s => (s.story.chapter ?? 0) >= 18 && (s.counts?.hotel ?? 0) > 0 && Object.keys(s.valley?.goals ?? {}).length >= 3, lines: [
     { who: 'albright', text: 'I have taken a room with a view of the brook. I am told there is no other kind.' },
     { who: 'ada', text: 'And how does it look beside your drawings, {person:albright:display}?' },
-    { who: 'albright', text: 'My drawings had more chimneys. I find I do not miss them.' },
+    { who: 'albright', text: 'My drawings had straighter lines. I find I do not miss them.' },
   ] },
 ];
 

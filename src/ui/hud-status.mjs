@@ -4,7 +4,7 @@ import { rentWaiting } from '../core/homes.mjs';
 import { unread } from '../core/bonds.mjs';
 import { marketDayOf } from '../core/market-day.mjs';
 import { festivalOf } from '../core/festival.mjs';
-import { albrightOffer, dividendOf } from '../core/valley.mjs';
+import { albrightOffer, dividendOf, companyPlan } from '../core/valley.mjs';
 import { VALLEY } from '../content/economy.mjs';
 import { breakfastReady } from '../core/hotel.mjs';
 import { trainOf } from '../core/train.mjs';
@@ -28,6 +28,9 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   if (day.active) rows.push({ act: 'marketday', icon: day.good, label: 'Market day', ms: Math.max(0, day.endsAt - now), lit: true });
   const fest = festivalOf(s, now);   // the Harvest Festival's evening: the time left (a tap opens its panel)
   if (fest.active) rows.push({ act: 'festival', icon: 'stage', label: 'Festival', ms: Math.max(0, fest.until - now), lit: true });
+  // Grandpa Oak waits to walk upriver (chapter 16); the valley company can be founded (chapter 17)
+  if ((s.story?.chapter ?? 0) >= 15 && (s.upriver?.stops?.length ?? 0) < 3) rows.push({ act: 'upriver', icon: 'spring_water', label: 'Upriver', text: 'waiting', hot: true });
+  if (!s.valley?.founded && (s.story?.chapter ?? 0) >= 16 && companyPlan(s).ok) rows.push({ act: 'valleyValue', icon: 'company', label: 'Valley company', text: 'ready', hot: true });
   // the valley fair runs (chapter 18): the time left (a tap opens the judging)
   if (fairActive(s, now)) rows.push({ act: 'fair', icon: 'ribbon_gold', label: 'Fair', ms: Math.max(0, s.fair.until - now), lit: true });
   // the evening report (chapter 10): offered once a day from six o'clock, when hands are hired and the day earned something

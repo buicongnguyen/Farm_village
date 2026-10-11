@@ -885,4 +885,10 @@ export const JA_FISHING = {
   'Show the place': '場所を見る',
   'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': '場所は農場の北、橋のすぐ東の小川の岸です。立て札が目じるしです。',
   'Its place is the north side of the village square, where the burned platform stands.': '場所は村の広場の北がわ、焼けた舞台のあるところです。',
+  'Across the brook, once the far bank is open': '小川のむこう。むこう岸が開いてから',
+  'On the quay': '岸壁に建てる',
+  'Upriver': '川上へ',
+  'Valley company': '谷の会社',
+  'My drawings had straighter lines. I find I do not miss them.': 'わたしの図面は、もっとまっすぐな線ばかりでした。それが、ちっとも恋しくないのです。',
+  'The farm is too big for one pair of hands now, and nobody had to be asked twice. One neighbour takes the far beds, another the ovens, a third whatever needs doing. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.': '農場はもう、ひとりの手にはあまるほど大きくなりました。だれも二度たのまれるまでもありません。ひとりは遠くの畑を、ひとりはかまどを、もうひとりは手のいるところを引きうけます。夕方になると{person:ada:short}が、いつものように封筒のうらで一日の計算をします。',
 };

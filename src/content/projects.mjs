@@ -36,9 +36,9 @@ export const STEPS = [
   { id: 'juice', name: 'Fresh juice for the village', text: 'The families ask for something cool to drink. Build a juice press on the farm.',
     needs: { level: 6 }, site: 'juice_press', done: s => working(s, 'juice_press') >= 1, builds: [] },
   { id: 'anglers', name: 'A quiet day at the pond', text: 'The children want fish for supper. Land five fish at the pond.',
-    needs: {}, done: s => (s.fishing?.caught ?? 0) >= 5, builds: [] },
+    needs: {}, panel: 'pond', optional: true, done: s => (s.fishing?.caught ?? 0) >= 5, builds: [] },
   { id: 'fleet', name: 'A second truck for the market road', text: 'One truck cannot carry it all any more. Buy a second delivery truck.',
-    needs: { level: 7 }, panel: 'market', done: s => (s.truck?.fleet?.length ?? 0) >= 1, builds: [] },
+    needs: { level: 7 }, panel: 'market', optional: true, done: s => (s.truck?.fleet?.length ?? 0) >= 1, builds: [] },
   { id: 'noodles', name: 'Noodles for the whole street', text: 'Build a noodle factory, so there is a hot bowl for everyone.',
     needs: { level: 8 }, site: 'noodle_factory', done: s => working(s, 'noodle_factory') >= 1, builds: [] },
   { id: 'police', name: 'A police post for a safe village', text: 'The village has grown. Build a police post, so someone keeps watch at night.',
@@ -98,6 +98,6 @@ export const STEPS = [
   { id: 'two_villages', name: 'The lights of two villages', text: 'A billion is only a number. Keep the market, the fair, the trains and the hotel going, and watch the lights come on along both banks.',
     needs: {}, panel: 'valleyValue', done: s => !!s.firsts?.['title:1000000000'], builds: [] },
   { id: 'hospital', name: 'From clinic to hospital', text: 'Help the clinic grow into a hospital for the whole valley.',
-    needs: { level: 15 }, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
+    needs: { level: 15 }, panel: 'villageGrowth', optional: true, done: s => Number.isSafeInteger(s.growth?.hospitalAt), builds: [] },
 ];
 export const V01_LAST_STEP = 'school';

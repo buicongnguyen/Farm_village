@@ -10,6 +10,8 @@ import * as barn from './barn.mjs';
 import { giftable, addHearts } from './bonds.mjs';
 import { gainXp } from './levels.mjs';
 
+/** Is the festival's evening running now? Cheap: the views ask every frame (festivalOf lays the whole feast). */
+export const festivalActive = (s, now) => { const f = s.festival; return !!f && Number.isFinite(f.until) && now >= f.at && now < f.until; };
 export const stageBuilt = s => (s.counts.stage ?? 0) > 0;
 const RANK = { product: 0, fruit: 1, produce: 2, crop: 3 };   // what a feast is laid from first: made food, then fruit, eggs and milk, then crops
 /** The feast the barn can lay now: up to FESTIVAL_DAY.kinds goods with `each` to spare, the best first: [{ good, n }]. Fish and feed are not feast food. */

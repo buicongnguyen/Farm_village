@@ -71,7 +71,8 @@ export function advance(ctx) {
   if (s.projects.step >= TAIL) {
     // the checklist: whatever is true is ticked off (once: the stamp is the record); the step shown is the first still open
     for (const step of STEPS.slice(TAIL)) if (!stamped(s, step) && step.done(s)) finish(step);
-    const open = STEPS.findIndex((st, i) => i >= TAIL && !stamped(s, st)), at = open < 0 ? STEPS.length : open;
+    // the story's steps first: an optional one (a quiet day at the pond, a second truck, the hospital) is shown only when nothing else is open
+    const story = STEPS.findIndex((st, i) => i >= TAIL && !st.optional && !stamped(s, st)), open = story >= 0 ? story : STEPS.findIndex((st, i) => i >= TAIL && !stamped(s, st)), at = open < 0 ? STEPS.length : open;
     if (at !== s.projects.step) { s.projects.step = at; s.projects.delivered = {}; }
   }
   for (const step of finished) ctx.emit('projectDone', { id: step.id, name: step.name, next: currentStep(s)?.id ?? null });

@@ -29,6 +29,7 @@ folder says what to build, in which files, and how to know it is done.
 | 18 | [ch18-the-valley-fair.md](ch18-the-valley-fair.md) | The fair and the produce contest | 1–2 | **done** (PR #93) |
 | 19 | [ch19-the-green-valley.md](ch19-the-green-valley.md) | Beauty goals, wealth titles, the award | 1 | **done** (PR #94) |
 | 20 | [ch20-the-lights-of-two-villages.md](ch20-the-lights-of-two-villages.md) | The billion and the closing card | 1 | **done** (PR #95) |
+| V | [95-review.md](95-review.md) | Review after chapter 20: code, story flow, guidance, walking | 1–2 | **first pass done**; open items listed |
 | R | [90-release-pass.md](90-release-pass.md) | Release pace, simulation, soundtrack, playtest, store checklist | 3–4 | not started |
 | – | [99-after-the-story.md](99-after-the-story.md) | What waits until the story is done | – | parked |
 

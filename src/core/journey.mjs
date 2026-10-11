@@ -42,7 +42,7 @@ const tests = {
 };
 export function journeyOf(s) {
   // the first built stage with something still to do (the homecoming also waits for level 4); after the last, the next planned one
-  const built = STAGES.filter(st => !st.planned), open = built.find((st, i) => !st.milestones.every(m => tests[m.test](s)) || (i === 0 && s.level < 4));
+  const built = STAGES.filter(st => !st.planned), open = built.find((st, i) => !st.milestones.every(m => m.optional || tests[m.test](s)) || (i === 0 && s.level < 4));   // a side goal (optional) never holds the story's stage back
   const stage = open ?? STAGES[built.length] ?? built.at(-1);
   const milestones = (stage.milestones ?? []).map(m => ({ ...m, done: tests[m.test](s) }));
   const unlocks = JOURNEY_UNLOCKS.filter(u => u.planned || !workingCount(s, u.kind)).slice(0, 3).map(u => ({ ...u, available: !u.planned && s.level >= BUILDINGS[u.kind].level && mayBuild(s, u.kind).ok }));

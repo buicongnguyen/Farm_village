@@ -885,4 +885,10 @@ export const VI_FISHING = {
   'Show the place': 'Xem vị trí',
   'Its place is on the bank of the brook, just east of the road bridge, north of the farm. A sign marks it.': 'Vị trí của nó ở bờ suối, ngay phía đông cây cầu, phía bắc trang trại. Có một tấm biển đánh dấu.',
   'Its place is the north side of the village square, where the burned platform stands.': 'Vị trí của nó ở phía bắc quảng trường làng, chỗ cái bục bị cháy.',
+  'Across the brook, once the far bank is open': 'Ở bên kia suối, khi bờ bên kia đã mở',
+  'On the quay': 'Trên bến',
+  'Upriver': 'Ngược suối',
+  'Valley company': 'Công ty thung lũng',
+  'My drawings had straighter lines. I find I do not miss them.': 'Bản vẽ của tôi toàn những đường thẳng tắp. Tôi nhận ra mình chẳng hề nhớ chúng.',
+  'The farm is too big for one pair of hands now, and nobody had to be asked twice. One neighbour takes the far beds, another the ovens, a third whatever needs doing. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.': 'Giờ trang trại đã quá lớn so với một đôi tay, và chẳng ai phải đợi nhờ đến lần thứ hai. Người hàng xóm này nhận mấy luống xa, người kia lo lò nướng, người thứ ba thì việc gì cần là làm. Buổi tối, bà {person:ada:short} cộng sổ cả ngày lên mặt sau một chiếc phong bì, như bà vẫn làm xưa nay.',
 };

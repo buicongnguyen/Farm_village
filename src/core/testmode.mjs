@@ -175,7 +175,7 @@ export const JUMPS = {
 /** The chapters a tester can jump to. */
 export const JUMP_CHAPTERS = Object.keys(JUMPS).map(Number).sort((a, b) => a - b);
 /** The level a chapter's own deed asks for, where the jump before it does not reach it: a tester who jumps there can play it at once. */
-const PLAY_LEVEL = { 14: BUILDINGS.hotel.level, 15: BUILDINGS.halt.level };
+const PLAY_LEVEL = { 7: BUILDINGS.police.level, 8: BUILDINGS.company.level, 9: BUILDINGS.stage.level, 13: BUILDINGS.apartment.level, 14: BUILDINGS.hotel.level, 15: BUILDINGS.halt.level };
 
 export const actions = {
   /** Use a coupon code: { code }. A known code switches the tester's tools on for this farm, once and for good. */
@@ -238,7 +238,7 @@ export const actions = {
     if (s.story.chapter >= 20) s.story.ended ??= ctx.now;   // and chapter 20: the story is told
     if (s.story.chapter >= 12) (s.firsts ??= {}).bridge ??= ctx.now;   // and chapter 12
     s.story.beats = [...new Set([...(s.story.beats ?? []), ...BEATS.filter(b => b.chapter < chapter).map(b => b.id)])];
-    s.coins = Math.max(s.coins, 1000 * chapter); s.undo = [];
+    s.coins = Math.max(s.coins, 2500 * chapter); s.undo = [];   // enough for the chapter's own deed (the halt, the valley company)
     const missing = CHAPTERS.filter(c => c.id < chapter && !c.when(s)).map(c => c.id);
     ctx.emit('testJumped', { chapter, missing });
     return { chapter, missing };
@@ -246,8 +246,9 @@ export const actions = {
   /** Unlock everything: every level's content, every project step reached, and coins to try it all. */
   testUnlockAll(ctx, { coins = 10000 } = {}) {
     const { s } = ctx, from = s.level;
-    if (s.level < TOP_LEVEL) { s.level = TOP_LEVEL; s.xp = Math.max(s.xp, xpFor(TOP_LEVEL)); }
-    const clinic = STEPS.findIndex(st => st.id === 'clinic'); s.projects.step = clinic; s.projects.delivered = { ...(STEPS[clinic].deliver ?? {}) };
+    if (s.level < TOP_LEVEL && Number.isSafeInteger(coins) && coins >= 0 && coins <= 1e9) { s.level = TOP_LEVEL; s.xp = Math.max(s.xp, xpFor(TOP_LEVEL)); }
+    if (!Number.isSafeInteger(coins) || coins < 0 || coins > 1e9) return ctx.fail('Unknown amount');
+    const clinic = STEPS.findIndex(st => st.id === 'clinic'); if (s.projects.step < clinic) { s.projects.step = clinic; s.projects.delivered = { ...(STEPS[clinic].deliver ?? {}) }; }
     s.coins += coins;
     ctx.emit('testUnlocked', { from, level: s.level, coins });
     return { level: s.level };
