@@ -261,7 +261,9 @@ panels.onStepWhere = id => {
   const i = STEPS.findIndex(st => st.id === id), step = STEPS[i]; if (!step) return;
   const later = i > game.s.projects.step, spot = stepSpot(game.s, step, true), text = t(game.s.mode === 'restore' && step.restore ? step.restore : step.text);
   const say = later ? t('Later in the story: {text}', { text }) : text;
-  if (spot) { panels.close(); if (build.open) build.close(); radial.hide(); flyTo(spot[0], spot[2], Math.min(world.cam.span, 34)); hud.toast(`${t(step.name)} · ${say}`, 'info', { icon: 'ui:projects', to: 'projects' }); }
+  const menu = !later && step.panel && !['landNext', 'offer', 'barn'].includes(step.panel);
+  if (menu) { panels.show(step.panel); hud.toast(`${t(step.name)} · ${say}`, 'info', { icon: 'ui:projects' }); }
+  else if (spot) { panels.close(); if (build.open) build.close(); radial.hide(); flyTo(spot[0], spot[2], Math.min(world.cam.span, 34)); hud.toast(`${t(step.name)} · ${say}`, 'info', { icon: 'ui:projects', to: 'projects' }); }
   else if (!later && step.panel === 'landNext') { panels.close(); panels.onLandNext?.(); }
   else if (!later && step.panel === 'offer') { panels.close(); panels.onOffer?.(); }
   else if (!later && step.panel) panels.show(step.panel);

@@ -1,5 +1,11 @@
 # Changelog
 
+## The company's request, made plain — 2026-10-11
+
+- The village board begins with the company's request: every good ticked or "N missing" with where it is made, what blocks it, and one button, "Complete the request: send the truck". Before the company takes requests, a checklist says what it still needs.
+- A truck that stands loaded at the market can take the request: its goods go back to the barn (the hired driver used to keep every truck loaded, so none was ever free).
+- Roadmap goals that are not done lead to where they are done. "The first big delivery" says how it is done.
+
 ## Stuck project lines, hold to load — 2026-10-11
 
 - Village projects ticks a deed that is already done even while an earlier step is still open ("The first market day" and "The first big delivery" stayed open on farms that ran ahead).

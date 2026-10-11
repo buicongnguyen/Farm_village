@@ -49,7 +49,7 @@ export const STEPS = [
   { id: 'company', name: 'The company office', text: 'Open a company office, where neighbours can take proper jobs.',
     needs: { level: 15 }, site: 'company', done: s => (s.counts.company ?? 0) >= 1, builds: [] },
   // chapter 8 (docs/plan/ch08-work-for-everyone.md)
-  { id: 'first_contract', name: 'The first big delivery', text: 'The company office takes orders bigger than any cart. Send its first delivery from the village board, and collect the payment.',
+  { id: 'first_contract', name: 'The first big delivery', text: 'The company office takes orders bigger than any cart. Open the village board: the company’s request is at the top. Gather the goods it lists, press “Complete the request”, and collect the payment at the market when the truck is back.',
     needs: { level: 15 }, panel: 'villageGrowth', done: s => normalizeGrowth(s).settled >= 1, builds: [] },
   // chapter 9 (docs/plan/ch09-the-village-sings-again.md)
   { id: 'stage', name: 'The festival stage', text: 'Only a burned platform is left of the old stage on the village square. Build a new one where it stood.',
