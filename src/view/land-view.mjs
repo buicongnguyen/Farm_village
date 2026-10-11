@@ -24,7 +24,7 @@ const RIM_CHUNK = 16;
 const meadowPath = x => Math.max(brookCurve(x) + 3.4, MEADOW.z1 - 0.35 + Math.sin(x * 0.7) * 0.3);
 // What stands beside the barn as its room grows (cells from the barn's middle; shown from this capacity on).
 const BARN_GROWS = [[150, 'barn_hay', 3.0, 0.4, 0.3], [400, 'barn_hay', 3.5, 1.5, 1.1], [1000, 'barn_silo', 3.3, 3.0, 0], [2500, 'barn_hay', 3.9, -0.6, 2.0], [5000, 'barn_silo', 3.3, -2.6, 0], [10000, 'barn_tractor', 4.6, 5.0, 0.5]];
-const OWN = /^(truck|barnup:|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
+const OWN = /^(truck|barnup:|outup:|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
@@ -340,6 +340,20 @@ export class LandView {
     for (let i = 0; i < N / 2; i++) { const id = `quay:t${i}`; if (paved && b.has(rail)) b.set(id, { model: rail, x: (i * 2 + 1) * CELL, z: (TRACK.z + 0.5) * CELL, rot: 0 }); else b.remove(id); }
     this.world.onLampsChanged?.();
   }
+  /** An upgraded animal home or workshop shows it: one round bale of its goods' packing stands by its east wall for every
+   *  output upgrade (core/output.mjs). `pop`: a new one bounces in. */
+  drawOutput(pop = false) {
+    const b = this.world.batches, want = new Set(); if (!b.has('barn_hay')) return;
+    for (const [id, level] of Object.entries(this.s.outputUp ?? {})) {
+      const p = this.s.placed[id]; if (!p) continue; const [w, d] = footprint(p.kind, p.rot);
+      for (let k = 0; k < Math.min(4, level); k++) {
+        const key = `outup:${id}:${k}`; want.add(key); const isNew = !b.items.has(key);
+        b.set(key, { model: 'barn_hay', x: (p.x + w + 0.35) * CELL, z: (p.z + 0.35 + k * Math.max(0.5, (d - 0.7) / 3)) * CELL, rot: k * 1.3, scale: 0.62 });
+        if (isNew && pop) b.pulse(key, { from: 0.2, to: 0.72, ms: 520 });
+      }
+    }
+    for (const key of [...b.items.keys()]) if (key.startsWith('outup:') && !want.has(key)) b.remove(key);
+  }
   /** The barn shows its upgrades: hay, then a silo, more hay, a second silo and a tractor (BARN_GROWS). `pop`: a new one bounces in. */
   drawBarn(pop = false) {
     const b = this.world.batches, cap = this.s.barn?.cap ?? 0;
@@ -477,7 +491,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround(); this.drawBarn(true);
+      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround(); this.drawBarn(true); this.drawOutput(true);
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -518,7 +532,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside(); this.fairKey = null; this.drawFair(); this.bankCleared = this.upriverCleared = false; this.drawOpenGround(); this.drawBarn();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside(); this.fairKey = null; this.drawFair(); this.bankCleared = this.upriverCleared = false; this.drawOpenGround(); this.drawBarn(); this.drawOutput();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }

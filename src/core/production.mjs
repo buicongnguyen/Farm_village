@@ -1,5 +1,6 @@
 // Production buildings: independent trays. Inputs are paid when work starts; finished products keep their tray
 // until collected. Legacy serial jobs keep their saved schedule until that batch is collected.
+import { outputTimes } from './output.mjs';
 import { RECIPES } from '../content/goods.mjs';
 import { SLOTS, XP, SLUICE } from '../content/economy.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -24,7 +25,7 @@ export const productionDuration = (s, building, recipe, now) => Math.max(1, Math
 export function collectableJobs(s, id, now) {
   let space = barn.space(s);
   return productionOf(s, id).queue.filter(job => {
-    const amount = RECIPES[job.recipe].makes;
+    const amount = RECIPES[job.recipe].makes * outputTimes(s, id);
     if (job.doneAt > now || amount > space) return false;
     space -= amount; return true;
   });
@@ -76,7 +77,7 @@ export const actions = {
       if (q.queue.some(job => job.doneAt <= now && !collectedSlots.has(job.slot))) full = true;
       if (!jobs.length) continue;
       for (const job of jobs) {
-        const rid = job.recipe, r = RECIPES[rid];
+        const rid = job.recipe, r = { ...RECIPES[rid], makes: RECIPES[rid].makes * outputTimes(s, id) };   // an upgraded workshop gives double, and double again
         barn.add(s, rid, r.makes); got++; (s.stats.grown ??= {})[rid] = (s.stats.grown[rid] ?? 0) + r.makes;   // what the farm knows how to make (core/fair.mjs)
         s.stats.produced += r.makes; gainXp(ctx, XP.produce(r.value)); if (rid === 'cheese') s.stats.cheeseMade = (s.stats.cheeseMade ?? 0) + r.makes;
         if (rid === 'butter') s.stats.butterMade = (s.stats.butterMade ?? 0) + r.makes;

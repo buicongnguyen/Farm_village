@@ -1,5 +1,14 @@
 # Changelog
 
+## Upgrades for factories and animal homes — 2026-10-11
+
+- Every workshop and every animal home can be upgraded four times. Each upgrade doubles what one batch or one collection gives (×2, ×4, ×8, ×16) for the same ingredients, feed and time.
+- The button is in the workshop's panel and in the animal home's menu; a bale stands beside the building for every upgrade.
+
+## One feed, ten collections — 2026-10-11
+
+- Feeding an animal once is good for ten collections (eggs, milk, goat milk): it goes on giving and is hungry again after the tenth. The animal home's menu says how many are left.
+
 ## The workshop hand leaves the request's goods — 2026-10-11
 
 - A hired workshop hand no longer cooks with goods the company's open request is waiting for (it turned the request's Noodles into Instant noodles, batch after batch).

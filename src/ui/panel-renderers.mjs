@@ -1,4 +1,6 @@
 // Sheet contents load on first use; the input/controller stays available at startup.
+import { OUTPUT_UP } from '../content/economy.mjs';
+import { outputPlan, outputTimes } from '../core/output.mjs';
 import { t, num } from '../kit/i18n.mjs';
 import { GOODS, RECIPES } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -25,6 +27,14 @@ import { renderSettings, renderAlbum } from './settings-panels.mjs';
 import { renderProfiles } from './profiles-panel.mjs';
 import { renderExploration, renderExplorationEntry } from './exploration-panels.mjs';
 import { renderAdviceList, renderAdviceMemories, renderAdviceDetail } from './advice-panels.mjs';
+/** A workshop's output upgrade: what it gives now, and the button for the next doubling (core/output.mjs). */
+function outputCard(s, id) {
+  const up = outputPlan(s, id), now = outputTimes(s, id);
+  if (!up.next) return `<p class="hint output-up"><b>${t('Output ×{n}', { n: now })}</b> · ${t('This is as big as it gets')}</p>`;
+  return `<div class="output-up"><button class="btn ${up.ok ? 'primary' : ''} wide" data-do="upgradeOutput" ${up.ok ? '' : 'disabled'}>${glyph('up', 'g')} ${t('Upgrade: every batch gives ×{n}', { n: up.times })} · ${coinMark()} ${num(up.price)}</button>
+    <p class="hint">${t('Upgrade {level} of {max}. Same ingredients, same time, double the goods.', { level: up.next, max: OUTPUT_UP.max })}${up.reason ? ` · <b>${t(up.reason, up.params ?? {})}</b>` : ''}</p></div>`;
+}
+
 export { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';   // panels.mjs calls these through this.renderer
 import { renderFriends, renderGift, renderMail, heartBar, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
@@ -170,7 +180,7 @@ export function renderPanel() {
       title = t(BUILDINGS[p.kind].name); icon = p.kind;
       const q = productionOf(s, o.arg), ready = q.queue.filter(j => j.doneAt <= now).length, slotCost = SLOTS.cost[q.slots];
       const recipes = recipesAt(s, p.kind).map(r => { const def = RECIPES[r], can = barn.hasAll(s, def.needs);
-        return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes > 1 ? ` ×${def.makes}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(productionDuration(s, o.arg, r, now))}</small></button>
+        return `<div class="recipe-group"><button class="recipe ${can ? 'can' : ''}" data-do="produce" data-recipe="${r}">${goodIcon(r)}<b>${t(def.name)}${def.makes * outputTimes(s, o.arg) > 1 ? ` ×${def.makes * outputTimes(s, o.arg)}` : ''}</b><span class="needs">${goodsLine(s, def.needs, true, false)}</span><small>${glyph('clock', 'g')} ${shortTime(productionDuration(s, o.arg, r, now))}</small></button>
           ${can && q.slots - q.queue.length > 1 ? `<button class="sell-ten recipe-all" data-do="produceAll" data-recipe="${r}">${t('All')} ×${Math.min(q.slots - q.queue.length, ...Object.entries(def.needs).map(([g, n]) => Math.floor(barn.free(s, g) / n)))}</button>` : ''}
           <div class="recipe-help">${goodHelpButton(r, def.makes)}</div></div>`; }).join('');
       const queue = Array.from({ length: q.slots }, (_, i) => { const j = q.queue.find(job => job.slot === i); if (!j) return `<div class="slot empty" data-tray="${i}" aria-label="${t('Empty tray')}"></div>`;
@@ -178,7 +188,7 @@ export function renderPanel() {
         return `<div class="slot ${left <= 0 ? 'ready' : ''}" data-tray="${i}" style="--k:${k.toFixed(3)}">${goodIcon(j.recipe)}<small>${left <= 0 ? t('Ready') : j.startedAt > now ? t('Starts in {time}', { time: shortTime(j.startedAt - now) }) : shortTime(left)}</small></div>`; }).join('');
       const hurry = hurryLeft(s) > 0 && hurryable(s, o.arg, now) ? `<button class="btn ghost wide" data-do="hurry">${glyph('clock', 'g')} ${t('Hurry')}</button>` : '';
       body = `<p class="hint">${t('Each tray starts its own batch immediately. Finished goods wait here until collected.')}</p>${q.queue.some(j => j.startedAt > now) ? `<p class="hint">${t('Earlier saved batches keep their original schedule. New batches start immediately.')}</p>` : ''}<div class="queue">${queue}${slotCost != null && q.slots < SLOTS.max ? `<button class="slot buy" data-do="buySlot" aria-label="${t('Buy a parallel tray')}">${glyph('plus', 'g')}<small>${coinMark()} ${num(slotCost)}</small></button>` : ''}</div>
-        ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}${hurry}<div class="recipes">${recipes}</div>`;
+        ${ready ? `<button class="btn primary wide" data-do="collectProducts">${t('Collect {count}', { count: ready })}</button>` : ''}${hurry}${outputCard(s, o.arg)}<div class="recipes">${recipes}</div>`;
     } else if (o.kind === 'quests') {
       const qs = questsOf(s), w = WEEKLY[s.weekly?.i ?? 0], wp = weeklyProgress(s), left = hurryLeft(s);
       const card = q => { const def = q.favour ? null : QUESTS[q.t], pr = progressOf(s, q), ok = questReady(s, q);
