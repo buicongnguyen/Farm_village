@@ -104,3 +104,15 @@ test('three more hands: the orchard hand picks half the ripe trees, the fisher l
   const back = Math.max(s.truck.backAt, round) + HANDS.everyMs + 2000; tick(s, s.truck.backAt + 1); tick(s, back);
   assert.ok(s.coins > coins - 20, 'the takings never came in');
 });
+
+test('the workshop hand does not cook with what the open company request is waiting for', () => {
+  const s = game(); s.level = 16; s.coins = 50000; s.barn.cap = 5000; s.counts.school = 1; let i = 0;
+  for (const kind of ['company', 'juice_press', 'noodle_factory', 'market']) if (!Object.values(s.placed).some(p => p.kind === kind)) { s.placed['zz' + kind] = { kind, x: 60 + 6 * i++, z: 40, rot: 0 }; s.counts[kind] = (s.counts[kind] ?? 0) + 1; }
+  for (const k of Object.keys(s.cond ?? {})) delete s.cond[k];
+  const nf = Object.keys(s.placed).find(id => s.placed[id].kind === 'noodle_factory'); s.production[nf] = { slots: 4, queue: [] };
+  s.barn.items.noodles = 8; s.barn.items.carrot = 40; s.lastRecipe = { [nf]: 'instant_noodles' };
+  assert.equal(act(s, 'hireHand', { role: 'workshop' }, T0).ok, true); tick(s, T0 + 1000); tick(s, T0 + 1000 + HANDS.everyMs + 1000);
+  assert.equal(s.barn.items.noodles, 8, 'the eight Noodles of the request were cooked into Instant noodles'); assert.equal(s.production[nf].queue.length, 0);
+  s.barn.items.noodles = 12; tick(s, T0 + 2000 + 2 * HANDS.everyMs + 2000);
+  assert.equal(s.barn.items.noodles, 8, 'what is beyond the request is cooked'); assert.equal(s.production[nf].queue.length, 2);
+});

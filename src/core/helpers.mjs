@@ -1,5 +1,6 @@
 // Your family lends a hand (v0.3e): now and then, while the game is open, June brings in a few ripe crops and sows the same
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
+import { companyKeep } from './village-growth.mjs';
 import { HELP, HANDS, WEAR } from '../content/economy.mjs';
 import { actions as production, collectableJobs } from './production.mjs';
 import { actions as trees, ripeTrees } from './trees.mjs';
@@ -106,7 +107,11 @@ export function tickHands(ctx) {
       const p = s.placed[id], r = RECIPES[recipe]; if (!p || !r || r.at !== p.kind || !isWorking(s, id)) continue;
       const q = s.production?.[id]; if (!q) continue;
       let start = Math.min(Math.ceil((q.slots - q.queue.length) / 2), Math.floor(s.coins / HANDS.wage) - done);
-      while (start-- > 0 && barn.hasAll(s, r.needs) && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
+      // never with what the company's open request is waiting for
+      // (a hand cooking Instant noodles used to eat the Noodles a request asked for, batch after batch)
+      const spoken = g => companyKeep(s, g);
+      const spare = () => Object.entries(r.needs).every(([g, n]) => barn.free(s, g) - n >= spoken(g));
+      while (start-- > 0 && spare() && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
     }
     paid('workshop', done, jobs[0]?.id ?? Object.keys(s.lastRecipe ?? {})[0] ?? null);
   }

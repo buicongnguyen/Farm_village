@@ -1,5 +1,9 @@
 # Changelog
 
+## The workshop hand leaves the request's goods — 2026-10-11
+
+- A hired workshop hand no longer cooks with goods the company's open request is waiting for (it turned the request's Noodles into Instant noodles, batch after batch).
+
 ## Trucks leave the company's goods alone — 2026-10-11
 
 - The goods of the company's open request stay in the barn: "Fill" and the truck driver no longer take them to market.
