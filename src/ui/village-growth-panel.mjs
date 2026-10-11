@@ -15,11 +15,35 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const names = Object.fromEntries(allPeople().map(person => [person.id, person.name]));
 const nameOf = id => t(names[id] ?? id);
 const button = (action, label, data = '', disabled = false) => `<button class="btn wide" data-do="${action}" ${data} ${disabled ? 'disabled' : ''}>${label}</button>`;
+/** The company's request, row by row: a tick when the barn has it, else how many are missing and where they are made. */
+const requestRows = g => g.rows.map(r => r.have >= r.n
+  ? `<div class="set-row req ok">${goodIcon(r.good, 'mini')} <span>${t(GOODS[r.good].name)} ${num(r.n)}/${num(r.n)} ✓</span></div>`
+  : `<div class="set-row req short">${goodIcon(r.good, 'mini')} <span>${t(GOODS[r.good].name)} ${num(r.have)}/${num(r.n)} · <b>${t('{n} missing', { n: num(r.n - r.have) })}</b></span>${goodHelpButton(r.good, r.n)}</div>`).join('');
+/** The request itself, first on the board when the company works: what it asks, what blocks it, and one button to send it. */
+function requestCard(s, g) {
+  const waiting = g.active && !g.active.away, away = g.active?.away;
+  return `<div class="company-request"><h3>${t('Company request')} · ${t(g.next.title)}</h3><p>${t(g.next.text)}</p>
+    ${away ? `<p class="board-voice">${t('The company truck is on its way')}</p>` : waiting ? `<p><b>${t('The truck is back with the payment.')}</b></p><button class="btn primary wide" data-do="growthMarket">${t('Collect at the market')}</button>`
+      : `${requestRows(g)}<p>${t('Payment: {coins} coins', { coins: num(g.payment) })}</p>
+      ${g.reason ? `<p class="hint">${t(g.reason)}</p>` : `<p class="hint">${t('Everything is in the barn. One truck takes it; the payment comes back with the truck.')}</p>`}
+      `}
+    <button class="btn ${away || waiting ? '' : 'primary '}wide" data-do="sendCompanyDelivery" data-id="${g.next.id}" ${g.canSend ? '' : 'disabled'}>${t('Complete the request: send the truck')}</button></div>`;
+}
+/** Before the company takes requests: the three things it needs, each ticked or open, so nobody has to guess. */
+function openingCard(s, g) {
+  const kinds = [...new Set(g.factories.map(f => f.kind))], office = workingCount(s, 'company') > 0;
+  const row = (ok, text) => `<div class="set-row req ${ok ? 'ok' : 'short'}"><span>${ok ? '✓' : '○'} ${text}</span></div>`;
+  return `<div class="company-request"><h3>${t('Company request')}</h3><p>${t('The company sends big orders by truck once these three things are true:')}</p>
+    ${row(s.level >= GROWTH.company.level, t('Reach level {level}', { level: GROWTH.company.level }))}
+    ${row(office, t('The company office is rebuilt and in working order'))}
+    ${row(kinds.length >= GROWTH.company.factories, `${t('Two different food factories in working order ({n} of 2)', { n: Math.min(kinds.length, 2) })}${kinds.length ? ` · ${kinds.map(k => t(BUILDINGS[k].name)).join(', ')}` : ''}`)}
+    <p class="hint">${t('A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.')}</p></div>`;
+}
 const needs = (s, goods) => Object.entries(goods).map(([good, n]) => `<div class="set-row">${goodIcon(good, 'mini')} <span>${t(GOODS[good].name)} ${num(Math.min(n, barn.free(s, good)))}/${num(n)}</span>${goodHelpButton(good, n)}</div>`).join('');
 
 export function renderVillageGrowth(s, now) {
   const g = growthStatus(s, now);
-  let body = `<section class="village-growth"><h3>${t('Room for the village to grow')}</h3><p>${t('Optional projects, familiar neighbours, and useful things made here.')}</p>
+  let body = `<section class="village-growth">${g.ready ? requestCard(s, g) : openingCard(s, g)}<h3>${t('Room for the village to grow')}</h3><p>${t('Optional projects, familiar neighbours, and useful things made here.')}</p>
     <h3>${goodIcon('hospital', 'mini')} ${t('Our little hospital')}</h3>`;
   if (g.hospitalAt !== null) body += `<p>${t('The hospital pantry can now place company requests.')}</p>${button('growthMemory', t(HOSPITAL_MEMORY.title), 'data-id="hospital"')}`;
   else body += `<p>${t('Upgrade the existing clinic: level {level}, {coins} coins, and these supplies.', { level: GROWTH.hospital.level, coins: num(GROWTH.hospital.coins) })}</p>${needs(s, GROWTH.hospital.need)}
@@ -28,16 +52,11 @@ export function renderVillageGrowth(s, now) {
   body += `<h3>${t('Police post')}</h3><p>${t('A working post adds 5% to company delivery payments. The price is fixed when the truck leaves.')}</p>
     <p>${t('Level {level} · {coins} coins', { level: GROWTH.police.level, coins: num(GROWTH.police.coins) })}</p>${button('growthSite', t(g.police ? 'Visit the police post' : 'Preview the old police post'), 'data-kind="police"')}
     <h3>${t('Company office')}</h3>${workingCount(s, 'company') > 0 ? `<p class="board-voice">${faceHtml('bea', 'mini-face')}<span><b>${t('{person:bea:display}')}:</b> ${t('Every crate counted twice, and every one of them ours.')}</span></p>` : ''}<p>${t('Level {level} · {coins} coins · two different working food factories', { level: GROWTH.company.level, coins: num(GROWTH.company.coins) })}</p>
-    ${button('growthSite', t('Visit the old company office'), 'data-kind="company"')}`;
+    ${button('growthSite', t(workingCount(s, 'company') > 0 ? 'Visit the company office' : 'Visit the old company office'), 'data-kind="company"')}`;
   const earned = BULK_REQUESTS.filter(request => g.memories[request.id] != null);
   if (earned.length) body += `<h3>${t('Company memories')}</h3>${earned.map(request => button('growthMemory', t(request.title), `data-id="${request.id}"`)).join('')}`;
   if (!g.ready) return `${body}<p class="hint">${t('Open the company with two working food factories first')}</p></section>`;
-  body += `<h3>${t(COMPANY_BRANDS[g.active?.brand ?? g.brand])} · ${t(g.next.title)}</h3><p>${t(g.next.text)}</p>${needs(s, g.next.need)}
-    <p>${t('Whole request: {units} goods · payment {coins} coins', { units: g.units, coins: num(g.payment) })}</p>
-    <p>${t('Uses one empty truck from your market fleet. Goods leave now; collect the payment when it returns.')}</p>
-    ${g.reason ? `<p class="hint">${t(g.reason)}</p>` : ''}${button('sendCompanyDelivery', t('Confirm goods and send the truck'), `data-id="${g.next.id}"`, !g.canSend)}
-    ${g.active && !g.active.away ? button('growthMarket', t('Collect at the market')) : ''}
-    <p class="hint">${t('The three requests come around again after each payment. There is no deadline or penalty for waiting.')}</p>`;
+  body += `<p class="hint">${t('The three requests come around again after each payment. There is no deadline or penalty for waiting.')}</p>`;
   body += `<h3>${t('Choose our label')}</h3><p>${t('The label belongs to your deliveries. Recipes and goods stay the same.')}</p>
     ${Object.entries(COMPANY_BRANDS).map(([id, name]) => button('chooseCompanyBrand', `${g.brand === id ? '✓ ' : ''}${t(name)}`, `data-brand="${id}"`, g.brand === id)).join('')}
     <details class="growth-staff" data-growth-detail="staff"><summary class="btn wide">${t('Neighbours at work')}</summary><p>${t('One worker and one manager. The invitation fee is paid once per hire; there are no daily wages.')}</p>

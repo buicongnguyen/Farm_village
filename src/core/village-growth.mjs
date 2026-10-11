@@ -25,7 +25,10 @@ export function growthStatus(s, now = s.lastSeen) {
   const activeIndex = trucks.findIndex(u => validTag(u.companyDelivery) && u.companyDelivery.sequence === saved.sent && saved.sent > saved.settled);
   const active = activeIndex >= 0 ? { ...trucks[activeIndex].companyDelivery, truck: activeIndex, away: !!trucks[activeIndex].away } : null;
   const next = requestAt(active?.sequence ?? saved.sent + 1), police = workingCount(s, 'police') > 0;
-  const ready = companyReady(s), idleTruck = trucks.findIndex(u => !u.away && Array.isArray(u.load) && u.load.length === 0 && (!validTag(u.companyDelivery) || u.companyDelivery.sequence <= saved.settled));
+  const ready = companyReady(s), home = u => !u.away && Array.isArray(u.load) && (!validTag(u.companyDelivery) || u.companyDelivery.sequence <= saved.settled);
+  // an empty truck at the market, or else one that stands there loaded (by you or the driver): its goods go back to the barn
+  const emptyTruck = trucks.findIndex(u => home(u) && u.load.length === 0), idleTruck = emptyTruck >= 0 ? emptyTruck : trucks.findIndex(home);
+  const onTruck = good => idleTruck < 0 ? 0 : trucks[idleTruck].load.reduce((n, row) => n + (row.good === good ? row.n : 0), 0);
   const hospitalReason = saved.hospitalAt !== null ? 'The hospital is already open'
     : s.level < GROWTH.hospital.level ? 'Reach level {level} first'
       : (s.story?.chapter ?? 0) < 5 ? 'Read the clinic homecoming chapter first'
@@ -33,6 +36,8 @@ export function growthStatus(s, now = s.lastSeen) {
           : s.coins < GROWTH.hospital.coins ? 'Not enough coins'
             : !barn.hasAll(s, GROWTH.hospital.need) ? 'Keep the project goods and gather the hospital supplies' : null;
   const units = Object.values(next.need).reduce((n, v) => n + v, 0);
+  /** What the request asks for, good by good: { good, n, have } (have: free in the barn plus what stands on the truck that would go). */
+  const rows = Object.entries(next.need).map(([good, n]) => ({ good, n, have: barn.free(s, good) + onTruck(good) })), missing = rows.filter(r => r.have < r.n);
   const capacity = TRUCK.capacity[Math.min(Math.max(s.truck?.level ?? 1, 1), TRUCK.capacity.length) - 1];
   const reason = !ready ? 'Open the company with two working food factories first'
     : active ? active.away ? 'The company truck is on its way' : 'Collect the company payment at the market first'
@@ -40,10 +45,10 @@ export function growthStatus(s, now = s.lastSeen) {
         : next.hospital && saved.hospitalAt === null ? 'Upgrade the clinic to a hospital for this request'
           : !workingCount(s, 'market') ? 'Repair the market square first'
             : !isWorking(s, 'road_south') ? 'Repair the village street first'
-              : idleTruck < 0 ? 'Keep one empty truck at the market for this request'
+              : idleTruck < 0 ? 'Every truck is away. Wait for one to come back to the market'
                 : capacity < units ? 'Upgrade a truck to fit this whole request'
-                  : !barn.hasAll(s, next.need) ? 'Keep the project goods and finish this company request' : null;
-  return { ...saved, ready, police, active, next, idleTruck, units, capacity, reason, canSend: !reason,
+                  : missing.length ? 'Some goods for this request are still missing' : null;
+  return { ...saved, ready, police, active, next, idleTruck, units, capacity, reason, canSend: !reason, rows, missing,
     payment: Math.round(next.coins * (active ? active.police ? 1.05 : 1 : police ? 1.05 : 1)),
     hospitalReason, canUpgradeHospital: !hospitalReason, staffOptions: eligibleCompanyStaff(s, now), factories: workingFactories(s) };
 }
@@ -114,7 +119,8 @@ export const actions = {
     if (!stamp(ctx.now) || id !== status.next.id) return ctx.fail('This company request is not available');
     if (!status.canSend) return ctx.fail(status.reason);
     const g = normalizeGrowth(ctx.s), request = status.next, u = fleet(ctx.s)[status.idleTruck], sequence = g.sent + 1;
-    barn.take(ctx.s, request.need);
+    for (const row of u.load) ctx.s.barn.items[row.good] = (ctx.s.barn.items[row.good] ?? 0) + row.n;   // what stood on the truck goes back where it came from
+    u.load = []; delete u.market; barn.take(ctx.s, request.need);
     u.load = Object.entries(request.need).map(([good, n]) => ({ good, n }));
     u.companyDelivery = { id, sequence, at: ctx.now, brand: g.brand, police: status.police };
     u.away = true; u.backAt = ctx.now + TRUCK.tripMs;

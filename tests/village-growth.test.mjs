@@ -92,8 +92,12 @@ test('the worker changes only new assigned-factory duration; a manager atomicall
 });
 
 test('bulk requests use one actual empty fleet truck, quote the police bonus once, and pay through normal return/collection', () => {
+  { // a truck that stands loaded at the market may take the request: its goods go back to the barn first
+    const one = ready(), wheat = one.barn.items.wheat; one.truck.load = [{ good: 'wheat', n: 7 }]; assert.equal(growthStatus(one).canSend, true);
+    assert.equal(send(one).truck, 0); assert.equal(one.barn.items.wheat, wheat + 7); assert.equal(one.truck.away, true); assert.ok(!one.truck.load.some(r => r.good === 'wheat'));
+    const gone = ready(); gone.truck.away = true; gone.truck.backAt = NOW + 5; assert.match(growthStatus(gone).reason, /Every truck is away/); refused(gone, 'sendCompanyDelivery', { id: 'pantry' });
+    const short = ready(); short.barn.items.noodles = 3; const st = growthStatus(short); assert.match(st.reason, /still missing/); assert.deepEqual(st.missing.map(r => [r.good, r.have, r.n]), [['noodles', 3, 8]]); }
   const s = ready(), money = s.coins; s.truck.load = [{ good: 'wheat', n: 1 }];
-  refused(s, 'sendCompanyDelivery', { id: 'pantry' });
   s.truck.fleet.push({ away: false, backAt: 0, load: [], coins: 0 }); const result = send(s);
   assert.equal(result.truck, 1); assert.equal(s.truck.away, false); assert.equal(s.truck.fleet[0].away, true);
   assert.equal(s.coins, money); assert.equal(s.barn.items.carrot_juice, 94); assert.equal(s.barn.items.noodles, 92);
