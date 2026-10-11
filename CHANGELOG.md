@@ -1,5 +1,9 @@
 # Changelog
 
+## The herd goes out to graze — 2026-10-11
+
+- Cows and goats graze every field the farm owns, fenced home or not; they keep off beds, buildings, weeds and rocks. Hens stay near the coop.
+
 ## Upgrades for factories and animal homes — 2026-10-11
 
 - Every workshop and every animal home can be upgraded four times. Each upgrade doubles what one batch or one collection gives (×2, ×4, ×8, ×16) for the same ingredients, feed and time.
