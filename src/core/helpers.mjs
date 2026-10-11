@@ -118,7 +118,7 @@ export function tickHands(ctx) {
     let done = 0;
     if (truckCoins(s) > 0 && market.collectTruck(quiet)?.ok !== false) done++;
     const idle = trucksOf(s).filter(u => !u.away).length;
-    if (idle && s.coins >= HANDS.wage) { if (market.fillTruck(quiet)?.ok !== false) done++; if (trucksOf(s).some(u => !u.away && u.load.length) && market.sendTruck(quiet)?.ok !== false) done++; }
+    if (idle && s.coins >= HANDS.wage && !s.truckHold) { if (market.fillTruck(quiet)?.ok !== false) done++; if (trucksOf(s).some(u => !u.away && u.load.length) && market.sendTruck(quiet)?.ok !== false) done++; }
     paid('driver', Math.min(done, Math.floor(s.coins / HANDS.wage)), 'market');
   }
   if (s.hands.fisher && s.coins >= HANDS.wage) {   // lands one fish a round, straight into the barn

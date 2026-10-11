@@ -1,5 +1,10 @@
 # Changelog
 
+## Trucks leave the company's goods alone — 2026-10-11
+
+- The goods of the company's open request stay in the barn: "Fill" and the truck driver no longer take them to market.
+- Market square and the request card: "Pause the truck driver". A paused driver still brings in the takings but loads and sends nothing.
+
 ## The company's request, made plain — 2026-10-11
 
 - The village board begins with the company's request: every good ticked or "N missing" with where it is made, what blocks it, and one button, "Complete the request: send the truck". Before the company takes requests, a checklist says what it still needs.

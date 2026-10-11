@@ -25,6 +25,8 @@ function requestCard(s, g) {
   return `<div class="company-request"><h3>${t('Company request')} · ${t(g.next.title)}</h3><p>${t(g.next.text)}</p>
     ${away ? `<p class="board-voice">${t('The company truck is on its way')}</p>` : waiting ? `<p><b>${t('The truck is back with the payment.')}</b></p><button class="btn primary wide" data-do="growthMarket">${t('Collect at the market')}</button>`
       : `${requestRows(g)}<p>${t('Payment: {coins} coins', { coins: num(g.payment) })}</p>
+      ${g.missing.length && s.hands?.driver ? `<button class="btn ${s.truckHold ? 'primary' : ''} wide" data-do="holdTrucks" data-on="${s.truckHold ? 0 : 1}">${t(s.truckHold ? 'The driver is waiting · let the driver work again' : 'Pause the truck driver')}</button>` : ''}
+      <p class="hint">${t('The goods of this request are kept in the barn: the trucks do not take them to market.')}</p>
       ${g.reason ? `<p class="hint">${t(g.reason)}</p>` : `<p class="hint">${t('Everything is in the barn. One truck takes it; the payment comes back with the truck.')}</p>`}
       `}
     <button class="btn ${away || waiting ? '' : 'primary '}wide" data-do="sendCompanyDelivery" data-id="${g.next.id}" ${g.canSend ? '' : 'disabled'}>${t('Complete the request: send the truck')}</button></div>`;

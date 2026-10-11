@@ -52,6 +52,12 @@ export function growthStatus(s, now = s.lastSeen) {
     payment: Math.round(next.coins * (active ? active.police ? 1.05 : 1 : police ? 1.05 : 1)),
     hospitalReason, canUpgradeHospital: !hospitalReason, staffOptions: eligibleCompanyStaff(s, now), factories: workingFactories(s) };
 }
+/** How much of a good the company's open request asks for (0 while a delivery is under way or the company is not open):
+ *  "Fill" and the truck driver leave that much in the barn (core/market.mjs keepFor). */
+export function companyKeep(s, good) {
+  if (!companyReady(s)) return 0; const g = normalizeGrowth(s); if (g.sent > g.settled) return 0;
+  return requestAt(g.sent + 1)?.need?.[good] ?? 0;
+}
 export const unreadGrowth = s => { const g = normalizeGrowth(s); return [...(g.hospitalAt !== null ? ['hospital'] : []), ...Object.keys(g.memories)].filter(id => !g.read.includes(id)).length; };
 
 /** Called only by the normal truck return, replacing its ordinary cargo quote for a valid company trip. */

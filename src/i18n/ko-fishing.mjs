@@ -928,4 +928,9 @@ export const KO_FISHING = {
   'The company office is rebuilt and in working order': '회사 사무실을 다시 짓고 제대로 돌아가게 하기',
   'Two different food factories in working order ({n} of 2)': '서로 다른 식품 공장 두 곳이 가동 중 (2곳 중 {n}곳)',
   'A food factory is a workshop such as the juice press, the noodle factory or the dairy. The feed mill and the bakery do not count.': '식품 공장은 주스 압착기, 국수 공장, 유제품 공방 같은 작업장이에요. 사료 방앗간과 빵집은 포함되지 않아요.',
+  'Pause the truck driver': '트럭 기사 잠시 쉬게 하기',
+  'The driver is waiting · let the driver work again': '기사가 대기 중 · 다시 일하게 하기',
+  'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': '이제 창고에서 저절로 나가는 물건은 없어요. 직접 싣고 보내는 건 여전히 할 수 있어요.',
+  'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': '기사가 남는 물건을 싣고 트럭을 알아서 보내요. 창고에 물건을 모으려면 잠시 쉬게 하세요.',
+  'The goods of this request are kept in the barn: the trucks do not take them to market.': '이 주문의 물건은 창고에 남겨 둬요. 트럭이 시장으로 가져가지 않아요.',
 };
