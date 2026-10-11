@@ -4,6 +4,7 @@
 // The view plays the events; a refused action changes nothing and gives a reason for t().
 import { actions as farm } from './farm.mjs';
 import { actions as animals } from './animals.mjs';
+import { actions as output } from './output.mjs';
 import { actions as production } from './production.mjs';
 import { actions as build } from './build.mjs';
 import { actions as projects, advance } from './projects.mjs';
@@ -50,7 +51,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
+export const ACTIONS = { ...handActions, ...farm, ...animals, ...output, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {

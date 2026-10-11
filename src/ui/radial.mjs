@@ -3,6 +3,7 @@
 // tap them, to do the same; the seed bag or the sickle follows the finger and each bed pops (world.juice).
 // The menu springs open. A tap on an animal in its pen opens its home's menu (life.animalAt). A For-sale parcel shows
 // its price and level with a gold outline of the land; the weekly cart and the mailbox open their panels.
+import { outputPlan, outputTimes } from '../core/output.mjs';
 import * as THREE from 'three';
 import { t, num } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
@@ -193,9 +194,10 @@ export class Radial {
       if (ready) buttons.push({ act: 'collect', icon: iconHtml(a.gives), label: t('Collect ({count})', { count: ready }) });
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
+      { const up = outputPlan(s, id); if (up.next) buttons.push({ act: 'upgradeOutput', icon: glyph('up', 'ic'), label: up.need > s.level ? t('Level {level}', { level: up.need }) : `×${up.times} · ${coinMark()}${num(up.price)}`, disabled: !up.ok }); }
       // how long the feed still lasts: the fewest collections any fed animal here has left
       const fedLeft = list.filter(x => x.doneAt != null).map(x => x.meals ?? 1), least = fedLeft.length ? Math.min(...fedLeft) : 0;
-      info = `${t(a.name)} ${list.length}/${a.perHome} · ${hungry || !least ? t('One feed lasts {n} collections', { n: FEED_MEALS }) : t('Fed for {n} more', { n: least })}`;
+      info = `${t(a.name)} ${list.length}/${a.perHome}${outputTimes(s, id) > 1 ? ` · ×${outputTimes(s, id)}` : ''} · ${hungry || !least ? t('One feed lasts {n} collections', { n: FEED_MEALS }) : t('Fed for {n} more', { n: least })}`;
     } else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       if (s.mode === 'restore') { this.hide(); this.panels.show('land', land.parcel); return; }
@@ -268,6 +270,7 @@ export class Radial {
     else if (d.act === 'pick') g.do('pick', { id });
     else if (d.act === 'repair') g.do('repair', { id: d.id });
     else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
+    else if (d.act === 'upgradeOutput') g.do('upgradeOutput', { building: id });
     else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
     else if (d.act === 'learning') this.panels.show('learning');
     else if (d.act === 'schoolActivity') this.panels.show('schoolActivity');

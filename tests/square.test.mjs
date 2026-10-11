@@ -27,3 +27,20 @@ test('one feed lasts ten collections: the animal goes on giving and is hungry af
   s.animals.cp[0] = { kind: 'hen', doneAt: now };   // fed under the old rule
   assert.equal(actions.collect(ctx(), { home: 'cp' }).collected, 1); assert.equal(animalState(s.animals.cp[0], now), 'hungry');
 });
+
+test('output upgrades: each doubles what an animal home or a workshop gives, four at most, and they survive a save', async () => {
+  const { act } = await import('../src/core/act.mjs'), { newGame, pack, unpack } = await import('../src/core/state.mjs'), { ANIMALS, RECIPES } = await import('../src/content/goods.mjs');
+  const { outputPlan, outputTimes } = await import('../src/core/output.mjs'), { OUTPUT_UP } = await import('../src/content/economy.mjs');
+  const T = 1_700_000_000_000, s = newGame(T, 7, { restore: true }); let now = T; s.cond = {}; s.level = 20; s.coins = 10_000_000; s.barn.cap = 100_000; s.orders.cards = [];
+  s.placed.cp = { kind: 'coop', x: 40, z: 60, rot: 0 }; s.animals.cp = [{ kind: 'hen', doneAt: null }]; s.barn.items = { chicken_feed: 5, wheat: 500 };
+  s.placed.fm = { kind: 'feed_mill', x: 44, z: 60, rot: 0 }; s.production.fm = { slots: 2, queue: [] };
+  const must = (name, arg) => { const r = act(s, name, arg, now); assert.equal(r.ok, true, `${name}: ${r.reason}`); return r; };
+  assert.equal(act(s, 'upgradeOutput', { building: 'nothing' }, now).ok, false);
+  for (let n = 1; n <= OUTPUT_UP.max; n++) { const coins = s.coins, plan = outputPlan(s, 'cp'); must('upgradeOutput', { building: 'cp' }); assert.equal(s.coins, coins - plan.price); assert.equal(outputTimes(s, 'cp'), 2 ** n); }
+  assert.equal(act(s, 'upgradeOutput', { building: 'cp' }, now).ok, false, 'a fifth upgrade');
+  must('feed', { home: 'cp' }); now += ANIMALS.hen.everyMs; must('collect', { home: 'cp' }); assert.equal(s.barn.items.egg, 16);
+  must('upgradeOutput', { building: 'fm' }); const feed = s.barn.items.chicken_feed ?? 0; must('produce', { building: 'fm', recipe: 'chicken_feed' }); now += RECIPES.chicken_feed.timeMs + 1;
+  must('collectProducts', { building: 'fm' }); assert.equal(s.barn.items.chicken_feed - feed, RECIPES.chicken_feed.makes * 2);
+  if (pack && unpack) assert.deepEqual(unpack(pack(s)).outputUp, { cp: 4, fm: 1 });
+  s.level = 1; s.outputUp.fm = 0; assert.match(outputPlan(s, 'fm').reason, /level/);
+});

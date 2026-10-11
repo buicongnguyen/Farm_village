@@ -937,4 +937,10 @@ export const JA_FISHING = {
   'Your {n} {other} do not count: they are a different good, cooked from {good}.': 'お持ちの{other}{n}個は数えません。{good}から作る別の品物です。',
   'One feed lasts {n} collections': 'えさ1回で{n}回とれます',
   'Fed for {n} more': 'あと{n}回分おなかいっぱい',
+  'This cannot be upgraded': 'ここはアップグレードできません',
+  'This is as big as it gets': 'これ以上は大きくなりません',
+  'Output ×{n}': 'できる量 ×{n}',
+  'Upgrade: every batch gives ×{n}': 'アップグレード：1回で×{n}',
+  'Upgrade {level} of {max}. Same ingredients, same time, double the goods.': 'アップグレード {level}/{max}。材料も時間も同じで、できる品物は2倍。',
+  '{name} upgraded: it gives ×{n} now': '{name}をアップグレードしました：これからは×{n}',
 };

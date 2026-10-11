@@ -49,6 +49,9 @@ export const BEDS = {
   allowance: level => Math.min(30, 6 + 3 * level),
   cost: n => n <= 6 ? 0 : Math.round(5 + 0.5 * (n - 7)),   // the nth bed: a few coins, rising very slowly (v0.3c)
 };
+/** Output upgrades (core/output.mjs): up to `max` per animal home or workshop, each doubling what a collection gives.
+ *  The nth costs a rising sum on top of four times the building's own price; `level`: the farm level each needs. */
+export const OUTPUT_UP = { max: 4, level: [3, 6, 10, 14], cost: (base, n) => [300, 1200, 5000, 20000][n] + 4 * base * (n + 1) };
 export const CLEAR = { weeds: 2, rock: 10 };
 export const BARN = { start: 50, step: 100, max: 24000, upgradeCost: () => 100 };   // upgrades stop at max
 export const SLOTS = { start: 2, max: 10, cost: [0, 0, 60, 90, 120, 150, 180, 210, 240, 270] };   // cost of the nth slot (index = slot count before buying)

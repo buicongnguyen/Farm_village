@@ -164,6 +164,7 @@ export class Hud {
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
     if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
+    if (e.type === 'outputUpgraded') this.toast(t('{name} upgraded: it gives ×{n} now', { name: t(BUILDINGS[e.kind].name), n: e.times }), 'good', { icon: e.kind });
     if (e.type === 'chapterClosed') { const step = currentStep(this.game.s); if (step && e.id < 20) this.toast(t('Next in the story: {name}', { name: t(step.name) }), 'info', { icon: 'ui:projects', to: 'projects' }); }
     if (e.type === 'couponRedeemed') this.toast(t('Tester tools are on for this farm. They are at the bottom of Settings'), 'good', { icon: 'ui:xp', to: 'settings' });
     if (e.type === 'greenGoal') this.toast(`${t('A green goal reached: {name}', { name: t(e.name) })} · +${num(e.coins)}`, 'good', { icon: 'round_tree', to: 'valleyGreen' });
