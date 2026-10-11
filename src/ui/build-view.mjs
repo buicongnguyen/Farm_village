@@ -6,6 +6,7 @@ import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL, RUINS, ruinAt, SITES } from '../content/world.mjs';
+import { buyableParcels } from '../core/build.mjs';
 import { canPlace, canPlaceEdge, occupant, cellType } from '../core/grid.mjs';
 import { ruinStands } from '../core/ruins.mjs';
 import { mayBuild } from '../core/projects.mjs';
@@ -60,6 +61,7 @@ export class BuildView {
     this.game.do('endBuild');
   }
   click(e) {
+    if (e.target.closest('[data-land]')) { this.onLand?.(); return; }
     const b = e.target.closest('[data-cat],[data-kind],[data-tool],[data-bar]'); if (!b) return;
     sfx('click');
     if (b.dataset.cat) { this.cat = b.dataset.cat; this.render(); }
@@ -73,7 +75,12 @@ export class BuildView {
   }
   render() {
     const s = this.game.s, cats = CATEGORIES.map(c => `<button data-cat="${c.id}" class="tab${c.id === this.cat ? ' on' : ''}">${t(c.name)}</button>`).join('');
-    const items = Object.entries(BUILDINGS).filter(([kind, d]) => d.cat === this.cat && !d.lot && (!d.site || SITES.some(x => x.kind === kind && !x.hidden))).map(([kind, d]) => {
+    const items = Object.entries(BUILDINGS).filter(([kind, d]) => d.cat === this.cat && (!d.site || SITES.some(x => x.kind === kind && !x.hidden))).map(([kind, d]) => {
+      if (d.lot) {   // it stands on a lot of the quay, across the brook: the card leads to the quay's panel
+        const open = !!s.firsts?.bridge, level = s.level < d.level;
+        const note = !open ? `${glyph('lock', 'g')} ${t('Across the brook, once the far bank is open')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('On the quay')}`;
+        return `<button class="card site-card${open ? '' : ' locked'}" data-kind="${kind}">${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small></button>`;
+      }
       if (d.site) {   // it is built at its own place, from its own panel: the card leads there
         const built = (s.counts[kind] ?? 0) > 0, level = s.level < d.level;
         const note = built ? `${glyph('check', 'g')} ${t('Built')}` : level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : `${coinMark()} ${num(d.cost ?? 0)} · ${t('Show the place')}`;
@@ -84,10 +91,14 @@ export class BuildView {
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
       return `<button class="card${kind === this.kind ? ' on' : ''}${locked ? ' locked' : ''}${stored ? ' stored' : ''}" data-kind="${kind}" ${locked ? 'aria-disabled="true"' : ''}>${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small>${stored ? `<i class="badge">${stored}</i>` : ''}</button>`;
     }).join('');
+    // the Farm tab begins with the land itself: the next field for sale (a tap goes there and opens its panel)
+    const land = this.cat === 'farm' ? (() => { const lots = buyableParcels(s), all = s.parcels.length >= 16, next = lots[0];
+      const note = all ? `${glyph('check', 'g')} ${t('Every field is yours')}` : !next ? `${glyph('lock', 'g')} ${t('No field for sale yet')}` : next.ok ? `${coinMark()} ${num(next.price)} · ${t('Show the place')}` : `${glyph('lock', 'g')} ${t(next.reason, tParams(next.params))}`;
+      return `<button class="card site-card${all ? ' stored' : ''}" data-land="1">${iconHtml('sale_sign', '', 'icon')}<b>${t('A new field')}</b><small>${note}</small><i class="badge">${s.parcels.length}/16</i></button>`; })() : '';
     const tools = TOOLS.map(tl => `<button class="round small tool${this.mode === tl.id ? ' on' : ''}" data-tool="${tl.id}" aria-label="${t(tl.name)}" title="${t(tl.name)}">${iconHtml(tl.icon, '', 'btn-icon')}</button>`).join('');
     const scroll = this.el.querySelector('.tabs')?.scrollLeft;
     const tabsAt = this.el.querySelector('.tabs')?.scrollLeft ?? 0;   // the tab strip keeps its place when the sheet is redrawn
-    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${items}</div>`;
+    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${land}${items}</div>`;
     this.el.querySelector('.tabs').scrollLeft = tabsAt;
     // keep the chosen category in view (the tab row scrolls on a phone)
     const tabs = this.el.querySelector('.tabs'), on = tabs.querySelector('.tab.on');
@@ -99,7 +110,8 @@ export class BuildView {
   }
   select(kind) {
     const s = this.game.s, d = BUILDINGS[kind], may = mayBuild(s, kind);
-    if (d.site) { this.onSite?.(kind); return; }   // one fixed place: the view goes there and its panel opens (main.mjs)
+    if (d.site) { this.onSite?.(kind); return; }
+    if (d.lot) { if (s.firsts?.bridge) this.onQuay?.(); else this.hud.refuse('Across the brook, once the far bank is open'); return; }   // one fixed place: the view goes there and its panel opens (main.mjs)
     if (s.level < d.level) { this.hud.refuse('Reach level {level} first', { level: d.level, kind, lock: 'level' }); return; }
     if (!may.ok) { this.hud.refuse(may.reason, may.params); return; }
     Object.assign(this, { mode: 'place', kind, rot: 0, moving: null });

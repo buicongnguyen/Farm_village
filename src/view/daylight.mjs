@@ -4,7 +4,7 @@
 // The light is applied at once on load, when a setting changes and when the clock jumps, then follows the clock.
 import * as THREE from 'three';
 import { CELL, FARMHOUSE, SITES, PLAZA } from '../content/world.mjs';
-import { festivalOf } from '../core/festival.mjs';
+import { festivalActive } from '../core/festival.mjs';
 import { footprint, BUILDINGS } from '../content/buildings.mjs';
 import * as KINDS from './kinds.mjs';
 import { NIGHT } from '../kit/toon.mjs';
@@ -110,7 +110,7 @@ export class Daylight {
     this.placeGlows();
     this.apply();
   }
-  festive() { return festivalOf(this.game.s, this.game.now).active; }
+  festive() { return festivalActive(this.game.s, this.game.now); }
   hour() {
     if (this.game.s.settings.daylight === 'always') return 12;
     if (this.festive()) return FESTIVAL_HOUR;   // the Harvest Festival is an evening, whatever the clock says

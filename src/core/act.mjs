@@ -48,7 +48,7 @@ import { actions as schoolActivity } from './school-activity.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND } from '../content/economy.mjs';
+import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
 
 export const ACTIONS = { ...handActions, ...farm, ...animals, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
@@ -124,4 +124,11 @@ function guardClock(s, now) {
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);
   for (const h of Object.values(s.homes)) if (h.family && !h.arrived && h.arrivesAt > now + FAMILY_ARRIVAL_MS) { h.arrivesAt = now + FAMILY_ARRIVAL_MS; h.rentFrom = Math.min(h.rentFrom, h.arrivesAt); }
   for (const [id, tr] of Object.entries(s.trees ?? {})) { const f = FRUITS[BUILDINGS[s.placed[id]?.kind]?.fruit]; if (f) tr.doneAt = clampDone(tr.doneAt, now, tr.first ? f.firstMs : f.regrowMs); }
+  // the later chapters' clocks: a festival or fair that "began in the future" begins now; no rest, stay or stop is longer than its own length
+  for (const [f, D] of [[s.festival, FESTIVAL_DAY], [s.fair, FAIR]]) if (f && Number.isFinite(f.at) && f.at > now) { f.until = Math.min(f.until, now + D.lastsMs); f.at = now; }
+  if (s.cooperative?.nextAt > now + 30 * 60_000) s.cooperative.nextAt = now + 30 * 60_000;
+  const tr = s.train; if (tr) { if (tr.nextAt > now + TRAIN.everyMs) tr.nextAt = now + TRAIN.everyMs; if (tr.here && tr.here.at > now) { tr.here.at = now; tr.here.until = Math.min(tr.here.until, now + TRAIN.stopMs); } }
+  const h = s.hotel; if (h) { if (h.nextAt > now + HOTEL.arriveMs) h.nextAt = now + HOTEL.arriveMs; for (const g of h.rooms ?? []) if (g && g.at > now) { g.at = now; g.until = Math.min(g.until, now + HOTEL.stayMs); } }
+  if (s.valley?.dividendFrom > now) s.valley.dividendFrom = now;
+  for (const f of Object.values(s.flats ?? {})) if (f.rentFrom > now) f.rentFrom = now;
 }

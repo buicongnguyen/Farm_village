@@ -10,7 +10,7 @@ import { kennelOf } from '../core/orchard.mjs';
 import { CELL, N, ORDER_BOARD, NEIGHBOUR_SIGNS, FARMHOUSE, RUINS, VILLAGE, POND_DOCK, POND_FISHING_SPOTS } from '../content/world.mjs';
 import * as PEOPLE_DATA from '../content/people.mjs';
 import { fishable, seatsOf } from '../core/pond-bank.mjs';
-import { festivalOf } from '../core/festival.mjs';
+import { festivalActive } from '../core/festival.mjs';
 import { fairActive } from '../core/fair.mjs';
 import { FAIR } from '../content/economy.mjs';
 import { SITES, PLAZA, WELL, ALBRIGHT, FAIR_TABLE } from '../content/world.mjs';
@@ -292,7 +292,7 @@ export class PeopleView {
   frame(dt) {
     this.time += dt;
     this.clock += dt; if (this.clock > 1) { this.clock = 0; this.sync(); this.maybeTip(); this.pipIdle(); }
-    const night = isNight(this.s, this.game.now), fair = fairActive(this.s, this.game.now), party = fair || festivalOf(this.s, this.game.now).active;   // the valley fair, or the Harvest Festival's evening
+    const night = isNight(this.s, this.game.now), fair = fairActive(this.s, this.game.now), party = fair || festivalActive(this.s, this.game.now);   // the valley fair, or the Harvest Festival's evening
     this.fairOn = fair;
     for (const w of this.walkers.values()) {
       if (w.pet) this.liveDog(w, dt, night);

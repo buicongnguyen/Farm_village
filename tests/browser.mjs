@@ -684,7 +684,7 @@ await check('chapter 10: hired villagers are named and seen at work, the evening
   await page.evaluate(() => { farm.panels.close(); farm.panels.onTest('finish'); });
   await page.waitForSelector('.chapter-modal', { timeout: 20000 });
   const card = await page.textContent('.chapter-modal');
-  expect(card.includes('Hands to help') && card.includes('Chip') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
+  expect(card.includes('Hands to help') && card.includes('One neighbour takes the far beds') && card.includes('Granny Maple'), `the card: ${card.slice(0, 160)}`);
   await page.waitForTimeout(700); await page.screenshot({ path: `${SHOTS}chapter-10-card.png` });
   await page.click('.chapter-modal [data-close]'); await page.waitForFunction(() => farm.state().story.chapter === 10);
   expect(!errors.length, errors.join('\n'));
@@ -1266,7 +1266,7 @@ await check('the coupon: a code in Settings switches the tester tools on; coins 
 // and opens its panel, which says where it is.
 await check('the Build menu lists the boat dock and the festival stage; a tap shows the place and its panel (pc)', async () => {
   const { ctx, page, errors } = await open('pc', '?new&restore');
-  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 12; s.coins = 9000; farm.game.tick(); });
+  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 15; s.coins = 9000; farm.game.tick(); });
   await page.click('.hud [data-act="build"]'); await page.waitForSelector('.sheet.build .tabs');
   await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
   expect(await page.locator('.sheet.build .card[data-kind="stage"]').count() === 1 && await page.locator('.sheet.build .card[data-kind="cannery"]').count() === 0, 'the stage is missing, or the cannery (built by the story) is listed');

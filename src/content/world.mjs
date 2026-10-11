@@ -168,9 +168,32 @@ export const isPondPath = (x, z) => [POND_PATH, POND_SHORE].some(p => x >= p.x0 
 /** The village plaza (cells, inclusive): cobbles round the old well, between the cottage row and the ruins. */
 export const PLAZA = { x0: 38, z0: 98, x1: 43, z1: 103 };
 export const WELL = { x: 41, z: 101 };
+/** The south bank of the brook, from the water up to the north lane's verge: public ground, so the stepping stones lead
+ *  somewhere, the whole brook meadow can be walked and the brook can be followed (wild trees keep off it). */
+export const isBrookBank = (x, z) => x >= 30 && x <= 99 && z > brookZ(x) + BROOK_HALF && z < 18;
+/** The two cells between the east fields and the east road's verge: open, so a field's edge is not a wall. */
+export const isEastVerge = (x, z) => x >= 96 && x <= 97 && z >= 22 && z <= 89;
+/** The path upriver, west of the brook road along the south bank to the spring: open to walk once the walk upriver has
+ *  been made (chapter 16, s.upriver.stops). Four cells deep from the water. */
+export const inUpriverPath = (x, z) => x >= 0 && x <= 25 && z > brookZ(x) + BROOK_HALF && z <= brookZ(x) + BROOK_HALF + 4;
+/** The valley fair (chapter 18): where its stalls and the visitors' carts stand while it runs, outside the ring of grass
+ *  the crowd gathers on. x, z: the middle in cells; cells: what must be free grass for it to stand there (and what
+ *  nobody walks through while it does). */
+export const FAIR_SPOTS = (() => {
+  const P = PLAZA, out = [];
+  for (const [i, z] of [P.z0 + 1, P.z0 + 4].entries()) {   // west of the square, facing it; east of it, facing the usual view
+    out.push({ model: i ? 'fair_stall_b' : 'fair_stall', x: P.x0 - 2.5, z: z + 1, rot: Math.PI / 2, cells: [[P.x0 - 3, z], [P.x0 - 3, z + 1]] });
+    out.push({ model: i ? 'fair_stall' : 'fair_stall_b', x: P.x1 + 4.5, z: z + 0.5, rot: 0, cells: [[P.x1 + 3, z], [P.x1 + 4, z], [P.x1 + 5, z]] });
+  }
+  for (const [i, z] of [P.z0, P.z0 + 3, P.z0 + 6].entries()) out.push({ model: 'fair_cart', x: P.x0 - 4.5, z: z + 0.5, rot: Math.PI / 2 + (i - 1) * 0.3, cells: [[P.x0 - 5, z]] });   // a cart from each valley
+  return out;
+})();
 /** The arch over the farm entrance, between the road and the start parcel. */
 export const FARM_GATE = { x: 30.5, z: 64, rot: Math.PI / 2 };
 /** The windmill by the farmhouse (cells). */
 export const WINDMILL = { x: 17, z: 54, rot: 0.4 };
+/** Scenery that stands on open ground and is solid: nobody walks through it (core/walk.mjs). Cells. The well, the
+ *  windmill, the mailbox and the square's corner stalls (benches stay open: people sit on them). */
+export const SOLID_CELLS = new Set([[WELL.x, WELL.z], [WINDMILL.x, WINDMILL.z], [MAILBOX.x, MAILBOX.z], [PLAZA.x0 + 1, PLAZA.z0 + 1], [PLAZA.x1, PLAZA.z0 + 1], [PLAZA.x1, PLAZA.z1]].map(c => c.join()));
 /** The land drawn around the map so its edge never shows (metres beyond the edge): low hills, then a far haze. */
 export const SKIRT = 72;

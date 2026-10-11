@@ -77,7 +77,7 @@ export const BUILDINGS = {
   halt:       { name: 'Railway halt', cat: 'projects', size: [6, 5], area: 'riverside', level: 17, cost: 18000, lot: true, max: 1, model: 'halt', charm: 2 },
   beehive:    { name: 'Beehive', cat: 'production', size: [1, 1], area: 'farm', level: 10, cost: 250, produces: true, max: 5, choice: 'meadow', model: 'beehive', charm: 2 },
   // Chapter 9: rebuilt on the village square where the old one burned (core/sites.mjs); the Harvest Festival is held from it
-  stage:      { name: 'Festival stage', cat: 'projects', size: [4, 2], area: 'village', level: 12, cost: 1500, site: true, max: 1, model: 'stage' },
+  stage:      { name: 'Festival stage', cat: 'projects', size: [4, 2], area: 'village', level: 15, cost: 1500, site: true, max: 1, model: 'stage' },
   police:     { name: 'Police post', cat: 'projects', size: [4, 3], area: 'village', level: 12, cost: 2200, door: true, civicSite: true, max: 1, model: 'police', charm: 4 },
   company:    { name: 'Company office', cat: 'projects', size: [4, 3], area: 'village', level: 15, cost: 3000, door: true, civicSite: true, max: 1, model: 'company', charm: 2 },
   school:     { name: 'School', cat: 'projects', size: [5, 4], area: 'village', level: 6, cost: 0, door: true, project: 'school', max: 1, model: 'school' },

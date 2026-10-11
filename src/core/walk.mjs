@@ -1,10 +1,11 @@
 // Walking routes for people (view/people-view.mjs). Roads and paths are cheapest, open grass costs a little more, crop
-// beds more still (people go round them when they can). Buildings, the farmhouse and barn, the pond's water (its bank is
+// beds more still (people go round them when they can). The brook's south bank and, after the walk upriver, the path
+// to the spring are public ground too. Buildings, the farmhouse and barn, the pond's water (its bank is
 // public ground all the way round), animal pens and
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside } from '../content/world.mjs';
+import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside, isBrookBank, isEastVerge, inUpriverPath, SOLID_CELLS, FAIR_SPOTS, ALBRIGHT, AWARD_PLAQUE } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -14,6 +15,7 @@ const FIXED = [FARMHOUSE, BARN].map(b => ({ x0: b.x - 3, z0: b.z - 3, x1: b.x + 
 const inFixed = (x, z) => FIXED.some(f => x >= f.x0 && x <= f.x1 && z >= f.z0 && z <= f.z1);
 // The four kiosks round the lake stand on the public bank: one cell each.
 const KIOSKS = new Set(SHOP_SITES.filter(k => k.id.startsWith('lake-')).map(k => `${Math.floor(k.x)},${Math.floor(k.z)}`));
+const FAIR_STALL_CELLS = new Set(FAIR_SPOTS.flatMap(spot => spot.cells.map(c => c.join())));
 const validCell = (x, z) => Number.isInteger(x) && Number.isInteger(z) && inMap(x, z);
 const validPoint = p => Array.isArray(p) && p.length === 2 && validCell(p[0], p[1]);
 // Dressing keeps these roadside verges clear. They join farm entrances and neighbour signposts to the road.
@@ -27,7 +29,13 @@ export function stepCost(s, x, z, blocked = null) {
   if (isBrook(x, z)) return x === STEPPING_STONES.x ? 2 : 0;
   if (isPondWater(x, z) || inFixed(x, z) || KIOSKS.has(`${x},${z}`)) return 0;
   const parcel = parcelOf(x, z);
-  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z) || (s.firsts?.bridge && inTowpath(x, z)) || (s.firsts?.quay && inRiverside(x, z)))) return 0;   // the far bank's towpath, once its gate is off (chapter 12)
+  if (parcel ? !s.parcels.includes(parcel) : !(nearHome(x, z) || inVillage(x, z) || isPondPath(x, z) || isPondBank(x, z) || roadside(x, z) || isDockBank(x, z) || isBrookBank(x, z) || isEastVerge(x, z) || ((s.upriver?.stops?.length ?? 0) >= 3 && inUpriverPath(x, z)) || (s.firsts?.bridge && inTowpath(x, z)) || (s.firsts?.quay && inRiverside(x, z)))) return 0;   // the far bank's towpath, once its gate is off (chapter 12)
+  // scenery that is solid: the well, the windmill, the mailbox, the square's stalls; the hives of a kept
+  // meadow; the county's plaque; and the fair's stalls and carts while a fair runs
+  if (SOLID_CELLS.has(`${x},${z}`)) return 0;
+  if (s.story?.albright === 'meadow' && z === 18 && ALBRIGHT.hives.some(h => Math.floor(h[0]) === x && Math.floor(h[1]) === z)) return 0;
+  if (s.firsts?.award && x === Math.floor(AWARD_PLAQUE.x) && z === Math.floor(AWARD_PLAQUE.z)) return 0;
+  if (s.fair?.n && s.fair.over !== s.fair.n && FAIR_STALL_CELLS.has(`${x},${z}`)) return 0;
   if (x === COOPERATIVE_BOARD.x && z === COOPERATIVE_BOARD.z && (s.story?.chapter ?? 0) >= 11) return 0;   // the co-operative's notice board stands there
   if (x === FAIR_BOARD.x && z === FAIR_BOARD.z && s.valley?.founded) return 0;   // the fair's ribbon board
   if (z === FAIR_TABLE.z && (x === FAIR_TABLE.x || x === FAIR_TABLE.x + 1) && s.fair?.n && s.fair.over !== s.fair.n) return 0;   // the judging table, until the fair's end is told

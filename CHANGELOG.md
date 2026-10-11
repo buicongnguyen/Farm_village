@@ -1,5 +1,11 @@
 # Changelog
 
+## Review after chapter 20 — 2026-10-11
+
+- **Explore**: the brook's south bank, the whole flower meadow, the verge by the east road and (after the walk upriver) the path to the spring can be walked. The well, the windmill, the mailbox, stalls, hives and the plaque are solid.
+- **Finding your way**: Village projects shows the story's step first; the quay's buildings are in the Build menu; the Roadmap follows the story and leads to the quay; new pills for the walk upriver and the valley company.
+- **Fixes**: a clock set back no longer locks the later chapters' timers; a long time away is not replayed at the hotel; letters wait for their chapter; small story corrections. See `docs/plan/95-review.md`.
+
 ## The coupon code — 2026-10-11
 
 - **Coupon code** in Settings: the owner's code switches the tester tools on for that farm, without `?tester` in the address.

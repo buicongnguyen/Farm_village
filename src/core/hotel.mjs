@@ -50,6 +50,9 @@ export function tickHotel(ctx) {
   const { s, now } = ctx, id = hotelId(s); if (!id) return;
   const h = (s.hotel ??= { level: 0, rooms: [], nextAt: now + arriveEvery(s), held: 0, n: 0 });
   while (h.rooms.length < roomsOf(s)) h.rooms.push(null);
+  // a long time away with the desk full: weeks of guests are not replayed, and are not counted for the valley's name
+  // (core/valley.mjs deedsOf). The rooms empty and the next guest is at the door
+  if (h.held >= H.cap && now - h.nextAt > 2 * H.stayMs) { for (let i = 0; i < h.rooms.length; i++) if (h.rooms[i] && h.rooms[i].until <= now) h.rooms[i] = null; h.nextAt = now; }
   for (let guard = 0; guard < 80; guard++) {
     // the earliest thing due: a guest leaving, or one arriving at a free room
     let leave = -1; for (let i = 0; i < h.rooms.length; i++) if (h.rooms[i] && h.rooms[i].until <= now && (leave < 0 || h.rooms[i].until < h.rooms[leave].until)) leave = i;

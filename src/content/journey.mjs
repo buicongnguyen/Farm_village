@@ -3,31 +3,31 @@ export const STAGES = [
   { id: 'homecoming', name: 'Homecoming', goal: 'Bring the farm back', level: 1, version: '0.3',
     milestones: [{ name: 'Repair the feed mill and coop', test: 'farm' }, { name: 'Welcome the first family', test: 'family' }] },
   { id: 'orchard', name: 'The orchard', goal: 'Plant an orchard', level: 4, version: '0.4',
-    milestones: [{ name: 'Pick nine cherries', test: 'cherries' }, { name: 'Build a fruit stand', test: 'stand' },
-      { name: 'Give {pet:dog:short} a kennel', test: 'kennel' }, { name: 'Reopen the clinic', test: 'clinic' }] },
+    milestones: [{ name: 'Pick nine cherries', test: 'cherries' }, { name: 'Build a fruit stand', test: 'stand', optional: true },
+      { name: 'Give {pet:dog:short} a kennel', test: 'kennel', optional: true }, { name: 'Reopen the clinic', test: 'clinic' }] },
   { id: 'meadow', name: 'Home and dairy', goal: 'Make the farm a home', level: 6, version: '0.5',
-    milestones: [{ name: 'Raise the farmhouse to level 5', test: 'house5' }, { name: 'Build a goat barn', test: 'goatbarn' },
-      { name: 'Make cheese at the dairy', test: 'cheese' }, { name: 'Hire a farm hand', test: 'hand' }] },
+    milestones: [{ name: 'Raise the farmhouse to level 5', test: 'house5', optional: true }, { name: 'Build a goat barn', test: 'goatbarn', optional: true },
+      { name: 'Make cheese at the dairy', test: 'cheese', optional: true }, { name: 'Hire a farm hand', test: 'hand' }] },
   // Act II of the story (docs/plan): each chapter adds its deed here as it is built.
   { id: 'wakes', name: 'The valley wakes', goal: 'Bring the village back to life', level: 6, version: '0.6',
     milestones: [{ name: 'Sell the good of the day on a market day', test: 'marketday' }, { name: 'Own three fields', test: 'fields3' }] },
   { id: 'streets', name: 'Safe streets and work for all', goal: 'Reopen the police post and the company office', level: 12, version: '0.7',
     milestones: [{ name: 'Rebuild the police post', test: 'police' }, { name: 'Build the boat dock on the brook', test: 'dock' },
       { name: 'Reopen the company office', test: 'company' }, { name: 'Send the first company delivery', test: 'contract1' }] },
-  { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 12, version: '0.7',
+  { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 15, version: '0.7',
     milestones: [{ name: 'Rebuild the festival stage', test: 'stage' }, { name: 'Hold the Harvest Festival', test: 'festival' }] },
   // Act III: chapters 10 to 12 add their deeds here
-  { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 12, version: '0.8',
+  { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 15, version: '0.8',
     milestones: [{ name: 'Hire three farm hands', test: 'hands3' }, { name: 'Let them do thirty tasks', test: 'tasks30' },
       { name: 'Answer the man from the city', test: 'albright' }, { name: 'Found the co-operative', test: 'cooperative' }, { name: 'Fill a shared order', test: 'cooperativeOrder' }] },
   // Act IV: chapters 13 to 16 add their deeds here
-  { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 14, version: '0.9',
+  { id: 'farbank', name: 'Across the river', goal: 'Build the riverside town', level: 15, version: '0.9',
     milestones: [{ name: 'Pave the old quay', test: 'quay' }, { name: 'Build a house on the quay', test: 'quayHouse' },
       { name: 'Open the hotel', test: 'hotel' }, { name: 'Welcome ten guests', test: 'guests10' },
       { name: 'Reopen the railway halt', test: 'halt' }, { name: 'Send a wagon by train', test: 'train1' },
       { name: 'Walk to where the brook begins', test: 'upriver' }] },
   // Act V: chapters 17 to 20 add their deeds here
-  { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 16, version: '1.0',
+  { id: 'valley', name: 'The valley of plenty', goal: 'Make the valley thrive', level: 17, version: '1.0',
     milestones: [{ name: 'Found the valley company', test: 'valleyCompany' }, { name: 'Win a ribbon at the valley fair', test: 'fairRibbon' }, { name: 'Win the county’s prize for the green valley', test: 'greenValley' }, { name: 'See the lights of two villages', test: 'lights' }] },
 ];
 /** What the valley is called as its value passes each mark (core/valley.mjs titleOf; chapter 19 hands them out). */
@@ -42,6 +42,6 @@ export const JOURNEY_UNLOCKS = [
   { name: 'Goat barn', level: 8, kind: 'goat_barn' }, { name: 'Dairy', level: 8, kind: 'dairy' },
   { name: 'Police post', level: 12, kind: 'police' }, { name: 'Company office', level: 15, kind: 'company' },
   { name: 'Boat dock', level: 10, kind: 'dock' },
-  { name: 'Festival stage', level: 12, kind: 'stage' },
-  { name: 'Riverside town', level: 18, version: '0.9', planned: true },
+  { name: 'Festival stage', level: 15, kind: 'stage' },
+  { name: 'Quay house', level: 15, kind: 'apartment' }, { name: 'Hotel', level: 16, kind: 'hotel' }, { name: 'Railway halt', level: 17, kind: 'halt' },
 ];

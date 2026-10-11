@@ -64,8 +64,8 @@ test('the village projects go on after the clinic: market day, a third field, ju
   // steps already true are ticked off in one go; the rest wait
   s.fishing = { line: null, coins: 0, caught: 5, feeAt: 0 }; s.placed.j1 = { kind: 'juice_press', x: 40, z: 60, rot: 0 }; s.counts.juice_press = 1;
   tick(s, T0 + 1000); assert.equal(currentStep(s).id, 'market_day', 'the first one still open is shown');
-  s.stats.marketDays = 1; s.parcels.push('1,2', '2,2'); tick(s, T0 + 1500); assert.equal(currentStep(s).id, 'fleet');
-  s.truck.fleet.push({ level: 1, away: false, backAt: 0, load: [], coins: 0 }); tick(s, T0 + 2000); assert.equal(currentStep(s).id, 'noodles');
+  s.stats.marketDays = 1; s.parcels.push('1,2', '2,2'); tick(s, T0 + 1500); assert.equal(currentStep(s).id, 'noodles', 'an optional step (the second truck) does not hide the next story step');
+  s.truck.fleet.push({ level: 1, away: false, backAt: 0, load: [], coins: 0 }); tick(s, T0 + 2000); assert.equal(currentStep(s).id, 'noodles'); assert.ok(STEPS.find(st => st.id === 'fleet').optional);
 });
 
 test('the workshop hand keeps a workshop going: it collects half of what is done and starts what the building made last', () => {

@@ -49,7 +49,7 @@ export function beautyTip(s) {
   if (s.story?.albright === 'factory' && !s.valley?.green && Object.values(s.placed).some(p => p.kind === 'cannery')) return 'green';
   if (parts.trees < BEAUTY.cap.trees) return 'trees';
   if (parts.flowers < BEAUTY.cap.flowers) return 'flowers';
-  if (parts.water < 2 * BEAUTY.pond + BEAUTY.dock + BEAUTY.sluice) return 'water';
+  if (parts.water < 2 * BEAUTY.pond + BEAUTY.dock + BEAUTY.sluice + (s.upriver?.stops?.includes('spring') ? BEAUTY.spring : 0)) return 'water';
   return null;
 }
 

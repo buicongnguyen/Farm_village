@@ -82,6 +82,9 @@ export const KIND_MODELS = {
   apartment:    { kit: 'decor', node: 'apartment', authored: true, lod: 'static', late: true },   // chapter 13: the quay house, on a lot of the far bank
   quay_bollard: { kit: 'decor', node: 'quay_bollard', authored: true, lod: 'static', late: true },   // along the water side of the paved quay
   company_flag: { kit: 'decor', node: 'company_flag', authored: true, lod: 'static', late: true },   // chapter 17: beside the office door once the valley company is founded
+  barn_silo: { kit: 'rural-extra', node: 'silo', height: 7.2, lod: 'static', late: true },             // the barn as it is upgraded (land-view drawBarn)
+  barn_hay: { kit: 'rural-extra', node: 'hay_round', width: 1.7, lod: 'static', late: true },
+  barn_tractor: { kit: 'rural-extra', node: 'tractor', width: 3.4, lod: 'static', late: true },
   plaque: { kit: 'decor', node: 'plaque', authored: true, lod: 'static', late: true },                 // chapter 19: the county's plaque at the bridge
   path_stone: { kit: 'decor', node: 'path_stone', authored: true, lod: 'static', late: true },         // chapter 19: the path through the flower meadow
   ribbon_board: { kit: 'decor', node: 'ribbon_board', authored: true, lod: 'static', late: true },   // chapter 18: the fair's board on the village square

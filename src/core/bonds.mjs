@@ -118,10 +118,11 @@ function checkWishes(ctx, events) {
 }
 
 // ── Letters ──
-/** The highest chapter reached: the cards already seen, or any whose test now passes. */
+/** The highest chapter reached: the cards already seen, and after them every chapter in a row whose deed is done (a
+ *  later deed done early does not count until the chapters before it are). */
 export function chapterReached(s) {
   let c = s.story?.chapter ?? 0;
-  for (const ch of CHAPTERS) { try { if (ch.id > c && ch.when?.(s)) c = ch.id; } catch { /* a chapter test that needs more state */ } }
+  for (const ch of CHAPTERS) { if (ch.id <= c) continue; let ok = false; try { ok = ch.id === c + 1 && !!ch.when?.(s); } catch { /* a chapter test that needs more state */ } if (!ok) break; c = ch.id; }
   return c;
 }
 const statOf = (s, key) => key.split('.').reduce((o, k) => o?.[k], s.stats) ?? 0;

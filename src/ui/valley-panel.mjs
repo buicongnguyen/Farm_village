@@ -51,11 +51,11 @@ function valuePage(s, now) {
   const bars = Object.entries(ASSETS).filter(([k]) => a[k] > 0).map(([k, [name, icon]]) => `<div class="report-row">${iconHtml(icon, '', 'mini')}<span>${t(name)}</span><i class="progress"><i style="width:${Math.max(4, Math.round(a[k] / top * 100))}%"></i></i><b>${short(a[k])}</b></div>`).join('');
   const times = goodwillOf(s);
   return `<div class="valley value">
-    <div class="valley-rank"><h3 class="value-big" title="${num(value)}">${coinMark()} ${short(value)}</h3>
+    <div class="valley-rank"><h3 class="value-big" title="${value < 1e15 ? num(value) : short(value)}">${coinMark()} ${short(value)}</h3>
       <p>${title ? `<b>${t(title.name)}</b>` : t('What the valley is worth')}${next ? ` · ${t('{name} at {score}', { name: t(next.name), score: short(next.at) })}` : ''}</p>
       ${next ? `<progress value="${Math.max(0, value - (title?.at ?? 0))}" max="${next.at - (title?.at ?? 0)}"></progress>` : ''}</div>
     ${bars}
-    <p class="valley-pays">${t('Goodwill ×{times}: {count} deeds done together', { times: num(times, times < 100 ? 1 : 0), count: deedsOf(s) })}</p>
+    <p class="valley-pays">${t('Goodwill ×{times}: {count} deeds done together', { times: times >= 10000 ? short(times) : num(times, times < 100 ? 1 : 0), count: deedsOf(s) })}</p>
     <p class="hint">${t('Every market day sold on, shared order, loaded train, festival and handful of hotel guests makes the name of the valley worth more.')}</p>
     <h3>${t('The dividend')}</h3>
     <p class="feast-gives">${coinMark()} <b>${num(d.waiting)}</b> ${d.nextAt ? `· ${glyph('clock', 'g')} ${shortTime(Math.max(0, d.nextAt - now))}` : `· ${t('Collect it: no more can wait')}`}</p>

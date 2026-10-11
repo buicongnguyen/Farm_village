@@ -36,7 +36,7 @@ export const marketBonus = (s, good, now) => { const d = marketDayOf(s, now); re
 /** The player sold the good of the day: the day counts once (chapter 6 asks for one). Returns true the first time in a day. */
 export function countMarketDay(ctx) {
   const { s, now } = ctx, d = marketDayOf(s, now); if (!d.active) return false;
-  const m = (s.marketDay ??= { shift: 0 }); if (m.sold === d.n) return false;
+  const m = (s.marketDay ??= { shift: 0 }); if (m.sold != null && m.sold >= d.n) return false;
   m.sold = d.n; s.stats.marketDays = (s.stats.marketDays ?? 0) + 1;
   return true;
 }

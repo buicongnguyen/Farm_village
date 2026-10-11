@@ -9,6 +9,7 @@ import './ui/polish.css';
 import { Game } from './game.mjs';
 import { newGame } from './core/state.mjs';
 import { COUPONS, couponKey, testerOn } from './core/testmode.mjs';
+import { buyableParcels } from './core/build.mjs';
 import { WorldView } from './view/world-view.mjs';
 import { LandView } from './view/land-view.mjs';
 import { Marks } from './view/marks-view.mjs';
@@ -249,6 +250,9 @@ const openOffer = () => {
 };
 panels.onOffer = openOffer; hud.onOffer = openOffer;
 build.onSite = kind => panels.onSite(kind);
+// "A new field" in the Build menu: the view goes to the next field for sale and its panel opens
+build.onLand = () => { const next = buyableParcels(game.s)[0]; if (!next) { hud.toast(t(game.s.parcels.length >= 16 ? 'Every field is yours' : 'No field for sale yet'), 'info', { icon: 'sale_sign' }); return; } panels.onLandVisit?.(next.parcel); };
+build.onQuay = () => { if (build.open) build.close(); radial.hide(); panels.show('quay'); panels.onQuayLook?.(); };
 panels.onSite = kind => {
   if (!SITES.some(x => x.kind === kind) || !BUILDINGS[kind]?.site) return;
   if (build.open) build.close(); radial.hide(); siteView(kind); panels.show('site', kind);

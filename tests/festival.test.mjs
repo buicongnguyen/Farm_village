@@ -41,7 +41,7 @@ test('the stage has its place on the north edge of the village square, facing th
   assert.equal(s.coins, coins - BUILDINGS.stage.cost); assert.ok(stageBuilt(s)); assert.ok(stepDone(s, 'stage')); assert.equal(s.placed[r.id].kind, 'stage');
   assert.equal(act(s, 'move', { id: r.id, x: 50, z: 95, rot: 0 }, T0).ok, false); assert.equal(act(s, 'demolish', { id: r.id }, T0).ok, false);
   // a path the player laid across the square does not stop the stage
-  const p = farm(5); p.level = 12; must(p, 'place', { kind: 'path', x: stage.x + 1, z: stage.z }); must(p, 'buildSite', { kind: 'stage' });
+  const p = farm(5); p.level = 15; must(p, 'place', { kind: 'path', x: stage.x + 1, z: stage.z }); must(p, 'buildSite', { kind: 'stage' });
 });
 test('the feast is six different foods, three of each, the best the barn has; fish and feed are not feast food', () => {
   const s = farm(); stock(s);
@@ -56,7 +56,7 @@ test('holding the festival: needs the stage and a feast, takes the feast, starts
   const s = farm(); stock(s);
   let st = festivalOf(s, T0); assert.equal(st.reason, 'Build the festival stage first');
   const before = JSON.stringify(s); assert.equal(act(s, 'holdFestival', {}, T0).ok, false); assert.equal(JSON.stringify(s), before);
-  s.level = 12; must(s, 'buildSite', { kind: 'stage' });
+  s.level = 15; must(s, 'buildSite', { kind: 'stage' });
   s.barn.items = { bread: 9 }; st = festivalOf(s, T0); assert.equal(st.ok, false); assert.equal(st.reason, 'The feast needs {kinds} different foods, {each} of each');
   const poor = JSON.stringify(s); assert.equal(act(s, 'holdFestival', {}, T0).ok, false); assert.equal(JSON.stringify(s), poor);
   stock(s); st = festivalOf(s, T0); assert.ok(st.ok && !st.active);
@@ -80,12 +80,12 @@ test('holding the festival: needs the stage and a feast, takes the feast, starts
   tick(s, T0 + everyMs + lastsMs + 1); assert.equal(s.stats.harvestFestivals, 2);
 });
 test('"Finish every timer" ends the evening too, so a tester is not kept waiting', () => {
-  const s = farm(); stock(s); s.level = 12; must(s, 'buildSite', { kind: 'stage' }); must(s, 'holdFestival', {});
+  const s = farm(); stock(s); s.level = 15; must(s, 'buildSite', { kind: 'stage' }); must(s, 'holdFestival', {});
   must(s, 'testFinishTimers', {}, T0 + 1000); tick(s, T0 + 2000); assert.equal(s.stats.harvestFestivals, 1); assert.ok(!festivalOf(s, T0 + 2000).active);
 });
 test('chapter 9 closes after the first festival is over; then Bramble\'s scene, and Oak comes home', () => {
   assert.ok(ch && ch.panels.length === 3 && ch.ada);
-  const s = farm(); stock(s); s.level = 12; assert.equal(ch.when(s), false); assert.equal(oakHome(s), false);
+  const s = farm(); stock(s); s.level = 15; assert.equal(ch.when(s), false); assert.equal(oakHome(s), false);
   must(s, 'buildSite', { kind: 'stage' }); assert.equal(ch.when(s), false, 'the stage alone is half of it');
   assert.ok(BEATS.find(b => b.id === 'stage-up').when(s));
   must(s, 'holdFestival', {}); tick(s, T0 + lastsMs + 1); assert.equal(ch.when(s), true); assert.ok(stepDone(s, 'harvest_festival'));

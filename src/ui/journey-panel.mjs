@@ -11,6 +11,7 @@ export function renderJourney(s) {
     ${(s.story?.chapter ?? 0) >= 15 ? `<button class="btn wide" data-do="upriver">${iconHtml('spring_water', '', 'mini')} ${t('Where the brook begins')}</button>` : ''}
     ${(s.story?.chapter ?? 0) >= 10 ? `<button class="btn wide" data-do="valley">${iconHtml('round_tree', '', 'mini')} ${t('The valley')}</button>` : ''}
     ${(s.story?.chapter ?? 0) >= 16 ? `<button class="btn wide" data-do="valleyValue">${iconHtml('company', '', 'mini')} ${t('The valley company')}</button>` : ''}
+    ${s.firsts?.bridge ? `<button class="btn wide" data-do="quay">${iconHtml('quay', '', 'mini')} ${t('The quay')}</button>` : ''}
     ${s.valley?.founded ? `<button class="btn wide" data-do="fair">${iconHtml('ribbon_board', '', 'mini')} ${t('The valley fair')}</button>` : ''}
     ${s.story?.ended ? `<button class="btn wide" data-do="valleyAlbum">${glyph('album', 'g')} ${t('The valley album')}</button>` : ''}</div>`;
 }
