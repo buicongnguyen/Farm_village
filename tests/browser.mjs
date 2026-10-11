@@ -1266,7 +1266,7 @@ await check('the coupon: a code in Settings switches the tester tools on; coins 
 // and opens its panel, which says where it is.
 await check('the Build menu lists the boat dock and the festival stage; a tap shows the place and its panel (pc)', async () => {
   const { ctx, page, errors } = await open('pc', '?new&restore');
-  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 12; s.coins = 9000; farm.game.tick(); });
+  await page.evaluate(() => { farm.closeCards(); const s = farm.state(); s.level = 15; s.coins = 9000; farm.game.tick(); });
   await page.click('.hud [data-act="build"]'); await page.waitForSelector('.sheet.build .tabs');
   await page.click('.sheet.build [data-cat="projects"]'); await page.waitForSelector('.sheet.build .card[data-kind="dock"]');
   expect(await page.locator('.sheet.build .card[data-kind="stage"]').count() === 1 && await page.locator('.sheet.build .card[data-kind="cannery"]').count() === 0, 'the stage is missing, or the cannery (built by the story) is listed');
