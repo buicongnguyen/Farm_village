@@ -909,4 +909,8 @@ export const JA_FISHING = {
   '{n} of 16 fields are yours': '16の畑のうち{n}つがあなたのものです',
   'Your new field': 'あなたの新しい畑',
   'The big trees on it are cut for you when you buy it. Only weeds and rocks are left to clear.': '大きな木は、買うと切っておきます。あとは草と岩を片づけるだけです。',
+  'The far bank opens in chapter 12 · tap to see the way': '向こう岸は第12章で開きます · タップで道すじを見る',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': '小川の向こう岸は、第12章で協同組合ができると開きます。物語の次の一歩：{name}',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded.': '小川の向こう岸は、第12章で協同組合ができると開きます。',
+  'Later in the story: {text}': '物語のもう少し先：{text}',
 };

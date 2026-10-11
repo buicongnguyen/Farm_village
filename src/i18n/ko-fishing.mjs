@@ -909,4 +909,8 @@ export const KO_FISHING = {
   '{n} of 16 fields are yours': '밭 16곳 중 {n}곳이 당신 거예요',
   'Your new field': '새로 산 밭',
   'The big trees on it are cut for you when you buy it. Only weeds and rocks are left to clear.': '큰 나무는 밭을 사면 대신 베어 드려요. 잡초와 돌만 치우면 돼요.',
+  'The far bank opens in chapter 12 · tap to see the way': '건너편 강둑은 12장에서 열려요 · 눌러서 길 보기',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': '개울 건너편 강둑은 12장에서 협동조합을 세우면 열려요. 이야기의 다음 일: {name}',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded.': '개울 건너편 강둑은 12장에서 협동조합을 세우면 열려요.',
+  'Later in the story: {text}': '이야기의 나중 일: {text}',
 };

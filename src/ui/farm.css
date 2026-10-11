@@ -348,3 +348,7 @@ img.fair-ribbon { width: 46px; height: 46px; flex: none; }
 .album-titles li small { margin-left: auto; opacity: .7; }
 /* a need that is not met and can be worked on somewhere: a row that is a button */
 button.req.link { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: #fff3d6; border: 2px solid var(--line); border-radius: 12px; padding: 5px 9px; margin: 3px 0; cursor: pointer; }
+/* Village projects: a line not done yet is a button that shows where it is done */
+.steps .step-where { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; padding: 4px 2px; min-height: 36px; cursor: pointer; border-radius: 10px; }
+.steps .step-where:hover, .steps .step-where:focus-visible { background: #fff3d6; }
+.steps .step-where i { margin-left: auto; font-style: normal; opacity: .6; }

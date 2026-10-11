@@ -17,7 +17,11 @@ import { buyableParcels } from '../core/build.mjs';
 /** Where the story's current step is worked on, in metres [x, y, z], or null: a blue star floats there. Only steps of
  *  the checklist (after the clinic), and never an optional one: the star always means "the story goes on here". */
 export function storySpot(s) {
-  const step = currentStep(s); if (!step || s.projects.step < TAIL || step.optional) return null;
+  const step = currentStep(s); return !step || s.projects.step < TAIL || step.optional ? null : stepSpot(s, step);
+}
+/** Where a step of Village projects is worked on, in metres, or null when it has no one place. `any`: also a thing that
+ *  is built already and an early step's building (the panel's "where is this" tap), not only what the star marks. */
+export function stepSpot(s, step, any = false) {
   const cell = (x, z, y = 4.6) => [x * CELL, y, z * CELL];
   const placed = kind => { const p = Object.values(s.placed).find(q => q.kind === kind); if (!p) return null; const [w, d] = footprint(kind, p.rot); return cell(p.x + w / 2, p.z + d / 2, 6); };
   const site = kind => { const st = SITES.find(x => x.kind === kind) ?? RUINS.find(x => x.kind === kind); if (!st) return null; const [w, d] = st.size ?? footprint(kind, st.rot ?? 0); return cell(st.x + w / 2, st.z + d / 2, 5.2); };
@@ -26,7 +30,7 @@ export function storySpot(s) {
     case 'market_day': return placed('market');
     case 'third_field': { const next = buyableParcels(s)[0]; return next ? cell(next.x + PARCEL / 2, next.z + PARCEL / 2, 4) : null; }
     case 'juice': return placed('juice_press'); case 'noodles': return placed('noodle_factory');
-    case 'police': case 'dock': case 'company': case 'stage': return placed(step.id) ? null : site(step.id);
+    case 'police': case 'dock': case 'company': case 'stage': return placed(step.id) ? (any ? placed(step.id) : null) : site(step.id);
     case 'first_contract': return placed('company');
     case 'harvest_festival': return placed('stage');
     case 'albright': return s.story?.albright ? null : cell(ALBRIGHT.stand[0] + 0.5, ALBRIGHT.stand[1] + 0.5, 3.4);
@@ -35,7 +39,8 @@ export function storySpot(s) {
     case 'quay_house': return lot('apartment'); case 'hotel': case 'ten_guests': return lot('hotel'); case 'halt': case 'first_train': return lot('halt');
     case 'valley_company': return placed('company');
     case 'valley_fair': return cell(FAIR_BOARD.x + 0.5, FAIR_BOARD.z + 0.5, 3.8);
-    default: return null;   // hands, the walk upriver (a pill leads to Grandpa Oak), the green goals, the billion: no one place
+    case 'anglers': return any ? cell(POND_DOCK.x + 0.5, POND_DOCK.z + 0.5, 3) : null;
+    default: { if (!any) return null; const kind = step.site ?? step.builds?.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)); return kind ? placed(kind) ?? site(kind) : null; }   // hands, the walk upriver (a pill leads to Grandpa Oak), the green goals, the billion: no one place
   }
 }
 function storyTexture() {   // a blue disc with a white star: "the story goes on here"

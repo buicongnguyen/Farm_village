@@ -909,4 +909,8 @@ export const VI_FISHING = {
   '{n} of 16 fields are yours': 'Bạn đã có {n} trên 16 thửa ruộng',
   'Your new field': 'Thửa ruộng mới của bạn',
   'The big trees on it are cut for you when you buy it. Only weeds and rocks are left to clear.': 'Cây lớn trên đó sẽ được chặt giúp bạn khi mua. Bạn chỉ còn phải dọn cỏ và đá.',
+  'The far bank opens in chapter 12 · tap to see the way': 'Bờ bên kia mở ở chương 12 · chạm để xem đường đi',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': 'Bờ bên kia con suối mở ở chương 12, khi hợp tác xã được lập. Việc tiếp theo trong câu chuyện: {name}',
+  'The far bank of the brook opens in chapter 12, when the co-operative is founded.': 'Bờ bên kia con suối mở ở chương 12, khi hợp tác xã được lập.',
+  'Later in the story: {text}': 'Về sau trong câu chuyện: {text}',
 };
