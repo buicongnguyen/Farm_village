@@ -203,7 +203,7 @@ export const BEATS = [
     { who: 'pip', text: 'It is yellow. Why is it yellow? The milk was white.' },
     { who: 'lan', text: 'Bring me some, dear, and I will show you what a warm loaf is for.' },
   ] },
-  { id: 'cheese-picnic', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && (s.stats.butterMade ?? 0) > 0 && (s.stats.cheeseMade ?? 0) > 0, lines: [
+  { id: 'cheese-picnic', chapter: 6, when: s => (s.story.chapter ?? 0) >= 5 && (s.story.chapter ?? 0) < 9 && (s.stats.butterMade ?? 0) > 0 && (s.stats.cheeseMade ?? 0) > 0, lines: [
     { who: 'ada', text: 'Bread, butter and cheese. I packed that for {person:ellis:short} every time he went upriver.' },
     { who: 'pip', text: 'I counted the plates. There is one too many.' },
     { who: 'ada', text: 'That one stays, dear. He will want it when he comes home.' },
@@ -240,7 +240,7 @@ export const BEATS = [
     { who: 'ada', text: 'Like the rest of us, dear. Never broken. Only shut.' },
   ] },
   { id: 'wheel-turns', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8 && (s.stats.sluiceMade ?? 0) > 0, lines: [
-    { who: 'minh', text: 'I have wanted to see that wheel move since I was a boy. It is faster than I drew it.' },
+    { who: 'minh', text: 'I have wanted to see that wheel move since the day it stopped. It is faster than I drew it.' },
     { who: 'pip', text: 'It goes round and round and it never gets dizzy!' },
   ] },
   // ── Chapter 9 (docs/plan/ch09-the-village-sings-again.md): the fire thread ends; Oak comes home ──
@@ -285,7 +285,7 @@ export const BEATS = [
   ] },
   // ── Chapter 12 (docs/plan/ch12-one-river-many-farms.md): the co-operative, and the towpath opened. ──
   { id: 'coop-idea', chapter: 12, when: s => (s.story.chapter ?? 0) >= 11 && ['priya', 'twins'].every(id => (s.neighbours?.[id]?.total ?? 0) >= 1), lines: [
-    { who: 'mai', text: 'Five farms on one river, and each of us sends a half-empty cart to the city. What if we filled them together?' },
+    { who: 'mai', text: 'Five farms in one valley, and each of us sends a half-empty cart to the city. What if we filled them together?' },
     { who: 'priya', text: 'I have done that sum. It comes out very well indeed.' },
     { who: 'june', text: 'A co-operative. {person:ada:short} has been saying so for years, love. There is a board going up on the square.' },
   ] },
@@ -306,7 +306,7 @@ export const BEATS = [
   { id: 'tuyet-list', chapter: 13, when: s => (s.story.chapter ?? 0) >= 13, lines: [
     { who: 'tuyet', text: 'Forty-one names on my list, and I have ticked four. The rest are waiting for a roof.' },
     { who: 'sam', text: 'Give me the replies. I will carry every one, and I will take the long way so they last.' },
-    { who: 'tuyet', text: 'You always did, boy. You were late with my newspaper for eleven years.' },
+    { who: 'tuyet', text: 'You always did, boy. You were late with my newspaper every single morning.' },
   ] },
   // ── Chapter 14 (docs/plan/ch14-rooms-with-a-view.md): the hotel and its guests. ──
   { id: 'first-guests', chapter: 14, when: s => (s.story.chapter ?? 0) >= 13 && (s.hotel?.n ?? 0) >= 1, lines: [

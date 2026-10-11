@@ -31,7 +31,7 @@ export const STEPS = [
   // chapter 6 (docs/plan/ch06-market-day.md): the story's next deeds come first in the checklist
   { id: 'market_day', name: 'The first market day', text: 'The square holds a market day now and then. Sell the good of the day while it lasts: it pays double.',
     needs: { level: 6 }, panel: 'barn', done: s => (s.stats.marketDays ?? 0) >= 1, builds: [] },
-  { id: 'third_field', name: 'A third field', text: 'The farm is ready to grow. Buy a third piece of land.',
+  { id: 'third_field', panel: 'landNext', name: 'A third field', text: 'The farm is ready to grow. Buy a third piece of land.',
     needs: { level: 4 }, done: s => s.parcels.length >= 3, builds: [] },
   { id: 'juice', name: 'Fresh juice for the village', text: 'The families ask for something cool to drink. Build a juice press on the farm.',
     needs: { level: 6 }, site: 'juice_press', done: s => working(s, 'juice_press') >= 1, builds: [] },

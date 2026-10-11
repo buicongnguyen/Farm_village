@@ -55,3 +55,18 @@ test('weeks away are not replayed at the hotel and do not make the valley\'s nam
   assert.ok((s.stats.guests ?? 0) - before < 120, `${(s.stats.guests ?? 0) - before} guests counted for a month away`); assert.ok(events < 240);
   assert.ok(s.hotel.nextAt <= month + 6000 + HOTEL.arriveMs * 2, 'and the next guest is at the door');
 });
+
+test('second pass: Oak\'s letters lapse when he is home; the cannery side of chapter 19 asks for the green cannery', async () => {
+  const { letterLapsed, letterPrerequisite } = await import('../src/core/bonds.mjs');
+  const { LETTERS } = await import('../src/content/letters.mjs');
+  const { greenAward } = await import('../src/core/valley.mjs');
+  const s = farm(8), l5 = LETTERS.find(l => l.id === 'ellis-5'), l9 = LETTERS.find(l => l.id === 'ellis-9');
+  assert.equal(letterLapsed(s, l5), false); assert.equal(l9.until, undefined);
+  const home = farm(10); assert.ok(letterLapsed(home, l5)); home.mail = (home.mail ?? []).filter(m => !/^ellis-[2-8]$/.test(m.id));
+  assert.notEqual(letterPrerequisite(home, 'ellis-9'), 'ellis-8', 'a letter that will never come does not hold the last one back');
+  tick(home, T0 + 1000); assert.ok(!home.mail.some(m => /^ellis-[2-8]$/.test(m.id)), 'no letter "from upriver" after he is home');
+  const f = farm(20), base = greenAward(f); assert.equal(base.cannery, false); assert.equal(base.green, true); f.story.albright = 'factory'; delete f.valley.green;
+  assert.equal(greenAward(f).ok, false); assert.equal(greenAward(f).green, false); f.valley.green = 1; assert.equal(greenAward(f).green, true); assert.equal(greenAward(f).ok, greenAward(f).rank >= greenAward(f).rankNeed && greenAward(f).value >= greenAward(f).valueNeed);
+  const seen = farm(9); must(seen, 'testFinishChapter', {}); assert.ok(must(seen, 'chapterSeen', { id: 9 }).events.some(e => e.type === 'chapterClosed' && e.id === 9));
+  assert.equal(must(seen, 'chapterSeen', { id: 9 }).events.some(e => e.type === 'chapterClosed'), false, 'told once');
+});

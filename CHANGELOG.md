@@ -1,5 +1,11 @@
 # Changelog
 
+## Review, second pass — 2026-10-11
+
+- After a chapter's card a notice says what the story asks next. "A third field" and the valley company's and the prize's needs are buttons that lead to the place.
+- The cannery's side of chapter 19 asks for the green cannery. Grandpa Oak's letters from upriver stop once he is home. Small story corrections.
+- The documents describe the game as it is.
+
 ## Review after chapter 20 — 2026-10-11
 
 - **Explore**: the brook's south bank, the whole flower meadow, the verge by the east road and (after the walk upriver) the path to the spring can be walked. The well, the windmill, the mailbox, stalls, hives and the plaque are solid.

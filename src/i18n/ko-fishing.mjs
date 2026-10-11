@@ -897,4 +897,9 @@ export const KO_FISHING = {
   'The spring is a wet rock under a fern, and {person:pip:short} is not impressed until {person:ellis:short} says that every drop in the mill race started there. He went up this spring to learn why the brook had dropped again. He found the gate padlocked, and he stayed away, because he could not face coming home until it was open.': '샘은 고사리 밑의 젖은 바위일 뿐이라 {person:pip:short}는 시큰둥합니다. 물레방아 물길의 물방울 하나하나가 거기서 시작됐다고 {person:ellis:short} 할아버지가 말해 줄 때까지는요. 할아버지는 올봄, 개울물이 왜 또 줄었는지 알아보러 올라갔습니다. 자물쇠가 채워진 수문을 보았고, 그 문이 열리기 전에는 차마 집에 돌아올 수 없어 머물렀습니다.',
   'Every drop in the mill race began under that fern. I sat here a long while this spring, when the brook dropped, working up the nerve to follow it down.': '물레방아 물길의 물방울은 모두 저 고사리 밑에서 시작됐단다. 올봄 개울물이 줄었을 때, 물길을 따라 내려갈 용기를 내느라 여기 오래 앉아 있었지.',
   'Off with the padlock, one good pull on the wheel, and the gate went up. It was never broken. Only shut.': '자물쇠를 떼고 손잡이를 한 번 힘껏 돌리니 수문이 올라갔어요. 고장 난 적은 없었어요. 닫혀 있었을 뿐이죠.',
+  'Next in the story: {name}': '이야기의 다음: {name}',
+  'I have wanted to see that wheel move since the day it stopped. It is faster than I drew it.': '저 바퀴가 멈춘 날부터 다시 도는 걸 보고 싶었어요. 제가 그린 것보다 더 빨리 도네요.',
+  'Five farms in one valley, and each of us sends a half-empty cart to the city. What if we filled them together?': '한 골짜기에 농장이 다섯인데, 저마다 반쯤 빈 수레를 도시로 보내고 있잖아요. 다 같이 채워 보내면 어떨까요?',
+  'You always did, boy. You were late with my newspaper every single morning.': '넌 늘 그랬지, 얘야. 아침마다 내 신문을 늦게 가져왔잖니.',
+  'Thank you for the school. Thirty desks, one bell and three pupils so far. {person:bo:short} has already asked to be bell monitor. With thanks, {person:cora:display}': '학교를 지어 주셔서 고맙습니다. 책상 서른 개, 종 하나, 그리고 지금은 학생이 셋이에요. {person:bo:short}는 벌써 종 당번을 하겠다고 나섰답니다. 고마운 마음을 담아, {person:cora:display}',
 };

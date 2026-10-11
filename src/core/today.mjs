@@ -68,7 +68,8 @@ export const actions = {
     const chapter = CHAPTERS.find(c => c.id === id), st = ctx.s.story;
     const seen = st.chapter ?? 0;
     if (!chapter || id > seen && (id !== seen + 1 || !chapter.when(ctx.s))) return ctx.fail('Unknown story moment');
-    st.chapter = Math.max(st.chapter ?? 0, id);
+    const first = id > (st.chapter ?? 0); st.chapter = Math.max(st.chapter ?? 0, id);
+    if (first) ctx.emit('chapterClosed', { id });
     // chapter 8: the water rights are bought back and the sluice opens (content/economy.mjs SLUICE), once and for good
     if (st.chapter >= 8 && !ctx.s.firsts?.sluice) { (ctx.s.firsts ??= {}).sluice = ctx.now; ctx.emit('sluiceOpened'); }
     // chapter 9: the hands' thirty tasks of chapter 10 are counted from here

@@ -137,7 +137,8 @@ export function greenProgress(s) {
 /** What chapter 19 asks: a picture-postcard valley, worth the green mark. { rank, rankNeed, value, valueNeed, ok } */
 export function greenAward(s) {
   const rank = beautyOf(s).rank, value = s.valley?.founded ? valueOf(s) : 0, rankNeed = BEAUTY.ranks.length - 1, valueNeed = VALLEY.marks.green;
-  return { rank, rankNeed, value, valueNeed, ok: rank >= rankNeed && value >= valueNeed };
+  const cannery = s.story?.albright === 'factory', green = !cannery || !!s.valley?.green;   // the card says the cannery is hidden by its trees
+  return { rank, rankNeed, value, valueNeed, cannery, green, ok: rank >= rankNeed && value >= valueNeed && green };
 }
 /** Called by tick(): a green goal reached is stamped and paid, once; a value mark passed gives the valley its next
  *  title, one at a time and in order; and chapter 19's deed is stamped when it first holds. */

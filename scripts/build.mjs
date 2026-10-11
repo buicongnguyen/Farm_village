@@ -31,7 +31,9 @@ if (serve) {
   // The limit guards against a careless import, not against the story: each chapter adds a few KB of rules and text
   // (three.js alone is 628 KB of it). The real budget is the 4G loading check in tests/browser.mjs (3.5 s). The release
   // pass moves story text behind import() and lowers this again (docs/plan/90-release-pass.md 5).
-  const LIMIT = 1_250_000, sizeOf = files => [...files].reduce((n, f) => n + metafile.outputs[f].bytes, 0), size = sizeOf(first);
+  // 1,300,000 since the review after chapter 20 (docs/plan/95-review.md): the story is complete, so this is its final size
+  // until the release pass moves story text behind import().
+  const LIMIT = 1_300_000, sizeOf = files => [...files].reduce((n, f) => n + metafile.outputs[f].bytes, 0), size = sizeOf(first);
   console.log(`first load: ${size.toLocaleString('en-US')} bytes of code (limit ${LIMIT.toLocaleString('en-US')}); ${sizeOf(lazy).toLocaleString('en-US')} bytes loaded later${testMode ? ' — TEST MODE build, do not deploy' : ''}`);
   if (size > LIMIT) { console.error(`The first load is ${(size - LIMIT).toLocaleString('en-US')} bytes over the limit: move code behind import().`); process.exit(1); }
   // The page names the exact bundle it was built with, so a cached old game.js is never paired with new styles.

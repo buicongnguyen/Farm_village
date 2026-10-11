@@ -251,6 +251,7 @@ const openOffer = () => {
 panels.onOffer = openOffer; hud.onOffer = openOffer;
 build.onSite = kind => panels.onSite(kind);
 // "A new field" in the Build menu: the view goes to the next field for sale and its panel opens
+panels.onLandNext = () => build.onLand();
 build.onLand = () => { const next = buyableParcels(game.s)[0]; if (!next) { hud.toast(t(game.s.parcels.length >= 16 ? 'Every field is yours' : 'No field for sale yet'), 'info', { icon: 'sale_sign' }); return; } panels.onLandVisit?.(next.parcel); };
 build.onQuay = () => { if (build.open) build.close(); radial.hide(); panels.show('quay'); panels.onQuayLook?.(); };
 panels.onSite = kind => {

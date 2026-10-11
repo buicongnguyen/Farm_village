@@ -5,6 +5,10 @@ Update it at the end of every work session: change the status, add a line to the
 
 ## Current status
 
+- **Now (2026-10-11): the story is complete.** Chapters 1 to 20 are live; the review after chapter 20 is done
+  (`docs/plan/95-review.md`). Next: the release pass (`docs/plan/90-release-pass.md`). The plan table is
+  `docs/plan/README.md`; the notes below are the history of versions 0.1 to 0.3.
+
 - **Now: v0.3 "Restore Hollowbrook"** — the plan, decisions and its own log are in [docs/PLAN-v0.3.md](docs/PLAN-v0.3.md).
 
 - **AAA pass (0.2.0) — fixer stage done on branch `aaa-integrate`** (not pushed, not merged to `main`). The six
