@@ -212,6 +212,8 @@ noted in `ASSETS.md`), then Vietnamese, then the browser suites, then deploy.
 
 ## Status
 
+Interior follow-up, 2026-10-12: implemented and reviewed for [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108). The six-room farmhouse preserves existing activities and earned furniture; hospital, police, company, school, barn and bakery rooms reuse the user's Willowmere assets and open existing services. [Explore scope](EXPLORE-MODE.md). The [supermarket story and interior](SUPERMARKET-STORY-PLAN.md) are prepared only; shop gameplay remains planned.
+
 Current language follow-up, 2026-10-09: complete Korean/Japanese editions are implemented on `codex/korean-japanese`.
 Release: [PR #35](https://github.com/buicongnguyen/Farm_village/pull/35).
 All four menus, catalogs, local names, dates and number formats share the same saved farms and story logic.
@@ -267,7 +269,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 3. The meadow | Gameplay not started; first goat/dairy art delivery requested with exact IDs in [MEADOW-DAIRY-SCOPE.md](MEADOW-DAIRY-SCOPE.md). Cat, land deeds and the larger region remain separate proposals. |
 | Cross-stage follow-up: clearer guidance and delivered art | Implemented and validated for PR #31: compact HUD, contextual discovery/repair/school advice, hospital footprint fix and three potting-bench art states. 407 native tests, pace, 31 component suites, 28 smoke checks and 16 local production contexts pass; the PR records publication/live checks. [Scope and checks](CLEARER-GUIDANCE-AND-ART.md). Meadow gameplay remains separate; its first art contract is [scoped](MEADOW-DAIRY-SCOPE.md). |
 | 4. Down to the river | not started |
-| 5. A village to be proud of | First Explore slice implemented with AR-015/PR #43: public-porch entry, direct movement, safe exit, sofa/rest and saved garden-drawing memory in all four editions. [Scope, controls and validation](EXPLORE-MODE.md#implemented-first-slice--2026-10-09). School/other interiors and additional activities remain planned; this does not complete the stage. |
+| 5. A village to be proud of | First Explore slice implemented with AR-015/PR #43: public-porch entry, direct movement, safe exit, sofa/rest and saved garden-drawing memory in all four editions. [Scope, controls and validation](EXPLORE-MODE.md#implemented-first-slice--2026-10-09). Expanded farmhouse and clinic/police/company/school/barn/bakery interiors are delivered through [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108) (2026-10-12). Supermarket gameplay and other interiors remain planned; this does not complete the stage. |
 | 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |

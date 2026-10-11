@@ -1,3 +1,5 @@
+import { isWorking } from '../core/working.mjs';
+const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Sheet contents load on first use; the input/controller stays available at startup.
 import { OUTPUT_UP } from '../content/economy.mjs';
 import { outputPlan, outputTimes } from '../core/output.mjs';
@@ -242,6 +244,12 @@ export function renderPanel() {
     const schoolOpen = [...this.el.querySelectorAll('details[data-school-detail][open]')].map(el => el.dataset.schoolDetail);
     if (['today', 'clinic', 'album'].includes(o.kind)) body = growthEntry + body;
     if (['today', 'projects', 'album'].includes(o.kind)) body = renderLearningEntry(s, now, { album: o.kind === 'album' }) + renderSchoolEntry(s, now, { album: o.kind === 'album' }) + body;
+    if (!document.body.classList.contains('explore-inside')) {
+      const kinds = { clinic: ['clinic'], villageGrowth: ['clinic', 'police', 'company'], schoolActivity: ['school'], production: ['bakery'] }[o.kind] ?? [];
+      const sites = Object.entries(s.placed).filter(([id, p]) => kinds.includes(p.kind) && isWorking(s, id) && (!['clinic', 'production'].includes(o.kind) || !o.arg || id === o.arg));
+      if (o.kind === 'barn' && isWorking(s, 'barn')) sites.push(['barn', { kind: 'barn' }]);
+      body = sites.map(([id, p]) => `<button class="btn go wide" data-do="enterInterior" data-id="${esc(id)}">${iconHtml(p.kind === 'barn' ? 'ui:barn' : p.kind, '', 'mini')} ${t(BUILDINGS[p.kind]?.name ?? 'Barn')} · ${t('Go inside')}</button>`).join('') + body;
+    }
     this.el.innerHTML = this.head(title, icon) + `<div class="panel-body">${body}</div>`;
     if (o.kind === 'pond') mountPond(this);
     if (pondFocus) [...this.el.querySelectorAll('button[data-do]')].find(button => !button.disabled
