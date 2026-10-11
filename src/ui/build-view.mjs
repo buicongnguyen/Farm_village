@@ -6,6 +6,7 @@ import { t, tParams, num } from '../kit/i18n.mjs';
 import { tutorialOf } from '../content/story.mjs';
 import { CATEGORIES, BUILDINGS, footprint } from '../content/buildings.mjs';
 import { CELL, RUINS, ruinAt, SITES } from '../content/world.mjs';
+import { buyableParcels } from '../core/build.mjs';
 import { canPlace, canPlaceEdge, occupant, cellType } from '../core/grid.mjs';
 import { ruinStands } from '../core/ruins.mjs';
 import { mayBuild } from '../core/projects.mjs';
@@ -60,6 +61,7 @@ export class BuildView {
     this.game.do('endBuild');
   }
   click(e) {
+    if (e.target.closest('[data-land]')) { this.onLand?.(); return; }
     const b = e.target.closest('[data-cat],[data-kind],[data-tool],[data-bar]'); if (!b) return;
     sfx('click');
     if (b.dataset.cat) { this.cat = b.dataset.cat; this.render(); }
@@ -89,10 +91,14 @@ export class BuildView {
       const note = level ? `${glyph('lock', 'g')} ${t('Level {level}', { level: d.level })}` : !may.ok ? `${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}` : stored ? t('{count} stored', { count: stored }) : price ? `${coinMark()} ${num(price)}` : t('Free');
       return `<button class="card${kind === this.kind ? ' on' : ''}${locked ? ' locked' : ''}${stored ? ' stored' : ''}" data-kind="${kind}" ${locked ? 'aria-disabled="true"' : ''}>${iconHtml(kind, '', 'icon')}<b>${t(d.name)}</b><small>${note}</small>${stored ? `<i class="badge">${stored}</i>` : ''}</button>`;
     }).join('');
+    // the Farm tab begins with the land itself: the next field for sale (a tap goes there and opens its panel)
+    const land = this.cat === 'farm' ? (() => { const lots = buyableParcels(s), all = s.parcels.length >= 16, next = lots[0];
+      const note = all ? `${glyph('check', 'g')} ${t('Every field is yours')}` : !next ? `${glyph('lock', 'g')} ${t('No field for sale yet')}` : next.ok ? `${coinMark()} ${num(next.price)} · ${t('Show the place')}` : `${glyph('lock', 'g')} ${t(next.reason, tParams(next.params))}`;
+      return `<button class="card site-card${all ? ' stored' : ''}" data-land="1">${iconHtml('sale_sign', '', 'icon')}<b>${t('A new field')}</b><small>${note}</small><i class="badge">${s.parcels.length}/16</i></button>`; })() : '';
     const tools = TOOLS.map(tl => `<button class="round small tool${this.mode === tl.id ? ' on' : ''}" data-tool="${tl.id}" aria-label="${t(tl.name)}" title="${t(tl.name)}">${iconHtml(tl.icon, '', 'btn-icon')}</button>`).join('');
     const scroll = this.el.querySelector('.tabs')?.scrollLeft;
     const tabsAt = this.el.querySelector('.tabs')?.scrollLeft ?? 0;   // the tab strip keeps its place when the sheet is redrawn
-    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${items}</div>`;
+    this.el.innerHTML = `<div class="build-top"><div class="tabs">${cats}</div><div class="tools">${tools}<button class="round small close" data-bar="close" aria-label="${t('Close')}">${glyph('close', 'g')}</button></div></div><div class="cards">${land}${items}</div>`;
     this.el.querySelector('.tabs').scrollLeft = tabsAt;
     // keep the chosen category in view (the tab row scrolls on a phone)
     const tabs = this.el.querySelector('.tabs'), on = tabs.querySelector('.tab.on');

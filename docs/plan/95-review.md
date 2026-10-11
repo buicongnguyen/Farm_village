@@ -52,13 +52,26 @@ was fixed in this pass, and what is left, with the reason.
   company can be founded. When the farm is busy, the Next chip names the story's step.
 - Tester: a jump gives the level and the coins the chapter's own deed needs.
 
+**The three decisions (owner, 2026-10-11: "think and suggest the improvement, and do it")**
+- **Chapter 10 follows chapter 9.** The thirty tasks are counted from the day chapter 9 is seen (`s.story.handBase`).
+  Chosen over moving the hands' unlock later, because hiring help early is good play; only the chapter waits.
+- **Chapter 9 follows chapter 8.** The festival stage is a level 15 building, like the company office. Chosen over a
+  story lock on the site, because a level is something the player already understands.
+- **One account of the water.** The sluice was shut eleven years ago, when the mill closed, and the brook has run thin
+  since. This spring somebody padlocked the gate and the brook dropped again: that is when Grandpa Oak went up. His
+  letters and Constable Sage's already said this; chapter 16's card, his line at the spring and Rusty's line at the
+  gate were changed to say it too.
+
+**Land and upgrades (owner: "I did not see how to buy the land"; "an upgrade should show some change")**
+- The Build menu's Farm tab begins with **A new field**: its price, how many of the sixteen are bought, and a tap that
+  takes the view to the next field for sale and opens its panel. (Fields are sold one next to another, so the east
+  side comes after the fields beside it.)
+- The barn shows its room: hay, a silo, more hay, a second silo and a tractor stand beside it as it is upgraded.
+  The trucks grow a little with every truck upgrade. (The farmhouse, the cottages and the hotel already changed.)
+
 ## Left open, and why
 
-**Story order (needs the owner's word: it changes what a chapter asks)**
-- Chapter 10 (three hands, thirty tasks) can be done at level 6, long before chapter 9; its card then follows
-  card 9 at once. Proposal: count the thirty tasks from the day chapter 9 is seen.
-- Chapter 9's stage is level 12 and chapter 8's office level 15: the festival can be held before card 8.
-  Proposal: the stage at level 15, or its site opens when chapter 8 is seen.
+**Story order**
 - Chapter 19's cannery card says the cannery is hidden by trees, but the deed does not ask for the green cannery.
 
 **Story facts (text in four languages; one sitting with the story bible)**

@@ -73,7 +73,7 @@ export const CHAPTERS = [
     text: 'The farm is too big for one pair of hands now, and nobody had to be asked twice. One neighbour takes the far beds, another the ovens, a third whatever needs doing. In the evening {person:ada:short} adds up the day on the back of an envelope, the way she always has.',
     ada: 'A farm is run from the porch as much as from the field, dear. Sit down. Let me show you the sums.',
     panels: panels(10, ['Hands in the field.', 'The ovens, never cold.', 'The day, added up.']),
-    when: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30 },
+    when: s => (s.story?.chapter ?? 0) >= 9 && Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) - (s.story.handBase ?? 0) >= 30 },   // counted from the festival on (s.story.handBase, core/today.mjs): the chapter cannot be done before chapter 9
   // The deed: the player answers Mr Albright (docs/plan/ch11-the-man-from-the-city.md). The card reads by the answer
   // (`variants`, keyed by s.story.albright); the plain text is the cannery's, so every check has one to read.
   { id: 11, title: 'The man from the city', subtitle: 'One meadow, two answers.', icon: '🎩',
@@ -114,7 +114,7 @@ export const CHAPTERS = [
   // The deed: the three stops upriver are walked (docs/plan/ch16-where-the-brook-begins.md). The end of Act IV; this
   // chapter closes Oak's absence and opens nothing new.
   { id: 16, title: 'Where the brook begins', subtitle: 'The long way round.', icon: '💧',
-    text: 'The spring is a wet rock under a fern, and {person:pip:short} is not impressed until {person:ellis:short} says that every drop in the mill race started there. He went upriver to learn why the water had stopped. He found the gate, and he stayed away, because he could not face coming home until it was open.',
+    text: 'The spring is a wet rock under a fern, and {person:pip:short} is not impressed until {person:ellis:short} says that every drop in the mill race started there. He went up this spring to learn why the brook had dropped again. He found the gate padlocked, and he stayed away, because he could not face coming home until it was open.',
     ada: 'He always did take the long way round, dear. My knees stayed home, and so did I. Was the fern still there?',
     panels: panels(16, ['The old weir.', 'The heron pool.', 'The spring.']),
     when: s => (s.upriver?.stops?.length ?? 0) >= 3 },
@@ -236,7 +236,7 @@ export const BEATS = [
   ] },
   { id: 'water-rights', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8, lines: [
     { who: 'bea', text: 'Paid in full and stamped twice. The water is the village’s again, on paper and in the brook.' },
-    { who: 'tomas', text: 'One good pull on the wheel and the gate went up. It was never broken. Only shut.' },
+    { who: 'tomas', text: 'Off with the padlock, one good pull on the wheel, and the gate went up. It was never broken. Only shut.' },
     { who: 'ada', text: 'Like the rest of us, dear. Never broken. Only shut.' },
   ] },
   { id: 'wheel-turns', chapter: 8, when: s => (s.story.chapter ?? 0) >= 8 && (s.stats.sluiceMade ?? 0) > 0, lines: [
@@ -348,7 +348,7 @@ export const BEATS = [
   ] },
   { id: 'upriver-spring', chapter: 16, when: s => !!s.upriver?.stops?.includes('spring'), lines: [
     { who: 'pip', text: 'That is IT? It is a wet rock.' },
-    { who: 'ellis', text: 'Every drop in the mill race began under that fern. I sat here a long while, the year the water stopped, working up the nerve to follow it down.' },
+    { who: 'ellis', text: 'Every drop in the mill race began under that fern. I sat here a long while this spring, when the brook dropped, working up the nerve to follow it down.' },
     { who: 'pip', text: 'Then it is the BEST wet rock. Can we take some home in a bottle?' },
   ] },
   // ── Chapter 17 (docs/plan/ch17-a-share-for-everyone.md): the valley company, the first dividend. ──

@@ -24,7 +24,7 @@ const tests = {
   stage: s => (s.counts.stage ?? 0) > 0,
   festival: s => (s.stats?.harvestFestivals ?? 0) >= 1,
   hands3: s => Object.keys(s.hands ?? {}).length >= 3,
-  tasks30: s => (s.stats?.handTasks ?? 0) >= 30,
+  tasks30: s => (s.story?.chapter ?? 0) >= 9 && (s.stats?.handTasks ?? 0) - (s.story?.handBase ?? 0) >= 30,
   albright: s => !!s.story?.albright,
   cooperative: s => !!s.cooperative?.founded,
   quay: s => !!s.firsts?.quay,

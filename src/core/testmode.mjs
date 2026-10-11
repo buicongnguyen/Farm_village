@@ -161,7 +161,7 @@ export const JUMPS = {
     if (!c.filled) { c.filled = 1; c.n = Math.max(1, c.n); c.order = null; c.nextAt = now; s.stats.cooperativeOrders = 1; }
   },
   // chapter 10 is behind: three hands hired (the field, the animals, the workshop) and thirty tasks done by them
-  11: ctx => { const { s, now } = ctx; give(ctx, 'school'); for (const role of ['field', 'animals', 'workshop']) (s.hands ??= {})[role] ??= { since: now }; s.stats.handTasks = Math.max(30, s.stats.handTasks ?? 0); },
+  11: ctx => { const { s, now } = ctx; give(ctx, 'school'); for (const role of ['field', 'animals', 'workshop']) (s.hands ??= {})[role] ??= { since: now }; s.stats.handTasks = Math.max((s.story.handBase ?? 0) + 30, s.stats.handTasks ?? 0); },
   // chapter 9 is behind: the festival stage stands and a Harvest Festival has been held to its end
   10: ctx => { const { s } = ctx; upTo(ctx, BUILDINGS.stage.level); const coins = s.coins; s.coins += BUILDINGS.stage.cost; sites.buildSite(ctx, { kind: 'stage' }); s.coins = coins;
     s.stats.harvestFestivals = Math.max(1, s.stats.harvestFestivals ?? 0); },

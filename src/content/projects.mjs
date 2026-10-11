@@ -53,12 +53,12 @@ export const STEPS = [
     needs: { level: 15 }, panel: 'villageGrowth', done: s => normalizeGrowth(s).settled >= 1, builds: [] },
   // chapter 9 (docs/plan/ch09-the-village-sings-again.md)
   { id: 'stage', name: 'The festival stage', text: 'Only a burned platform is left of the old stage on the village square. Build a new one where it stood.',
-    needs: { level: 12 }, site: 'stage', done: s => (s.counts.stage ?? 0) >= 1, builds: [] },
+    needs: { level: 15 }, site: 'stage', done: s => (s.counts.stage ?? 0) >= 1, builds: [] },
   { id: 'harvest_festival', name: 'The Harvest Festival', text: 'Lay a feast from your barn and hold the Harvest Festival at the stage. The whole village comes.',
-    needs: { level: 12 }, panel: 'festival', done: s => (s.stats.harvestFestivals ?? 0) >= 1, builds: [] },
+    needs: { level: 15 }, panel: 'festival', done: s => (s.stats.harvestFestivals ?? 0) >= 1, builds: [] },
   // chapter 10 (docs/plan/ch10-hands-to-help.md)
   { id: 'three_hands', name: 'Three pairs of hands', text: 'The farm has outgrown one pair of hands. Hire three neighbours in Friends, and let them do thirty tasks.',
-    needs: {}, panel: 'friends', done: s => Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) >= 30, builds: [] },
+    needs: {}, panel: 'friends', done: s => (s.story?.chapter ?? 0) >= 9 && Object.keys(s.hands ?? {}).length >= 3 && (s.stats.handTasks ?? 0) - (s.story.handBase ?? 0) >= 30, builds: [] },
   // chapter 11 (docs/plan/ch11-the-man-from-the-city.md)
   { id: 'albright', name: 'An answer for the man from the city', text: 'A man from the city waits at the farm gate with an offer for the brook meadow. Hear him out, and answer when you are ready.',
     needs: {}, panel: 'offer', done: s => !!s.story?.albright, builds: [] },

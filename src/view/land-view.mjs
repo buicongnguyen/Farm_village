@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, FAIR_SPOTS, PLAZA, AWARD_PLAQUE, inVillage, isBrookBank, isEastVerge, inUpriverPath, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, FAIR_SPOTS, PLAZA, AWARD_PLAQUE, inVillage, isBrookBank, isEastVerge, inUpriverPath, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK, BARN } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { fairActive } from '../core/fair.mjs';
@@ -22,7 +22,9 @@ import { roadSegmentAt, ROAD_SEGMENTS } from '../content/world.mjs';
 const RIM_CHUNK = 16;
 /** Where the path through the kept meadow runs (cells): south of the brook's bank, with a slow bend. */
 const meadowPath = x => Math.max(brookCurve(x) + 3.4, MEADOW.z1 - 0.35 + Math.sin(x * 0.7) * 0.3);
-const OWN = /^(truck|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
+// What stands beside the barn as its room grows (cells from the barn's middle; shown from this capacity on).
+const BARN_GROWS = [[150, 'barn_hay', 3.0, 0.4, 0.3], [400, 'barn_hay', 3.5, 1.5, 1.1], [1000, 'barn_silo', 3.3, 3.0, 0], [2500, 'barn_hay', 3.9, -0.6, 2.0], [5000, 'barn_silo', 3.3, -2.6, 0], [10000, 'barn_tractor', 4.6, 5.0, 0.5]];
+const OWN = /^(truck|barnup:|p\d|c\d|e\d|j-?\d|s\d|sails:|dress:|scaffold:|pen:|meadow:|story:|quay:|fair:)/;   // batch ids land-view owns (removed by sync)
 // the trucks' colours (core/market.mjs fleet: the first is the red pickup) and how far apart they park, in cells
 const TRUCK_MODELS = ['truck', 'truck_teal', 'truck_sun'], TRUCK_GAP = 2.7;
 const FENCES = new Set(['fence', 'gate']);
@@ -338,6 +340,15 @@ export class LandView {
     for (let i = 0; i < N / 2; i++) { const id = `quay:t${i}`; if (paved && b.has(rail)) b.set(id, { model: rail, x: (i * 2 + 1) * CELL, z: (TRACK.z + 0.5) * CELL, rot: 0 }); else b.remove(id); }
     this.world.onLampsChanged?.();
   }
+  /** The barn shows its upgrades: hay, then a silo, more hay, a second silo and a tractor (BARN_GROWS). `pop`: a new one bounces in. */
+  drawBarn(pop = false) {
+    const b = this.world.batches, cap = this.s.barn?.cap ?? 0;
+    BARN_GROWS.forEach(([from, model, dx, dz, rot], i) => {
+      const id = `barnup:${i}`; if (cap < from || !b.has(model)) { b.remove(id); return; }
+      const isNew = !b.items.has(id); b.set(id, { model, x: (BARN.x + 0.5 + dx) * CELL, z: (BARN.z + 0.5 + dz) * CELL, rot });
+      if (isNew && pop) b.pulse(id, { from: 0.2, to: 1.15, ms: 520 });
+    });
+  }
   /** Ground that the walking rules open (core/walk.mjs): the wild trees, bushes and rocks leave it, so nobody walks through
    *  a tree. The brook's south bank and the east fields' verge from the start; the path upriver once it has been walked. */
   drawOpenGround() {
@@ -466,7 +477,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround();
+      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround(); this.drawBarn(true);
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -492,7 +503,8 @@ export class LandView {
       }
       if (!show) { b.remove(key); return; }
       const cur = b.items.get(key), zz = tr.away ? z : z - 0.4 * CELL;
-      if (!cur || cur.x !== x || cur.z !== zz || cur.rot !== rot || cur.model !== model) b.set(key, { model, x, z: zz, rot });
+      const scale = 1 + 0.035 * Math.max(0, (s.truck.level ?? 1) - 1);   // a bigger truck with every upgrade
+      if (!cur || cur.x !== x || cur.z !== zz || cur.rot !== rot || cur.model !== model || cur.scale !== scale) b.set(key, { model, x, z: zz, rot, scale });
     });
     clear(units.length);
   }
@@ -506,7 +518,7 @@ export class LandView {
     for (const id of Object.keys(this.s.placed)) this.drawPlaced(id);
     for (const key of Object.keys(this.s.fences)) this.drawEdge(key);
     if (b.has('path_stones')) for (let z = 0; z < N; z++) for (let x = 0; x < N; x++) if (cellType(this.s, x, z) === 'path') this.drawStones(x, z);
-    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside(); this.fairKey = null; this.drawFair(); this.bankCleared = this.upriverCleared = false; this.drawOpenGround();
+    this.drawRuins(); this.drawHouse(); this.meadowKey = null; this.drawMeadow(); this.cooperativeKey = null; this.drawCooperative(); this.riversideKey = null; this.drawRiverside(); this.fairKey = null; this.drawFair(); this.bankCleared = this.upriverCleared = false; this.drawOpenGround(); this.drawBarn();
     this.pens = new Map(); this.refreshPens();
     this.world.ground.markAll();
   }

@@ -14,7 +14,7 @@ export const STAGES = [
   { id: 'streets', name: 'Safe streets and work for all', goal: 'Reopen the police post and the company office', level: 12, version: '0.7',
     milestones: [{ name: 'Rebuild the police post', test: 'police' }, { name: 'Build the boat dock on the brook', test: 'dock' },
       { name: 'Reopen the company office', test: 'company' }, { name: 'Send the first company delivery', test: 'contract1' }] },
-  { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 12, version: '0.7',
+  { id: 'sings', name: 'The village sings again', goal: 'Hold the Harvest Festival', level: 15, version: '0.7',
     milestones: [{ name: 'Rebuild the festival stage', test: 'stage' }, { name: 'Hold the Harvest Festival', test: 'festival' }] },
   // Act III: chapters 10 to 12 add their deeds here
   { id: 'coop', name: 'The brook co-operative', goal: 'Run the farm with the whole valley', level: 15, version: '0.8',
@@ -42,6 +42,6 @@ export const JOURNEY_UNLOCKS = [
   { name: 'Goat barn', level: 8, kind: 'goat_barn' }, { name: 'Dairy', level: 8, kind: 'dairy' },
   { name: 'Police post', level: 12, kind: 'police' }, { name: 'Company office', level: 15, kind: 'company' },
   { name: 'Boat dock', level: 10, kind: 'dock' },
-  { name: 'Festival stage', level: 12, kind: 'stage' },
+  { name: 'Festival stage', level: 15, kind: 'stage' },
   { name: 'Quay house', level: 15, kind: 'apartment' }, { name: 'Hotel', level: 16, kind: 'hotel' }, { name: 'Railway halt', level: 17, kind: 'halt' },
 ];
