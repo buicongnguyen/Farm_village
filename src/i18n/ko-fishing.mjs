@@ -933,4 +933,6 @@ export const KO_FISHING = {
   'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': '이제 창고에서 저절로 나가는 물건은 없어요. 직접 싣고 보내는 건 여전히 할 수 있어요.',
   'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': '기사가 남는 물건을 싣고 트럭을 알아서 보내요. 창고에 물건을 모으려면 잠시 쉬게 하세요.',
   'The goods of this request are kept in the barn: the trucks do not take them to market.': '이 주문의 물건은 창고에 남겨 둬요. 트럭이 시장으로 가져가지 않아요.',
+  'Made at the {place}: {needs} → {n}': '{place}에서 만들어요: {needs} → {n}',
+  'Your {n} {other} do not count: they are a different good, cooked from {good}.': '가지고 있는 {other} {n}개는 세지 않아요. {good}(으)로 만든 다른 물건이에요.',
 };

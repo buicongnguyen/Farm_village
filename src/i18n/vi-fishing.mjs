@@ -933,4 +933,6 @@ export const VI_FISHING = {
   'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': 'Giờ không món nào tự rời kho nữa. Bạn vẫn có thể tự chất hàng và cho xe đi.',
   'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': 'Tài xế tự chất hàng dư và cho xe đi. Cho tạm nghỉ để dồn hàng trong kho.',
   'The goods of this request are kept in the barn: the trucks do not take them to market.': 'Hàng của đơn này được giữ lại trong kho: xe tải không chở chúng ra chợ.',
+  'Made at the {place}: {needs} → {n}': 'Làm tại {place}: {needs} → {n}',
+  'Your {n} {other} do not count: they are a different good, cooked from {good}.': '{n} {other} của bạn không được tính: đó là món khác, được nấu từ {good}.',
 };

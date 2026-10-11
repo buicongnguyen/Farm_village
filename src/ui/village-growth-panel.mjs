@@ -16,15 +16,22 @@ const names = Object.fromEntries(allPeople().map(person => [person.id, person.na
 const nameOf = id => t(names[id] ?? id);
 const button = (action, label, data = '', disabled = false) => `<button class="btn wide" data-do="${action}" ${data} ${disabled ? 'disabled' : ''}>${label}</button>`;
 /** The company's request, row by row: a tick when the barn has it, else how many are missing and where they are made. */
-const requestRows = g => g.rows.map(r => r.have >= r.n
+/** Under a missing good: how it is made, and a word when the barn holds a look-alike made from it (Instant noodles are
+ *  not Noodles: they are cooked from them, so a barn full of the one can be empty of the other). */
+function madeLine(s, good) {
+  const r = RECIPES[good], made = r ? `<small class="hint">${t('Made at the {place}: {needs} → {n}', { place: t(BUILDINGS[r.at].name), needs: Object.entries(r.needs).map(([id, n]) => `${n} ${t(GOODS[id].name)}`).join(' + '), n: r.makes })}</small>` : '';
+  const alike = Object.entries(RECIPES).find(([id, x]) => x.needs?.[good] && barn.stock(s, id) > 0);
+  return made + (alike ? `<small class="hint"><b>${t('Your {n} {other} do not count: they are a different good, cooked from {good}.', { n: num(barn.stock(s, alike[0])), other: t(GOODS[alike[0]].name), good: t(GOODS[good].name) })}</b></small>` : '');
+}
+const requestRows = (g, s) => g.rows.map(r => r.have >= r.n
   ? `<div class="set-row req ok">${goodIcon(r.good, 'mini')} <span>${t(GOODS[r.good].name)} ${num(r.n)}/${num(r.n)} ✓</span></div>`
-  : `<div class="set-row req short">${goodIcon(r.good, 'mini')} <span>${t(GOODS[r.good].name)} ${num(r.have)}/${num(r.n)} · <b>${t('{n} missing', { n: num(r.n - r.have) })}</b></span>${goodHelpButton(r.good, r.n)}</div>`).join('');
+  : `<div class="set-row req short">${goodIcon(r.good, 'mini')} <span>${t(GOODS[r.good].name)} ${num(r.have)}/${num(r.n)} · <b>${t('{n} missing', { n: num(r.n - r.have) })}</b></span>${goodHelpButton(r.good, r.n)}</div>${madeLine(s, r.good)}`).join('');
 /** The request itself, first on the board when the company works: what it asks, what blocks it, and one button to send it. */
 function requestCard(s, g) {
   const waiting = g.active && !g.active.away, away = g.active?.away;
   return `<div class="company-request"><h3>${t('Company request')} · ${t(g.next.title)}</h3><p>${t(g.next.text)}</p>
     ${away ? `<p class="board-voice">${t('The company truck is on its way')}</p>` : waiting ? `<p><b>${t('The truck is back with the payment.')}</b></p><button class="btn primary wide" data-do="growthMarket">${t('Collect at the market')}</button>`
-      : `${requestRows(g)}<p>${t('Payment: {coins} coins', { coins: num(g.payment) })}</p>
+      : `${requestRows(g, s)}<p>${t('Payment: {coins} coins', { coins: num(g.payment) })}</p>
       ${g.missing.length && s.hands?.driver ? `<button class="btn ${s.truckHold ? 'primary' : ''} wide" data-do="holdTrucks" data-on="${s.truckHold ? 0 : 1}">${t(s.truckHold ? 'The driver is waiting · let the driver work again' : 'Pause the truck driver')}</button>` : ''}
       <p class="hint">${t('The goods of this request are kept in the barn: the trucks do not take them to market.')}</p>
       ${g.reason ? `<p class="hint">${t(g.reason)}</p>` : `<p class="hint">${t('Everything is in the barn. One truck takes it; the payment comes back with the truck.')}</p>`}

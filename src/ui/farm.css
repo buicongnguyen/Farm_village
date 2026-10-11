@@ -355,3 +355,4 @@ button.req.link { display: block; width: 100%; text-align: left; font: inherit; 
 /* the company's request on the village board: first, framed, with what is missing in red */
 .company-request { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 10px; background: #fff8e6; }
 .company-request .req.ok { color: #2e7d32; } .company-request .req.short b { color: #c62828; }
+.company-request small.hint { display: block; margin: 0 0 6px 28px; }
