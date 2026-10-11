@@ -1,5 +1,16 @@
 # Changelog
 
+## Hired-work logic review — 2026-10-12
+
+- Animal hands now give the same ten collections per feed as manual feeding, skip homes under repair, and respect the wages left after collecting.
+- Workshop hands reserve company-request ingredients when restarting collected trays as well as when filling empty trays. Manual production remains a player choice.
+- Imported output-upgrade data is normalized before use, preventing invalid values from corrupting coins or product quantities.
+
+## Branch integration and home-screen metadata — 2026-10-12
+
+- Integrated the preserved picnic-trail branch with current main; the trail itself already shipped in PR #18. Main’s chapters 1–20, translations, company reserves, feeding, output upgrades and grazing behavior are retained.
+- Added relative home-screen launch metadata for hosting under `/Farm_village/`, and removed the viewport restriction on browser zoom. Existing canvas gesture handling and fullscreen support remain main’s implementation.
+
 ## The herd goes out to graze — 2026-10-11
 
 - Cows and goats graze every field the farm owns, fenced home or not; they keep off beds, buildings, weeds and rocks. Hens stay near the coop.

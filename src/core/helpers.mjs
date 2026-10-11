@@ -1,6 +1,6 @@
 // Your family lends a hand (v0.3e): now and then, while the game is open, June brings in a few ripe crops and sows the same
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
-import { afterCollect } from './animals.mjs';
+import { afterCollect, FEED_MEALS } from './animals.mjs';
 import { outputTimes } from './output.mjs';
 import { companyKeep } from './village-growth.mjs';
 import { HELP, HANDS, WEAR } from '../content/economy.mjs';
@@ -85,22 +85,28 @@ export function tickHands(ctx) {
     if (ripe.length) { farm.harvest(quiet, { ids: ripe }); for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop }); paid('field', ripe.length, ripe[0]); }
   }
   if (s.hands.animals) {
-    const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null);
+    const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null && isWorking(s, x.home));
     let done = 0, sold = 0;
     for (const { home, an } of ready.slice(0, half(ready.length))) { sold += barn.addOrSell(s, ANIMALS[an.kind].gives, outputTimes(s, home)); afterCollect(an, now); done++; ctx.emit('collected', { home, good: ANIMALS[an.kind].gives }); }
     if (done) gainXp(ctx, XP.collect * done);
     if (sold) ctx.emit('barnSold', { coins: sold });
-    for (const { an } of hungry.slice(0, Math.max(0, half(hungry.length)))) { const a = ANIMALS[an.kind]; if (barn.take(s, { [a.eats]: 1 }, false)) { an.doneAt = now + a.everyMs; done++; } }
+    for (const { an } of hungry.slice(0, Math.max(0, Math.min(Math.ceil(hungry.length / 2), Math.floor(s.coins / HANDS.wage) - done)))) { const a = ANIMALS[an.kind]; if (barn.take(s, { [a.eats]: 1 }, false)) { an.doneAt = now + a.everyMs; an.meals = FEED_MEALS; done++; } }
     paid('animals', Math.min(done, Math.floor(s.coins / HANDS.wage)), (ready[0] ?? hungry[0])?.home ?? null);
   }
   if (s.hands.workshop) {
+    // Both restarting collected trays and starting idle trays must leave the open request's ingredients.
+    const startRecipe = (building, recipe) => {
+      const r = RECIPES[recipe];
+      if (!r || !Object.entries(r.needs).every(([g, n]) => barn.free(s, g) - n >= companyKeep(s, g))) return false;
+      return production.produce(quiet, { building, recipe })?.ok !== false;
+    };
     const jobs = Object.keys(s.production ?? {}).flatMap(id => collectableJobs(s, id, now).map(job => ({ id, recipe: job.recipe })));
     let left = half(jobs.length), done = 0;
     for (const id of new Set(jobs.map(j => j.id))) {
       if (left <= 0) break;
       const mine = jobs.filter(j => j.id === id).slice(0, left), r = production.collectProducts(quiet, { building: id, limit: mine.length });
       if (r?.ok === false) continue;
-      for (const j of mine.slice(0, r.collected)) production.produce(quiet, { building: id, recipe: j.recipe });
+      for (const j of mine.slice(0, r.collected)) startRecipe(id, j.recipe);
       left -= r.collected; done += r.collected;
     }
     // and it keeps every workshop going: half of each building's free trays (rounded up) start what that building made
@@ -109,11 +115,7 @@ export function tickHands(ctx) {
       const p = s.placed[id], r = RECIPES[recipe]; if (!p || !r || r.at !== p.kind || !isWorking(s, id)) continue;
       const q = s.production?.[id]; if (!q) continue;
       let start = Math.min(Math.ceil((q.slots - q.queue.length) / 2), Math.floor(s.coins / HANDS.wage) - done);
-      // never with what the company's open request is waiting for
-      // (a hand cooking Instant noodles used to eat the Noodles a request asked for, batch after batch)
-      const spoken = g => companyKeep(s, g);
-      const spare = () => Object.entries(r.needs).every(([g, n]) => barn.free(s, g) - n >= spoken(g));
-      while (start-- > 0 && spare() && production.produce(quiet, { building: id, recipe })?.ok !== false) done++;
+      while (start-- > 0 && startRecipe(id, recipe)) done++;
     }
     paid('workshop', done, jobs[0]?.id ?? Object.keys(s.lastRecipe ?? {})[0] ?? null);
   }
