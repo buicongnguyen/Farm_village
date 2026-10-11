@@ -111,7 +111,7 @@ test('a truck that leaves on a market day with the good of the day is paid the b
   const s2 = farm(9); delete s2.cond.road_south; tick(s2, T0 + 1000); const g = marketDayOf(s2, at).good, o = Object.keys(GOODS).find(k => k !== g && GOODS[k].kind === 'crop');
   stock(s2, { [o]: 10 }); must(s2, 'loadTruck', { good: o, n: 5 }, at); must(s2, 'sendTruck', {}, at); assert.equal(s2.stats.marketDays ?? 0, 0);
 });
-test('the hired driver earns the bonus on a market day, but only your own sale counts as the deed', () => {
+test('the hired driver earns the bonus on a market day, and that sale counts as the deed (no second notice)', () => {
   const s = farm(); delete s.cond.road_south; s.level = 12; s.coins = 5000; tick(s, T0 + 1000);
   s.placed.sch = { kind: 'school', x: 50, z: 106, rot: 2 }; s.counts.school = 1;   // hands are hired once the school stands
   assert.equal(act(s, 'hireHand', { role: 'driver' }, T0 + 1000).ok, true);
@@ -119,7 +119,7 @@ test('the hired driver earns the bonus on a market day, but only your own sale c
   tick(s, T0 + 2000); const at = T0 + 2000 + HANDS.everyMs + 1; assert.ok(marketDayOf(s, at).active, 'the day still runs when the hand works');
   const r = tick(s, at), u = truckOf(s);
   assert.ok(u.away, 'the driver sent the truck'); assert.deepEqual(u.market, { good, bonus });
-  assert.ok(!types(r).includes('marketDaySale')); assert.equal(s.stats.marketDays ?? 0, 0, 'the deed is yours to do');
+  assert.ok(!types(r).includes('marketDaySale')); assert.equal(s.stats.marketDays, 1, 'the farm sold the good of the day: a farm with a driver is not stuck on chapter 6');
 });
 test('no market day below its level or while the square is broken; a save from before the chapter loads clean', () => {
   const young = newGame(T0, 4242, { restore: true }); tick(young, T0); must(young, 'testJumpChapter', { chapter: 5 }); young.level = MARKET_DAY.level - 1;

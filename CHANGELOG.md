@@ -1,5 +1,11 @@
 # Changelog
 
+## Stuck project lines, hold to load — 2026-10-11
+
+- Village projects ticks a deed that is already done even while an earlier step is still open ("The first market day" and "The first big delivery" stayed open on farms that ran ahead).
+- A market day counts when the hired truck driver sends the good of the day, not only when you send it yourself.
+- Market square: hold a good's tile to keep loading it onto the truck.
+
 ## Review, third pass — 2026-10-11
 
 - A blue star in the world shows where the story goes on.

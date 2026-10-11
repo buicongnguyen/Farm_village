@@ -913,4 +913,5 @@ export const KO_FISHING = {
   'The far bank of the brook opens in chapter 12, when the co-operative is founded. Next in the story: {name}': '개울 건너편 강둑은 12장에서 협동조합을 세우면 열려요. 이야기의 다음 일: {name}',
   'The far bank of the brook opens in chapter 12, when the co-operative is founded.': '개울 건너편 강둑은 12장에서 협동조합을 세우면 열려요.',
   'Later in the story: {text}': '이야기의 나중 일: {text}',
+  'Tap a good to load ten. Hold it to keep loading.': '물건을 누르면 열 개씩 실어요. 길게 누르면 계속 실어요.',
 };

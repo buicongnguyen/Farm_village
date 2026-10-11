@@ -120,10 +120,10 @@ export const actions = {
       u.away = true; u.backAt = now + TRUCK.tripMs;
       ctx.emit('truckSent', { units: loadUnits(u), truck: all.indexOf(u) });
       // a truck that leaves on a market day with the good of the day is paid the bonus for it when it is back.
-      // Sent by the hired driver it earns the same, but the day counts (chapter 6) only when you send it yourself.
+      // Sent by the hired driver it earns the same and the day counts too (chapter 6): the farm sold the good of the day.
       if (day.active && u.load.some(row => row.good === day.good)) {
         u.market = { good: day.good, bonus: day.bonus };
-        if (!ctx.byHand) ctx.emit('marketDaySale', { good: day.good, truck: all.indexOf(u), first: countMarketDay(ctx) });
+        const first = countMarketDay(ctx); if (!ctx.byHand) ctx.emit('marketDaySale', { good: day.good, truck: all.indexOf(u), first });
       }
     }
     return { backAt: now + TRUCK.tripMs, sent: go.length };
