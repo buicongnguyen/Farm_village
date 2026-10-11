@@ -933,4 +933,6 @@ export const JA_FISHING = {
   'Nothing leaves the barn by itself now. You can still fill and send the trucks yourself.': 'いまは納屋から勝手に出ていくものはありません。自分で積んで送り出すことはできます。',
   'The driver loads spare goods and sends the trucks by themselves. Pause them to save goods up in the barn.': '運転手は余った品物を積んで、自分でトラックを出します。納屋に品物をためたいときは休ませましょう。',
   'The goods of this request are kept in the barn: the trucks do not take them to market.': 'この注文の品物は納屋に取っておきます。トラックが市場へ持っていくことはありません。',
+  'Made at the {place}: {needs} → {n}': '{place}で作ります：{needs} → {n}',
+  'Your {n} {other} do not count: they are a different good, cooked from {good}.': 'お持ちの{other}{n}個は数えません。{good}から作る別の品物です。',
 };
