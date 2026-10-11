@@ -9,7 +9,7 @@ export async function loadHomeRoom(body, kind = null) {
   const file = kind ?? 'cottage';
   if (kind && !['hospital', 'police', 'company', 'school', 'barn', 'bakery', 'supermarket'].includes(kind)) throw Error('unknown interior');
   const [kit, response, , extraKit, keepsakes] = await Promise.all([loadKit('cottage-furniture'), fetch(`./assets/models/interior-${file}.json`), loadRig(body),
-    kind ? loadKit('facility-props') : loadKit('interior-extras').catch(() => null), kind ? null : loadKit('interior-farmhouse')]);
+    kind ? loadKit('facility-props') : loadKit('interior-extras'), kind ? null : loadKit('interior-farmhouse')]);
   if (!response.ok) throw Error('room metadata');
   const data = await response.json();
   if (data.schemaVersion !== 2 || data.roomId !== (kind ? `${kind}_interior` : 'farmhouse_main')) throw Error('room schema');

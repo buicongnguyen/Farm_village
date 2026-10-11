@@ -1,10 +1,11 @@
 # Changelog
 
-## Cozy rooms and village interiors — 2026-10-12 (branch, not deployed)
+## Cozy rooms and village interiors — 2026-10-12 (PR #108)
 
 - Replaced the small farmhouse shell with the user's six-room Zoo Garden cottage. Kept Hollowbrook's memory shelf, family table, activities and all earned decorations, including the large plant.
 - Added lazy, walkable clinic/hospital, police, company, school, storage-barn and bakery interiors from the user's Willowmere game. Their furniture opens existing services; observations add village details in all four editions.
 - Added a phone follow camera, whole-room view and readable furniture labels. Entry respects actual doors and repairs; safe exit works even if a building changes during the visit. Room pose stays out of saves.
+- Review fixes: a blocked walking destination cancels the previous route, and failed decoration downloads show Retry instead of opening a room with invisible furniture obstacles.
 - Prepared the supermarket room and [story plan](docs/SUPERMARKET-STORY-PLAN.md) only, as requested. No supermarket construction, sale bonus or chapter gate is enabled.
 
 

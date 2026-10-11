@@ -396,9 +396,9 @@ Proposed modules, to be confirmed when coding begins:
 
 ### Validation of the expanded rooms — 2026-10-12
 
-Review: [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108), implementation `af0f9cc`. Not merged or deployed.
+Release: [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108), implementation `af0f9cc` plus the review fixes below. The user authorized merge and deployment on 2026-10-12.
 
-- `npm test`: 696/696 passing, including every pair of activity positions in all eight layouts (farmhouse at levels 1 and 10), door rotations, atomic refusals, repair/removal exits, save isolation, packed assets and disabled supermarket entry.
+- `npm test`: 697/697 passing, including every pair of activity positions in all eight layouts (farmhouse at levels 1 and 10), door rotations, atomic refusals, repair/removal exits, save isolation, packed assets and disabled supermarket entry.
 - `npm run sim`: steady school on day 3; casual/steady/keen guardrails also pass in the unit suite.
 - Test build: 1,255,021 first-load bytes / 1,300,000. GitHub's production build: 1,254,666 bytes. Both packed interior kits are fetched only after choosing Explore.
 - Full existing browser run: 39 of 40 suites passed initially. The remaining farmhouse suite exposed a phone label disappearing after a card closed; corrected, then all four languages plus failed-download/retry/profile checks passed. Roaming was rerun after the fix and passed 10/10. Together with the new civic-interiors suite, all 41 component suites have passing results.
@@ -406,3 +406,5 @@ Review: [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108), imple
 - Desktop/phone smoke suite passes 50/50, including the complete chapters 1–20. Initial scene measured 2.6 seconds on simulated 4G. Browser tests use Chromium; the optional WebKit run is unavailable on this machine.
 - Visual examples: furnished level-10 farmhouse 18 draws / 34,804 triangles; prepared supermarket preview 6 draws / 37,742 triangles. All tested zooms stay below 120 draws / 300k triangles.
 - Both room generators reproduce the committed JSON without a diff. Preview images are renders of these imported assets, not separate concept art.
+
+- Final code/logic review: cancel a superseded outdoor route when its replacement is blocked; require the earned-decoration kit before opening a furnished room so visible geometry and collision always agree. Added unit and browser regression checks.

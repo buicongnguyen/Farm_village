@@ -93,3 +93,13 @@ test('Explore copy has all four editions and keeps the child and partner Vietnam
   assert.match(VI_EXPLORE[HOME_MEMORY.text], /\bCon\b/);
   assert.doesNotMatch(VI_EXPLORE[HOME_MEMORY.reply], /tôi|tao|bạn/iu);
 });
+
+// A refused tap must not continue toward a previous door or activity.
+test('an unreachable outdoor destination cancels the previous route', () => {
+  const s = fixture(); assert.ok(routeExplore(s, [55,125]));
+  assert.equal(routeExplore(s, [-5,-5]), false);
+  assert.deepEqual(exploreSession(s).route, []);
+  const position = [...exploreSession(s).p];
+  for (let i = 0; i < 20; i++) moveExplore(s, 0, 0, .1);
+  assert.deepEqual(exploreSession(s).p, position);
+});

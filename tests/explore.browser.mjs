@@ -103,6 +103,15 @@ try {
   const page = await context.newPage(), errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto(url + '?new&restore'); await page.waitForFunction(() => window.farm?.ready, null, { timeout: 60000 });
   await page.evaluate(() => { farm.skipIntro(); farm.closeCards(); farm.game.s.cond.house = { level: 0, ms: 0 }; });
+  // Earned furniture and its colliders must appear together, including after a failed download.
+  await page.route('**/interior-extras.glb', route => route.fulfill({ status: 503, body: 'unavailable' }));
+  await page.evaluate(() => { farm.state().house.level = 10; farm.radial.choose({ act: 'goInside' }); });
+  await page.locator('[data-explore="retry"]').waitFor({ timeout: 60000 });
+  assert.equal(await page.evaluate(() => !!farm.world.exploreMode.session), false, 'failed furniture opened an incomplete room');
+  await page.unroute('**/interior-extras.glb'); await page.locator('[data-explore="retry"]').click();
+  await page.waitForFunction(() => farm.world.exploreMode.session && !farm.world.exploreMode.loading, null, { timeout: 60000 });
+  assert.equal(await page.evaluate(() => farm.world.exploreMode.room.data.comforts.length), 9);
+  await page.locator('[data-explore="close"]').click();
   let release; let hold = new Promise(resolve => { release = resolve; });
   await page.route('**/interior-cottage.json', async route => { await hold; await route.continue(); });
   await page.evaluate(() => farm.radial.choose({ act: 'goInside' }));
@@ -123,5 +132,5 @@ try {
   assert.equal(await page.evaluate(() => farm.state().explore), undefined);
   assert.ok(await page.locator('.hud-tools').isVisible());
   assert.deepEqual(errors, []);
-  console.log('PASS Explore download retry, cancellation, re-entry, profile replacement'); await context.close();
+  console.log('PASS Explore complete furniture retry, cancellation, re-entry, profile replacement'); await context.close();
 } finally { await browser.close(); }

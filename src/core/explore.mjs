@@ -44,7 +44,7 @@ export function startExplore(s, position, room, blocked) {
 }
 export function routeExplore(s, to) {
   const e = sessions.get(s); if (!e || !to?.every(Number.isFinite)) return false;
-  e.seated = false;
+  e.seated = false; e.route = []; // A new destination replaces the old walk, even when it is blocked.
   if (e.location !== 'outdoors') e.route = roomRoute(e.room, e.p, to);
   else {
     if (!outdoorClear(s, to, e.blocked)) return false;
