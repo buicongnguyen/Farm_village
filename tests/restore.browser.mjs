@@ -131,8 +131,9 @@ await check('markers: a red ! over broken things, a gold coin over ripe crops; t
   const m0 = await page.evaluate(() => { const c = farm.marks.collect(); return { alert: c.alert.length, coin: c.coin.length }; });
   expect(m0.alert >= 6 && m0.coin === 0, `at the start: ${JSON.stringify(m0)}`);
   await page.evaluate(() => farm.setClockOffset(70_000)); await page.waitForTimeout(1500);
-  const m1 = await page.evaluate(() => ({ coin: farm.marks.collect().coin.length, shown: farm.marks.coin.userData.n }));
-  expect(m1.coin >= 6 && m1.shown >= 6, `ripe beds: ${JSON.stringify(m1)}`);
+  // a ripe crop shows its own picture in a badge (a coin is for money that waits): count both kinds of marker
+  const m1 = await page.evaluate(() => ({ coin: farm.marks.collect().coin.length, shown: farm.marks.coin.userData.n + [...farm.marks.badge.values()].reduce((n, p) => n + (p.visible ? p.userData.n : 0), 0), wheat: farm.marks.badge.get('wheat')?.userData.n ?? 0 }));
+  expect(m1.coin >= 6 && m1.shown >= 6 && m1.wheat >= 1, `ripe beds: ${JSON.stringify(m1)}`);
   // two empty beds: choose a crop on one, then tap the other: the menu opens again, so another crop can be chosen
   const beds = await page.evaluate(() => { const s = farm.game.s; const ids = Object.keys(s.beds).slice(0, 2); for (const id of ids) delete s.beds[id]; return ids.map(id => [s.placed[id].x, s.placed[id].z]); });
   await tap(page, ...beds[0]); expect(await page.isVisible('.radial-btn[data-act="plant"]'), 'no seed menu on the first bed');
