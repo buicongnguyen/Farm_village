@@ -716,21 +716,27 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             a = i / nfruit * math.tau + .4; r = (1.55 + .25 * (i % 2)) * out; z = 2.4 + .8 * ((i * 3) % 4) / 3
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
-def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1)):
+def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1), lod=0):
     """A fruit tree of the orchard (2026-10-12, the owner: "fuller trees, the fruit easy to see"): a layered crown of nine
     puffs, dark below and light on top as the sun falls, on a forked trunk, with the fruit sitting ON the crown's upper
     half in a spiral so every one shows from the game's camera. About 1,070 triangles (the scenery's round tree keeps
     cute(): there are hundreds of those, and at most a dozen of each fruit tree)."""
-    p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=8, rt=.3), cl('root', .64, .26, 0, 0, 0, 'woodd', verts=8, rt=.44),
-         st((0, 0, 1.5), (.75, .2, 2.5), .17, 'wood', sides=5, rt=.1), st((0, 0, 1.6), (-.7, -.3, 2.55), .16, 'woodd', sides=5, rt=.1)]
+    # lod 1 is the authored middle level (<piece>_mid): the same crown in coarser puffs and fewer, bigger fruit. The game's
+    # own simplifier turned the round puffs into shards and the fruit into slivers, and the usual view is that far out.
+    sub = 1 if lod else 2
+    if lod:
+        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=5, rt=.3)]; nfruit = max(6, round(nfruit * .6)); fr *= 1.28
+    else:
+        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=8, rt=.3), cl('root', .64, .26, 0, 0, 0, 'woodd', verts=8, rt=.44),
+             st((0, 0, 1.5), (.75, .2, 2.5), .17, 'wood', sides=5, rt=.1), st((0, 0, 1.6), (-.7, -.3, 2.55), .16, 'woodd', sides=5, rt=.1)]
     p.append(ball('puff', 1.55, 0, 0, 3.1, base, sub=2, sc=(1, 1, .92)))
     for i in range(4):   # the low ring: wide and in shade
         a = i / 4 * math.tau + .5
-        p.append(ball('puff', 1.08, math.cos(a) * 1.18, math.sin(a) * 1.18, 2.6, dark if i % 2 else base, sub=2, sc=(1, 1, .9)))
+        p.append(ball('puff', 1.08 * (1.06 if lod else 1), math.cos(a) * 1.18, math.sin(a) * 1.18, 2.6, dark if i % 2 else base, sub=sub, sc=(1, 1, .9)))
     for i in range(3):   # the upper ring and the top: in the light
         a = i / 3 * math.tau + 1.4
-        p.append(ball('puff', .95, math.cos(a) * .8, math.sin(a) * .8, 3.6, light if i else base, sub=2, sc=(1, 1, .9)))
-    p.append(ball('puff', .86, .08, .05, 4.3, light, sub=2, sc=(1, 1, .88)))
+        p.append(ball('puff', .95 * (1.06 if lod else 1), math.cos(a) * .8, math.sin(a) * .8, 3.6, light if i else base, sub=sub, sc=(1, 1, .9)))
+    p.append(ball('puff', .86 * (1.06 if lod else 1), .08, .05, 4.3, light, sub=sub, sc=(1, 1, .88)))
     if fruit:
         for i in range(nfruit):   # a golden-angle spiral over the crown's upper half, just proud of the leaves
             h = .12 + .8 * (i + .5) / nfruit; a = i * 2.39996 + .3
@@ -738,14 +744,23 @@ def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(
             p.append(ball('fruit', fr * (1.0 if i % 4 else 1.15), math.cos(a) * r, math.sin(a) * r, 2.25 + h * 2.25, fruit2 if fruit2 and i % 2 else fruit, sub=0, sc=fsc))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_apple', orchard('leafw', 'leafwl', 'leafwd', 'fruitred'))
-piece('cute_apple_bare', orchard('leafw', 'leafwl', 'leafwd'))
-piece('cute_peach', orchard('leafwl', 'leafw', 'leafwd', 'fruitpeach'))
-piece('cute_peach_bare', orchard('leafwl', 'leafw', 'leafwd'))
+ORCHARD = {   # piece: (the three leaf colours, then the fruit's arguments)
+    'cute_apple': (('leafw', 'leafwl', 'leafwd'), dict(fruit='fruitred')),
+    'cute_peach': (('leafwl', 'leafw', 'leafwd'), dict(fruit='fruitpeach')),
+    'cute_orange': (('leafwd', 'leafw', 'pinew'), dict(fruit='orange')),
+    'cute_cherry': (('leafw', 'blossoml', 'leafwd'), dict(fruit='berry', nfruit=18, fr=.21)),
+    'tree2_mango': (('leafwd', 'leafw', 'pinew'), dict(fruit='mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3))),
+}
+def orchard_pieces(name, into=None):
+    """A fruit tree's four roots: ripe and bare, each with its authored middle level."""
+    leaves, fruit = ORCHARD[name]
+    for lod, tail in ((0, ''), (1, '_mid')):
+        piece(name + tail, orchard(*leaves, **fruit, lod=lod), into)
+        piece(name + '_bare' + tail, orchard(*leaves, lod=lod), into)
+orchard_pieces('cute_apple'); orchard_pieces('cute_peach')
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
 # tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
-piece('cute_orange', orchard('leafwd', 'leafw', 'pinew', 'orange'))
-piece('cute_orange_bare', orchard('leafwd', 'leafw', 'pinew'))
+orchard_pieces('cute_orange')
 def palm(fruit=True):
     """A coconut palm: a curved, ringed trunk, six drooping fronds and a cluster of coconuts under them."""
     p = []
@@ -2082,8 +2097,7 @@ def mango(ripe=True):
             p.append(ball('mango', .2, x, y, z, 'mango' if i % 2 else 'mangor', sub=1, sc=(.85, .85, 1.4)))
     return p
 # 2026-10-12: the mango as an orchard tree: its long fruit, gold and blushing, on the crown instead of under it
-piece('tree2_mango', orchard('leafwd', 'leafw', 'pinew', 'mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3)), decor)
-piece('tree2_mango_bare', orchard('leafwd', 'leafw', 'pinew'), decor)
+orchard_pieces('tree2_mango', decor)
 
 def grape_arbor(ripe=True):
     """Grape arbour (fruit vine, 1 cell): a little wooden pergola roofed with vine leaves, purple bunches hanging inside."""
@@ -2382,8 +2396,7 @@ def cherry_tree(ripe=True):
                 p.append(ball('cherry', .17, x + dx, y, z, 'berry', sub=1))
     return p
 # 2026-10-12: the cherry is an orchard tree too: blossom on its sunlit puffs, and its cherries on the crown where they show
-piece('cute_cherry', orchard('leafw', 'blossoml', 'leafwd', 'berry', nfruit=18, fr=.21))
-piece('cute_cherry_bare', orchard('leafw', 'blossoml', 'leafwd'))
+orchard_pieces('cute_cherry')
 
 def cherries():
     return [ball('cherry', .33, -.25, 0, .34, 'berry', sub=2), ball('cherry', .33, .27, .03, .34, 'fruitred', sub=2),
