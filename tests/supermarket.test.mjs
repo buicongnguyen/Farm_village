@@ -68,6 +68,7 @@ test('failed shop actions are atomic for stale IDs, missing goods, insufficient 
 });
 test('malformed saved baskets fail closed instead of reserving or minting goods; zero timestamps remain valid',()=>{
  const s=fixture();custom(s,{carrot:8});for(const change of [{payment:999999},{need:{carrot:-8}},{need:{unknown:8}},{need:{carrot:9}},{section:'__proto__'},{accepted:'yes'},{id:'shop:1'}]){const c=structuredClone(s);Object.assign(c.supermarket.request,change);assert.equal(normalizeSupermarket(c).request,null);assert.deepEqual(supermarketHeld(c),{});}
+ const exhausted=structuredClone(s);exhausted.supermarket.serial=999999;exhausted.supermarket.request.id='shop:999999';assert.deepEqual(supermarketHeld(exhausted),{});
  s.supermarket.memories={opening:0};s.supermarket.read='opening';assert.equal(unreadSupermarket(s),1);assert.equal(normalizeSupermarket(s).memories.opening,0);
 });
 test('cancel cooldown survives backward clocks and used supermarket builds cannot be undone for a refund',()=>{

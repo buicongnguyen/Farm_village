@@ -6,7 +6,7 @@ const stamp = n => Number.isSafeInteger(n) && n >= 0;
 const counter = n => stamp(n) && n < 1_000_000 ? n : 0;
 export const basketPrice = need => Math.ceil(Object.entries(need).reduce((sum, [g, n]) => sum + GOODS[g].value * n, 0) * SUPERMARKET.premium);
 function validRequest(raw, serial, sections) {
-  if (!raw || raw.id !== `shop:${serial}` || !Object.hasOwn(SHOP_SECTIONS, raw.section) || !sections[raw.section]
+  if (serial >= 999_999 || !raw || raw.id !== `shop:${serial}` || !Object.hasOwn(SHOP_SECTIONS, raw.section) || !sections[raw.section]
     || !raw.need || Array.isArray(raw.need) || typeof raw.need !== 'object' || !stamp(raw.offeredAt) || typeof raw.accepted !== 'boolean') return null;
   const rows = Object.entries(raw.need);
   if (rows.length < 1 || rows.length > 2 || rows.some(([g, n]) => !SHOP_SECTIONS[raw.section].goods.includes(g) || !stamp(n) || n < 1 || n > SUPERMARKET.units)

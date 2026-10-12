@@ -117,7 +117,7 @@ export function renderPanel() {
       title = t('Village supermarket'); icon = 'supermarket';
       body = o.kind === 'shopMemory' ? renderShopMemory(s, o.arg) : renderSupermarket(s, now);
       const shop = normalizeSupermarket(s);
-      if (o.kind === 'shopMemory' && shop.memories[o.arg] != null && !shop.read.includes(o.arg)) queueMicrotask(() => {
+      if (o.kind === 'shopMemory' && Object.hasOwn(shop.memories, o.arg) && !shop.read.includes(o.arg)) queueMicrotask(() => {
         if (this.open === o && !document.hidden && !modalOpen() && !normalizeSupermarket(this.game.s).read.includes(o.arg)) this.game.do('readShopMemory', { id: o.arg });
       });
     }

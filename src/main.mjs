@@ -146,6 +146,7 @@ panels = new Panels(app, game, hud, {
   },
   // "show the way": go to where a missing good is made, or open the catalogue on that building
   onShowWay: at => {
+    world.exploreMode?.close();
     if (at === 'learning') { panels.onLearningVisit?.(); return; }
     if (at === 'pond') { flyTo((POND_DOCK.x - 2) * CELL, POND_DOCK.z * CELL); panels.show('pond'); return; }
     if (at === 'farm') { const o = parcelOrigin(START_PARCEL); flyTo((o.x + 6) * CELL, (o.z + 4) * CELL); hud.toast(t('Plant it in your beds'), 'info', { icon: 'bed' }); return; }
@@ -171,6 +172,8 @@ panels = new Panels(app, game, hud, {
   },
   onGoodHelpReturn: () => { if (build.open) build.close(); radial.hide(); },
   onGoodHelpSource: target => {
+    // Source controls live outdoors. Leave an interior safely before opening its destination; the panel keeps the request return context.
+    world.exploreMode?.close();
     if (build.open) build.close();
     radial.hide(); radial.armed = null; radial.tool.hidden = true;
     if (target.kind === 'learning') { panels.onLearningVisit?.(); return; }
@@ -212,7 +215,7 @@ panels = new Panels(app, game, hud, {
     }
   },
   // a wish's Build button: the catalogue on that decoration
-  onBuildKind: kind => { if (!BUILDINGS[kind]) return; build.cat = BUILDINGS[kind].cat; build.start(kind); },
+  onBuildKind: kind => { if (!BUILDINGS[kind]) return; world.exploreMode?.close(); build.cat = BUILDINGS[kind].cat; build.start(kind); },
   onPhoto: () => import('./ui/photo.mjs').then(m => m.startPhoto({ world, root: app })),
   onTest: what => testAction(what),
   // the tester's tools show in a test build, with ?tester, or on a farm where the owner's coupon was used (Settings)
