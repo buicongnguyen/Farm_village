@@ -53,7 +53,7 @@ function storyTexture() {   // a blue disc with a white star: "the story goes on
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 
-const CAP = 160, SIZE = 7, BADGE = 6.4, BADGE_NEAR = 26, BADGE_MIN = 0.3;   // BADGE: a ready badge's size against a coin's
+const CAP = 160, SIZE = 7, BADGE = 6.4, BADGE_NEAR = 26, BADGE_MIN = 0.3, GOLD_GLINTS = 26;   // BADGE: a ready badge's size against a coin's
 function alertTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
   g.fillStyle = '#e8382f'; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();
@@ -105,7 +105,7 @@ export class Marks {
     this.glint.material.color.set('#ffe9a8');   // a warm glint: gold light, not white
     this.backing = cloud(backingTexture()); this.backing.renderOrder = 19;
     this.story = cloud(storyTexture());
-    this.gold = cloud(this.glint.material.map); this.gold.material.blending = THREE.AdditiveBlending; this.gold.material.color.set('#ffd866');
+    this.gold = cloud(this.glint.material.map); this.gold.material.blending = THREE.AdditiveBlending; this.gold.material.color.set('#ffcf5a');   // light on the water (a plain gold star does not show on bright blue)
     world.scene.add(this.backing, this.coin, this.alert, this.glint, this.story, this.gold);
     world.onFrame?.((dt, now) => this.frame(dt, now));
   }
@@ -133,7 +133,7 @@ export class Marks {
     if (rentWaiting(s, now) >= 10) mark(null, [(MAILBOX.x + 0.5) * CELL, 2.2, (MAILBOX.z + 0.5) * CELL]);   // rent waiting in the mailbox
     const spot = storySpot(s);
     // a gold rush: glints all along the brook (core/surprises.mjs)
-    const gold = rushActive(s, now) ? Array.from({ length: 90 }, (_, i) => { const x = 10 + i * 1.25; return [(x + 0.5) * CELL, 0.5, (brookZ(Math.round(x)) + ((i * 7) % 5) * 0.5 - 1 + 0.5) * CELL]; }) : [];
+    const gold = rushActive(s, now) ? Array.from({ length: GOLD_GLINTS }, (_, i) => { const x = 12 + i * (110 / GOLD_GLINTS); return [(x + 0.5) * CELL, 0.5, (brookZ(Math.round(x)) + ((i * 7) % 5) * 0.5 - 1 + 0.5) * CELL]; }) : [];
     return { coin, money, badge, alert, story: spot ? [spot] : [], gold };
   }
   frame(dt, now) {
@@ -152,7 +152,10 @@ export class Marks {
     { const gp = this.gold, list = this.list.gold ?? [], arr = gp.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { arr[i * 3] = list[i][0]; arr[i * 3 + 1] = list[i][1]; arr[i * 3 + 2] = list[i][2]; }
       gp.geometry.attributes.position.needsUpdate = true; gp.geometry.setDrawRange(0, n); gp.visible = n > 0;
-      gp.material.size = SIZE * 4.2 * this.world.renderer.getPixelRatio() * Math.max(0.35, 0.7 + 0.3 * Math.sin(t * 5.5)); }
+      // a few gold glints, each twinkling in its own time, smaller as the view is zoomed out (90 white stars at one size made the
+      // whole brook glitter; they cost one draw call either way)
+      const zoom = Math.min(1, Math.max(0.45, 30 / (this.world.cam.shown?.span ?? this.world.cam.span ?? 30)));
+      gp.material.size = SIZE * 4.4 * zoom * this.world.renderer.getPixelRatio() * (0.8 + 0.2 * Math.sin(t * 3.2)); }   // they pulse gently together and never vanish
     // the badges: one cloud for each good that is ready somewhere (made when first needed, hidden when none is)
     // a badge keeps its size up close and shrinks with the view as it is zoomed out (BADGE_NEAR metres across and less:
     // full size; from there in proportion, never below BADGE_MIN), so a far view of the orchard is not all badges

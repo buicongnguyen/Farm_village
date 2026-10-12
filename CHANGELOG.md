@@ -1,5 +1,9 @@
 # Changelog
 
+## A calmer gold rush — 2026-10-13
+
+- The brook shows a few quiet glints during a gold rush (26 along its whole length, smaller when zoomed out); it had 90 and the whole brook glittered.
+
 ## Trees in flower, and four more fruit trees — 2026-10-13
 
 - A fruit tree is bare while it grows, **in flower** for the second half of that time, and then carries its fruit. Each of the nine trees has its own blossom colour.
