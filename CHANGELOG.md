@@ -1,6 +1,6 @@
 # Changelog
 
-## Village supermarket and production rooms — 2026-10-12
+## Village supermarket and production rooms — 2026-10-12 (PR #109)
 
 - Added an optional level-14 village supermarket with three shelves, saved eight-item baskets at a 25% premium, explicit reservations and a 30-minute interval. It follows real ingredient sources and leaves chapters 1–20 unchanged.
 - Added adaptive shop dialogue and three saved memories in all four editions. A counter photo, tasting tray and framed thank-you card appear as the player supplies different shelves; Today keeps unread memories.

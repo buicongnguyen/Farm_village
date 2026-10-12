@@ -689,3 +689,5 @@ Historical log: the dated ownership and waiting-for-art notes below describe the
 - Status: **placeholder**, ID `supermarket`, outputs `public/assets/icons/supermarket.webp` and `public/assets/icons/sm/supermarket.webp`.
 - Both sizes currently copy `market.webp`. Replace them with a matching render of `supermarket.glb` → `supermarket`, using the usual icon renderer and 64 px generation workflow. The model is already delivered and packed; do not redesign its footprint or doorway.
 - No gameplay waits for this artwork. Other product-specific shelf variants or additional workplace rooms are future proposals, not active file reservations.
+
+- Implementation handoff: `3cf877c`, [PR #109](https://github.com/buicongnguyen/Farm_village/pull/109). The source/furniture reuse and optional shop rules are complete; Codex is running release validation. After that PR merges, no shared implementation file remains reserved by this slice. The placeholder-icon replacement is the only active art follow-up.

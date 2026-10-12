@@ -1,6 +1,6 @@
 # The village supermarket: implemented first slice
 
-Status: implemented on `codex/village-supermarket`, 2026-10-12, following the user's approval after PR #108. Release checks are recorded in the pull request. This optional branch adds no chapter gate and does not alter chapters 1–20.
+Status: implemented in [PR #109](https://github.com/buicongnguyen/Farm_village/pull/109), 2026-10-12, following the user's approval after PR #108. Release checks are recorded in the pull request. This optional branch adds no chapter gate and does not alter chapters 1–20.
 
 ## What the player does
 
