@@ -1063,4 +1063,12 @@ export const JA_FISHING = {
   'The gift truck': '贈り物のトラック',
   'A hundred trips to market do not go unnoticed.': '市場への百回の配達は、だれかがちゃんと見ています。',
   'The company sent it with a ribbon on the mirror: for the farm that never missed a delivery.': '会社がミラーにリボンをつけて送ってくれました。一度も配達を欠かさなかった農場へ。',
+  'Plum': 'プラム',
+  'Lemon': 'レモン',
+  'Longan': 'リュウガン',
+  'Lychee': 'ライチ',
+  'Plum tree': 'プラムの木',
+  'Lemon tree': 'レモンの木',
+  'Longan tree': 'リュウガンの木',
+  'Lychee tree': 'ライチの木',
 };

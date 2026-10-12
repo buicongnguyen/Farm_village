@@ -1063,4 +1063,12 @@ export const KO_FISHING = {
   'The gift truck': '선물 받은 트럭',
   'A hundred trips to market do not go unnoticed.': '시장에 백 번 다녀온 걸 모를 리 없지요.',
   'The company sent it with a ribbon on the mirror: for the farm that never missed a delivery.': '회사에서 거울에 리본을 달아 보냈어요. 한 번도 배달을 거르지 않은 농장에게.',
+  'Plum': '자두',
+  'Lemon': '레몬',
+  'Longan': '용안',
+  'Lychee': '리치',
+  'Plum tree': '자두나무',
+  'Lemon tree': '레몬나무',
+  'Longan tree': '용안나무',
+  'Lychee tree': '리치나무',
 };

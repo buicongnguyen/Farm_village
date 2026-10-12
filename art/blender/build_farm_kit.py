@@ -716,7 +716,7 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             a = i / nfruit * math.tau + .4; r = (1.55 + .25 * (i % 2)) * out; z = 2.4 + .8 * ((i * 3) % 4) / 3
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
-def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1), lod=0):
+def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1), lod=0, bloom=None):
     """A fruit tree of the orchard. 2026-10-13 (the owner: "ours are only circles, no clear leaves"): the crown is made
     of LEAVES. A dark core of four puffs fills it, and leaf blades (style.leaf: a diamond with a mid-rib, seen from both
     sides) stand out of it in a spiral, drooping more the lower they sit, light on top and dark below as the sun falls.
@@ -745,6 +745,12 @@ def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(
         mt = light if h > .55 else dark if h < -.02 else (base if i % 3 else light)
         size = (1 - .18 * rnd.random()) * (.82 if h > .8 else 1)
         p.append(lf((x, y, z), a, L * size, W * size, mt, lift=.12 + .3 * max(0, h), droop=.1 + .5 * (1 - h) / 2, tilt=rnd.uniform(-.08, .08)))   # the top leaves reach up, the skirt hangs
+    if bloom:   # in flower (<piece>_bloom): small blossoms all over the crown, before the fruit sets
+        nb, br = (16, .21) if lod else (30, .15)
+        for i in range(nb):
+            h = -.05 + .95 * (i + .5) / nb; a = i * 2.39996 + 2.1
+            r = rx * math.sqrt(max(.05, 1 - (h * .95) ** 2)) * (.98 if i % 2 else 1.05)
+            p.append(ball('flower', br * (1 if i % 3 else 1.2), math.cos(a) * r, math.sin(a) * r, cz + rz * h * .9 + .1, bloom if i % 4 else 'sun', sub=0))
     if fruit:
         for i in range(nfruit):   # among the outer leaves of the upper half
             h = .1 + .78 * (i + .5) / nfruit; a = i * 2.39996 + .9
@@ -752,19 +758,26 @@ def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(
             p.append(ball('fruit', fr * (1.0 if i % 4 else 1.15), math.cos(a) * r, math.sin(a) * r, cz + rz * h * .9 + .12, fruit2 if fruit2 and i % 2 else fruit, sub=0, sc=fsc))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
-ORCHARD = {   # piece: (the three leaf colours, then the fruit's arguments)
-    'cute_apple': (('leafw', 'leafwl', 'leafwd'), dict(fruit='fruitred')),
-    'cute_peach': (('leafwl', 'leafw', 'leafwd'), dict(fruit='fruitpeach')),
-    'cute_orange': (('leafwd', 'leafw', 'pinew'), dict(fruit='orange')),
-    'cute_cherry': (('leafw', 'blossoml', 'leafwd'), dict(fruit='berry', nfruit=18, fr=.21)),
-    'tree2_mango': (('leafwd', 'leafw', 'pinew'), dict(fruit='mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3))),
+ORCHARD = {   # piece: (the three leaf colours, the fruit's arguments, the blossom's colour)
+    'cute_apple': (('leafw', 'leafwl', 'leafwd'), dict(fruit='fruitred'), 'blossoml'),
+    'cute_peach': (('leafwl', 'leafw', 'leafwd'), dict(fruit='fruitpeach'), 'blossom'),
+    'cute_orange': (('leafwd', 'leafw', 'pinew'), dict(fruit='orange'), 'white'),
+    'cute_cherry': (('leafw', 'blossoml', 'leafwd'), dict(fruit='berry', nfruit=18, fr=.21), 'blossom'),
+    'tree2_mango': (('leafwd', 'leafw', 'pinew'), dict(fruit='mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3)), 'cream'),
+    # 2026-10-13: four more orchard trees (their icons were rendered with tree pack 2 and never used)
+    'tree2_lemon': (('leafw', 'leafwl', 'leafwd'), dict(fruit='lemon', nfruit=13, fr=.29, fsc=(.86, .86, 1.18)), 'white'),
+    'tree2_plum': (('leafwd', 'leafw', 'pinew'), dict(fruit='plum', nfruit=14, fr=.28, fruit2='pluml'), 'blossoml'),
+    'tree2_longan': (('leafw', 'leafwl', 'leafwd'), dict(fruit='longan', nfruit=20, fr=.2), 'cream'),
+    'tree2_lychee': (('leafwd', 'leafwl', 'leafwd'), dict(fruit='lychee', nfruit=18, fr=.23), 'cream'),
 }
 def orchard_pieces(name, into=None):
-    """A fruit tree's four roots: ripe and bare, each with its authored middle level."""
-    leaves, fruit = ORCHARD[name]
+    """A fruit tree's roots: ripe, bare and in flower, each with its authored middle level. The forms in flower go into
+    the decor kit (loaded after the first scene): a tree shows them only half-way through its growing."""
+    leaves, fruit, bloom = ORCHARD[name]
     for lod, tail in ((0, ''), (1, '_mid')):
         piece(name + tail, orchard(*leaves, **fruit, lod=lod), into)
         piece(name + '_bare' + tail, orchard(*leaves, lod=lod), into)
+        piece(name + '_bloom' + tail, orchard(*leaves, lod=lod, bloom=bloom), decor)
 orchard_pieces('cute_apple'); orchard_pieces('cute_peach')
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
 # tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
@@ -2080,16 +2093,14 @@ def lemon(ripe=True):
     p = cute('l', 'leafwd', 'leafw', 'leafdd')
     if ripe: p += fruit_on(10, 'lemon', .22, 1.3, sc=(1, 1, 1.35))
     return p
-piece('tree2_lemon', lemon(), decor)
-piece('tree2_lemon_bare', lemon(False), decor)
+orchard_pieces('tree2_lemon', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def plum(ripe=True):
     """Plum tree (fruit; Granny Ada's terrible jam): a fresh green canopy hung with deep purple plums."""
     p = cute('pl', 'leafwl', 'leafw', 'leafwd')
     if ripe: p += fruit_on(11, 'plum', .23, 1.3, mt2='pluml')
     return p
-piece('tree2_plum', plum(), decor)
-piece('tree2_plum_bare', plum(False), decor)
+orchard_pieces('tree2_plum', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def mango(ripe=True):
     """Mango tree (fruit): a big dense dark dome, long mangoes blushing orange-red hanging on short stalks."""
@@ -2138,8 +2149,7 @@ def longan(ripe=True):
             p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
             p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'longan', n=6, r=.13)
     return p
-piece('tree2_longan', longan(), decor)
-piece('tree2_longan_bare', longan(False), decor)
+orchard_pieces('tree2_longan', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def lychee(ripe=True):
     """Lychee tree (fruit, the hills chapter): a bright green canopy with clusters of rosy-red lychees."""
@@ -2150,8 +2160,7 @@ def lychee(ripe=True):
             p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
             p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'lychee', n=6, r=.13, mt2='berry')
     return p
-piece('tree2_lychee', lychee(), decor)
-piece('tree2_lychee_bare', lychee(False), decor)
+orchard_pieces('tree2_lychee', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():
