@@ -34,9 +34,10 @@ test('a hand\'s round is counted, located and told: tasks, where the work was, a
   const beds = Object.keys(s.placed).filter(id => s.placed[id].kind === 'bed'); assert.ok(beds.length >= 4);
   for (const id of Object.keys(s.beds)) delete s.beds[id];
   must(s, 'plant', { ids: beds, crop: 'wheat' }); tick(s, T0 + 1000);   // the hands' clock starts
+  must(s, 'startFieldWork', { ids: beds, owner: 'field', mode: 'ready' });
   const at = T0 + 1000 + HANDS.everyMs + 1, coins = s.coins, r = tick(s, at), did = r.events.find(e => e.type === 'handDid' && e.role === 'field');
   assert.ok(did, 'the field hand did not work'); assert.equal(did.who, 'minh'); assert.ok(beds.includes(did.at), 'the work was at a bed');
-  assert.equal(did.count, Math.ceil(beds.length / 2), 'half of the ripe beds, rounded up');
+  assert.equal(did.count, Math.min(3, beds.length), 'the bounded batch size');
   assert.equal(s.stats.handTasks, did.count); assert.equal(s.hands.field.done, did.count); assert.deepEqual(s.hands.field.last, { at, id: did.at });
   assert.equal(s.today.hands.field, did.count); assert.equal(s.today.wages, did.count * HANDS.wage); assert.ok(s.coins <= coins - did.count * HANDS.wage + 1e6);
   const back = unpack(pack(s)); assert.equal(back.stats.handTasks, did.count); assert.equal(back.hands.field.done, did.count);

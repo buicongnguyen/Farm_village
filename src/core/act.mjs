@@ -2,6 +2,7 @@
 //   act(state, action, payload, now) → { ok, reason?, params?, events, ...result }
 //   tick(state, now)                 → { events }   (families arriving, new orders, neighbours, the new day)
 // The view plays the events; a refused action changes nothing and gives a reason for t().
+import { actions as fieldWork, observeFieldWork } from './field-work.mjs';
 import { actions as farm } from './farm.mjs';
 import { actions as animals } from './animals.mjs';
 import { actions as output } from './output.mjs';
@@ -49,9 +50,9 @@ import { actions as schoolActivity } from './school-activity.mjs';
 import { clampDone } from './clock.mjs';
 import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
+import { HANDS, ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...output, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
+export const ACTIONS = { ...fieldWork, ...handActions, ...farm, ...animals, ...output, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {
@@ -81,7 +82,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickTester(ctx); tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickTester(ctx); tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); observeFieldWork(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   tickShops(ctx); tickLearning(ctx); afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now); tallyEarned(s, ctx.events); afterAdvice(ctx);
@@ -120,6 +121,7 @@ function guardClock(s, now) {
   if (s.orders?.pending) s.orders.pending = s.orders.pending.map(at => Math.min(at, now + ORDERS.discardMs));
   if (s.fishing?.line) s.fishing.line.doneAt = Math.min(s.fishing.line.doneAt, now + FISH.waitMs);
   if (s.helpAt) s.helpAt = Math.min(s.helpAt, now + 2 * 60_000);
+  if (s.handsAt) s.handsAt = Math.min(s.handsAt, now + HANDS.everyMs);
   for (const u of s.truck ? [s.truck, ...(s.truck.fleet ?? [])] : []) if (u.away) u.backAt = Math.min(u.backAt, now + TRUCK.tripMs);
   for (const h of Object.values(s.homes)) if (h.tipAt) h.tipAt = Math.min(h.tipAt, now + RENT.tipMs[1]);
   if (s.fruitStand?.nextSaleAt) s.fruitStand.nextSaleAt = Math.min(s.fruitStand.nextSaleAt, now + FRUIT_STAND.everyMs);

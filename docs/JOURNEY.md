@@ -273,6 +273,8 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 6. Hollowbrook Farm Co. | First bounded office/staff/truck mechanics implemented in the current cross-stage slice; the full stage's job roster, horse/stable, evening report and chapters 8–10 remain planned |
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
+| Cross-stage proposal: farm variety, machinery and northwest playground | **Design only, 2026-10-12**: [combined implementation plan](FARM-EXPANSION-IMPLEMENTATION-PLAN.md), including the proposed 30/300 capacity model, animal care, orchards, a recreation business, story and validation phases. No new mechanics implemented. |
+| Cross-stage follow-up: farmhouse work board | First crop-assignment slice implemented and validated on `codex/helper-work-board`; awaiting review, not live. [Scope](WORK-BOARD-IMPLEMENTATION.md). Tractors, new fields and the playground remain planned. |
 
 ### Picnic branch integration — 2026-10-12
 

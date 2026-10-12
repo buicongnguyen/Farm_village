@@ -1,5 +1,8 @@
 # Hollowbrook — consolidated implementation plan
 
+Expansion planning, 2026-10-12: [Farm expansion: animals, orchards, machinery and the northwest playground](FARM-EXPANSION-IMPLEMENTATION-PLAN.md) consolidates the latest owner suggestions, including the proposed 30/300 crop-capacity distinction. **Design only; no new gameplay delivered.** Its decision register supersedes the earlier small machinery/variety proposals for this scope.
+
+
 Current language follow-up, 2026-10-09: `codex/korean-japanese` adds complete Korean/Japanese editions for the current
 game, with four-language menus, independent catalog downloads and unchanged progression. See
 [LANGUAGE-EDITIONS.md](LANGUAGE-EDITIONS.md) for implementation and verification. Meadow/dairy, later cast and later

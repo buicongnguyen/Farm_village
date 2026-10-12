@@ -11,7 +11,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { HOME_COMFORT } from '../content/explore.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR } from '../content/economy.mjs';
-import { ORDER_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY, HOME_GARDEN } from '../content/world.mjs';
+import { ORDER_BOARD, WORK_BOARD, BARN, FARMHOUSE, MAILBOX, CELL, PARCEL, parcelOf, isPond, POND_SHORE, ruinAt, RUIN_NAMES, TIDY, HOME_GARDEN } from '../content/world.mjs';
 import { tidied, ruinStands } from '../core/ruins.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { occupant, cellType, penOf } from '../core/grid.mjs';
@@ -95,6 +95,7 @@ export class Radial {
   /** The farmhouse: its repair when worn, and the upgrade to the next level. */
   houseMenu() {
     const s = this.s, lv = s.house?.level ?? 1, buttons = [];
+    buttons.push({ act: 'workBoard', icon: iconHtml('projects', '', 'ic'), label: t('Farm work board') });
     buttons.push({ act: 'goInside', icon: glyph('home', 'ic'), label: t('Go inside'), disabled: levelOf(s, 'house') >= 3 || isRepairing(s, 'house') });
     if (explorationStatus(s).eligible) buttons.push({ act: 'explorePorch', icon: iconHtml('lucky_box', '', 'ic'), label: t('Explore the porch') });
     const lesson = learningStatus(s, this.game.now);
@@ -140,6 +141,7 @@ export class Radial {
       if (ruinStands(s, ruin.kind) && !tidied(s, ruin.kind)) ruinButtons.push({ act: 'tidyRuin', kind: ruin.kind, icon: glyph('sprout', 'ic'), label: `${coinMark()}${TIDY.coins}`, disabled: s.coins < TIDY.coins });
       return this.open(cell, x, y, ruinButtons, `${t(RUIN_NAMES[ruin.kind])} · ${!ruinStands(s, ruin.kind) ? t('Cleared, kept for the rebuild') : next ? t('Ready to rebuild') : tidied(s, ruin.kind) ? t('Tidied, waiting for its day') : t('Run down')}`, { ruin: ruin.kind });
     }
+    if (!id && !opts.preview && near(cell, WORK_BOARD, 0)) { this.hide(); this.panels.show('workBoard'); return; }
     const who = !opts.preview && !id && this.people?.pick(x, y);
     if (who && who.id === 'ellis' && (s.story?.chapter ?? 0) >= 15 && (s.upriver?.stops?.length ?? 0) < 3) { this.hide(); this.people.talk(who); this.panels.show('upriver'); return; }   // Grandpa Oak: the walk upriver (chapter 16)
     if (who && (who.person ?? who.id) === 'albright' && !s.story?.albright) { this.hide(); this.people.talk(who); this.panels.onOffer?.(); return; }   // the man from the city: his offer (chapter 11)
@@ -265,6 +267,7 @@ export class Radial {
     else if (d.act === 'projects') this.panels.show('projects');
     else if (d.act === 'hurry') { if (g.do('hurry', { id }).ok) this.world.juice?.pop?.({ x: g.s.placed[id].x, z: g.s.placed[id].z }); }
     else if (d.act === 'harvestAll') g.do('harvest', { ids: Object.keys(g.s.beds).filter(k => g.s.beds[k].doneAt <= g.now) });
+    else if (d.act === 'workBoard') { this.hide(); this.panels.show('workBoard'); }
     else if (d.act === 'collect') g.do('collect', { home: id });
     else if (d.act === 'feed') g.do('feed', { home: id });
     else if (d.act === 'buyAnimal') g.do('buyAnimal', { home: id });

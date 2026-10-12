@@ -14,6 +14,7 @@ import * as barn from './barn.mjs';
 import { actions as farm } from './farm.mjs';
 import { gainXp } from './levels.mjs';
 import { XP } from '../content/economy.mjs';
+import { workFieldRound, actions as fieldWork } from './field-work.mjs';
 import { FAMILIES } from '../content/people.mjs';
 
 export function tickHelpers(ctx) {
@@ -23,14 +24,19 @@ export function tickHelpers(ctx) {
   const late = now - s.helpAt > WEAR.tickCapMs;   // away: they did not work while you were gone
   s.helpAt = now + HELP.everyMs; if (late) return;
   const quiet = { ...ctx, fail: () => ({}), emit: ctx.emit };
-  // June: harvest a few ripe beds and sow the same crop again
-  const ripe = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now).slice(0, HELP.beds);
-  if (ripe.length) {
-    const crops = ripe.map(id => [id, s.beds[id].crop]);
-    farm.harvest(quiet, { ids: ripe });
-    for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop });
-    ctx.emit('helperDid', { who: 'june', count: ripe.length, what: 'crops' });
+  // Keep the opening family's established pace until the player adopts board controls or hires a field hand.
+  if (!s.fieldWork?.enabled && !s.hands?.field) {
+    // June: harvest a few ripe beds and sow the same crop again
+    const ripe = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now).slice(0, HELP.beds);
+    if (ripe.length) {
+      const crops = ripe.map(id => [id, s.beds[id].crop]);
+      farm.harvest(quiet, { ids: ripe });
+      for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop });
+      ctx.emit('helperDid', { who: 'june', count: ripe.length, what: 'crops' });
+    }
   }
+  const familyWork = workFieldRound(quiet, 'family');
+  if (familyWork.count) ctx.emit('helperDid', { who: 'june', count: familyWork.count, what: 'crops' });
   // Pip: fetch a few eggs and milk
   let got = 0, sold = 0;
   for (const id of Object.keys(s.animals)) for (const an of s.animals[id]) {
@@ -59,14 +65,17 @@ export const handActions = {
     if (!handsOpen(s)) return ctx.fail('Build the school first');
     if (handHired(s, role)) return ctx.fail('Already hired');
     if (s.coins < def.fee) return ctx.fail('Not enough coins');
+    if (role === 'field') (s.fieldWork ??= { job: null, last: null }).enabled = true;
     s.coins -= def.fee; (s.hands ??= {})[role] = { since: ctx.now }; ctx.emit('handHired', { role }); return { role };
   },
   releaseHand(ctx, { role }) {
     if (!handHired(ctx.s, role)) return ctx.fail('Nobody is hired for this');
-    delete ctx.s.hands[role]; return { role };
+    delete ctx.s.hands[role];
+    if (role === 'field' && ctx.s.fieldWork?.job?.owner === 'field') fieldWork.cancelFieldWork(ctx);
+    return { role };
   },
 };
-/** Every HANDS.everyMs, while the game is open, each hand does half (rounded up) of what waits; a coin a task, as far as the coins go. */
+/** Hired work runs only while playing. Field work follows finite assignments; other roles retain their bounded rounds. */
 export function tickHands(ctx) {
   const { s, now } = ctx; if (!s.hands || !handsOpen(s)) return;
   if (!s.handsAt) { s.handsAt = now + HANDS.everyMs; return; }
@@ -81,8 +90,8 @@ export function tickHands(ctx) {
     ctx.emit('handDid', { role, count, who: handWho(s, role, now), at });
   };
   if (s.hands.field) {
-    const all = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now), ripe = all.slice(0, half(all.length)), crops = ripe.map(id => [id, s.beds[id].crop]);
-    if (ripe.length) { farm.harvest(quiet, { ids: ripe }); for (const [id, crop] of crops) if (!s.beds[id]) farm.plant(quiet, { ids: [id], crop }); paid('field', ripe.length, ripe[0]); }
+    const work = workFieldRound(quiet, 'field');
+    paid('field', work.count, work.at);
   }
   if (s.hands.animals) {
     const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null && isWorking(s, x.home));

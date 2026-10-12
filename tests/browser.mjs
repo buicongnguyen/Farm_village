@@ -662,11 +662,22 @@ await check('chapter 10: hired villagers are named and seen at work, the evening
   await page.waitForTimeout(300); await page.screenshot({ path: `${SHOTS}hands-named.png` });
   // a round of work: the field hand harvests, and Chip walks to the bed
   await page.waitForFunction(() => farm.people?.walkers?.has('minh'), null, { timeout: 40000 });
-  const tasks = await page.evaluate(async () => {
+  await page.evaluate(() => {
     const g = farm.game, s = g.s; farm.panels.close(); farm.closeCards();
-    g.do('plant', { ids: Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]), crop: 'wheat' }); g.do('testFinishTimers'); g.tick();
-    const off = +(sessionStorage.getItem('fv-clock-offset') ?? 0); farm.setClockOffset(off + 61000); g.do('testFinishTimers'); g.tick();
-    return s.stats.handTasks ?? 0;
+    g.do('plant', { ids: Object.keys(s.placed).filter(k => s.placed[k].kind === 'bed' && !s.beds[k]), crop: 'wheat' });
+    g.do('testFinishTimers'); g.tick();
+  });
+  await page.waitForTimeout(700);
+  await page.evaluate(() => { farm.closeCards(); farm.panels.show('workBoard'); });
+  await page.locator('[data-do="workOwner"][data-value="field"]').click();
+  const beds = await page.locator('[data-do="workBed"]').evaluateAll(els => els.slice(0, 3).map(el => el.dataset.id));
+  expect(beds.length === 3, 'no planted beds to assign');
+  for (const id of beds) await page.locator(`[data-do="workBed"][data-id="${id}"]`).click();
+  await page.locator('[data-do="startFieldWork"]').click();
+  const tasks = await page.evaluate(() => {
+    const g = farm.game; farm.panels.close(); farm.closeCards();
+    const off = +(sessionStorage.getItem('fv-clock-offset') ?? 0); farm.setClockOffset(off + 61000); g.tick();
+    return g.s.stats.handTasks ?? 0;
   });
   expect(tasks > 0, 'the hands did nothing');
   await page.waitForFunction(() => { const w = farm.people.walkers.get('minh'); return w && (w.route.length > 0 || w.todo?.act === 'sweep' || w.clipFor === 'Sweep'); }, null, { timeout: 15000 });

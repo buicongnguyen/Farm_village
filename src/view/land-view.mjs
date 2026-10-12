@@ -4,7 +4,7 @@
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
 import * as THREE from 'three';
-import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, FAIR_SPOTS, PLAZA, AWARD_PLAQUE, inVillage, isBrookBank, isEastVerge, inUpriverPath, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK, BARN } from '../content/world.mjs';
+import { N, CELL, ORDER_BOARD, WORK_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, FAIR_SPOTS, PLAZA, AWARD_PLAQUE, inVillage, isBrookBank, isEastVerge, inUpriverPath, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK, BARN } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
 import { albrightOffer } from '../core/valley.mjs';
 import { fairActive } from '../core/fair.mjs';
@@ -49,6 +49,7 @@ export class LandView {
     await this.register(Object.entries(EARLY).map(([k, spec]) => [`${k}~`, spec]));
     this.makeRims();
     this.world.batches.set('order_board', { model: 'order_board', x: (ORDER_BOARD.x + 0.5) * CELL, z: (ORDER_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
+    this.drawWorkBoard();
     this.ready = true; this.sync();
     this.later = this.loadLater(entries.filter(([, spec]) => spec.late));
   }
@@ -491,7 +492,7 @@ export class LandView {
     // fruit trees change their look when their harvest comes ready
     this.clock += dt;
     if (this.clock > 1) {
-      this.clock = 0; this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround(); this.drawBarn(true); this.drawOutput(true);
+      this.clock = 0; this.drawWorkBoard(); this.drawMeadow(); this.drawCooperative(); this.drawRiverside(); this.drawFair(); this.drawOpenGround(); this.drawBarn(true); this.drawOutput(true);
       for (const [id, p] of Object.entries(this.s.placed)) if (KIND_MODELS[`${p.kind}:bare`]) { const want = this.model(p.kind, id), item = this.world.batches.items.get(id); if (want && item?.model !== want) this.drawPlaced(id); }
     }
   }
@@ -521,6 +522,10 @@ export class LandView {
       if (!cur || cur.x !== x || cur.z !== zz || cur.rot !== rot || cur.model !== model || cur.scale !== scale) b.set(key, { model, x, z: zz, rot, scale });
     });
     clear(units.length);
+  }
+  drawWorkBoard() {
+    if (occupant(this.game.s, WORK_BOARD.x, WORK_BOARD.z)) { this.world.batches.remove('work_board'); return; }
+    this.world.batches.set('work_board', { model: 'order_board', x: (WORK_BOARD.x + 0.5) * CELL, z: (WORK_BOARD.z + 0.5) * CELL, rot: Math.PI / 2 });
   }
   sync() {
     if (!this.ready || !this.s) return;

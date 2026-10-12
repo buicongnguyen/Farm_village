@@ -12,7 +12,7 @@ const ADVICE = {
   barn: 'The barn is nearly full, dear. Send the trucks, or sell what you will not need.',
   beds: 'There are empty beds. A bed with nothing in it earns nothing, dear.',
   trays: 'A workshop is standing idle. Give it something to do.',
-  hire: 'You can afford another pair of hands. They pay for themselves by supper.',
+  hire: 'You can afford another pair of hands. Choose the help you need and keep some coins for wages.',
   grow: 'You have room for more beds, dear. The land is yours: use it.',
   praise: 'A good day. Nothing to mend, nothing to scold. Sit on the porch a while.',
 };

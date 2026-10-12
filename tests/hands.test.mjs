@@ -30,20 +30,21 @@ test('hands can be hired only once the school stands, for a fee, one per role; l
   assert.equal(act(s, 'releaseHand', { role: 'field' }, T0).ok, false);
 });
 
-test('the field hand brings in half of the ripe beds and sows them again; the other half waits for you', () => {
+test('the field hand collects a bounded assigned batch and leaves the other beds for you', () => {
   const { s, beds } = farmWithBeds(8); assert.ok(beds.length >= 6, `only ${beds.length} beds planted`);
   s.level = 2;   // below the family helpers' level, so only the hired hand works
   s.counts.school = 1; assert.equal(act(s, 'hireHand', { role: 'field' }, T0).ok, true);
   const done = Math.max(...beds.map(id => s.beds[id].doneAt)) + 1000;
+  assert.ok(act(s, 'startFieldWork', { ids: beds, owner: 'field', mode: 'ready' }, done).ok);
   tick(s, done); assert.equal(ripeBeds(s, done).length, beds.length, 'the hand worked before its first round');
   const coins = s.coins, wheat = s.barn.items.wheat, later = done + HANDS.everyMs + 1000;
   tick(s, later);
   const left = ripeBeds(s, later).length, did = beds.length - left;
-  assert.equal(did, Math.ceil(beds.length / 2), `the hand did ${did} of ${beds.length}`);
+  assert.equal(did, Math.min(3, beds.length), `the hand did ${did} of ${beds.length}`);
   assert.equal(s.coins, coins - did * HANDS.wage); assert.ok(s.barn.items.wheat !== wheat, 'nothing was harvested');
-  assert.equal(Object.keys(s.beds).length, beds.length, `the harvested beds were not sown again: ${Object.keys(s.beds).length} of ${beds.length}, level ${s.level}`);
+  assert.equal(Object.keys(s.beds).length, beds.length - did, 'the assignment does not automatically replant');
   // with no coins for wages the hand does nothing
-  const waiting = () => beds.filter(id => s.beds[id].doneAt <= done).length;   // beds nobody has touched since they first ripened
+  const waiting = () => beds.filter(id => s.beds[id]?.doneAt <= done).length;   // beds nobody has touched since they first ripened
   assert.equal(waiting(), left);
   s.coins = 0; const idle = later + HANDS.everyMs + 1000; tick(s, idle); assert.equal(waiting(), left, 'the hand worked without pay');
   // and nothing happens while you are away (a long gap)

@@ -691,3 +691,9 @@ Historical log: the dated ownership and waiting-for-art notes below describe the
 - No gameplay waits for this artwork. Other product-specific shelf variants or additional workplace rooms are future proposals, not active file reservations.
 
 - Implementation handoff: `3cf877c`, [PR #109](https://github.com/buicongnguyen/Farm_village/pull/109). The source/furniture reuse and optional shop rules are complete; Codex is running release validation. After that PR merges, no shared implementation file remains reserved by this slice. The placeholder-icon replacement is the only active art follow-up.
+
+### 2026-10-12: Codex work-board first slice
+
+Active writer: Codex on `codex/helper-work-board`, base `70fea6e`. Small shared-view change: LandView adds a farmhouse hiring/work board using the existing `order_board` model as a stand-in; no Blender, binary, icon or palette edits. Logic adds finite crop assignments and safe pauses. Exact art replacement is deferred; no AR number allocated. Handoff and verification will be recorded in the implementation document.
+
+Work-board placement review: use 27,68; the first candidate at 27,56 overlapped the market cart. Hide the stand-in when an older player object occupies the new cell; preserve the farmhouse/Friends menu route. Runtime notifications are owned by Codex for this slice and use existing effects unchanged.

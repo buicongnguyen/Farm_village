@@ -365,3 +365,7 @@ so the numbers above stand. Before v0.2, the pace model gets these additions and
 | Clinic | Level 6, school completed, four arrived households | 600 coins plus 12 bread and 9 cherries donated to the project |
 
 The real-rules simulation plants the clinic's cherry tree before reserving its building price. Empty and restored starts both keep school days at casual 5, steady 3 and keen 2. All profiles finish the clinic and acquire the stand and kennel within fourteen days; `tests/sim.test.mjs` checks this alongside the earlier pace targets.
+
+## Farm work board (2026-10-12)
+
+After adopting board controls, crop help is a one-time assignment of at most 12 planted beds. The hired field hand collects at most 3 beds per 60-second testing-pace round for 1 coin per completed bed; family help retains up to 4 beds per 120-second testing-pace round without wages. Both round intervals follow `paced()` in release mode. Default assignments leave ripe crops visible for at least 45 real seconds after observation (also after a long absence), then wait for the next round. Immediate harvesting is optional. Full storage or insufficient wages pauses without auto-selling or debt. No automatic replanting, replacement targets or upfront wage payment. Existing hire fees remain unchanged. See [the implemented scope](WORK-BOARD-IMPLEMENTATION.md).

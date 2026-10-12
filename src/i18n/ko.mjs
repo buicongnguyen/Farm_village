@@ -1,10 +1,11 @@
+import { KO_WORK_BOARD } from './ko-work-board.mjs';
 import { KO_SUPERMARKET } from './ko-supermarket.mjs';
 // Korean edition. English keys and stable identity tokens are shared with every locale.
 import { KO_FEATURES } from './ko-features.mjs';
 import { KO_FISHING } from './ko-fishing.mjs';
 import { KO_MAIL } from './ko-mail.mjs';
 import { KO_EXPLORE } from './ko-explore.mjs';
-export const KO = {
+export const KO = { ...KO_WORK_BOARD,
   ...KO_EXPLORE,
   ...KO_FISHING, ...KO_MAIL,
   "Coins": "동전",

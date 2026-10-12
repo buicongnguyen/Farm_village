@@ -1,5 +1,17 @@
 # Changelog
 
+## Farmhouse work board - 2026-10-12 (unreleased)
+
+- Added a farmhouse work board with one-time crop assignments for family help or a hired field worker. Choose up to 12 beds, leave others untouched and keep ripe crops visible with an optional harvest pause. Manual harvesting takes priority without wages or replacement targets.
+- Helpers stop after the assignment, pause for full storage or unavailable wages, and preserve progress on reload. Cancellation records crops left for the player; backward clock changes cannot endlessly restart the harvest pause. Opening family help remains unchanged until players adopt board controls; existing hires and company progress are preserved.
+- Added four-language controls, save normalization and rules/browser checks. Hiring advice now explains wages instead of promising a guaranteed payback by supper. Machinery is planned exclusively for newly acquired and developed fields, following the owner's refinement.
+
+## Farm and playground expansion plan - 2026-10-12 (documentation only)
+
+- Consolidated animal care/quality, orchard groups, swipe-operated machinery and a northwest playground business in [the future implementation plan](docs/FARM-EXPANSION-IMPLEMENTATION-PLAN.md).
+- Recorded the owner's proposed 30-crop manual / 300-crop machine scale, with daily quotas distinguished from managed field capacity, plus map constraints, finite business accounting, story, save compatibility and delivery checks. No gameplay, prices or limits changed.
+
+
 ## Review of the supermarket and the walkable interiors — 2026-10-12
 
 - Supermarket baskets can be delivered: the order board's cards no longer lock a basket's goods away (a busy board asked for more carrots than a barn holds). A new basket asks first for goods the barn can spare.

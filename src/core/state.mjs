@@ -1,3 +1,4 @@
+import { normalizeFieldWork } from './field-work-state.mjs';
 import { normalizeOutput } from './output.mjs';
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
 import { START, START_RESTORE } from '../content/economy.mjs';
@@ -31,6 +32,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     placed: {},                             // id → { kind, x, z, rot }
     fences: {},                             // "x,z,n" | "x,z,w" → 'fence' | 'gate'
     nextId: 1,
+    fieldWork: { enabled: false, job: null, last: null },
     beds: {},                               // bed id → { crop, doneAt } (empty bed: no entry)
     animals: {},                            // home id → [{ kind, doneAt | null }]  (doneAt null = hungry, <= now = ready)
     production: {},                         // building id → { slots, queue: [{ recipe, doneAt }] }
@@ -153,6 +155,7 @@ export function withDefaults(s) {
   s.contracts = normalizeContracts(s);
   s.production = normalizeProduction(s);
   s.outputUp = normalizeOutput(s);
+  s.fieldWork = normalizeFieldWork(s);
   s.shops = normalizeShops(s);
   s.supermarket = normalizeSupermarket(s);
   s.growth = normalizeGrowth(s);

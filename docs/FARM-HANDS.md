@@ -1,5 +1,7 @@
 # Farm hands (2026-10-10)
 
+Current follow-up, 2026-10-12: [the work board](WORK-BOARD-IMPLEMENTATION.md) replaces hired field sweeping with finite crop assignments and lets players opt into protected crops for family help. The earlier automatic field-harvest/replant description below is historical. Other roles retain their current rules.
+
 Once the school stands, the Friends panel offers three hired hands (rules in `core/helpers.mjs`, numbers in `HANDS`,
 `content/economy.mjs`):
 

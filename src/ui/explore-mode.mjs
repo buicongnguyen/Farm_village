@@ -7,7 +7,7 @@ import { FISH_TABLE } from '../content/goods.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { fillable } from './panels.mjs';
 import { unread } from '../core/bonds.mjs';
-import { ORDER_BOARD, MAILBOX } from '../content/world.mjs';
+import { ORDER_BOARD, WORK_BOARD, MAILBOX } from '../content/world.mjs';
 import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, homeCooldown, OUTDOOR_SPEED } from '../core/explore.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
@@ -146,6 +146,7 @@ class ExploreMode {
     if (this.own && this.site) add('home', far(p, ...HOME_APPROACH), 3, 'Go inside: {place}', { place: t('Farmhouse') }, HOME_APPROACH);
     if (this.own && !s.fishing?.line) { const bank = nearestPond(s, ...p); add('pond', Math.max(0, bank.d), BANK.reach + .01, 'Cast a line'); }   // anywhere round any pond
     for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
+    if (this.world.batches.items.has('work_board')) add('workBoard', far(p, centre(WORK_BOARD.x), centre(WORK_BOARD.z)), 2.8, 'Farm work board', null, [centre(WORK_BOARD.x + 1), centre(WORK_BOARD.z)]);
     add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board', null, [centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)]);
     add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox', null, [centre(MAILBOX.x), centre(MAILBOX.z)]);
     if (this.own && this.site !== 'barn' && facilityOpen(s, 'barn')) { const door = facilityDoor(s, 'barn'); add('facility:barn', far(p, ...door), 3, 'Go inside: {place}', { place: t('Barn') }, door); }
@@ -219,6 +220,7 @@ class ExploreMode {
     } else if (kind === 'facility' || kind === 'home') { this.close(); this.open({ site: kind === 'home' ? null : id }); }
     else if (kind === 'pond') this.cast(null);   // straight out from where you stand
     else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, this.span); people.talk(w); } }
+    else if (kind === 'workBoard') this.panels.show('workBoard');
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
     else if (kind === 'bench') {
