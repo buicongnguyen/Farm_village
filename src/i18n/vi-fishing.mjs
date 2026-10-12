@@ -943,4 +943,5 @@ export const VI_FISHING = {
   'Upgrade: every batch gives ×{n}': 'Nâng cấp: mỗi mẻ cho ×{n}',
   'Upgrade {level} of {max}. Same ingredients, same time, double the goods.': 'Nâng cấp {level}/{max}. Vẫn nguyên liệu ấy, vẫn thời gian ấy, hàng ra gấp đôi.',
   '{name} upgraded: it gives ×{n} now': 'Đã nâng cấp {name}: giờ cho ×{n}',
+  'Basket': 'Giỏ hàng',
 };

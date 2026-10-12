@@ -17,5 +17,8 @@ dairy.rooms.forEach((r, i) => r.name = ['Dairy workshop', 'Cool pantry', 'Quiet 
 dairy.pieces.push(piece('counter', -5.6, -6.4, 'make', 1.2), piece('fp_pail', -5.6, -6.4, 'make', .8, 1.2),
   piece('sink', -8.4, -6.5), piece('fridge', .6, -6.5, 'pantry'), piece('fp_chiller', 2.2, -6.5, 'pantry', .65),
   piece('sofa', 6.1, -6.4), piece('round_table', 6.1, -3.8, null, .8), piece('kettle', 6.1, -3.8, null, .8, .9),
-  piece('fp_noticeboard', -6.3, .6, 'notes'), piece('counter', 6.3, 1.8), piece('fp_scale', 6.3, 1.8, null, .8, 1.05));
+  piece('fp_noticeboard', -6.3, .6, 'notes'), piece('counter', 6.3, 1.8), piece('fp_scale', 6.3, 1.8, null, .8, 1.05),
+  // the counter room was a bare floor: a tasting table, the day's churns and crates by the wall
+  piece('round_table', -5.6, 4.6, null, .9), piece('stool', -6.7, 4.6), piece('stool', -4.5, 4.6), piece('fp_pail', -8.6, 3), piece('fp_pail', -7.7, 2.7, null, .85),
+  piece('fp_crate', 8.6, 6.8), piece('fp_crate', 7.3, 7, null, .85), piece('fp_cart', 3, 3.2, null, .9));
 export const PRODUCTION_PLANS = { feed_mill: mill, dairy };

@@ -943,4 +943,5 @@ export const JA_FISHING = {
   'Upgrade: every batch gives ×{n}': 'アップグレード：1回で×{n}',
   'Upgrade {level} of {max}. Same ingredients, same time, double the goods.': 'アップグレード {level}/{max}。材料も時間も同じで、できる品物は2倍。',
   '{name} upgraded: it gives ×{n} now': '{name}をアップグレードしました：これからは×{n}',
+  'Basket': 'かご',
 };

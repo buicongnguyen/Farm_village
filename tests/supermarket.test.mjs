@@ -50,13 +50,14 @@ test('accepted reservations protect all barn spending, including bypass-project 
  assert.equal(plantPrice(s,'carrot'),CROPS.carrot.value);const coins=s.coins;must(s,'plant',{id:'bed',crop:'carrot'});assert.equal(s.barn.items.carrot,8);assert.equal(s.coins,coins-CROPS.carrot.value);
  delete s.placed.supermarket;refuse(s,'deliverShopBasket',{request:'shop:0'});must(s,'cancelShopBasket',{request:'shop:0'});assert.equal(barn.free(s,'carrot'),8);assert.equal(s.supermarket.nextAt,NOW+SUPERMARKET.waitMs);
 });
-test('project delivery cannot consume supermarket bread; supermarket delivery leaves project and order shares intact',()=>{
+test('project delivery cannot consume supermarket bread; the order board does not lock a basket away',()=>{
  const s=fixture();custom(s,{bread:8},'bakery');s.projects={step:stepIndex('cottage2'),delivered:{}};s.barn.items.bread=8;
  refuse(s,'projectDeliver');s.barn.items.bread=13;must(s,'projectDeliver');assert.equal(s.barn.items.bread,8);assert.equal(s.projects.delivered.bread,5);
- s.projects.step=100;s.orders.cards=[{id:'reserved',need:{bread:2}}];refuse(s,'deliverShopBasket',{request:'shop:0'});s.barn.items.bread=10;must(s,'deliverShopBasket',{request:'shop:0'});assert.equal(s.barn.items.bread,2);
+ // an order card is an offer, not a promise: the basket is delivered from the same bread (a busy board used to ask for more than a barn holds)
+ s.projects.step=100;s.orders.cards=[{id:'offer',need:{bread:40}}];assert.equal(basketRows(s).find(row=>row.good==='bread').reserved,0);must(s,'deliverShopBasket',{request:'shop:0'});assert.equal(s.barn.items.bread??0,0);
 });
 test('source help counts the basket own reservation once and keeps other requests visible',()=>{
- const s=fixture();custom(s,{carrot:8});s.barn.items.carrot=10;s.orders.cards=[{need:{carrot:4}}];const h=goodHelp(s,'carrot',NOW,{needed:8,shopRequest:'shop:0'});assert.equal(h.free,6);assert.equal(h.missing,2);assert.equal(h.held,4);
+ const s=fixture();custom(s,{carrot:8});s.barn.items.carrot=10;s.orders.cards=[{need:{carrot:4}}];const h=goodHelp(s,'carrot',NOW,{needed:8,shopRequest:'shop:0'});assert.equal(h.free,10);assert.equal(h.missing,0);assert.equal(h.held,0);
  assert.equal(goodHelp(s,'carrot',NOW,{needed:8}).free,2);
 });
 test('failed shop actions are atomic for stale IDs, missing goods, insufficient coins, malformed sections and clocks',()=>{
@@ -101,4 +102,17 @@ test('supermarket exterior is packed, faces the public doorway and fits its 4 by
  const gltf=await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
  const g=bake(gltf.scene.children.find(n=>n.name==='supermarket')),factor=fitFactor(g,{width:KIND_MODELS.supermarket.width});g.scale(factor,factor,factor);g.computeBoundingBox();
  assert.ok(g.boundingBox.max.x<=3.901&&g.boundingBox.min.x>=-3.901);assert.ok(g.boundingBox.max.z<=2.901&&g.boundingBox.min.z>=-2.901);assert.ok(g.attributes.position.count/3<12000);g.dispose();
+});
+
+test('a basket asks first for goods the barn can spare; with nothing to spare it still offers the farm’s own goods',()=>{
+ const s=fixture();must(s,'introduceSupermarket');must(s,'restoreShopSection',{section:'garden'});
+ const pool=basketPool(s,'garden');assert.ok(pool.length>=3,`a pool of ${pool.length}`);
+ // nothing in the barn: any two goods of the pool, as before
+ s.barn.items={};must(s,'prepareShopBasket',{section:'garden'});let need=s.supermarket.request.need;assert.equal(Object.values(need).reduce((a,b)=>a+b,0),SUPERMARKET.units);assert.ok(Object.keys(need).every(g=>pool.includes(g)));
+ must(s,'cancelShopBasket',{request:s.supermarket.request.id});s.supermarket.nextAt=0;
+ // two goods in store: the basket is made of those two, whatever the seed would have picked
+ const [a,b]=[pool[pool.length-1],pool[pool.length-2]];s.barn.items={[a]:20,[b]:20};
+ for(let n=0;n<6;n++){must(s,'prepareShopBasket',{section:'garden'});need=s.supermarket.request.need;assert.deepEqual(Object.keys(need).sort(),[a,b].sort(),`basket ${n}`);assert.ok(supermarketStatus(s,NOW).rows.every(row=>row.have>=row.n));must(s,'cancelShopBasket',{request:s.supermarket.request.id});s.supermarket.nextAt=0;}
+ // one good in store, enough for a whole basket: a basket of that one
+ s.barn.items={[a]:20};must(s,'prepareShopBasket',{section:'garden'});assert.deepEqual(s.supermarket.request.need,{[a]:SUPERMARKET.units});assert.deepEqual(normalizeSupermarket(s).request.need,{[a]:SUPERMARKET.units});
 });

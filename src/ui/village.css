@@ -111,3 +111,10 @@ body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }
 .shop-dialogue p { margin: 6px 0; }
 .shop-portrait { width: 64px; height: 64px; object-fit: contain; flex: 0 0 64px; }
 .shop-card .badge.ready, .badge.shop-count { position: static; display: inline-flex; margin-left: 8px; vertical-align: middle; width: max-content; justify-self: start; }
+/* the shop's shelves while a basket is open: one row of names; the basket itself is the framed card */
+.shop-shelves { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+.shop-chip { padding: 4px 10px; border-radius: 999px; border: 2px solid var(--line); background: #fff8e6; font-weight: 800; font-size: .9em; }
+.shop-chip.on { background: #ffe2a8; border-color: #e0a23a; } .shop-chip.off { opacity: .5; }
+.shop-card { border-top: 2px solid var(--line); padding: 8px 0; } .shop-card > div { margin-bottom: 6px; }
+.shop-card.shop-basket { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; background: #fff8e6; }
+.shop-card.shop-basket h3 { margin: 2px 0 4px; } .shop-card.shop-basket p { margin: 4px 0; }

@@ -17,7 +17,7 @@ export async function loadHomeRoom(body, kind = null) {
 }
 export class ExploreRoom {
   constructor({ kit, data, extras }, settings) {
-    this.data = data; this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#2a1d1a');
+    this.data = data; this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#3b2a24');
     this.camera = new THREE.OrthographicCamera(-8, 8, 8, -8, .1, 100);
     this.camera.position.fromArray(data.camera.position); this.camera.lookAt(...data.camera.target); this.camera.updateMatrixWorld();
     const hemi = new THREE.HemisphereLight('#fff3df', '#b07a52', 1.55), sun = new THREE.DirectionalLight('#ffe9c8', 1.7);
@@ -45,8 +45,10 @@ export class ExploreRoom {
   }
   layoutCamera() {
     const size = this.projectedBounds.getSize(new THREE.Vector3()), centre = this.projectedBounds.getCenter(new THREE.Vector3());
-    const top = Math.min(130, innerHeight * .24), bottom = Math.min(180, innerHeight * .3), usable = Math.max(160, innerHeight - top - bottom);
-    this.fullWidth = Math.max(size.x * 1.08, size.y * 1.08 * innerWidth / usable);
+    // what the interface covers: the tool row at the top; at the foot the stick and buttons on a narrow window, one pill
+    // and its hint on a wide one (the room was drawn in barely half of a desktop window)
+    const wide = innerWidth >= 900, top = Math.min(wide ? 112 : 130, innerHeight * .24), bottom = Math.min(wide ? 96 : 180, innerHeight * .3), usable = Math.max(160, innerHeight - top - bottom);
+    this.fullWidth = Math.max(size.x * (wide ? 1.03 : 1.08), size.y * (wide ? 1.03 : 1.08) * innerWidth / usable);
     const w = this.view === 'whole' ? this.fullWidth : Math.min(this.fullWidth, this.followWidth), h = w * innerHeight / innerWidth;
     const p = this.focus.clone().applyMatrix4(this.camera.matrixWorldInverse);
     const clampCentre = (value, lo, hi, span) => span >= hi - lo ? (lo + hi) / 2 : THREE.MathUtils.clamp(value, lo + span / 2, hi - span / 2);

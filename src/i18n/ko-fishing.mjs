@@ -943,4 +943,5 @@ export const KO_FISHING = {
   'Upgrade: every batch gives ×{n}': '업그레이드: 한 번에 ×{n}',
   'Upgrade {level} of {max}. Same ingredients, same time, double the goods.': '업그레이드 {level}/{max}. 재료와 시간은 그대로, 물건은 두 배.',
   '{name} upgraded: it gives ×{n} now': '{name} 업그레이드 완료: 이제 ×{n}',
+  'Basket': '바구니',
 };

@@ -1,5 +1,13 @@
 # Changelog
 
+## Review of the supermarket and the walkable interiors — 2026-10-12
+
+- Supermarket baskets can be delivered: the order board's cards no longer lock a basket's goods away (a busy board asked for more carrots than a barn holds). A new basket asks first for goods the barn can spare.
+- The supermarket panel shows the open basket as one framed card, with the shelves as a row of names.
+- Inside a building, two labels that would overlap sit one above the other, and a label at the screen's edge slides in; before, one of them vanished and that object could not be found (the barn's hay corner, the school library, the mill's grain store, the farmhouse table).
+- On a wide window the whole room fills the screen instead of barely half of it.
+- The barn has a hay store and a feed bay where three beds and a kitchen stood; the bakery has the bakers' rest corner where a bedroom was; the dairy's counter room is furnished.
+
 ## Village supermarket and production rooms — 2026-10-12 (PR #109)
 
 - Added an optional level-14 village supermarket with three shelves, saved eight-item baskets at a 25% premium, explicit reservations and a 30-minute interval. It follows real ingredient sources and leaves chapters 1–20 unchanged.

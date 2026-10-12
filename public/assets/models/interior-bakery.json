@@ -67,7 +67,7 @@
     },
     {
       "id": "family",
-      "name": "Family corner",
+      "name": "Rest corner",
       "rect": {
         "x0": 3.6,
         "x1": 9.8,
@@ -434,36 +434,6 @@
     },
     {
       "id": "furniture_17",
-      "kit": "bed",
-      "x": 8.6,
-      "z": -7,
-      "y": 0,
-      "rot": 0,
-      "scale": 1.2,
-      "use": null
-    },
-    {
-      "id": "furniture_18",
-      "kit": "nightstand",
-      "x": 7.2,
-      "z": -7.9,
-      "y": 0,
-      "rot": 0,
-      "scale": 1.2,
-      "use": null
-    },
-    {
-      "id": "furniture_19",
-      "kit": "lamp_small",
-      "x": 7.2,
-      "z": -7.9,
-      "y": 0.62,
-      "rot": 0,
-      "scale": 1.2,
-      "use": null
-    },
-    {
-      "id": "furniture_20",
       "kit": "sofa",
       "x": 5.2,
       "z": -4.2,
@@ -473,7 +443,7 @@
       "use": null
     },
     {
-      "id": "furniture_21",
+      "id": "furniture_18",
       "kit": "round_table",
       "x": 7.8,
       "z": -4.4,
@@ -483,7 +453,7 @@
       "use": null
     },
     {
-      "id": "furniture_22",
+      "id": "furniture_19",
       "kit": "plant_big",
       "x": 9.2,
       "z": -3,
@@ -493,7 +463,7 @@
       "use": null
     },
     {
-      "id": "furniture_23",
+      "id": "furniture_20",
       "kit": "picture",
       "x": 6,
       "z": -8.3,
@@ -503,7 +473,7 @@
       "use": null
     },
     {
-      "id": "furniture_24",
+      "id": "furniture_21",
       "kit": "fp_breadshelf",
       "x": -8.6,
       "z": 0.6,
@@ -513,7 +483,7 @@
       "use": "bakery_bread"
     },
     {
-      "id": "furniture_25",
+      "id": "furniture_22",
       "kit": "fp_breadshelf",
       "x": -6.3,
       "z": 0.6,
@@ -523,7 +493,7 @@
       "use": "bakery_bread"
     },
     {
-      "id": "furniture_26",
+      "id": "furniture_23",
       "kit": "fp_breadshelf",
       "x": -4,
       "z": 0.6,
@@ -533,7 +503,7 @@
       "use": "bakery_bread"
     },
     {
-      "id": "furniture_27",
+      "id": "furniture_24",
       "kit": "fp_cakecase",
       "x": 6.4,
       "z": 1.8,
@@ -543,7 +513,7 @@
       "use": null
     },
     {
-      "id": "furniture_28",
+      "id": "furniture_25",
       "kit": "fp_register",
       "x": 7.4,
       "z": 1.8,
@@ -553,7 +523,7 @@
       "use": null
     },
     {
-      "id": "furniture_29",
+      "id": "furniture_26",
       "kit": "fp_breadbasket",
       "x": 5.6,
       "z": 1.8,
@@ -563,7 +533,7 @@
       "use": null
     },
     {
-      "id": "furniture_30",
+      "id": "furniture_27",
       "kit": "round_table",
       "x": -6,
       "z": 4.4,
@@ -573,7 +543,7 @@
       "use": null
     },
     {
-      "id": "furniture_31",
+      "id": "furniture_28",
       "kit": "fp_breadbasket",
       "x": -6,
       "z": 4.4,
@@ -583,7 +553,7 @@
       "use": null
     },
     {
-      "id": "furniture_32",
+      "id": "furniture_29",
       "kit": "stool",
       "x": -7,
       "z": 4.4,
@@ -593,7 +563,7 @@
       "use": null
     },
     {
-      "id": "furniture_33",
+      "id": "furniture_30",
       "kit": "stool",
       "x": -5,
       "z": 4.4,
@@ -603,7 +573,7 @@
       "use": null
     },
     {
-      "id": "furniture_34",
+      "id": "furniture_31",
       "kit": "plant_big",
       "x": -9,
       "z": 7.4,
@@ -613,7 +583,7 @@
       "use": null
     },
     {
-      "id": "furniture_35",
+      "id": "furniture_32",
       "kit": "plant_big",
       "x": 3,
       "z": 7.4,
@@ -623,7 +593,7 @@
       "use": null
     },
     {
-      "id": "furniture_36",
+      "id": "furniture_33",
       "kit": "plant_big",
       "x": 9,
       "z": 7.4,
@@ -633,13 +603,43 @@
       "use": null
     },
     {
-      "id": "furniture_37",
+      "id": "furniture_34",
       "kit": "welcome_mat",
       "x": 0,
       "z": 7.7,
       "y": 0.012,
       "rot": 0,
       "scale": 1.2,
+      "use": null
+    },
+    {
+      "id": "furniture_35",
+      "kit": "fp_coffee",
+      "x": 8.7,
+      "z": -7.5,
+      "y": 0,
+      "rot": 0,
+      "scale": 1.2,
+      "use": null
+    },
+    {
+      "id": "furniture_36",
+      "kit": "armchair",
+      "x": 8.6,
+      "z": -5.4,
+      "y": 0,
+      "rot": 0,
+      "scale": 1.08,
+      "use": null
+    },
+    {
+      "id": "furniture_37",
+      "kit": "bookshelf",
+      "x": 7,
+      "z": -7.7,
+      "y": 0,
+      "rot": 0,
+      "scale": 1.08,
       "use": null
     },
     {
@@ -785,28 +785,6 @@
     {
       "id": "furniture_17",
       "min": [
-        7.769999809265137,
-        -8.202069931030273
-      ],
-      "max": [
-        9.43,
-        -5.774052925109864
-      ]
-    },
-    {
-      "id": "furniture_18",
-      "min": [
-        6.970000095367432,
-        -8.100007705688476
-      ],
-      "max": [
-        7.43,
-        -7.634001560211182
-      ]
-    },
-    {
-      "id": "furniture_20",
-      "min": [
         4.189999885559082,
         -4.594391994476318
       ],
@@ -816,7 +794,7 @@
       ]
     },
     {
-      "id": "furniture_21",
+      "id": "furniture_18",
       "min": [
         7.329999752044678,
         -4.870000057220459
@@ -827,7 +805,7 @@
       ]
     },
     {
-      "id": "furniture_22",
+      "id": "furniture_19",
       "min": [
         8.910014457702637,
         -3.3529369163513185
@@ -838,7 +816,7 @@
       ]
     },
     {
-      "id": "furniture_24",
+      "id": "furniture_21",
       "min": [
         -9.502026252746582,
         0.3352026414871216
@@ -849,7 +827,7 @@
       ]
     },
     {
-      "id": "furniture_25",
+      "id": "furniture_22",
       "min": [
         -7.202026538848877,
         0.3352026414871216
@@ -860,7 +838,7 @@
       ]
     },
     {
-      "id": "furniture_26",
+      "id": "furniture_23",
       "min": [
         -4.902026348114013,
         0.3352026414871216
@@ -871,7 +849,7 @@
       ]
     },
     {
-      "id": "furniture_27",
+      "id": "furniture_24",
       "min": [
         5.390000171661377,
         1.4380065870285035
@@ -882,7 +860,7 @@
       ]
     },
     {
-      "id": "furniture_30",
+      "id": "furniture_27",
       "min": [
         -6.469999961853027,
         3.929999895095825
@@ -893,7 +871,7 @@
       ]
     },
     {
-      "id": "furniture_32",
+      "id": "furniture_29",
       "min": [
         -7.169996433258056,
         4.230003662109375
@@ -904,7 +882,7 @@
       ]
     },
     {
-      "id": "furniture_33",
+      "id": "furniture_30",
       "min": [
         -5.169996433258056,
         4.230003662109375
@@ -915,7 +893,7 @@
       ]
     },
     {
-      "id": "furniture_34",
+      "id": "furniture_31",
       "min": [
         -9.2899853515625,
         7.047063179016114
@@ -926,7 +904,7 @@
       ]
     },
     {
-      "id": "furniture_35",
+      "id": "furniture_32",
       "min": [
         2.7100146484375,
         7.047063179016114
@@ -937,7 +915,7 @@
       ]
     },
     {
-      "id": "furniture_36",
+      "id": "furniture_33",
       "min": [
         8.7100146484375,
         7.047063179016114
@@ -945,6 +923,39 @@
       "max": [
         9.416474990844726,
         7.689985446929931
+      ]
+    },
+    {
+      "id": "furniture_35",
+      "min": [
+        8.49999267578125,
+        -7.669996433258056
+      ],
+      "max": [
+        8.900006942749023,
+        -7.330003566741944
+      ]
+    },
+    {
+      "id": "furniture_36",
+      "min": [
+        8.1300004196167,
+        -5.794392280578613
+      ],
+      "max": [
+        9.070000343322754,
+        -5.011013336181641
+      ]
+    },
+    {
+      "id": "furniture_37",
+      "min": [
+        6.378784008026123,
+        -7.867601089477539
+      ],
+      "max": [
+        7.621215991973877,
+        -7.532398529052735
       ]
     },
     {
