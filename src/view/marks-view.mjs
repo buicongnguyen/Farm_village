@@ -53,7 +53,7 @@ function storyTexture() {   // a blue disc with a white star: "the story goes on
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 
-const CAP = 160, SIZE = 7, BADGE = 6.4;   // BADGE: a ready badge's size against a coin's
+const CAP = 160, SIZE = 7, BADGE = 6.4, BADGE_NEAR = 26, BADGE_MIN = 0.3;   // BADGE: a ready badge's size against a coin's
 function alertTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
   g.fillStyle = '#e8382f'; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 26, 0, Math.PI * 2); g.fill(); g.stroke();
@@ -154,6 +154,9 @@ export class Marks {
       gp.geometry.attributes.position.needsUpdate = true; gp.geometry.setDrawRange(0, n); gp.visible = n > 0;
       gp.material.size = SIZE * 4.2 * this.world.renderer.getPixelRatio() * Math.max(0.35, 0.7 + 0.3 * Math.sin(t * 5.5)); }
     // the badges: one cloud for each good that is ready somewhere (made when first needed, hidden when none is)
+    // a badge keeps its size up close and shrinks with the view as it is zoomed out (BADGE_NEAR metres across and less:
+    // full size; from there in proportion, never below BADGE_MIN), so a far view of the orchard is not all badges
+    const far = Math.min(1, Math.max(BADGE_MIN, BADGE_NEAR / (this.world.cam.shown?.span ?? this.world.cam.span ?? BADGE_NEAR)));
     const ready = this.list.badge ?? {};
     for (const [good, pts] of this.badge) if (!ready[good]?.length) pts.visible = false;
     for (const [good, list] of Object.entries(ready)) {
@@ -161,7 +164,7 @@ export class Marks {
       const arr = pts.geometry.attributes.position.array, n = Math.min(CAP, list.length);
       for (let i = 0; i < n; i++) { const [x, y, z] = list[i]; arr[i * 3] = x; arr[i * 3 + 1] = y + 0.2 * Math.sin(t * 2.6 + i * 1.7 + x); arr[i * 3 + 2] = z; }
       pts.geometry.attributes.position.needsUpdate = true; pts.geometry.setDrawRange(0, n); pts.visible = n > 0; pts.userData.n = n;
-      pts.material.color.setScalar(dim); pts.material.size = SIZE * BADGE * this.world.renderer.getPixelRatio() * (1 + 0.05 * Math.sin(t * 5));
+      pts.material.color.setScalar(dim); pts.material.size = SIZE * BADGE * far * this.world.renderer.getPixelRatio() * (1 + 0.05 * Math.sin(t * 5));
     }
     // the backing disc follows every coin (same bob), a little bigger
     { const bk = this.backing, ba = bk.geometry.attributes.position.array, bn = Math.min(CAP, (this.list.money ?? []).length);
