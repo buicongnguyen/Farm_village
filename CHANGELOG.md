@@ -1,5 +1,9 @@
 # Changelog
 
+## Camera tilt — 2026-10-12
+
+- Settings has a Camera tilt slider: from a low look across the valley (28°) to nearly straight down (68°). The view follows the slider while it is dragged; Reset returns to the usual 54°. Q and E still turn the view by a quarter.
+
 ## The farm notebook: six things to find out — 2026-10-12
 
 Real growing techniques, each tried once when the farm has what it takes, each changing one rule for good. The notebook is in Village projects; a notice says once when something can be tried.
