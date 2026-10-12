@@ -3,6 +3,8 @@
 // tap them, to do the same; the seed bag or the sickle follows the finger and each bed pops (world.juice).
 // The menu springs open. A tap on an animal in its pen opens its home's menu (life.animalAt). A For-sale parcel shows
 // its price and level with a gold outline of the land; the weekly cart and the mailbox open their panels.
+import { KNOWHOW } from '../content/knowhow.mjs';
+import { knows, graftPlan, crossPlan, pickExtra } from '../core/knowhow.mjs';
 import { outputPlan, outputTimes } from '../core/output.mjs';
 import * as THREE from 'three';
 import { t, num } from '../kit/i18n.mjs';
@@ -174,10 +176,13 @@ export class Radial {
       else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml('ui:harvest_all', '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
       else { const full = CROPS[b.crop].growMs; info = `${iconHtml(b.crop, '', 'mini')} ${shortTime(b.doneAt - now)}${b.watered ? ` · ${t('Watered by the pond')}` : ''}${bar(1 - (b.doneAt - now) / full)}`; }
     } else if (def?.fruit) {
-      const st = treeState(s, id, now), f = FRUITS[def.fruit];
-      if (st?.state === 'ripe') buttons = [{ act: 'pick', icon: iconHtml(def.fruit), label: t('Pick ({count})', { count: f?.yield ?? 1 }) }];
-      else if (st) info = `${iconHtml(def.fruit, '', 'mini')} ${t(def.name)} · ${shortTime(st.leftMs)}${bar(st.progress)}`;
+      const st = treeState(s, id, now), fruit = st?.fruit ?? def.fruit, f = FRUITS[fruit], tree = s.trees?.[id], note = tree?.cross ? ` · ${t('Mango apple')}` : tree?.graft ? ` · ${t('Grafted')}` : '';
+      if (st?.state === 'ripe') buttons = [{ act: 'pick', icon: iconHtml(fruit), label: t('Pick ({count})', { count: (f?.yield ?? 1) + pickExtra(s) }) }];
+      else if (st) info = `${iconHtml(fruit, '', 'mini')} ${t(def.name)}${note} · ${shortTime(st.leftMs)}${bar(st.progress)}`;
       else info = t(def.name);
+      // farm know-how: a branch for a new tree of this kind; a mango branch for an apple tree (core/knowhow.mjs)
+      if (knows(s, 'graft')) { const g = graftPlan(s, id); buttons.push({ act: 'graftBranch', icon: iconHtml(p.kind), label: g.ok ? t('Graft') : t('{n} more picks', { n: g.left ?? 0 }), disabled: !g.ok }); }
+      if (knows(s, 'cross') && p.kind === 'apple_tree' && !tree?.cross) { const c = crossPlan(s, id); buttons.push({ act: 'crossBranch', icon: iconHtml('mango_apple'), label: `${coinMark()}${num(KNOWHOW.cross.coins)}`, disabled: !c.ok }); }
     } else if (def?.garden) info = `${iconHtml('garden_flower', '', 'mini')} ${t('Streak garden: day {count}', { count: s.today.days ?? 1 })}`;
     else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
@@ -272,6 +277,8 @@ export class Radial {
     else if (d.act === 'pick') g.do('pick', { id });
     else if (d.act === 'repair') g.do('repair', { id: d.id });
     else if (d.act === 'upgradeHouse') g.do('upgradeHouse');
+    else if (d.act === 'graftBranch') g.do('graftBranch', { id });
+    else if (d.act === 'crossBranch') g.do('crossBranch', { id });
     else if (d.act === 'upgradeOutput') g.do('upgradeOutput', { building: id });
     else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
     else if (d.act === 'learning') this.panels.show('learning');

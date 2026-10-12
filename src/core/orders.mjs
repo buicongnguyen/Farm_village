@@ -25,7 +25,7 @@ export function orderable(s) {
     const crop = CROPS[good], fruit = FRUITS[good], recipe = RECIPES[good];
     let ok = false;
     if (crop) ok = cropOpen(s, good) && beds;
-    else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt));
+    else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt) && (!fruit.cross || s.trees[id].cross));   // a Mango apple only from a tree that bears them
     else if (recipe) ok = recipeOpen(s, good) && has(recipe.at) && Object.keys(recipe.needs).every(source);
     else {
       const animal = Object.entries(ANIMALS).find(([, a]) => a.gives === good);

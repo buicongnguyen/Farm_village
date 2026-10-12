@@ -1,5 +1,16 @@
 # Changelog
 
+## The farm notebook: six things to find out — 2026-10-12
+
+Real growing techniques, each tried once when the farm has what it takes, each changing one rule for good. The notebook is in Village projects; a notice says once when something can be tried.
+
+- **Wake the old seeds** (seed soaking, level 2): every crop grows 15% faster.
+- **The stone in the fruit crate** (level 4): a new fruit tree, the Mango; the first one is in storage.
+- **Good neighbours in the beds** (companion planting, level 5): a bed beside its partner grows 20% faster (corn and pumpkin, carrot and onion, tomato and healing herb).
+- **A branch that becomes a tree** (grafting, level 6): a tree picked three times gives a free grafted sapling of its kind, which fruits much sooner and ripens 30% faster.
+- **Fewer, bigger fruit** (thinning, level 7): one more fruit from every pick.
+- **Two trees in one** (level 8): an apple tree takes a mango branch and bears Mango apples, a new fruit that sells for much more.
+
 ## Review of the supermarket and the walkable interiors — 2026-10-12
 
 - Supermarket baskets can be delivered: the order board's cards no longer lock a basket's goods away (a busy board asked for more carrots than a barn holds). A new basket asks first for goods the barn can spare.

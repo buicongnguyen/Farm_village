@@ -19,6 +19,7 @@ export const BUILDINGS = {
   apple_tree: { name: 'Apple tree', cat: 'farm', size: [1, 1], area: 'any', level: 2, cost: 120, fruit: 'apple', charm: 2, max: 12, model: 'tree_apple' },
   peach_tree: { name: 'Peach tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 240, fruit: 'peach', charm: 2, max: 12, model: 'tree_peach' },
   orange_tree: { name: 'Orange tree', cat: 'farm', size: [1, 1], area: 'any', level: 5, cost: 300, fruit: 'orange', charm: 2, max: 12, model: 'cute_orange' },
+  mango_tree: { name: 'Mango tree', cat: 'farm', size: [1, 1], area: 'any', level: 4, cost: 420, fruit: 'mango', charm: 3, max: 8, model: 'tree2_mango', knowhow: 'stone' },   // opens with the stone in the fruit crate (content/knowhow.mjs)
   coconut_palm: { name: 'Coconut palm', cat: 'farm', size: [1, 1], area: 'any', level: 8, cost: 500, fruit: 'coconut', charm: 3, max: 8, model: 'cute_palm' },
   // Paths and fences (fence and gate sit on cell edges)
   path:       { name: 'Path', cat: 'paths', size: [1, 1], area: 'any', level: 1, cost: 1, cell: 'path', charm: 0 },
