@@ -2272,7 +2272,7 @@ export const CIVIC_PLANS = {
       },
       {
         "id": "beds",
-        "name": "Family beds",
+        "name": "Hay store",
         "rect": {
           "x0": 4.2,
           "x1": 9.8,
@@ -2294,7 +2294,7 @@ export const CIVIC_PLANS = {
       },
       {
         "id": "living",
-        "name": "Kitchen corner",
+        "name": "Feed bay",
         "rect": {
           "x0": 3,
           "x1": 9.8,
@@ -2557,33 +2557,6 @@ export const CIVIC_PLANS = {
         "role": "feed"
       },
       {
-        "kit": "bed",
-        "x": 5.2,
-        "z": -7,
-        "rot": 0,
-        "s": 0.95,
-        "y": 0,
-        "role": "bed"
-      },
-      {
-        "kit": "bed",
-        "x": 7,
-        "z": -7,
-        "rot": 0,
-        "s": 0.95,
-        "y": 0,
-        "role": "bed"
-      },
-      {
-        "kit": "bed",
-        "x": 8.8,
-        "z": -7,
-        "rot": 0,
-        "s": 0.95,
-        "y": 0,
-        "role": "bed"
-      },
-      {
         "kit": "plant_small",
         "x": 4.7,
         "z": -3,
@@ -2653,77 +2626,105 @@ export const CIVIC_PLANS = {
         "block": false
       },
       {
-        "kit": "dining_table",
-        "x": 6.4,
-        "z": 2,
-        "rot": 0,
-        "s": 0.9,
-        "y": 0,
-        "role": "table"
-      },
-      {
-        "kit": "chair",
-        "x": 5.2,
-        "z": 3.6,
-        "rot": 3.141592653589793,
-        "s": 1,
-        "y": 0
-      },
-      {
-        "kit": "chair",
-        "x": 7.6,
-        "z": 3.6,
-        "rot": 3.141592653589793,
-        "s": 1,
-        "y": 0
-      },
-      {
-        "kit": "stove",
-        "x": 9.1,
-        "z": -0.6,
-        "rot": -1.5707963267948966,
-        "s": 1,
-        "y": 0,
-        "role": "table"
-      },
-      {
-        "kit": "kettle",
-        "x": 9.1,
-        "z": -0.6,
-        "rot": 0,
-        "s": 1,
-        "y": 1.3,
-        "block": false
-      },
-      {
-        "kit": "fridge",
-        "x": 9.2,
-        "z": 1.2,
-        "rot": -1.5707963267948966,
-        "s": 1,
-        "y": 0
-      },
-      {
-        "kit": "sofa",
-        "x": 6.2,
-        "z": 6.4,
-        "rot": 3.141592653589793,
-        "s": 0.9,
-        "y": 0
-      },
-      {
-        "kit": "rug_round",
-        "x": 6.4,
-        "z": 3.4,
-        "rot": 0,
-        "s": 0.8,
-        "y": 0.012,
-        "block": false
-      },
-      {
         "kit": "plant_big",
         "x": 9.2,
         "z": 7.4,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "fp_hay",
+        "x": 5.4,
+        "z": -7,
+        "rot": 0,
+        "s": 0.95,
+        "y": 0
+      },
+      {
+        "kit": "fp_hay",
+        "x": 7.2,
+        "z": -7.1,
+        "rot": 0,
+        "s": 0.85,
+        "y": 0
+      },
+      {
+        "kit": "fp_hay",
+        "x": 8.8,
+        "z": -7,
+        "rot": 0,
+        "s": 0.9,
+        "y": 0
+      },
+      {
+        "kit": "fp_crate",
+        "x": 9,
+        "z": -4.2,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "fp_pail",
+        "x": 5.2,
+        "z": -4.2,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "fp_cart",
+        "x": 6.4,
+        "z": 3.2,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "fp_sacks",
+        "x": 9,
+        "z": -0.6,
+        "rot": 0,
+        "s": 0.9,
+        "y": 0
+      },
+      {
+        "kit": "fp_sacks",
+        "x": 9.1,
+        "z": 1.1,
+        "rot": 0,
+        "s": 0.8,
+        "y": 0
+      },
+      {
+        "kit": "fp_trough",
+        "x": 4.6,
+        "z": 0.4,
+        "rot": 0,
+        "s": 0.9,
+        "y": 0
+      },
+      {
+        "kit": "fp_crate",
+        "x": 4.4,
+        "z": 6.9,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "fp_boxes",
+        "x": 6,
+        "z": 7.1,
+        "rot": 0,
+        "s": 0.8,
+        "y": 0
+      },
+      {
+        "kit": "fp_basket",
+        "x": 7.6,
+        "z": 7,
         "rot": 0,
         "s": 1,
         "y": 0
@@ -2756,7 +2757,7 @@ export const CIVIC_PLANS = {
       },
       {
         "id": "family",
-        "name": "Family corner",
+        "name": "Rest corner",
         "rect": {
           "x0": 3.6,
           "x1": 9.8,
@@ -3041,33 +3042,6 @@ export const CIVIC_PLANS = {
         "role": "pantry"
       },
       {
-        "kit": "bed",
-        "x": 8.6,
-        "z": -7,
-        "rot": 0,
-        "s": 1,
-        "y": 0,
-        "role": "bed"
-      },
-      {
-        "kit": "nightstand",
-        "x": 7.2,
-        "z": -7.9,
-        "rot": 0,
-        "s": 1,
-        "y": 0
-      },
-      {
-        "kit": "lamp_small",
-        "x": 7.2,
-        "z": -7.9,
-        "rot": 0,
-        "s": 1,
-        "y": 0.62,
-        "glow": true,
-        "block": false
-      },
-      {
         "kit": "sofa",
         "x": 5.2,
         "z": -4.2,
@@ -3220,6 +3194,30 @@ export const CIVIC_PLANS = {
         "s": 1,
         "y": 0.012,
         "block": false
+      },
+      {
+        "kit": "fp_coffee",
+        "x": 8.7,
+        "z": -7.5,
+        "rot": 0,
+        "s": 1,
+        "y": 0
+      },
+      {
+        "kit": "armchair",
+        "x": 8.6,
+        "z": -5.4,
+        "rot": 0,
+        "s": 0.9,
+        "y": 0
+      },
+      {
+        "kit": "bookshelf",
+        "x": 7,
+        "z": -7.7,
+        "rot": 0,
+        "s": 0.9,
+        "y": 0
       }
     ]
   },

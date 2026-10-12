@@ -6,6 +6,7 @@
 - The supermarket panel shows the open basket as one framed card, with the shelves as a row of names.
 - Inside a building, two labels that would overlap sit one above the other, and a label at the screen's edge slides in; before, one of them vanished and that object could not be found (the barn's hay corner, the school library, the mill's grain store, the farmhouse table).
 - On a wide window the whole room fills the screen instead of barely half of it.
+- The barn has a hay store and a feed bay where three beds and a kitchen stood; the bakery has the bakers' rest corner where a bedroom was; the dairy's counter room is furnished.
 
 ## Village supermarket and production rooms — 2026-10-12 (PR #109)
 
