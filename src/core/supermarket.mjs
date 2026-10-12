@@ -18,12 +18,16 @@ export function basketPool(s, section) {
   const sources = new Set([...orderable(s), 'perch', 'carp', 'catfish']);
   return SHOP_SECTIONS[section].goods.filter(g => sources.has(g));
 }
+/** What a basket may not touch of a good: what a project step holds and what the company's open request asks for.
+ *  The order board's cards are not counted: they are offers that come and go, and a busy board asked for more of the
+ *  common goods than a barn holds, so a basket of carrots could never be delivered. */
+export const shopReserve = (s, good) => (barn.held(s)[good] ?? 0) + companyKeep(s, good);
 export function basketRows(s, r = normalizeSupermarket(s).request) {
   if (!r) return [];
   const held = barn.held(s);
   return Object.entries(r.need).map(([good, n]) => {
-    const projects = held[good] ?? 0, company = companyKeep(s, good), orders = (s.orders?.cards ?? []).reduce((sum, c) => sum + (c.need?.[good] ?? 0), 0);
-    const reserved = projects + company + orders, stock = barn.stock(s, good), have = Math.max(0, stock - reserved);
+    const projects = held[good] ?? 0, company = companyKeep(s, good), orders = 0;
+    const reserved = projects + company, stock = barn.stock(s, good), have = Math.max(0, stock - reserved);
     return { good, n, stock, have, reserved, projects, company, orders };
   });
 }
@@ -70,8 +74,11 @@ export const supermarketActions = {
     if (st.nextAt > ctx.now) return ctx.fail('The next shop basket is not ready yet');
     if (st.serial >= 999_999) return ctx.fail('This shop record cannot accept another basket');
     const pool = basketPool(ctx.s, section); if (!pool.length) return ctx.fail('Set up a source for this shelf first');
-    const i = hash(ctx.s.createdAt, section, st.serial) % pool.length, need = { [pool[i]]: SUPERMARKET.units };
-    if (pool.length > 1) { need[pool[i]] = SUPERMARKET.units / 2; need[pool[(i + 1) % pool.length]] = SUPERMARKET.units / 2; }
+    // goods the barn can spare for half a basket come first; the pick among them is still the farm's own seeded one
+    const half = SUPERMARKET.units / 2, spare = g => barn.stock(ctx.s, g) - shopReserve(ctx.s, g), ready = pool.filter(g => spare(g) >= half);
+    const from = ready.length >= 2 ? ready : ready.length === 1 && spare(ready[0]) >= SUPERMARKET.units ? ready : ready.length ? [...ready, ...pool.filter(g => !ready.includes(g))] : pool;
+    const i = ready.length === 1 && from.length > 1 ? 0 : hash(ctx.s.createdAt, section, st.serial) % from.length, need = { [from[i]]: SUPERMARKET.units };
+    if (from.length > 1) { need[from[i]] = half; need[from[(i + 1) % from.length]] = half; }
     st.request = { id: `shop:${st.serial}`, section, need, payment: basketPrice(need), accepted: false, offeredAt: ctx.now };
     save(ctx, st); return {};
   },

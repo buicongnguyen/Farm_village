@@ -406,6 +406,9 @@ class ExploreMode {
     if (this.exitOnArrival && nearest === this.session.room.exit.id) { this.exitOnArrival = false; this.leaveRoom(); this.syncScene(); this.render(); return; }
     if (nearest !== this.lastNearest) { this.lastNearest = nearest; this.render(); }
   }
+  /** How much of the screen's foot the controls take (labels keep above it): the pill and its hint on a wide window, the
+   *  stick and the buttons on a narrow one. */
+  pinFloor() { return innerWidth >= 900 ? 110 : 205; }
   positionPins() {
     this.pinsEl.hidden = !this.inside || this.busy;
     if (this.pinsEl.hidden) return;
@@ -415,10 +418,15 @@ class ExploreMode {
       // Hidden labels have no measured width. Reveal for layout before deciding which ones fit.
       pin.hidden = false;
       const p = this.room.project(o.focus), width = pin.offsetWidth, height = pin.offsetHeight;
-      const box = { x: p.x - width / 2, y: p.y - height / 2, w: width, h: height };
-      const overlap = shown.some(b => box.x < b.x + b.w + 4 && box.x + box.w + 4 > b.x && box.y < b.y + b.h + 4 && box.y + box.h + 4 > b.y);
-      pin.hidden = !p.visible || overlap || box.x < 8 || box.x + box.w > innerWidth - 8 || box.y < toolbarBottom + 8 || box.y + box.h > innerHeight - 205;
-      if (!pin.hidden) { pin.style.left = `${p.x}px`; pin.style.top = `${p.y}px`; shown.push(box); }
+      // a label that would lie on another moves up or down by its own height (the nearest free place of five); only one
+      // that fits nowhere on the screen is left out. Two things close together (the barn's stores and its tool bench,
+      // the school's art corner and its library) used to show one label, and the other could not be found.
+      const hits = b => shown.some(o => b.x < o.x + o.w + 4 && b.x + b.w + 4 > o.x && b.y < o.y + o.h + 4 && b.y + b.h + 4 > o.y);
+      const fits = b => b.x >= 8 && b.x + b.w <= innerWidth - 8 && b.y >= toolbarBottom + 8 && b.y + b.h <= innerHeight - this.pinFloor();
+      let box = null;   // (a label at the window's edge slides in sideways)
+      for (const step of [0, -1, 1, -2, 2]) { const b = { x: Math.min(Math.max(p.x - width / 2, 8), Math.max(8, innerWidth - 8 - width)), y: p.y - height / 2 + step * (height + 6), w: width, h: height }; if (fits(b) && !hits(b)) { box = b; break; } }
+      pin.hidden = !p.visible || !box;
+      if (!pin.hidden) { pin.style.left = `${box.x + width / 2}px`; pin.style.top = `${box.y + height / 2}px`; shown.push(box); }
     }
   }
   render() {

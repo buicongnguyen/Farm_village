@@ -124,7 +124,7 @@ export function goodHelp(s, good, now = s.lastSeen, { needed = 1, shopRequest } 
   const inventory = stock(s, good, needed), request = normalizeSupermarket(s).request;
   let hold = (barn.held(s)[good] ?? 0) + (supermarketHeld(s)[good] ?? 0);
   if (shopRequest && request?.id === shopRequest && request.need[good]) {
-    hold = (barn.held(s)[good] ?? 0) + companyKeep(s, good) + (s.orders?.cards ?? []).reduce((sum, row) => sum + (row.need?.[good] ?? 0), 0);
+    hold = (barn.held(s)[good] ?? 0) + companyKeep(s, good);   // as the basket itself counts it (core/supermarket.mjs shopReserve)
     inventory.free = Math.max(0, inventory.stock - hold); inventory.held = Math.min(inventory.stock, hold); inventory.missing = Math.max(0, needed - inventory.free);
   }
   // Incoming output first fills any current reservation not yet covered by stock.
