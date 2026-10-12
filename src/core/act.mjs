@@ -6,6 +6,7 @@ import { actions as farm } from './farm.mjs';
 import { actions as animals } from './animals.mjs';
 import { actions as output } from './output.mjs';
 import { actions as knowhow, tickKnowhow } from './knowhow.mjs';
+import { actions as surprises, tickSurprises } from './surprises.mjs';
 import { actions as production } from './production.mjs';
 import { actions as build } from './build.mjs';
 import { actions as projects, advance } from './projects.mjs';
@@ -52,7 +53,7 @@ import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
 
-export const ACTIONS = { ...handActions, ...farm, ...animals, ...output, ...knowhow, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
+export const ACTIONS = { ...handActions, ...farm, ...animals, ...output, ...knowhow, ...surprises, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
   ...orchard, ...trees, ...bonds, ...cart, ...condition, ...testmode, ...discoveries, ...advice, ...exploration, ...landDiscovery, ...contracts, ...shops, ...villageGrowth, ...learning, ...schoolActivity };
 
 function context(s, now) {
@@ -82,7 +83,7 @@ export function tick(s, now = Date.now()) {
   const ctx = context(s, now);
   // a device clock that went backward never makes a timer longer than its full length
   if (now < s.lastSeen) guardClock(s, now);
-  tickTester(ctx); tickKnowhow(ctx); tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
+  tickSurprises(ctx); tickTester(ctx); tickKnowhow(ctx); tickToday(ctx); tickCondition(ctx); tickHomes(ctx); tickCart(ctx); tickNeighbours(ctx); tickOrders(ctx); tickStall(ctx); tickOrchard(ctx); tickMarketDay(ctx); tickFestival(ctx); tickCooperative(ctx); tickHotel(ctx); tickTrain(ctx); tickUpriver(ctx); tickFair(ctx); tickValley(ctx); tickTruck(ctx); tickFishing(ctx); tickQuests(ctx); tickHands(ctx); tickHelpers(ctx); if (s.needsPlaces) { delete s.needsPlaces; for (const kind of addNewPlaces(s)) ctx.emit('placed', { id: Object.keys(s.placed).find(k => s.placed[k].kind === kind), kind }); } advance(ctx); tickCart(ctx); tickBonds(ctx);
   tickShops(ctx); tickLearning(ctx); afterDiscoveries(ctx);
   s.lastSeen = Math.max(s.lastSeen, now);
   remember(s, ctx.events, now); tallyEarned(s, ctx.events); afterAdvice(ctx);

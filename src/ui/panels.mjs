@@ -155,6 +155,7 @@ export class Panels {
     else if (d.do === 'tiltReset') g.do('setting', { key: 'cameraTilt', value: TILT.default / 100 });
     else if (d.do === 'roadmap') this.show('roadmap');
     else if (d.do === 'knowhow') this.show('knowhow');
+    else if (d.do === 'panGold') g.do('panGold');
     else if (d.do === 'tryTrick') g.do('tryTrick', { id: d.id });
     else if (d.do === 'report') this.show('report');
     else if (d.do === 'valley') this.show('valley');

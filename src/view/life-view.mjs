@@ -3,6 +3,7 @@
 // Animals are cast subjects (skinned.mjs): the ones near the camera centre are animated skinned actors, the rest are
 // instances of the same model. Each animal walks, grazes or pecks, looks around, sits, and sleeps at night by its home.
 // Tapping one makes it call out (Moo, Flap) with a hop; life.animalAt(cell) tells the tap menu which animal is there.
+import { SURPRISES } from '../content/surprises.mjs';
 import * as THREE from 'three';
 import { CELL } from '../content/world.mjs';
 import { CROPS, ANIMALS } from '../content/goods.mjs';
@@ -98,7 +99,7 @@ export class LifeView {
   /** Each animal home's herd: one cast subject per animal, inside its fenced area. */
   syncHerds() {
     const s = this.s, t = this.game.now, want = new Map();
-    for (const [home, list] of Object.entries(s.animals)) for (const [i, a] of list.entries()) want.set(`${home}:${i}`, { home, kind: a.kind, ready: a.doneAt != null && a.doneAt <= t, hungry: a.doneAt == null });
+    for (const [home, list] of Object.entries(s.animals)) for (const [i, a] of list.entries()) want.set(`${home}:${i}:${a.variant ?? ''}`, { home, kind: a.kind, look: a.variant ? `hen_${a.variant}` : a.kind, young: a.bornAt != null && t - a.bornAt < SURPRISES.herd.youngMs ? a.bornAt : null, ready: a.doneAt != null && a.doneAt <= t, hungry: a.doneAt == null });
     for (const [key, a] of this.herds) if (!want.has(key) || !s.placed[a.home]) { this.cast.remove(a.subject); this.herds.delete(key); }
     for (const [key, w] of want) {
       let a = this.herds.get(key);
@@ -106,9 +107,11 @@ export class LifeView {
         if (!s.placed[w.home]) continue;
         const area = this.penArea(w.home), c = area[Math.floor(Math.random() * area.length)] ?? [0, 0];
         a = { ...w, key, state: 'look', until: 0, target: null, phase: Math.random() * 6.28, hop: 0 };
-        a.subject = this.cast.add({ rig: rigOf(w.kind), x: (c[0] + 0.2 + Math.random() * 0.6) * CELL, z: (c[1] + 0.2 + Math.random() * 0.6) * CELL, rot: Math.random() * 6.28, clip: 'Idle', animal: true });
+        a.subject = this.cast.add({ rig: rigOf(w.look), scale: w.young != null ? 0.55 : 1, x: (c[0] + 0.2 + Math.random() * 0.6) * CELL, z: (c[1] + 0.2 + Math.random() * 0.6) * CELL, rot: Math.random() * 6.28, clip: 'Idle', animal: true });
         this.herds.set(key, a);
       }
+      // a calf grows: small for its first minutes, then full size
+      if (a.subject && (w.young != null) !== (a.subject.scale < 1)) a.subject.scale = w.young != null ? 0.55 : 1;
       a.ready = w.ready; a.hungry = w.hungry;
     }
   }
