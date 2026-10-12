@@ -3,7 +3,7 @@
 import { LEVELS, MARKET_DAY, PARCELS, FAIR, BEAUTY, VALLEY } from '../content/economy.mjs';
 import { GREEN_GOALS } from '../content/valley.mjs';
 import { VALUE_TITLES } from '../content/journey.mjs';
-import { beautyOf, valueOf } from './valley.mjs';
+import { beautyOf, valueOf, goodwillOf, assetsOf } from './valley.mjs';
 import { planDay } from './neighbours.mjs';
 import { actions as riverside, freeLots } from './riverside.mjs';
 import { RIVERSIDE } from '../content/economy.mjs';
@@ -104,6 +104,8 @@ function fields(ctx, n) {
     if (out.ok === false) break;
   }
 }
+/** The valley's name counts only so many deeds (VALLEY.deeds): a small test farm is given the coins a mark still lacks. */
+const topUp = (s, mark) => { if (valueOf(s) < mark) s.coins += Math.ceil(mark / goodwillOf(s)) - assetsOf(s).total + 1; };
 export const JUMPS = {
   2: ctx => upTo(ctx, 2),   // chapter 1 opens the game: nothing to do for it
   3: ctx => { upTo(ctx, 3); stepTo(ctx, 'mill_coop'); give(ctx, 'feed_mill'); const coop = give(ctx, 'coop'); if (coop && !ctx.s.animals[coop]?.length) animals.buyAnimal(ctx, { home: coop }); },
@@ -114,7 +116,7 @@ export const JUMPS = {
   // chapter 11 is behind: Mr Albright has his answer (the tester keeps the meadow; play the chapter to choose the cannery)
   12: ctx => { const { s, now } = ctx; if (!s.story.albright) { s.story.albright = 'meadow'; (s.firsts ??= {}).albright = now; } },
   // chapter 20 is behind: the valley's name has grown to a billion and it has every title
-  21: ctx => { const { s, now } = ctx; for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.lights; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+  21: ctx => { const { s, now } = ctx; for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.lights; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests; topUp(s, VALLEY.marks.lights);
     for (const x of VALUE_TITLES) (s.firsts ??= {})[`title:${x.at}`] ??= now; },
   // chapter 19 is behind: the green goals are reached, the valley is a picture postcard (trees and flowers planted on
   // free ground as far as it takes) and its name has grown past the green mark (hotel guests enough for the goodwill)
@@ -125,7 +127,7 @@ export const JUMPS = {
     const o = parcelOrigin(START_PARCEL), coins = s.coins; s.coins += 1e7;
     for (const kind of ['round_tree', 'flowers']) for (let i = 0; i < 60 && beautyOf(s).rank < BEAUTY.ranks.length - 1; i++) { const at = grid.findSpot(s, kind, o.x + 8, o.z + 8); if (!at || build.place(ctx, { kind, ...at }).ok === false) break; }
     s.coins = coins;
-    for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.green; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests;
+    for (let i = 0; i < 400 && valueOf(s) < VALLEY.marks.green; i++) s.stats.guests = (s.stats.guests ?? 0) + VALLEY.guests; topUp(s, VALLEY.marks.green);
     (s.firsts ??= {}).greenValley ??= now; },
   // chapter 18 is behind: a fair was held to its end and a ribbon won (the valleys have rested since)
   19: ctx => { const { s, now } = ctx, f = (s.fair ??= { n: 0, ribbons: 0, best: {}, entry: {} }); if ((s.stats.fairs ?? 0) >= 1 && f.ribbons >= 1) return;

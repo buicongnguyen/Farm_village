@@ -2142,7 +2142,9 @@ def juice_press():
     p.append(bx('back', 3.6, .15, 2.2, 0, -1.6, .15, 'wood', bev=.03))
     for i in range(8):
         p.append(bx('awning', .48, 3.8, .14, -1.68 + i * .48, 0, 2.75, 'cream' if i % 2 else 'pumpkin' if 'pumpkin' in C else 'red'))
-    p.append(gable('roof', 3.8, 3.4, .7, 0, 0, 2.88, 'roof'))
+    # 2026-10-12: shingled in two tones like the bakery and the mill (it was one flat colour); the gable under it closes the ends
+    p.append(gable('roof', 3.8, 3.4, .7, 0, 0, 2.86, 'roofd', over=.12))
+    p += roof_rows(3.8, 3.4, .7, 0, 0, 2.88, 'roof', 'roofl', rows=4, over=.2, thick=.08)
     # the screw press
     p += [cl('vat', .55, .5, -.6, .3, .15, 'woodl', verts=12), cl('vatband', .57, .08, -.6, .3, .45, 'iron', verts=12),
           bx('frame', .12, .12, 1.5, -1.15, .3, .15, 'woodd'), bx('frame2', .12, .12, 1.5, -.05, .3, .15, 'woodd'),
@@ -2165,7 +2167,8 @@ def noodle_factory():
     """Noodle factory (3 x 2 cells): a cheerful brick workshop with a teal roof and a chimney, a big round window, and
     racks of drying noodles outside."""
     p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stoned', bev=.04), bx('walls', 4.0, 3.0, 2.4, -.7, -.2, .15, 'brick', bev=.05),
-         bx('trim', 4.1, 3.1, .15, -.7, -.2, 2.5, 'cream', bev=.03), gable('roof', 4.2, 3.2, 1.1, -.7, -.2, 2.62, 'teal'),
+         bx('trim', 4.1, 3.1, .15, -.7, -.2, 2.5, 'cream', bev=.03), gable('roof', 4.2, 3.2, 1.1, -.7, -.2, 2.6, 'teald', over=.12),
+         *roof_rows(4.2, 3.2, 1.1, -.7, -.2, 2.62, 'teal', 'teald', rows=5, over=.2),   # shingled in two tones (2026-10-12)
          cl('chimney', .3, 1.3, -2.0, -.8, 3.0, 'brickd', verts=8), cl('chimtop', .36, .15, -2.0, -.8, 4.3, 'charcoal', verts=8),
          bx('door', .9, .1, 1.5, -.3, 1.32, .15, 'woodd', bev=.03), bx('sign', 1.6, .08, .5, -.7, 1.34, 1.9, 'sun', bev=.03),
          cl('window', .4, .08, -1.8, 1.31, 1.25, 'glass', verts=12, rot=(math.pi / 2, 0, 0)),
