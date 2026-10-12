@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { loadKit, bake } from './models.mjs';
-import { Cast, loadRig, RIGS } from './skinned.mjs';
+import { Cast, loadRig, RIGS, wornRig } from './skinned.mjs';
+import { hatOf } from '../content/wardrobe.mjs';
 import { toonRamp } from '../kit/toon.mjs';
 import { outfitOf } from './people-view.mjs';
 import { buildCottage } from './cottage-view.mjs';
@@ -30,12 +31,22 @@ export class ExploreRoom {
     }
     this.body = settings.playerBody === 'woman' ? 'woman' : 'man';
     this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 });
-    this.player = this.cast.add({ rig: this.body, x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: 1.8 / RIGS[this.body].height,
+    this.player = this.cast.add({ rig: wornRig(this.body, hatOf({ settings })), x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: 1.8 / RIGS[this.body].height,
       tint: outfitOf('you', { settings }), priority: 10 });
     this.cast.select(); this.ray = new THREE.Raycaster(); this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     this.view = innerWidth < 600 ? 'follow' : 'whole'; this.followWidth = innerWidth < 600 ? 12 : 18;
     this.focus = new THREE.Vector3(...data.entry.position); this.quiet = !!settings.reducedMotion;
     this.resize();
+  }
+  /** Dress your character again (the wardrobe): a new hat is a new rig, shown once it has loaded; colours change at once. */
+  async dress(settings) {
+    const rig = wornRig(this.body, hatOf({ settings })), tint = outfitOf('you', { settings });
+    if (rig !== this.player.rig) {
+      await loadRig(rig); if (this.gone || wornRig(this.body, hatOf({ settings })) !== rig) return;
+      const { actor, ...old } = this.player; this.cast.remove(this.player); this.player = this.cast.add({ ...old, rig }); this.cast.select();
+    }
+    this.player.tint = tint;
+    const u = this.player.actor?.uniforms; if (u) { u.uTop.value.set(tint.top); u.uBottom.value.set(tint.bottom); }
   }
   get movementYaw() { return Math.atan2(this.data.camera.position[0] - this.data.camera.target[0], this.data.camera.position[2] - this.data.camera.target[2]); }
   resize() {
@@ -80,6 +91,7 @@ export class ExploreRoom {
     const p = this.ray.ray.intersectPlane(this.plane, new THREE.Vector3()); return p ? { point: [p.x, p.z] } : null;
   }
   dispose() {
+    this.gone = true;
     for (const m of this.meshes) m.geometry.dispose(); this.material.dispose();
     for (const a of this.cast.actors) { a.mixer.stopAllAction(); a.mesh.material.dispose(); a.mesh.skeleton.dispose(); }
     this.scene.clear();

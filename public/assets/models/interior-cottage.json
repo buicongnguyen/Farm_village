@@ -359,7 +359,7 @@
         0.6
       ],
       "id": "furniture_0",
-      "use": null
+      "use": "farmhouse_fireplace"
     },
     {
       "kit": "picture",
@@ -409,7 +409,7 @@
         0.8
       ],
       "id": "furniture_5",
-      "use": null
+      "use": "farmhouse_armchair"
     },
     {
       "kit": "plant_small",
@@ -499,7 +499,7 @@
         0.7
       ],
       "id": "furniture_14",
-      "use": null
+      "use": "farmhouse_fridge"
     },
     {
       "kit": "counter",
@@ -607,7 +607,7 @@
         0.6
       ],
       "id": "furniture_24",
-      "use": null
+      "use": "farmhouse_easel"
     },
     {
       "kit": "rug_rect",
@@ -627,7 +627,7 @@
         0.6
       ],
       "id": "furniture_26",
-      "use": null
+      "use": "farmhouse_yarn"
     },
     {
       "kit": "bookshelf",
@@ -669,7 +669,7 @@
         2.1
       ],
       "id": "furniture_30",
-      "use": null
+      "use": "farmhouse_bed"
     },
     {
       "kit": "nightstand",
@@ -718,7 +718,7 @@
         0.6,
         0.4
       ],
-      "use": null,
+      "use": "farmhouse_mirror",
       "id": "furniture_35"
     },
     {
@@ -741,7 +741,7 @@
         0.9
       ],
       "id": "furniture_37",
-      "use": null
+      "use": "farmhouse_bath"
     },
     {
       "kit": "duck",
@@ -749,7 +749,7 @@
       "z": -7.399999999999999,
       "y": 0.5,
       "id": "furniture_38",
-      "use": null
+      "use": "farmhouse_bath"
     },
     {
       "kit": "sink",
@@ -760,7 +760,7 @@
         0.5
       ],
       "id": "furniture_39",
-      "use": null
+      "use": "farmhouse_sink"
     },
     {
       "kit": "towel_rack",
@@ -837,7 +837,7 @@
         0.4
       ],
       "id": "furniture_47",
-      "use": null
+      "use": "farmhouse_books"
     },
     {
       "kit": "globe",
@@ -848,7 +848,7 @@
         0.45
       ],
       "id": "furniture_48",
-      "use": null
+      "use": "farmhouse_globe"
     },
     {
       "kit": "armchair",
@@ -1546,6 +1546,149 @@
         -11.12,
         1.2,
         -4.14
+      ]
+    },
+    {
+      "id": "farmhouse_fireplace",
+      "stand": [
+        -4.17,
+        0,
+        1.9549999999999998
+      ],
+      "focus": [
+        -5.37,
+        0.7,
+        1.9549999999999998
+      ]
+    },
+    {
+      "id": "farmhouse_armchair",
+      "stand": [
+        -2.744999999999999,
+        0,
+        4.31
+      ],
+      "focus": [
+        -3.7949999999999995,
+        0.6,
+        5.06
+      ]
+    },
+    {
+      "id": "farmhouse_bath",
+      "stand": [
+        -0.8624999999999999,
+        0,
+        -6.35
+      ],
+      "focus": [
+        -0.8624999999999999,
+        0.6,
+        -7.449999999999999
+      ]
+    },
+    {
+      "id": "farmhouse_sink",
+      "stand": [
+        2.55,
+        0,
+        -6.719999999999999
+      ],
+      "focus": [
+        2.8,
+        0.9,
+        -7.669999999999999
+      ]
+    },
+    {
+      "id": "farmhouse_bed",
+      "stand": [
+        -6.749999999999999,
+        0,
+        -6.227499999999999
+      ],
+      "focus": [
+        -8.049999999999999,
+        0.6,
+        -6.727499999999999
+      ]
+    },
+    {
+      "id": "farmhouse_mirror",
+      "stand": [
+        -3.7,
+        0,
+        -5.635
+      ],
+      "focus": [
+        -2.65,
+        1.2,
+        -5.635
+      ]
+    },
+    {
+      "id": "farmhouse_easel",
+      "stand": [
+        8.28,
+        0,
+        0.06500000000000017
+      ],
+      "focus": [
+        8.28,
+        1,
+        -1.035
+      ]
+    },
+    {
+      "id": "farmhouse_yarn",
+      "stand": [
+        8.889999999999999,
+        0,
+        5.635
+      ],
+      "focus": [
+        9.889999999999999,
+        0.4,
+        5.635
+      ]
+    },
+    {
+      "id": "farmhouse_globe",
+      "stand": [
+        4.619999999999999,
+        0,
+        -6.499999999999999
+      ],
+      "focus": [
+        4.369999999999999,
+        0.9,
+        -7.449999999999999
+      ]
+    },
+    {
+      "id": "farmhouse_books",
+      "stand": [
+        10.16,
+        0,
+        -5.06
+      ],
+      "focus": [
+        11.26,
+        1.1,
+        -5.06
+      ]
+    },
+    {
+      "id": "farmhouse_fridge",
+      "stand": [
+        -9.88,
+        0,
+        -1.4375
+      ],
+      "focus": [
+        -11.08,
+        1,
+        -1.4375
       ]
     },
     {
