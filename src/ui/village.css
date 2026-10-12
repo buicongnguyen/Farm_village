@@ -104,3 +104,10 @@ body.panel-open .hud-tools { bottom: calc(var(--sheet-h) + 10px); }
 .journey > .btn { margin-top: 14px; } .clinic-staff { text-align: center; }
 .hud .village-name { max-width: min(310px, 78vw); white-space: normal; text-align: left; }
 .btn.blocked { filter: saturate(.35); opacity: .8; }
+
+/* Optional shop: compact dialogue and in-flow status marks, using the shared colours. */
+.shop-dialogue { display: flex; align-items: flex-start; gap: 12px; margin: 14px 0; }
+.shop-dialogue > div { min-width: 0; }
+.shop-dialogue p { margin: 6px 0; }
+.shop-portrait { width: 64px; height: 64px; object-fit: contain; flex: 0 0 64px; }
+.shop-card .badge.ready, .badge.shop-count { position: static; display: inline-flex; margin-left: 8px; vertical-align: middle; width: max-content; justify-self: start; }

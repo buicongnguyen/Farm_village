@@ -39,12 +39,12 @@ export function buildCottage(kit, data, material) {
     if (!kit[p.kit]) throw Error(`Cottage furniture missing: ${p.kit}`);
     const g = bake(kit[p.kit], { center: false, ao: .45 });
     g.scale(p.scale ?? 1, p.scale ?? 1, p.scale ?? 1); g.rotateY(p.rot ?? 0); g.translate(p.x, p.y ?? 0, p.z);
-    const id = p.use ?? ''; if (!groups.has(id)) groups.set(id, []); groups.get(id).push(g);
+    const id = p.memory ? `memory:${p.memory}` : p.use ?? ''; if (!groups.has(id)) groups.set(id, []); groups.get(id).push(g);
   }
   for (const [id, parts] of groups) {
     if (!parts.length) continue;
     const geometry = mergeGeometries(parts, false); parts.forEach(g => g.dispose());
-    const mesh = new THREE.Mesh(geometry, material); mesh.name = id || 'cottage-shell'; mesh.userData.interaction = id || null; meshes.push(mesh);
+    const mesh = new THREE.Mesh(geometry, material); mesh.name = id || 'cottage-shell'; mesh.userData.interaction = id.startsWith('memory:') ? null : id || null; mesh.userData.memory = id.startsWith('memory:') ? id.slice(7) : null; if (mesh.userData.memory) mesh.visible = false; meshes.push(mesh);
   }
   return meshes;
 }

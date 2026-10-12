@@ -109,6 +109,7 @@ function remember(s, events, now) {
   if (s.news?.length > 12) s.news.length = 12;
 }
 function guardClock(s, now) {
+  if (s.supermarket) s.supermarket.nextAt = Math.min(s.supermarket.nextAt, now + 30 * 60_000);
   for (const b of Object.values(s.beds)) b.doneAt = clampDone(b.doneAt, now, CROPS[b.crop].growMs);
   for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null) a.doneAt = clampDone(a.doneAt, now, ANIMALS[a.kind].everyMs);
   clampProductionClock(s, now);

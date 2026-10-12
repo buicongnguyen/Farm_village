@@ -1,3 +1,4 @@
+import { JA_SUPERMARKET } from './ja-supermarket.mjs';
 // Complete Japanese locale. Each batch contains explicit authored translations.
 import { JA_00 } from './ja-00.mjs';
 import { JA_FISHING } from './ja-fishing.mjs';
@@ -22,3 +23,5 @@ import { JA_16 } from './ja-16.mjs';
 import { JA_17 } from './ja-17.mjs';
 export const JA = { ...JA_FISHING, ...JA_MAIL, ...JA_00, ...JA_01, ...JA_02, ...JA_03, ...JA_04, ...JA_05, ...JA_06, ...JA_07, ...JA_08, ...JA_09, ...JA_10, ...JA_11, ...JA_12, ...JA_13, ...JA_14, ...JA_15, ...JA_16, ...JA_17, 'Could not load this language. Check your connection.': '言語を読み込めませんでした。通信状況を確認してください。' };
 Object.assign(JA, JA_EXPLORE);
+
+Object.assign(JA, JA_SUPERMARKET);

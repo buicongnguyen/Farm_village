@@ -87,6 +87,7 @@ export class Radial {
     const s = this.s, now = this.game.now, lv = levelOf(s, id), name = thingName(s, id) ?? '';
     if (isRepairing(s, id)) { const left = Math.max(0, s.repairing[id].doneAt - now); return { buttons: [], info: `${name} · ${condLabel(s, id)} · ${shortTime(left)}${bar(1 - left / REPAIR.broken.ms)}` }; }
     const cost = repairCost(s, id), buttons = [{ act: 'repair', id, icon: iconHtml('wrench', '', 'ic'), label: `${coinMark()}${num(cost)}`, disabled: s.coins < cost }];
+    if (lv < 3 && s.placed[id]?.kind === 'supermarket') buttons.push({ act: 'open', icon: iconHtml('supermarket', '', 'ic'), label: t('Open') });
     if (lv < 3 && s.placed[id]?.kind === 'school') buttons.push({ act: 'schoolActivity', icon: iconHtml('school', '', 'ic'), label: t('Open') });
     if (lv < 3 && (def?.produces || def?.fruitStand || def?.stall || def?.market || def?.pond || def?.home || def?.animals)) buttons.push({ act: 'open', icon: iconHtml(def.home ? 'cottage' : def.animals ? def.animals === 'hen' ? 'coop' : 'cow_barn' : def.fruitStand ? 'fruit_stand' : def.stall || def.market ? 'stall' : def.pond ? 'pond' : def.produces ? 'bakery' : '', '', 'ic'), label: t('Open') });
     return { buttons, info: `${name} · ${condLabel(s, id)}` };
@@ -167,7 +168,7 @@ export class Radial {
     else if (p?.kind === 'bed') {
       const b = s.beds[id];
       if (!b) buttons = Object.entries(CROPS).filter(([c]) => cropOpen(s, c)).map(([c, def]) => {
-        const price = plantPrice(s, c), have = barn.stock(s, c);
+        const price = plantPrice(s, c), have = barn.free(s, c, false);
         return { act: 'plant', crop: c, icon: iconHtml(c, def.icon), label: def.free ? t('Free') : have ? `×${have}` : `${coinMark()}${price}` };
       });
       else if (b.doneAt <= now) { const all = Object.keys(s.beds).filter(k => s.beds[k].doneAt <= now).length; buttons = [{ act: 'harvest', icon: iconHtml('tool:harvest'), label: t('Harvest') }, ...(all > 1 ? [{ act: 'harvestAll', icon: iconHtml('ui:harvest_all', '', 'ic'), label: t('All ({count})', { count: all }) }] : [])]; }
@@ -181,6 +182,7 @@ export class Radial {
     else if (def?.produces) { this.hide(); this.panels.show('production', id); return; }
     else if (def?.fruitStand) { this.hide(); this.panels.show('fruit_stand'); return; }
     else if (p?.kind === 'clinic') { this.hide(); this.panels.show('clinic', id); return; }
+    else if (p?.kind === 'supermarket') { this.hide(); this.panels.show('supermarket', id); return; }
     else if (def?.civicSite) { this.hide(); this.panels.show('villageGrowth'); return; }
     else if (def?.pet) info = t('{pet:dog:short} watches the beds and chases crows. No upkeep needed.');
     else if (def?.stall) { this.hide(); this.panels.show('stall'); return; }

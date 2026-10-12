@@ -1,3 +1,5 @@
+import { normalizeSupermarket, supermarketHeld } from './supermarket-state.mjs';
+import { companyKeep } from './village-growth.mjs';
 // Read-only ingredient guidance. These facts describe existing actions; navigation never performs them.
 import { GOODS, CROPS, FRUITS, RECIPES, ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -63,7 +65,7 @@ function cropSource(s, good, now, missing) {
   const crop = CROPS[good], beds = makers(s, 'bed'), planted = beds.filter(id => s.beds[id]?.crop === good);
   const ready = planted.filter(id => s.beds[id].doneAt <= now), growing = planted.filter(id => s.beds[id].doneAt > now);
   const empty = beds.filter(id => !s.beds[id]);
-  const seed = crop.free ? 'free' : barn.stock(s, good) > 0 ? 'stock' : 'coins', cost = plantPrice(s, good);
+  const seed = crop.free ? 'free' : barn.free(s, good, false) > 0 ? 'stock' : 'coins', cost = plantPrice(s, good);
   const target = { kind: 'farm', id: ready[0] ?? empty[0] ?? growing[0] ?? beds[0] ?? null };
   const base = { type: 'crop', at: 'bed', seed, cost, ready: ready.length * 2, queued: growing.length * 2, target };
   if (ready.length) return { ...base, status: 'ready' };
@@ -116,12 +118,17 @@ function usesOf(s, good, now) {
 }
 
 /** No state is initialized or mutated. Counts describe this request and one recipe batch, never speculative future work. */
-export function goodHelp(s, good, now = s.lastSeen, { needed = 1 } = {}) {
+export function goodHelp(s, good, now = s.lastSeen, { needed = 1, shopRequest } = {}) {
   if (!own(GOODS, good)) return null;
   needed = Number.isFinite(needed) && needed > 0 ? Math.ceil(needed) : 1;
-  const inventory = stock(s, good, needed);
+  const inventory = stock(s, good, needed), request = normalizeSupermarket(s).request;
+  let hold = (barn.held(s)[good] ?? 0) + (supermarketHeld(s)[good] ?? 0);
+  if (shopRequest && request?.id === shopRequest && request.need[good]) {
+    hold = (barn.held(s)[good] ?? 0) + companyKeep(s, good) + (s.orders?.cards ?? []).reduce((sum, row) => sum + (row.need?.[good] ?? 0), 0);
+    inventory.free = Math.max(0, inventory.stock - hold); inventory.held = Math.min(inventory.stock, hold); inventory.missing = Math.max(0, needed - inventory.free);
+  }
   // Incoming output first fills any current reservation not yet covered by stock.
-  const incomingNeed = inventory.missing + Math.max(0, (barn.held(s)[good] ?? 0) - inventory.stock);
+  const incomingNeed = inventory.missing + Math.max(0, hold - inventory.stock);
   const source = own(RECIPES, good) ? recipeSource(s, good, now, incomingNeed)
     : own(CROPS, good) ? cropSource(s, good, now, incomingNeed) : own(FRUITS, good) ? fruitSource(s, good, now)
       : GOODS[good].kind === 'produce' ? animalSource(s, good, now)

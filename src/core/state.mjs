@@ -12,6 +12,7 @@ import { newExploration, normalizeExploration } from './exploration.mjs';
 import { newLandDiscovery, normalizeLandDiscovery } from './land-discovery.mjs';
 import { newContracts, normalizeContracts } from './contracts.mjs';
 import { normalizeProduction } from './production-state.mjs';
+import { normalizeSupermarket } from './supermarket-state.mjs';
 import { normalizeShops } from './shops-state.mjs';
 import { newGrowth, normalizeGrowth } from './growth-state.mjs';
 import { newLearning, normalizeLearning } from './learning-state.mjs';
@@ -153,6 +154,7 @@ export function withDefaults(s) {
   s.production = normalizeProduction(s);
   s.outputUp = normalizeOutput(s);
   s.shops = normalizeShops(s);
+  s.supermarket = normalizeSupermarket(s);
   s.growth = normalizeGrowth(s);
   s.learning = normalizeLearning(s);
   s.schoolActivity = normalizeSchool(s);

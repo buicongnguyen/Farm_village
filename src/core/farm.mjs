@@ -12,7 +12,7 @@ export const bedState = (s, id, now) => {
   return b.doneAt <= now ? { state: 'ready', crop: b.crop } : { state: 'growing', crop: b.crop, leftMs: b.doneAt - now, progress: 1 - (b.doneAt - now) / CROPS[b.crop].growMs };
 };
 /** The price to plant a crop the player has none of (DESIGN 5 "never stuck"); 0 when it comes from the barn or is free. */
-export const plantPrice = (s, crop) => CROPS[crop].free || barn.stock(s, crop) > 0 ? 0 : CROPS[crop].value;
+export const plantPrice = (s, crop) => CROPS[crop].free || barn.free(s, crop, false) > 0 ? 0 : CROPS[crop].value;
 
 export const actions = {
   /** Plant one bed, or many: { ids: [...] | id, crop }. */
@@ -26,7 +26,7 @@ export const actions = {
     for (const bid of ids) {
       if (s.placed[bid]?.kind !== 'bed' || s.beds[bid]) continue;
       if (!c.free) {
-        if (barn.stock(s, crop) > 0) barn.take(s, { [crop]: 1 }, false);
+        if (barn.free(s, crop, false) > 0) barn.take(s, { [crop]: 1 }, false);
         else if (s.coins >= c.value) s.coins -= c.value;
         else { if (!planted) return ctx.fail('Not enough coins'); break; }
       }

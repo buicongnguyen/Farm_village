@@ -1,5 +1,13 @@
 # Changelog
 
+## Village supermarket and production rooms — 2026-10-12 (PR #109)
+
+- Added an optional level-14 village supermarket with three shelves, saved eight-item baskets at a 25% premium, explicit reservations and a 30-minute interval. It follows real ingredient sources and leaves chapters 1–20 unchanged.
+- Added adaptive shop dialogue and three saved memories in all four editions. A counter photo, tasting tray and framed thank-you card appear as the player supplies different shelves; Today keeps unread memories.
+- Enabled the prepared supermarket interior and reused the original Willowmere exterior. Added walkable feed-mill and dairy rooms with their real production and storage controls. The shop icon temporarily reuses the market artwork.
+- Review fixes: basket holds protect seeds, project deliveries, recipes, manual sales, trucks and helpers; source cards correctly count a basket’s own held goods. A used shop cannot be undone for a full refund. Broken-shop guidance leads to repair, source navigation safely leaves an interior before showing the destination, and compact dialogue/status badges fit phone sheets.
+- Added rules and browser coverage for shop progress, refusal atomicity, saved offers, reservations, production rooms, footsteps, translations and rendering budgets. See [the implemented plan](docs/SUPERMARKET-STORY-PLAN.md).
+
 ## Cozy rooms and village interiors — 2026-10-12 (PR #108)
 
 - Replaced the small farmhouse shell with the user's six-room Zoo Garden cottage. Kept Hollowbrook's memory shelf, family table, activities and all earned decorations, including the large plant.

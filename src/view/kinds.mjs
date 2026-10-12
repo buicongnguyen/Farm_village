@@ -4,6 +4,7 @@
 // `late: true` kits load after the first frame (land-view registers them in its second wave); until then an item
 // whose kind has an EARLY stand-in draws with that, and anything else waits.
 export const KIND_MODELS = {
+  supermarket: { kit: 'supermarket', node: 'supermarket', width: 7.8, lod: 'static', late: true }, // Original Willowmere exterior, reused by request.
   coop:      { kit: 'farm-kit', node: 'coop', authored: true, lod: 'static' },
   cow_barn:  { kit: 'farm-kit', node: 'cow_barn', authored: true, lod: 'static' },
   goat_barn: { kit: 'decor', node: 'goat_barn', authored: true, lod: 'static', late: true },   // v0.5 (decor kit: loaded after the first scene)

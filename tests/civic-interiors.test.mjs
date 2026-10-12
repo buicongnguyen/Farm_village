@@ -11,9 +11,9 @@ import {CIVIC_INTERIORS} from '../src/content/civic-interiors.mjs';
 import {roomAtLevel} from '../src/content/explore.mjs';
 import {roomClear,roomRoute,segmentClear,xz} from '../src/core/explore-navigation.mjs';
 import {touch,doorCell} from '../src/core/grid.mjs';
-import {VI_EXPLORE} from '../src/i18n/vi-explore.mjs';
-import {KO_EXPLORE} from '../src/i18n/ko-explore.mjs';
-import {JA_EXPLORE} from '../src/i18n/ja-explore.mjs';
+import {VI} from '../src/i18n/vi.mjs';
+import {KO} from '../src/i18n/ko.mjs';
+import {JA} from '../src/i18n/ja.mjs';
 const NOW=1800000000000;
 const load=id=>JSON.parse(readFileSync(new URL(`../public/assets/models/interior-${id}.json`,import.meta.url)));
 installExplore();installCivicExplore();
@@ -39,15 +39,15 @@ test('civic entry requires its own real door, condition and matching room; refus
  assert.ok(atObject(s,'interior_exit'));assert.ok(act(s,'leaveFacility',{},NOW).ok);assert.deepEqual(exploreSession(s).p,door);
 });
 test('barn and every supported building enter and leave without rewards; rotations and removed buildings are safe',()=>{
- for(const kind of Object.keys(CIVIC_INTERIORS).filter(k=>k!=='supermarket'))for(const rot of kind==='barn'?[0]:[0,1,2,3]){
+ for(const kind of Object.keys(CIVIC_INTERIORS))for(const rot of kind==='barn'?[0]:[0,1,2,3]){
   const {s,id,door}=fixture(kind,rot);if(kind!=='barn')assert.deepEqual(door,doorCell(CIVIC_INTERIORS[kind].kind,68,93,rot).map(v=>v*2+1));
   assert.ok(facilityOpen(s,id));const before=pack(s);assert.ok(act(s,'enterFacility',{id},NOW).ok);assert.equal(pack(s),before);assert.equal(exploreSession(unpack(pack(s))),undefined);
   delete s.placed[id];s.cond[id]={level:3};touch(s);assert.ok(act(s,'leaveFacility',{recover:true},NOW).ok);assert.ok(outdoorClear(s,exploreSession(s).p));
  }
 });
-test('prepared supermarket has no live entry or economic actions',()=>{const s=newGame(NOW,123,{restore:true});s.placed.futureShop={kind:'supermarket',x:68,z:93,rot:0};assert.equal(facilityOpen(s,'futureShop'),false);assert.equal(facilityDoor(s,'futureShop'),null);});
+
 test('room descriptions and actions are translated in every edition',()=>{
- for(const room of Object.values(CIVIC_INTERIORS))for(const o of Object.values(room.objects))for(const key of [o.label,o.text].filter(Boolean))for(const catalog of [VI_EXPLORE,KO_EXPLORE,JA_EXPLORE])assert.ok(catalog[key]||['Company request'].includes(key),key);
+ for(const room of Object.values(CIVIC_INTERIORS))for(const o of Object.values(room.objects))for(const key of [o.label,o.text].filter(Boolean))for(const catalog of [VI,KO,JA])assert.ok(catalog[key]||['Company request'].includes(key),key);
 });
 test('all reused furniture exists in packed original kits',()=>{
  const nodes=new Set();for(const id of ['cottage-furniture','facility-props','interior-farmhouse']){const b=readFileSync(new URL(`../public/assets/models/${id}.glb`,import.meta.url)),j=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)).toString());assert.ok(j.extensionsUsed.includes('EXT_meshopt_compression'));for(const n of j.nodes)nodes.add(n.name);}

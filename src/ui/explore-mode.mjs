@@ -363,7 +363,7 @@ class ExploreMode {
     const yaw = this.inside ? this.room.movementYaw : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
     if (x || y) this.actOnArrival = this.castOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
-    if (this.inside) { this.room.frame(this.session, moving, dt); this.positionPins(); }
+    if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); }
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });

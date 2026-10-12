@@ -1,5 +1,15 @@
 // Existing Hollowbrook services placed in the user's original Willowmere civic rooms.
 export const CIVIC_INTERIORS = {
+  feed_mill: { kind: 'feed_mill', name: 'Feed mill', objects: {
+    mill_make: { label: 'Feed workbench', role: 'make', stand: [-5.6, -4.8], panel: 'production', siteArg: true },
+    mill_grain: { label: 'Grain store', role: 'grain', stand: [.6, -4.7], panel: 'barn' },
+    mill_tools: { label: 'Tool bench', role: 'tools', stand: [-6.3, 2.6], panel: 'learning' },
+  } },
+  dairy: { kind: 'dairy', name: 'Dairy', objects: {
+    dairy_make: { label: 'Dairy workbench', role: 'make', stand: [-5.6, -4.8], panel: 'production', siteArg: true },
+    dairy_pantry: { label: 'Cool pantry', role: 'pantry', stand: [.6, -4.7], panel: 'barn' },
+    dairy_notes: { label: 'Dairy notes', role: 'notes', stand: [-6.3, 2.4], text: 'Fresh milk, a patient stir, and something good to share. The recipe board has room for another favourite.' },
+  } },
   hospital: { kind: 'clinic', name: 'Clinic', objects: {
     hospital_reception: { label: 'Reception', role: 'reception', stand: [7.4, 3], panel: 'clinic', siteArg: true },
     hospital_pharmacy: { label: 'Medicine cabinet', role: 'pharmacy', stand: [7.6, -3], text: 'Neatly labelled jars, fresh towels and a little pot of flowers. Everything is ready for the next neighbour.' },
@@ -30,11 +40,10 @@ export const CIVIC_INTERIORS = {
     bakery_pantry: { label: 'Baking pantry', role: 'pantry', stand: [1.4, -5.6], panel: 'barn' },
     bakery_bread: { label: 'Bread shelves', role: 'bread', stand: [-6.3, 2], text: 'The shelves smell of warm bread. The little chalk sign says: made here, shared here.' },
   } },
-  // Prepared reference room; no world entry until the supermarket story and shop rules are implemented.
-  supermarket: { available: false, kind: 'supermarket', name: 'Village supermarket', objects: {
-    supermarket_checkout: { label: 'Checkout', role: 'checkout', stand: [5.6, 3.2], text: 'A place for our village harvest. The shopkeeper is planning the first shelves.' },
-    supermarket_fresh: { label: 'Fresh produce', role: 'bins', stand: [0, -3.5], text: 'Little baskets for colourful vegetables, with space for the name of the farm that grew them.' },
-    supermarket_sample: { label: 'Tasting table', role: 'sample', stand: [1.6, 3.5], text: 'A tiny taste can start a big conversation. What shall we make for the neighbours next?' },
+  supermarket: { kind: 'supermarket', name: 'Village supermarket', objects: {
+    supermarket_checkout: { label: 'Checkout', role: 'checkout', stand: [5.6, 3.2], panel: 'supermarket', siteArg: true },
+    supermarket_fresh: { label: 'Fresh produce', role: 'bins', stand: [0, -3.5], panel: 'supermarket', siteArg: true },
+    supermarket_sample: { label: 'Tasting table', role: 'sample', stand: [1.6, 3.5], panel: 'supermarket', siteArg: true },
   } },
 };
 export const facilityKind = (s, id) => id === 'barn' ? 'barn' : Object.keys(CIVIC_INTERIORS).find(k => CIVIC_INTERIORS[k].available !== false && CIVIC_INTERIORS[k].kind === s.placed[id]?.kind) ?? null;

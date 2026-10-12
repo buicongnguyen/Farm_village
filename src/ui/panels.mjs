@@ -70,7 +70,7 @@ export class Panels {
     if (!GOODS[d.good]) return;
     if (!this.helpReturn) this.helpReturn = { ...this.open, scroll: this.el.scrollTop, order: button?.closest('[data-order-id]')?.dataset.orderId };
     if (this.open?.kind === 'goodHelp') (this.helpTrail ??= []).push(this.open.arg);
-    this.show('goodHelp', { good: d.good, needed: Math.max(1, Number(d.needed) || 1) });
+    this.show('goodHelp', { good: d.good, needed: Math.max(1, Number(d.needed) || 1), shopRequest: d.shopRequest });
   }
   returnFromHelp() {
     const origin = this.helpReturn; this.helpReturn = null; this.helpTrail = [];
@@ -107,6 +107,12 @@ export class Panels {
     else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) showLandMemory(g); }
     else if (d.do === 'landMemory') showLandMemory(g);
     else if (d.do === 'contracts') this.show('contracts');
+    else if (d.do === 'supermarket' || d.do === 'shopMemory') this.show(d.do, d.id);
+    else if (d.do === 'shopBuild') { this.close(); this.onBuildKind?.('supermarket'); }
+    else if (['introduceSupermarket', 'restoreShopSection', 'prepareShopBasket', 'acceptShopBasket', 'cancelShopBasket', 'deliverShopBasket', 'discoverShopCard'].includes(d.do)) {
+      const result = g.do(d.do, { section: d.section, request: d.request });
+      if (result.ok && d.do === 'deliverShopBasket') this.hud?.toast(t('Basket delivered!'), 'good');
+    }
     else if (d.do === 'shops') this.show('shops', d.shop);
     else if (d.do === 'villageGrowth') this.show('villageGrowth');
     else if (d.do === 'growthSite') this.onGrowthSite?.(d.kind);

@@ -1,3 +1,4 @@
+import { KO_SUPERMARKET } from './ko-supermarket.mjs';
 // Korean edition. English keys and stable identity tokens are shared with every locale.
 import { KO_FEATURES } from './ko-features.mjs';
 import { KO_FISHING } from './ko-fishing.mjs';
@@ -1715,3 +1716,5 @@ Object.assign(KO, {
 });
 
 Object.assign(KO, KO_FEATURES, { "Could not load this language. Check your connection.": "이 언어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요." });
+
+Object.assign(KO, KO_SUPERMARKET);
