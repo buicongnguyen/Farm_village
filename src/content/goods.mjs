@@ -1,4 +1,5 @@
 // Crops, fruit, animals and recipes (ECONOMY.md section 2). `value` is the base price; `level` unlocks it.
+import { LUCKY_GOODS } from './surprises.mjs';
 import { MIN, HOUR, paced } from './economy.mjs';
 
 // Testing-time tuning (2026-10-10, the user's call): every crop earns at least 8 coins a minute per bed, the dear ones a
@@ -84,8 +85,10 @@ for (const c of Object.values(CROPS)) c.growMs = paced(c.growMs);
 for (const f of Object.values(FRUITS)) { f.firstMs = paced(f.firstMs); f.regrowMs = paced(f.regrowMs); }
 for (const a of Object.values(ANIMALS)) a.everyMs = paced(a.everyMs);
 for (const r of Object.values(RECIPES)) r.timeMs = paced(r.timeMs);
+// lucky goods (content/surprises.mjs): only surprises give them; no order, recipe or shop asks for them
 /** Every good the barn can hold: { id → { name, value, icon, kind } }. */
 export const GOODS = {
+  ...Object.fromEntries(Object.entries(LUCKY_GOODS).map(([id, x]) => [id, { ...x, kind: 'lucky', level: 2 }])),
   ...Object.fromEntries(Object.entries(CROPS).map(([id, c]) => [id, { name: c.name, value: c.value, icon: c.icon, kind: 'crop', level: c.level }])),
   ...Object.fromEntries(FISH_TABLE.map(f => [f.id, { name: f.name, value: f.value, icon: '🐟', kind: 'fish', level: 2 }])),
   ...Object.fromEntries(Object.entries(FRUITS).map(([id, f]) => [id, { name: f.name, value: f.value, icon: f.icon, kind: 'fruit', level: f.level }])),

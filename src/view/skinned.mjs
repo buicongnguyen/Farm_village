@@ -17,6 +17,9 @@ export const RIG_BASE = './assets/models/rigged/';
 // walk: the speed (m/s, at our size) the Walk clip is authored for, so feet do not slide. tint: clothes can be recoloured.
 export const RIGS = {
   hen:    { file: 'chicken', height: 0.95, walk: 0.95, bake: 'Idle' },
+  // rare hens (core/surprises.mjs): the same model, its baked colours repainted (PAINT below), so no new art file
+  hen_black:   { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'black' },
+  hen_rainbow: { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'rainbow' },
   cow:    { file: 'cow', height: 2.05, walk: 1.0, bake: 'Idle' },
   pig:    { file: 'pig', height: 1.1, walk: 1.0, bake: 'Idle' },
   goat:   { file: 'goat', height: 1.35, walk: 1.2, bake: 'Idle' },
@@ -47,6 +50,13 @@ const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);   // rigs may
 const rigs = new Map();          // name → Promise<Rig>
 const loaded = new Map();        // name → Rig, once ready
 
+/** Repaint a baked vertex colour [r, g, b] (0–1) of the chicken, given the vertex's height in the model (0 feet, 1 top).
+ *  The plumage is repainted; the red comb, the yellow beak and legs and the dark eyes keep their colour. */
+const plumage = ([r, g, b]) => !(r > 0.55 && g < 0.3 && b < 0.3) && !(r > 0.6 && g > 0.5 && b < 0.35) && Math.max(r, g, b) > 0.15;
+const PAINT = {
+  black: (c) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]; return [0.05 + l * 0.16, 0.05 + l * 0.17, 0.09 + l * 0.24]; },   // blue-black, shaded as the model is
+  rainbow: (c, t) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2], k = new THREE.Color().setHSL((0.98 - 0.86 * t + 1) % 1, 0.85, 0.34 + 0.4 * l); return [k.r, k.g, k.b]; },
+};
 /** Merge a rigged GLB's primitives into one skinned geometry with baked vertex colours, so one actor is one draw call. */
 function mergeRig(def, gltf) {
   const root = gltf.scene; root.updateMatrixWorld(true);
@@ -60,11 +70,15 @@ function mergeRig(def, gltf) {
     const g = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 3);
     const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), sl = new Float32Array(n).fill(slot);
     const P = src.attributes.position, N = src.attributes.normal, I = src.attributes.skinIndex, W = src.attributes.skinWeight;
+    const paint = PAINT[def.paint] ?? null; let low = Infinity, high = -Infinity;
+    if (paint) for (let i = 0; i < n; i++) { const y = P.getY(i); if (y < low) low = y; if (y > high) high = y; }
+    const span = high - low;
     for (let i = 0; i < n; i++) {
       pos[i * 3] = P.getX(i); pos[i * 3 + 1] = P.getY(i); pos[i * 3 + 2] = P.getZ(i);
       if (N) { nor[i * 3] = N.getX(i); nor[i * 3 + 1] = N.getY(i); nor[i * 3 + 2] = N.getZ(i); }
       const a = ao ? [ao.getX(i), ao.getY(i), ao.getZ(i)] : [1, 1, 1], c = slot ? [1, 1, 1] : [base.r, base.g, base.b];
       col[i * 3] = c[0] * a[0]; col[i * 3 + 1] = c[1] * a[1]; col[i * 3 + 2] = c[2] * a[2];
+      if (paint) { const [pr, pg, pb] = paint([col[i * 3], col[i * 3 + 1], col[i * 3 + 2]], span ? (P.getY(i) - low) / span : 0.5); col[i * 3] = pr; col[i * 3 + 1] = pg; col[i * 3 + 2] = pb; }
       for (let k = 0; k < 4; k++) { si[i * 4 + k] = I.getComponent(i, k); sw[i * 4 + k] = W.getComponent(i, k); }
     }
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));

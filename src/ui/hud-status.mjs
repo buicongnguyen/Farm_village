@@ -1,4 +1,5 @@
 // Read-only HUD facts. One chip per destination; order counts live on the order-board button.
+import { rushActive } from '../core/surprises.mjs';
 import { questsOf, ready } from '../core/quests.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { unread } from '../core/bonds.mjs';
@@ -31,6 +32,8 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   // Grandpa Oak waits to walk upriver (chapter 16); the valley company can be founded (chapter 17)
   if ((s.story?.chapter ?? 0) >= 15 && (s.upriver?.stops?.length ?? 0) < 3) rows.push({ act: 'upriver', icon: 'spring_water', label: 'Upriver', text: 'waiting', hot: true });
   if (!s.valley?.founded && (s.story?.chapter ?? 0) >= 16 && companyPlan(s).ok) rows.push({ act: 'valleyValue', icon: 'company', label: 'Valley company', text: 'ready', hot: true });
+  // a gold rush (core/surprises.mjs): the time left (a tap opens its panel)
+  if (rushActive(s, now)) rows.push({ act: 'goldrush', icon: 'ui:coin', label: 'Gold rush', ms: Math.max(0, s.surprises.rush.until - now), lit: true });
   // the valley fair runs (chapter 18): the time left (a tap opens the judging)
   if (fairActive(s, now)) rows.push({ act: 'fair', icon: 'ribbon_gold', label: 'Fair', ms: Math.max(0, s.fair.until - now), lit: true });
   // the evening report (chapter 10): offered once a day from six o'clock, when hands are hired and the day earned something

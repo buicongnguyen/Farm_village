@@ -5,6 +5,7 @@
 //   WISHES[personId] = [{ text, need: { kind, near: 'home' } }]
 //   LETTERS = [{ id, from, when, also?, after?: [letterId], text, reward? }]
 // useBondsData() swaps in fixtures (tests run before the story data lands).
+import { letterGift } from './surprises.mjs';
 import { HEART_SCENES, WISHES } from '../content/hearts.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { CHAPTERS } from '../content/story.mjs';
@@ -236,7 +237,7 @@ export const actions = {
     if (m.read) return { reward: {} };
     if (letterPrerequisite(s, id)) return ctx.fail('Read the earlier letter first');
     m.read = true;
-    const reward = grant(ctx, letter.reward);
+    const reward = grant(ctx, letter.reward); letterGift(ctx, id);   // two letters carry a gift no reward field can hold (core/surprises.mjs)
     ctx.emit('letterRead', { id, from: m.from, reward });
     return { reward };
   },

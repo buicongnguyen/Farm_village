@@ -1,6 +1,7 @@
 // Floating markers over things that want the player (PLAN-v0.3b): a bobbing gold coin over anything ready to collect
 // (ripe crops and fruit, eggs and milk, finished goods, the market truck's takings) and a red "!" over anything broken.
 // Two THREE.Points clouds, so every marker costs no more than one draw call each.
+import { rushActive } from '../core/surprises.mjs';
 import * as THREE from 'three';
 import { CELL } from '../content/world.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
@@ -10,7 +11,7 @@ import { readyCount } from '../core/production.mjs';
 import { isBroken } from '../core/working.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { truckCoins } from '../core/market.mjs';
-import { MAILBOX, POND_DOCK, SITES, RUINS, COOPERATIVE_BOARD, FAIR_BOARD, ALBRIGHT, QUAY, LOTS, PARCEL } from '../content/world.mjs';
+import { brookZ, MAILBOX, POND_DOCK, SITES, RUINS, COOPERATIVE_BOARD, FAIR_BOARD, ALBRIGHT, QUAY, LOTS, PARCEL } from '../content/world.mjs';
 import { currentStep, TAIL } from '../core/projects.mjs';
 import { buyableParcels } from '../core/build.mjs';
 
@@ -81,7 +82,8 @@ export class Marks {
     this.glint.material.color.set('#ffe9a8');   // a warm glint: gold light, not white
     this.backing = cloud(backingTexture()); this.backing.renderOrder = 19;
     this.story = cloud(storyTexture());
-    world.scene.add(this.backing, this.coin, this.alert, this.glint, this.story);
+    this.gold = cloud(this.glint.material.map); this.gold.material.blending = THREE.AdditiveBlending; this.gold.material.color.set('#ffd866');
+    world.scene.add(this.backing, this.coin, this.alert, this.glint, this.story, this.gold);
     world.onFrame?.((dt, now) => this.frame(dt, now));
   }
   /** Where every marker belongs right now: { coin: [[x, y, z]], alert: [...] } (also read by the tests). */
@@ -105,10 +107,12 @@ export class Marks {
     if ((s.fishing?.coins ?? 0) > 0 || (s.fishing?.line && s.fishing.line.doneAt <= now)) coin.push([(POND_DOCK.x + 0.5) * CELL, 2.2, (POND_DOCK.z + 0.5) * CELL]);   // the village pond
     if (rentWaiting(s, now) >= 10) coin.push([(MAILBOX.x + 0.5) * CELL, 2.2, (MAILBOX.z + 0.5) * CELL]);   // rent waiting in the mailbox
     const spot = storySpot(s);
-    return { coin, alert, story: spot ? [spot] : [] };
+    // a gold rush: glints all along the brook (core/surprises.mjs)
+    const gold = rushActive(s, now) ? Array.from({ length: 90 }, (_, i) => { const x = 10 + i * 1.25; return [(x + 0.5) * CELL, 0.5, (brookZ(Math.round(x)) + ((i * 7) % 5) * 0.5 - 1 + 0.5) * CELL]; }) : [];
+    return { coin, alert, story: spot ? [spot] : [], gold };
   }
   frame(dt, now) {
-    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = this.backing.visible = this.story.visible = false; return; }   // (the lighting checks measure the world alone)
+    if (this.hidden) { this.coin.visible = this.alert.visible = this.glint.visible = this.backing.visible = this.story.visible = this.gold.visible = false; return; }   // (the lighting checks measure the world alone)
     this.acc += dt; if (this.acc > 0.4 || !this.list.coin.length && !this.list.alert.length && this.acc > 0.1) { this.acc = 0; this.list = this.collect(); }
     const t = document.body.classList.contains('reduced-motion') ? 0 : performance.now() / 1000;
     const dim = 1 - 0.5 * (this.world.daylight?.nightness ?? 0);   // markers soften at night
@@ -120,6 +124,10 @@ export class Marks {
       pts.geometry.attributes.position.needsUpdate = true; pts.geometry.setDrawRange(0, n); pts.visible = n > 0; pts.userData.n = n;
       pts.material.size = SIZE * this.world.renderer.getPixelRatio() * (key === 'coin' ? 1 + 0.1 * Math.sin(t * 6) : key === 'story' ? 7 + 0.5 * Math.sin(t * 4) : 1);
     }
+    { const gp = this.gold, list = this.list.gold ?? [], arr = gp.geometry.attributes.position.array, n = Math.min(CAP, list.length);
+      for (let i = 0; i < n; i++) { arr[i * 3] = list[i][0]; arr[i * 3 + 1] = list[i][1]; arr[i * 3 + 2] = list[i][2]; }
+      gp.geometry.attributes.position.needsUpdate = true; gp.geometry.setDrawRange(0, n); gp.visible = n > 0;
+      gp.material.size = SIZE * 4.2 * this.world.renderer.getPixelRatio() * Math.max(0.35, 0.7 + 0.3 * Math.sin(t * 5.5)); }
     // the backing disc follows every coin (same bob), a little bigger
     { const bk = this.backing, ba = bk.geometry.attributes.position.array, bn = Math.min(CAP, this.list.coin.length);
       for (let i = 0; i < bn; i++) { const [x, y, z] = this.list.coin[i]; ba[i * 3] = x; ba[i * 3 + 1] = y + 0.18 * Math.sin(t * 3 + i * 1.7); ba[i * 3 + 2] = z; }

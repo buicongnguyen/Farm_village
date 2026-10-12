@@ -1,5 +1,14 @@
 # Changelog
 
+## Surprises: lucky finds and events — 2026-10-12
+
+Things that happen to the farm by themselves. They only add, every roll is seeded and has a ceiling, and each is kept in "Lucky finds" at the foot of the farm notebook (docs/plan/96-surprises.md).
+
+- **Rare hens**: after a farm's first four, a hen bought may be black (1 in 8, certain by the twelfth) or rainbow (once, by the thirtieth). They look it in the pen and lay Black eggs (40) and Rainbow eggs (120).
+- **The herd grows**: a goat walks out of the forest and stays; two cows have a calf, small for its first ten minutes. Two extra animals per barn at most, also when it is full.
+- **Gold rush**: now and then, with a rented cottage, the brook carries gold for five minutes: cottage rent is doubled, the brook glints, and it can be panned twelve times.
+- **Two gifts by letter**: after an hour of play an uncle's house in town pays rent into the mailbox; the hundredth truck trip brings a truck from the company (coins when the fleet is full).
+
 ## Camera tilt — 2026-10-12
 
 - Settings has a Camera tilt slider: from a low look across the valley (28°) to nearly straight down (68°). The view follows the slider while it is dragged; Reset returns to the usual 54°. Q and E still turn the view by a quarter.
