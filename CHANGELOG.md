@@ -2,7 +2,7 @@
 
 ## The farm notebook: six things to find out — 2026-10-12
 
-Real growing techniques, each tried once when the farm has what it takes, each changing one rule for good. The notebook is in Village projects; a pill shows when something can be tried.
+Real growing techniques, each tried once when the farm has what it takes, each changing one rule for good. The notebook is in Village projects; a notice says once when something can be tried.
 
 - **Wake the old seeds** (seed soaking, level 2): every crop grows 15% faster.
 - **The stone in the fruit crate** (level 4): a new fruit tree, the Mango; the first one is in storage.

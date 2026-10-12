@@ -13,7 +13,9 @@ export function normalizeKnowhow(s) {
   const raw = s.knowhow && typeof s.knowhow === 'object' && !Array.isArray(s.knowhow) ? s.knowhow : {}, known = {}, saplings = {};
   for (const t of TRICKS) if (stamp(raw.known?.[t.id])) known[t.id] = raw.known[t.id];
   for (const [kind, n] of Object.entries(raw.saplings && typeof raw.saplings === 'object' ? raw.saplings : {})) if (BUILDINGS[kind]?.fruit && Number.isSafeInteger(n) && n > 0) saplings[kind] = Math.min(n, 99);
-  return { known, saplings };
+  // `told`: the tricks whose "you can try this now" notice was shown (once each)
+  const told = TRICKS.filter(t => raw.told?.[t.id] === true || known[t.id] != null).map(t => t.id);
+  return { known, saplings, ...(told.length ? { told: Object.fromEntries(told.map(id => [id, true])) } : {}) };
 }
 export const knows = (s, id) => stamp(s.knowhow?.known?.[id]);
 const picked = s => s.stats?.picked ?? 0;
@@ -72,6 +74,16 @@ export function takeSapling(s, kind) {
   return true;
 }
 
+/** Called by tick(): the first time a trick can be tried, a notice says so (once for each; no pill in the status row). */
+export function tickKnowhow(ctx) {
+  const { s } = ctx; if (!TRICKS.some(t => s.level >= t.level && !knows(s, t.id) && !s.knowhow?.told?.[t.id])) return;
+  for (const { trick, state } of knowhowRows(s)) {
+    if (state !== 'ready' || s.knowhow?.told?.[trick.id]) continue;
+    const k = (s.knowhow = normalizeKnowhow(s)); (k.told ??= {})[trick.id] = true;
+    ctx.emit('trickReady', { id: trick.id, name: trick.name });
+  }
+}
+
 export const actions = {
   /** Try a trick from the notebook: { id }. */
   tryTrick(ctx, { id } = {}) {
@@ -82,7 +94,7 @@ export const actions = {
     const k = (s.knowhow = normalizeKnowhow(s));
     if (id === 'soak') barn.take(s, { [soakCrop(s)]: KNOWHOW.soak.cost });
     if (id === 'stone') { s.coins -= KNOWHOW.stone.coins; s.stored = s.stored ?? {}; s.stored.mango_tree = (s.stored.mango_tree ?? 0) + 1; k.saplings.mango_tree = (k.saplings.mango_tree ?? 0) + 1; }
-    k.known[id] = now;
+    k.known[id] = now; (k.told ??= {})[id] = true;
     ctx.emit('trickFound', { id, name: trick.name });
     return { id };
   },

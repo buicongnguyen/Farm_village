@@ -34,7 +34,7 @@ test('the notebook: a trick is hidden below its level, waits for what it needs, 
   assert.equal(s.barn.items.wheat, KNOWHOW.soak.need - KNOWHOW.soak.cost); assert.ok(knows(s, 'soak')); assert.equal(state(s, 'soak'), 'known');
   refuse(s, 'tryTrick', { id: 'soak' });
   assert.deepEqual(unpack(pack(s)).knowhow.known, s.knowhow.known, 'it survives a save');
-  assert.deepEqual(normalizeKnowhow({ knowhow: { known: { soak: 5, bogus: 6, graft: 'x' }, saplings: { apple_tree: 2, coop: 3, peach_tree: -1 } } }), { known: { soak: 5 }, saplings: { apple_tree: 2 } });
+  assert.deepEqual(normalizeKnowhow({ knowhow: { known: { soak: 5, bogus: 6, graft: 'x' }, saplings: { apple_tree: 2, coop: 3, peach_tree: -1 }, told: { stone: true, bogus: true } } }), { known: { soak: 5 }, saplings: { apple_tree: 2 }, told: { soak: true, stone: true } });
 });
 
 test('soaked seed and good neighbours: crops take less time, and a bed beside its partner less still', () => {
@@ -93,4 +93,13 @@ test('two trees in one: an apple tree takes a mango branch and bears Mango apple
 test('every trick has its words, an icon that exists and a level; they open one after another', () => {
   for (const t of TRICKS) for (const key of ['name', 'hint', 'need', 'how', 'found', 'effect', 'fact']) assert.ok(typeof t[key] === 'string' && t[key].length > 8, `${t.id}.${key}`);
   assert.deepEqual(TRICKS.map(t => t.level), [...TRICKS.map(t => t.level)].sort((a, b) => a - b)); assert.equal(new Set(TRICKS.map(t => t.level)).size, TRICKS.length);
+});
+
+test('a notice says once when something can be tried; nothing is said for what is known or below the farm’s level', () => {
+  const s = farm(); s.level = 2; s.barn.items = {}; s.knowhow = { known: {}, saplings: {} };
+  const said = now => tick(s, now).events.filter(e => e.type === 'trickReady').map(e => e.id);
+  assert.deepEqual(said(T0 + 1000), []); s.barn.items.wheat = KNOWHOW.soak.need;
+  assert.deepEqual(said(T0 + 2000), ['soak']); assert.deepEqual(said(T0 + 3000), [], 'said twice'); assert.equal(unpack(pack(s)).knowhow.told.soak, true);
+  s.level = 8; s.stats.picked = 100; assert.deepEqual(said(T0 + 4000).sort(), ['stone', 'thin']);
+  must(s, 'tryTrick', { id: 'stone' }, T0 + 5000); assert.deepEqual(said(T0 + 6000), []);
 });

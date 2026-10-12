@@ -945,8 +945,6 @@ export const KO_FISHING = {
   '{name} upgraded: it gives ×{n} now': '{name} 업그레이드 완료: 이제 ×{n}',
   'Basket': '바구니',
   'Farm notebook': '농장 수첩',
-  'Notebook': '수첩',
-  'try it': '해 보기',
   'Try it': '해 보기',
   'To try it': '해 보려면',
   'Something to find out later': '나중에 알아낼 것',
@@ -1012,4 +1010,5 @@ export const KO_FISHING = {
   'An apple tree picked 3 times can take a mango branch (200 coins). It then bears Mango apples, which sell for much more.': '3번 수확한 사과나무에 망고 가지를 붙일 수 있어요(200코인). 그러면 훨씬 비싸게 팔리는 망고사과가 열려요.',
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': '실제로 한 줄기에 여러 품종을 접붙이기도 해요(‘과일 샐러드 나무’). 다만 진짜 과수원에서는 가까운 친척끼리만 붙어요. 망고사과는 할로우브룩만의 과일이에요.',
   'Graft': '접붙이기',
+  'Something to try in your farm notebook: {name}': '농장 수첩에 해 볼 것이 생겼어요: {name}',
 };

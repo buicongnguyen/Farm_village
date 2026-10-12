@@ -945,8 +945,6 @@ export const JA_FISHING = {
   '{name} upgraded: it gives ×{n} now': '{name}をアップグレードしました：これからは×{n}',
   'Basket': 'かご',
   'Farm notebook': '農場ノート',
-  'Notebook': 'ノート',
-  'try it': 'ためす',
   'Try it': 'ためしてみる',
   'To try it': 'ためすには',
   'Something to find out later': 'あとでわかること',
@@ -1012,4 +1010,5 @@ export const JA_FISHING = {
   'An apple tree picked 3 times can take a mango branch (200 coins). It then bears Mango apples, which sell for much more.': '3回収穫したりんごの木にマンゴーの枝をつげます（200コイン）。するとずっと高く売れるマンゴーりんごがなります。',
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': '栽培家は本当にひとつの幹にいくつもの品種をつぎます（「フルーツサラダの木」）。ただし本物の果樹園では近い仲間どうししかつきません。マンゴーりんごはホロウブルックだけのものです。',
   'Graft': '接ぎ木',
+  'Something to try in your farm notebook: {name}': '農場ノートにためせることがあります：{name}',
 };

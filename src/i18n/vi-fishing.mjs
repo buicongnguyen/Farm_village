@@ -945,8 +945,6 @@ export const VI_FISHING = {
   '{name} upgraded: it gives ×{n} now': 'Đã nâng cấp {name}: giờ cho ×{n}',
   'Basket': 'Giỏ hàng',
   'Farm notebook': 'Sổ tay nhà nông',
-  'Notebook': 'Sổ tay',
-  'try it': 'thử xem',
   'Try it': 'Thử xem',
   'To try it': 'Muốn thử thì',
   'Something to find out later': 'Một điều để khám phá sau',
@@ -1012,4 +1010,5 @@ export const VI_FISHING = {
   'An apple tree picked 3 times can take a mango branch (200 coins). It then bears Mango apples, which sell for much more.': 'Cây táo đã hái 3 lần có thể ghép một cành xoài (200 xu). Sau đó cây ra Táo xoài, bán được giá cao hơn nhiều.',
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': 'Người làm vườn thật sự có ghép nhiều giống lên một thân (gọi là "cây trái cây thập cẩm"), nhưng ngoài đời chỉ những loài họ hàng gần mới ghép được. Táo xoài là của riêng Thung Suối.',
   'Graft': 'Ghép cành',
+  'Something to try in your farm notebook: {name}': 'Có điều để thử trong sổ tay nhà nông: {name}',
 };
