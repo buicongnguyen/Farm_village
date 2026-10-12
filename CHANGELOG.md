@@ -1,5 +1,9 @@
 # Changelog
 
+## Glossier icons — 2026-10-12
+
+- The 140 pictures of goods, buildings, animals and found objects are juicier: richer colour, light from the upper left, a wet highlight and a soft shadow under each (art/blender/icon_gloss.py, a pass over our own renders). Faces and interface symbols are unchanged.
+
 ## Ready badges — 2026-10-12
 
 - What is ready shows itself: a round badge with the product's own picture floats over a ripe bed, a ripe tree, an animal home and a workshop (wheat over wheat, an egg over the coop). The gold coin is kept for money that waits: rent, the trucks' takings, the stalls, the pond's fees.
