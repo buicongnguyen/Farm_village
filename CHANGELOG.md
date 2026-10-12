@@ -1,5 +1,9 @@
 # Changelog
 
+## Fruit trees at the usual zoom — 2026-10-13
+
+- The fuller fruit trees now look right from the usual, zoomed-out view too. Beyond a certain zoom the game drew an automatically simplified copy, which turned the round crown into shards and the fruit into slivers; each fruit tree has its own middle level now (six round puffs, fewer and bigger fruit, about 640 to 720 triangles).
+
 ## Fewer repairs, smaller far badges, late crops — 2026-10-12
 
 - Buildings wear much more slowly: worn after a day of play and shabby after two (it was 3 and 9 hours).
