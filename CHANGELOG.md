@@ -1,5 +1,10 @@
 # Changelog
 
+## Fuller fruit trees — 2026-10-12
+
+- The apple, peach, orange, cherry and mango trees have a fuller, layered crown, dark below and light on top, and their fruit sits on the crown where it shows. About 1,000 to 1,150 triangles each (was about 650); the scenery's trees are unchanged.
+- The Black egg and the Rainbow egg have their own pictures.
+
 ## Glossier icons — 2026-10-12
 
 - The 140 pictures of goods, buildings, animals and found objects are juicier: richer colour, light from the upper left, a wet highlight and a soft shadow under each (art/blender/icon_gloss.py, a pass over our own renders). Faces and interface symbols are unchanged.
