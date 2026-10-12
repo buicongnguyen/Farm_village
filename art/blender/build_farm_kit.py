@@ -2764,6 +2764,13 @@ def build(group):
     objs = []
     for name, parts, tint in group:
         o = vc_join(parts, name, tint); objs.append(o)
+        # a piece keeps its own name: a part of a later piece may be called the same ('bench', 'lamp'), and Blender would
+        # export this one as 'bench.005' (found when the kit was rebuilt on 2026-10-12: the game looks pieces up by name)
+        if o.name != name:
+            other = bpy.data.objects.get(name)
+            if other is not None and other is not o: other.name = name + '_part'
+            o.name = name
+        assert o.name == name, f'{name} was exported as {o.name}'
         d = o.dimensions
         print(f'{name}: {triangles(o)} triangles, {d.x:.2f} x {d.z:.2f} x {d.y:.2f} m')
     return objs
