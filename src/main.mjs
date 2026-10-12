@@ -224,6 +224,7 @@ panels = new Panels(app, game, hud, {
 panels.profile = profile;
 hud.profile = profile; hud.update();
 radial = new Radial(app, { game, world, panels, hud });
+panels.onTilt = deg => world.cam.tilt(deg);   // the slider is followed while it is dragged; letting go saves it
 panels.onEnterInterior = id => radial.explore(false, id);
 radial.fx = new Fx(app, { game, world });
 new Bonds({ game, hud });
@@ -372,6 +373,7 @@ function applySettings() {
   document.body.dataset.text = String(st.textSize);
   document.body.classList.toggle('reduced-motion', !!st.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches);
   world.setQuality(st.quality);
+  world.cam.tilt(st.cameraTilt);   // the tilt chosen in Settings (the default when none was)
 }
 
 world.start();

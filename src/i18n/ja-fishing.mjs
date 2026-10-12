@@ -1011,4 +1011,7 @@ export const JA_FISHING = {
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': '栽培家は本当にひとつの幹にいくつもの品種をつぎます（「フルーツサラダの木」）。ただし本物の果樹園では近い仲間どうししかつきません。マンゴーりんごはホロウブルックだけのものです。',
   'Graft': '接ぎ木',
   'Something to try in your farm notebook: {name}': '農場ノートにためせることがあります：{name}',
+  'Camera tilt': 'カメラのかたむき',
+  'Reset': '元にもどす',
+  'Slide left for a low look across the valley, right to look straight down. Q and E turn the view.': '左にすべらせると谷を低く見わたし、右にすべらせると真上から見下ろします。QとEで向きを変えます。',
 };

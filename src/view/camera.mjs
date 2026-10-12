@@ -5,7 +5,11 @@
 // panPixels(), zoom() and lookAt() stay immediate and hard-clamped, so scripts and tests land exactly where they ask.
 import * as THREE from 'three';
 
-export const PITCH = 0.95;               // about 54° down
+export const PITCH = 0.95;               // about 54° down: the view the game was drawn for, and the default
+/** The tilt the player may choose in Settings, in degrees above the ground: from a low, side-on look across the valley to
+ *  nearly straight down. The default is PITCH. */
+export const TILT = { min: 28, max: 68, default: Math.round(PITCH * 180 / Math.PI) };
+export const clampTilt = deg => Number.isFinite(Number(deg)) ? Math.min(TILT.max, Math.max(TILT.min, Number(deg))) : TILT.default;
 export const SPAN = { min: 24, max: 260, mid: 40, far: 90 };
 const RUBBER = 0.35;                     // how far past an edge a drag may go, as a share of the view
 const easeInOut = k => k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
@@ -13,7 +17,7 @@ const easeInOut = k => k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
 export class GameCamera {
   constructor({ x = 0, z = 0, span = 60, bounds = { x0: 0, z0: 0, x1: 256, z1: 256 } } = {}) {
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 1000);
-    Object.assign(this, { x, z, span, yaw: Math.PI / 4, bounds, listeners: new Set(), vx: 0, vz: 0, flight: null, soft: false, raf: 0, dragging: false });
+    Object.assign(this, { x, z, span, yaw: Math.PI / 4, pitch: PITCH, bounds, listeners: new Set(), vx: 0, vz: 0, flight: null, soft: false, raf: 0, dragging: false });
     this.update();
   }
   /** 0 = full models, 1 = simplified models, 2 = stand-ins (TECH-PLAN 6). */
@@ -34,17 +38,19 @@ export class GameCamera {
     const w = globalThis.innerWidth ?? 1280, h = globalThis.innerHeight ?? 800, aspect = w / h;
     const vw = aspect >= 1 ? span : span * aspect, vh = vw / aspect, c = this.camera, d = 300;
     Object.assign(c, { left: -vw / 2, right: vw / 2, top: vh / 2, bottom: -vh / 2 }); c.updateProjectionMatrix();
-    c.position.set(x + Math.sin(this.yaw) * Math.cos(PITCH) * d, Math.sin(PITCH) * d, z + Math.cos(this.yaw) * Math.cos(PITCH) * d);
+    c.position.set(x + Math.sin(this.yaw) * Math.cos(this.pitch) * d, Math.sin(this.pitch) * d, z + Math.cos(this.yaw) * Math.cos(this.pitch) * d);
     c.lookAt(x, 0, z);
     for (const f of this.listeners) f(this);
   }
   /** Ground metres moved by a screen drag of (dx, dy) pixels. */
   pixelsToGround(dx, dy) {
-    const mpp = (this.camera.right - this.camera.left) / (globalThis.innerWidth ?? 1280), s = Math.sin(this.yaw), c = Math.cos(this.yaw), k = 1 / Math.sin(PITCH);
+    const mpp = (this.camera.right - this.camera.left) / (globalThis.innerWidth ?? 1280), s = Math.sin(this.yaw), c = Math.cos(this.yaw), k = 1 / Math.sin(this.pitch);
     return [-(dx * c + dy * s * k) * mpp, -(-dx * s + dy * c * k) * mpp];
   }
   panPixels(dx, dy) { const [gx, gz] = this.pixelsToGround(dx, dy); this.stop(); this.soft = false; this.x += gx; this.z += gz; this.update(); }
   zoom(factor) { this.stop(); this.soft = false; this.span *= factor; this.update(); }
+  /** Tilt the view: degrees above the ground (TILT), or nothing for the default. What is looked at stays in the middle. */
+  tilt(deg) { const p = deg == null ? PITCH : clampTilt(deg) === TILT.default ? PITCH : clampTilt(deg) * Math.PI / 180; if (p === this.pitch) return; this.pitch = p; this.update(); }
   turn(steps = 1) { this.stop(); this.yaw += steps * Math.PI / 2; this.update(); }
   lookAt(x, z, span = this.span) { this.stop(); this.soft = false; Object.assign(this, { x, z, span }); this.update(); }
   /** Ease the view to (x, z) and a span over ms (the guide and notifications). Resolves when it arrives or is cut short. */

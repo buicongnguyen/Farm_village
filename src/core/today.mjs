@@ -58,6 +58,8 @@ export const actions = {
   setting(ctx, { key, value }) {
     if (key === 'playerName') { const v = String(value ?? '').replace(/[<>"`\&]/g, '').trim().slice(0, 12); ctx.s.settings.playerName = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     const ok = { playerColor: PLAYER_COLORS, playerBody: ['man', 'woman'], daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
+    // the camera's tilt, in degrees (view/camera.mjs TILT; the slider sends hundredths like the volumes)
+    if (key === 'cameraTilt') { const v = Math.round(Number(value) * 100); if (!(v >= 28 && v <= 68)) return ctx.fail('Unknown setting'); ctx.s.settings.cameraTilt = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
     const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
     if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');
