@@ -1,5 +1,11 @@
 # Changelog
 
+## Fewer repairs, smaller far badges, late crops — 2026-10-12
+
+- Buildings wear much more slowly: worn after a day of play and shabby after two (it was 3 and 9 hours).
+- Ready badges shrink as the view is zoomed out, so a far view is not covered by them.
+- A farm that already grows tomato, potato, cabbage, onion or chili no longer throws an error while their models load: carrot leaves stand in for that moment.
+
 ## Fuller fruit trees — 2026-10-12
 
 - The apple, peach, orange, cherry and mango trees have a fuller, layered crown, dark below and light on top, and their fruit sits on the crown where it shows. About 1,000 to 1,150 triangles each (was about 650); the scenery's trees are unchanged.

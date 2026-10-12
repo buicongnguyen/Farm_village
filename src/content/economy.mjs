@@ -25,7 +25,8 @@ export const REPAIR = {
   worn: { share: 0.08, min: 5 },                           // wear level 1; level 2 costs half as much again
   road: 40, house: 400, helpMs: paced(45_000),
 };
-export const WEAR = { ms: [3 * HOUR, 9 * HOUR], rent: 0.05, charm: 1, tickCapMs: 2 * MIN };   // play time to "worn" and "shabby"; one tick never counts more than tickCapMs
+// 2026-10-12 (the owner: "the player has to fix things quite frequently"): a day of play to worn and two to shabby; it was 3 and 9 hours.
+export const WEAR = { ms: [DAY, 2 * DAY], rent: 0.05, charm: 1, tickCapMs: 2 * MIN };   // play time to "worn" and "shabby"; one tick never counts more than tickCapMs
 // The farmhouse (D4): a one-floor home that can be upgraded. Each level adds barn room.
 // Ten levels of comfort (v0.5). Each adds barn room; the house itself grows at 4 and 7 and the garden gains something
 // at every level (content/world.mjs HOME_GARDEN).
