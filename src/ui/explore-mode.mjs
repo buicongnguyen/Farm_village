@@ -1,7 +1,10 @@
 import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
-import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, roomAtLevel } from '../content/explore.mjs';
+import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, HOME_THINGS, roomAtLevel } from '../content/explore.mjs';
+import { wardrobe, hatOf } from '../content/wardrobe.mjs';
+import { wornRig } from '../view/skinned.mjs';
+import { GOODS } from '../content/goods.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
 import { FISH_TABLE } from '../content/goods.mjs';
 import { LETTERS } from '../content/letters.mjs';
@@ -23,7 +26,8 @@ import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
 
 const instances = new WeakMap();
-const HOME_LABELS = { farmhouse_sofa: 'Sofa', farmhouse_memory_shelf: 'Memory shelf', farmhouse_kitchen: 'Tea', farmhouse_desk: 'Journal', farmhouse_table: 'Plan the day', farmhouse_wardrobe: 'Wardrobe', farmhouse_exit: 'Go outside' };
+const HOME_LABELS = { farmhouse_sofa: 'Sofa', farmhouse_memory_shelf: 'Memory shelf', farmhouse_kitchen: 'Tea', farmhouse_desk: 'Journal', farmhouse_table: 'Plan the day', farmhouse_wardrobe: 'Wardrobe', farmhouse_exit: 'Go outside',
+  ...Object.fromEntries(Object.values(HOME_THINGS).map(th => [`farmhouse_${th.id}`, th.label])) };
 const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const button = (action, text, cls = '', disabled = false) => `<button type="button" class="btn ${cls}" data-explore="${action}" ${disabled ? 'disabled' : ''}>${esc(t(text))}</button>`;
 const editing = e => e.isComposing || e.target?.closest?.('input, textarea, select, [contenteditable="true"]');
@@ -106,7 +110,7 @@ class ExploreMode {
     this.world.cam.stop(); this.savedCamera = { x: this.world.cam.x, z: this.world.cam.z, span: this.world.cam.span };
     document.body.classList.add('explore-active'); this.el.hidden = false; this.render();
     try {
-      const body = this.state.settings.playerBody === 'woman' ? 'woman' : 'man';
+      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', hatOf(this.state));
       const assets = await loadHomeRoom(body, this.kind);
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
@@ -322,11 +326,20 @@ class ExploreMode {
       this.render(); return;
     }
     if (action === 'journal') { this.card = null; this.clear(); this.panels.show('quests'); this.render(); return; }
-    if (action.startsWith('shirt:')) {
-      const value = action.slice(6);
-      if (this.game.do('setting', { key: 'playerColor', value }).ok && this.room?.player) {   // the room's own actor wears it at once
-        this.room.player.tint = { ...this.room.player.tint, top: value };
-        for (const actor of this.room.cast.actors) actor.uniforms?.uTop.value.set(value);
+    if (action.startsWith('shirt:') || action.startsWith('hat:') || action.startsWith('look:')) {   // the wardrobe: your own shirt and hat, or a whole costume
+      const [kind, value] = action.split(/:(.*)/), set = (key, v) => this.game.do('setting', { key, value: v });
+      const r = kind === 'look' ? set('playerLook', value) : kind === 'hat' ? (set('playerLook', ''), set('playerHat', value)) : (set('playerLook', ''), set('playerColor', value));
+      this.said = r.ok ? null : t(r.reason);
+      this.room?.dress(this.state.settings).catch(() => {});   // the room's own actor wears it at once
+      this.render(); return;
+    }
+    if (action.startsWith('tab:')) { this.wardTab = action.slice(4); this.render(); return; }
+    if (action.startsWith('use:') || action.startsWith('more:')) {
+      const id = action.split(':')[1], r = this.game.do('useAtHome', { id, extra: action.startsWith('more:') });
+      if (!r.ok) this.said = t(r.reason);
+      else {
+        const guest = r.guest ? this.radial.people?.nameOf({ id: r.guest }) ?? r.guest : null;
+        this.said = [t(r.line), r.finished ? (guest ? t('The scarf is finished! You give it to {name}. A heart grows.', { name: guest }) : t('The scarf is finished! It goes in the gift drawer.')) : '', r.xp ? t('+{xp} XP', { xp: r.xp }) : ''].filter(Boolean).join(' ');
       }
       this.render(); return;
     }
@@ -345,6 +358,7 @@ class ExploreMode {
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
     else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; }
     else if (id === 'farmhouse_memory_shelf' && this.game.do('readHomeMemory').ok) this.card = 'memory';
+    else if (HOME_OBJECTS[id]?.thing) { const th = HOME_THINGS[HOME_OBJECTS[id].thing]; this.said = null; if (th.panel) this.panels.show(th.panel); else this.card = th.card ?? th.id; }
     this.render();
   }
   syncScene() {
@@ -415,6 +429,8 @@ class ExploreMode {
     const shown = [], toolbarBottom = this.el.querySelector('.explore-side')?.getBoundingClientRect().bottom ?? 122;
     for (const o of this.session.room.interactions) {
       const pin = this.pins.get(o.id)?.button; if (!pin) continue;
+      // on a phone the whole house is a hand wide: only the six main things are named there (the rest when you follow your character)
+      if (HOME_OBJECTS[o.id]?.thing && !this.kind && innerWidth < 600 && this.room.view === 'whole') { pin.hidden = true; continue; }
       // Hidden labels have no measured width. Reveal for layout before deciding which ones fit.
       pin.hidden = false;
       const p = this.room.project(o.focus), width = pin.offsetWidth, height = pin.offsetHeight;
@@ -440,7 +456,7 @@ class ExploreMode {
     let card = '';
     if (this.kind && this.objects[this.card]?.text) card = `<h2>${esc(t(this.objects[this.card].label))}</h2><p>${esc(t(this.objects[this.card].text))}</p>${button('back', 'Back', 'ghost')}`;
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
-    const wait = id => { const ms = homeCooldown(this.state, id, this.game.now); return ms > 0 ? `${Math.floor(ms / 60000)}:${String(Math.ceil(ms / 1000) % 60).padStart(2, '0')}` : ''; };
+    const wait = id => { const ms = homeCooldown(this.state, id, this.game.now); const sec = Math.ceil(ms / 1000); return ms > 0 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : ''; };
     const timed = (action, id, text) => wait(id) ? `<p role="status" data-wait="${id}">${esc(t('Ready again in {time}', { time: wait(id) }))}</p>` : button(action, text, 'primary');
     const said = this.said ? `<p role="status"><b>${esc(this.said)}</b></p>` : '';
     if (this.card === 'kitchen') card = `<h2>${esc(t('The kitchen'))}</h2><p>${esc(t('The kettle sings and the recipe book lies open. A pot of tea is best shared.'))}</p>${said}${timed('tea', 'tea', 'Brew tea')}${button('back', 'Back', 'ghost')}`;
@@ -453,10 +469,27 @@ class ExploreMode {
         [fillable(st), 'Orders you can fill now: {count}'], [unread(st), 'Unread letters: {count}']].filter(([n]) => n > 0);
       card = `<h2>${esc(t('The day on the table'))}</h2>${rows.length ? `<ul>${rows.map(([n, text]) => `<li>${esc(t(text, { count: n }))}</li>`).join('')}</ul>` : `<p>${esc(t('Everything is in hand. Enjoy the quiet.'))}</p>`}${button('close', 'Farm view', 'primary')}${button('back', 'Back', 'ghost')}`;
     }
-    if (this.card === 'wardrobe') card = `<h2>${esc(t('The wardrobe'))}</h2><p>${esc(t('Pick a shirt for today.'))}</p><div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${(this.state.settings.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>${button('back', 'Back', 'ghost')}`;
+    if (this.card === 'wardrobe') {   // three short rows, one at a time, so your character stays in view while you try things on
+      const st = this.state.settings, w = wardrobe(this.state), tab = ['shirt', 'hat', 'look'].includes(this.wardTab) ? this.wardTab : 'shirt';
+      const tabs = [['shirt', 'Shirt'], ['hat', 'Hats'], ['look', 'Costumes']].map(([id, name]) => `<button type="button" class="tab${tab === id ? ' on' : ''}" data-explore="tab:${id}">${esc(t(name))}</button>`).join('');
+      const piece = (action, o, on, hat) => `<button type="button" class="wear${on ? ' on' : ''}${o.open ? '' : ' locked'}" data-explore="${action}:${o.id}" ${o.open ? '' : 'disabled'} title="${esc(t(o.name))}"><img src="./assets/icons/wear/${hat}.webp" alt="" loading="lazy" width="48" height="48"><span>${esc(o.open ? t(o.name) : t('Level {level}', { level: o.level }))}</span></button>`;
+      const none = (action, on) => `<button type="button" class="wear none${on ? ' on' : ''}" data-explore="${action}:"><i></i><span>${esc(t('None'))}</span></button>`;
+      const row = tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
+        : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
+          : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.hat)).join('')}</div>`;
+      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
+    }
+    const thing = this.kind ? null : HOME_THINGS[this.card];
+    if (thing) {
+      const e = exploreState(this.state), count = thing.count ? `<p class="explore-note">${esc(t({ paintings: 'Paintings so far: {count}', rows: 'Rows knitted: {count}' }[thing.count], { count: e.made[thing.count] }))}</p>` : '';
+      const stock = thing.shows ? thing.shows.map(g => [g, this.state.barn?.items?.[g] ?? 0]).filter(([, n]) => n > 0) : null;
+      const inside = stock ? `<p>${esc(stock.length ? stock.map(([g, n]) => `${t(GOODS[g]?.name ?? g)} ${n}`).join(' · ') : t('Nearly empty. Time to visit the hens.'))}</p>` : '';
+      const use = !thing.verb || stock ? '' : thing.cooldownMs ? timed(`use:${thing.id}`, thing.id, thing.verb) : button(`use:${thing.id}`, thing.verb, 'primary');
+      card = `<h2>${esc(t(thing.name))}</h2><p>${esc(t(thing.intro))}</p>${inside}${said}${use}${thing.extra ? button(`more:${thing.id}`, thing.extra.verb, 'ghost') : ''}${count}${button('back', 'Back', 'ghost')}`;
+    }
     if (this.card === 'memory') {   // the collection log: how much of the valley you have found so far
       const st = this.state, fish = FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length, read = (st.mail ?? []).filter(m => m.read && LETTERS.some(l => l.id === m.id)).length;
-      const friends = Object.values(st.people ?? {}).filter(p => (p.hearts ?? 0) >= 3).length, log = [['Fish caught', fish, FISH_TABLE.length], ['Letters read', read, LETTERS.length], ['Friends with three hearts', friends, null], ['Journal drawings', exploreState(st).drawings, null]];
+      const friends = Object.values(st.people ?? {}).filter(p => (p.hearts ?? 0) >= 3).length, log = [['Fish caught', fish, FISH_TABLE.length], ['Letters read', read, LETTERS.length], ['Friends with three hearts', friends, null], ['Journal drawings', exploreState(st).drawings, null], ['Paintings', exploreState(st).made.paintings, null], ['Rows knitted', exploreState(st).made.rows, null]];
       card += `<h3>${esc(t('Our collection'))}</h3><ul class="explore-log">${log.map(([text, n, of]) => `<li>${esc(t(text))} <b>${n}${of ? ` / ${of}` : ''}</b></li>`).join('')}</ul>`;
     }
     if (this.card === 'sofa') {
@@ -473,7 +506,7 @@ class ExploreMode {
     this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
     if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
-    const html = `<div class="explore-heading">${esc(t(this.inside ? this.kind ? CIVIC_INTERIORS[this.kind].name : 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? this.objects[this.card]?.label ?? HOME_MEMORY.title))}">${card}</div>` : ''}
+    const html = `<div class="explore-heading">${esc(t(this.inside ? this.kind ? CIVIC_INTERIORS[this.kind].name : 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card${thing ? ' low' : ''}" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? thing?.name ?? this.objects[this.card]?.label ?? HOME_MEMORY.title))}">${card}</div>` : ''}
       <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the furniture to use it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== this.session?.room.exit.id ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}
