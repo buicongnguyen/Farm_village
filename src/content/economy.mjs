@@ -79,7 +79,8 @@ export const HOTEL = { rooms: [6, 9, 12], upgradeCost: [0, 8000, 15000], stayMs:
  *  of `dividend` of the assets is set aside; at most `cap` payments wait to be collected. `marks`: the value chapter 19
  *  asks for (with a picture-postcard valley) and the value that ends the story (chapter 20). `step` is the dial for how
  *  long those take: at testing pace a deed adds a fifth to the valley's name, at release pace a twelfth. */
-export const VALLEY = { found: 20000, beauty: 200, step: PACE.mode === 'release' ? 1.08 : 1.2, deeds: 400, guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6,
+export const VALLEY = { found: 20000, beauty: 200, step: PACE.mode === 'release' ? 1.08 : 1.2, deeds: PACE.mode === 'release' ? 111 : 47,   // deeds that count: the valley's name is worth about 5,000 times its assets at most (400 deeds made a 31-digit value)
+  guests: 5, dividend: 0.002, dividendMs: paced(10 * MIN), cap: 6,
   marks: { green: 100_000_000, lights: 1_000_000_000 } };
 /** The valley fair (core/fair.mjs, chapter 18). Holding one takes `fee` coins and `each` of every good entered; it lasts
  *  lastsMs, and the valleys rest everyMs from its opening. A score is `base` (from the plainest good of its class to the

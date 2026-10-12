@@ -58,3 +58,13 @@ test('camera tilt: the setting is kept within its range and saved; the camera fo
   assert.deepEqual([cam.x, cam.z], [50, 50], 'what is looked at stays in the middle');
   cam.tilt(999); assert.ok(Math.abs(cam.pitch - TILT.max * Math.PI / 180) < 1e-9); cam.tilt(); assert.equal(cam.pitch, PITCH); cam.tilt(TILT.default); assert.equal(cam.pitch, PITCH);
 });
+
+test('the valley\u2019s value stays a readable number: deeds count up to a limit, and its name is worth some thousands of times its assets at most', async () => {
+  const { valueOf, assetsOf, goodwillOf, deedsOf } = await import('../src/core/valley.mjs'), { VALLEY } = await import('../src/content/economy.mjs'), { newGame } = await import('../src/core/state.mjs');
+  const s = newGame(1_800_000_000_000, 5, { restore: true }); s.coins = 2_000_000;
+  Object.assign(s.stats, { marketDays: 5000, cooperativeOrders: 5000, trains: 5000, harvestFestivals: 5000, fairs: 5000, guests: 1e9 });
+  assert.equal(deedsOf(s), VALLEY.deeds); const g = goodwillOf(s);
+  assert.ok(g >= 2000 && g <= 8000, `goodwill ${g}`); assert.equal(valueOf(s), Math.round(assetsOf(s).total * g));
+  assert.ok(valueOf(s) < 1e11, `a farm of two million coins is worth ${valueOf(s)}`);
+  assert.ok(valueOf(s) >= VALLEY.marks.lights, 'the last chapter can still be reached');
+});
