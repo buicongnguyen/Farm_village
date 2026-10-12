@@ -1,6 +1,6 @@
 # Farm work board: first implementation
 
-Date: 2026-10-12. Branch: `codex/helper-work-board`, based on `70fea6e`. Status: implemented and validated on the feature branch; awaiting review, not deployed.
+Date: 2026-10-12. Branch: `codex/helper-work-board`, based on `70fea6e`. Implementation commit: `f5e160d`. Status: implemented and validated on the feature branch; awaiting review, not deployed.
 
 ## Delivered scope
 

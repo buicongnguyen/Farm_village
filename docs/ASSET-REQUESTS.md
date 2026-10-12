@@ -694,6 +694,8 @@ Historical log: the dated ownership and waiting-for-art notes below describe the
 
 ### 2026-10-12: Codex work-board first slice
 
-Active writer: Codex on `codex/helper-work-board`, base `70fea6e`. Small shared-view change: LandView adds a farmhouse hiring/work board using the existing `order_board` model as a stand-in; no Blender, binary, icon or palette edits. Logic adds finite crop assignments and safe pauses. Exact art replacement is deferred; no AR number allocated. Handoff and verification will be recorded in the implementation document.
+Completed writer: Codex on `codex/helper-work-board`, base `70fea6e`; implementation handoff commit `f5e160d`. Small shared-view change: LandView adds a farmhouse hiring/work board using the existing `order_board` model as a stand-in; no Blender, binary, icon or palette edits. Logic adds finite crop assignments and safe pauses. Exact art replacement is deferred; no AR number allocated. Handoff and verification will be recorded in the implementation document.
 
 Work-board placement review: use 27,68; the first candidate at 27,56 overlapped the market cart. Hide the stand-in when an older player object occupies the new cell; preserve the farmhouse/Friends menu route. Runtime notifications are owned by Codex for this slice and use existing effects unchanged.
+
+Handoff verification: 722 native tests, pace simulation, all 44 browser suites and the final 50-check smoke run pass. Relevant work-board/Explore checks were repeated during review. No art-lane files or binaries changed. See [implementation scope and validation](WORK-BOARD-IMPLEMENTATION.md). The branch awaits review; main has not been changed.
