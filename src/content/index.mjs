@@ -20,3 +20,6 @@ export * from './shops.mjs';
 export * from './village-growth.mjs';
 export * as learning from './learning.mjs';
 export * as schoolActivity from './school-activity.mjs';
+
+export { SHOP_LINES, SHOP_MEMORIES } from './supermarket-story.mjs';
+export { SHOP_SECTIONS } from './supermarket.mjs';

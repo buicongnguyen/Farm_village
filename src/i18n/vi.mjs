@@ -1,3 +1,4 @@
+import { VI_SUPERMARKET } from './vi-supermarket.mjs';
 import { MOBILE_VI } from './mobile.mjs';
 import { VI_FISHING } from './vi-fishing.mjs';
 import { VI_MAIL } from './vi-mail.mjs';
@@ -797,3 +798,5 @@ Object.assign(VI, {
 });
 
 Object.assign(VI, MOBILE_VI);
+
+Object.assign(VI, VI_SUPERMARKET);

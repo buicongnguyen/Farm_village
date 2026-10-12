@@ -675,3 +675,17 @@ Historical log: the dated ownership and waiting-for-art notes below describe the
 - **2026-10-12 scope complete for review:** Codex also owns the imported school, storage-barn and bakery layouts and their Explore/service links. Supermarket is **story plan + prepared interior only**, explicitly chosen by the user; `available: false`, no live shop or economy change. See [SUPERMARKET-STORY-PLAN.md](SUPERMARKET-STORY-PLAN.md) for its later asset needs. Reference checkouts and Claude/art worktrees remain untouched.
 
 - **2026-10-12 handoff:** room integration is committed as `af0f9cc` in [PR #108](https://github.com/buicongnguyen/Farm_village/pull/108). Tests and source provenance are in [EXPLORE-MODE.md](EXPLORE-MODE.md#validation-of-the-expanded-rooms--2026-10-12) and [ASSETS.md](ASSETS.md). Codex has finished this slice. The user authorized its review, merge and deployment on 2026-10-12; PR #108 includes the follow-up navigation and failed-download fixes. No shared-file reservation remains after that release.
+
+
+### Active supermarket and production-room implementation — 2026-10-12
+
+- User authorized the previously planned playable supermarket and additional interiors after PR #108. Active writer: Codex, `codex/village-supermarket`, base `923078c`. Owns supermarket content/rules/save normalization, reservation integration, lazy shop UI, story and four-language copy, tests and documentation.
+- Shared view work: `src/view/kinds.mjs` registers the user's original Willowmere supermarket exterior; `src/view/explore-room.mjs`, `src/ui/explore-mode.mjs` and civic room metadata add the supermarket and adapted feed-mill/dairy rooms. Reuse existing furniture kits; do not edit shared farm/decor binaries or other agents' checkouts.
+- Exterior source: `../3d_farmer_fish_sell/public/assets/models/supermarket.glb` and its Blender generator. Pack a separate local kit; preserve provenance and check footprint/door rotations. The supermarket icon initially reuses the market icon, explicitly marked as a placeholder. No new permanent HUD button.
+- Feed mill and dairy are newly arranged rooms using the existing grain sacks, workbenches, scales, chillers and pails, not claims of dedicated source interiors. They open the existing production and inventory panels. Other new workplaces remain separately scoped.
+
+### Supermarket icon follow-up — 2026-10-12
+
+- Status: **placeholder**, ID `supermarket`, outputs `public/assets/icons/supermarket.webp` and `public/assets/icons/sm/supermarket.webp`.
+- Both sizes currently copy `market.webp`. Replace them with a matching render of `supermarket.glb` → `supermarket`, using the usual icon renderer and 64 px generation workflow. The model is already delivered and packed; do not redesign its footprint or doorway.
+- No gameplay waits for this artwork. Other product-specific shelf variants or additional workplace rooms are future proposals, not active file reservations.

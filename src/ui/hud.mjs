@@ -23,6 +23,7 @@ import { BUILDINGS } from '../content/buildings.mjs';
 import { used as barnUsed } from '../core/barn.mjs';
 import * as barn from '../core/barn.mjs';
 import { currentStep, stepReady, deliveredAll, mayBuild } from '../core/projects.mjs';
+import { unreadSupermarket } from '../core/supermarket-state.mjs';
 import { unread } from '../core/bonds.mjs';
 import { unreadDiscoveries } from '../core/discoveries.mjs';
 import { unreadExploration } from '../core/exploration.mjs';
@@ -128,7 +129,7 @@ export class Hud {
   }
   /** A completed timer can change a topic without a resource event; keep the unread count current too. */
   refreshTodayMessages() {
-    const messages = unreadLearning(this.game.s) + unreadSchool(this.game.s) + unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
+    const messages = unreadSupermarket(this.game.s) + unreadLearning(this.game.s) + unreadSchool(this.game.s) + unreadGrowth(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadLandDiscovery(this.game.s) + unreadContracts(this.game.s) + unreadAdvice(this.game.s, this.game.now);
     const button = this.el.querySelector('[data-act="today"]'), badge = button.querySelector('.badge');
     badge.textContent = cap9(messages); badge.classList.remove('dot'); badge.hidden = !messages;
     button.setAttribute('aria-label', messages ? t('Today · {count} unread messages', { count: messages }) : t('Today'));
@@ -282,5 +283,5 @@ export class Hud {
     if (chip.dataset.html !== html) { chip.innerHTML = html; chip.dataset.html = html; }
   }
   /** Show only these village buttons (the tutorial unlocks them one by one); build, barn, turn, language, album and settings always show. */
-  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && (unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadAdvice(this.game.s, this.game.now))); } }
+  show(list) { for (const act of TOGGLED) { const b = this.el.querySelector(`[data-act="${act}"]`); if (b) b.hidden = !list.includes(act) && !(act === 'today' && (unreadSupermarket(this.game.s) + unreadDiscoveries(this.game.s) + unreadExploration(this.game.s) + unreadAdvice(this.game.s, this.game.now))); } }
 }

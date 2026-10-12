@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { bake } from '../src/view/models.mjs';
+import { PRODUCTION_PLANS } from '../src/content/production-interiors.mjs';
 import { CIVIC_PLANS } from '../src/content/civic-plans.mjs';
 import { CIVIC_INTERIORS } from '../src/content/civic-interiors.mjs';
 import { roomClear, roomRoute, xz } from '../src/core/explore-navigation.mjs';
@@ -13,7 +14,12 @@ for (const file of ['cottage-furniture', 'facility-props']) {
   const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parseAsync(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength), '');
   for (const n of gltf.scene.children) kits[n.name] = n;
 }
-for (const [id, p] of Object.entries(CIVIC_PLANS)) {
+for (const [id, p] of Object.entries({ ...CIVIC_PLANS, ...PRODUCTION_PLANS })) {
+  if (id === 'supermarket') p.pieces = p.pieces.filter(p => p.kit !== 'fp_sampletray');
+  if (id === 'supermarket') p.pieces.push(
+    { kit: 'photo', x: 5.6, z: 1.8, s: .8, y: 1.25, rot: 0, block: false, memory: 'opening' },
+    { kit: 'fp_sampletray', x: 1.6, z: 2.4, s: .9, y: 1.02, rot: 0, block: false, memory: 'variety' },
+    { kit: 'picture', x: 3, z: -8.3, s: .8, y: 2.1, rot: 0, hang: true, block: false, memory: 'thankyou' });
   const spec = CIVIC_INTERIORS[id], furniture = [], colliders = [], boxes = {};
   const walls = p.walls.flatMap((w, index) => {
     let at = w.from; const spans = [];
@@ -27,7 +33,7 @@ for (const [id, p] of Object.entries(CIVIC_PLANS)) {
     g.scale(scale, scale, scale); g.rotateY(piece.rot); g.translate(piece.x, y, piece.z); g.computeBoundingBox();
     const b = g.boundingBox.clone(); g.dispose();
     const use = Object.entries(spec.objects).find(([, o]) => o.role === piece.role)?.[0] ?? null;
-    furniture.push({ id: `furniture_${i}`, kit: piece.kit, x: piece.x, z: piece.z, y, rot: piece.rot, scale, use });
+    furniture.push({ id: `furniture_${i}`, kit: piece.kit, x: piece.x, z: piece.z, y, rot: piece.rot, scale, use, ...(piece.memory ? { memory: piece.memory } : {}) });
     if (piece.block !== false && !piece.hang && !piece.y && b.max.y > .2) colliders.push({ id: `furniture_${i}`, min: [b.min.x + .07, b.min.z + .07], max: [b.max.x - .07, b.max.z - .07] });
     if (use) { if (!boxes[use]) boxes[use] = b; else boxes[use].union(b); }
   }

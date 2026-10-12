@@ -42,6 +42,7 @@ export const BUILDINGS = {
   market:     { name: 'Market square', cat: 'projects', size: [5, 3], area: 'village', level: 1, cost: 60, door: true, market: true, max: 1, model: 'market' },
   // The fish pond: cast a line, reel in a fish; fishing villagers pay a little to sit by it (core/fishing.mjs)
   pond:       { name: 'Fish pond', cat: 'production', size: [4, 4], area: 'any', level: 2, cost: 120, pond: true, max: 2, model: 'pond', charm: 2 },
+  supermarket: { name: 'Village supermarket', cat: 'projects', size: [4, 3], area: 'village', level: 14, cost: 4200, door: true, max: 1, model: 'supermarket', charm: 2 },
   // Homes
   cottage:    { name: 'Rental cottage', cat: 'homes', size: [3, 3], area: 'village', level: 3, cost: n => COTTAGE_COSTS[n] ?? 10000, door: true, home: true, project: 'cottage1', model: 'house', charm: 0 },
   // Charm (DESIGN 12)

@@ -7,7 +7,7 @@ import { buildCottage } from './cottage-view.mjs';
 
 export async function loadHomeRoom(body, kind = null) {
   const file = kind ?? 'cottage';
-  if (kind && !['hospital', 'police', 'company', 'school', 'barn', 'bakery', 'supermarket'].includes(kind)) throw Error('unknown interior');
+  if (kind && !['hospital', 'police', 'company', 'school', 'barn', 'bakery', 'supermarket', 'feed_mill', 'dairy'].includes(kind)) throw Error('unknown interior');
   const [kit, response, , extraKit, keepsakes] = await Promise.all([loadKit('cottage-furniture'), fetch(`./assets/models/interior-${file}.json`), loadRig(body),
     kind ? loadKit('facility-props') : loadKit('interior-extras'), kind ? null : loadKit('interior-farmhouse')]);
   if (!response.ok) throw Error('room metadata');
@@ -60,7 +60,8 @@ export class ExploreRoom {
     this.followWidth = THREE.MathUtils.clamp((this.view === 'whole' ? this.fullWidth : this.followWidth) * factor, 8, this.fullWidth);
     this.view = this.followWidth >= this.fullWidth ? 'whole' : 'follow'; this.layoutCamera();
   }
-  frame(session, moving, dt) {
+  frame(session, moving, dt, state) {
+    for (const mesh of this.meshes) if (mesh.userData.memory) mesh.visible = state?.supermarket?.memories?.[mesh.userData.memory] != null;
     const seat = this.data.seats?.[0], p = session.seated ? [seat.position[0], seat.position[2]] : session.p;
     const y = session.seated ? seat.cushionTop - seat.measured[this.body].hipHeight : 0;
     Object.assign(this.player, { x: p[0], y, z: p[1], rot: session.seated ? Math.atan2(seat.facing[0], seat.facing[2]) : session.yaw, clip: session.seated ? 'Sit' : moving ? 'Walk' : 'Idle', speed: 1 });
@@ -72,7 +73,7 @@ export class ExploreRoom {
   }
   pick(x, y) {
     this.ray.setFromCamera(new THREE.Vector2(x / innerWidth * 2 - 1, 1 - y / innerHeight * 2), this.camera);
-    const hit = this.ray.intersectObjects(this.meshes)[0];
+    const hit = this.ray.intersectObjects(this.meshes.filter(m => m.visible))[0];
     if (hit?.object.userData.interaction) return { id: hit.object.userData.interaction };
     const p = this.ray.ray.intersectPlane(this.plane, new THREE.Vector3()); return p ? { point: [p.x, p.z] } : null;
   }

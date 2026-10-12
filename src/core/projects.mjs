@@ -1,4 +1,5 @@
 // The build order (DESIGN 11): requirements, goods delivery, and moving on when a step is done.
+import { supermarketBuildReason } from './supermarket-state.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { FAMILIES } from '../content/people.mjs';
 import { RECIPES, FRUITS } from '../content/goods.mjs';
@@ -44,6 +45,7 @@ export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   if (def.choice && s.story?.albright !== def.choice) return { ok: false, reason: 'This belongs to the other answer you could have given', params: { kind, lock: 'choice' } };
   if (def.lot) return (s.counts[kind] ?? 0) >= (def.max ?? Infinity) ? { ok: false, reason: 'The quay has all of these it can hold', params: { kind, lock: 'max' } } : { ok: true };   // core/riverside.mjs judges the rest
   if (def.site) return (s.counts[kind] ?? 0) > 0 ? { ok: false, reason: 'It is already built', params: { kind, lock: 'max' } } : { ok: true };   // core/sites.mjs judges the rest
+  if (kind === 'supermarket') { const reason = supermarketBuildReason(s); if (reason) return { ok: false, reason }; }
   const civicReason = civicBuildReason(s, kind); if (civicReason) return { ok: false, reason: civicReason };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
@@ -96,7 +98,7 @@ export const actions = {
     if (goods != null && (typeof goods !== 'object' || Array.isArray(goods) || Object.entries(goods).some(([id, n]) => !Object.hasOwn(step.deliver, id) || !Number.isSafeInteger(n) || n < 0))) return ctx.fail('Missing ingredients');
     let given = 0;
     for (const [id, want] of Object.entries(step.deliver)) {
-      const left = want - (s.projects.delivered[id] ?? 0), n = Math.min(left, goods?.[id] ?? left, barn.stock(s, id));
+      const left = want - (s.projects.delivered[id] ?? 0), n = Math.min(left, goods?.[id] ?? left, barn.free(s, id, false));
       if (n > 0) { barn.take(s, { [id]: n }, false); s.projects.delivered[id] = (s.projects.delivered[id] ?? 0) + n; given += n; }
     }
     if (!given) return ctx.fail('Missing ingredients');

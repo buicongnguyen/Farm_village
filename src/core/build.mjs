@@ -155,6 +155,7 @@ export const actions = {
     } else {
       const p = s.placed[e.id];
       // Dispatch bonuses and paid staff work survive removal: a used civic building cannot be fully refunded.
+      if (p.kind === 'supermarket' && s.supermarket?.introducedAt != null) return ctx.fail('It is in use now: move it instead');
       if (p.kind === 'clinic' && normalizeGrowth(s).hospitalAt !== null) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].civicSite) {
         const growth = normalizeGrowth(s);

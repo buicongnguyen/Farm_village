@@ -54,19 +54,19 @@ function useText(use) {
   }
 }
 
-export function renderGoodHelp(s, good, now, { needed = 1 } = {}) {
-  const help = goodHelp(s, good, now, { needed });
+export function renderGoodHelp(s, good, now, { needed = 1, shopRequest } = {}) {
+  const help = goodHelp(s, good, now, { needed, shopRequest });
   const back = `<button class="btn ghost wide" data-do="goodHelpBack">${t('Back to what I was doing')}</button>`;
   if (!help) return `<p class="hint">${t('This good is no longer available.')}</p>${back}`;
   const source = help.source;
   const seed = source.seed ? `<p>${esc(source.seed === 'free' ? t('Seeds are free for this crop.') : source.seed === 'stock'
     ? t('Planting uses one crop from barn stock, including stock held for a project.')
-    : t('Without a crop in the barn, planting costs {coins} coins per bed.', { coins: num(source.cost) }))}</p>` : '';
+    : t('Without an available crop, planting costs {coins} coins per bed.', { coins: num(source.cost) }))}</p>` : '';
   const price = ['build', 'repair', 'animal'].includes(source.status) ? `<p>${esc(t('Preview cost: {coins} coins. Placement or purchase still needs your confirmation.', { coins: num(source.cost) }))}</p>` : '';
   const rows = (source.ingredients ?? []).map(i => `<li>${esc(t('{good}: {have} available / {need} needed', { good: name(i.good), have: num(i.free), need: num(i.needed) }))} ${goodHelpButton(i.good, i.needed)}</li>`).join('');
   const batch = source.makes ? `<p class="hint">${esc(t('One batch makes {count} in {time}. Queued batches have already used their ingredients.', { count: num(source.makes), time: shortTime(source.duration) }))}</p>` : '';
   return `<article class="good-help"><h3>${goodIcon(good, 'mini')} ${esc(name(good))}</h3>
-    <p>${esc(t('{have} in the barn · {free} available · {held} held for the project', { have: num(help.stock), free: num(help.free), held: num(help.held) }))}</p>
+    <p>${esc(t('{have} in the barn · {free} available · {held} reserved', { have: num(help.stock), free: num(help.free), held: num(help.held) }))}</p>
     <p>${esc(t('For this request: {need} needed · {missing} still missing', { need: num(help.needed), missing: num(help.missing) }))}</p>
     ${!help.missing ? `<p class="hint">${t('You already have enough available for this request.')}</p>` : ''}
     <h3>${t('Where to get it')}</h3><p>${esc(sourceText(source))}</p>

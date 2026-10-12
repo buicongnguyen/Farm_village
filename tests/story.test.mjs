@@ -3,6 +3,7 @@
 import './tz.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { SHOP_LINES, SHOP_MEMORIES } from '../src/content/supermarket-story.mjs';
 import { CHAPTERS, BEATS, TUTORIAL, RESTORE_TUTORIAL, VILLAGE_NAME } from '../src/content/story.mjs';
 import { FAMILIES, VILLAGERS, NEIGHBOURS, REMARK_FACTS, FIRST_ORDER, JUNE_TIPS } from '../src/content/people.mjs';
 import { HEART_SCENES, WISHES, ARRIVALS } from '../src/content/hearts.mjs';
@@ -24,7 +25,7 @@ import { game, tutorial } from './helpers.mjs';
 const residents = FAMILIES.flatMap(f => f.people);
 const PEOPLE = Object.fromEntries([...VILLAGERS, ...NEIGHBOURS, ...residents].map(p => [p.id, p]));
 const sceneLines = Object.values(HEART_SCENES).flatMap(levels => Object.values(levels).flatMap(sc => [...sc.lines, ...(sc.variants ?? []).flatMap(v => v.lines)]));
-const spoken = [...LEARNING_MEMORIES.flatMap(m => m.lines), ...SCHOOL_MEMORY.lines, ...LAND_BRANCH.discovery.lines, ...CONTRACTS.flatMap(c => [...c.memory.lines, { who: c.person, text: c.line }, ...(c.ribbonLine ? [{ who: c.person, text: c.ribbonLine }] : [])]), ...EXPLORATION_STEPS.flatMap(step => step.lines), ...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
+const spoken = [...Object.values(SHOP_LINES), ...Object.values(SHOP_MEMORIES), ...LEARNING_MEMORIES.flatMap(m => m.lines), ...SCHOOL_MEMORY.lines, ...LAND_BRANCH.discovery.lines, ...CONTRACTS.flatMap(c => [...c.memory.lines, { who: c.person, text: c.line }, ...(c.ribbonLine ? [{ who: c.person, text: c.ribbonLine }] : [])]), ...EXPLORATION_STEPS.flatMap(step => step.lines), ...BEATS.flatMap(b => b.lines), ...sceneLines, ...Object.values(ARRIVALS).flat()];
 
 test('every speaker in the story, heart scenes, arrivals and letters is a real person', () => {
   const unknown = [...spoken.map(l => l.who), ...LETTERS.map(l => l.from), ...Object.values(ADVICE_TOPICS).map(a => a.person)].filter(id => !PEOPLE[id]);

@@ -56,6 +56,8 @@ import { renderGoodHelp, goodHelpButton } from './good-help-panel.mjs';
 import { renderLandPanel, renderLandEntry, plainField } from './land-panel.mjs';
 import { renderContracts, renderContractMemories, renderContractMemory } from './contracts-panel.mjs';
 import { contractStatus } from '../core/contracts.mjs';
+import { renderSupermarket, renderShopMemory, supermarketEntry } from './supermarket-panel.mjs';
+import { normalizeSupermarket, supermarketHeld } from '../core/supermarket-state.mjs';
 import { renderShops, shopsEntry } from './shops-panel.mjs';
 import { normalizeGrowth } from '../core/growth-state.mjs';
 import { renderCivicSite } from './civic-site-panel.mjs';
@@ -111,6 +113,14 @@ export function renderPanel() {
       });
     }
     else if (o.kind === 'contracts') { title = t('A picnic menu'); icon = 'carrot_juice'; body = renderContracts(s, now); }
+    else if (o.kind === 'supermarket' || o.kind === 'shopMemory') {
+      title = t('Village supermarket'); icon = 'supermarket';
+      body = o.kind === 'shopMemory' ? renderShopMemory(s, o.arg) : renderSupermarket(s, now);
+      const shop = normalizeSupermarket(s);
+      if (o.kind === 'shopMemory' && shop.memories[o.arg] != null && !shop.read.includes(o.arg)) queueMicrotask(() => {
+        if (this.open === o && !document.hidden && !modalOpen() && !normalizeSupermarket(this.game.s).read.includes(o.arg)) this.game.do('readShopMemory', { id: o.arg });
+      });
+    }
     else if (o.kind === 'shops') { title = t('Village shops'); icon = 'stall'; body = renderShops(s, now, o.arg); }
     else if (o.kind === 'report') {
       title = t('Today on the farm'); icon = 'ui:coin'; body = renderReport(s, now);
@@ -171,7 +181,7 @@ export function renderPanel() {
     else if (o.kind === 'gift') body = renderGift(s, o.arg, now);
     else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${readyFirst(s, s.orders.cards).map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
     else if (o.kind === 'barn') {
-      const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = barn.held(s);
+      const used = barn.used(s), items = Object.entries(s.barn.items).filter(([, n]) => n > 0).sort((a, b) => GOODS[a[0]].level - GOODS[b[0]].level), held = { ...barn.held(s) }; for (const [id, n] of Object.entries(supermarketHeld(s))) held[id] = (held[id] ?? 0) + n;
       const day = marketDayOf(s, now), k = g => day.active && day.good === g ? day.bonus : 1, badge = g => k(g) > 1 ? `<i class="day-badge">×${k(g)}</i>` : '';
       body = `<div class="cap"><div class="cap-bar ${used >= s.barn.cap * 0.9 ? 'full' : ''}"><i style="width:${Math.min(100, used / s.barn.cap * 100)}%"></i><b>${num(used)}/${num(s.barn.cap)}</b></div>
         ${s.barn.cap >= BARN.max ? '' : `<button class="btn orange" data-do="upgradeBarn">${glyph('up', 'g')} ${t('Upgrade (+{step})', { step: Math.min(BARN.step, BARN.max - s.barn.cap) })} · ${coinMark()} ${num(BARN.upgradeCost(s.barn.upgrades))}</button>`}</div>
@@ -242,10 +252,11 @@ export function renderPanel() {
     const futureOpen = this.el.querySelector('.contract-future')?.open;
     const growthOpen = [...this.el.querySelectorAll('details[data-growth-detail][open]')].map(el => el.dataset.growthDetail);
     const schoolOpen = [...this.el.querySelectorAll('details[data-school-detail][open]')].map(el => el.dataset.schoolDetail);
+    if (['today', 'shops', 'album'].includes(o.kind)) body = supermarketEntry(s) + body;
     if (['today', 'clinic', 'album'].includes(o.kind)) body = growthEntry + body;
     if (['today', 'projects', 'album'].includes(o.kind)) body = renderLearningEntry(s, now, { album: o.kind === 'album' }) + renderSchoolEntry(s, now, { album: o.kind === 'album' }) + body;
     if (!document.body.classList.contains('explore-inside')) {
-      const kinds = { clinic: ['clinic'], villageGrowth: ['clinic', 'police', 'company'], schoolActivity: ['school'], production: ['bakery'] }[o.kind] ?? [];
+      const kinds = { clinic: ['clinic'], villageGrowth: ['clinic', 'police', 'company'], schoolActivity: ['school'], production: ['bakery', 'feed_mill', 'dairy'], supermarket: ['supermarket'] }[o.kind] ?? [];
       const sites = Object.entries(s.placed).filter(([id, p]) => kinds.includes(p.kind) && isWorking(s, id) && (!['clinic', 'production'].includes(o.kind) || !o.arg || id === o.arg));
       if (o.kind === 'barn' && isWorking(s, 'barn')) sites.push(['barn', { kind: 'barn' }]);
       body = sites.map(([id, p]) => `<button class="btn go wide" data-do="enterInterior" data-id="${esc(id)}">${iconHtml(p.kind === 'barn' ? 'ui:barn' : p.kind, '', 'mini')} ${t(BUILDINGS[p.kind]?.name ?? 'Barn')} · ${t('Go inside')}</button>`).join('') + body;
