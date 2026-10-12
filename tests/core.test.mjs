@@ -394,9 +394,9 @@ test('apple pie is baked at the bakery and pays more than its inputs', () => {
 test('levelUp.unlocks matches content level fields without promising separately learned crops', () => {
   for (let L = 2; L <= 10; L++) {
     const u = unlocksAt(L), at = o => Object.keys(o).filter(k => o[k].level === L).sort();
-    assert.deepEqual([...u.crops].sort(), at(C).filter(id => !C[id].skill)); assert.deepEqual([...u.fruits].sort(), at(FRUITS));
+    assert.deepEqual([...u.crops].sort(), at(C).filter(id => !C[id].skill)); assert.deepEqual([...u.fruits].sort(), at(FRUITS).filter(id => !FRUITS[id].cross && !BUILDINGS[FRUITS[id].tree]?.knowhow));   // the farm notebook's finds are not promised by a level
     assert.deepEqual([...u.recipes].sort(), at(R)); assert.deepEqual([...u.animals].sort(), at(A));
-    assert.deepEqual([...u.buildings].sort(), at(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden));
+    assert.deepEqual([...u.buildings].sort(), at(BUILDINGS).filter(k => !BUILDINGS[k].project && !BUILDINGS[k].garden && !BUILDINGS[k].knowhow));
     assert.equal(u.list.length, u.crops.length + u.fruits.length + u.recipes.length + u.animals.length + u.buildings.length);
   }
   assert.ok(unlocksAt(2).buildings.includes('apple_tree') && unlocksAt(4).buildings.includes('peach_tree'));

@@ -27,6 +27,10 @@ export const FRUITS = {
   apple: { name: 'Apple', tree: 'apple_tree', value: 9,  level: 2, yield: 3, firstMs: 30_000, regrowMs: 50_000, icon: '🍎' },
   peach: { name: 'Peach', tree: 'peach_tree', value: 15, level: 4, yield: 3, firstMs: 3 * MIN, regrowMs: 5 * MIN, icon: '🍑' },
   orange: { name: 'Orange', tree: 'orange_tree', value: 18, level: 5, yield: 3, firstMs: 4 * MIN, regrowMs: 6 * MIN, icon: '🍊' },
+  // farm know-how (content/knowhow.mjs): the mango comes from a stone found in the fruit crate; the Mango apple grows on
+  // an apple tree that took a mango branch (`cross`: no tree of its own, core/trees.mjs fruitId)
+  mango: { name: 'Mango', tree: 'mango_tree', value: 30, level: 4, yield: 3, firstMs: 5 * MIN, regrowMs: 8 * MIN, icon: '🥭' },
+  mango_apple: { name: 'Mango apple', tree: 'apple_tree', value: 75, level: 8, yield: 2, firstMs: 8 * MIN, regrowMs: 8 * MIN, icon: '🥭', cross: true },
   coconut: { name: 'Coconut', tree: 'coconut_palm', value: 26, level: 8, yield: 2, firstMs: 6 * MIN, regrowMs: 10 * MIN, icon: '🥥' },
 };
 

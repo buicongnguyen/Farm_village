@@ -1,5 +1,6 @@
 // Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section with the play
 // package's helpers; the public game shows it too when it was opened with ?tester (docs/plan/00-tester-tools.md).
+import { BUILDINGS } from '../content/buildings.mjs';
 import { t, getLanguage, getLocale, LANGUAGES } from '../kit/i18n.mjs';
 import { CHAPTERS } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -68,7 +69,7 @@ export function renderAlbum(s) {
       : `<div class="chapter-tile locked">${glyph('lock', 'g big')}<b>${t('Chapter {n}', { n: ch.id })}</b></div>`).join('')}</div>
     ${families.length ? `<h3>${t('Families of Hollowbrook')}</h3><div class="portraits">${families.map(f => `<div class="portrait-tile">${iconHtml(`family:${f.id}`, '', 'family-art')}<b>${t(f.name)}</b></div>`).join('')}</div>` : ''}
     <h3>${t('Fish album')}</h3><div class="portraits">${FISH_TABLE.map(f => { const n = s.album?.fish?.[f.id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(f.id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not caught yet')}</small></div>`; }).join('')}</div>
-    <h3>${t('Fruit album')}</h3><div class="portraits">${Object.entries(FRUITS).map(([id, f]) => { const n = s.album?.fruit?.[id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not picked yet')}</small></div>`; }).join('')}</div>
+    <h3>${t('Fruit album')}</h3><div class="portraits">${Object.entries(FRUITS).filter(([id, f]) => (s.album?.fruit?.[id] ?? 0) > 0 || !(f.cross || BUILDINGS[f.tree]?.knowhow)).map(([id, f]) => { const n = s.album?.fruit?.[id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not picked yet')}</small></div>`; }).join('')}</div>
     <h3>${t('First times')}</h3><ul>${firsts.map(([k, icon, label]) => `<li>${iconHtml(icon, '', 'mini')} ${t(label)} · <small>${when(s.firsts[k])}</small></li>`).join('') || `<li>${t('Your first harvest is waiting.')}</li>`}</ul>
     ${hearts.length ? `<h3>${t('Heart scenes')}</h3><ul>${hearts.map(h => `<li>${faceHtml(h.person, 'mini-face')} ${t('{name} and you: {count} hearts', { name: nameOf(h.person), count: h.at })} · <small>${when(h.time)}</small></li>`).join('')}</ul>` : ''}
     ${projects.length ? `<h3>${t('Projects')}</h3><ul>${projects.map(st => `<li>${glyph('projects', 'g')} ${t(st.name)} · <small>${when(s.firsts[`project:${st.id}`])}</small></li>`).join('')}</ul>` : ''}

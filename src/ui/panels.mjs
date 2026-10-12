@@ -151,6 +151,8 @@ export class Panels {
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
     else if (d.do === 'roadmap') this.show('roadmap');
+    else if (d.do === 'knowhow') this.show('knowhow');
+    else if (d.do === 'tryTrick') g.do('tryTrick', { id: d.id });
     else if (d.do === 'report') this.show('report');
     else if (d.do === 'valley') this.show('valley');
     else if (d.do === 'valleyValue') this.show('valleyValue');

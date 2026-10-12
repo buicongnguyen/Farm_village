@@ -48,6 +48,7 @@ export function mayBuild(s, kind, { repair = false, now = s.lastSeen } = {}) {
   if (kind === 'supermarket') { const reason = supermarketBuildReason(s); if (reason) return { ok: false, reason }; }
   const civicReason = civicBuildReason(s, kind); if (civicReason) return { ok: false, reason: civicReason };
   if (def.garden) return { ok: false, reason: 'It grows by itself in your streak garden', params: { kind, lock: 'garden' } };
+  if (def.knowhow && !Number.isSafeInteger(s.knowhow?.known?.[def.knowhow])) return { ok: false, reason: 'Find this out in your farm notebook first', params: { kind, lock: 'knowhow' } };
   if (def.project && !reached(s, def.project)) return { ok: false, reason: 'Opens with the project "{name}"', params: { name: STEPS[stepIndex(def.project)].name, project: def.project, kind, lock: 'project' } };
   if (def.after && !completed(s, def.after)) return { ok: false, reason: 'Opens after the project "{name}"', params: { name: STEPS[stepIndex(def.after)].name, project: def.after, kind, lock: 'project' } };
   // repairing a broken thing needs a free place among the working ones; building needs a free place among all that stand

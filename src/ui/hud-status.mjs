@@ -1,4 +1,5 @@
 // Read-only HUD facts. One chip per destination; order counts live on the order-board button.
+import { knowhowReady } from '../core/knowhow.mjs';
 import { questsOf, ready } from '../core/quests.mjs';
 import { rentWaiting } from '../core/homes.mjs';
 import { unread } from '../core/bonds.mjs';
@@ -28,6 +29,8 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   if (day.active) rows.push({ act: 'marketday', icon: day.good, label: 'Market day', ms: Math.max(0, day.endsAt - now), lit: true });
   const fest = festivalOf(s, now);   // the Harvest Festival's evening: the time left (a tap opens its panel)
   if (fest.active) rows.push({ act: 'festival', icon: 'stage', label: 'Festival', ms: Math.max(0, fest.until - now), lit: true });
+  // something in the farm notebook can be tried now (core/knowhow.mjs)
+  if (knowhowReady(s)) rows.push({ act: 'knowhow', icon: 'wheat', label: 'Notebook', text: 'try it', hot: true });
   // Grandpa Oak waits to walk upriver (chapter 16); the valley company can be founded (chapter 17)
   if ((s.story?.chapter ?? 0) >= 15 && (s.upriver?.stops?.length ?? 0) < 3) rows.push({ act: 'upriver', icon: 'spring_water', label: 'Upriver', text: 'waiting', hot: true });
   if (!s.valley?.founded && (s.story?.chapter ?? 0) >= 16 && companyPlan(s).ok) rows.push({ act: 'valleyValue', icon: 'company', label: 'Valley company', text: 'ready', hot: true });

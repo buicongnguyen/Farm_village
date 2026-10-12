@@ -166,6 +166,9 @@ export class Hud {
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
     if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
     if (e.type === 'outputUpgraded') this.toast(t('{name} upgraded: it gives ×{n} now', { name: t(BUILDINGS[e.kind].name), n: e.times }), 'good', { icon: e.kind });
+    if (e.type === 'trickFound') this.toast(t('You found something out: {name}', { name: t(e.name) }), 'good', { icon: 'wheat', to: 'knowhow' });
+    if (e.type === 'grafted') this.toast(t('A grafted {name} sapling is in your storage', { name: t(BUILDINGS[e.kind].name) }), 'good', { icon: e.kind });
+    if (e.type === 'crossed') this.toast(t('The mango branch took: this tree will bear Mango apples'), 'good', { icon: 'mango_apple' });
     if (e.type === 'chapterClosed') { const step = currentStep(this.game.s); if (step && e.id < 20) this.toast(t('Next in the story: {name}', { name: t(step.name) }), 'info', { icon: 'ui:projects', to: 'projects' }); }
     if (e.type === 'couponRedeemed') this.toast(t('Tester tools are on for this farm. They are at the bottom of Settings'), 'good', { icon: 'ui:xp', to: 'settings' });
     if (e.type === 'greenGoal') this.toast(`${t('A green goal reached: {name}', { name: t(e.name) })} · +${num(e.coins)}`, 'good', { icon: 'round_tree', to: 'valleyGreen' });
