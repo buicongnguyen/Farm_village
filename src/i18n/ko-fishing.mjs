@@ -1011,4 +1011,7 @@ export const KO_FISHING = {
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': '실제로 한 줄기에 여러 품종을 접붙이기도 해요(‘과일 샐러드 나무’). 다만 진짜 과수원에서는 가까운 친척끼리만 붙어요. 망고사과는 할로우브룩만의 과일이에요.',
   'Graft': '접붙이기',
   'Something to try in your farm notebook: {name}': '농장 수첩에 해 볼 것이 생겼어요: {name}',
+  'Camera tilt': '카메라 기울기',
+  'Reset': '되돌리기',
+  'Slide left for a low look across the valley, right to look straight down. Q and E turn the view.': '왼쪽으로 밀면 골짜기를 낮게 건너다보고, 오른쪽으로 밀면 위에서 똑바로 내려다봐요. Q와 E 키로 화면을 돌려요.',
 };

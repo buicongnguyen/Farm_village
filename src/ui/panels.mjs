@@ -1,6 +1,7 @@
 // Farm panels in a bottom sheet (DESIGN 8, 13, 7): the order board, the barn, a production building, the stall, the
 // weekly cart, the mailbox, friends and gifts. One sheet at a time; it re-draws itself after every action while open.
 // Opening a panel turns a page (sfx 'page'); its buttons click.
+import { TILT } from '../view/camera.mjs';
 import { t, setLanguage } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
 import { GOODS } from '../content/goods.mjs';
@@ -43,6 +44,7 @@ export class Panels {
       const main = this.open ? [...this.el.querySelectorAll('.btn.primary:not([disabled])')].filter(b => b.offsetParent) : [...document.querySelectorAll('.radial:not([hidden]) .radial-btn:not([disabled])')];
       if (main.length === 1) { e.preventDefault(); main[0].click(); }
     });
+    this.el.addEventListener('input', e => { if (e.target.matches('[data-range="cameraTilt"]')) this.onTilt?.(Number(e.target.value)); });
     this.el.addEventListener('change', e => { if (e.target.matches('[data-range]')) this.game.do('setting', { key: e.target.dataset.range, value: e.target.value / 100 }); if (e.target.matches('[data-name]')) this.game.do('setting', { key: 'playerName', value: e.target.value }); if (e.target.matches('[data-file]')) this.onSave?.('import', e.target.files[0]); });
     game.on(() => { if (this.open && !this.holding()) this.render(); });
     onModal(open => { if (!open && this.open && !this.holding()) this.render(); });
@@ -150,6 +152,7 @@ export class Panels {
     else if (d.do === 'buySlot') g.do('buySlot', { building: this.open.arg });
     else if (d.do === 'fruitList') g.do('fruitList', { good: d.good, n: Math.min(FRUIT_STAND.stack, barn.free(g.s, d.good)) });
     else if (d.do === 'fruitCollect') g.do('fruitCollect');
+    else if (d.do === 'tiltReset') g.do('setting', { key: 'cameraTilt', value: TILT.default / 100 });
     else if (d.do === 'roadmap') this.show('roadmap');
     else if (d.do === 'knowhow') this.show('knowhow');
     else if (d.do === 'tryTrick') g.do('tryTrick', { id: d.id });

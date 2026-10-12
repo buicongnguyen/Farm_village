@@ -1011,4 +1011,7 @@ export const VI_FISHING = {
   'Growers do graft several kinds onto one trunk (a "fruit salad tree"), though only close relatives join in real orchards. The Mango apple is Hollowbrook’s own.': 'Người làm vườn thật sự có ghép nhiều giống lên một thân (gọi là "cây trái cây thập cẩm"), nhưng ngoài đời chỉ những loài họ hàng gần mới ghép được. Táo xoài là của riêng Thung Suối.',
   'Graft': 'Ghép cành',
   'Something to try in your farm notebook: {name}': 'Có điều để thử trong sổ tay nhà nông: {name}',
+  'Camera tilt': 'Độ nghiêng góc nhìn',
+  'Reset': 'Đặt lại',
+  'Slide left for a low look across the valley, right to look straight down. Q and E turn the view.': 'Kéo sang trái để nhìn thấp ngang qua thung lũng, sang phải để nhìn thẳng từ trên xuống. Phím Q và E để xoay góc nhìn.',
 };
