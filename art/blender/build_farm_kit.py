@@ -721,22 +721,28 @@ def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(
     puffs, dark below and light on top as the sun falls, on a forked trunk, with the fruit sitting ON the crown's upper
     half in a spiral so every one shows from the game's camera. About 1,070 triangles (the scenery's round tree keeps
     cute(): there are hundreds of those, and at most a dozen of each fruit tree)."""
-    # lod 1 is the authored middle level (<piece>_mid): the same crown in coarser puffs and fewer, bigger fruit. The game's
-    # own simplifier turned the round puffs into shards and the fruit into slivers, and the usual view is that far out.
-    sub = 1 if lod else 2
+    # lod 1 is the authored middle level (<piece>_mid): the same silhouette in six round puffs with fewer, bigger fruit.
+    # The usual view is that far out, and the game's own simplifier turned the round crown into shards there. (Coarser
+    # puffs were tried first: at 20 faces a puff is a spiky gem, so the saving comes from their number, not their roundness.)
     if lod:
-        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=5, rt=.3)]; nfruit = max(6, round(nfruit * .6)); fr *= 1.28
+        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=5, rt=.3)]; nfruit = max(6, round(nfruit * .6)); fr *= 1.3
+        p.append(ball('puff', 1.62, 0, 0, 3.1, base, sub=2, sc=(1, 1, .92)))
+        for i in range(3):
+            a = i / 3 * math.tau + .5
+            p.append(ball('puff', 1.22, math.cos(a) * 1.12, math.sin(a) * 1.12, 2.65, dark if i != 1 else base, sub=2, sc=(1, 1, .9)))
+        p.append(ball('puff', 1.0, .55, .45, 3.75, light, sub=2, sc=(1, 1, .9)))
+        p.append(ball('puff', .92, -.1, -.1, 4.25, light, sub=2, sc=(1, 1, .88)))
     else:
         p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=8, rt=.3), cl('root', .64, .26, 0, 0, 0, 'woodd', verts=8, rt=.44),
              st((0, 0, 1.5), (.75, .2, 2.5), .17, 'wood', sides=5, rt=.1), st((0, 0, 1.6), (-.7, -.3, 2.55), .16, 'woodd', sides=5, rt=.1)]
-    p.append(ball('puff', 1.55, 0, 0, 3.1, base, sub=2, sc=(1, 1, .92)))
-    for i in range(4):   # the low ring: wide and in shade
-        a = i / 4 * math.tau + .5
-        p.append(ball('puff', 1.08 * (1.06 if lod else 1), math.cos(a) * 1.18, math.sin(a) * 1.18, 2.6, dark if i % 2 else base, sub=sub, sc=(1, 1, .9)))
-    for i in range(3):   # the upper ring and the top: in the light
-        a = i / 3 * math.tau + 1.4
-        p.append(ball('puff', .95 * (1.06 if lod else 1), math.cos(a) * .8, math.sin(a) * .8, 3.6, light if i else base, sub=sub, sc=(1, 1, .9)))
-    p.append(ball('puff', .86 * (1.06 if lod else 1), .08, .05, 4.3, light, sub=sub, sc=(1, 1, .88)))
+        p.append(ball('puff', 1.55, 0, 0, 3.1, base, sub=2, sc=(1, 1, .92)))
+        for i in range(4):   # the low ring: wide and in shade
+            a = i / 4 * math.tau + .5
+            p.append(ball('puff', 1.08, math.cos(a) * 1.18, math.sin(a) * 1.18, 2.6, dark if i % 2 else base, sub=2, sc=(1, 1, .9)))
+        for i in range(3):   # the upper ring and the top: in the light
+            a = i / 3 * math.tau + 1.4
+            p.append(ball('puff', .95, math.cos(a) * .8, math.sin(a) * .8, 3.6, light if i else base, sub=2, sc=(1, 1, .9)))
+        p.append(ball('puff', .86, .08, .05, 4.3, light, sub=2, sc=(1, 1, .88)))
     if fruit:
         for i in range(nfruit):   # a golden-angle spiral over the crown's upper half, just proud of the leaves
             h = .12 + .8 * (i + .5) / nfruit; a = i * 2.39996 + .3
