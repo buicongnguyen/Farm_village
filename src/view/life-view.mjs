@@ -77,8 +77,12 @@ export class LifeView {
       if (p.kind === 'bed') {
         const bed = s.beds[id], key = `crop:${id}`; seen.add(key);
         if (!bed) { if (this.shown.has(key)) { b.remove(key); this.shown.delete(key); } continue; }
-        const progress = Math.min(1, 1 - (bed.doneAt - t) / CROPS[bed.crop].growMs);
+        const progress = Math.min(1, 1 - (bed.doneAt - t) / (bed.growMs ?? CROPS[bed.crop].growMs));
         let [model, scale] = cropLook(bed.crop, progress); if (!b.has(model)) [model, scale] = cropStage(bed.crop, progress);
+        // tomato, potato, cabbage, onion and chili are in the kit that loads after the first scene: until it has, a farm
+        // that already grows them shows the carrot's leaves (asking for the missing model threw on every frame)
+        if (!b.has(model)) [model, scale] = cropLook('', progress);
+        if (!b.has(model)) continue;
         const look = `${model}|${scale}`;
         if (this.shown.get(key) !== look) {
           b.set(key, { model, x: (p.x + 0.5) * CELL, z: (p.z + 0.5) * CELL, rot: ((p.x * 7 + p.z * 13) % 4) * Math.PI / 2, scale });   // quarter turns: plant rows stay on the bed furrows
