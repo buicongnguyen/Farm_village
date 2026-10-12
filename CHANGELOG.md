@@ -1,5 +1,9 @@
 # Changelog
 
+## Fruit trees with leaves — 2026-10-13
+
+- The crowns of the apple, peach, orange, cherry and mango trees are made of leaves now: about ninety leaf blades over a dark core, light on top and dark below, with the fruit among them. They were smooth balls. About 1,340 to 1,480 triangles up close and 650 to 730 from the usual view.
+
 ## Fruit trees at the usual zoom — 2026-10-13
 
 - The fuller fruit trees now look right from the usual, zoomed-out view too. Beyond a certain zoom the game drew an automatically simplified copy, which turned the round crown into shards and the fruit into slivers; each fruit tree has its own middle level now (six round puffs, fewer and bigger fruit, about 640 to 720 triangles).
