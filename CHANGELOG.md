@@ -1,5 +1,9 @@
 # Changelog
 
+## Ready badges — 2026-10-12
+
+- What is ready shows itself: a round badge with the product's own picture floats over a ripe bed, a ripe tree, an animal home and a workshop (wheat over wheat, an egg over the coop). The gold coin is kept for money that waits: rent, the trucks' takings, the stalls, the pond's fees.
+
 ## Surprises: lucky finds and events — 2026-10-12
 
 Things that happen to the farm by themselves. They only add, every roll is seeded and has a ceiling, and each is kept in "Lucky finds" at the foot of the farm notebook (docs/plan/96-surprises.md).
