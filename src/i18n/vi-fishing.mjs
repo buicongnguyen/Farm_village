@@ -1063,4 +1063,12 @@ export const VI_FISHING = {
   'The gift truck': 'Chiếc xe tải được tặng',
   'A hundred trips to market do not go unnoticed.': 'Một trăm chuyến ra chợ thì thế nào cũng có người để ý.',
   'The company sent it with a ribbon on the mirror: for the farm that never missed a delivery.': 'Công ty gửi nó đến với chiếc nơ trên gương: tặng nông trại chưa từng lỡ một chuyến hàng.',
+  'Plum': 'Mận',
+  'Lemon': 'Chanh',
+  'Longan': 'Nhãn',
+  'Lychee': 'Vải',
+  'Plum tree': 'Cây mận',
+  'Lemon tree': 'Cây chanh',
+  'Longan tree': 'Cây nhãn',
+  'Lychee tree': 'Cây vải',
 };

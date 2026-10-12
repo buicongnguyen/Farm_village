@@ -1,5 +1,10 @@
 # Changelog
 
+## Trees in flower, and four more fruit trees — 2026-10-13
+
+- A fruit tree is bare while it grows, **in flower** for the second half of that time, and then carries its fruit. Each of the nine trees has its own blossom colour.
+- Four more fruit trees in the Build menu: **Plum** (level 6), **Lemon** (level 7), **Longan** (level 9) and **Lychee** (level 10), each a step dearer and slower than the orange. Their icons were rendered long ago and never used; their trees are new.
+
 ## Fruit trees with leaves — 2026-10-13
 
 - The crowns of the apple, peach, orange, cherry and mango trees are made of leaves now: about ninety leaf blades over a dark core, light on top and dark below, with the fruit among them. They were smooth balls. About 1,340 to 1,480 triangles up close and 650 to 730 from the usual view.

@@ -3,6 +3,7 @@
 // 16 × 16 cells), fence posts joined at corners and T joints, edge stones along paths, window boxes, flowerpots and a
 // lantern on cottages as they are furnished, scaffolding on the ruin of the project being worked on, and the feed
 // mill's sails. sync() rebuilds from scratch (after loading); apply(events) updates only what an action changed.
+import { treeState } from '../core/trees.mjs';
 import * as THREE from 'three';
 import { N, CELL, ORDER_BOARD, RUINS, SITES, HOME_GARDEN, MEADOW, ALBRIGHT, brookCurve, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, FAIR_SPOTS, PLAZA, AWARD_PLAQUE, inVillage, isBrookBank, isEastVerge, inUpriverPath, TOWPATH_GATE, inTowpath, QUAY, LOTS, inQuay, inRiverside, lotAt, TRACK, BARN } from '../content/world.mjs';
 import { clearWilds } from './dress.mjs';
@@ -36,6 +37,7 @@ const MEADOW_FLOWERS = 76, GREEN_TREES = [[-0.9, 0.4], [-0.9, 2.6], [5.9, 2.9], 
 const frac = v => v - Math.floor(v);
 const PEN_EARTH = '#c9a46a';
 
+const BLOOM_FROM = 0.5;   // a growing fruit tree is in flower from here on
 export class LandView {
   constructor(world, game) {
     Object.assign(this, { world, game, ready: false, pos: new Map(), beds: new Map(), rims: new Map(), rimDirty: new Set(), dressed: new Map(), clock: 0, pens: new Map() });
@@ -131,8 +133,9 @@ export class LandView {
   /** The registered model that draws a kind now: its own, its first-frame stand-in, or null while it loads. */
   model(kind, id) {
     let name = modelFor(kind, id);
-    if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = `${name}:bare`;
     const b = this.world.batches;
+    // a fruit tree: bare while it grows, in flower for the second half of that time, then with its fruit
+    if (KIND_MODELS[`${name}:bare`] && !this.fruitReady(id)) name = this.inFlower(id) && b.has(`${name}:bloom`) ? `${name}:bloom` : `${name}:bare`;
     if (kind === 'hotel') { const tier = `hotel_t${Math.min(2, this.s.hotel?.level ?? 0)}`; if (tier !== 'hotel_t0' && b.has(tier)) name = tier; }   // a floor more with each upgrade
     if (kind === 'cottage') { const tier = `cottage_t${Math.min(2, this.s.homes?.[id]?.level ?? 0)}`; if (b.has(tier)) name = tier; }   // each furnish level is its own building
     // AR-011: keep the clinic while its optional hospital model loads; the next late-kit sync selects the saved tier.
@@ -140,6 +143,8 @@ export class LandView {
     return b.has(name) ? name : b.has(`${name}~`) ? `${name}~` : null;
   }
   /** Fruit trees show fruit when their harvest is ready (whatever shape the play package's state takes). */
+  /** Half-way to its fruit and not there yet: the tree is in flower. */
+  inFlower(id) { const t = this.s.trees?.[id], st = t ? treeState(this.s, id, this.game.now) : null; return st?.state === 'growing' && st.progress >= BLOOM_FROM; }
   fruitReady(id) {
     const s = this.s, now = this.game.now, st = s.trees?.[id] ?? s.fruitTrees?.[id] ?? s.orchard?.[id] ?? s.fruit?.[id] ?? s.production?.[id];
     if (!st) return true;

@@ -32,6 +32,11 @@ export const FRUITS = {
   // an apple tree that took a mango branch (`cross`: no tree of its own, core/trees.mjs fruitId)
   mango: { name: 'Mango', tree: 'mango_tree', value: 30, level: 4, yield: 3, firstMs: 5 * MIN, regrowMs: 8 * MIN, icon: '🥭' },
   mango_apple: { name: 'Mango apple', tree: 'apple_tree', value: 75, level: 8, yield: 2, firstMs: 8 * MIN, regrowMs: 8 * MIN, icon: '🥭', cross: true },
+  // four more orchard trees (2026-10-13), each a step dearer and slower than the orange
+  plum: { name: 'Plum', tree: 'plum_tree', value: 21, level: 6, yield: 3, firstMs: 4.5 * MIN, regrowMs: 7 * MIN, icon: '🟣' },
+  lemon: { name: 'Lemon', tree: 'lemon_tree', value: 23, level: 7, yield: 3, firstMs: 5 * MIN, regrowMs: 7.5 * MIN, icon: '🍋' },
+  longan: { name: 'Longan', tree: 'longan_tree', value: 28, level: 9, yield: 3, firstMs: 6 * MIN, regrowMs: 9 * MIN, icon: '🟤' },
+  lychee: { name: 'Lychee', tree: 'lychee_tree', value: 33, level: 10, yield: 3, firstMs: 7 * MIN, regrowMs: 10.5 * MIN, icon: '🔴' },
   coconut: { name: 'Coconut', tree: 'coconut_palm', value: 26, level: 8, yield: 2, firstMs: 6 * MIN, regrowMs: 10 * MIN, icon: '🥥' },
 };
 
