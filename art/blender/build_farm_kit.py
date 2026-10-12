@@ -716,7 +716,7 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             a = i / nfruit * math.tau + .4; r = (1.55 + .25 * (i % 2)) * out; z = 2.4 + .8 * ((i * 3) % 4) / 3
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
-def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31):
+def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1)):
     """A fruit tree of the orchard (2026-10-12, the owner: "fuller trees, the fruit easy to see"): a layered crown of nine
     puffs, dark below and light on top as the sun falls, on a forked trunk, with the fruit sitting ON the crown's upper
     half in a spiral so every one shows from the game's camera. About 1,070 triangles (the scenery's round tree keeps
@@ -735,7 +735,7 @@ def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31):
         for i in range(nfruit):   # a golden-angle spiral over the crown's upper half, just proud of the leaves
             h = .12 + .8 * (i + .5) / nfruit; a = i * 2.39996 + .3
             r = 2.08 * math.sqrt(max(.05, 1 - (h * .92) ** 2)) * (.96 if i % 3 else 1.03)
-            p.append(ball('fruit', fr * (1.0 if i % 4 else 1.15), math.cos(a) * r, math.sin(a) * r, 2.25 + h * 2.25, fruit, sub=0))
+            p.append(ball('fruit', fr * (1.0 if i % 4 else 1.15), math.cos(a) * r, math.sin(a) * r, 2.25 + h * 2.25, fruit2 if fruit2 and i % 2 else fruit, sub=0, sc=fsc))
     return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
 piece('cute_apple', orchard('leafw', 'leafwl', 'leafwd', 'fruitred'))
@@ -2081,8 +2081,9 @@ def mango(ripe=True):
             p.append(st((x * .95, y * .95, z + .35), (x, y, z + .12), .02, 'stem', sides=3))
             p.append(ball('mango', .2, x, y, z, 'mango' if i % 2 else 'mangor', sub=1, sc=(.85, .85, 1.4)))
     return p
-piece('tree2_mango', mango(), decor)
-piece('tree2_mango_bare', mango(False), decor)
+# 2026-10-12: the mango as an orchard tree: its long fruit, gold and blushing, on the crown instead of under it
+piece('tree2_mango', orchard('leafwd', 'leafw', 'pinew', 'mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3)), decor)
+piece('tree2_mango_bare', orchard('leafwd', 'leafw', 'pinew'), decor)
 
 def grape_arbor(ripe=True):
     """Grape arbour (fruit vine, 1 cell): a little wooden pergola roofed with vine leaves, purple bunches hanging inside."""
@@ -2377,8 +2378,9 @@ def cherry_tree(ripe=True):
                 p.append(st((x, y, z + .35), (x + dx, y, z), .025, 'leafd', sides=3))
                 p.append(ball('cherry', .17, x + dx, y, z, 'berry', sub=1))
     return p
-piece('cute_cherry', cherry_tree())
-piece('cute_cherry_bare', cherry_tree(False))
+# 2026-10-12: the cherry is an orchard tree too: blossom on its sunlit puffs, and its cherries on the crown where they show
+piece('cute_cherry', orchard('leafw', 'blossoml', 'leafwd', 'berry', nfruit=18, fr=.21))
+piece('cute_cherry_bare', orchard('leafw', 'blossoml', 'leafwd'))
 
 def cherries():
     return [ball('cherry', .33, -.25, 0, .34, 'berry', sub=2), ball('cherry', .33, .27, .03, .34, 'fruitred', sub=2),
