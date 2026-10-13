@@ -75,3 +75,18 @@ for (const [id, th] of Object.entries(HOME_THINGS)) {
   if (th.cooldownMs) HOME_ACTIVITIES[id] = { at: `farmhouse_${id}`, cooldownMs: th.cooldownMs, xp: th.xp };
 }
 export const HOME_MADE = { paintings: 99, rows: 990 };   // the most of each that is counted
+
+// The family at home (after the house life of Willowmere, the owner's own game): they walk from one thing to the next,
+// stop a while at each in a pose, and say a line as they arrive. They are company only: you walk through them, nothing
+// is saved, and they wave when you come near. rounds: [the thing they go to, the clip they hold there, what they say].
+export const HOME_FAMILY = [
+  { id: 'june', body: 'woman', height: 1.8, rounds: [
+    ['farmhouse_kitchen', 'Carry', 'Supper will be ready when it is ready.'], ['farmhouse_fireplace', 'Sweep', 'Ash again. The fire eats and never tidies.'],
+    ['farmhouse_yarn', 'Idle', 'Ten rows make a scarf. I count every one.'], ['farmhouse_table', 'Talk', 'Sit a moment. The fields can wait five minutes.']] },
+  { id: 'pip', body: 'kid', height: 1.3, rounds: [
+    ['farmhouse_easel', 'Cheer', 'It needs a chicken. Everything needs a chicken.'], ['farmhouse_globe', 'Jump', 'I found where we live! It is very small.'],
+    ['farmhouse_bath', 'Wave', 'The duck is the captain. I am only crew.'], ['farmhouse_armchair', 'Idle', 'I am reading. The pictures, mostly.']] },
+  { id: 'ada', body: 'hana', height: 1.7, rounds: [
+    ['farmhouse_fridge', 'Knead', 'Dough tells you when it is ready. You only have to listen.'], ['farmhouse_books', 'Idle', 'Every trick in that notebook was a mistake first.'],
+    ['farmhouse_sofa', 'Talk', 'Sit, sit. You have earned a chair.'], ['farmhouse_desk', 'Idle', 'A tidy desk. Somebody in this house is hiding something.']] },
+];

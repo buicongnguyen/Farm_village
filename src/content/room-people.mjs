@@ -5,7 +5,7 @@
 // player's expense. Loaded with Explore, so none of this is in the first download.
 // at: where they would like to stand (metres in the room); the room finds the nearest free spot with space to walk up.
 export const ROOM_PEOPLE = {
-  police: [{ id: 'officer', role: 'Officer', body: 'man', hat: 'hat_navy', top: '#2f4f9a', bottom: '#1f2d55', at: [-3.4, 3.4],
+  police: [{ id: 'officer', role: 'Officer', body: 'man', kit: 'dz_navy', top: '#2f4f9a', bottom: '#1f2d55', at: [-3.4, 3.4],
     hello: ['Quiet day. The most serious case this week was a goose with opinions.', 'Nothing to report. I wrote that down, so now there is something to report.'],
     asks: [
       { q: 'For the record: {harvested} crops have left your fields. Do you know where every one of them went?',
@@ -33,21 +33,21 @@ export const ROOM_PEOPLE = {
         a: [['All of them. I never drop any', 'Confidence without evidence. You would do well in my Monday class.'], ['It depends on the stairs', 'A sum with honesty in it. Full marks.']] },
       { q: 'The class asked why you plant in rows. I said “geometry”. Was I right?',
         a: [['Yes, geometry', 'Thank you. I will not mention that I guessed.'], ['So I can find things', 'Practical. I shall call it geometry in the service of not losing a turnip.']] }] },
-    { id: 'pupil', role: 'Pupil', body: 'kid', top: '#ffcf3f', bottom: '#2f4f8a', at: [3.2, 4.6],
+    { id: 'pupil', role: 'Pupil', body: 'kid', kit: 'armor_hoodie', top: '#f08a2a', bottom: '#2f4f8a', at: [3.2, 4.6],
       hello: ['I am not skipping class. I am doing independent research on this corridor.', 'Shh. If I stand very still the bell cannot see me.'],
       asks: [
         { q: 'Is it true you have caught {fish} kinds of fish? Do they know each other?',
           a: [['They are old friends', 'I knew it. Fish have a whole society and nobody tells us.'], ['They pretend not to', 'Like my brother at school. That makes sense.']] },
         { q: 'If a hen lays an egg on a hill, who owns the egg at the bottom?',
           a: [['Whoever catches it', 'That is what I said! Teacher called it “not how law works”.'], ['The hen, always', 'Even if it rolls into the next farm? You are very strict.']] }] }],
-  barn: [{ id: 'farmhand', role: 'Farmhand', body: 'man', hat: 'hat_straw', top: '#4f9a4a', bottom: '#8a5a2c', at: [-3, 2.4],
+  barn: [{ id: 'farmhand', role: 'Farmhand', body: 'man', hat: 'hat_straw', kit: 'armor_leaf', top: '#4f9a4a', bottom: '#8a5a2c', at: [-3, 2.4],
     hello: ['Mind the hay. It was tidy once, for almost an hour.', 'Morning. Or afternoon. In here it is always roughly hay o’clock.'],
     asks: [
       { q: 'You have made {produced} things in the workshops. Do you ever just sit on a bale and look at nothing?',
         a: [['Every evening', 'Good. Looking at nothing is the one crop that never fails.'], ['There is no time', 'The hay disagrees. It has done nothing for weeks and look how well it turned out.']] },
       { q: 'The cows watched you rearrange this barn. Would you like their review?',
         a: [['Go on', 'Three out of five. They preferred the old corner. Cows are conservative about corners.'], ['I fear it', 'Wise. They are still discussing it.']] }] }],
-  bakery: [{ id: 'helper', role: 'Baker’s helper', body: 'woman', hat: 'hat_chef', top: '#fff4e2', bottom: '#b98a4e', at: [-3.6, 2.8],
+  bakery: [{ id: 'helper', role: 'Baker’s helper', body: 'woman', hat: 'hat_chef', kit: 'armor_chef', top: '#fff4e2', bottom: '#b98a4e', at: [-3.6, 2.8],
     hello: ['Careful, it is warm in here. The oven and I have an understanding: it burns things and I apologise.', 'You are just in time. For what, I cannot say. Something is always nearly ready.'],
     asks: [
       { q: 'Bread is flour, water and waiting. Which of the three do you find hardest?',
@@ -68,7 +68,7 @@ export const ROOM_PEOPLE = {
           a: [['No', 'I feared as much. I shall keep circling the shelves, then.'], ['Level one: soup', 'Soup. Of course. It was soup all along.']] },
         { q: 'Do you ever buy back your own vegetables by accident?',
           a: [['Twice', 'And were they good? Be honest. You cannot sue yourself.'], ['I recognise them', 'By face? That is either devotion or a very small farm.']] }] }],
-  feed_mill: [{ id: 'miller', role: 'Miller', body: 'man', hat: 'hat_leather', top: '#c9a35a', bottom: '#5a4630', at: [-2.8, 1],
+  feed_mill: [{ id: 'miller', role: 'Miller', body: 'man', hat: 'hat_leather', kit: 'armor_leather', top: '#c9a35a', bottom: '#5a4630', at: [-2.8, 1],
     hello: ['Shout if you need me. The mill hears everything twice and understands none of it.', 'Dusty in here. We call it atmosphere and charge nothing for it.'],
     asks: [
       { q: 'I hear your hens have opinions about my feed. Favourable?',

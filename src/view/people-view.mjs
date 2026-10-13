@@ -24,7 +24,7 @@ import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { costumeOf, hatOf } from '../content/wardrobe.mjs';
+import { costumeOf, wearOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
@@ -170,7 +170,7 @@ export class PeopleView {
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
-    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, hatOf(this.s)) : w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
+    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, wearOf(this.s)) : w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     if (w.player) { const before = this.wornBefore; this.wornBefore = w.subject.rig; if (before && before !== w.subject.rig) releaseRig(before); }   // the hat you took off
     this.walkers.set(w.id, w); return w;
   }
