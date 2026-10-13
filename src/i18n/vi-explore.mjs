@@ -425,4 +425,8 @@ export const VI_EXPLORE = {
   "Sit, sit. You have earned a chair.": "Ngồi đi, ngồi đi. Con xứng đáng có một cái ghế rồi.",
   "A tidy desk. Somebody in this house is hiding something.": "Bàn gọn quá. Trong nhà này có người đang giấu gì đó.",
   "Star sailor": "Thủy thủ ngôi sao",
+  "No skirt": "Không mặc váy",
+  "Short skirt": "Váy ngắn",
+  "Knee skirt": "Váy ngang gối",
+  "Long skirt": "Váy dài",
 };

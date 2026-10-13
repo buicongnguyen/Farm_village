@@ -595,7 +595,7 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
-    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.redress(me); }
+    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook', 'playerSkirt'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.redress(me); }
 
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);

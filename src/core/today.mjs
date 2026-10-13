@@ -67,6 +67,7 @@ export const actions = {
       if (item && item.level > ctx.s.level) return ctx.fail('That is still locked');
       ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
     }
+    if (key === 'playerSkirt') { const v = Number(value); if (![0, 1, 2, 3].includes(v)) return ctx.fail('Unknown setting'); ctx.s.settings.playerSkirt = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
     const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
     if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');

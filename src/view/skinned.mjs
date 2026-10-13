@@ -297,11 +297,41 @@ function fitPiece(rig, part, mesh, headSpace = false) {
   g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
   return g;
 }
+/** A skirt made here, not loaded ("skirt:1" short, "skirt:2" to the knee, "skirt:3" long): sixteen pleats flaring from
+ *  the waist, about 190 triangles. It takes the trousers' colour (the bottom tint), hangs from the hips and rides on the
+ *  thighs (and the shins, when it is long) so it follows a stride. */
+function skirtPiece(rig, length) {
+  const fit = measure(rig), L = fit.sides[-1], R = fit.sides[1]; if (!L || !R || fit.index.hips === undefined) return null;
+  const hipY = (L.H.y + R.H.y) / 2, kneeY = (L.K.y + R.K.y) / 2, ankleY = (L.A.y + R.A.y) / 2, T = fit.torso;
+  const top = hipY + (T.y1 - hipY) * 0.2, foot = length <= 1 ? hipY + (kneeY - hipY) * 0.55 : length === 2 ? kneeY - (hipY - kneeY) * 0.06 : kneeY + (ankleY - kneeY) * 0.62;
+  const SEG = 16, ROWS = 6, n = SEG * ROWS, pos = new Float32Array(n * 3), col = new Float32Array(n * 3).fill(1), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), index = [], v = new THREE.Vector3();
+  const flare = 1.45 + 0.2 * length;
+  for (let r = 0; r < ROWS; r++) for (let s = 0; s < SEG; s++) {
+    const t = r / (ROWS - 1), a = s / SEG * Math.PI * 2, y = top + (foot - top) * t, wide = 1.1 + (flare - 1.1) * Math.pow(t, 0.8), pleat = 1 + (s % 2 ? 0.07 : -0.03) * t, i = r * SEG + s;
+    const x = Math.sin(a) * T.halfW * wide * pleat, z = T.cz + Math.cos(a) * T.halfD * 1.15 * wide * pleat;
+    v.set(x, y, z).applyMatrix4(rig.mesh.bindMatrixInverse); pos.set([v.x, v.y, v.z], i * 3);
+    const shade = 1 - 0.1 * (s % 2) - 0.08 * t; col.set([shade, shade, shade], i * 3);   // pleats and a darker hem
+    const side = smooth(-T.halfW * 0.25, T.halfW * 0.25, x), ride = smooth(hipY + (top - hipY) * 0.5, hipY - (hipY - kneeY) * 0.45, y) * 0.9, low = smooth(kneeY + 0.02, kneeY - (kneeY - ankleY) * 0.25, y);
+    const w = [[fit.index.hips, 1 - ride], [R.bones.thigh, ride * side * (1 - low)], [L.bones.thigh, ride * (1 - side) * (1 - low)], [R.bones.shin, ride * side * low], [L.bones.shin, ride * (1 - side) * low]]
+      .filter(([, q]) => q > 0.001).sort((p, q) => q[1] - p[1]).slice(0, 4), sum = w.reduce((q, [, e]) => q + e, 0) || 1;
+    w.forEach(([b, q], j) => { si[i * 4 + j] = b; sw[i * 4 + j] = q / sum; });
+    if (r) { const p0 = (r - 1) * SEG + s, p1 = (r - 1) * SEG + (s + 1) % SEG, c1 = r * SEG + (s + 1) % SEG; index.push(p0, i, c1, p0, c1, p1); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(index); g.computeVertexNormals();
+  const N = g.attributes.normal, P = g.attributes.position, c = new THREE.Vector3(0, 0, T.cz).applyMatrix4(rig.mesh.bindMatrixInverse);   // normals must look out
+  let out = 0; for (let i = 0; i < n; i++) out += (P.getX(i) - c.x) * N.getX(i) + (P.getZ(i) - c.z) * N.getZ(i);
+  if (out < 0) { for (let i = 0; i < index.length; i += 3) [index[i + 1], index[i + 2]] = [index[i + 2], index[i + 1]]; g.setIndex(index); g.computeVertexNormals(); }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('aSlot', new THREE.BufferAttribute(new Float32Array(n).fill(rig.def.tint ? 3 : 0), 1));
+  g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+  return g;
+}
 /** Put a wear list on a rig ("hat_straw", "kit:dz_pirate", or both joined by "+"): one merged geometry, no extra draw call. */
 async function putOn(rig, wear) {
   const parts = [];
   for (const id of wear.split('+')) {
-    if (id.startsWith('kit:')) for (const { part, mesh } of (await loadKits()).get(id.slice(4)) ?? []) parts.push(fitPiece(rig, part, mesh));
+    if (id.startsWith('skirt:')) parts.push(skirtPiece(rig, +id.slice(6)));
+    else if (id.startsWith('kit:')) for (const { part, mesh } of (await loadKits()).get(id.slice(4)) ?? []) parts.push(fitPiece(rig, part, mesh));
     else { const piece = (await loadWear()).get(id); if (piece) parts.push(fitPiece(rig, 'head', piece, true)); }
   }
   const merged = mergeGeometries([rig.geo, ...parts.filter(Boolean)], false); if (!merged) return;

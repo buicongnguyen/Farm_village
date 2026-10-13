@@ -2,7 +2,7 @@ import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, HOME_THINGS, roomAtLevel } from '../content/explore.mjs';
-import { wardrobe, wearOf, bodyOf, BODIES } from '../content/wardrobe.mjs';
+import { wardrobe, wearOf, bodyOf, BODIES, SKIRTS, skirtOf } from '../content/wardrobe.mjs';
 import { wornRig } from '../view/skinned.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
@@ -337,6 +337,10 @@ class ExploreMode {
     }
     if (action.startsWith('answer:') && this.talk) { this.talk.answer = +action.slice(7) ? 1 : 0; this.render(); return; }
     if (action === 'another' && this.talk) { this.talk = { n: this.talk.n + 1, answer: null }; this.render(); return; }
+    if (action.startsWith('skirt:')) {   // the mirror: no skirt, or one of three lengths (taking a costume off, which would hide it)
+      this.game.do('setting', { key: 'playerLook', value: '' }); const r = this.game.do('setting', { key: 'playerSkirt', value: +action.slice(6) }); this.said = r.ok ? null : t(r.reason);
+      this.room?.dress(this.state.settings).catch(() => {}); this.render(); return;
+    }
     if (action.startsWith('body:')) {   // the mirror: a man, a woman, a boy or a girl
       const r = this.game.do('setting', { key: 'playerBody', value: action.slice(5) }); this.said = r.ok ? null : t(r.reason);
       this.room?.dress(this.state.settings).catch(() => {}); this.render(); return;
@@ -505,7 +509,7 @@ class ExploreMode {
       const tabs = [['body', 'You'], ['shirt', 'Shirt'], ['hat', 'Hats'], ['look', 'Costumes']].map(([id, name]) => `<button type="button" class="tab${tab === id ? ' on' : ''}" data-explore="tab:${id}">${esc(t(name))}</button>`).join('');
       const piece = (action, o, on, hat) => `<button type="button" class="wear${on ? ' on' : ''}${o.open ? '' : ' locked'}" data-explore="${action}:${o.id}" ${o.open ? '' : 'disabled'} title="${esc(t(o.name))}"><img src="./assets/icons/wear/${hat}.webp" alt="" loading="lazy" width="48" height="48"><span>${esc(o.open ? t(o.name) : t('Level {level}', { level: o.level }))}</span></button>`;
       const none = (action, on) => `<button type="button" class="wear none${on ? ' on' : ''}" data-explore="${action}:"><i></i><span>${esc(t('None'))}</span></button>`;
-      const row = tab === 'body' ? `<div class="explore-bodies">${Object.values(BODIES).map(b => `<button type="button" class="btn${bodyOf(this.state).id === b.id ? ' primary' : ' ghost'}" data-explore="body:${b.id}">${esc(t(b.name))}</button>`).join('')}</div>`
+      const row = tab === 'body' ? `<div class="explore-bodies">${Object.values(BODIES).map(b => `<button type="button" class="btn${bodyOf(this.state).id === b.id ? ' primary' : ' ghost'}" data-explore="body:${b.id}">${esc(t(b.name))}</button>`).join('')}</div><div class="explore-bodies">${SKIRTS.map((name, i) => `<button type="button" class="btn${!st.playerLook && skirtOf(this.state) === i ? ' primary' : ' ghost'}" data-explore="skirt:${i}">${esc(t(name))}</button>`).join('')}</div>`
         : tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
         : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
           : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.kit ?? c.hat)).join('')}</div>`;
