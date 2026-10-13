@@ -3,6 +3,7 @@
 import { produceOf } from './surprises.mjs';
 import { afterCollect, FEED_MEALS } from './animals.mjs';
 import { outputTimes, animalYield } from './output.mjs';
+import { MACHINES, tractors } from './machines.mjs';
 import { companyKeep } from './village-growth.mjs';
 import { HELP, HANDS, WEAR } from '../content/economy.mjs';
 import { actions as production, collectableJobs } from './production.mjs';
@@ -25,7 +26,7 @@ export function tickHelpers(ctx) {
   s.helpAt = now + HELP.everyMs; if (late) return;
   const quiet = { ...ctx, fail: () => ({}), emit: ctx.emit };
   // June: harvest a few ripe beds and sow the same crop again
-  const ripe = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now).slice(0, HELP.beds);
+  const ripe = Object.keys(s.beds).filter(id => s.beds[id].doneAt <= now).slice(0, HELP.beds + MACHINES.beds * tractors(s));   // each tractor takes eight more
   if (ripe.length) {
     const crops = ripe.map(id => [id, s.beds[id].crop]);
     farm.harvest(quiet, { ids: ripe });

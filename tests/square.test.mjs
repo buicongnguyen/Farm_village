@@ -94,3 +94,19 @@ test('the new food workshops: every recipe has a maker, costs less than it sells
   const s = newGame(NOW, 22, { restore: true }); s.level = 14; const shown = productMap(s).cols.flat().map(g => g.id);
   for (const id of made) assert.ok(shown.includes(id), `${id} is not on the product map`);
 });
+test('machines: each working tractor shed adds eight beds to a round of help (two at most), a drone pad brings fruit a quarter sooner', async () => {
+  const { MACHINES, tractors, sprayFactor } = await import('../src/core/machines.mjs'), { plan, onLoop } = await import('../src/view/machines-view.mjs').catch(() => ({}));
+  const { BUILDINGS } = await import('../src/content/buildings.mjs');
+  const s = newGame(NOW, 31, { restore: true }); s.level = 14;
+  assert.equal(tractors(s), 0); assert.equal(sprayFactor(s), 1);
+  for (const [id, x] of [['t1', 60], ['t2', 64], ['t3', 68]]) s.placed[id] = { kind: 'tractor_shed', x, z: 40, rot: 0 };
+  assert.equal(tractors(s), 2, 'a third tractor counted'); s.cond.t1 = { level: 3, ms: 0 }; s.cond.t2 = { level: 3, ms: 0 }; assert.equal(tractors(s), 1, 'a broken shed still works');
+  s.placed.pad = { kind: 'drone_pad', x: 72, z: 40, rot: 0 }; assert.equal(sprayFactor(s), MACHINES.spray); assert.ok(MACHINES.spray < 1 && MACHINES.beds >= 4);
+  assert.equal(BUILDINGS.tractor_shed.max, 2); assert.equal(BUILDINGS.drone_pad.max, 1);
+  if (plan) {   // (the view's own sums: where the machines go)
+    const p = plan(s); assert.equal(p.sheds.length, 1); assert.ok(p.pad); assert.ok(p.loop, 'no loop round the beds');
+    const per = 2 * (p.loop[2] - p.loop[0] + p.loop[3] - p.loop[1]), a = onLoop(p.loop, 0), b = onLoop(p.loop, per);
+    assert.ok(Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6, 'the loop does not close');
+    for (let u = 0; u < per; u += per / 16) { const [x, z] = onLoop(p.loop, u); assert.ok(x >= p.loop[0] - 1e-6 && x <= p.loop[2] + 1e-6 && z >= p.loop[1] - 1e-6 && z <= p.loop[3] + 1e-6); }
+  }
+});

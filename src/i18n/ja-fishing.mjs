@@ -1152,4 +1152,8 @@ export const JA_FISHING = {
   'Music in the {name}: calm animals give half as much again': '{name}に音楽が流れます。落ち着いた動物は、とれる量が1.5倍に',
   'There is nothing to add here': 'ここに追加できるものはありません',
   'Repair it first': 'まず修理しましょう',
+  'Tractor shed': 'トラクター小屋',
+  'Drone pad': 'ドローン発着場',
+  'harvests and sows 8 more beds at every round of help': '手伝いのたびに、うねを8つ多く収穫して種まきします',
+  'sprays the orchard: fruit comes a quarter sooner': '果樹園に散布します。実が四分の一早くなります',
 };
