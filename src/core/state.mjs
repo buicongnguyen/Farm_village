@@ -1,3 +1,4 @@
+import { normalizeInsight } from './insight-state.mjs';
 import { normalizeFieldWork } from './field-work-state.mjs';
 import { normalizeOutput } from './output.mjs';
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
@@ -143,6 +144,7 @@ export function withDefaults(s) {
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.today.earnedBase ??= s.stats?.coinsEarned ?? 0;   // the evening report (core/report.mjs): an old save's day starts counting now
   s.stats = { ...fresh.stats, ...s.stats };
+  if (s.insight !== undefined) s.insight = normalizeInsight(s);
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };
   if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger

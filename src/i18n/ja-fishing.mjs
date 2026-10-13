@@ -1136,4 +1136,12 @@ export const JA_FISHING = {
   'Minutes': '分',
   'See the big picture of your farm': '農場の全体のようすを見る',
   'Level': 'レベル',
+  "{a} of {b} beds are planted": "{b}区画のうち{a}区画に作物を植えています",
+  "An empty bed is room for your next idea. Plant a crop when it suits your plans.": "空いた畑は、新しいことを始める場所。育てたい作物が決まったら植えてみましょう。",
+  "Turn spare ingredients into useful goods. Check the recipe margin before filling more trays.": "余った材料で役立つ品物を作れます。次の仕込みを始める前に、材料代を引いた利益を確認してみましょう。",
+  "Your fields have yielded {n} crops. That is plenty to share with the village.": "畑で作物を{n}個収穫しました。村のみんなと分け合うものが増えましたね。",
+  "Needs a technique": "技術を覚えましょう",
+  "Needs a source or repair": "材料の入手先や修理が必要です",
+  "Estimates use base prices and your upgrades. Allow time for ingredients; sale bonuses and wages can change the result.": "基本価格と現在の強化内容による見積もりです。材料の準備時間も必要です。販売ボーナスや人件費によって実際の利益は変わります。",
+  "Needs a level or technique": "レベルアップか技術の習得が必要",
 };

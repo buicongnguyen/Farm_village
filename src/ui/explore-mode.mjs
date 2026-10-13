@@ -22,7 +22,7 @@ import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
 import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
-import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
+import { ROOM_PEOPLE, withPeople, roomConversation } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
 
@@ -476,11 +476,9 @@ class ExploreMode {
     const person = this.kind ? this.session?.room.people?.find(w => `person_${w.id}` === this.card) ?? null : null;   // (with where they stand: the card keeps off them)
     if (this.room) this.room.talking = person?.id ?? null;
     if (person && this.talk) {   // hello, one question about your own farm, two ways to answer, and what they make of it
-      const st = this.state, nums = talkNumbers(st, FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length), 
-        fair = person.asks.filter(a => [...a.q.matchAll(/\{(\w+)\}/g)].every(m => nums[m[1]] > 0)), asks = fair.length ? fair : person.asks,   // never “0 harvests”
-        ask = asks[this.talk.n % asks.length], said = this.talk.answer;
-      card = `<h2>${esc(t(person.role))}</h2>` + (said === null
-        ? `<p>${esc(t(person.hello[this.talk.n % person.hello.length]))}</p><p><b>${esc(t(ask.q, nums))}</b></p>${ask.a.map(([text], i) => button(`answer:${i}`, text, 'primary')).join('')}${button('back', 'Back', 'ghost')}`
+      const st = this.state, { nums, hello, ask } = this.talk.data ??= roomConversation(person, st, FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length, this.talk.n), said = this.talk.answer;
+      card = `<h2>${esc(t(person.role))}</h2>` + (!ask ? `<p>${esc(t(hello))}</p>${button('back', 'Back', 'ghost')}` : said === null
+        ? `<p>${esc(t(hello))}</p><p><b>${esc(t(ask.q, nums))}</b></p>${ask.a.map(([text], i) => button(`answer:${i}`, text, 'primary')).join('')}${button('back', 'Back', 'ghost')}`
         : `<p>${esc(t(ask.q, nums))}</p><p class="explore-you">${esc(t(ask.a[said][0]))}</p><p><b>${esc(t(ask.a[said][1]))}</b></p>${button('another', 'Another question', 'primary')}${button('back', 'Back', 'ghost')}`);
     }
     if (this.kind && this.objects[this.card]?.text) card = `<h2>${esc(t(this.objects[this.card].label))}</h2><p>${esc(t(this.objects[this.card].text))}</p>${button('back', 'Back', 'ghost')}`;

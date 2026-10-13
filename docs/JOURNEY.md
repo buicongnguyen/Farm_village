@@ -276,6 +276,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | Cross-stage proposal: farm variety, machinery and northwest playground | **Design only, 2026-10-12**: [combined implementation plan](FARM-EXPANSION-IMPLEMENTATION-PLAN.md), including the proposed 30/300 capacity model, animal care, orchards, a recreation business, story and validation phases. No new mechanics implemented. |
 | Cross-stage follow-up: farmhouse work board | First crop-assignment slice implemented and validated on `codex/helper-work-board`; awaiting review, not live. [Scope](WORK-BOARD-IMPLEMENTATION.md). Tractors, new fields and the playground remain planned. |
 | Review of October orchard, surprises and home life | **Fixed and validated on the feature branch, not deployed (2026-10-13)**: preserved tree upgrades and graft credits, corrected lucky-event accounting, source guidance and home rewards. Latest main integrated through `73fa8f5`; validation recorded in [the review](plan/95-review.md). |
+| Review of farm reports and indoor life | **Fixed and validated on the feature branch (2026-10-13)**: safe growth history, honest earnings/source advice, stable indoor conversations and recoverable costumes with room cleanup. Includes main through `2b2e57c`; see [the review](plan/95-review.md). Not deployed. |
 
 ### Picnic branch integration — 2026-10-12
 

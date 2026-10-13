@@ -16,27 +16,27 @@ const tabs = on => `<div class="tabs insight-tabs">${[['', 'Where we stand'], ['
 function overview(s, now) {
   const list = scores(s, now), ranked = [...list].sort((a, b) => b.score - a.score), best = ranked[0], next = ranked.at(-1), total = Math.round(list.reduce((n, x) => n + x.score, 0) / list.length);
   const bars = list.map(x => `<div class="insight-row" data-score="${x.id}"><b>${t(x.name)}</b><div class="insight-bar ${x.score >= 70 ? 'high' : x.score >= 40 ? 'mid' : 'low'}"><i style="width:${Math.max(4, x.score)}%"></i><span>${x.score}</span></div><small>${t(x.text, x.params)}</small></div>`).join('');
-  const make = bestMakes(s).map(m => `<li>${goodIcon(m.id, 'mini')} <b>${nameOf(m.id)}</b> <span>${t('+{gain} coins a batch, {rate} a minute', { gain: num(m.gain), rate: num(m.perMin) })}</span>${m.ready ? '' : `<small>${t('Build the {place} first', { place: placeOf(m.at) })}</small>`}</li>`).join('');
+  const make = bestMakes(s, 3, now).map(m => `<li>${goodIcon(m.id, 'mini')} <b>${nameOf(m.id)}</b> <span>${t('+{gain} coins a batch, {rate} a minute', { gain: num(m.gain), rate: num(m.perMin) })}</span>${m.ready ? '' : `<small>${t(m.reason, { place: placeOf(m.at) })}</small>`}</li>`).join('');
   const crops = bestCrops(s).map(c => `${goodIcon(c.id, 'mini')} ${nameOf(c.id)}`).join(' · ');
   return `<section class="insight-praise">${iconHtml('ui:heart', '', 'mini')}<div><b>${t('What you have done')}</b>${praise(s, now).map(([text, p]) => `<p>${t(text, Object.fromEntries(Object.entries(p).map(([k, v]) => [k, num(v)])))}</p>`).join('')}</div></section>
     <h3>${t('Where the farm stands')} <span class="insight-total">${total}/100</span></h3>${bars}
     <section class="insight-next"><p><b>${t('Your strongest side')}:</b> ${t(best.name)}. ${t('Well done. That side of the farm runs like a clock.')}</p>
       ${next.score < 100 ? `<p><b>${t('The next thing to grow')}:</b> ${t(next.name)}. ${t(next.tip)}</p>` : `<p>${t('Every side of the farm is full. There is nothing here to put right, only more to dream up.')}</p>`}</section>
-    ${make ? `<h3>${t('What pays best to make now')}</h3><ul class="insight-makes">${make}</ul>` : ''}
+    ${make ? `<h3>${t('What pays best to make now')}</h3><p class="hint">${t('Estimates use base prices and your upgrades. Allow time for ingredients; sale bonuses and wages can change the result.')}</p><ul class="insight-makes">${make}</ul>` : ''}
     ${crops ? `<p class="hint">${t('Best crops for a bed at your level')}: ${crops}</p>` : ''}
     <p class="insight-cheer">${t('Whatever the bars say, the valley is better for every day you spend in it.')}</p>`;
 }
 function map(s, focus) {
-  const m = productMap(s), W = 76, H = 70, rows = Math.max(1, ...m.cols.map(c => c.length)), at = {}, lit = focus && makes()[focus] ? chainOf(m, focus) : null;
+  const m = productMap(s), W = 76, H = 70, rows = Math.max(1, ...m.cols.map(c => c.length)), at = {}, lit = focus && Object.hasOwn(makes(), focus) ? chainOf(m, focus) : null;
   m.cols.forEach((col, c) => col.forEach((g, r) => { at[g.id] = [c * W, r * H]; }));
   const lines = m.edges.map(([a, b]) => { const [x1, y1] = at[a], [x2, y2] = at[b], on = lit?.has(a) && lit?.has(b); return `<path class="${on ? 'on' : lit ? 'off' : ''}" d="M${x1 + 58} ${y1 + 26} C${x1 + 76} ${y1 + 26} ${x2 - 14} ${y2 + 26} ${x2 + 4} ${y2 + 26}"/>`; }).join('');
-  const nodes = m.cols.flat().map(g => `<button class="insight-node${g.open ? g.ready ? ' ready' : ' open' : ' later'}${lit ? lit.has(g.id) ? ' lit' : ' dim' : ''}${focus === g.id ? ' focus' : ''}" style="left:${at[g.id][0]}px;top:${at[g.id][1]}px" data-do="insight" data-arg="map:${g.id}" title="${nameOf(g.id)}">${goodIcon(g.id, 'mini')}<small>${g.open ? nameOf(g.id) : t('Level {level}', { level: g.level })}</small></button>`).join('');
-  const info = focus && makes()[focus] ? (() => {
+  const nodes = m.cols.flat().map(g => `<button class="insight-node${g.open ? g.ready ? ' ready' : ' open' : ' later'}${lit ? lit.has(g.id) ? ' lit' : ' dim' : ''}${focus === g.id ? ' focus' : ''}" style="left:${at[g.id][0]}px;top:${at[g.id][1]}px" data-do="insight" data-arg="map:${g.id}" title="${nameOf(g.id)}">${goodIcon(g.id, 'mini')}<small>${g.open ? nameOf(g.id) : g.level > (s.level ?? 1) ? t('Level {level}', { level: g.level }) : t('Needs a technique')}</small></button>`).join('');
+  const info = focus && Object.hasOwn(makes(), focus) ? (() => {
     const g = makes()[focus], from = g.from.map(nameOf).join(' + ');
     return `<p class="insight-info">${goodIcon(focus, 'mini')} <b>${nameOf(focus)}:</b> ${from ? t('made at the {place} from {from}', { place: placeOf(g.at), from }) : t('grown at the {place}', { place: placeOf(g.at) })} · ${coinMark()} ${num(valueOf(focus))}${g.level > s.level ? ` · ${t('Level {level}', { level: g.level })}` : ''}</p>`;
   })() : `<p class="hint">${t('Left to right: what you grow, what you make from it, and what you make from that. Tap a good to light its whole chain.')}</p>`;
   return `${info}<div class="insight-map-wrap"><div class="insight-map" style="width:${m.cols.length * W}px;height:${rows * H}px"><svg width="${m.cols.length * W}" height="${rows * H}" aria-hidden="true">${lines}</svg>${nodes}</div></div>
-    <p class="insight-legend"><i class="ready"></i>${t('You can make it')} <i class="open"></i>${t('Needs its building')} <i class="later"></i>${t('Opens at a later level')}</p>`;
+    <p class="insight-legend"><i class="ready"></i>${t('You can make it')} <i class="open"></i>${t('Needs a source or repair')} <i class="later"></i>${t('Needs a level or technique')}</p>`;
 }
 function growthPage(s) {
   const g = growth(s), tr = trend(s);

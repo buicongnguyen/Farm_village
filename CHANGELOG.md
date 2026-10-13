@@ -1,5 +1,13 @@
 # Changelog
 
+## Review of farm reports, indoor conversations and costumes - 2026-10-13 (unreleased)
+
+- Integrated the indoor people, fitted costumes, family movement and farm-report updates (PRs #123-#125), plus the pool model from #126. Existing work-board, orchard and lucky-event fixes remain on this branch.
+- Malformed optional growth history can no longer break level-ups or inject invalid chart values. Earnings trends use total elapsed time, so a short level cannot outweigh a long one.
+- Product maps use functioning ingredient chains and learned techniques. Profit estimates include purchased output upgrades and current production speed; free wheat includes both harvested grains. The report explains its pricing assumptions and uses gentler, accurate crop wording in all four languages.
+- Indoor conversations no longer invent hours of play and keep the same question and numbers until answered. Failed outfit downloads can be retried; leaving a room frees its character instances, cloned crowd geometry and spare actors.
+- Costume fitting loads on demand, and land-memory rendering travels with the existing deferred panels. The loading limit remains unchanged. Added seven rules regressions and a four-language browser suite; validation is recorded in `docs/plan/95-review.md`.
+
 ## Review of orchard, lucky events and home life - 2026-10-13 (unreleased)
 
 - Integrated main through `73fa8f5` while retaining the finite farmhouse work board. Grafted saplings survive Undo; stored trees retain their growth bonus, special fruit and branch progress after reload. A branch cut prevents undoing the tree to cut the same branch again.

@@ -14,7 +14,6 @@ import { showExplorationMemory } from './exploration-panels.mjs';
 // Advice cards load with the panel renderers (this.renderer), which also carries their three actions: an advice card
 // can only be on screen once that chunk is in, so its buttons act at once.
 import { showLetter } from './bonds-panels.mjs';
-import { showLandMemory } from './land-panel.mjs';
 import { goodIcon, glyph, iconHtml } from './icon.mjs';
 import { onModal } from './modal.mjs';
 
@@ -107,8 +106,8 @@ export class Panels {
     else if (d.do === 'goodHelpReturn') this.returnFromHelp();
     else if (d.do === 'landVisit') { this.close(); this.onLandVisit?.(d.parcel); }
     else if (d.do === 'landBuy') { if (g.do('buyParcel', { parcel: d.parcel }).ok) this.onLandVisit?.(d.parcel); }
-    else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) showLandMemory(g); }
-    else if (d.do === 'landMemory') showLandMemory(g);
+    else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) this.renderer.showLandMemory(g); }
+    else if (d.do === 'landMemory') this.renderer.showLandMemory(g);
     else if (d.do === 'contracts') this.show('contracts');
     else if (d.do === 'supermarket' || d.do === 'shopMemory') this.show(d.do, d.id);
     else if (d.do === 'shopBuild') { this.close(); this.onBuildKind?.('supermarket'); }

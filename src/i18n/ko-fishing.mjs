@@ -1136,4 +1136,12 @@ export const KO_FISHING = {
   'Minutes': '분',
   'See the big picture of your farm': '농장의 큰 그림 보기',
   'Level': '레벨',
+  "{a} of {b} beds are planted": "밭 {b}곳 중 {a}곳에 작물을 심었어요",
+  "An empty bed is room for your next idea. Plant a crop when it suits your plans.": "빈 밭에는 새로운 걸 심을 수 있어요. 계획에 맞춰 천천히 골라 보세요.",
+  "Turn spare ingredients into useful goods. Check the recipe margin before filling more trays.": "남는 재료로 쓸모 있는 물건을 만들어 보세요. 작업을 더 시작하기 전에 재료값을 뺀 수익을 확인해 보세요.",
+  "Your fields have yielded {n} crops. That is plenty to share with the village.": "밭에서 작물 {n}개를 거뒀어요. 마을과 나눌 것이 그만큼 늘었네요.",
+  "Needs a technique": "기술을 배워야 해요",
+  "Needs a source or repair": "재료 공급원이나 수리가 필요해요",
+  "Estimates use base prices and your upgrades. Allow time for ingredients; sale bonuses and wages can change the result.": "기본 가격과 현재 업그레이드로 계산한 예상치예요. 재료를 준비하는 시간도 필요하며, 판매 보너스와 임금에 따라 실제 수익은 달라져요.",
+  "Needs a level or technique": "레벨을 올리거나 기술을 배워야 해요",
 };

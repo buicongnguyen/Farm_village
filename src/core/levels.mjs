@@ -1,3 +1,4 @@
+import { normalizeInsight } from './insight-state.mjs';
 // XP and levels (ECONOMY 6).
 import { LEVELS } from '../content/economy.mjs';
 import { CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
@@ -7,7 +8,7 @@ import { BUILDINGS } from '../content/buildings.mjs';
 export const xpFor = LEVELS.xpFor;
 /** A mark for the big picture's growth page (core/insight.mjs): the farm's running totals as this level began. The last 40 are kept. */
 function mark(s) {
-  const st = s.stats ?? {}, list = (s.insight ??= { levels: [] }).levels ??= [];
+  const st = s.stats ?? {}, history = normalizeInsight(s), list = history.levels.filter(row => row.l < s.level); s.insight = { levels: list };
   list.push({ l: s.level, c: st.coinsEarned ?? 0, m: st.produced ?? 0, o: st.ordersFilled ?? 0, ms: st.playMs ?? 0 }); while (list.length > 40) list.shift();
 }
 /** Add XP; emits a 'levelUp' event per level gained. */

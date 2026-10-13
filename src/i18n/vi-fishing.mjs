@@ -1136,4 +1136,12 @@ export const VI_FISHING = {
   'Minutes': 'Phút',
   'See the big picture of your farm': 'Xem bức tranh toàn cảnh nông trại',
   'Level': 'Cấp',
+  "{a} of {b} beds are planted": "Đã gieo trồng {a}/{b} luống",
+  "An empty bed is room for your next idea. Plant a crop when it suits your plans.": "Luống đất trống đang chờ ý tưởng mới. Cứ chọn cây và gieo trồng theo ý bạn nhé.",
+  "Turn spare ingredients into useful goods. Check the recipe margin before filling more trays.": "Nguyên liệu dư có thể làm thành những món hữu ích. Hãy xem phần giá trị tăng thêm trước khi làm thêm mẻ nhé.",
+  "Your fields have yielded {n} crops. That is plenty to share with the village.": "Ruộng vườn đã cho {n} nông sản. Có bao nhiêu món ngon để chia sẻ với cả làng!",
+  "Needs a technique": "Cần học kỹ thuật",
+  "Needs a source or repair": "Cần nguồn nguyên liệu hoặc sửa chữa",
+  "Estimates use base prices and your upgrades. Allow time for ingredients; sale bonuses and wages can change the result.": "Ước tính theo giá gốc và các nâng cấp hiện có. Bạn còn cần thời gian chuẩn bị nguyên liệu; tiền thưởng bán hàng và tiền công có thể làm kết quả thay đổi.",
+  "Needs a level or technique": "Cần lên cấp hoặc học kỹ thuật",
 };

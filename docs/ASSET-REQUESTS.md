@@ -699,3 +699,10 @@ Completed writer: Codex on `codex/helper-work-board`, base `70fea6e`; implementa
 Work-board placement review: use 27,68; the first candidate at 27,56 overlapped the market cart. Hide the stand-in when an older player object occupies the new cell; preserve the farmhouse/Friends menu route. Runtime notifications are owned by Codex for this slice and use existing effects unchanged.
 
 Handoff verification: 722 native tests, pace simulation, all 44 browser suites and the final 50-check smoke run pass. Relevant work-board/Explore checks were repeated during review. No art-lane files or binaries changed. See [implementation scope and validation](WORK-BOARD-IMPLEMENTATION.md). The branch awaits review; main has not been changed.
+
+
+### 2026-10-13: Codex review of PRs #123-#125
+
+Completed writer: Codex on `codex/helper-work-board`, integration `f0131ee` (main `438a568`), followed by pool-only main `2b2e57c` in `589ebf6`. Reviewing insight accounting, unlock guidance and safe save history. Shared-view scope: `src/view/skinned.mjs`, a lazily loaded costume-fitting module, and `src/view/explore-room.mjs` for failed-download recovery and disposal when leaving a room. Preserve Claude's geometry, fitting constants, palettes and assets exactly; no binary or generator changes. UI/story review includes truthful indoor statistics and browser coverage of the new panels and costumes.
+
+Handoff: PR #111 contains the review fixes and lazy costume-fitting module. No shared-view reservation remains after this handoff. Validation: 773 unit tests, all 46 browser suites, 50 full-game smoke checks, three final affected-suite repeats, and production English/Vietnamese boots pass. Final first load is 1,296,670 / 1,300,000 bytes. Main is unmodified by this review; see `docs/plan/95-review.md` for findings and limits.

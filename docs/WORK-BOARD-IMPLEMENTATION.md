@@ -36,3 +36,10 @@ Review fixes included moving the board clear of the market cart, truthful helper
 Latest main through `73fa8f5` was merged in `51165b2`. The work-board handlers, observation before helper work and save normalization coexist with the new notebook and lucky-event systems. The orchard, reward and home-activity fixes are recorded in [the review](plan/95-review.md). PR #111 remains the review branch; it is not deployed.
 
 Integration validation: 757/757 unit tests, all 45 browser suites, five affected suites repeated on the final build, and 50/50 full-game smoke checks passed. The final production first load is 1,296,097 / 1,300,000 bytes; school and clinic remain day 3 for steady play. See the dated review for limitations.
+
+
+## Farm-report and indoor-life follow-up - 2026-10-13
+
+PR #111 now integrates main through `2b2e57c` (indoor people, fitted costumes, farm reports and the pool art). The additional fixes cover safe progress-history imports, accurate rates and source readiness, learned unlocks, stable indoor questions, retryable costumes and room graphics cleanup. The work-board design and finite assignment rules remain as documented above.
+
+Validation: 773/773 unit tests, all 46 browser suites and 50/50 full-game smoke checks pass; the work board still passes all eight language/viewport combinations. Three affected suites were repeated after the final asset/legend integration. Production first load is 1,296,670 / 1,300,000 bytes, and English/Vietnamese production boots pass. Full findings and the Safari limitation are in [the review](plan/95-review.md). Awaiting PR review; not deployed.

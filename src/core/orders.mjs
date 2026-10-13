@@ -17,7 +17,7 @@ import { cropOpen } from './learning-state.mjs';
 export const slots = s => ORDERS.slots(s.level);
 /** Renewable sources for new random orders. Existing cards stay saved when a source is stored or needs repair.
  * A maker alone is not enough: follow every ingredient back to real beds, planted trees, animals and feed. */
-export function orderable(s) {
+export function sourceGoods(s) {
   const placed = Object.entries(s.placed), memo = new Map();
   const has = kind => placed.some(([id, p]) => p.kind === kind && isWorking(s, id));
   const beds = placed.some(([, p]) => p.kind === 'bed');
@@ -39,8 +39,9 @@ export function orderable(s) {
     }
     memo.set(good, ok); return ok;
   };
-  return Object.keys(GOODS).filter(good => !good.endsWith('_feed') && source(good));
+  return Object.keys(GOODS).filter(source);
 }
+export const orderable = s => sourceGoods(s).filter(good => !good.endsWith('_feed'));
 /** People who can post orders now: villagers who are here (not noOrders ones such as your own family), neighbours, and
  * families who have moved in. */
 export function posters(s, now) {

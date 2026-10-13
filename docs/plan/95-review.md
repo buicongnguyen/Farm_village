@@ -129,3 +129,30 @@ Validation:
 - Browser coverage is Chromium desktop and phone emulation. The optional WebKit engine is unavailable locally; physical iPhone/Safari behavior is unverified.
 
 No main merge or deployment is part of this review request. Previously lost upgrade metadata or overwritten rent windows cannot be reconstructed from old saves.
+
+
+## Farm reports and indoor life review - 2026-10-13 (PR #111, not deployed)
+
+Reviewed PRs #123-#125 from main `438a568`, integrated in `f0131ee`, against the pending work-board and prior orchard/lucky-event fixes. The pool-only PR #126 (`2b2e57c`) subsequently merged cleanly in `589ebf6`; its generator and model are kept together and unchanged.
+
+Reproduced and fixed:
+
+- **Level-up safety:** optional insight history was trusted on import. A string, non-array `levels`, or invalid rows could throw during the next XP award or produce invalid chart markup. History now keeps only bounded, ordered, nonnegative integer snapshots, both at save migration and level-up; chart reads are pure.
+- **Earnings comparisons:** averaging per-level rates gave a one-minute level as much weight as a 99-minute level. Equal overall earning rates could be reported as falling. Trends now divide each comparison period's total earnings by its actual elapsed time; zero-duration intervals are ignored.
+- **Production guidance:** a building's mere presence marked goods ready even when broken or missing its animals/feed chain. Reports share renewable-source validation with orders, include learned crops and early learned recipes, and distinguish missing ingredients, repairs and absent buildings. Recipe margins use output multipliers and current worker/sluice duration; crop estimates count both free wheat grains. Estimates explicitly exclude sale bonuses, wages and upstream production time.
+- **Dialogue:** the nurse credited even a new farm with at least two played hours. Progress questions now use actual numbers and omit inapplicable topics. An open conversation snapshots its selected greeting, question and numbers, preventing an intervening harvest from attaching the reply to a different question.
+- **Costume downloads:** failed fitting downloads were swallowed, caching an undressed body as a successfully fitted outfit. Failure now propagates and clears the failed rig/asset promises; choosing the outfit again can recover without a reload. Successful fitting still uses Claude's exact proportions and geometry.
+- **Room cleanup:** retiring a room cast previously forgot subjects without freeing its spare actors or tinted crowd copies. Retirement now removes and disposes owned instances, mixer bindings and geometry while preserving shared templates. Retired outfit gait work stops before creating more frames. Crowd resizing also releases its previous tinted geometry.
+- **Loading and UI:** costume fitting is optional; land-memory UI is supplied by the already deferred panel renderer. No budget was raised. Inherited product-map focus keys are rejected, and report copy avoids invented manual harvests and pressure about empty beds. New report strings have Vietnamese, Korean and Japanese translations.
+
+Regression evidence: the six initial new rules cases failed before the fixes; seven now pass in `tests/review-insight.test.mjs`. `tests/review-insight.browser.mjs` checks all four language editions at 390/1280 px, actual product-map readiness and chart values, a failed costume fetch followed by successful retry, wardrobe selection, room graphics disposal and a changing-stat conversation. The Vietnamese phone chart was visually inspected.
+
+Validation:
+
+- `npm test`: 773/773 passed, repeated after integrating the pool asset and final translated legend. `npm run sim` passes; steady school and clinic remain day 3.
+- All 46 browser suites passed. The full-game smoke run passed 50/50, including chapters 1-20; its simulated 4G first scene took 2,710 ms against the 3,500 ms target.
+- Rebuilt after the pool-only merge and final legend correction, then repeated `art-footprints`, `world` and `review-insight`; all passed. The four report languages, costume retry, room disposal and stable conversation were rechecked on this final test build. Rendering stays within 120 draws / 300,000 triangles at every tested zoom.
+- Final test first load: 1,297,028 bytes. Final production first load: 1,296,670 / 1,300,000 bytes (3,330 bytes headroom). Production menu/farm boots in English and Vietnamese with no page errors or test hook.
+- Optional WebKit was unavailable, so browser evidence covers Chromium desktop/phone emulation only.
+
+Limitations: browser coverage is Chromium desktop and phone emulation, not physical iPhone/Safari. This review does not rebalance the whole economy or add a new progression stage. Previously corrupted optional chart rows are discarded; coins, levels and ordinary game progress are preserved. PR #111 remains unmerged and the live game is unchanged by this review.
