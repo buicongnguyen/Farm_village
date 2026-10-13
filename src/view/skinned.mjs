@@ -279,6 +279,7 @@ function refit(fit, part, x, y, z) {
 }
 /** One piece (its part and its mesh) as a skinned geometry on this rig, in the rig's own bind space. */
 function fitPiece(rig, part, mesh, headSpace = false) {
+  const asHair = part.endsWith('+hair'); if (asHair) part = part.slice(0, -5);   // hair pieces (buns, tails): white here, tinted with the wearer's hair
   const fit = measure(rig), src = mesh.geometry, n = src.attributes.position.count, C = src.attributes.color, v = new THREE.Vector3();
   const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
   for (let i = 0; i < n; i++) {
@@ -286,13 +287,13 @@ function fitPiece(rig, part, mesh, headSpace = false) {
     if (headSpace) v.multiplyScalar(CHIBI.headWidth).setY(v.y + CHIBI.headTop);   // a hat is stored from the top of the head
     const r = refit(fit, part, v.x, v.y, v.z); if (!r) return null;
     r.p.applyMatrix4(rig.mesh.bindMatrixInverse); pos.set([r.p.x, r.p.y, r.p.z], i * 3);
-    col.set(C ? [C.getX(i), C.getY(i), C.getZ(i)] : [1, 1, 1], i * 3);
+    col.set(C && !asHair ? [C.getX(i), C.getY(i), C.getZ(i)] : [1, 1, 1], i * 3);
     const w = r.w.filter(([b, k]) => b !== undefined && k > 0.001), sum = w.reduce((t, [, k]) => t + k, 0) || 1;
     w.slice(0, 4).forEach(([b, k], j) => { si[i * 4 + j] = b; sw[i * 4 + j] = k / sum; });
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(Array.from(src.index.array)); g.computeVertexNormals();
-  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('aSlot', new THREE.BufferAttribute(new Float32Array(n), 1));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('aSlot', new THREE.BufferAttribute(new Float32Array(n).fill(asHair && rig.def.tint ? 1 : 0), 1));
   g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
   return g;
 }

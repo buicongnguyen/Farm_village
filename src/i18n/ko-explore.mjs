@@ -422,4 +422,5 @@ export const KO_EXPLORE = {
   "Every trick in that notebook was a mistake first.": "그 수첩의 요령은 전부 처음엔 실수였단다.",
   "Sit, sit. You have earned a chair.": "앉아, 앉아. 의자 하나쯤은 받을 만하지.",
   "A tidy desk. Somebody in this house is hiding something.": "책상이 깔끔하네. 이 집에 누가 뭘 숨기고 있어.",
+  "Star sailor": "별의 세일러",
 };
