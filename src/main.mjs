@@ -232,6 +232,7 @@ new Bonds({ game, hud });
 new LevelUp({ game, busy: () => build.open || radial.isArmed(), onShow: ({ type, id }) => {
   if (type === 'building' && BUILDINGS[id]) { panels.close(); build.cat = BUILDINGS[id].cat; if (!build.open) build.show(); else build.render(); }
   else if (type === 'recipe') { const at = RECIPES[id]?.at, pid = Object.keys(game.s.placed).find(k => game.s.placed[k].kind === at); if (pid) { const p = game.s.placed[pid]; flyTo((p.x + 1) * CELL, (p.z + 1) * CELL); panels.show('production', pid); } }
+  else if (type === 'insight') panels.show('insight');
   else if (type === 'crop') { const o = parcelOrigin(START_PARCEL); flyTo((o.x + 6) * CELL, (o.z + 4) * CELL); hud.toast(t('Tap an empty bed to plant it'), 'info', { icon: id }); }
 } });
 
