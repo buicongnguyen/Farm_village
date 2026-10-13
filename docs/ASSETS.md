@@ -168,3 +168,7 @@ the same games' costume kits in the chibi's own space, and `src/view/skinned.mjs
 onto a villager's bones (body over hips, spine and chest; sleeves and legs blended at the elbow and knee), so a costume
 in `src/content/wardrobe.mjs` is real clothes, usually with a hat. The house activities in `src/content/explore.mjs`
 (`HOME_THINGS`) follow Willowmere's `house-rules.mjs` in idea only; the words and rules are Hollowbrook's.
+
+The **Star sailor** costume (`dz_star`, 2026-10-14) is our own: `art/blender/build_star_sailor.py` authors it with Zoo
+Garden's costume tools (imported from the owner's `cute_game`, which is not changed) as an original magical-girl sailor
+outfit, not a copy of any one character. Its buns and tails are marked as hair, so they take the wearer's hair colour.

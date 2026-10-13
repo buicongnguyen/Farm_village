@@ -27,6 +27,7 @@ export const COSTUMES = {
   cloud: { name: 'Cloud jumper', kit: 'armor_cloud', top: '#8fd0e8', bottom: '#4a5568', level: 6 },
   sailor: { name: 'Sailor', kit: 'dz_navy', top: '#f5f7fb', bottom: '#1f3a6b', level: 7 },
   ninja: { name: 'Ninja', kit: 'dz_ninja', top: '#1f2a5a', bottom: '#1f2a5a', level: 8 },
+  star: { name: 'Star sailor', kit: 'dz_star', top: '#fffdf7', bottom: '#5b4fe0', level: 9 },   // our own (art/blender/build_star_sailor.py)
   dino: { name: 'Dino suit', kit: 'dz_dino', top: '#3fbf3f', bottom: '#3fbf3f', level: 10 },
   winter: { name: 'Winter red', kit: 'armor_santa', hat: 'hat_santa', top: '#c8232c', bottom: '#4a3a3a' },
   hero: { name: 'Superhero', kit: 'dz_superhero', top: '#d8232a', bottom: '#d8232a', level: 12 },
