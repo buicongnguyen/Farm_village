@@ -280,6 +280,11 @@ await check('at home every piece of furniture does something: tea, the journal a
   const colour = await page.evaluate(() => farm.state().settings.playerColor ?? '#e63946');
   await page.locator('.explore-swatches .btn:not(.on)').first().click();
   expect(await page.evaluate(c => farm.state().settings.playerColor !== c, colour), 'the wardrobe did not change the shirt');
+  // changing clothes must not replace the character Explore is steering: you came out of the house invisible
+  await page.evaluate(() => { farm.game.do('setting', { key: 'playerHat', value: 'hat_straw' }); farm.game.do('setting', { key: 'playerLook', value: 'farmhand' }); });
+  const kept = await page.evaluate(() => { const m = farm.world.exploreMode, you = farm.radial.people.walkers.get('you'); return { same: you === m.walker, drawn: farm.radial.people.cast.subjects.has(you.subject), rig: you.subject.rig }; });
+  expect(kept.same && kept.drawn, `after changing clothes your character outdoors was replaced or is no longer drawn: ${JSON.stringify(kept)}`);
+  expect(/hat_straw/.test(kept.rig), `your character outdoors does not wear what you chose: ${kept.rig}`);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-wardrobe.png` });
   await visit('farmhouse_memory_shelf');
   expect(await page.locator('.explore-log li').count() === 6, 'the memory shelf has no collection log');
