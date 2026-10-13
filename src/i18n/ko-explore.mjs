@@ -423,4 +423,8 @@ export const KO_EXPLORE = {
   "Sit, sit. You have earned a chair.": "앉아, 앉아. 의자 하나쯤은 받을 만하지.",
   "A tidy desk. Somebody in this house is hiding something.": "책상이 깔끔하네. 이 집에 누가 뭘 숨기고 있어.",
   "Star sailor": "별의 세일러",
+  "No skirt": "치마 없음",
+  "Short skirt": "짧은 치마",
+  "Knee skirt": "무릎 치마",
+  "Long skirt": "긴 치마",
 };

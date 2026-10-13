@@ -157,3 +157,15 @@ test('the mirror: you can be a man, a woman, a boy or a girl, and each has a mod
   assert.equal(act(s, 'setting', { key: 'playerBody', value: 'giant' }, NOW).ok, false);
   s.settings.playerBody = 'nobody'; assert.equal(bodyOf(s).id, 'man', 'an unknown body in an old save');
 });
+
+test('the mirror: no skirt or one of three lengths, worn with your hat, hidden by a costume, and named in three languages', async () => {
+  const { SKIRTS, skirtOf } = await import('../src/content/wardrobe.mjs');
+  const s = newGame(NOW, 6, { restore: true }); s.level = 5; assert.equal(skirtOf(s), 0); assert.equal(wearOf(s), '');
+  for (const n of [1, 2, 3]) { assert.ok(act(s, 'setting', { key: 'playerSkirt', value: n }, NOW).ok); assert.equal(skirtOf(s), n); assert.equal(wearOf(s), `skirt:${n}`); }
+  assert.ok(act(s, 'setting', { key: 'playerHat', value: 'hat_straw' }, NOW).ok); assert.equal(wearOf(s), 'hat_straw+skirt:3');
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'chef' }, NOW).ok); assert.ok(!wearOf(s).includes('skirt'), 'a costume did not cover the skirt');
+  assert.equal(act(s, 'setting', { key: 'playerSkirt', value: 4 }, NOW).ok, false); assert.equal(act(s, 'setting', { key: 'playerSkirt', value: 'long' }, NOW).ok, false);
+  assert.ok(act(s, 'setting', { key: 'playerSkirt', value: 0 }, NOW).ok); assert.equal(skirtOf(s), 0);
+  s.settings.playerSkirt = 9; assert.equal(skirtOf(s), 0, 'a wrong length in an old save');
+  assert.equal(SKIRTS.length, 4); for (const name of SKIRTS) for (const pack of [VI_EXPLORE, KO_EXPLORE, JA_EXPLORE]) assert.ok(pack[name]?.length > 0, `missing: ${name}`);
+});
