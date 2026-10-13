@@ -20,6 +20,7 @@ vertex colours with baked ambient occlusion, no textures, one skin per model.
 | villager-man.glb | villager-man.glb | 9e06a4a16f1d | Carry, Cheer, Hammer, Idle, Jump, Sit, Sweep, Talk, Walk, Wave | men |
 | villager-woman.glb | villager-woman.glb | ba18c83177d1 | the same ten | women, June |
 | villager-kid.glb | villager-kid.glb | b9db608124b9 | the same ten | children, Pip |
+| villager-girl.glb | villager-girl.glb (Starline branch `feat/villager-girl`: `build_villager('girl')`, added 2026-10-14 for the mirror) | f942457595ee | the same ten | your character as a girl |
 | hana.glb | hana.glb | 7d324b72ff1b | Cheer, Idle, Knead, Talk, Walk, Wave | Ada (grey hair and headscarf, lavender dress) |
 | broom.glb | broom.glb | 83c1abce0cbc | (static prop, copied as is) | held while sweeping |
 | hammer.glb | hammer.glb | dcac16969690 | (static prop, copied as is) | held while hammering at a project |

@@ -32,6 +32,7 @@ export const RIGS = {
   man:    { file: 'villager-man', height: 2.3, walk: 2.0, bake: 'Idle', tint: true },
   woman:  { file: 'villager-woman', height: 2.2, walk: 1.83, bake: 'Idle', tint: true },
   kid:    { file: 'villager-kid', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },
+  girl:   { file: 'villager-girl', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },   // the mirror's girl (Starline's builder, kind 'girl'): the child's body with a bob, bunches and a skirt
   hana:   { file: 'hana', height: 2.1, walk: 1.98, bake: 'Idle', tint: true },
 };
 // Clothes slots that can be recoloured, by material name. Their vertices are baked white (keeping the shading), and the
