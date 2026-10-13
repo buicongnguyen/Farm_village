@@ -33,7 +33,7 @@ for n, c in {
         'stoned': '#8C95A5', 'brick': '#C9583C', 'brickd': '#9E412C', 'iron': '#5B6477', 'charcoal': '#3A3D4A', 'glass': '#7FE3FF',
         'glassd': '#3FAFE0', 'sack': '#EBD3A3', 'sackd': '#C9AE7E', 'bread': '#D98B3A', 'breadl': '#F2B460', 'cork': '#C98F55',
         'paper': '#FFF6D8', 'pink': '#FF7FB5', 'sky': '#35B6F2', 'mint': '#5EDFB0', 'sun': '#FFC83A', 'gold': '#F5B21E',
-        'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF',
+        'hay': '#F2C14E', 'hayd': '#D99A2B', 'lampglow': '#FFE08A', 'violet': '#9B6BFF', 'water': '#3FB7F0', 'waterl': '#8FDBFF', 'pooll': '#8FE6F5', 'poolm': '#3FC0EE', 'poold': '#1F8FDC', 'poolwall': '#1C6FB8', 'deck': '#F6E8C6', 'deckd': '#E3CFA0',
         # crops
         'wheat': '#FFC93C', 'wheatl': '#FFE680', 'wheatd': '#EDB13A', 'wheatg': '#F0A020', 'wstalk': '#EFC85A', 'wgreen': '#8EDB5A', 'wgreenl': '#B6EC7A',
         'leaf': '#4FBF3A', 'leafw': '#4fab45', 'leafwl': '#8fd04c', 'leafwd': '#3a8444', 'blossom': '#FFB6D4', 'blossomd': '#FF8CBD', 'blossoml': '#FFD6E6', 'fruitred': '#FF3B3B', 'fruitpeach': '#FF9A72', 'pinew': '#2f8a50', 'pinewl': '#58b45e', 'leafl': '#7BDB4F', 'leafd': '#2F9A3A', 'leafdd': '#237A2E', 'sprout': '#8BE35A', 'carrot': '#FF7A1A',
@@ -1865,18 +1865,34 @@ for name, gen in (('goat_barn', goat_barn), ('dairy', dairy)):
 # =================================================================== the farmhouse garden (v0.5): what a better house brings
 # Drawn round the farmhouse by its comfort level (src/content/world.mjs HOME_GARDEN). Origins at the footprint centre.
 def home_pool():
-    """A swimming pool, 6 x 4 m: a pale stone rim, bright water with two lane ripples, steps with a rail, a beach ball."""
-    p = [bx('rim', 5.8, 3.8, .18, 0, 0, 0, 'stonel', bev=.06, seg=2), bx('tile', 5.2, 3.2, .1, 0, 0, .1, 'sky', bev=.02),
-         bx('water', 5.0, 3.0, .06, 0, 0, .16, 'water', bev=.01), bx('shine', 1.6, .12, .02, -1.0, .5, .215, 'waterl', bev=0),
-         bx('shine2', 1.1, .1, .02, 1.1, -.6, .215, 'waterl', bev=0), bx('shine3', .7, .08, .02, .2, 1.0, .215, 'waterl', bev=0)]
-    for k in range(3):
-        p.append(bx('step', .9, .3, .05, -2.0, 1.2 - k * .3, .2 - k * .0, 'white', bev=.01))
-    for y in (1.35, .75):
-        p += [cl('railpost', .035, .7, -2.55, y, .18, 'stoned', verts=6), cl('railtop', .035, .5, 0, 0, 0, 'stoned', verts=6, rot=(0, math.pi / 2, 0))]
-        p[-1].location = (-2.3, -y, .88)
-    p += [ball('ball', .26, 1.5, .6, .44, 'white', sub=2), ball('ballr', .262, 1.5, .6, .44, 'red', sub=2, sc=(1, .28, 1)), ball('ringf', .34, -.4, -.7, .26, 'pink', sub=2, sc=(1, 1, .32))]
-    for x in (-2.75, 2.75):
-        p.append(ball('potleaf', .22, x, -1.75, .34, 'leaf', sub=1, sc=(1, 1, 1.2))); p.append(cl('pot', .18, .24, x, -1.75, .18, 'roof', verts=8, rt=.22))
+    """A swimming pool, 6 x 4 m, that reads as water with depth (it used to be one flat sheet of a single blue): a warm
+    stone deck, a pale coping, water stepping from a light shallow end to a deep end, tile lines on the floor, a few
+    ripples, steps and a rail at the shallow end, a springboard at the deep one, a beach ball and a ring."""
+    p = [bx('deck', 5.9, 3.9, .12, 0, 0, 0, 'deckd', bev=.04, seg=2), bx('deckin', 5.5, 3.5, .14, 0, 0, 0, 'deck', bev=.03),
+         bx('basin', 4.6, 2.6, .125, 0, 0, 0, 'poolwall', bev=0)]
+    for y in (-1.375, 1.375):                               # the coping is a ring: the water lies below its top, so the pool has an edge to look over
+        p.append(bx('coping', 5.0, .25, .2, 0, y, 0, 'stonel', bev=.04, seg=2))
+    for x in (-2.375, 2.375):
+        p.append(bx('coping', .25, 3.0, .2, x, 0, 0, 'stonel', bev=.04, seg=2))
+    n = 6                                                   # the water: six bands, light at the steps, deep at the board
+    for i, mt in enumerate(('pooll', 'pooll', 'poolm', 'poolm', 'poold', 'poold')):
+        p.append(bx('water', 4.4 / n + .01, 2.4, .02, -2.2 + (i + .5) * 4.4 / n, 0, .135 - i * .001, mt, bev=0))
+    for x in (-.75, .75):                                   # tile lines along the floor, seen through the water
+        p.append(bx('line', 4.3, .05, .004, 0, x, .156, 'poolwall', bev=0))
+    for x, y, w, r in ((-1.2, .55, .9, .25), (.3, -.75, .7, -.2), (1.3, .35, .8, .15), (-.4, .15, .5, -.3), (1.7, -.5, .45, .3), (-1.6, -.6, .5, .1)):
+        p.append(bx('ripple', w, .07, .004, x, y, .16, 'waterl', bev=0, rot=r))
+    for x, y in ((.9, .8), (-.9, -.25)):
+        p.append(bx('glint', .22, .05, .004, x, y, .162, 'white', bev=0, rot=.2))
+    for k in range(3):                                      # steps going down into the shallow end
+        p.append(bx('step', .32, .9, .05, -2.05 + k * .3, .65, .15 - k * .012, 'white' if k < 2 else 'pooll', bev=.01))
+    for y in (1.05, .25):
+        p += [cl('railpost', .035, .62, -2.4, y, .2, 'stoned', verts=6), cl('railtop', .035, .5, 0, 0, 0, 'stoned', verts=6, rot=(0, math.pi / 2, 0))]
+        p[-1].location = (-2.15, -y, .82)
+    p += [bx('boardfoot', .5, .5, .26, 2.6, 0, .2, 'stone', bev=.03), bx('board', 1.3, .4, .06, 2.15, 0, .46, 'white', bev=.02), bx('boardgrip', .9, .3, .01, 2.0, 0, .52, 'sky', bev=0)]
+    p += [ball('ball', .26, 1.1, .7, .4, 'white', sub=2), ball('ballr', .262, 1.1, .7, .4, 'red', sub=2, sc=(1, .28, 1)), ball('ringf', .34, -.3, -.75, .22, 'pink', sub=2, sc=(1, 1, .32)),
+          ball('ringhole', .17, -.3, -.75, .25, 'poolm', sub=1, sc=(1, 1, .3))]
+    for x in (-2.72, 2.72):
+        p.append(ball('potleaf', .22, x, -1.72, .34, 'leaf', sub=1, sc=(1, 1, 1.2))); p.append(cl('pot', .18, .24, x, -1.72, .14, 'roof', verts=8, rt=.22))
     return p
 
 def home_loungers():
