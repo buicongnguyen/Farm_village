@@ -2,7 +2,7 @@ import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, HOME_THINGS, roomAtLevel } from '../content/explore.mjs';
-import { wardrobe, hatOf } from '../content/wardrobe.mjs';
+import { wardrobe, wearOf } from '../content/wardrobe.mjs';
 import { wornRig } from '../view/skinned.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
@@ -51,6 +51,7 @@ class ExploreMode {
     this.pinsEl = document.createElement('div'); this.pinsEl.className = 'home-pins'; this.pinsEl.hidden = true;
     this.pins = new Map();
     radial.el.parentElement.appendChild(this.pinsEl);
+    this.sayEl = document.createElement('div'); this.sayEl.className = 'home-say'; this.sayEl.hidden = true; radial.el.parentElement.appendChild(this.sayEl);
     // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it). It is one
     // permanent element beside the panel, so the panel can redraw (a new nearby action) while a thumb is on the stick.
     const joy = this.joyEl = document.createElement('div'); joy.className = 'explore-joy'; joy.hidden = true; joy.setAttribute('role', 'group'); joy.innerHTML = '<i></i>';
@@ -111,7 +112,7 @@ class ExploreMode {
     this.world.cam.stop(); this.savedCamera = { x: this.world.cam.x, z: this.world.cam.z, span: this.world.cam.span };
     document.body.classList.add('explore-active'); this.el.hidden = false; this.render();
     try {
-      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', hatOf(this.state));
+      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', wearOf(this.state));
       const assets = await loadHomeRoom(body, this.kind);
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
@@ -243,7 +244,7 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; this.pinsEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -381,7 +382,7 @@ class ExploreMode {
     const yaw = this.inside ? this.room.movementYaw : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
     if (x || y) this.actOnArrival = this.castOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
-    if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); }
+    if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); this.positionSay(); }
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
@@ -427,6 +428,18 @@ class ExploreMode {
   /** How much of the screen's foot the controls take (labels keep above it): the pill and its hint on a wide window, the
    *  stick and the buttons on a narrow one. */
   pinFloor() { return innerWidth >= 900 ? 110 : 205; }
+  /** What the family says at home, over their heads (one small bubble each, only while they say it). */
+  positionSay() {
+    const family = this.room?.family ?? []; this.sayEl.hidden = !this.inside || this.busy || !family.length;
+    if (this.sayEl.hidden) return;
+    while (this.sayEl.children.length < family.length) this.sayEl.append(document.createElement('p'));
+    family.forEach((f, i) => {
+      const el = this.sayEl.children[i]; el.hidden = !f.say; if (!f.say) return;
+      const text = t(f.say); if (el.textContent !== text) el.textContent = text;
+      const p = this.room.project([f.subject.x, f.height + 0.45, f.subject.z]);
+      el.style.left = `${Math.min(Math.max(p.x, 96), innerWidth - 96)}px`; el.style.top = `${Math.max(p.y, 120)}px`;
+    });
+  }
   positionPins() {
     this.pinsEl.hidden = !this.inside || this.busy;
     if (this.pinsEl.hidden) return;
@@ -490,8 +503,8 @@ class ExploreMode {
       const none = (action, on) => `<button type="button" class="wear none${on ? ' on' : ''}" data-explore="${action}:"><i></i><span>${esc(t('None'))}</span></button>`;
       const row = tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
         : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
-          : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.hat)).join('')}</div>`;
-      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
+          : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.kit ?? c.hat)).join('')}</div>`;
+      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat or costume arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
     }
     const thing = this.kind ? null : HOME_THINGS[this.card];
     if (thing) {

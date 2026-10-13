@@ -4,12 +4,13 @@
 // is written in "head space": the origin on the top of the chibi head, one unit = that head's width, material colours
 // baked into the vertices. src/view/skinned.mjs sets a piece on a villager's own head by the same two measures.
 //
-//   node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> [out.glb]
-//   node art/blender/pack.mjs <out.glb> public/assets/models/rigged/wear.glb
+//   node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> <hats.glb> <costumes.glb>
+//   node art/blender/pack.mjs <hats.glb> public/assets/models/rigged/wear.glb
+//   node art/blender/pack.mjs <costumes.glb> public/assets/models/rigged/costumes.glb
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [src, out = 'art/generated/wear-raw.glb'] = process.argv.slice(2);
+const [src, out = 'wear-raw.glb', outCostumes = 'costumes-raw.glb'] = process.argv.slice(2);
 if (!src) { console.error('usage: node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> [out.glb]'); process.exit(2); }
 // the chibi head (hero.glb, node "head" at y 1.12, box x ±0.58, y −0.12…1.06): its top and its width
 const HEAD_TOP = [0, 2.18, 0], HEAD_WIDTH = 1.16;
@@ -51,8 +52,9 @@ function world(json, index) {
   for (let p = json.nodes.findIndex(n => n.children?.includes(index)); p >= 0; p = json.nodes.findIndex(n => n.children?.includes(p))) m = mul(local(json.nodes[p]), m);
   return m;
 }
-const files = new Map(), pieces = [];
-for (const [id, [file, names]] of Object.entries(PIECES)) {
+const files = new Map();
+/** The nodes' triangles as one piece, colours baked; `place` maps a point of the chibi (world space) to where it is stored. */
+function collect(id, file, names, place) {
   if (!files.has(file)) files.set(file, readGlb(join(src, 'public', 'assets', 'models', `${file}.glb`)));
   const glb = files.get(file), { json } = glb, pos = [], nor = [], col = [], idx = [];
   for (const name of names) {
@@ -66,15 +68,30 @@ for (const [id, [file, names]] of Object.entries(PIECES)) {
         const [x, y, z] = [P[k * 3], P[k * 3 + 1], P[k * 3 + 2]], [a, b, d] = [N[k * 3], N[k * 3 + 1], N[k * 3 + 2]];
         const w = [m[0] * x + m[4] * y + m[8] * z + m[12], m[1] * x + m[5] * y + m[9] * z + m[13], m[2] * x + m[6] * y + m[10] * z + m[14]];
         const nv = [m[0] * a + m[4] * b + m[8] * d, m[1] * a + m[5] * b + m[9] * d, m[2] * a + m[6] * b + m[10] * d], l = Math.hypot(...nv) || 1;
-        pos.push(...w.map((v, q) => (v - HEAD_TOP[q]) / HEAD_WIDTH)); nor.push(...nv.map(v => v / l)); col.push(...rgb);
+        pos.push(...place(w)); nor.push(...nv.map(v => v / l)); col.push(...rgb);
       }
       const I = prim.indices === undefined ? Array.from({ length: count }, (_, k) => k) : accessor(glb, prim.indices);
       for (const k of I) idx.push(base + k);
     }
   }
-  pieces.push({ id, pos, nor, col, idx });
+  return { id, pos, nor, col, idx };
+}
+const headSpace = w => w.map((v, q) => (v - HEAD_TOP[q]) / HEAD_WIDTH);
+const hats = Object.entries(PIECES).map(([id, [file, names]]) => collect(id, file, names, headSpace));
+// Whole costumes (the second file, fetched only when one is worn): every part of a kit, kept in the chibi's own space and
+// named <kit>__<part>__<n> (part: head, body, arm-left, arm-right, leg-left, leg-right). skinned.mjs re-fits each part
+// onto a villager's bones: the body over hips, spine and chest, a sleeve over the upper arm and forearm so it bends.
+export const KITS = { dz_aodai: 'disguises', dz_aodai_man: 'disguises', dz_army: 'disguises', dz_dino: 'disguises', dz_fairy: 'disguises', dz_knight: 'disguises', dz_mage: 'disguises', dz_mecha: 'disguises', dz_navy: 'disguises', dz_ninja: 'disguises', dz_pirate: 'disguises', dz_snowman: 'disguises', dz_superhero: 'disguises', dz_usa: 'disguises', dz_vampire: 'disguises', dz_vietnam: 'disguises',
+  armor_angel: 'gear-wear', armor_bone: 'gear-wear', armor_chef: 'gear-wear', armor_cloud: 'gear-wear', armor_hawaii: 'gear-wear', armor_hoodie: 'gear-wear', armor_kimono: 'gear-wear', armor_leaf: 'gear-wear', armor_leather: 'gear-wear', armor_santa: 'gear-wear', armor_space: 'gear-wear', armor_tux: 'gear-wear', armor_wings: 'gear-wear', armor_wolf: 'gear-wear' };
+const costumes = [];
+for (const [kit, file] of Object.entries(KITS)) {
+  if (!files.has(file)) files.set(file, readGlb(join(src, 'public', 'assets', 'models', `${file}.glb`)));
+  const { json } = files.get(file), root = json.nodes.find(n => n.name === kit); if (!root) throw Error(`${file}: no kit ${kit}`);
+  const count = {};
+  for (const ci of root.children ?? []) { const name = json.nodes[ci].name, part = name.split('@')[1]; if (!part) continue; count[part] = (count[part] ?? 0) + 1; costumes.push(collect(`${kit}__${part}__${count[part]}`, file, [name], w => w)); }
 }
 // one mesh node for each piece: POSITION, NORMAL, COLOR_0 (floats; pack.mjs quantizes), 32-bit indices
+function write(pieces, out) {
 const chunks = [], views = [], accessors = [], meshes = [], nodes = []; let at = 0;
 const put = (typed, target) => { const b = Buffer.from(typed.buffer, typed.byteOffset, typed.byteLength); views.push({ buffer: 0, byteOffset: at, byteLength: b.length, target }); chunks.push(b); at += b.length; const pad = (4 - at % 4) % 4; if (pad) { chunks.push(Buffer.alloc(pad)); at += pad; } return views.length - 1; };
 for (const p of pieces) {
@@ -87,7 +104,6 @@ for (const p of pieces) {
     { bufferView: put(new Uint32Array(p.idx), 34963), componentType: 5125, count: p.idx.length, type: 'SCALAR' });
   meshes.push({ name: p.id, primitives: [{ attributes: { POSITION: a, NORMAL: a + 1, COLOR_0: a + 2 }, indices: a + 3, material: 0 }] });
   nodes.push({ name: p.id, mesh: meshes.length - 1 });
-  console.log(`${p.id}: ${p.idx.length / 3} triangles, y ${min[1].toFixed(2)}…${max[1].toFixed(2)}, x ±${Math.max(-min[0], max[0]).toFixed(2)}`);
 }
 const bin = Buffer.concat(chunks), gltf = { asset: { version: '2.0', generator: 'Hollowbrook build-wear' }, scene: 0, scenes: [{ nodes: nodes.map((_, i) => i) }], nodes, meshes,
   materials: [{ name: 'Wear', pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 } }], accessors, bufferViews: views, buffers: [{ byteLength: bin.length }] };
@@ -97,3 +113,5 @@ const jh = Buffer.alloc(8); jh.writeUInt32LE(json.length, 0); jh.writeUInt32LE(0
 const bh = Buffer.alloc(8); bh.writeUInt32LE(bin.length, 0); bh.writeUInt32LE(0x004e4942, 4);
 writeFileSync(out, Buffer.concat([head, jh, json, bh, bin]));
 console.log(`${pieces.length} pieces, ${pieces.reduce((n, p) => n + p.idx.length / 3, 0)} triangles -> ${out}`);
+}
+write(hats, out); write(costumes, outCostumes);
