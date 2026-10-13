@@ -1136,4 +1136,6 @@ export const VI_FISHING = {
   'Minutes': 'Phút',
   'See the big picture of your farm': 'Xem bức tranh toàn cảnh nông trại',
   'Level': 'Cấp',
+  'Boy': 'Bé trai',
+  'Girl': 'Bé gái',
 };
