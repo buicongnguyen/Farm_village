@@ -52,10 +52,10 @@ export const COSTUMES = {
 for (const [id, o] of [...Object.entries(HATS), ...Object.entries(COSTUMES)]) o.id = id;
 for (const c of Object.values(COSTUMES)) c.level ??= HATS[c.hat].level;
 /** Who you are (the mirror, and Settings): a man, a woman, a boy or a girl. `rig` is the model, `size` its size outdoors
- *  against that model's own (the girl is the woman's model at a child's height), `child` gives a child's height indoors. */
+ *  against that model's own (1 for all four now that the girl has a model of her own), `child` gives a child's height indoors. */
 export const BODIES = {
   man: { name: 'Man', rig: 'man', size: 1 }, woman: { name: 'Woman', rig: 'woman', size: 1 },
-  kid: { name: 'Boy', rig: 'kid', size: 1, child: true }, girl: { name: 'Girl', rig: 'woman', size: 0.72, child: true },
+  kid: { name: 'Boy', rig: 'kid', size: 1, child: true }, girl: { name: 'Girl', rig: 'girl', size: 1, child: true },
 };
 for (const [id, b] of Object.entries(BODIES)) b.id = id;
 export const bodyOf = s => BODIES[s?.settings?.playerBody] ?? BODIES.man;
