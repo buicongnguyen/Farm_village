@@ -641,6 +641,79 @@ item('ribbon_gold', ribbon('ribgold', 'ribgoldd', 'ribred'))
 item('ribbon_silver', ribbon('ribsilver', 'ribsilverd', 'ribblue'))
 item('ribbon_bronze', ribbon('ribbronze', 'ribbronzed', 'ribgreen'))
 
+# 2026-10-14: the goods of the mushroom house, the fermentary and the fresh kitchen
+C.update({n: mat('IT ' + n, c, .5) for n, c in {'capred': '#E8392E', 'capbrown': '#B8793A', 'stemw': '#FFF1D8', 'kimchi': '#E8452E', 'kimchid': '#B92E22', 'cabb': '#DDEB8A',
+    'jar': '#BFE9F5', 'lidg': '#F5B21E', 'label': '#FFF6D8', 'sauce': '#D92B22', 'sauced': '#A81E1A', 'capg': '#3FA83A', 'bowlw': '#FFFDF6', 'bowlr': '#E8573F',
+    'soup': '#F2DDA8', 'soupd': '#D9BC7A', 'herbg': '#4FBF3A', 'tom': '#EF3B3B', 'carr': '#FF8A2A', 'boxr': '#E8573F', 'boxin': '#FFF6D8', 'rice': '#FFFDF6', 'yolk': '#FFC83A',
+    'breadt': '#D98B3A', 'spoon': '#C9CED8'}.items()})
+def mushrooms():
+    """Three mushrooms: fat cream stems, red caps with white dots, the big one in the middle."""
+    p = []
+    for x, y, r, cap in ((0, 0, .36, 'capred'), (-.46, .1, .26, 'capred'), (.44, -.08, .24, 'capbrown')):
+        p += [cyl('stem', r * .42, r * 1.2, (x, y, r * .6), C['stemw'], verts=12, bev=.03), P('cap', r, (x, y, r * 1.35), cap, sub=2, sc=(1, 1, .62)),
+              cyl('gills', r * .86, .03, (x, y, r * 1.2), C['stemw'], verts=14, bev=0)]
+        for k in range(5):
+            a = k / 5 * math.tau + r
+            p.append(P('dot', r * .14, (x + math.cos(a) * r * .55, y + math.sin(a) * r * .55, r * 1.35 + r * .46), 'frost', sub=1, sc=(1, 1, .5)))
+    return p
+item('mushroom', mushrooms())
+def kimchi():
+    """A jar of kimchi: glass, the red cabbage inside with pale leaves showing, a gold lid and a paper label."""
+    p = [cyl('glass', .46, .8, (0, 0, .4), C['kimchi'], verts=20, bev=.05), cyl('shine', .465, .5, (0, 0, .5), C['kimchid'], verts=20, bev=0),
+         cyl('neck', .38, .1, (0, 0, .84), C['jar'], verts=20, bev=.01), cyl('lid', .42, .14, (0, 0, .95), C['lidg'], verts=20, bev=.03),
+         box('label', (.5, .04, .3), (0, -.45, .42), C['label'], bev=.01, seg=1), P('chili', .07, (0, -.48, .42), 'kimchid', sub=1, sc=(2.2, .5, .8))]
+    for k in range(7):
+        a = k / 7 * math.tau
+        p.append(P('leaf', .13, (math.cos(a) * .44, math.sin(a) * .44, .2 + (k % 3) * .2), 'cabb', sub=1, sc=(1, .5, 1.3)))
+    return p
+item('kimchi', kimchi())
+def chili_sauce():
+    """A bottle of chili sauce: a red bottle with a long neck, a green cap and a label with a chili on it."""
+    return [cyl('body', .3, .7, (0, 0, .35), C['sauce'], verts=18, bev=.06), cyl('shoulder', .3, .16, (0, 0, .78), C['sauce'], verts=18, bev=.02, radius_top=.12),
+            cyl('neck', .12, .3, (0, 0, 1.0), C['sauced'], verts=14, bev=.01), cyl('cap', .15, .14, (0, 0, 1.2), C['capg'], verts=14, bev=.03),
+            cyl('label', .31, .34, (0, 0, .38), C['label'], verts=18, bev=0), P('chili', .09, (0, -.32, .4), 'capred', sub=1, sc=(2.4, .5, .9)),
+            P('stalk', .04, (-.2, -.32, .43), 'capg', sub=1)]
+item('chili_sauce', chili_sauce())
+def salad():
+    """A bowl of salad: a white bowl heaped with green leaves, tomato halves and ribbons of carrot."""
+    p = [cyl('bowl', .62, .3, (0, 0, .2), C['bowlw'], verts=24, bev=.04, radius_top=.74), cyl('foot', .34, .08, (0, 0, .04), C['bowlw'], verts=18, bev=.02),
+         torus('rim', .73, .035, (0, 0, .36), C['platerim'], major_segs=24, minor_segs=4)]
+    for k in range(11):
+        a = k / 11 * math.tau; r = .2 + .32 * ((k * 7) % 5) / 5
+        p.append(P('leaf', .2, (math.cos(a) * r, math.sin(a) * r, .44 + .06 * (k % 3)), 'leafl' if k % 2 else 'leaf', sub=1, sc=(1.2, .9, .55)))
+    for k in range(4):
+        a = k / 4 * math.tau + .5
+        p.append(P('tomato', .13, (math.cos(a) * .36, math.sin(a) * .36, .56), 'tom', sub=1, sc=(1, 1, .7)))
+    for k in range(5):
+        a = k / 5 * math.tau + 1.1
+        p.append(box('carrot', (.3, .06, .04), (math.cos(a) * .22, math.sin(a) * .22, .62), C['carr'], bev=.01, seg=1, rot=(0, .2, a)))
+    return p
+item('salad', salad())
+def mushroom_soup():
+    """A bowl of mushroom soup: a red bowl, cream soup, slices of mushroom, a few herbs and a spoon."""
+    p = [cyl('bowl', .6, .32, (0, 0, .2), C['bowlr'], verts=24, bev=.04, radius_top=.74), cyl('foot', .34, .08, (0, 0, .04), C['bowlr'], verts=18, bev=.02),
+         cyl('soup', .7, .04, (0, 0, .35), C['soup'], verts=24, bev=0), torus('rim', .73, .035, (0, 0, .37), C['frost'], major_segs=24, minor_segs=4)]
+    for x, y in ((-.25, .1), (.2, .25), (.1, -.25), (-.2, -.3), (.4, -.05)):
+        p += [P('slice', .13, (x, y, .39), 'capbrown', sub=1, sc=(1, 1, .3)), cyl('slicestem', .05, .04, (x, y - .1, .39), C['stemw'], verts=8, bev=0)]
+    for k in range(6):
+        a = k / 6 * math.tau + .3
+        p.append(P('herb', .04, (math.cos(a) * .5, math.sin(a) * .5, .39), 'herbg', sub=1))
+    p += [box('handle', (.1, .7, .04), (.55, .45, .5), C['spoon'], bev=.02, seg=1, rot=(.25, 0, -.6)), P('scoop', .13, (.3, .1, .42), 'spoon', sub=1, sc=(1, 1.3, .4))]
+    return p
+item('mushroom_soup', mushroom_soup())
+def lunch_box():
+    """A packed lunch box: a red box in four parts with rice, an egg, salad and bread, its lid leaning behind."""
+    p = [box('box', (1.3, .9, .26), (0, 0, .13), C['boxr'], bev=.06, seg=2), box('inside', (1.18, .78, .06), (0, 0, .25), C['boxin'], bev=.02, seg=1),
+         box('wall', (.04, .78, .1), (0, 0, .29), C['boxr'], bev=.01, seg=1), box('wall', (.57, .04, .1), (-.3, 0, .29), C['boxr'], bev=.01, seg=1),
+         box('lid', (1.3, .08, .9), (0, .5, .5), C['boxr'], bev=.05, seg=2, rot=(-.35, 0, 0)),
+         box('rice', (.5, .68, .1), (.31, 0, .31), C['rice'], bev=.04, seg=1), P('plum', .07, (.31, 0, .38), 'capred', sub=1),
+         P('eggw', .16, (-.3, .19, .32), 'frost', sub=1, sc=(1.2, 1, .5)), P('yolk', .08, (-.3, .19, .37), 'yolk', sub=1, sc=(1, 1, .6)),
+         box('bread', (.44, .26, .1), (-.3, -.2, .31), C['breadt'], bev=.04, seg=1)]
+    for k in range(4):
+        p.append(P('leaf', .09, (-.44 + k * .1, -.2 + (.06 if k % 2 else -.05), .38), 'leafl', sub=1, sc=(1.2, 1, .5)))
+    return p
+item('lunch_box', lunch_box())
+
 objs = []
 for name, parts in items:
     o = vc_join(parts, name)

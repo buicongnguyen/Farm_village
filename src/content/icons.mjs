@@ -8,6 +8,8 @@ const GOODS = ['cherry', 'wheat', 'carrot', 'corn', 'pumpkin', 'herb', 'ginseng'
   'lemon', 'plum', 'mango', 'mango_apple', 'black_egg', 'rainbow_egg', 'grape', 'longan', 'lychee', 'canned_corn', 'canned_tomato', 'honey', 'honey_cake'];   // tree pack 2 fruit (AR-014)
 const BUILDINGS = ['juice_press', 'noodle_factory', 'orange_tree', 'coconut_palm', 'willow', 'cherry_tree', 'fruit_stand', 'kennel', 'clinic', 'bed', 'path', 'fence', 'gate', 'coop', 'cow_barn', 'feed_mill', 'bakery', 'stall', 'market', 'pond', 'truck', 'round_tree', 'pine_tree', 'cottage', 'flowers', 'bush', 'tree', 'bench', 'lamp', 'school', 'fountain', 'picket', 'garden_flower', 'scarecrow', 'hay_bale', 'flowerpot', 'street_lamp', 'apple_tree', 'peach_tree', 'bunting', 'banner', 'sale_sign',
   'maple', 'birch', 'cypress', 'fir', 'great_oak', 'lemon_tree', 'plum_tree', 'mango_tree', 'grape_arbor', 'longan_tree', 'lychee_tree'];   // tree pack 2 (AR-014)
+BUILDINGS.push('mushroom_house', 'fermentary', 'fresh_kitchen');   // 2026-10-14
+GOODS.push('mushroom', 'kimchi', 'chili_sauce', 'salad', 'mushroom_soup', 'lunch_box');
 BUILDINGS.push('supermarket', 'police', 'company', 'hospital', 'goat_barn', 'dairy', 'dock', 'stage', 'cannery', 'beehive', 'cooperative_board', 'apartment', 'quay', 'hotel', 'halt', 'ribbon_board'); // AR-011 renders (hospital = the clinic's upgrade, s.growth.hospitalAt)
 const TOOLS = ['tool:clear', 'tool:harvest', 'tool:move', 'tool:store', 'tool:build'];
 const UI = ['ui:coin', 'ui:xp', 'ui:heart', 'ui:barn', 'ui:orders'];

@@ -2232,6 +2232,67 @@ def noodle_factory():
     return p
 piece('noodle_factory', noodle_factory(), decor)
 
+def mushroom_house():
+    """Mushroom house (3 x 2 cells): a low, dark timber shed with a mossy green roof and a round door, and outside it
+    logs and shelves where big red-capped mushrooms grow."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stoned', bev=.04), bx('walls', 3.8, 2.8, 1.9, -.8, -.3, .15, 'woodd', bev=.05),
+         bx('trim', 3.9, 2.9, .14, -.8, -.3, 2.0, 'wooddd', bev=.03), gable('roof', 4.1, 3.1, 1.2, -.8, -.3, 2.1, 'leafd', over=.14),
+         *roof_rows(4.1, 3.1, 1.2, -.8, -.3, 2.12, 'leaf', 'leafd', rows=5, over=.22),
+         cl('door', .55, .1, -.8, 1.12, .75, 'wooddd', verts=12, rot=(math.pi / 2, 0, 0)), cl('doorring', .62, .08, -.8, 1.1, .75, 'woodl', verts=12, rot=(math.pi / 2, 0, 0)),
+         bx('sign', 1.2, .08, .42, -.8, 1.16, 1.75, 'cream', bev=.03)]
+    def shroom(x, y, z, r, cap='red'):
+        return [cl('stem', r * .34, r * 1.1, x, y, z, 'cream', verts=7), ball('cap', r, x, y, z + r * 1.15, cap, sub=1, sc=(1, 1, .58)),
+                ball('dot', r * .2, x + r * .35, y + r * .2, z + r * 1.5, 'white', sub=0), ball('dot', r * .16, x - r * .4, y - r * .1, z + r * 1.45, 'white', sub=0)]
+    p += shroom(-.8, 1.22, 1.72, .14)                       # the sign's mushroom
+    for k, (x, y) in enumerate(((1.75, -1.1), (2.45, -.2), (1.8, .75))):   # logs lying outside, mushrooms on each
+        p.append(cl('log', .28, 1.5, x, y, .43, 'wood', verts=9, rot=(math.pi / 2, 0, .5 - k * .5)))
+        for j in range(3):
+            p += shroom(x - .35 + j * .35, y + (.12 if j % 2 else -.1), .62, .2 + .04 * ((j + k) % 2), 'red' if (j + k) % 3 else 'sun')
+    p += [bx('shelf', 1.2, .5, .08, .1, 1.3, .7, 'woodl', bev=.02), bx('shelfleg', .08, .5, .6, -.4, 1.3, .15, 'woodd'), bx('shelfleg', .08, .5, .6, .6, 1.3, .15, 'woodd')]
+    for j in range(3):
+        p += shroom(-.25 + j * .35, 1.3, .78, .15, 'cork' if j == 1 else 'red')
+    return p
+piece('mushroom_house', mushroom_house(), decor)
+
+def fermentary():
+    """Fermentary (3 x 2 cells): a plaster hall with a dark tiled roof and a red door, and rows of big brown clay jars
+    with lids standing in the yard, where kimchi and sauce take their time."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stone', bev=.04), bx('walls', 3.6, 2.9, 2.2, -.95, -.3, .15, 'plaster', bev=.05),
+         bx('beam', 3.7, 3.0, .16, -.95, -.3, 1.25, 'woodd', bev=.02), bx('trim', 3.7, 3.0, .15, -.95, -.3, 2.3, 'woodd', bev=.03),
+         gable('roof', 4.0, 3.3, 1.0, -.95, -.3, 2.4, 'charcoal', over=.16), *roof_rows(4.0, 3.3, 1.0, -.95, -.3, 2.42, 'iron', 'charcoal', rows=5, over=.24),
+         bx('door', .9, .1, 1.5, -.95, 1.18, .15, 'redd', bev=.03), bx('sign', 1.3, .08, .45, -.95, 1.2, 1.85, 'sun', bev=.03),
+         bx('window', .7, .08, .6, -2.2, 1.18, 1.3, 'glass', bev=.02), bx('wframe', .8, .07, .7, -2.2, 1.17, 1.25, 'woodd', bev=.02)]
+    def jar(x, y, r, lid='woodd'):
+        return [cl('jarfoot', r * .7, r * .5, x, y, .15, 'brickd', verts=10, rt=r), cl('jar', r, r * 1.0, x, y, .15 + r * .5, 'brickd', verts=10, rt=r * .78),
+                cl('jarneck', r * .78, r * .22, x, y, .15 + r * 1.5, 'wooddd', verts=10, rt=r * .7), cl('lid', r * .86, r * .14, x, y, .15 + r * 1.72, lid, verts=10, rt=r * .4)]
+    for k, (x, y, r) in enumerate(((1.35, -1.25, .42), (2.3, -1.2, .36), (1.4, -.2, .34), (2.35, -.15, .44), (1.45, .9, .4), (2.35, .95, .32), (.35, 1.3, .3))):
+        p += jar(x, y, r, 'woodd' if k % 2 else 'cork')
+    p += [cl('signjar', .16, .2, -.95, 1.27, 1.95, 'brickd', verts=8, rt=.12), ball('chili', .09, -.6, 1.27, 2.05, 'red', sub=0, sc=(1.8, .6, .6)),
+          bx('crate', .7, .5, .4, .3, -1.3, .15, 'woodl', bev=.03), ball('cab', .22, .15, -1.3, .68, 'leafl', sub=1), ball('cab', .2, .5, -1.25, .66, 'leaf', sub=1)]
+    return p
+piece('fermentary', fermentary(), decor)
+
+def fresh_kitchen():
+    """Fresh kitchen (3 x 2 cells): a bright white kitchen with a green striped awning over a serving hatch, crates of
+    vegetables at the side and a stack of packed lunch boxes on the counter."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stonel', bev=.04), bx('walls', 4.2, 2.8, 2.3, -.6, -.35, .15, 'white', bev=.05),
+         bx('skirting', 4.3, 2.9, .5, -.6, -.35, .15, 'mint', bev=.03), bx('trim', 4.3, 2.9, .15, -.6, -.35, 2.4, 'cream', bev=.03),
+         gable('roof', 4.5, 3.1, .9, -.6, -.35, 2.5, 'teald', over=.14), *roof_rows(4.5, 3.1, .9, -.6, -.35, 2.52, 'mint', 'teal', rows=5, over=.22),
+         bx('hatch', 2.0, .1, 1.0, -1.1, 1.08, 1.05, 'glassd', bev=.02), bx('counter', 2.3, .5, .12, -1.1, 1.3, .95, 'woodl', bev=.03),
+         bx('door', .8, .1, 1.5, .9, 1.08, .15, 'woodd', bev=.03), bx('sign', 1.4, .08, .4, -.6, 1.1, 2.15, 'sun', bev=.03)]
+    for k in range(6):                                       # the awning, striped
+        p.append(bx('awning', 2.5 / 6, .9, .06, -2.35 + (k + .5) * 2.5 / 6, 1.5, 1.98 - .0, 'leaf' if k % 2 else 'white', bev=.01))
+    for k in range(3):                                       # packed lunch boxes on the counter
+        p += [bx('box', .42, .3, .12, -1.7 + k * .5, 1.3, 1.07, 'sun' if k % 2 else 'red', bev=.03), bx('boxlid', .44, .32, .04, -1.7 + k * .5, 1.3, 1.19, 'white', bev=.02)]
+    p += [bx('box', .42, .3, .12, -1.45, 1.3, 1.23, 'mint', bev=.03), bx('boxlid', .44, .32, .04, -1.45, 1.3, 1.35, 'white', bev=.02)]
+    for k, (x, y) in enumerate(((2.2, -1.0), (2.25, .0), (2.2, 1.0))):   # crates of vegetables
+        p.append(bx('crate', .8, .6, .4, x, y, .15, 'woodl', bev=.03))
+        for j in range(3):
+            p.append(ball('veg', .16, x - .22 + j * .22, y + (.08 if j % 2 else -.08), .62, ('leafl', 'red', 'carrot')[(j + k) % 3], sub=1))
+    p += [cl('bowl', .2, .12, -.6, 1.2, 2.2, 'white', verts=10, rt=.28), ball('salad', .18, -.6, 1.2, 2.34, 'leafl', sub=1, sc=(1, 1, .5)), ball('tom', .06, -.52, 1.26, 2.4, 'red', sub=0)]
+    return p
+piece('fresh_kitchen', fresh_kitchen(), decor)
+
 # =================================================================== lucky finds (AR-009)
 # One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads
 # until the logic lane shows one (no world placement, no footprint). Modelled at about 0.5 m for comfortable numbers,

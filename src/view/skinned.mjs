@@ -247,7 +247,7 @@ function measure(rig) {
   const sides = {};
   for (const tail of ['_L', '_R']) {
     const S = joint(`upperarm${tail}`), E = joint(`forearm${tail}`), W = joint(`hand${tail}`), H = joint(`thigh${tail}`), K = joint(`shin${tail}`), A = joint(`foot${tail}`); if (!S || !E || !W || !H || !K || !A) continue;
-    sides[S.x < 0 ? -1 : 1] = { S, E, W, H, K, A, armR: limb(`upperarm${tail}`, `forearm${tail}`, [`upperarm${tail}`]), legR: limb(`thigh${tail}`, `shin${tail}`, [`thigh${tail}`]),
+    sides[S.x < 0 ? -1 : 1] = { S, E, W, H, K, A, armR: limb(`upperarm${tail}`, `forearm${tail}`, [`upperarm${tail}`]), legR: Math.min(limb(`thigh${tail}`, `shin${tail}`, [`thigh${tail}`]), limb(`shin${tail}`, `foot${tail}`, [`shin${tail}`]) * 1.25),   // (the shin's, a little over: a thigh's vertices take in the seat and the shirt tail, which made costume legs huge)
       bones: { upper: index[`upperarm${tail}`], fore: index[`forearm${tail}`], thigh: index[`thigh${tail}`], shin: index[`shin${tail}`], foot: index[`foot${tail}`] } };
   }
   const low = Math.min(...[...by.values()].flat().map(p => p.y));
@@ -268,7 +268,7 @@ function refit(fit, part, x, y, z) {
   }
   const arm = part.startsWith('arm'), side = fit.sides[(part.endsWith('left') ? -1 : 1)]; if (!side) return null;
   const from = arm ? side.S : side.H, mid = arm ? side.E : side.K, end = arm ? side.W : new THREE.Vector3(side.A.x, fit.low, side.A.z);
-  const o = arm ? C.shoulder : C.hip, sx = part.endsWith('left') ? -1 : 1, t = (o[1] - y) / (arm ? C.arm : C.leg), kr = (arm ? side.armR / C.armR : side.legR / C.legR) * LIMB_FIT;
+  const o = arm ? C.shoulder : C.hip, sx = part.endsWith('left') ? -1 : 1, t = (o[1] - y) / (arm ? C.arm : C.leg), kr = (arm ? side.armR / C.armR * LIMB_FIT : side.legR / C.legR * LEG_FIT);
   const d = end.clone().sub(from), len = d.length(); d.normalize();
   const f = new THREE.Vector3(0, 0, 1).addScaledVector(d, -d.z).normalize(), u = new THREE.Vector3().crossVectors(f, d);
   const p = from.clone().addScaledVector(d, t * len).addScaledVector(u, (x - sx * o[0]) * kr).addScaledVector(f, (z - o[2]) * kr);
@@ -337,6 +337,7 @@ async function putOn(rig, wear) {
   const merged = mergeGeometries([rig.geo, ...parts.filter(Boolean)], false); if (!merged) return;
   rig.geo = merged; rig.mesh.geometry = merged;
 }
+const LEG_FIT = 1.12;   // a trouser leg or a boot over the leg (closer than a sleeve: two legs side by side must not merge)
 const BODY_FIT = 1.18, LIMB_FIT = 1.25;   // a costume's width over the torso, and over a limb (cloth outside the body)
 const HEAD_FIT = 1.0;   // a hat's size against the head it sits on
 const idle = () => new Promise(r => (globalThis.requestIdleCallback ?? (f => setTimeout(f, 16)))(() => r(), { timeout: 400 }));
