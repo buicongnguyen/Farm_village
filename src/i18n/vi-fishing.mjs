@@ -1152,4 +1152,8 @@ export const VI_FISHING = {
   'Music in the {name}: calm animals give half as much again': 'Đã có nhạc ở {name}: vật nuôi thư thái cho thêm một nửa sản lượng',
   'There is nothing to add here': 'Ở đây không có gì để thêm',
   'Repair it first': 'Hãy sửa nó trước',
+  'Tractor shed': 'Nhà để máy kéo',
+  'Drone pad': 'Bãi đáp máy bay phun',
+  'harvests and sows 8 more beds at every round of help': 'thu hoạch và gieo thêm 8 luống mỗi lượt giúp việc',
+  'sprays the orchard: fruit comes a quarter sooner': 'phun cho vườn cây: quả chín sớm hơn một phần tư',
 };

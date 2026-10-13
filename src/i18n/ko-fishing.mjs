@@ -1152,4 +1152,8 @@ export const KO_FISHING = {
   'Music in the {name}: calm animals give half as much again': '{name}에 음악이 흘러요: 편안한 동물은 절반을 더 줘요',
   'There is nothing to add here': '여기엔 더할 것이 없어요',
   'Repair it first': '먼저 수리하세요',
+  'Tractor shed': '트랙터 창고',
+  'Drone pad': '드론 착륙장',
+  'harvests and sows 8 more beds at every round of help': '도움을 줄 때마다 밭 8곳을 더 거두고 심어요',
+  'sprays the orchard: fruit comes a quarter sooner': '과수원에 약을 뿌려요: 열매가 4분의 1 더 빨리 열려요',
 };

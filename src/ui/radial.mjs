@@ -207,7 +207,8 @@ export class Radial {
       // how long the feed still lasts: the fewest collections any fed animal here has left
       const fedLeft = list.filter(x => x.doneAt != null).map(x => x.meals ?? 1), least = fedLeft.length ? Math.min(...fedLeft) : 0;
       info = `${t(a.name)} ${list.length}/${a.perHome}${outputTimes(s, id) > 1 ? ` · ×${outputTimes(s, id)}` : ''} · ${hungry || !least ? t('One feed lasts {n} collections', { n: FEED_MEALS }) : t('Fed for {n} more', { n: least })}`;
-    } else if (p) info = t(def?.name ?? '');
+    } else if (def?.machine) info = `${t(def.name)} · ${t(def.machine === 'tractor' ? 'harvests and sows 8 more beds at every round of help' : 'sprays the orchard: fruit comes a quarter sooner')}`;
+    else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       if (s.mode === 'restore') { this.hide(); this.panels.show('land', land.parcel); return; }
       info = `${iconHtml('sale_sign', '', 'mini')} ${t(parcelNote(land.parcel))} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;

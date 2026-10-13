@@ -1683,5 +1683,17 @@
   "src": "raw:items",
   "root": "lunch_box",
   "preset": "goods"
+ },
+ {
+  "id": "tractor_shed",
+  "src": "raw:decor",
+  "root": "tractor_shed",
+  "preset": "building"
+ },
+ {
+  "id": "drone_pad",
+  "src": "raw:decor",
+  "root": "drone_pad",
+  "preset": "building"
  }
 ]

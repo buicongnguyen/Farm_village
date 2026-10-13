@@ -39,6 +39,9 @@ export const BUILDINGS = {
   // food factories (docs/VILLAGE-GROWTH-PLAN.md, stage 3b): the same farm goods processed for more profit
   juice_press: { name: 'Juice press', cat: 'production', size: [2, 2], area: 'farm', level: 6, cost: 600, door: true, produces: true, max: 1, model: 'juice_press' },
   noodle_factory: { name: 'Noodle factory', cat: 'production', size: [3, 2], area: 'farm', level: 8, cost: 1200, door: true, produces: true, max: 1, model: 'noodle_factory', charm: -1 },
+  // machines (core/machines.mjs): owning one is its effect; machines-view.mjs shows them at work
+  tractor_shed: { name: 'Tractor shed', cat: 'production', size: [2, 2], area: 'farm', level: 10, cost: 4000, max: 2, model: 'tractor_shed', machine: 'tractor' },
+  drone_pad: { name: 'Drone pad', cat: 'production', size: [1, 1], area: 'farm', level: 12, cost: 5000, max: 1, model: 'drone_pad', machine: 'drone' },
   // 2026-10-14: three more food workshops, each a new chain on the product map
   mushroom_house: { name: 'Mushroom house', cat: 'production', size: [3, 2], area: 'farm', level: 9, cost: 1500, door: true, produces: true, max: 1, model: 'mushroom_house' },
   fermentary: { name: 'Fermentary', cat: 'production', size: [3, 2], area: 'farm', level: 11, cost: 2600, door: true, produces: true, max: 1, model: 'fermentary' },

@@ -2232,6 +2232,58 @@ def noodle_factory():
     return p
 piece('noodle_factory', noodle_factory(), decor)
 
+def tractor_shed():
+    """Tractor shed (2 x 2 cells): an open-fronted timber garage with a red tin roof, a fuel drum, a stack of tyres and a
+    tool board. The tractor itself is its own piece and drives about (machines-view.mjs)."""
+    p = [bx('floor', 3.8, 3.8, .12, 0, 0, 0, 'stoned', bev=.04), bx('back', 3.4, .16, 2.2, 0, -1.6, .12, 'wood', bev=.03),
+         bx('side', .16, 3.0, 2.2, -1.62, -.1, .12, 'wood', bev=.03), bx('side', .16, 3.0, 2.2, 1.62, -.1, .12, 'wood', bev=.03),
+         bx('post', .18, .18, 2.2, -1.6, 1.4, .12, 'woodd', bev=.02), bx('post', .18, .18, 2.2, 1.6, 1.4, .12, 'woodd', bev=.02),
+         bx('lintel', 3.5, .2, .22, 0, 1.4, 2.2, 'woodd', bev=.02), gable('roof', 3.9, 3.5, .8, 0, -.1, 2.4, 'roofd', over=.14),
+         *roof_rows(3.9, 3.5, .8, 0, -.1, 2.42, 'roof', 'roofl', rows=5, over=.2),
+         cl('drum', .3, .8, -1.1, -1.1, .12, 'red', verts=10), cl('drumtop', .31, .05, -1.1, -1.1, .92, 'redd', verts=10),
+         bx('toolboard', 1.2, .06, .7, .6, -1.5, 1.1, 'woodl', bev=.02), bx('spanner', .5, .04, .08, .5, -1.46, 1.35, 'iron', bev=.01), bx('hammer', .08, .04, .4, .9, -1.46, 1.15, 'iron', bev=.01)]
+    for k in range(3):
+        p.append(cl('tyre', .34, .2, 1.15, -1.05, .12 + k * .2, 'charcoal', verts=12))
+    return p
+piece('tractor_shed', tractor_shed(), decor)
+
+def tractor():
+    """The tractor (its own piece: it drives round the beds): a chunky red tractor, nose to the front, two big rear wheels
+    and two small front ones, an exhaust, a yellow seat under a roll bar."""
+    p = [bx('chassis', .9, 2.2, .35, 0, 0, .45, 'charcoal', bev=.05), bx('bonnet', .8, 1.2, .6, 0, .55, .75, 'red', bev=.1),
+         bx('grille', .6, .06, .4, 0, 1.17, .85, 'iron', bev=.02), bx('lamp', .16, .06, .14, -.25, 1.19, 1.15, 'lampglow', bev=.02), bx('lamp', .16, .06, .14, .25, 1.19, 1.15, 'lampglow', bev=.02),
+         bx('cab', .9, .8, .5, 0, -.5, .75, 'redd', bev=.06), bx('seat', .5, .45, .14, 0, -.55, 1.25, 'sun', bev=.05), bx('seatback', .5, .12, .45, 0, -.82, 1.32, 'sun', bev=.05),
+         cl('exhaust', .06, .8, .28, .7, 1.3, 'charcoal', verts=7), cl('wheel', .07, .5, 0, .1, 1.45, 'charcoal', verts=7, rot=(math.pi / 2.6, 0, 0)),
+         bx('rollbar', .08, .08, .9, -.42, -.9, 1.0, 'iron', bev=.01), bx('rollbar', .08, .08, .9, .42, -.9, 1.0, 'iron', bev=.01), bx('rolltop', .92, .08, .08, 0, -.9, 1.88, 'iron', bev=.01),
+         bx('hitch', .3, .4, .1, 0, -1.25, .45, 'iron', bev=.02)]
+    for sx in (-1, 1):
+        p += [cl('rear', .62, .34, sx * .68, -.55, .62, 'charcoal', verts=14, rot=(0, math.pi / 2, 0)), cl('rearhub', .26, .36, sx * .68, -.55, .62, 'sun', verts=10, rot=(0, math.pi / 2, 0)),
+              cl('front', .36, .24, sx * .6, .85, .36, 'charcoal', verts=12, rot=(0, math.pi / 2, 0)), cl('fronthub', .15, .26, sx * .6, .85, .36, 'sun', verts=8, rot=(0, math.pi / 2, 0)),
+              bx('guard', .34, .9, .08, sx * .68, -.55, 1.28, 'red', bev=.03)]
+    return p
+piece('tractor', tractor(), decor)
+
+def drone_pad():
+    """Drone pad (1 x 1 cell): a round landing pad with a yellow ring, a short mast with a wind sock and a tank of spray."""
+    return [cl('pad', .85, .12, 0, 0, 0, 'stoned', verts=18), cl('ring', .7, .02, 0, 0, .12, 'sun', verts=18), cl('disc', .56, .025, 0, 0, .12, 'stone', verts=18),
+            bx('mark', .5, .1, .01, 0, 0, .15, 'sun', bev=0), bx('mark', .1, .5, .01, 0, 0, .15, 'sun', bev=0),
+            cl('mast', .04, 1.5, -.62, -.62, .12, 'iron', verts=6), bx('sock', .4, .1, .14, -.42, -.62, 1.5, 'red', bev=.03),
+            cl('tank', .2, .5, .6, -.6, .12, 'sky', verts=10), cl('tankcap', .1, .08, .6, -.6, .62, 'iron', verts=8)]
+piece('drone_pad', drone_pad(), decor)
+
+def spray_drone():
+    """The spray drone (its own piece: it flies over the orchard): a white body with a blue tank under it, four arms and
+    four rotor discs, two little skids."""
+    p = [bx('body', .5, .7, .2, 0, 0, .3, 'white', bev=.08), cl('tank', .2, .3, 0, 0, .0, 'sky', verts=10), bx('eye', .2, .06, .1, 0, .36, .34, 'charcoal', bev=.02),
+         bx('nozzle', 1.1, .05, .05, 0, -.05, .02, 'iron', bev=0)]
+    for sx in (-1, 1):
+        p.append(bx('skid', .06, .7, .05, sx * .28, 0, -.12, 'iron', bev=.01))
+        for sy in (-1, 1):
+            p += [bx('arm', .5, .07, .06, sx * .42, sy * .42, .36, 'iron', bev=.01, rot=sx * sy * .785), cl('motor', .08, .12, sx * .6, sy * .6, .38, 'charcoal', verts=8),
+                  cl('rotor', .34, .02, sx * .6, sy * .6, .52, 'glass', verts=14)]
+    return p
+piece('spray_drone', spray_drone(), decor)
+
 def mushroom_house():
     """Mushroom house (3 x 2 cells): a low, dark timber shed with a mossy green roof and a round door, and outside it
     logs and shelves where big red-capped mushrooms grow."""

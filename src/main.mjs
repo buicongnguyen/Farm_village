@@ -347,6 +347,10 @@ async function lights() {
   for (const [x, z, span] of [[(FARMHOUSE.x + 6) * CELL, (FARMHOUSE.z + 2) * CELL, 60], [58 * CELL, 100 * CELL, 80], [72 * CELL, 5 * CELL, 80], [62 * CELL, 52 * CELL, 150]]) { if (!(await world.cam.flyTo(x, z, span, 3200))) return; await new Promise(done => setTimeout(done, 900)); }
 }
 game.on(r => { if (r.events?.some(e => e.type === 'storyEnded')) lights(); });
+// the machines at work are drawn by a view of their own, fetched the first time a tractor shed or a drone pad stands
+let machinesView = null;
+const wantMachines = () => { if (!machinesView && Object.values(game.s.placed ?? {}).some(p => BUILDINGS[p.kind]?.machine)) machinesView = import('./view/machines-view.mjs').then(v => v.installMachines(world, game)).catch(() => { machinesView = null; }); };
+game.on(wantMachines); wantMachines();
 // Chapter 19: when the county's plaque goes up the valley is looked over once, slowly: the farm, the village, the quay,
 // and last the plaque at the bridge. A touch ends it (a flight that is cut short resolves false).
 async function overview() {
