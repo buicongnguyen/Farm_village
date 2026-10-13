@@ -9,7 +9,7 @@
 import { SURPRISES, HEN_EGGS, LUCKY_FINDS } from '../content/surprises.mjs';
 import { ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
-import { TRUCK, HOUR } from '../content/economy.mjs';
+import { TRUCK, HOUR, RENT } from '../content/economy.mjs';
 import { hash } from './rng.mjs';
 import { isWorking } from './working.mjs';
 
@@ -22,8 +22,10 @@ export function normalizeSurprises(s) {
   for (const id of FIND_IDS) if (stamp(raw.found?.[id])) found[id] = raw.found[id];
   const herd = h => (h && stamp(h.at) ? { at: h.at, n: whole(h.n, SURPRISES.herd.extra) } : null);
   const r = raw.rush, rush = r && stamp(r.from) && stamp(r.until) && r.until > r.from ? { from: r.from, until: r.until, pans: whole(r.pans, SURPRISES.rush.pans), panAt: stamp(r.panAt) ? r.panAt : 0, ...(r.told === true ? { told: true } : {}) } : null;
-  return { found, hens: whole(raw.hens), rare: whole(raw.rare), rainbow: raw.rainbow === true, goat: herd(raw.goat), calf: herd(raw.calf),
-    rushAt: whole(raw.rushAt), misses: whole(raw.misses, SURPRISES.rush.by), rush, house: stamp(raw.house) ? raw.house : null,
+  const rentRushes = (Array.isArray(raw.rentRushes) ? raw.rentRushes : []).filter(r => stamp(r?.from) && stamp(r?.until) && r.until > r.from)
+    .map(r => ({ from: r.from, until: Math.min(r.until, r.from + SURPRISES.rush.lastsMs) })).sort((a, b) => a.from - b.from).slice(-64);
+  return { found, ...(rentRushes.length ? { rentRushes } : {}), ...(stamp(raw.playAt) ? { playAt: raw.playAt } : {}), hens: whole(raw.hens), rare: whole(raw.rare), rainbow: raw.rainbow === true, goat: herd(raw.goat), calf: herd(raw.calf),
+    rushAt: stamp(raw.rushAt) ? raw.rushAt : 0, misses: whole(raw.misses, SURPRISES.rush.by), rush, house: stamp(raw.house) ? raw.house : null,
     houseFrom: stamp(raw.houseFrom) ? raw.houseFrom : null, truck: stamp(raw.truck) ? raw.truck : null };
 }
 const state = s => (s.surprises = normalizeSurprises(s));
@@ -74,8 +76,14 @@ export function rushStatus(s, now) {
 const rented = (s, now) => Object.values(s.homes ?? {}).some(h => h.family && h.arrivesAt <= now);
 /** How long of [from, to] lies inside the rush (ms): the part of a cottage's uncollected rent that is doubled. */
 export function rushOverlap(s, from, to) {
-  const r = s.surprises?.rush; if (!r) return 0;
-  return Math.max(0, Math.min(to, r.until) - Math.max(from, r.from));
+  const st = s.surprises; if (!st) return 0;
+  // Union the windows, so even duplicate or overlapping saved periods cannot pay twice.
+  let total = 0, cursor = from;
+  for (const r of [...(st.rentRushes ?? []), ...(st.rush ? [st.rush] : [])].sort((a, b) => a.from - b.from)) {
+    const start = Math.max(cursor, r.from), end = Math.min(to, r.until);
+    if (end > start) { total += end - start; cursor = end; }
+  }
+  return total;
 }
 /** The uncle's house in town: rent waiting (capped like a cottage's). */
 export function houseRent(s, now) {
@@ -84,18 +92,20 @@ export function houseRent(s, now) {
 }
 /** Rent was collected: the house's rent starts again, and a finished rush is forgotten. */
 export function rentCollected(s, now) {
-  if (!s.surprises) return; if (stamp(s.surprises.house)) s.surprises.houseFrom = now;
+  if (!s.surprises) return; delete s.surprises.rentRushes; if (stamp(s.surprises.house)) s.surprises.houseFrom = now;
   if (s.surprises.rush && now >= s.surprises.rush.until) s.surprises.rush = null;
 }
 
 /** Called by tick(): play time, the herd, the rush's roll. */
 export function tickSurprises(ctx) {
-  const { s, now } = ctx, add = Math.min(SURPRISES.tickCap, Math.max(0, now - (s.lastSeen ?? now)));
-  s.stats.playMs = (s.stats.playMs ?? 0) + add;
+  const { s, now } = ctx, st = state(s), elapsed = now - (st.playAt ?? s.lastSeen ?? now);
+  // Actions also update lastSeen. A separate tick clock counts their time without treating absence as play.
+  s.stats.playMs = (s.stats.playMs ?? 0) + (elapsed >= 0 && elapsed <= SURPRISES.tickCap ? elapsed : 0);
+  st.playAt = now;
+  if (st.rentRushes) st.rentRushes = st.rentRushes.filter(r => r.until > now - RENT.capHours * HOUR);
   const H = SURPRISES.herd, R = SURPRISES.rush, play = s.stats.playMs;
   const goats = homesOf(s, 'goat').length, cows = homesOf(s, 'cow').length, homes = rented(s, now);
   if (!goats && !cows && !homes && !s.surprises?.rush) return;   // nothing a surprise is about yet
-  const st = state(s);
   if (goats) herdGrows(ctx, st, 'goat', 'goat', 1, 'wild_goat', () => ({ kind: 'goat', doneAt: null, wild: true }));
   if (cows) herdGrows(ctx, st, 'calf', 'cow', H.cows, 'calf', () => ({ kind: 'cow', doneAt: null, bornAt: now }));
   // the rush: one roll for every R.everyMs of play with a rented cottage; certain on the R.by-th roll in a row
@@ -104,7 +114,9 @@ export function tickSurprises(ctx) {
     if (!st.rushAt) st.rushAt = play;   // the first roll comes a full stretch after the first tenant
     else if (play - st.rushAt >= R.everyMs) {
       st.rushAt = play; const roll = hash(s.seed, 'gold-rush', Math.floor(play / R.everyMs));
-      if (st.misses + 1 >= R.by || roll % R.chance === 0) { st.misses = 0; st.rush = { from: now, until: now + R.lastsMs, pans: 0, panAt: 0 }; find(ctx, st, 'gold_rush'); ctx.emit('rushBegan', { until: st.rush.until }); }
+      if (st.misses + 1 >= R.by || roll % R.chance === 0) {
+        if (st.rush) (st.rentRushes ??= []).push({ from: st.rush.from, until: st.rush.until });
+        st.misses = 0; st.rush = { from: now, until: now + R.lastsMs, pans: 0, panAt: 0 }; find(ctx, st, 'gold_rush'); ctx.emit('rushBegan', { until: st.rush.until }); }
       else st.misses++;
     }
   }

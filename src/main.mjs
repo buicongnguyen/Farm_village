@@ -176,6 +176,7 @@ panels = new Panels(app, game, hud, {
     world.exploreMode?.close();
     if (build.open) build.close();
     radial.hide(); radial.armed = null; radial.tool.hidden = true;
+    if (target.kind === 'knowhow') { panels.show('knowhow'); return; }
     if (target.kind === 'learning') { panels.onLearningVisit?.(); return; }
     if (target.kind === 'pond') { panels.onShowWay('pond'); return; }
     if (target.kind === 'catalogue') {

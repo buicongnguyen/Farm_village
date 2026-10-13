@@ -10,19 +10,50 @@ import { gainXp } from './levels.mjs';
 /** What a tree bears: its kind's fruit, or the Mango apple once an apple tree has taken a mango branch (core/knowhow.mjs). */
 export const fruitId = (s, id) => s.trees?.[id]?.cross && s.placed[id]?.kind === 'apple_tree' ? 'mango_apple' : BUILDINGS[s.placed[id]?.kind]?.fruit ?? null;
 export const fruitOf = (s, id) => FRUITS[fruitId(s, id)] ?? null;
+export function treeDuration(s, id) {
+  const t = s.trees?.[id], f = fruitOf(s, id);
+  return t && f ? Math.round((t.first ? f.firstMs * firstFactor(t.graft) : f.regrowMs) * treeFactor(t)) : 0;
+}
 /** { state: 'ripe' | 'growing', fruit, leftMs, progress } or null for a thing that is not a fruit tree. */
 export function treeState(s, id, now) {
   const t = s.trees?.[id], f = fruitOf(s, id); if (!t || !f) return null;
   if (t.doneAt <= now) return { state: 'ripe', fruit: fruitId(s, id) };
-  const full = (t.first ? f.firstMs * firstFactor(t.graft) : f.regrowMs) * treeFactor(t);
+  const full = treeDuration(s, id);
   return { state: 'growing', fruit: fruitId(s, id), leftMs: t.doneAt - now, progress: Math.max(0, 1 - (t.doneAt - now) / full) };
+}
+/** Only lasting tree improvements go into storage; a replanted tree starts a fresh regrowth wait. */
+export function storedTreeState(t, kind) {
+  const picked = Number.isSafeInteger(t?.picked) && t.picked > 0 ? t.picked : 0;
+  return { picked, graftAt: Number.isSafeInteger(t?.graftAt) ? Math.max(0, Math.min(picked, t.graftAt)) : 0,
+    ...(t?.graft === true ? { graft: true } : {}), ...(t?.cross === true && kind === 'apple_tree' ? { cross: true } : {}) };
+}
+export function normalizeTreeStore(s) {
+  const out = {};
+  for (const [kind, rows] of Object.entries(s.treeStore ?? {})) {
+    const count = s.stored?.[kind];
+    if (!BUILDINGS[kind]?.fruit || !Array.isArray(rows) || !Number.isSafeInteger(count) || count < 1) continue;
+    const valid = rows.filter(t => t && typeof t === 'object' && !Array.isArray(t)).slice(0, count).map(t => storedTreeState(t, kind));
+    if (valid.length) out[kind] = valid;
+  }
+  return out;
+}
+export function takeStoredTree(s, kind) {
+  const row = s.treeStore?.[kind]?.shift();
+  if (s.treeStore?.[kind]?.length === 0) delete s.treeStore[kind];
+  return row;
+}
+export function storeTree(s, kind, tree) {
+  if (tree) ((s.treeStore ??= {})[kind] ??= []).unshift(storedTreeState(tree, kind));
 }
 /** A new tree gets its first wait; a stored or rebuilt tree waits a full regrowth cycle. */
 /** `graft`: a grafted sapling (core/knowhow.mjs): its first fruit comes much sooner, and every crop after it faster. */
-export function plantTree(s, id, now, { regrow = false, graft = false } = {}) {
+export function plantTree(s, id, now, { regrow = false, graft = false, storedTree } = {}) {
+  const saved = storedTree && storedTreeState(storedTree, s.placed[id]?.kind);
+  if (saved) (s.trees ??= {})[id] = saved;
   const f = fruitOf(s, id); if (!f) return;
-  const first = graft || !regrow, wait = first ? f.firstMs * firstFactor(graft) : f.regrowMs;
-  (s.trees ??= {})[id] = { doneAt: now + Math.round(wait * (graft ? treeFactor({ graft }) : 1)), first, picked: 0, ...(graft ? { graft: true } : {}) };
+  graft = saved?.graft ?? graft;
+  const first = !saved && (graft || !regrow), wait = first ? f.firstMs * firstFactor(graft) : f.regrowMs;
+  (s.trees ??= {})[id] = { picked: 0, ...saved, doneAt: now + Math.round(wait * (graft ? treeFactor({ graft }) : 1)), first, ...(graft ? { graft: true } : {}) };
 }
 export const ripeTrees = (s, now) => Object.keys(s.trees ?? {}).filter(id => s.placed[id] && s.trees[id].doneAt <= now);
 

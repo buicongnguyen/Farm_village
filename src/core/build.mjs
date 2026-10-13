@@ -8,7 +8,7 @@ import * as grid from './grid.mjs';
 import { mayBuild, projectCost, advance } from './projects.mjs';
 import { gainXp, xpFor } from './levels.mjs';
 import { arriveNext } from './homes.mjs';
-import { plantTree } from './trees.mjs';
+import { plantTree, takeStoredTree, storeTree } from './trees.mjs';
 import { suspendFruitSales, resumeFruitSales } from './orchard.mjs';
 import { afterParcelBought } from './land-discovery.mjs';
 import { normalizeGrowth, stamp } from './growth-state.mjs';
@@ -106,13 +106,15 @@ export const actions = {
     if (def.tills) setCell(s, x, z, 'tilled');
     count(s, kind, 1); grid.touch(s);
     if (def.home) arriveNext(ctx, id);
-    if (def.fruit) plantTree(s, id, now, { regrow: fromStore || fromRebuild, graft: fromStore && takeSapling(s, kind) });
+    const sapling = def.fruit && fromStore && takeSapling(s, kind);
+    const storedTree = def.fruit && fromStore && !sapling ? takeStoredTree(s, kind) : undefined;
+    if (def.fruit) plantTree(s, id, now, { regrow: fromStore || fromRebuild, graft: sapling, storedTree });
     if (def.fruitStand) resumeFruitSales(ctx);
     // Build XP once per new high-water count of a kind: placing what was undone or stored again pays nothing,
     // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.
     const built = (s.stats.built ??= {}); let xp = 0;
     if ((def.cost || def.project) && s.counts[kind] > (built[kind] ?? 0)) { built[kind] = s.counts[kind]; xp = XP.build; gainXp(ctx, xp); }
-    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, fruitSold: def.fruitStand ? s.stats.fruitSold : undefined,
+    remember(s, { type: 'place', kind, id, price, fromStore, fromRebuild, xp, ...(sapling ? { sapling: true } : {}), ...(storedTree ? { storedTree } : {}), fruitSold: def.fruitStand ? s.stats.fruitSold : undefined,
       ...(def.civicSite ? { growthSent: normalizeGrowth(s).sent } : {}) });
     ctx.emit('placed', { id, kind, x, z, rot });
     advance(ctx);
@@ -163,13 +165,17 @@ export const actions = {
         if (e.civicUsed || growth.sent > (stamp(e.growthSent) ? e.growthSent : 0)
           || (p.kind === 'company' && Object.values(growth.staff).some(Boolean))) return ctx.fail('It is in use now: move it instead');
       }
-      if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived || (s.trees[e.id] && (s.trees[e.id].picked ?? (s.trees[e.id].first ? 0 : 1)) > 0)
+      if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived || (s.trees[e.id] && ((s.trees[e.id].picked ?? (s.trees[e.id].first ? 0 : 1)) > (e.storedTree?.picked ?? 0) || !!s.trees[e.id].cross !== !!e.storedTree?.cross || (s.trees[e.id].graftAt ?? 0) !== (e.storedTree?.graftAt ?? 0)))
         || (BUILDINGS[p.kind].fruitStand && (s.fruitStand.items.length || s.fruitStand.coins || s.stats.fruitSold > (e.fruitSold ?? 0)))) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);
       if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
       for (const k of CONTENTS) delete s[k]?.[e.id];
       delete s.placed[e.id]; count(s, p.kind, -1); grid.touch(s);
-      if (e.fromStore) s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
+      if (e.fromStore) {
+        s.stored[p.kind] = (s.stored[p.kind] ?? 0) + 1;
+        if (e.sapling) { const k = (s.knowhow ??= { known: {}, saplings: {} }); k.saplings[p.kind] = (k.saplings[p.kind] ?? 0) + 1; }
+        if (e.storedTree) storeTree(s, p.kind, e.storedTree);
+      }
       if (e.fromRebuild) (s.rebuild ??= {})[p.kind] = (s.rebuild[p.kind] ?? 0) + 1;
       if (e.xp) { s.xp = Math.max(xpFor(s.level), s.xp - e.xp); s.stats.built[p.kind] = Math.max(0, (s.stats.built?.[p.kind] ?? 1) - 1); }   // levels never go down
       ctx.emit('stored', { id: e.id, kind: p.kind });
@@ -183,6 +189,7 @@ export const actions = {
   store(ctx, { id }) {
     const { s } = ctx, p = typeof id === 'string' && Object.hasOwn(s.placed, id) ? s.placed[id] : null; if (!p) return ctx.fail('Nothing to store');
     const why = storeWhy(s, id); if (why) return ctx.fail(why);
+    if (BUILDINGS[p.kind].fruit) storeTree(s, p.kind, s.trees[id]);
     if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);
     if (BUILDINGS[p.kind].tills) setCell(s, p.x, p.z, 'grass');
     for (const k of CONTENTS) delete s[k]?.[id];

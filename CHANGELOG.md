@@ -1,5 +1,13 @@
 # Changelog
 
+## Review of orchard, lucky events and home life - 2026-10-13 (unreleased)
+
+- Integrated main through `73fa8f5` while retaining the finite farmhouse work board. Grafted saplings survive Undo; stored trees retain their growth bonus, special fruit and branch progress after reload. A branch cut prevents undoing the tree to cut the same branch again.
+- Lucky-event play time includes time spent clicking, excludes long absences and resumes after a backward clock correction. A later gold rush preserves uncollected bonus rent from earlier rushes, and long-running farms retain their saved rush counter beyond 278 hours of play.
+- Ingredient guidance distinguishes ordinary apples and eggs from Mango apples and rare eggs, includes thinning/output upgrades, and points to the notebook or the actual source. It no longer sends rare-egg searches to the fishing pond. New orders follow the actual produce and full recipe chain, and invalid wardrobe selections are refused safely.
+- Home activity cooldowns recover after a backward clock change. Knitting at the saved counter limit cannot repeatedly award the same scarf, and refused activities do not advance dialogue turns. Improved tree timers use the actual fruit and grafting duration during clock recovery.
+- Added focused rules and English/Vietnamese browser regressions for the integrated update. Review and validation details are in `docs/plan/95-review.md`.
+
 ## Farmhouse work board - 2026-10-12 (unreleased)
 
 - Added a farmhouse work board with one-time crop assignments for family help or a hired field worker. Choose up to 12 beds, leave others untouched and keep ripe crops visible with an optional harvest pause. Manual harvesting takes priority without wages or replacement targets.

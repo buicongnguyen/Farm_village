@@ -1,4 +1,6 @@
 // The order board (DESIGN 8, ECONOMY 3): cards from villagers and neighbours, delivered from the barn.
+import { fruitId } from './trees.mjs';
+import { produceOf } from './surprises.mjs';
 import { beautyBonus } from './valley.mjs';
 import { ORDERS, XP, BONDS } from '../content/economy.mjs';
 import { GOODS, CROPS, RECIPES, ANIMALS, FRUITS } from '../content/goods.mjs';
@@ -25,14 +27,14 @@ export function orderable(s) {
     const crop = CROPS[good], fruit = FRUITS[good], recipe = RECIPES[good];
     let ok = false;
     if (crop) ok = cropOpen(s, good) && beds;
-    else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt) && (!fruit.cross || s.trees[id].cross));   // a Mango apple only from a tree that bears them
+    else if (fruit) ok = fruit.level <= s.level && placed.some(([id, p]) => p.kind === fruit.tree && Number.isFinite(s.trees?.[id]?.doneAt) && fruitId(s, id) === good);   // a Mango apple only from a tree that bears them
     else if (recipe) ok = recipeOpen(s, good) && has(recipe.at) && Object.keys(recipe.needs).every(source);
     else {
       const animal = Object.entries(ANIMALS).find(([, a]) => a.gives === good);
       if (animal) {
         const [kind, a] = animal;
         ok = a.level <= s.level && placed.some(([id, p]) => p.kind === a.home && isWorking(s, id)
-          && (s.animals[id] ?? []).some(an => an.kind === kind)) && source(a.eats);
+          && (s.animals[id] ?? []).some(an => an.kind === kind && produceOf(an) === good)) && source(a.eats);
       }
     }
     memo.set(good, ok); return ok;

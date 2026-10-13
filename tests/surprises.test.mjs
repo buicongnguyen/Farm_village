@@ -48,8 +48,9 @@ test('rare hens: the first four are plain; then seeded, a black one by the twelf
 
 test('play time is counted a minute a tick at most; a jumped clock earns none of it', () => {
   const s = farm(); assert.equal(s.stats.playMs ?? 0, 0);
-  tick(s, T0 + 30_000); assert.equal(s.stats.playMs, 30_000); tick(s, T0 + 30_000 + 10 * HOUR); assert.equal(s.stats.playMs, 30_000 + SURPRISES.tickCap);
-  tick(s, T0); assert.equal(s.stats.playMs, 30_000 + SURPRISES.tickCap, 'a clock set back takes nothing away');
+  tick(s, T0 + 30_000); assert.equal(s.stats.playMs, 30_000); tick(s, T0 + 30_000 + 10 * HOUR); assert.equal(s.stats.playMs, 30_000, 'absence earns no play time');
+  tick(s, T0); assert.equal(s.stats.playMs, 30_000, 'a clock set back takes nothing away');
+  tick(s, T0 + 1000); assert.equal(s.stats.playMs, 31_000, 'normal play resumes immediately');
 });
 
 test('the herd grows: a forest goat after play time with a goat, a calf with two cows; two extra in a full barn at most', () => {

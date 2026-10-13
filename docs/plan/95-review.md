@@ -103,3 +103,29 @@ was fixed in this pass, and what is left, with the reason.
 
 - Locked rows that only name a level ("Reach level N") still do not say how to level up.
 - The farm gate's posts and the order board can be walked through (both stand where people must pass).
+
+
+## Integration review - 2026-10-13 (feature branch, not deployed)
+
+Reviewed main's notebook, surprises, fruit-tree and home-life updates through `73fa8f5` with the pending farmhouse work board (PR #111). Preserved both sets of action handlers, tick hooks and save normalization when resolving the integration conflicts. Art outputs are taken from main without modification.
+
+Reproduced and fixed:
+
+- **Trees:** Undo consumed grafted-sapling quality, and storage removed grafting, Mango-apple fruit and branch progress. Stored trees now keep those permanent properties in a bounded-by-inventory `treeStore` record; a replanted tree waits a full regrowth cycle. New grafted saplings retain priority when both types are in storage. Picking or cutting a branch after placement blocks Undo, including on a previously stored tree, so Undo cannot duplicate cuttings.
+- **Lucky events:** actions updated the same timestamp used for active play, so frequent clicks erased time toward discoveries. A dedicated saved tick timestamp includes that time, skips long absences and recovers when the clock moves back. The saved rush play-time counter also retains values beyond 1 billion milliseconds (about 278 hours), preventing repeated rolls on long-running farms. Successive gold rushes keep their pending rent windows until collection; windows are clipped to the rent cap and overlapping intervals cannot pay twice.
+- **Guidance:** apple requests could point to Mango-apple trees; rare eggs fell through to fishing advice. Cards now use the actual produce, explain discoveries/grafting and navigate to the notebook or a matching tree/hen. Counts include thinning and purchased animal/workshop output upgrades. A rare hen needing repair leads to its own coop. New random orders also require the actual fruit/egg and its complete recipe chain; special produce cannot stand in for ordinary ingredients.
+- **Home activities:** a future cooldown timestamp stayed in the future after clock rollback; it is now corrected once. At the knitting counter cap, the same last scarf was repeatedly treated as newly finished; only a new milestone gives that reward. Refused activities also leave session dialogue turns alone.
+- **Wardrobe:** rejected inherited object keys and non-string item IDs without changing settings; imported invalid selections safely render as no costume/hat.
+- **Tree clocks:** clock recovery now uses the tree's actual fruit, first-crop state and grafting bonus, matching the visible growth progress.
+
+Coverage: `tests/review-growth.test.mjs` contains 16 targeted cases; `tests/review-growth.browser.mjs` checks source navigation and storage/reload in English and Vietnamese at 390 and 1280 pixels. No new visible strings were introduced; source cards reuse the existing translated notebook and discovery text.
+
+Validation:
+
+- `npm test`: 757/757 passed, including the 16 new review regressions. `npm run sim` passes; steady play reaches school and clinic on day 3.
+- All 45 browser suites passed on the integrated build. After the final rule corrections, rebuilt and reran `review-growth`, `orchard`, `guidance-land-contracts`, `explore` and `explore-roam`; all passed. The work board passed its eight language/screen-size combinations in the full run.
+- Final `tests/browser.mjs`: 50/50 passed, including chapters 1-20. Simulated 4G first scene: 2,713 ms against the 3,500 ms target. Rendering remained within 120 draws and 300,000 triangles at every tested zoom.
+- Final test build: 1,296,452 first-load bytes; production build: 1,296,097 / 1,300,000 bytes (3,903 bytes headroom). Future additions still need the planned lazy-loading release pass.
+- Browser coverage is Chromium desktop and phone emulation. The optional WebKit engine is unavailable locally; physical iPhone/Safari behavior is unverified.
+
+No main merge or deployment is part of this review request. Previously lost upgrade metadata or overwritten rent windows cannot be reconstructed from old saves.

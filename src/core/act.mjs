@@ -34,7 +34,7 @@ import { actions as train, tickTrain } from './train.mjs';
 import { actions as upriver, tickUpriver } from './upriver.mjs';
 import { actions as fair, tickFair } from './fair.mjs';
 import { actions as orchard, tickOrchard } from './orchard.mjs';
-import { actions as trees } from './trees.mjs';
+import { actions as trees, treeDuration } from './trees.mjs';
 import { actions as bonds, afterAction, tickBonds } from './bonds.mjs';
 import { actions as cart, tickCart } from './cart.mjs';
 import { actions as condition, tickCondition } from './condition.mjs';
@@ -50,8 +50,7 @@ import { actions as villageGrowth } from './village-growth.mjs';
 import { actions as learning, tickLearning } from './learning.mjs';
 import { actions as schoolActivity } from './school-activity.mjs';
 import { clampDone } from './clock.mjs';
-import { CROPS, ANIMALS, FRUITS } from '../content/goods.mjs';
-import { BUILDINGS } from '../content/buildings.mjs';
+import { CROPS, ANIMALS } from '../content/goods.mjs';
 import { HANDS, ORDERS, STALL, TRUCK, FISH, RENT, FAMILY_ARRIVAL_MS, REPAIR, FRUIT_STAND, FESTIVAL_DAY, FAIR, TRAIN, HOTEL } from '../content/economy.mjs';
 
 export const ACTIONS = { ...fieldWork, ...handActions, ...farm, ...animals, ...output, ...knowhow, ...surprises, ...production, ...build, ...projects, ...homes, ...orders, ...neighbours, ...today, ...stall, ...market, ...fishing, ...quests, ...ruins, ...sites, ...festival, ...report, ...valley, ...cooperative, ...riverside, ...hotel, ...train, ...upriver, ...fair,
@@ -112,6 +111,8 @@ function remember(s, events, now) {
   if (s.news?.length > 12) s.news.length = 12;
 }
 function guardClock(s, now) {
+  for (const [id, at] of Object.entries(s.explore?.used ?? {})) if (at > now) s.explore.used[id] = now;
+  if (s.surprises?.houseFrom > now) s.surprises.houseFrom = now;
   if (s.supermarket) s.supermarket.nextAt = Math.min(s.supermarket.nextAt, now + 30 * 60_000);
   for (const b of Object.values(s.beds)) b.doneAt = clampDone(b.doneAt, now, CROPS[b.crop].growMs);
   for (const list of Object.values(s.animals)) for (const a of list) if (a.doneAt != null) a.doneAt = clampDone(a.doneAt, now, ANIMALS[a.kind].everyMs);
@@ -129,7 +130,7 @@ function guardClock(s, now) {
   if (s.fruitStand?.nextSaleAt) s.fruitStand.nextSaleAt = Math.min(s.fruitStand.nextSaleAt, now + FRUIT_STAND.everyMs);
   if (s.stall?.nextSaleAt) s.stall.nextSaleAt = Math.min(s.stall.nextSaleAt, now + STALL.sellEveryMs[1]);
   for (const h of Object.values(s.homes)) if (h.family && !h.arrived && h.arrivesAt > now + FAMILY_ARRIVAL_MS) { h.arrivesAt = now + FAMILY_ARRIVAL_MS; h.rentFrom = Math.min(h.rentFrom, h.arrivesAt); }
-  for (const [id, tr] of Object.entries(s.trees ?? {})) { const f = FRUITS[BUILDINGS[s.placed[id]?.kind]?.fruit]; if (f) tr.doneAt = clampDone(tr.doneAt, now, tr.first ? f.firstMs : f.regrowMs); }
+  for (const [id, tr] of Object.entries(s.trees ?? {})) { const full = treeDuration(s, id); if (full) tr.doneAt = clampDone(tr.doneAt, now, full); }
   // the later chapters' clocks: a festival or fair that "began in the future" begins now; no rest, stay or stop is longer than its own length
   for (const [f, D] of [[s.festival, FESTIVAL_DAY], [s.fair, FAIR]]) if (f && Number.isFinite(f.at) && f.at > now) { f.until = Math.min(f.until, now + D.lastsMs); f.at = now; }
   if (s.cooperative?.nextAt > now + 30 * 60_000) s.cooperative.nextAt = now + 30 * 60_000;

@@ -29,3 +29,10 @@ Tractors and 300-space fields, new animals/quality, orchards, playground busines
 - Testing limitation: the optional WebKit engine is not installed on this machine. Browser results cover Chrome phone emulation and desktop, not a physical iPhone/Safari run.
 
 Review fixes included moving the board clear of the market cart, truthful helper notices, accurate cancellation totals, removing a guaranteed hiring-payback claim, and preventing backward clocks from repeatedly restarting the harvest pause or stranding the hired-work timer. The live game is unchanged until this branch is reviewed and merged.
+
+
+## Integration follow-up - 2026-10-13
+
+Latest main through `73fa8f5` was merged in `51165b2`. The work-board handlers, observation before helper work and save normalization coexist with the new notebook and lucky-event systems. The orchard, reward and home-activity fixes are recorded in [the review](plan/95-review.md). PR #111 remains the review branch; it is not deployed.
+
+Integration validation: 757/757 unit tests, all 45 browser suites, five affected suites repeated on the final build, and 50/50 full-game smoke checks passed. The final production first load is 1,296,097 / 1,300,000 bytes; school and clinic remain day 3 for steady play. See the dated review for limitations.

@@ -62,8 +62,9 @@ export const actions = {
     // the camera's tilt, in degrees (view/camera.mjs TILT; the slider sends hundredths like the volumes)
     if (key === 'cameraTilt') { const v = Math.round(Number(value) * 100); if (!(v >= 28 && v <= 68)) return ctx.fail('Unknown setting'); ctx.s.settings.cameraTilt = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     if (key === 'playerHat' || key === 'playerLook') {   // the wardrobe (content/wardrobe.mjs): '' takes it off; each opens at its level
-      const item = (key === 'playerHat' ? HATS : COSTUMES)[value], v = value ? String(value) : '';
-      if (v && !item) return ctx.fail('Unknown setting');
+      const table = key === 'playerHat' ? HATS : COSTUMES;
+      if (typeof value !== 'string' || value && !Object.hasOwn(table, value)) return ctx.fail('Unknown setting');
+      const v = value, item = table[v];
       if (item && item.level > ctx.s.level) return ctx.fail('That is still locked');
       ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
     }

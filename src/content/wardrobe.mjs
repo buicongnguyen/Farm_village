@@ -36,9 +36,9 @@ export const COSTUMES = {
 for (const [id, o] of [...Object.entries(HATS), ...Object.entries(COSTUMES)]) o.id = id;
 for (const c of Object.values(COSTUMES)) c.level = HATS[c.hat].level;
 /** The costume you have on, or null. */
-export const costumeOf = s => COSTUMES[s?.settings?.playerLook] ?? null;
+export const costumeOf = s => typeof s?.settings?.playerLook === 'string' && Object.hasOwn(COSTUMES, s.settings.playerLook) ? COSTUMES[s.settings.playerLook] : null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */
-export const hatOf = s => costumeOf(s)?.hat ?? (HATS[s?.settings?.playerHat] ? s.settings.playerHat : '');
+export const hatOf = s => costumeOf(s)?.hat ?? (typeof s?.settings?.playerHat === 'string' && Object.hasOwn(HATS, s.settings.playerHat) ? s.settings.playerHat : '');
 /** Hats and costumes in the order they are earned, each with `open` for this farm. */
 export const wardrobe = s => ({
   hats: Object.values(HATS).sort((a, b) => a.level - b.level).map(h => ({ ...h, open: (s.level ?? 1) >= h.level })),
