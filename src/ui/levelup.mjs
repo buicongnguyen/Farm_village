@@ -55,7 +55,8 @@ export class LevelUp {
     showModal(`<div class="levelup"><div class="burst"><i class="rays"></i><div class="level-badge">${glyph('star', 'star')}<b>${level}</b></div></div>
       <h2>${t('Level {level}!', { level })}</h2><p class="sub">${tiles.length ? t('New on your farm') : t('Your farm grows. Keep going!')}</p>
       ${tiles.length ? `<div class="unlock-tiles">${tiles.join('')}</div>` : ''}
-      <div class="row">${show ? `<button class="btn orange" data-close data-show="${show.type}:${show.id}">${t('Show me')}</button>` : ''}<button class="btn primary big" data-close>${t('Continue')}</button></div>${level >= 3 ? `<button class="btn ghost levelup-insight" data-close data-insight>${t('See the big picture of your farm')}</button>` : ''}</div>`,
+      ${level >= 3 ? `<button class="btn ghost levelup-insight" data-close data-insight>${t('See the big picture of your farm')}</button>` : ''}
+      <div class="row">${show ? `<button class="btn orange" data-close data-show="${show.type}:${show.id}">${t('Show me')}</button>` : ''}<button class="btn primary big" data-close>${t('Continue')}</button></div></div>`,
     { modal: true, cls: 'levelup-modal', onOpen: el => {
       el.querySelector('[data-more]')?.addEventListener('click', e => { e.currentTarget.remove(); el.querySelectorAll('.unlock-tile.extra').forEach(x => { x.hidden = false; }); });
       el.querySelector('[data-insight]')?.addEventListener('click', () => setTimeout(() => this.onShow?.({ type: 'insight' }), 0));

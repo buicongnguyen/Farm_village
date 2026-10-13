@@ -394,4 +394,4 @@ button.req.link { display: block; width: 100%; text-align: left; font: inherit; 
 .insight-col { flex: 1 0 26px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 2px; } .insight-col i { width: 100%; max-width: 34px; border-radius: 8px 8px 0 0; background: linear-gradient(#ffd966, #f2a52a); }
 .insight-col span { font-size: 10px; font-weight: 700; } .insight-col b { font-size: 11px; }
 .insight-table { width: 100%; border-collapse: collapse; font-size: .88em; margin-top: 8px; } .insight-table th, .insight-table td { padding: 4px 6px; text-align: right; border-bottom: 1px solid #e2cf9f; } .insight-table th:first-child, .insight-table td:first-child { text-align: left; }
-.levelup-insight { display: block; margin: 8px auto 0; }
+.levelup-insight { display: block; margin: 0 auto 8px; }
