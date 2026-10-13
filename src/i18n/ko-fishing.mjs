@@ -1136,4 +1136,6 @@ export const KO_FISHING = {
   'Minutes': '분',
   'See the big picture of your farm': '농장의 큰 그림 보기',
   'Level': '레벨',
+  'Boy': '남자아이',
+  'Girl': '여자아이',
 };

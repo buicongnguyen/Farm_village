@@ -143,3 +143,17 @@ test('the family at home: every stop is a thing in the house they can walk to, w
     }
   }
 });
+
+test('the mirror: you can be a man, a woman, a boy or a girl, and each has a model, a size and a name in three languages', async () => {
+  const { BODIES, bodyOf } = await import('../src/content/wardrobe.mjs'), { RIGS } = await import('../src/view/skinned.mjs');
+  const packs = await Promise.all(['vi', 'ko', 'ja'].map(l => import(`../src/i18n/${l}-fishing.mjs`).then(m => Object.values(m)[0])));
+  const s = newGame(NOW, 4, { restore: true }); assert.equal(bodyOf(s).id, 'man');
+  for (const b of Object.values(BODIES)) {
+    assert.ok(act(s, 'setting', { key: 'playerBody', value: b.id }, NOW).ok, b.id); assert.equal(bodyOf(s), b);
+    assert.ok(RIGS[b.rig]?.tint, `${b.id}: no such model`); assert.ok(b.size > 0.5 && b.size <= 1);
+    assert.ok(b.name);
+  }
+  for (const name of ['Boy', 'Girl']) assert.ok(packs.every(p => p[name]?.length > 0), `missing: ${name}`);
+  assert.equal(act(s, 'setting', { key: 'playerBody', value: 'giant' }, NOW).ok, false);
+  s.settings.playerBody = 'nobody'; assert.equal(bodyOf(s).id, 'man', 'an unknown body in an old save');
+});

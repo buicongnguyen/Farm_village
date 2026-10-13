@@ -1136,4 +1136,6 @@ export const JA_FISHING = {
   'Minutes': '分',
   'See the big picture of your farm': '農場の全体のようすを見る',
   'Level': 'レベル',
+  'Boy': '男の子',
+  'Girl': '女の子',
 };

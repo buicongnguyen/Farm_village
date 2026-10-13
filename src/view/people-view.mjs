@@ -24,7 +24,7 @@ import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { costumeOf, wearOf } from '../content/wardrobe.mjs';
+import { costumeOf, wearOf, bodyOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
@@ -119,7 +119,7 @@ export class PeopleView {
   /** Who should be around: Ada, the family, residents of arrived families, and Cora once the school is open. */
   residents() {
     const s = this.s, now = this.game.now, home = [FARMHOUSE.x + 5, FARMHOUSE.z];
-    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: s.settings?.playerBody ?? 'man', home, family: true, player: true }];
+    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: bodyOf(s).rig, size: bodyOf(s).size, home, family: true, player: true }];
     for (const [hid, h] of Object.entries(s.homes)) {
       if (!h.family || h.arrivesAt > now) continue;
       const p = s.placed[hid], door = p && doorCell(p.kind, p.x, p.z, p.rot), fam = FAMILIES.find(f => f.id === h.family);
@@ -170,7 +170,7 @@ export class PeopleView {
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
-    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, wearOf(this.s)) : w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
+    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, wearOf(this.s)) : w.body, ...(w.size && w.size !== 1 ? { scale: w.size } : {}), x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     if (w.player) { const before = this.wornBefore; this.wornBefore = w.subject.rig; if (before && before !== w.subject.rig) releaseRig(before); }   // the hat you took off
     this.walkers.set(w.id, w); return w;
   }
@@ -179,9 +179,9 @@ export class PeopleView {
    *  came out of the house invisible after changing clothes. */
   redress(w) {
     const { actor, ...old } = w.subject, before = old.rig;
-    w.body = this.s.settings?.playerBody ?? 'man';
+    w.body = bodyOf(this.s).rig; w.size = bodyOf(this.s).size;
     this.cast.remove(w.subject);
-    w.subject = this.cast.add({ ...old, rig: wornRig(w.body, wearOf(this.s)), tint: outfitOf(w.person ?? w.id, this.s) });
+    w.subject = this.cast.add({ ...old, rig: wornRig(w.body, wearOf(this.s)), scale: w.size, tint: outfitOf(w.person ?? w.id, this.s) });
     this.wornBefore = w.subject.rig; if (before !== w.subject.rig) releaseRig(before);
   }
   drop(w) { this.releaseFishing(w); w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }

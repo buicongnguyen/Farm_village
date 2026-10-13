@@ -55,6 +55,7 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 .explore-card.high { top: max(64px, calc(env(safe-area-inset-top) + 56px)); max-height: 40%; }
 @media (max-width: 600px) { .explore-card.high { top: max(112px, calc(env(safe-area-inset-top) + 104px)); } }
 .explore-you { font-style: italic; opacity: .8; margin: 2px 0 6px; } .explore-you::before { content: '— '; }
+.explore-bodies { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 8px 0; } .explore-bodies .btn { min-width: 84px; }
 .explore-note { font-size: .82em; opacity: .8; margin: 4px 0; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }
@@ -64,8 +65,11 @@ body.fishing-active .explore-controls.compact [data-explore="interact"] { displa
 .home-pins[hidden], .home-pins button[hidden] { display: none; }
 body.panel-open .home-pins, body:has(.modal) .home-pins { visibility: hidden; }
 .home-pins button { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; min-height: 44px; min-width: 44px;
-  max-width: 160px; padding: 4px 10px; border-radius: 16px; border: 2px solid #fff2d6bb; color: #fffdf6;
-  background: #593923cc; font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; text-shadow: 0 1px 2px #21160e; box-shadow: 0 2px 5px #0003; }
+  max-width: 160px; padding: 4px 10px; border-radius: 16px; border: 2px solid transparent; color: #fffdf6;
+  background: transparent; font-family: inherit; font-size: 13px; font-weight: 800; line-height: 1.2; cursor: pointer;
+  /* no box and no border: the name alone, with a dark edge so it reads on any floor */
+  text-shadow: 0 0 3px #21160e, 0 0 3px #21160e, 0 1px 3px #21160e, 1px 0 2px #21160e, -1px 0 2px #21160e; }
+.home-pins button:hover { background: #59392355; }
 .home-say { position: fixed; inset: 0; pointer-events: none; z-index: 8; } .home-say[hidden], .home-say p[hidden] { display: none; }
 body.panel-open .home-say, body:has(.modal) .home-say { visibility: hidden; }
 .home-say p { position: absolute; transform: translate(-50%, -100%); margin: 0; max-width: 180px; padding: 5px 10px; border-radius: 14px; background: #fffdf6; color: #3b2a24; border: 2px solid var(--edge, #5b3418);
