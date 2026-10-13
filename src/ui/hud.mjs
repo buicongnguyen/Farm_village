@@ -165,6 +165,7 @@ export class Hud {
     if (e.type === 'albrightAnswered') this.toast(t(e.choice === 'factory' ? 'The cannery is going up on the brook meadow' : 'The brook meadow stays a meadow. Beehives are in the build menu'), 'good', { icon: e.choice === 'factory' ? 'cannery' : 'beehive', to: 'valley' });
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
     if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
+    if (e.type === 'musicBought') this.toast(t('Music in the {name}: calm animals give half as much again', { name: t(BUILDINGS[e.kind].name) }), 'good', { icon: e.kind });
     if (e.type === 'outputUpgraded') this.toast(t('{name} upgraded: it gives ×{n} now', { name: t(BUILDINGS[e.kind].name), n: e.times }), 'good', { icon: e.kind });
     if (e.type === 'rareHen') this.toast(t(e.variant === 'rainbow' ? 'A rainbow hen! Nobody will believe it' : 'One of the chicks is a black hen!'), 'good', { icon: e.variant === 'rainbow' ? 'rainbow_egg' : 'black_egg', to: 'knowhow' });
     if (e.type === 'herdGrew') this.toast(t(e.find === 'calf' ? 'A calf was born in the cow barn' : 'A goat walked out of the forest and stayed'), 'good', { icon: e.kind, to: 'knowhow' });

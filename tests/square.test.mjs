@@ -68,3 +68,29 @@ test('the valley\u2019s value stays a readable number: deeds count up to a limit
   assert.ok(valueOf(s) < 1e11, `a farm of two million coins is worth ${valueOf(s)}`);
   assert.ok(valueOf(s) >= VALLEY.marks.lights, 'the last chapter can still be reached');
 });
+
+// 2026-10-14: music for the herds, and three more food workshops
+const { newGame } = await import('../src/core/state.mjs'), { act } = await import('../src/core/act.mjs'), NOW = 1_800_000_000_000;
+test('music in the barn: bought once for a cow or goat barn, half as much again at every collection, nowhere else', async () => {
+  const { MUSIC, musicPlan, animalYield, hasMusic } = await import('../src/core/output.mjs');
+  const s = newGame(NOW, 21, { restore: true }); s.level = 12; s.coins = 5000;
+  s.placed.zcow = { kind: 'cow_barn', x: 60, z: 40, rot: 0 }; s.placed.zcoop = { kind: 'coop', x: 66, z: 40, rot: 0 };
+  assert.equal(musicPlan(s, 'zcoop'), null); assert.equal(act(s, 'buyMusic', { building: 'zcoop' }, NOW).ok, false);
+  assert.equal(animalYield(s, 'zcow'), 1); assert.equal(musicPlan(s, 'zcow').price, MUSIC.cow_barn.cost);
+  s.level = 3; assert.equal(act(s, 'buyMusic', { building: 'zcow' }, NOW).ok, false, 'music before its level'); s.level = 12;
+  s.coins = 10; assert.equal(act(s, 'buyMusic', { building: 'zcow' }, NOW).ok, false, 'music without the coins'); s.coins = 5000;
+  assert.ok(act(s, 'buyMusic', { building: 'zcow' }, NOW).ok); assert.equal(s.coins, 5000 - MUSIC.cow_barn.cost); assert.ok(hasMusic(s, 'zcow'));
+  assert.equal(animalYield(s, 'zcow'), 2); (s.outputUp ??= {}).zcow = 2; assert.equal(animalYield(s, 'zcow'), 6);
+  assert.equal(act(s, 'buyMusic', { building: 'zcow' }, NOW).ok, false, 'music twice');
+  s.music.zcoop = true; assert.equal(animalYield(s, 'zcoop'), 1, 'a stale mark gave the coop music');
+});
+test('the new food workshops: every recipe has a maker, costs less than it sells for, and is on the product map', async () => {
+  const { RECIPES, GOODS } = await import('../src/content/goods.mjs'), { BUILDINGS } = await import('../src/content/buildings.mjs'), { productMap } = await import('../src/core/insight.mjs');
+  const made = ['mushroom', 'kimchi', 'chili_sauce', 'salad', 'mushroom_soup', 'lunch_box'];
+  for (const id of made) {
+    const r = RECIPES[id]; assert.ok(BUILDINGS[r.at]?.produces, `${id}: no maker`); assert.ok(r.level >= BUILDINGS[r.at].level, `${id} opens before its workshop`);
+    const cost = Object.entries(r.needs).reduce((n, [g, k]) => n + GOODS[g].value * k, 0); assert.ok(r.value * r.makes > cost, `${id} sells for no more than it costs`);
+  }
+  const s = newGame(NOW, 22, { restore: true }); s.level = 14; const shown = productMap(s).cols.flat().map(g => g.id);
+  for (const id of made) assert.ok(shown.includes(id), `${id} is not on the product map`);
+});

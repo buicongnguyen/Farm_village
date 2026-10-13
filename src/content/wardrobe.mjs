@@ -65,8 +65,9 @@ export const costumeOf = s => COSTUMES[s?.settings?.playerLook] ?? null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */
 export const hatOf = s => { const c = costumeOf(s); return c ? c.hat ?? '' : HATS[s?.settings?.playerHat] ? s.settings.playerHat : ''; };
 /** Everything your character has on, as the rig wants it (view/skinned.mjs wornRig): a costume's kit and hat, or your hat. */
-export const wearOf = s => { const c = costumeOf(s); return c ? [c.kit && `kit:${c.kit}`, c.hat].filter(Boolean).join('+') : [hatOf(s), skirtOf(s) && `skirt:${skirtOf(s)}`].filter(Boolean).join('+'); };
-/** The skirt you chose at the mirror: 0 none, 1 short, 2 to the knee, 3 long (made in view/skinned.mjs, in the trousers' colour). A costume covers it. */
+export const wearOf = s => { const c = costumeOf(s); return [c ? c.kit && `kit:${c.kit}` : '', hatOf(s), skirtOf(s) && `skirt:${skirtOf(s)}`].filter(Boolean).join('+'); };   // (the skirt is your own choice: a costume keeps it)
+/** The skirt you chose at the mirror: 0 none, 1 short, 2 to the knee, 3 long (made in view/skinned.mjs, in the trousers' colour).
+ *  It is worn with a costume too: choosing a skirt used to take the costume off, which looked like the costume vanishing. */
 export const SKIRTS = ['No skirt', 'Short skirt', 'Knee skirt', 'Long skirt'];
 export const skirtOf = s => { const n = Number(s?.settings?.playerSkirt); return n >= 1 && n <= 3 ? Math.round(n) : 0; };
 /** Hats and costumes in the order they are earned, each with `open` for this farm. */
