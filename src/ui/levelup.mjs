@@ -3,6 +3,7 @@
 // the content when an event has none), a tile for a new order slot, "Show me" for the first new building or recipe, and
 // Continue. Several levels gained in one go make one card with everything they opened. The card waits while the player
 // is busy (build mode, a planting or harvesting sweep) and comes as soon as they stop.
+import { HATS } from '../content/wardrobe.mjs';
 import { t } from '../kit/i18n.mjs';
 import { CROPS, FRUITS, RECIPES, ANIMALS, GOODS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -41,6 +42,7 @@ export class LevelUp {
   }
   show(level, list, slots) {
     const tiles = list.map(u => `<div class="unlock-tile" data-type="${u.type}">${iconOf(u)}<b>${nameOf(u)}</b><small>${t(TYPE[u.type] ?? 'New')}</small></div>`);
+    for (const h of Object.values(HATS)) if (h.level === level && level > 1) tiles.push(`<div class="unlock-tile" data-type="hat"><img class="tile-icon" src="./assets/icons/wear/${h.id}.webp" alt=""><b>${t('A new hat')}</b><small>${t('In the wardrobe')}</small></div>`);
     if (slots) tiles.push(`<div class="unlock-tile" data-type="slots">${iconHtml('ui:orders', '', 'tile-icon')}<b>${t('{count} order slots', { count: slots })}</b><small>${t('More orders')}</small></div>`);
     // two levels at once can open a dozen things: six tiles fit a phone, the rest fold behind a "+N" tile (tap to see them)
     const SHOWN = 6;

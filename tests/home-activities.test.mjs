@@ -121,3 +121,9 @@ test('the words of the little things and of the wardrobe are in all three packs'
   const keys = [...Object.values(HOME_THINGS).flatMap(t => [t.name, t.label, t.verb, t.intro, ...(t.lines ?? []), t.extra?.verb, ...(t.extra?.lines ?? [])]), ...Object.values(HATS).map(h => h.name), ...Object.values(COSTUMES).map(c => c.name), 'Hats', 'Costumes', 'None'].filter(k => k && k !== 'Farm notebook');   // (the notebook's name is in the farm's own pack)
   for (const pack of [VI_EXPLORE, KO_EXPLORE, JA_EXPLORE]) for (const k of keys) assert.ok(pack[k]?.length > 0, `missing: ${k}`);
 });
+
+test('choosing a shirt takes a costume off, in the wardrobe or in Settings', () => {
+  const s = newGame(NOW, 11, { restore: true }); s.level = 5;
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'chef' }, NOW).ok); assert.equal(costumeOf(s).id, 'chef');
+  assert.ok(act(s, 'setting', { key: 'playerColor', value: '#3a86ff' }, NOW).ok); assert.equal(costumeOf(s), null); assert.equal(s.settings.playerColor, '#3a86ff');
+});

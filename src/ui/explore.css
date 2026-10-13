@@ -52,6 +52,9 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 .explore-wear .wear img, .explore-wear .wear i { width: 48px; height: 48px; display: block; } .explore-wear .wear i { border-radius: 50%; border: 3px dashed #b9a27c; box-sizing: border-box; }
 .explore-wear .wear.on { outline: 4px solid var(--leaf, #5a9a33); outline-offset: 1px; background: #f1ffd9; }
 .explore-wear .wear.locked { opacity: .55; cursor: default; } .explore-wear .wear.locked img { filter: grayscale(1) brightness(.8); }
+.explore-card.high { top: max(64px, calc(env(safe-area-inset-top) + 56px)); max-height: 40%; }
+@media (max-width: 600px) { .explore-card.high { top: max(112px, calc(env(safe-area-inset-top) + 104px)); } }
+.explore-you { font-style: italic; opacity: .8; margin: 2px 0 6px; } .explore-you::before { content: '— '; }
 .explore-note { font-size: .82em; opacity: .8; margin: 4px 0; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }

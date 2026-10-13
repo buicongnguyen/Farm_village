@@ -1071,4 +1071,6 @@ export const KO_FISHING = {
   'Lemon tree': '레몬나무',
   'Longan tree': '용안나무',
   'Lychee tree': '리치나무',
+  'A new hat': '새 모자',
+  'In the wardrobe': '옷장에 있어요',
 };
