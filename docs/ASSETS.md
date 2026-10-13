@@ -163,7 +163,8 @@ The supermarket is a disabled prepared room. Its exterior/icon/stock variants an
 `public/assets/models/rigged/wear.glb` (27 head pieces) and `public/assets/icons/wear/*.webp` come from the owner's own
 village game Willowmere (`3d_farmer_fish_sell`: `gear-wear.glb`, first made for Zoo Garden, and `disguises.glb`), not
 from any third party. `art/tools/build-wear.mjs <path to 3d_farmer_fish_sell>` cuts the pieces that follow the head
-into head space with their colours baked in; `art/blender/pack.mjs` packs the result. Willowmere's body garments are
-rigid shells for its chibi explorer and do not fit Hollowbrook's skinned villagers, so a costume here is a hat with a
-matching shirt and trousers (`src/content/wardrobe.mjs`). The house activities in `src/content/explore.mjs`
+into head space with their colours baked in; `art/blender/pack.mjs` packs the result. Whole costumes followed (2026-10-13): `rigged/costumes.glb` holds 30 of
+the same games' costume kits in the chibi's own space, and `src/view/skinned.mjs` (`refit`) re-fits each rigid part
+onto a villager's bones (body over hips, spine and chest; sleeves and legs blended at the elbow and knee), so a costume
+in `src/content/wardrobe.mjs` is real clothes, usually with a hat. The house activities in `src/content/explore.mjs`
 (`HOME_THINGS`) follow Willowmere's `house-rules.mjs` in idea only; the words and rules are Hollowbrook's.

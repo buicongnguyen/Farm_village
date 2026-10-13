@@ -2,7 +2,7 @@ import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, HOME_THINGS, roomAtLevel } from '../content/explore.mjs';
-import { wardrobe, hatOf } from '../content/wardrobe.mjs';
+import { wardrobe, wearOf } from '../content/wardrobe.mjs';
 import { wornRig } from '../view/skinned.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
@@ -21,7 +21,8 @@ import { BANK, nearestPond, pondAt, castPlan, shorePoint, waterDistance } from '
 import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
 import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
-import { xz } from '../core/explore-navigation.mjs';
+import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
+import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
 
@@ -50,6 +51,7 @@ class ExploreMode {
     this.pinsEl = document.createElement('div'); this.pinsEl.className = 'home-pins'; this.pinsEl.hidden = true;
     this.pins = new Map();
     radial.el.parentElement.appendChild(this.pinsEl);
+    this.sayEl = document.createElement('div'); this.sayEl.className = 'home-say'; this.sayEl.hidden = true; radial.el.parentElement.appendChild(this.sayEl);
     // The thumb stick (Zoo Garden's: fixed bottom-left, 52 px of travel, an 18 % dead zone, full speed past it). It is one
     // permanent element beside the panel, so the panel can redraw (a new nearby action) while a thumb is on the stick.
     const joy = this.joyEl = document.createElement('div'); joy.className = 'explore-joy'; joy.hidden = true; joy.setAttribute('role', 'group'); joy.innerHTML = '<i></i>';
@@ -82,7 +84,7 @@ class ExploreMode {
   }
   get session() { return exploreSession(this.state); }
   get inside() { return !!this.session && this.session.location !== 'outdoors'; }
-  get objects() { return this.kind ? { ...CIVIC_INTERIORS[this.kind].objects, interior_exit: { label: 'Go outside' } } : HOME_OBJECTS; }
+  get objects() { return this.kind ? { ...CIVIC_INTERIORS[this.kind].objects, ...Object.fromEntries((ROOM_PEOPLE[this.kind] ?? []).map(w => [`person_${w.id}`, { label: 'Say hello', pin: w.role, person: w }])), interior_exit: { label: 'Go outside' } } : HOME_OBJECTS; }
   get approach() { return this.site ? facilityDoor(this.state, this.site) ?? this.entryDoor : HOME_APPROACH; }
   enterRoom() { return this.site ? this.game.do('enterFacility', { id: this.site }) : this.game.do('enterFarmhouse'); }
   leaveRoom(recover = false) { return this.game.do(this.site ? 'leaveFacility' : 'leaveFarmhouse', { recover }); }
@@ -93,7 +95,7 @@ class ExploreMode {
       b.addEventListener('click', () => { if (!this.inside || this.busy) return; this.clear(); this.target = id; this.notice = null;
         if (!routeExplore(this.state, xz(this.session.room.interactions.find(o => o.id === id).stand))) this.notice = 'The way is blocked. Try another spot.';
         this.render(); });
-      this.pinsEl.append(b); this.pins.set(id, { button: b, label: this.kind ? object.label : HOME_LABELS[id] });
+      this.pinsEl.append(b); this.pins.set(id, { button: b, label: this.kind ? object.pin ?? object.label : HOME_LABELS[id] });
     }
   }
   /** Tap or thumb stick: the saved choice (touch screens are given the stick on their first visit, in open()). */
@@ -110,14 +112,14 @@ class ExploreMode {
     this.world.cam.stop(); this.savedCamera = { x: this.world.cam.x, z: this.world.cam.z, span: this.world.cam.span };
     document.body.classList.add('explore-active'); this.el.hidden = false; this.render();
     try {
-      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', hatOf(this.state));
+      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', wearOf(this.state));
       const assets = await loadHomeRoom(body, this.kind);
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
       this.walker = people.walkers.get(who) ?? people.walkers.get('you'); if (!this.walker) throw Error('player loading');
       if (roam && this.walker.indoors) { this.close(); this.hud.toast(t('It is night and everyone is asleep. Explore in the morning.'), 'info'); return; }
       this.own = !!this.walker.player;   // only your own character goes inside and fishes for you
-      const comfort = this.state.house?.level ?? 1; if (!this.kind) assets.data = roomAtLevel(assets.data, comfort);   // the room as this house level has made it
+      const comfort = this.state.house?.level ?? 1; if (!this.kind) assets.data = roomAtLevel(assets.data, comfort); else assets.data = withPeople(assets.data, this.kind, roomClear, roomRoute);   // someone is in   // the room as this house level has made it
       this.room = new ExploreRoom(assets, this.state.settings, comfort);
       if (!startExplore(this.state, [this.walker.x, this.walker.z], assets.data, people.penCells())) throw Error('no safe approach');
       people.cancelTrip(this.walker); this.walker.controlled = true; this.walker.indoors = false;
@@ -244,7 +246,7 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; this.pinsEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -335,6 +337,8 @@ class ExploreMode {
       this.room?.dress(this.state.settings).catch(() => {});   // the room's own actor wears it at once
       this.render(); return;
     }
+    if (action.startsWith('answer:') && this.talk) { this.talk.answer = +action.slice(7) ? 1 : 0; this.render(); return; }
+    if (action === 'another' && this.talk) { this.talk = { n: this.talk.n + 1, answer: null }; this.render(); return; }
     if (action.startsWith('tab:')) { this.wardTab = action.slice(4); this.render(); return; }
     if (action.startsWith('use:') || action.startsWith('more:')) {
       const id = action.split(':')[1], r = this.game.do('useAtHome', { id, extra: action.startsWith('more:') });
@@ -356,6 +360,7 @@ class ExploreMode {
     const id = this.nearest(); this.clear(true); this.notice = null;
     if (!this.inside) { if (this.near) this.doNear(this.near); if (this.active) this.render(); return; }
     if (id === this.session.room.exit.id) { this.leaveRoom(); this.target = null; this.syncScene(); }
+    else if (this.kind && this.objects[id]?.person) { this.card = id; this.talk = { n: (this.talkTurn = (this.talkTurn ?? 0) + 1), answer: null }; }
     else if (this.kind && this.objects[id]) { const o = this.objects[id]; if (o.panel) this.panels.show(o.panel, o.siteArg ? this.site : undefined); else this.card = id; }
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
     else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; }
@@ -379,7 +384,7 @@ class ExploreMode {
     const yaw = this.inside ? this.room.movementYaw : this.world.cam.yaw, c = Math.cos(yaw), s = Math.sin(yaw);
     if (x || y) this.actOnArrival = this.castOnArrival = null, this.enterOnArrival = false;
     const moving = !this.busy && moveExplore(this.state, x * c + y * s, -x * s + y * c, dt);
-    if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); }
+    if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); this.positionSay(); }
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
@@ -425,6 +430,18 @@ class ExploreMode {
   /** How much of the screen's foot the controls take (labels keep above it): the pill and its hint on a wide window, the
    *  stick and the buttons on a narrow one. */
   pinFloor() { return innerWidth >= 900 ? 110 : 205; }
+  /** What the family says at home, over their heads (one small bubble each, only while they say it). */
+  positionSay() {
+    const family = this.room?.family ?? []; this.sayEl.hidden = !this.inside || this.busy || !family.length;
+    if (this.sayEl.hidden) return;
+    while (this.sayEl.children.length < family.length) this.sayEl.append(document.createElement('p'));
+    family.forEach((f, i) => {
+      const el = this.sayEl.children[i]; el.hidden = !f.say; if (!f.say) return;
+      const text = t(f.say); if (el.textContent !== text) el.textContent = text;
+      const p = this.room.project([f.subject.x, f.height + 0.45, f.subject.z]);
+      el.style.left = `${Math.min(Math.max(p.x, 96), innerWidth - 96)}px`; el.style.top = `${Math.max(p.y, 120)}px`;
+    });
+  }
   positionPins() {
     this.pinsEl.hidden = !this.inside || this.busy;
     if (this.pinsEl.hidden) return;
@@ -456,6 +473,16 @@ class ExploreMode {
     const loading = this.loading ? t(this.kind || this.roam ? 'Getting ready to explore…' : 'Opening the farmhouse…') : this.error ? t(this.kind || this.roam ? 'Could not start exploring. Please try again.' : 'Could not open the farmhouse. Please try again.') : '';
     const nearest = this.nearest(), control = this.control;
     let card = '';
+    const person = this.kind ? this.session?.room.people?.find(w => `person_${w.id}` === this.card) ?? null : null;   // (with where they stand: the card keeps off them)
+    if (this.room) this.room.talking = person?.id ?? null;
+    if (person && this.talk) {   // hello, one question about your own farm, two ways to answer, and what they make of it
+      const st = this.state, nums = talkNumbers(st, FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length), 
+        fair = person.asks.filter(a => [...a.q.matchAll(/\{(\w+)\}/g)].every(m => nums[m[1]] > 0)), asks = fair.length ? fair : person.asks,   // never “0 harvests”
+        ask = asks[this.talk.n % asks.length], said = this.talk.answer;
+      card = `<h2>${esc(t(person.role))}</h2>` + (said === null
+        ? `<p>${esc(t(person.hello[this.talk.n % person.hello.length]))}</p><p><b>${esc(t(ask.q, nums))}</b></p>${ask.a.map(([text], i) => button(`answer:${i}`, text, 'primary')).join('')}${button('back', 'Back', 'ghost')}`
+        : `<p>${esc(t(ask.q, nums))}</p><p class="explore-you">${esc(t(ask.a[said][0]))}</p><p><b>${esc(t(ask.a[said][1]))}</b></p>${button('another', 'Another question', 'primary')}${button('back', 'Back', 'ghost')}`);
+    }
     if (this.kind && this.objects[this.card]?.text) card = `<h2>${esc(t(this.objects[this.card].label))}</h2><p>${esc(t(this.objects[this.card].text))}</p>${button('back', 'Back', 'ghost')}`;
     if (this.card === 'memory') card = `<h2>${esc(t(HOME_MEMORY.title))}</h2><p><b>${esc(t('{person:pip:display}'))}</b> — ${esc(t(HOME_MEMORY.text))}</p><p><b>${esc(t('{person:june:display}'))}</b> — ${esc(t(HOME_MEMORY.reply))}</p><p>${esc(t('Saved in your home memories. Come back to read it anytime.'))}</p>${button('album', 'Open album', 'ghost')}${button('back', 'Back', 'ghost')}`;
     const wait = id => { const ms = homeCooldown(this.state, id, this.game.now); const sec = Math.ceil(ms / 1000); return ms > 0 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : ''; };
@@ -478,8 +505,8 @@ class ExploreMode {
       const none = (action, on) => `<button type="button" class="wear none${on ? ' on' : ''}" data-explore="${action}:"><i></i><span>${esc(t('None'))}</span></button>`;
       const row = tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
         : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
-          : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.hat)).join('')}</div>`;
-      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
+          : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.kit ?? c.hat)).join('')}</div>`;
+      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat or costume arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
     }
     const thing = this.kind ? null : HOME_THINGS[this.card];
     if (thing) {
@@ -508,7 +535,7 @@ class ExploreMode {
     this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
     if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
-    const html = `<div class="explore-heading">${esc(t(this.inside ? this.kind ? CIVIC_INTERIORS[this.kind].name : 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card${thing ? ' low' : ''}" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? thing?.name ?? this.objects[this.card]?.label ?? HOME_MEMORY.title))}">${card}</div>` : ''}
+    const html = `<div class="explore-heading">${esc(t(this.inside ? this.kind ? CIVIC_INTERIORS[this.kind].name : 'At home' : 'Explore') + who)}</div>${card ? `<div class="explore-card${thing ? ' low' : person ? (this.room.project([person.position?.[0] ?? 0, 1, person.position?.[1] ?? 0]).y < innerHeight * .5 ? ' low' : ' high') : ''}" data-object="${this.card}" role="dialog" aria-label="${esc(t({ sofa: 'A quiet moment at home', kitchen: 'The kitchen', desk: 'The desk', table: 'The day on the table', wardrobe: 'The wardrobe' }[this.card] ?? thing?.name ?? person?.role ?? this.objects[this.card]?.label ?? HOME_MEMORY.title))}">${card}</div>` : ''}
       <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the furniture to use it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== this.session?.room.exit.id ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}

@@ -52,6 +52,9 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 .explore-wear .wear img, .explore-wear .wear i { width: 48px; height: 48px; display: block; } .explore-wear .wear i { border-radius: 50%; border: 3px dashed #b9a27c; box-sizing: border-box; }
 .explore-wear .wear.on { outline: 4px solid var(--leaf, #5a9a33); outline-offset: 1px; background: #f1ffd9; }
 .explore-wear .wear.locked { opacity: .55; cursor: default; } .explore-wear .wear.locked img { filter: grayscale(1) brightness(.8); }
+.explore-card.high { top: max(64px, calc(env(safe-area-inset-top) + 56px)); max-height: 40%; }
+@media (max-width: 600px) { .explore-card.high { top: max(112px, calc(env(safe-area-inset-top) + 104px)); } }
+.explore-you { font-style: italic; opacity: .8; margin: 2px 0 6px; } .explore-you::before { content: '— '; }
 .explore-note { font-size: .82em; opacity: .8; margin: 4px 0; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }
@@ -63,6 +66,11 @@ body.panel-open .home-pins, body:has(.modal) .home-pins { visibility: hidden; }
 .home-pins button { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; min-height: 44px; min-width: 44px;
   max-width: 160px; padding: 4px 10px; border-radius: 16px; border: 2px solid #fff2d6bb; color: #fffdf6;
   background: #593923cc; font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; text-shadow: 0 1px 2px #21160e; box-shadow: 0 2px 5px #0003; }
+.home-say { position: fixed; inset: 0; pointer-events: none; z-index: 8; } .home-say[hidden], .home-say p[hidden] { display: none; }
+body.panel-open .home-say, body:has(.modal) .home-say { visibility: hidden; }
+.home-say p { position: absolute; transform: translate(-50%, -100%); margin: 0; max-width: 180px; padding: 5px 10px; border-radius: 14px; background: #fffdf6; color: #3b2a24; border: 2px solid var(--edge, #5b3418);
+  font-size: 12px; font-weight: 700; line-height: 1.25; text-align: center; box-shadow: 0 2px 5px #0003; animation: say-in .18s ease-out; }
+@keyframes say-in { from { opacity: 0; transform: translate(-50%, -88%); } }
 .home-pins button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 body.explore-inside .explore-controls.compact { max-width: min(94%, 550px); }
 body.explore-inside .explore-side { max-width: calc(100% - 24px); }

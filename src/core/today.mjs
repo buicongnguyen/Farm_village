@@ -71,6 +71,7 @@ export const actions = {
     if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
     const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
     if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');
+    if (key === 'playerColor') ctx.s.settings.playerLook = '';   // your own shirt again: a costume would hide it
     ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
   },
   /** A chapter card was shown. */

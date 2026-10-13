@@ -10,7 +10,8 @@ import { pack, unpack } from '../src/kit/save.mjs';
 import { installExplore, startExplore, exploreState, exploreSession, routeExplore, moveExplore, atObject, homeCooldown } from '../src/core/explore.mjs';
 import { xz } from '../src/core/explore-navigation.mjs';
 import { HOME_OBJECTS, HOME_ACTIVITIES, HOME_THINGS, roomAtLevel } from '../src/content/explore.mjs';
-import { HATS, COSTUMES, hatOf, costumeOf, wardrobe } from '../src/content/wardrobe.mjs';
+import { HATS, COSTUMES, hatOf, wearOf, costumeOf, wardrobe } from '../src/content/wardrobe.mjs';
+import { HOME_FAMILY } from '../src/content/explore.mjs';
 import { existsSync } from 'node:fs';
 import { residents, heartsOf } from '../src/core/bonds.mjs';
 import { VI_EXPLORE } from '../src/i18n/vi-explore.mjs';
@@ -108,16 +109,37 @@ test('the wardrobe: a hat or a costume opens at its level, a costume brings its 
   const saved = pack(s);
   assert.equal(act(s, 'setting', { key: 'playerHat', value: 'crown' }, NOW).ok, false, 'a locked hat'); assert.equal(act(s, 'setting', { key: 'playerHat', value: 'hat_nope' }, NOW).ok, false);
   assert.equal(act(s, 'setting', { key: 'playerLook', value: 'royal' }, NOW).ok, false, 'a locked costume'); assert.equal(pack(s), saved);
-  assert.equal(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok, true); assert.equal(hatOf(s), 'hat_conical'); assert.equal(costumeOf(s).top, COSTUMES.aodai.top);
+  assert.equal(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok, true); assert.equal(hatOf(s), '', 'a costume with its own headwear takes your hat off'); assert.equal(wearOf(s), 'kit:dz_aodai'); assert.equal(costumeOf(s).top, COSTUMES.aodai.top);
+  s.level = 4; assert.ok(act(s, 'setting', { key: 'playerLook', value: 'chef' }, NOW).ok); assert.equal(wearOf(s), 'kit:armor_chef+hat_chef'); s.level = 3; assert.ok(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok);
   assert.equal(act(s, 'setting', { key: 'playerLook', value: '' }, NOW).ok, true); assert.equal(hatOf(s), 'hat_straw');
   assert.equal(act(s, 'setting', { key: 'playerHat', value: '' }, NOW).ok, true); assert.equal(hatOf(s), '');
   const w = wardrobe(s); assert.equal(w.hats.filter(h => h.open).length, Object.values(HATS).filter(h => h.level <= 3).length); assert.ok(w.hats[0].open && !w.hats.at(-1).open);
   for (const h of Object.values(HATS)) assert.ok(existsSync(new URL(`../public/assets/icons/wear/${h.id}.webp`, import.meta.url)), `no picture for ${h.id}`);
-  for (const c of Object.values(COSTUMES)) { assert.ok(HATS[c.hat], `${c.id} has no hat`); assert.match(c.top, /^#[0-9a-f]{6}$/); assert.match(c.bottom, /^#[0-9a-f]{6}$/); }
+  const kits = new Set(JSON.parse(readFileSync(new URL('../public/assets/models/rigged/costumes.glb', import.meta.url)).subarray(20, 20 + readFileSync(new URL('../public/assets/models/rigged/costumes.glb', import.meta.url)).readUInt32LE(12)).toString()).nodes.map(n => n.name.split('__')[0]));
+  for (const c of Object.values(COSTUMES)) { assert.ok(c.kit || HATS[c.hat], `${c.id} is nothing to wear`); if (c.hat) assert.ok(HATS[c.hat]); if (c.kit) { assert.ok(kits.has(c.kit), `${c.id}: no kit ${c.kit} in costumes.glb`); assert.ok(existsSync(new URL(`../public/assets/icons/wear/${c.kit}.webp`, import.meta.url))); } assert.ok(c.level >= 1); assert.match(c.top, /^#[0-9a-f]{6}$/); assert.match(c.bottom, /^#[0-9a-f]{6}$/); }
   const levels = Object.values(HATS).map(h => h.level); for (let l = 2; l <= 26; l++) assert.ok(levels.includes(l), `nothing new in the wardrobe at level ${l}`);
 });
 
 test('the words of the little things and of the wardrobe are in all three packs', () => {
   const keys = [...Object.values(HOME_THINGS).flatMap(t => [t.name, t.label, t.verb, t.intro, ...(t.lines ?? []), t.extra?.verb, ...(t.extra?.lines ?? [])]), ...Object.values(HATS).map(h => h.name), ...Object.values(COSTUMES).map(c => c.name), 'Hats', 'Costumes', 'None'].filter(k => k && k !== 'Farm notebook');   // (the notebook's name is in the farm's own pack)
   for (const pack of [VI_EXPLORE, KO_EXPLORE, JA_EXPLORE]) for (const k of keys) assert.ok(pack[k]?.length > 0, `missing: ${k}`);
+});
+
+test('choosing a shirt takes a costume off, in the wardrobe or in Settings', () => {
+  const s = newGame(NOW, 11, { restore: true }); s.level = 5;
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'chef' }, NOW).ok); assert.equal(costumeOf(s).id, 'chef');
+  assert.ok(act(s, 'setting', { key: 'playerColor', value: '#3a86ff' }, NOW).ok); assert.equal(costumeOf(s), null); assert.equal(s.settings.playerColor, '#3a86ff');
+});
+
+test('the family at home: every stop is a thing in the house they can walk to, with a pose their body has and a line in three languages', () => {
+  const clips = { woman: ['Carry', 'Cheer', 'Hammer', 'Idle', 'Jump', 'Sit', 'Sweep', 'Talk', 'Walk', 'Wave'], kid: ['Carry', 'Cheer', 'Hammer', 'Idle', 'Jump', 'Sit', 'Sweep', 'Talk', 'Walk', 'Wave'], hana: ['Cheer', 'Idle', 'Knead', 'Talk', 'Walk', 'Wave'] };
+  const s = fixture();
+  for (const f of HOME_FAMILY) {
+    assert.ok(clips[f.body], `${f.id}: no such body`); assert.ok(f.rounds.length >= 3);
+    for (const [id, clip, line] of f.rounds) {
+      assert.ok(room.interactions.some(o => o.id === id), `${f.id} goes to ${id}, which is not in the house`); walk(s, id);
+      assert.ok(clips[f.body].includes(clip), `${f.id} cannot ${clip}`);
+      for (const pack of [VI_EXPLORE, KO_EXPLORE, JA_EXPLORE]) assert.ok(pack[line]?.length > 0, `missing: ${line}`);
+    }
+  }
 });

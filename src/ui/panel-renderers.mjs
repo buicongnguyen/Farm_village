@@ -3,6 +3,7 @@ const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 // Sheet contents load on first use; the input/controller stays available at startup.
 import { renderGoldRush } from './knowhow-panel.mjs';
 import { renderKnowhow } from './knowhow-panel.mjs';
+import { renderInsight } from './insight-panel.mjs';
 import { OUTPUT_UP } from '../content/economy.mjs';
 import { outputPlan, outputTimes } from '../core/output.mjs';
 import { t, num } from '../kit/i18n.mjs';
@@ -79,9 +80,9 @@ const goodsLine = (s, need, honour = true, help = true) => Object.entries(need).
   return help ? `<button class="good ${ok ? 'ok' : 'short'}" data-do="goodHelp" data-good="${g}" data-needed="${n}" aria-label="${t('About {good}', { good: t(GOODS[g].name) })}"><span class="item-token token ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')}</span><span>${num(have)}/${n} ›</span></button>`
     : `<span class="good ${ok ? 'ok' : 'short'}">${goodIcon(g, 'mini')} ${Math.min(have, n)}/${n}</span>`;
 }).join('');
-const TITLES = { goldrush: 'Gold in the brook', knowhow: 'Farm notebook', exploration: 'Picnic trail', advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
+const TITLES = { insight: 'The big picture', goldrush: 'Gold in the brook', knowhow: 'Farm notebook', exploration: 'Picnic trail', advice: 'Village ideas', profiles: 'Farm profiles', roadmap: 'Roadmap', fruit_stand: 'Fruit stand', clinic: 'Clinic', settings: 'Settings', album: 'Family album', today: 'Today', projects: 'Village projects', cottage: 'Rental cottage', orders: 'Order board', barn: 'Barn',
   stall: 'Roadside stall', market: 'Market square', pond: 'Fish pond', quests: 'Goals', cart: 'Market cart', mail: 'Mailbox', friends: 'Friends', gift: 'Give a gift' };
-const HEAD_ICONS = { goldrush: 'ui:coin', knowhow: 'wheat', exploration: 'lucky_box', advice: 'ui:heart', profiles: 'cottage', roadmap: 'projects', fruit_stand: 'fruit_stand', clinic: 'clinic', settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
+const HEAD_ICONS = { insight: 'projects', goldrush: 'ui:coin', knowhow: 'wheat', exploration: 'lucky_box', advice: 'ui:heart', profiles: 'cottage', roadmap: 'projects', fruit_stand: 'fruit_stand', clinic: 'clinic', settings: 'settings', album: 'album', today: 'today', projects: 'projects', cottage: 'cottage', orders: 'ui:orders', barn: 'ui:barn', stall: 'stall',
   cart: 'cart', mail: 'mail', friends: 'ui:heart', gift: 'gift' };
 
 export function renderPanel() {
@@ -162,6 +163,7 @@ export function renderPanel() {
     else if (o.kind === 'exploration') body = renderExploration(s, o.arg);
     else if (o.kind === 'roadmap') body = renderJourney(s);
     else if (o.kind === 'knowhow') body = renderKnowhow(s);
+    else if (o.kind === 'insight') body = renderInsight(s, now, o.arg);
     else if (o.kind === 'goldrush') body = renderGoldRush(s, now);
     else if (o.kind === 'clinic') {
       if (growthRecord.hospitalAt !== null) { title = t('Our little hospital'); icon = 'hospital'; }

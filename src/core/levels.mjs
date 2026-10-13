@@ -5,10 +5,15 @@ import { ORDERS } from '../content/economy.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 
 export const xpFor = LEVELS.xpFor;
+/** A mark for the big picture's growth page (core/insight.mjs): the farm's running totals as this level began. The last 40 are kept. */
+function mark(s) {
+  const st = s.stats ?? {}, list = (s.insight ??= { levels: [] }).levels ??= [];
+  list.push({ l: s.level, c: st.coinsEarned ?? 0, m: st.produced ?? 0, o: st.ordersFilled ?? 0, ms: st.playMs ?? 0 }); while (list.length > 40) list.shift();
+}
 /** Add XP; emits a 'levelUp' event per level gained. */
 export function gainXp(ctx, amount) {
   const { s } = ctx; if (!Number.isFinite(amount)) throw new Error(`bad XP amount ${amount}`); s.xp += Math.max(0, Math.round(amount));
-  while (s.level < LEVELS.max && s.xp >= xpFor(s.level + 1)) { s.level++; ctx.emit('levelUp', { level: s.level, unlocks: unlocksAt(s.level) }); }
+  while (s.level < LEVELS.max && s.xp >= xpFor(s.level + 1)) { s.level++; mark(s); ctx.emit('levelUp', { level: s.level, unlocks: unlocksAt(s.level) }); }
 }
 /**
  * What opens at a level, from the content's level fields: crop, fruit, recipe, animal and building ids, the new order slot
