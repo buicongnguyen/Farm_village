@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { loadKit, bake } from './models.mjs';
 import { Cast, loadRig, RIGS, wornRig } from './skinned.mjs';
 import { hatOf } from '../content/wardrobe.mjs';
+import { ROOM_PEOPLE } from '../content/room-people.mjs';
 import { toonRamp } from '../kit/toon.mjs';
 import { outfitOf } from './people-view.mjs';
 import { buildCottage } from './cottage-view.mjs';
@@ -10,7 +11,8 @@ export async function loadHomeRoom(body, kind = null) {
   const file = kind ?? 'cottage';
   if (kind && !['hospital', 'police', 'company', 'school', 'barn', 'bakery', 'supermarket', 'feed_mill', 'dairy'].includes(kind)) throw Error('unknown interior');
   const [kit, response, , extraKit, keepsakes] = await Promise.all([loadKit('cottage-furniture'), fetch(`./assets/models/interior-${file}.json`), loadRig(body),
-    kind ? loadKit('facility-props') : loadKit('interior-extras'), kind ? null : loadKit('interior-farmhouse')]);
+    kind ? loadKit('facility-props') : loadKit('interior-extras'), kind ? null : loadKit('interior-farmhouse'),
+    ...(ROOM_PEOPLE[kind] ?? []).map(w => loadRig(wornRig(w.body, w.hat)).catch(() => null))]);
   if (!response.ok) throw Error('room metadata');
   const data = await response.json();
   if (data.schemaVersion !== 2 || data.roomId !== (kind ? `${kind}_interior` : 'farmhouse_main')) throw Error('room schema');
@@ -30,9 +32,12 @@ export class ExploreRoom {
       this.scene.add(mesh); this.meshes.push(mesh);
     }
     this.body = settings.playerBody === 'woman' ? 'woman' : 'man';
-    this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 });
+    this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 + (data.people?.length ?? 0) });
     this.player = this.cast.add({ rig: wornRig(this.body, hatOf({ settings })), x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: 1.8 / RIGS[this.body].height,
       tint: outfitOf('you', { settings }), priority: 10 });
+    // the people of the building (content/room-people.mjs): in their work clothes, turned to the spot you walk up to
+    this.people = (data.people ?? []).map(w => this.cast.add({ who: w.id, rig: wornRig(w.body, w.hat), x: w.position[0], z: w.position[1], rot: Math.atan2(w.stand[0] - w.position[0], w.stand[1] - w.position[1]),
+      clip: 'Idle', scale: (w.body === 'kid' ? 1.3 : 1.8) / RIGS[w.body].height, tint: { ...outfitOf(`room_${w.id}`, { settings }), top: w.top, bottom: w.bottom }, priority: 5, near: 0 }));
     this.cast.select(); this.ray = new THREE.Raycaster(); this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     this.view = innerWidth < 600 ? 'follow' : 'whole'; this.followWidth = innerWidth < 600 ? 12 : 18;
     this.focus = new THREE.Vector3(...data.entry.position); this.quiet = !!settings.reducedMotion;
@@ -78,6 +83,12 @@ export class ExploreRoom {
     const seat = this.data.seats?.[0], p = session.seated ? [seat.position[0], seat.position[2]] : session.p;
     const y = session.seated ? seat.cushionTop - seat.measured[this.body].hipHeight : 0;
     Object.assign(this.player, { x: p[0], y, z: p[1], rot: session.seated ? Math.atan2(seat.facing[0], seat.facing[2]) : session.yaw, clip: session.seated ? 'Sit' : moving ? 'Walk' : 'Idle', speed: 1 });
+    for (const w of this.people) {   // they turn to you as you come near, wave once, and talk while you talk
+      const dx = p[0] - w.x, dz = p[1] - w.z, close = Math.hypot(dx, dz) < 2.8;
+      w.near = close ? w.near + dt : 0;
+      if (close) { let turn = Math.atan2(dx, dz) - w.rot; turn = Math.atan2(Math.sin(turn), Math.cos(turn)); w.rot += turn * (this.quiet ? 1 : 1 - Math.exp(-6 * dt)); }
+      w.clip = this.talking === w.who ? 'Talk' : close && w.near < 1.7 ? 'Wave' : 'Idle';
+    }
     this.focus.lerp(new THREE.Vector3(p[0], .8, p[1]), this.quiet ? 1 : 1 - Math.exp(-9 * dt)); this.layoutCamera(); this.actorFrame(dt);
   }
   project(position) {

@@ -53,3 +53,45 @@ test('all reused furniture exists in packed original kits',()=>{
  const nodes=new Set();for(const id of ['cottage-furniture','facility-props','interior-farmhouse']){const b=readFileSync(new URL(`../public/assets/models/${id}.glb`,import.meta.url)),j=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)).toString());assert.ok(j.extensionsUsed.includes('EXT_meshopt_compression'));for(const n of j.nodes)nodes.add(n.name);}
  for(const name of ['cottage',...Object.keys(CIVIC_INTERIORS)])for(const p of load(name).furniture)assert.ok(nodes.has(p.kit),`${name}: ${p.kit}`);
 });
+
+// Someone is in: the people of each building (content/room-people.mjs).
+import { ROOM_PEOPLE, withPeople, talkNumbers } from '../src/content/room-people.mjs';
+import { roomClear as clearAt, roomRoute as routeTo } from '../src/core/explore-navigation.mjs';
+import { RIGS as CAST_RIGS } from '../src/view/skinned.mjs';
+import { HATS as WEAR_HATS } from '../src/content/wardrobe.mjs';
+import { VI_EXPLORE as VI_P } from '../src/i18n/vi-explore.mjs';
+import { KO_EXPLORE as KO_P } from '../src/i18n/ko-explore.mjs';
+import { JA_EXPLORE as JA_P } from '../src/i18n/ja-explore.mjs';
+import { newGame as freshGame } from '../src/core/state.mjs';
+import { readFileSync as readRoom } from 'node:fs';
+test('every building has someone in it, standing clear of the furniture, the door and the things you use, with room to walk up', () => {
+  for (const [kind, list] of Object.entries(ROOM_PEOPLE)) {
+    const room = JSON.parse(readRoom(new URL(`../public/assets/models/interior-${kind}.json`, import.meta.url))), data = withPeople(room, kind, clearAt, routeTo);
+    assert.equal(data.people.length, list.length, `${kind}: somebody found no place to stand`);
+    assert.equal(data.interactions.at(-1).id, room.interactions.at(-1).id, `${kind}: the way out is no longer last`);
+    const entry = [room.entry.position[0], room.entry.position[2]];
+    for (const w of data.people) {
+      assert.ok(clearAt(room, w.position) && clearAt(room, w.stand), `${kind} ${w.id} stands in something`);
+      assert.ok(!clearAt(data, w.position), `${kind} ${w.id} can be walked through`);
+      assert.ok(routeTo(data, entry, w.stand).length, `${kind} ${w.id} cannot be reached`);
+      for (const o of room.interactions) assert.ok(routeTo(data, entry, [o.stand[0], o.stand[2]]).length, `${kind}: ${w.id} blocks ${o.id}`);
+    }
+  }
+  assert.equal(withPeople({ entry: {}, interactions: [] }, 'nowhere', clearAt, routeTo).people, undefined);
+});
+test('each person has a body we can draw, two greetings and two questions with two answers, all in three languages, with only numbers we can give', () => {
+  const nums = talkNumbers(freshGame(1_800_000_000_000, 3, { restore: true }), 0);
+  for (const v of Object.values(nums)) assert.ok(Number.isFinite(v) && v >= 0);
+  const ids = new Set();
+  for (const w of Object.values(ROOM_PEOPLE).flat()) {
+    assert.ok(!ids.has(w.id)); ids.add(w.id); assert.ok(CAST_RIGS[w.body]?.tint, `${w.id}: no such body`); if (w.hat) assert.ok(WEAR_HATS[w.hat], `${w.id}: no such hat`);
+    assert.equal(w.hello.length, 2); assert.equal(w.asks.length, 2);
+    for (const ask of w.asks) {
+      assert.equal(ask.a.length, 2);
+      for (const text of [w.role, ...w.hello, ask.q, ...ask.a.flat()]) {
+        for (const m of text.matchAll(/\{(\w+)\}/g)) assert.ok(m[1] in nums, `${w.id}: no number for {${m[1]}}`);
+        for (const pack of [VI_P, KO_P, JA_P]) { assert.ok(pack[text]?.length > 0, `missing: ${text}`); assert.deepEqual([...pack[text].matchAll(/\{\w+\}/g)].map(m => m[0]).sort(), [...text.matchAll(/\{\w+\}/g)].map(m => m[0]).sort(), `parameters differ: ${text}`); }
+      }
+    }
+  }
+});
