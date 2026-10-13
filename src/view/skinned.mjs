@@ -281,6 +281,16 @@ export function loadRig(name) {
   return rigs.get(name);
 }
 export const rigReady = name => loaded.get(name) ?? null;
+const casts = new Set();
+/** A body in a hat that nobody wears any more (you changed hats): its geometries, crowd batches and spare actors are
+ *  freed. Only worn rigs are ever dropped, and only when no cast draws one; it loads again if the hat comes back. */
+export function releaseRig(name) {
+  const rig = loaded.get(name); if (!rig || !RIGS[name]?.wear) return false;
+  for (const cast of casts) for (const s of cast.subjects) if (s.rig === name) return false;
+  for (const cast of casts) cast.forget(name);
+  for (const g of [rig.geo, rig.near, rig.mid, ...Object.values(rig.variants ?? {}), ...(rig.gait?.frames ?? []).flatMap(f => [f.near, f.mid])]) g?.dispose();
+  rigs.delete(name); loaded.delete(name); return true;
+}
 
 /** The toon material, with the clothes tint for tinted rigs (instanced: per-instance attributes; skinned: uniforms). */
 function castMaterial(tinted, uniforms = null) {
@@ -319,7 +329,15 @@ export class Cast {
   constructor(world, { max = 8, radius = 25, triBudget = 60000, critters = 4 } = {}) {
     Object.assign(this, { world, max, radius, triBudget, maxCritters: critters, subjects: new Set(), actors: [], spare: new Map(), crowds: new Map() });
     Object.assign(this, { queue: [], loading: false, startAt: Infinity, frames: 0, clock: 1, mixerMs: 0, time: 0 });
-    world.onFrame((dt, now) => this.frame(dt, now));
+    world.onFrame((dt, now) => this.frame(dt, now)); casts.add(this);
+  }
+  /** This cast is finished (a room was left): it no longer keeps anyone's rig alive. */
+  retire() { casts.delete(this); this.subjects.clear(); }
+  /** Drop what was made for a rig that is gone: its crowd batches and its spare actors. */
+  forget(name) {
+    for (const [key, c] of this.crowds) if (c.rig.name === name) { this.world.scene.remove(c.mesh); if (c.tints) c.mesh.geometry.dispose(); c.mesh.dispose(); this.crowds.delete(key); }
+    for (const a of this.spare.get(name) ?? []) { this.world.scene.remove(a.root); a.mesh.material.dispose(); a.mesh.skeleton.dispose(); this.actors.splice(this.actors.indexOf(a), 1); }
+    this.spare.delete(name);
   }
   add(subject) { this.subjects.add(subject); this.want(subject.rig); return subject; }
   remove(subject) { if (subject.actor) this.release(subject.actor); this.subjects.delete(subject); }

@@ -1071,4 +1071,6 @@ export const JA_FISHING = {
   'Lemon tree': 'レモンの木',
   'Longan tree': 'リュウガンの木',
   'Lychee tree': 'ライチの木',
+  'A new hat': '新しいぼうし',
+  'In the wardrobe': 'たんすの中に',
 };

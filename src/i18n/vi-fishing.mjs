@@ -1071,4 +1071,6 @@ export const VI_FISHING = {
   'Lemon tree': 'Cây chanh',
   'Longan tree': 'Cây nhãn',
   'Lychee tree': 'Cây vải',
+  'A new hat': 'Một chiếc mũ mới',
+  'In the wardrobe': 'Trong tủ quần áo',
 };

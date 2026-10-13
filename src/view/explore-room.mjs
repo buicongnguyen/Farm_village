@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { loadKit, bake } from './models.mjs';
-import { Cast, loadRig, RIGS, wornRig } from './skinned.mjs';
+import { Cast, loadRig, RIGS, wornRig, releaseRig } from './skinned.mjs';
 import { hatOf } from '../content/wardrobe.mjs';
 import { ROOM_PEOPLE } from '../content/room-people.mjs';
 import { toonRamp } from '../kit/toon.mjs';
@@ -49,6 +49,7 @@ export class ExploreRoom {
     if (rig !== this.player.rig) {
       await loadRig(rig); if (this.gone || wornRig(this.body, hatOf({ settings })) !== rig) return;
       const { actor, ...old } = this.player; this.cast.remove(this.player); this.player = this.cast.add({ ...old, rig }); this.cast.select();
+      releaseRig(old.rig);   // the hat you took off (kept while your character outdoors still wears it)
     }
     this.player.tint = tint;
     const u = this.player.actor?.uniforms; if (u) { u.uTop.value.set(tint.top); u.uBottom.value.set(tint.bottom); }
@@ -97,6 +98,10 @@ export class ExploreRoom {
   }
   pick(x, y) {
     this.ray.setFromCamera(new THREE.Vector2(x / innerWidth * 2 - 1, 1 - y / innerHeight * 2), this.camera);
+    for (const w of this.people) {   // (people are skinned actors: found by where they stand on the screen)
+      const feet = this.project([w.x, 0, w.z]), head = this.project([w.x, 1.9, w.z]);
+      if (Math.abs(x - feet.x) < 26 && y > head.y - 10 && y < feet.y + 8) return { id: `person_${w.who}` };
+    }
     const hit = this.ray.intersectObjects(this.meshes.filter(m => m.visible))[0];
     if (hit?.object.userData.interaction) return { id: hit.object.userData.interaction };
     const p = this.ray.ray.intersectPlane(this.plane, new THREE.Vector3()); return p ? { point: [p.x, p.z] } : null;
@@ -105,6 +110,7 @@ export class ExploreRoom {
     this.gone = true;
     for (const m of this.meshes) m.geometry.dispose(); this.material.dispose();
     for (const a of this.cast.actors) { a.mixer.stopAllAction(); a.mesh.material.dispose(); a.mesh.skeleton.dispose(); }
+    const worn = [this.player, ...this.people].map(s => s.rig); this.cast.retire(); for (const name of worn) releaseRig(name);
     this.scene.clear();
   }
 }
