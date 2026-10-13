@@ -1,5 +1,7 @@
 // Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section with the play
 // package's helpers; the public game shows it too when it was opened with ?tester (docs/plan/00-tester-tools.md).
+import { TILT } from '../view/camera.mjs';
+import { BUILDINGS } from '../content/buildings.mjs';
 import { t, getLanguage, getLocale, LANGUAGES } from '../kit/i18n.mjs';
 import { CHAPTERS } from '../content/story.mjs';
 import { STEPS } from '../content/projects.mjs';
@@ -34,6 +36,8 @@ export function renderSettings(s, profile, { tester = false } = {}) {
     <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${esc(st.playerName)}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>
     <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
+    <div class="set-row"><b>${t('Camera tilt')}</b><input type="range" min="${TILT.min}" max="${TILT.max}" value="${st.cameraTilt ?? TILT.default}" data-range="cameraTilt" aria-label="${t('Camera tilt')}">${(st.cameraTilt ?? TILT.default) !== TILT.default ? `<button class="btn ghost small-btn" data-do="tiltReset">${t('Reset')}</button>` : ''}</div>
+    <p class="hint">${t('Slide left for a low look across the valley, right to look straight down. Q and E turn the view.')}</p>
     <div class="set-row"><b>${t('Music')}</b><input type="range" min="0" max="100" value="${Math.round(st.music * 100)}" data-range="music" aria-label="${t('Music')}"></div>
     <div class="set-row"><b>${t('Day and night')}</b><div class="tabs">${choice('daylight', 'real', st.daylight, t('Follow my clock'))}${choice('daylight', 'always', st.daylight, t('Always daytime'))}</div></div>
     <div class="set-row"><b>${t('Text size')}</b><div class="tabs">${[1, 1.15, 1.3].map(v => choice('textSize', String(v), String(st.textSize), `${Math.round(v * 100)}%`)).join('')}</div></div>
@@ -68,7 +72,7 @@ export function renderAlbum(s) {
       : `<div class="chapter-tile locked">${glyph('lock', 'g big')}<b>${t('Chapter {n}', { n: ch.id })}</b></div>`).join('')}</div>
     ${families.length ? `<h3>${t('Families of Hollowbrook')}</h3><div class="portraits">${families.map(f => `<div class="portrait-tile">${iconHtml(`family:${f.id}`, '', 'family-art')}<b>${t(f.name)}</b></div>`).join('')}</div>` : ''}
     <h3>${t('Fish album')}</h3><div class="portraits">${FISH_TABLE.map(f => { const n = s.album?.fish?.[f.id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(f.id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not caught yet')}</small></div>`; }).join('')}</div>
-    <h3>${t('Fruit album')}</h3><div class="portraits">${Object.entries(FRUITS).map(([id, f]) => { const n = s.album?.fruit?.[id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not picked yet')}</small></div>`; }).join('')}</div>
+    <h3>${t('Fruit album')}</h3><div class="portraits">${Object.entries(FRUITS).filter(([id, f]) => (s.album?.fruit?.[id] ?? 0) > 0 || !(f.cross || BUILDINGS[f.tree]?.knowhow)).map(([id, f]) => { const n = s.album?.fruit?.[id] ?? 0; return `<div class="portrait-tile${n ? '' : ' locked'}">${iconHtml(id, '', 'family-art')}<b>${n ? t(f.name) : '?'}</b><small>${n ? `×${n}` : t('Not picked yet')}</small></div>`; }).join('')}</div>
     <h3>${t('First times')}</h3><ul>${firsts.map(([k, icon, label]) => `<li>${iconHtml(icon, '', 'mini')} ${t(label)} · <small>${when(s.firsts[k])}</small></li>`).join('') || `<li>${t('Your first harvest is waiting.')}</li>`}</ul>
     ${hearts.length ? `<h3>${t('Heart scenes')}</h3><ul>${hearts.map(h => `<li>${faceHtml(h.person, 'mini-face')} ${t('{name} and you: {count} hearts', { name: nameOf(h.person), count: h.at })} · <small>${when(h.time)}</small></li>`).join('')}</ul>` : ''}
     ${projects.length ? `<h3>${t('Projects')}</h3><ul>${projects.map(st => `<li>${glyph('projects', 'g')} ${t(st.name)} · <small>${when(s.firsts[`project:${st.id}`])}</small></li>`).join('')}</ul>` : ''}

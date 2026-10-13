@@ -356,3 +356,14 @@ button.req.link { display: block; width: 100%; text-align: left; font: inherit; 
 .company-request { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 10px; background: #fff8e6; }
 .company-request .req.ok { color: #2e7d32; } .company-request .req.short b { color: #c62828; }
 .company-request small.hint { display: block; margin: 0 0 6px 28px; }
+/* the farm notebook: one card for each thing to find out */
+.two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+.know-card { border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; margin: 8px 0; background: #fff8e6; }
+.know-card.ready { background: #fff1c9; border-color: #e0a23a; } .know-card.known { background: #eef7e2; border-color: #8cc152; } .know-card.later { opacity: .6; }
+.know-head { display: flex; align-items: center; gap: 8px; } .know-head .badge { position: static; margin-left: auto; }
+.know-card p { margin: 6px 0; } .know-effect { font-weight: 800; color: #2e7d32; } .know-need { font-weight: 800; }
+/* lucky finds: a grid of the surprises, grey until found */
+.lucky-title { margin: 14px 0 2px; } .lucky-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.lucky { border: 2px dashed var(--line); border-radius: 12px; padding: 6px 8px; display: grid; justify-items: center; text-align: center; gap: 2px; background: #f6efe0; }
+.lucky .icon { width: 44px; height: 44px; filter: brightness(0) opacity(.28); } .lucky small { font-size: .82em; line-height: 1.25; }
+.lucky.found { border-style: solid; border-color: #e0a23a; background: #fff1c9; } .lucky.found .icon { filter: none; }

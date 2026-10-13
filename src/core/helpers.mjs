@@ -1,5 +1,6 @@
 // Your family lends a hand (v0.3e): now and then, while the game is open, June brings in a few ripe crops and sows the same
 // again, and Pip fetches a few eggs and milk. Small and gentle: the busy work is lighter, the choices stay yours.
+import { produceOf } from './surprises.mjs';
 import { afterCollect, FEED_MEALS } from './animals.mjs';
 import { outputTimes } from './output.mjs';
 import { companyKeep } from './village-growth.mjs';
@@ -42,8 +43,8 @@ export function tickHelpers(ctx) {
   for (const id of Object.keys(s.animals)) for (const an of s.animals[id]) {
     if (got >= HELP.products) break;
     if (an.doneAt == null || an.doneAt > now) continue;
-    sold += barn.addOrSell(s, ANIMALS[an.kind].gives, outputTimes(s, id)); afterCollect(an, now); got++;
-    ctx.emit('collected', { home: id, good: ANIMALS[an.kind].gives });
+    sold += barn.addOrSell(s, produceOf(an), outputTimes(s, id)); afterCollect(an, now); got++;
+    ctx.emit('collected', { home: id, good: produceOf(an) });
   }
   if (got) { gainXp(ctx, XP.collect * got); if (sold) ctx.emit('barnSold', { coins: sold }); ctx.emit('helperDid', { who: 'pip', count: got, what: 'eggs' }); }
 }
@@ -96,7 +97,7 @@ export function tickHands(ctx) {
   if (s.hands.animals) {
     const list = Object.entries(s.animals).flatMap(([home, as]) => as.map(an => ({ home, an }))), ready = list.filter(x => x.an.doneAt != null && x.an.doneAt <= now), hungry = list.filter(x => x.an.doneAt == null && isWorking(s, x.home));
     let done = 0, sold = 0;
-    for (const { home, an } of ready.slice(0, half(ready.length))) { sold += barn.addOrSell(s, ANIMALS[an.kind].gives, outputTimes(s, home)); afterCollect(an, now); done++; ctx.emit('collected', { home, good: ANIMALS[an.kind].gives }); }
+    for (const { home, an } of ready.slice(0, half(ready.length))) { sold += barn.addOrSell(s, produceOf(an), outputTimes(s, home)); afterCollect(an, now); done++; ctx.emit('collected', { home, good: produceOf(an) }); }
     if (done) gainXp(ctx, XP.collect * done);
     if (sold) ctx.emit('barnSold', { coins: sold });
     for (const { an } of hungry.slice(0, Math.max(0, Math.min(Math.ceil(hungry.length / 2), Math.floor(s.coins / HANDS.wage) - done)))) { const a = ANIMALS[an.kind]; if (barn.take(s, { [a.eats]: 1 }, false)) { an.doneAt = now + a.everyMs; an.meals = FEED_MEALS; done++; } }

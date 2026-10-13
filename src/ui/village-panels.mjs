@@ -1,6 +1,7 @@
 // Village panels (DESIGN 10, 11, 14): the Today board, the projects with "show the way" and a cottage with its family's
 // hearts, gifts and today's wish. They draw into the shared sheet from panels.mjs. (The welcome card for a family that
 // moves in is in bonds-panels.mjs.)
+import { knowhowReady } from '../core/knowhow.mjs';
 import { t, tParams, num } from '../kit/i18n.mjs';
 import { STEPS } from '../content/projects.mjs';
 import { FAMILIES, NEIGHBOURS } from '../content/people.mjs';
@@ -95,7 +96,7 @@ export function renderToday(s, now) {
 export function renderProjects(s, now) {
   const step = currentStep(s);
   const list = STEPS.map((st, i) => { const done = stepDone(s, st.id), now = !done && i === s.projects.step; return done ? `<li class="done">${glyph('check', 'g')} ${t(st.name)}</li>` : `<li class="${now ? 'now' : ''}"><button class="step-where" data-do="stepWhere" data-step="${st.id}">${glyph(now ? 'play' : 'dot', 'g')} ${t(st.name)} <i>›</i></button></li>`; }).join('');   // a step not done yet: a tap shows where it is done (main.mjs)
-  if (!step) return `<p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
+  if (!step) return `<button class="btn wide" data-do="knowhow">${t('Farm notebook')}</button><p class="hint">${t('Every project of this version is done. More are coming!')}</p><ul class="steps">${list}</ul>`;
   const ready = stepReady(s, now), reqs = [];
   if (step.needs.level) reqs.push([s.level >= step.needs.level, t('Reach level {level}', { level: step.needs.level })]);
   if (step.needs.families) { const miss = ready.missing.find(m => m.need === 'families'); reqs.push([!miss, t('{count} settled families ({have} so far)', { count: step.needs.families, have: miss ? miss.have : step.needs.families })]); }
@@ -108,7 +109,7 @@ export function renderProjects(s, now) {
   const kind = step.site ?? step.builds.find(k => !['path', 'bed', 'fence', 'gate'].includes(k)), may = kind && mayBuild(s, kind);
   // in the restored village the work is repairing what stands: the button takes you to the run-down thing
   const run = s.mode === 'restore' ? step.builds.find(k => Object.keys(s.placed).some(id => s.placed[id].kind === k && levelOf(s, id) >= 3 && !isRepairing(s, id))) : null, runMay = run && mayBuild(s, run, { repair: true });
-  return `<button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
+  return `<div class="two-up"><button class="btn wide" data-do="roadmap">${t('Roadmap')}</button><button class="btn wide" data-do="knowhow">${t('Farm notebook')}${knowhowReady(s) ? ` <span class="badge shop-count">${knowhowReady(s)}</span>` : ''}</button></div><div class="project"><h3>${glyph('play', 'g')} ${t(step.name)}</h3><p>${t(s.mode === 'restore' && step.restore ? step.restore : step.text)}</p>
     ${reqs.map(([ok, text]) => `<div class="req ${ok ? 'ok' : ''}">${glyph(ok ? 'check' : 'lock', 'g')} ${text}</div>`).join('')}
     ${goods ? `<div class="needs-list">${goods}</div>${ready.ok && !deliveredAll(s, step) ? `<button class="btn primary wide" data-do="projectDeliver">${t('Deliver goods')}</button>` : ''}` : ''}
     ${run ? `<button class="btn primary wide" data-do="goRepair" data-kind="${run}" ${runMay?.ok && ready.ok ? '' : 'disabled'}>${glyph('wrench', 'g')} ${t('Repair: {name}', { name: t(BUILDINGS[run].name) })}</button>${runMay && !runMay.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(runMay.reason, tParams(runMay.params))}</p>` : ''}` : kind ? `<button class="btn primary wide" data-do="buildProject" data-kind="${kind}" ${may?.ok && ready.ok ? '' : 'disabled'}>${iconHtml(kind, '', 'mini')} ${t('Build: {name}', { name: t(BUILDINGS[kind].name) })}</button>${may && !may.ok ? `<p class="hint">${glyph('lock', 'g')} ${t(may.reason, tParams(may.params))}</p>` : ''}` : step.panel ? `<button class="btn primary wide" data-do="stepPanel" data-panel="${step.panel}" ${ready.ok ? '' : 'disabled'}>${t('Show me')}</button>` : step.builds.length ? `<p class="hint">${t('Use build mode to finish this step.')}</p>` : ''}

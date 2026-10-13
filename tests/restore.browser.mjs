@@ -27,6 +27,9 @@ async function check(name, f) {
 }
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 /** Bring a cell into the part of the screen no menu covers, then click it. */
+/** Do a step and look again, up to `tries` times: the village is alive (a visiting neighbour mends what the test just wore,
+ *  a notice takes a tap), so one slow moment must not fail the check. `step` sets the scene and acts; `seen` says it worked. */
+const until = async (step, seen, tries = 3) => { for (let i = 0; i < tries; i++) { await step(); if (await seen()) return true; } return false; };
 const tap = async (page, x, z) => {
   // walkers wander over the spot and a tap on a person talks to them: send them indoors so the tap reaches the thing
   for (let i = 0; i < 6; i++) { if (!(await page.isVisible('.modal [data-close]'))) break; await page.click('.modal [data-close]'); await page.waitForTimeout(150); }   // story cards the player would close
@@ -76,12 +79,12 @@ await check('a damaged road and the worn farmhouse can be repaired from their me
   expect(await page.isVisible('.radial-btn[data-act="repair"]'), 'no Repair on the damaged road');
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !!farm.state().repairing.road_south), 'the road repair did not start');
-  await page.evaluate(() => { farm.game.s.cond.house = { level: 1, ms: 3 * 3600e3 }; });   // a visiting neighbour may have mended it in the meantime (that is the feature)
-  await tap(page, 22, 62);                               // the farmhouse
+  // a visiting neighbour may mend it between the wearing and the tap (that is the feature): wear it and tap again if so
+  await until(async () => { await page.evaluate(() => { farm.game.s.cond.house = { level: 1, ms: 3 * 3600e3 }; }); await tap(page, 22, 62); }, () => page.isVisible('.radial-btn[data-act="repair"]'));
   expect(await page.isVisible('.radial-btn[data-act="repair"]'), `no Repair on the worn farmhouse (${await page.evaluate(() => JSON.stringify({ radial: [...document.querySelectorAll('.radial:not([hidden]) .radial-btn')].map(b => b.dataset.act), panel: document.querySelector('.panel:not([hidden])')?.dataset.kind ?? null, modal: !!document.querySelector('.modal'), house: farm.state().cond.house, repairing: Object.keys(farm.state().repairing ?? {}), explore: document.body.classList.contains('explore-active') }))})`);
   await page.click('.radial-btn[data-act="repair"]');
   expect(await page.evaluate(() => !farm.state().cond.house), 'a worn house is mended at once');
-  await tap(page, 22, 62);
+  await until(() => tap(page, 22, 62), () => page.isVisible('.radial-btn[data-act="upgradeHouse"]'));
   expect(await page.isVisible('.radial-btn[data-act="upgradeHouse"]'), 'no upgrade on the farmhouse');
   const cap = await page.evaluate(() => farm.state().barn.cap); await page.click('.radial-btn[data-act="upgradeHouse"]');
   expect(await page.evaluate(() => farm.state().barn.cap) > cap, 'the barn did not grow');
@@ -131,8 +134,9 @@ await check('markers: a red ! over broken things, a gold coin over ripe crops; t
   const m0 = await page.evaluate(() => { const c = farm.marks.collect(); return { alert: c.alert.length, coin: c.coin.length }; });
   expect(m0.alert >= 6 && m0.coin === 0, `at the start: ${JSON.stringify(m0)}`);
   await page.evaluate(() => farm.setClockOffset(70_000)); await page.waitForTimeout(1500);
-  const m1 = await page.evaluate(() => ({ coin: farm.marks.collect().coin.length, shown: farm.marks.coin.userData.n }));
-  expect(m1.coin >= 6 && m1.shown >= 6, `ripe beds: ${JSON.stringify(m1)}`);
+  // a ripe crop shows its own picture in a badge (a coin is for money that waits): count both kinds of marker
+  const m1 = await page.evaluate(() => ({ coin: farm.marks.collect().coin.length, shown: farm.marks.coin.userData.n + [...farm.marks.badge.values()].reduce((n, p) => n + (p.visible ? p.userData.n : 0), 0), wheat: farm.marks.badge.get('wheat')?.userData.n ?? 0 }));
+  expect(m1.coin >= 6 && m1.shown >= 6 && m1.wheat >= 1, `ripe beds: ${JSON.stringify(m1)}`);
   // two empty beds: choose a crop on one, then tap the other: the menu opens again, so another crop can be chosen
   const beds = await page.evaluate(() => { const s = farm.game.s; const ids = Object.keys(s.beds).slice(0, 2); for (const id of ids) delete s.beds[id]; return ids.map(id => [s.placed[id].x, s.placed[id].z]); });
   await tap(page, ...beds[0]); expect(await page.isVisible('.radial-btn[data-act="plant"]'), 'no seed menu on the first bed');
@@ -194,8 +198,8 @@ await check('the village pond: fish pictures swim in it; tap it, cast a line, re
   await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('pip'); p.selectedUntil = performance.now() + 9000; });
   await tap(page, 15, 42);
   expect(await page.evaluate(() => !!farm.people.walkers.get('pip').target && farm.people.walkers.get('pip').fishing), 'Pip was not sent fishing');
-  await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('you'); p.selectedUntil = performance.now() + 9000; });
-  await tap(page, 15, 42);
+  await until(async () => { await page.evaluate(() => { farm.panels.close(); const p = farm.people; p.selected = p.walkers.get('you'); p.selectedUntil = performance.now() + 9000; }); await tap(page, 15, 42); },
+    () => page.evaluate(() => !!farm.people.walkers.get('you').goal));
   expect(await page.evaluate(() => !!farm.people.walkers.get('you').goal), 'you were not sent fishing');
   expect(!errors.length, errors.join(' | '));
   await page.evaluate(() => sessionStorage.removeItem('fv-clock-offset'));

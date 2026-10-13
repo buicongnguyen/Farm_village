@@ -1,4 +1,5 @@
 // Animals live in their home (coop, cow barn) inside a closed fence; fed animals give produce after their time (DESIGN 6).
+import { henArrives, produceOf } from './surprises.mjs';
 import { ANIMALS } from '../content/goods.mjs';
 import { XP } from '../content/economy.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -33,9 +34,10 @@ export const actions = {
     if (list.length >= a.perHome) return ctx.fail('This home is full');
     const price = animalPrice(s, kind);
     if (s.coins < price) return ctx.fail('Not enough coins');
-    s.coins -= price; list.push({ kind, doneAt: null }); s.animals[home] = list;
+    const animal = { kind, doneAt: null }; s.coins -= price; list.push(animal); s.animals[home] = list;
+    const variant = henArrives(ctx, animal);   // now and then a hen turns out black, or rainbow (core/surprises.mjs)
     ctx.emit('animalArrived', { home, kind });
-    return { kind, price };
+    return { kind, price, ...(variant ? { variant } : {}) };
   },
   /** Feed hungry animals: { home } (one home) or nothing (every home). Uses one feed each, good for FEED_MEALS collections. */
   feed(ctx, { home } = {}) {
@@ -55,9 +57,9 @@ export const actions = {
     const { s, now } = ctx; let got = 0, sold = 0;
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
       if (an.doneAt == null || an.doneAt > now) continue;
-      sold += barn.addOrSell(s, ANIMALS[an.kind].gives, outputTimes(s, id));   // an upgraded home gives double, and double again
+      const good = produceOf(an); sold += barn.addOrSell(s, good, outputTimes(s, id));   // an upgraded home gives double, and double again
       afterCollect(an, now); got++;
-      ctx.emit('collected', { home: id, good: ANIMALS[an.kind].gives });
+      ctx.emit('collected', { home: id, good });
     }
     if (!got) return ctx.fail('Nothing is ready yet');
     if (sold) ctx.emit('barnSold', { coins: sold });

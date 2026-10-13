@@ -1,4 +1,5 @@
 // Crops, fruit, animals and recipes (ECONOMY.md section 2). `value` is the base price; `level` unlocks it.
+import { LUCKY_GOODS } from './surprises.mjs';
 import { MIN, HOUR, paced } from './economy.mjs';
 
 // Testing-time tuning (2026-10-10, the user's call): every crop earns at least 8 coins a minute per bed, the dear ones a
@@ -27,6 +28,15 @@ export const FRUITS = {
   apple: { name: 'Apple', tree: 'apple_tree', value: 9,  level: 2, yield: 3, firstMs: 30_000, regrowMs: 50_000, icon: '🍎' },
   peach: { name: 'Peach', tree: 'peach_tree', value: 15, level: 4, yield: 3, firstMs: 3 * MIN, regrowMs: 5 * MIN, icon: '🍑' },
   orange: { name: 'Orange', tree: 'orange_tree', value: 18, level: 5, yield: 3, firstMs: 4 * MIN, regrowMs: 6 * MIN, icon: '🍊' },
+  // farm know-how (content/knowhow.mjs): the mango comes from a stone found in the fruit crate; the Mango apple grows on
+  // an apple tree that took a mango branch (`cross`: no tree of its own, core/trees.mjs fruitId)
+  mango: { name: 'Mango', tree: 'mango_tree', value: 30, level: 4, yield: 3, firstMs: 5 * MIN, regrowMs: 8 * MIN, icon: '🥭' },
+  mango_apple: { name: 'Mango apple', tree: 'apple_tree', value: 75, level: 8, yield: 2, firstMs: 8 * MIN, regrowMs: 8 * MIN, icon: '🥭', cross: true },
+  // four more orchard trees (2026-10-13), each a step dearer and slower than the orange
+  plum: { name: 'Plum', tree: 'plum_tree', value: 21, level: 6, yield: 3, firstMs: 4.5 * MIN, regrowMs: 7 * MIN, icon: '🟣' },
+  lemon: { name: 'Lemon', tree: 'lemon_tree', value: 23, level: 7, yield: 3, firstMs: 5 * MIN, regrowMs: 7.5 * MIN, icon: '🍋' },
+  longan: { name: 'Longan', tree: 'longan_tree', value: 28, level: 9, yield: 3, firstMs: 6 * MIN, regrowMs: 9 * MIN, icon: '🟤' },
+  lychee: { name: 'Lychee', tree: 'lychee_tree', value: 33, level: 10, yield: 3, firstMs: 7 * MIN, regrowMs: 10.5 * MIN, icon: '🔴' },
   coconut: { name: 'Coconut', tree: 'coconut_palm', value: 26, level: 8, yield: 2, firstMs: 6 * MIN, regrowMs: 10 * MIN, icon: '🥥' },
 };
 
@@ -80,8 +90,10 @@ for (const c of Object.values(CROPS)) c.growMs = paced(c.growMs);
 for (const f of Object.values(FRUITS)) { f.firstMs = paced(f.firstMs); f.regrowMs = paced(f.regrowMs); }
 for (const a of Object.values(ANIMALS)) a.everyMs = paced(a.everyMs);
 for (const r of Object.values(RECIPES)) r.timeMs = paced(r.timeMs);
+// lucky goods (content/surprises.mjs): only surprises give them; no order, recipe or shop asks for them
 /** Every good the barn can hold: { id → { name, value, icon, kind } }. */
 export const GOODS = {
+  ...Object.fromEntries(Object.entries(LUCKY_GOODS).map(([id, x]) => [id, { ...x, kind: 'lucky', level: 2 }])),
   ...Object.fromEntries(Object.entries(CROPS).map(([id, c]) => [id, { name: c.name, value: c.value, icon: c.icon, kind: 'crop', level: c.level }])),
   ...Object.fromEntries(FISH_TABLE.map(f => [f.id, { name: f.name, value: f.value, icon: '🐟', kind: 'fish', level: 2 }])),
   ...Object.fromEntries(Object.entries(FRUITS).map(([id, f]) => [id, { name: f.name, value: f.value, icon: f.icon, kind: 'fruit', level: f.level }])),

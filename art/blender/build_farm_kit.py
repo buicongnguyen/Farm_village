@@ -716,15 +716,72 @@ def cute(name, base, light, dark, fruit=None, nfruit=7, fr=.2, out=1.0):
             a = i / nfruit * math.tau + .4; r = (1.55 + .25 * (i % 2)) * out; z = 2.4 + .8 * ((i * 3) % 4) / 3
             p.append(ball('fruit', fr, math.cos(a) * r * .8, math.sin(a) * r * .8, z, fruit, sub=0))
     return p
+def orchard(base, light, dark, fruit=None, nfruit=14, fr=.31, fruit2=None, fsc=(1, 1, 1), lod=0, bloom=None):
+    """A fruit tree of the orchard. 2026-10-13 (the owner: "ours are only circles, no clear leaves"): the crown is made
+    of LEAVES. A dark core of four puffs fills it, and leaf blades (style.leaf: a diamond with a mid-rib, seen from both
+    sides) stand out of it in a spiral, drooping more the lower they sit, light on top and dark below as the sun falls.
+    The fruit sits among the outer leaves of the upper half, where the game's camera sees it. No textures: the kit has
+    one white material and vertex colours, so the leaves are modelled, not painted.
+    lod 0: about 90 leaves, 1,450 triangles. lod 1 (<piece>_mid, the usual zoomed-out view): 44 larger leaves, 860."""
+    rnd = random.Random(7 + lod)
+    cx, cy, cz, rx, rz = 0, 0, 3.45, 1.9, 1.95                      # the crown: a dome a little taller than wide
+    if lod:
+        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=5, rt=.3)]
+        n, L, W, nfruit, fr = 44, 1.25, .66, max(6, round(nfruit * .6)), fr * 1.3
+    else:
+        p = [cl('trunk', .44, 2.2, 0, 0, 0, 'wood', verts=8, rt=.3), cl('root', .64, .26, 0, 0, 0, 'woodd', verts=8, rt=.44),
+             st((0, 0, 1.5), (.75, .2, 2.5), .17, 'wood', sides=5, rt=.1), st((0, 0, 1.6), (-.7, -.3, 2.55), .16, 'woodd', sides=5, rt=.1)]
+        n, L, W = 90, .92, .5
+    # the core: what shows between the leaves is deep shade
+    p.append(ball('core', 1.45, 0, 0, cz, dark, sub=2, sc=(1.05, 1.05, 1.12)))
+    for i in range(3):
+        a = i / 3 * math.tau + .5
+        p.append(ball('core', .95, math.cos(a) * .9, math.sin(a) * .9, cz - .55, dark, sub=1 if lod else 2, sc=(1, 1, .95)))
+    for i in range(n):   # leaves on a golden-angle spiral from the top of the crown down to its skirt
+        u = (i + .5) / n; h = 1 - 1.32 * u                             # 1 at the top, about -.3 at the skirt
+        a = i * 2.39996 + rnd.uniform(-.25, .25); ring = math.sqrt(max(.04, 1 - h * h))
+        k = .62 + .12 * rnd.random()                                   # the leaf's stalk is inside the core, its tip outside
+        x, y, z = cx + math.cos(a) * rx * ring * k, cy + math.sin(a) * rx * ring * k, cz + rz * h * .92
+        mt = light if h > .55 else dark if h < -.02 else (base if i % 3 else light)
+        size = (1 - .18 * rnd.random()) * (.82 if h > .8 else 1)
+        p.append(lf((x, y, z), a, L * size, W * size, mt, lift=.12 + .3 * max(0, h), droop=.1 + .5 * (1 - h) / 2, tilt=rnd.uniform(-.08, .08)))   # the top leaves reach up, the skirt hangs
+    if bloom:   # in flower (<piece>_bloom): small blossoms all over the crown, before the fruit sets
+        nb, br = (16, .21) if lod else (30, .15)
+        for i in range(nb):
+            h = -.05 + .95 * (i + .5) / nb; a = i * 2.39996 + 2.1
+            r = rx * math.sqrt(max(.05, 1 - (h * .95) ** 2)) * (.98 if i % 2 else 1.05)
+            p.append(ball('flower', br * (1 if i % 3 else 1.2), math.cos(a) * r, math.sin(a) * r, cz + rz * h * .9 + .1, bloom if i % 4 else 'sun', sub=0))
+    if fruit:
+        for i in range(nfruit):   # among the outer leaves of the upper half
+            h = .1 + .78 * (i + .5) / nfruit; a = i * 2.39996 + .9
+            r = rx * math.sqrt(max(.05, 1 - (h * .95) ** 2)) * (1.0 if i % 3 else 1.06)
+            p.append(ball('fruit', fr * (1.0 if i % 4 else 1.15), math.cos(a) * r, math.sin(a) * r, cz + rz * h * .9 + .12, fruit2 if fruit2 and i % 2 else fruit, sub=0, sc=fsc))
+    return p
 piece('cute_round', cute('r', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_apple', cute('a', 'leafw', 'leafwl', 'leafwd', 'fruitred', nfruit=10, fr=.27, out=1.3))   # fruit on the canopy, not inside it
-piece('cute_apple_bare', cute('ab', 'leafw', 'leafwl', 'leafwd'))
-piece('cute_peach', cute('p', 'leafwl', 'leafw', 'leafwd', 'fruitpeach', nfruit=10, fr=.27, out=1.3))
-piece('cute_peach_bare', cute('pb', 'leafwl', 'leafw', 'leafwd'))
+ORCHARD = {   # piece: (the three leaf colours, the fruit's arguments, the blossom's colour)
+    'cute_apple': (('leafw', 'leafwl', 'leafwd'), dict(fruit='fruitred'), 'blossoml'),
+    'cute_peach': (('leafwl', 'leafw', 'leafwd'), dict(fruit='fruitpeach'), 'blossom'),
+    'cute_orange': (('leafwd', 'leafw', 'pinew'), dict(fruit='orange'), 'white'),
+    'cute_cherry': (('leafw', 'blossoml', 'leafwd'), dict(fruit='berry', nfruit=18, fr=.21), 'blossom'),
+    'tree2_mango': (('leafwd', 'leafw', 'pinew'), dict(fruit='mango', nfruit=11, fr=.36, fruit2='mangor', fsc=(.82, .82, 1.3)), 'cream'),
+    # 2026-10-13: four more orchard trees (their icons were rendered with tree pack 2 and never used)
+    'tree2_lemon': (('leafw', 'leafwl', 'leafwd'), dict(fruit='lemon', nfruit=13, fr=.29, fsc=(.86, .86, 1.18)), 'white'),
+    'tree2_plum': (('leafwd', 'leafw', 'pinew'), dict(fruit='plum', nfruit=14, fr=.28, fruit2='pluml'), 'blossoml'),
+    'tree2_longan': (('leafw', 'leafwl', 'leafwd'), dict(fruit='longan', nfruit=20, fr=.2), 'cream'),
+    'tree2_lychee': (('leafwd', 'leafwl', 'leafwd'), dict(fruit='lychee', nfruit=18, fr=.23), 'cream'),
+}
+def orchard_pieces(name, into=None):
+    """A fruit tree's roots: ripe, bare and in flower, each with its authored middle level. The forms in flower go into
+    the decor kit (loaded after the first scene): a tree shows them only half-way through its growing."""
+    leaves, fruit, bloom = ORCHARD[name]
+    for lod, tail in ((0, ''), (1, '_mid')):
+        piece(name + tail, orchard(*leaves, **fruit, lod=lod), into)
+        piece(name + '_bare' + tail, orchard(*leaves, lod=lod), into)
+        piece(name + '_bloom' + tail, orchard(*leaves, lod=lod, bloom=bloom), decor)
+orchard_pieces('cute_apple'); orchard_pieces('cute_peach')
 piece('cute_blossom', cute('b', 'blossom', 'blossoml', 'blossomd'))
 # tree pack (2026-10-08): an orange tree and a coconut palm (fruit), a weeping willow (charm, by the pond)
-piece('cute_orange', cute('o', 'leafwd', 'leafw', 'pinew', 'orange', nfruit=9, fr=.28, out=1.3))
-piece('cute_orange_bare', cute('ob', 'leafwd', 'leafw', 'pinew'))
+orchard_pieces('cute_orange')
 def palm(fruit=True):
     """A coconut palm: a curved, ringed trunk, six drooping fronds and a cluster of coconuts under them."""
     p = []
@@ -2036,16 +2093,14 @@ def lemon(ripe=True):
     p = cute('l', 'leafwd', 'leafw', 'leafdd')
     if ripe: p += fruit_on(10, 'lemon', .22, 1.3, sc=(1, 1, 1.35))
     return p
-piece('tree2_lemon', lemon(), decor)
-piece('tree2_lemon_bare', lemon(False), decor)
+orchard_pieces('tree2_lemon', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def plum(ripe=True):
     """Plum tree (fruit; Granny Ada's terrible jam): a fresh green canopy hung with deep purple plums."""
     p = cute('pl', 'leafwl', 'leafw', 'leafwd')
     if ripe: p += fruit_on(11, 'plum', .23, 1.3, mt2='pluml')
     return p
-piece('tree2_plum', plum(), decor)
-piece('tree2_plum_bare', plum(False), decor)
+orchard_pieces('tree2_plum', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def mango(ripe=True):
     """Mango tree (fruit): a big dense dark dome, long mangoes blushing orange-red hanging on short stalks."""
@@ -2060,8 +2115,8 @@ def mango(ripe=True):
             p.append(st((x * .95, y * .95, z + .35), (x, y, z + .12), .02, 'stem', sides=3))
             p.append(ball('mango', .2, x, y, z, 'mango' if i % 2 else 'mangor', sub=1, sc=(.85, .85, 1.4)))
     return p
-piece('tree2_mango', mango(), decor)
-piece('tree2_mango_bare', mango(False), decor)
+# 2026-10-12: the mango as an orchard tree: its long fruit, gold and blushing, on the crown instead of under it
+orchard_pieces('tree2_mango', decor)
 
 def grape_arbor(ripe=True):
     """Grape arbour (fruit vine, 1 cell): a little wooden pergola roofed with vine leaves, purple bunches hanging inside."""
@@ -2094,8 +2149,7 @@ def longan(ripe=True):
             p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
             p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'longan', n=6, r=.13)
     return p
-piece('tree2_longan', longan(), decor)
-piece('tree2_longan_bare', longan(False), decor)
+orchard_pieces('tree2_longan', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 def lychee(ripe=True):
     """Lychee tree (fruit, the hills chapter): a bright green canopy with clusters of rosy-red lychees."""
@@ -2106,8 +2160,7 @@ def lychee(ripe=True):
             p += [st((math.cos(a) * 1.8, math.sin(a) * 1.8, 2.5), (math.cos(a) * rr, math.sin(a) * rr, 2.25), .025, 'woodd', sides=3)]
             p += hang(math.cos(a) * rr, math.sin(a) * rr, 2.2, 'lychee', n=6, r=.13, mt2='berry')
     return p
-piece('tree2_lychee', lychee(), decor)
-piece('tree2_lychee_bare', lychee(False), decor)
+orchard_pieces('tree2_lychee', decor)   # an orchard tree with leaves (was a tree of balls, never planted)
 
 # =================================================================== food factories (village growth plan, stage 3b)
 def juice_press():
@@ -2120,7 +2173,9 @@ def juice_press():
     p.append(bx('back', 3.6, .15, 2.2, 0, -1.6, .15, 'wood', bev=.03))
     for i in range(8):
         p.append(bx('awning', .48, 3.8, .14, -1.68 + i * .48, 0, 2.75, 'cream' if i % 2 else 'pumpkin' if 'pumpkin' in C else 'red'))
-    p.append(gable('roof', 3.8, 3.4, .7, 0, 0, 2.88, 'roof'))
+    # 2026-10-12: shingled in two tones like the bakery and the mill (it was one flat colour); the gable under it closes the ends
+    p.append(gable('roof', 3.8, 3.4, .7, 0, 0, 2.86, 'roofd', over=.12))
+    p += roof_rows(3.8, 3.4, .7, 0, 0, 2.88, 'roof', 'roofl', rows=4, over=.2, thick=.08)
     # the screw press
     p += [cl('vat', .55, .5, -.6, .3, .15, 'woodl', verts=12), cl('vatband', .57, .08, -.6, .3, .45, 'iron', verts=12),
           bx('frame', .12, .12, 1.5, -1.15, .3, .15, 'woodd'), bx('frame2', .12, .12, 1.5, -.05, .3, .15, 'woodd'),
@@ -2143,7 +2198,8 @@ def noodle_factory():
     """Noodle factory (3 x 2 cells): a cheerful brick workshop with a teal roof and a chimney, a big round window, and
     racks of drying noodles outside."""
     p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stoned', bev=.04), bx('walls', 4.0, 3.0, 2.4, -.7, -.2, .15, 'brick', bev=.05),
-         bx('trim', 4.1, 3.1, .15, -.7, -.2, 2.5, 'cream', bev=.03), gable('roof', 4.2, 3.2, 1.1, -.7, -.2, 2.62, 'teal'),
+         bx('trim', 4.1, 3.1, .15, -.7, -.2, 2.5, 'cream', bev=.03), gable('roof', 4.2, 3.2, 1.1, -.7, -.2, 2.6, 'teald', over=.12),
+         *roof_rows(4.2, 3.2, 1.1, -.7, -.2, 2.62, 'teal', 'teald', rows=5, over=.2),   # shingled in two tones (2026-10-12)
          cl('chimney', .3, 1.3, -2.0, -.8, 3.0, 'brickd', verts=8), cl('chimtop', .36, .15, -2.0, -.8, 4.3, 'charcoal', verts=8),
          bx('door', .9, .1, 1.5, -.3, 1.32, .15, 'woodd', bev=.03), bx('sign', 1.6, .08, .5, -.7, 1.34, 1.9, 'sun', bev=.03),
          cl('window', .4, .08, -1.8, 1.31, 1.25, 'glass', verts=12, rot=(math.pi / 2, 0, 0)),
@@ -2356,8 +2412,8 @@ def cherry_tree(ripe=True):
                 p.append(st((x, y, z + .35), (x + dx, y, z), .025, 'leafd', sides=3))
                 p.append(ball('cherry', .17, x + dx, y, z, 'berry', sub=1))
     return p
-piece('cute_cherry', cherry_tree())
-piece('cute_cherry_bare', cherry_tree(False))
+# 2026-10-12: the cherry is an orchard tree too: blossom on its sunlit puffs, and its cherries on the crown where they show
+orchard_pieces('cute_cherry')
 
 def cherries():
     return [ball('cherry', .33, -.25, 0, .34, 'berry', sub=2), ball('cherry', .33, .27, .03, .34, 'fruitred', sub=2),
@@ -2741,6 +2797,13 @@ def build(group):
     objs = []
     for name, parts, tint in group:
         o = vc_join(parts, name, tint); objs.append(o)
+        # a piece keeps its own name: a part of a later piece may be called the same ('bench', 'lamp'), and Blender would
+        # export this one as 'bench.005' (found when the kit was rebuilt on 2026-10-12: the game looks pieces up by name)
+        if o.name != name:
+            other = bpy.data.objects.get(name)
+            if other is not None and other is not o: other.name = name + '_part'
+            o.name = name
+        assert o.name == name, f'{name} was exported as {o.name}'
         d = o.dimensions
         print(f'{name}: {triangles(o)} triangles, {d.x:.2f} x {d.z:.2f} x {d.y:.2f} m')
     return objs

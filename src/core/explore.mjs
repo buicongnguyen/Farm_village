@@ -2,7 +2,7 @@ import { ACTIONS } from './act.mjs';
 import { levelOf, isRepairing } from './condition.mjs';
 import { actions as learning } from './learning.mjs';
 import { stepCost, fenceBetween, findRoute } from './walk.mjs';
-import { HOME_APPROACH, HOME_MEMORY, HOME_ACTIVITIES } from '../content/explore.mjs';
+import { HOME_APPROACH, HOME_MEMORY, HOME_ACTIVITIES, HOME_THINGS, HOME_MADE } from '../content/explore.mjs';
 import { residents, heartsOf, addHearts } from './bonds.mjs';
 import { gainXp } from './levels.mjs';
 import { roomClear, roomRoute, movePoint, xz } from './explore-navigation.mjs';
@@ -13,7 +13,8 @@ const stamp = n => Number.isSafeInteger(n) && n >= 0;
 export function exploreState(s) {
   const e = s.explore, m = e?.memories?.[HOME_MEMORY.id];
   const used = {}; for (const id of Object.keys(HOME_ACTIVITIES)) if (stamp(e?.used?.[id])) used[id] = e.used[id];
-  return { version: 1, controls: e?.controls === 'joystick' ? 'joystick' : 'tap', introduced: e?.introduced === true,
+  const made = {}; for (const [id, max] of Object.entries(HOME_MADE)) made[id] = Number.isSafeInteger(e?.made?.[id]) ? Math.max(0, Math.min(max, e.made[id])) : 0;
+  return { version: 1, made, controls: e?.controls === 'joystick' ? 'joystick' : 'tap', introduced: e?.introduced === true,
     used, drawings: Number.isSafeInteger(e?.drawings) ? Math.max(0, Math.min(HOME_ACTIVITIES.draw.max, e.drawings)) : 0,
     memories: stamp(m?.discoveredAt) ? { [HOME_MEMORY.id]: { discoveredAt: m.discoveredAt, readAt: stamp(m.readAt) ? Math.max(m.discoveredAt, m.readAt) : null } } : {} };
 }
@@ -122,6 +123,24 @@ export const actions = {
     if (homeCooldown(ctx.s, 'draw', ctx.now) > 0) return ctx.fail('Your hand needs a rest. Try again a little later.');
     const e = exploreState(ctx.s), a = HOME_ACTIVITIES.draw; e.used.draw = ctx.now; e.drawings = Math.min(a.max, e.drawings + 1); ctx.s.explore = e;
     gainXp(ctx, a.xp); return { xp: a.xp, drawings: e.drawings };
+  },
+  /** A little thing at home (HOME_THINGS): a line every time; its XP and its count once it has rested. */
+  useAtHome(ctx, { id, extra = false }) {
+    const th = HOME_THINGS[id], ses = sessions.get(ctx.s), list = extra ? th?.extra?.lines : th?.lines;
+    if (!list?.length || !atObject(ctx.s, `farmhouse_${id}`)) return ctx.fail('Walk closer first');
+    ses.turns = (ses.turns ?? 0) + 1;
+    if (extra || !th.cooldownMs) return { line: list[ses.turns % list.length] };
+    if (!stamp(ctx.now)) return ctx.fail('The project clock is unavailable');
+    if (homeCooldown(ctx.s, id, ctx.now) > 0) return ctx.fail('Not just yet. Try again a little later.');
+    const e = exploreState(ctx.s), out = { line: list[(th.count ? e.made[th.count] : ses.turns) % list.length], xp: th.xp };
+    e.used[id] = ctx.now;
+    if (th.count) out.made = e.made[th.count] = Math.min(HOME_MADE[th.count], e.made[th.count] + 1);
+    ctx.s.explore = e; gainXp(ctx, th.xp);
+    if (th.every && out.made % th.every === 0) {   // a finished scarf goes to the neighbour you know least
+      const guest = residents(ctx.s, ctx.now).map(r => r.id).filter(p => heartsOf(ctx.s, p) < 10).sort((a, b) => heartsOf(ctx.s, a) - heartsOf(ctx.s, b) || (a < b ? -1 : 1))[0];
+      out.finished = true; if (guest) { addHearts(ctx, guest, th.hearts, 'gift'); out.guest = guest; } else { gainXp(ctx, th.gift); out.xp += th.gift; }
+    }
+    return out;
   },
   readHomeMemory(ctx) {
     if (!atObject(ctx.s, 'farmhouse_memory_shelf')) return ctx.fail('Walk to the memory shelf first');

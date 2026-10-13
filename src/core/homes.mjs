@@ -1,4 +1,6 @@
 // Rental cottages, families and rent, and charm (DESIGN 10 and 12).
+import { SURPRISES } from '../content/surprises.mjs';
+import { rushOverlap, houseRent, rentCollected } from './surprises.mjs';
 import { quayRent, quayRentCollected } from './riverside.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { FAMILIES } from '../content/people.mjs';
@@ -67,8 +69,10 @@ export function rentWaiting(s, now) {
   for (const [id, h] of Object.entries(s.homes)) {
     if (!h.family || h.arrivesAt > now) continue;
     total += rentPerHour(s, id) * Math.min(RENT.capHours, Math.max(0, now - h.rentFrom) / HOUR);
+    // a gold rush fills every room: the rent of the hours it ran, once more (core/surprises.mjs)
+    total += rentPerHour(s, id) * (SURPRISES.rush.rent - 1) * rushOverlap(s, Math.max(h.rentFrom, now - RENT.capHours * HOUR), now) / HOUR;
   }
-  return Math.floor(total);
+  return Math.floor(total) + houseRent(s, now);
 }
 
 export const actions = {
@@ -76,7 +80,7 @@ export const actions = {
     const { s, now } = ctx, coins = rentWaiting(s, now);
     if (coins <= 0) return ctx.fail('The mailbox is empty');
     for (const h of Object.values(s.homes)) if (h.family && h.arrivesAt <= now) h.rentFrom = now;
-    quayRentCollected(s, now);
+    quayRentCollected(s, now); rentCollected(s, now);
     s.coins += coins; s.stats.coinsEarned += coins;
     ctx.emit('rent', { coins });
     return { coins };

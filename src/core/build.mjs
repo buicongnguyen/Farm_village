@@ -1,4 +1,5 @@
 // Build-mode actions: place, move, store, clear cells, fences, land parcels and the barn upgrade (DESIGN 4).
+import { takeSapling } from './knowhow.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { CLEAR, XP, PARCELS, BARN, DEMOLISH } from '../content/economy.mjs';
 import { N, FARM, PARCEL, RUINS } from '../content/world.mjs';
@@ -105,7 +106,7 @@ export const actions = {
     if (def.tills) setCell(s, x, z, 'tilled');
     count(s, kind, 1); grid.touch(s);
     if (def.home) arriveNext(ctx, id);
-    if (def.fruit) plantTree(s, id, now, { regrow: fromStore || fromRebuild });
+    if (def.fruit) plantTree(s, id, now, { regrow: fromStore || fromRebuild, graft: fromStore && takeSapling(s, kind) });
     if (def.fruitStand) resumeFruitSales(ctx);
     // Build XP once per new high-water count of a kind: placing what was undone or stored again pays nothing,
     // so place + undo (or store + place) never mints XP. Undo takes the XP back and lowers the mark again.

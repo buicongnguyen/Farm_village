@@ -23,7 +23,8 @@ import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
-import { castOf, RIGS } from './skinned.mjs';
+import { castOf, RIGS, wornRig } from './skinned.mjs';
+import { costumeOf, hatOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
@@ -74,7 +75,7 @@ const OUTFITS = {
   twins: { top: '#ffcf3f', bottom: '#2f4f8a', hair: '#a8642c' },   // the twins: the same yellow jersey and blue dungarees, both of them
   mai: { top: '#ff8fb0', bottom: '#4a6fd0', hair: '#1a1a22' }, gus: { top: '#6b8f3a', bottom: '#5a3a2a', hair: '#9a9a9a' },
 };
-const clothesOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: s.settings.playerColor, bottom: '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
+const clothesOf = (id, s) => id === 'you' && s?.settings?.playerColor ? { top: costumeOf(s)?.top ?? s.settings.playerColor, bottom: costumeOf(s)?.bottom ?? '#2f5aa8', hair: '#2a1a12' } : OUTFITS[id] ?? { top: TOPS[hash(id) % TOPS.length], bottom: BOTTOMS[(hash(id) >> 4) % BOTTOMS.length], hair: HAIR[(hash(id) >> 8) % HAIR.length] };
 // The look of each language edition: in English the village is fair-haired and lighter-skinned (blond, sandy, brown,
 // auburn); in Vietnamese, Korean and Japanese it keeps the dark hair and warm skin the models were made with. Grey
 // hair stays grey everywhere. Clothes, names' ids and saves are the same in every edition: only the tint changes.
@@ -169,7 +170,7 @@ export class PeopleView {
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
-    w.subject = this.cast.add({ rig: w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
+    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, hatOf(this.s)) : w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     this.walkers.set(w.id, w); return w;
   }
   drop(w) { this.releaseFishing(w); w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
@@ -583,7 +584,7 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
-    if (e.type === 'settingChanged' && ['playerColor', 'playerBody'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.drop(me); }   // sync() draws you again in the new look
+    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.drop(me); }   // sync() draws you again in the new look
 
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);

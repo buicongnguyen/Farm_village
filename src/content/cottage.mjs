@@ -141,9 +141,20 @@ const findPiece = (kit, x, z) => {
 const sofa = findPiece('sofa', -1.9, -1.38), shelf = findPiece('bookshelf', 4.76, 1.6);
 const kitchen = findPiece('counter', -9.58, .7), desk = findPiece('desk', 6.5, -6.55);
 const table = findPiece('dining_table', 2.6, 1), wardrobe = findPiece('wardrobe', -9.62, -3.6);
+// The little things (content/explore.mjs HOME_THINGS, after the house in the owner's Willowmere): the furniture that was
+// only to look at now answers too. [piece, where you stand beside it, the height you look at]
+const THINGS = {
+  fireplace: [findPiece('fireplace', -4.62, 1.7), [1.2, 0], .7], armchair: [findPiece('armchair', -3.3, 4.4), [1.05, -.75], .6],
+  bath: [findPiece('bathtub', -.75, -6.4), [0, 1.1], .6], sink: [findPiece('sink', 2.35, -6.62), [-.25, .95], .9],
+  bed: [findPiece('bed', -7, -5.85), [1.3, .5], .6], mirror: [findPiece('mirror', -2.35, -4.9), [-1.05, 0], 1.2],
+  easel: [findPiece('easel', 7.2, -.9), [0, 1.1], 1], yarn: [findPiece('yarn_basket', 8.6, 4.9), [-1, 0], .4],
+  globe: [findPiece('globe', 3.8, -6.4), [.25, .95], .9], books: [findPiece('bookshelf', 9.76, -4.4), [-1.1, 0], 1.1],
+  fridge: [findPiece('fridge', -9.58, -1.25), [1.2, 0], 1],
+};
 // Keep Hollowbrook's personal keepsakes and family drawing table alongside Zoo Garden's furnishings.
 const uses = new Map([[sofa, 'farmhouse_sofa'], [shelf, 'farmhouse_memory_shelf'], [kitchen, 'farmhouse_kitchen'],
-  [desk, 'farmhouse_desk'], [table, 'farmhouse_table'], [wardrobe, 'farmhouse_wardrobe']]);
+  [desk, 'farmhouse_desk'], [table, 'farmhouse_table'], [wardrobe, 'farmhouse_wardrobe'],
+  ...Object.entries(THINGS).map(([id, [piece]]) => [piece, `farmhouse_${id}`])]);
 // The reading lamp, piano corner and clock are earned house comforts, so leave room for them.
 table.kit = 'farmhouse_table'; table.block = [1.55, 1.88];
 shelf.kit = 'farmhouse_memory_shelf'; shelf.block = [1.04, 1.04]; shelf.x -= .32;
@@ -154,6 +165,7 @@ for (const p of COTTAGE_FURNITURE) {
   if (p.kit === 'radio') { p.x = 2.5; p.z = 1.15; }
   if (p.kit === 'books') p.use = 'farmhouse_desk';
   if (p.kit === 'door_frame') p.use = 'farmhouse_exit';
+  if (p.kit === 'duck') p.use = 'farmhouse_bath';
 }
 COTTAGE_FURNITURE.push({ id: 'front_door', kit: 'door', x: -.66, z: HOUSE.bounds.z1, rot: -.35, use: 'farmhouse_exit' });
 export function wallSegments() {
@@ -178,6 +190,7 @@ const interactions = [
   interact('farmhouse_desk', desk, [desk.x - 1.2, desk.z + .9], .9),
   interact('farmhouse_table', table, [table.x - 1.25, table.z], .8),
   interact('farmhouse_wardrobe', wardrobe, [wardrobe.x + 1.25, wardrobe.z], 1.2),
+  ...Object.entries(THINGS).map(([id, [piece, [dx, dz], height]]) => interact(`farmhouse_${id}`, piece, [piece.x + dx, piece.z + dz], height)),
   { id: 'farmhouse_exit', stand: [0, 0, HOUSE.bounds.z1 - .6], focus: [0, 1.1, HOUSE.bounds.z1] },
 ];
 const b = HOUSE.bounds;

@@ -92,12 +92,13 @@ await check('reduced motion: no particles for a pick or a golden catch, the floa
   expect(!errors.length, errors.join(' | '));
   await ctx.close();
 });
-await check('the markers carry a dark backing and a warm glint, and the phone budgets hold with effects running', async () => {
+await check('ripe crops carry their badge, the coin keeps its backing and warm glint, and the phone budgets hold with effects running', async () => {
   const { ctx, page, errors } = await open();
   await page.evaluate(() => { for (const id of Object.keys(farm.game.s.beds)) farm.game.s.beds[id].doneAt = farm.game.now - 1; });
   await page.waitForTimeout(1500);
-  const m = await page.evaluate(() => ({ backing: farm.marks.backing?.visible, glint: farm.marks.glint.material.color.getHexString() }));
-  expect(m.backing === true && m.glint !== 'ffffff', JSON.stringify(m));
+  // a ripe crop shows its own picture in a badge with its own disc (the coin and its dark backing are for money that waits)
+  const m = await page.evaluate(() => ({ badge: [...farm.marks.badge.values()].some(p => p.visible && p.userData.n > 0), backing: !!farm.marks.backing, glint: farm.marks.glint.material.color.getHexString() }));
+  expect(m.badge === true && m.backing === true && m.glint !== 'ffffff', JSON.stringify(m));
   for (const span of [24, 60, 140, 220]) {
     await page.evaluate(() => { farm.game.do('pick', {}); });
     const info = await page.evaluate(s => { farm.view(s, 50, 80); return new Promise(r => setTimeout(r, 700)).then(() => farm.measure(600)); }, span);

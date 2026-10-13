@@ -83,7 +83,7 @@ test('wear is very gentle: only play time counts, it never stops anything, a few
   const fine = rentPerHour(s, c1);
   // a day away (one big tick) adds at most one capped step of wear
   const ms0 = s.cond[c1]?.ms ?? 0; tick(s, t + 24 * HOUR); assert.ok((s.cond[c1]?.ms ?? 0) - ms0 <= WEAR.tickCapMs, 'time away is not play time');
-  // three hours of play: worn
+  // a day of play (WEAR.ms[0]): worn
   t = play(s, t + 24 * HOUR, WEAR.ms[0] + HOUR, 60_000);
   assert.equal(levelOf(s, c1), 1, 'worn after hours of play');
   assert.ok(Math.abs(rentPerHour(s, c1) - fine * (1 - WEAR.rent)) < fine * 0.02, 'a few percent less rent');

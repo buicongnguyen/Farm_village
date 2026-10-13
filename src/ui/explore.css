@@ -42,7 +42,17 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 .explore-log { list-style: none; padding-left: 0 !important; display: grid; gap: 3px; } .explore-log li { display: flex; justify-content: space-between; gap: 12px; }
 .explore-swatches { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 8px 0; }
 .explore-swatches .btn { width: 48px; height: 48px; min-width: 48px; border-radius: 50%; padding: 0; } .explore-swatches .btn.on { outline: 4px solid var(--leaf, #5a9a33); outline-offset: 2px; }
-.explore-card[data-object="kitchen"], .explore-card[data-object="desk"], .explore-card[data-object="table"], .explore-card[data-object="wardrobe"] { top: auto; bottom: 92px; max-height: 46%; }
+.explore-card[data-object="kitchen"], .explore-card[data-object="desk"], .explore-card[data-object="table"], .explore-card[data-object="wardrobe"], .explore-card.low { top: auto; bottom: 92px; max-height: 46%; }
+/* the wardrobe: tabs, then one row of hats or costumes that scrolls sideways, so the room above stays in view */
+.explore-card .tabs { display: flex; gap: 6px; justify-content: center; margin: 0 0 8px; }
+.explore-card .tabs .tab { min-height: 40px; padding: 4px 14px; border-radius: 20px; border: 2px solid var(--edge); background: var(--paper); font: inherit; font-weight: 800; cursor: pointer; }
+.explore-card .tabs .tab.on { background: var(--leaf, #5a9a33); color: #fff; }
+.explore-wear { display: flex; gap: 8px; overflow-x: auto; padding: 6px 4px 10px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+.explore-wear .wear { flex: 0 0 78px; scroll-snap-align: start; display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border-radius: 14px; border: 2px solid var(--edge); background: var(--paper); font: inherit; font-size: .72em; font-weight: 700; line-height: 1.15; cursor: pointer; min-height: 88px; }
+.explore-wear .wear img, .explore-wear .wear i { width: 48px; height: 48px; display: block; } .explore-wear .wear i { border-radius: 50%; border: 3px dashed #b9a27c; box-sizing: border-box; }
+.explore-wear .wear.on { outline: 4px solid var(--leaf, #5a9a33); outline-offset: 1px; background: #f1ffd9; }
+.explore-wear .wear.locked { opacity: .55; cursor: default; } .explore-wear .wear.locked img { filter: grayscale(1) brightness(.8); }
+.explore-note { font-size: .82em; opacity: .8; margin: 4px 0; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }
 

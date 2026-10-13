@@ -17,6 +17,9 @@ export const RIG_BASE = './assets/models/rigged/';
 // walk: the speed (m/s, at our size) the Walk clip is authored for, so feet do not slide. tint: clothes can be recoloured.
 export const RIGS = {
   hen:    { file: 'chicken', height: 0.95, walk: 0.95, bake: 'Idle' },
+  // rare hens (core/surprises.mjs): the same model, its baked colours repainted (PAINT below), so no new art file
+  hen_black:   { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'black' },
+  hen_rainbow: { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'rainbow' },
   cow:    { file: 'cow', height: 2.05, walk: 1.0, bake: 'Idle' },
   pig:    { file: 'pig', height: 1.1, walk: 1.0, bake: 'Idle' },
   goat:   { file: 'goat', height: 1.35, walk: 1.2, bake: 'Idle' },
@@ -47,6 +50,13 @@ const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);   // rigs may
 const rigs = new Map();          // name → Promise<Rig>
 const loaded = new Map();        // name → Rig, once ready
 
+/** Repaint a baked vertex colour [r, g, b] (0–1) of the chicken, given the vertex's height in the model (0 feet, 1 top).
+ *  The plumage is repainted; the red comb, the yellow beak and legs and the dark eyes keep their colour. */
+const plumage = ([r, g, b]) => !(r > 0.55 && g < 0.3 && b < 0.3) && !(r > 0.6 && g > 0.5 && b < 0.35) && Math.max(r, g, b) > 0.15;
+const PAINT = {
+  black: (c) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]; return [0.05 + l * 0.16, 0.05 + l * 0.17, 0.09 + l * 0.24]; },   // blue-black, shaded as the model is
+  rainbow: (c, t) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2], k = new THREE.Color().setHSL((0.98 - 0.86 * t + 1) % 1, 0.85, 0.34 + 0.4 * l); return [k.r, k.g, k.b]; },
+};
 /** Merge a rigged GLB's primitives into one skinned geometry with baked vertex colours, so one actor is one draw call. */
 function mergeRig(def, gltf) {
   const root = gltf.scene; root.updateMatrixWorld(true);
@@ -60,11 +70,15 @@ function mergeRig(def, gltf) {
     const g = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 3);
     const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), sl = new Float32Array(n).fill(slot);
     const P = src.attributes.position, N = src.attributes.normal, I = src.attributes.skinIndex, W = src.attributes.skinWeight;
+    const paint = PAINT[def.paint] ?? null; let low = Infinity, high = -Infinity;
+    if (paint) for (let i = 0; i < n; i++) { const y = P.getY(i); if (y < low) low = y; if (y > high) high = y; }
+    const span = high - low;
     for (let i = 0; i < n; i++) {
       pos[i * 3] = P.getX(i); pos[i * 3 + 1] = P.getY(i); pos[i * 3 + 2] = P.getZ(i);
       if (N) { nor[i * 3] = N.getX(i); nor[i * 3 + 1] = N.getY(i); nor[i * 3 + 2] = N.getZ(i); }
       const a = ao ? [ao.getX(i), ao.getY(i), ao.getZ(i)] : [1, 1, 1], c = slot ? [1, 1, 1] : [base.r, base.g, base.b];
       col[i * 3] = c[0] * a[0]; col[i * 3 + 1] = c[1] * a[1]; col[i * 3 + 2] = c[2] * a[2];
+      if (paint) { const [pr, pg, pb] = paint([col[i * 3], col[i * 3 + 1], col[i * 3 + 2]], span ? (P.getY(i) - low) / span : 0.5); col[i * 3] = pr; col[i * 3 + 1] = pg; col[i * 3 + 2] = pb; }
       for (let k = 0; k < 4; k++) { si[i * 4 + k] = I.getComponent(i, k); sw[i * 4 + k] = W.getComponent(i, k); }
     }
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
@@ -192,18 +206,57 @@ function carryWalk(rig) {
   const arm = t => /^(upperarm|forearm|hand|grip)/.test(t.name);
   rig.clips.set('CarryWalk', new THREE.AnimationClip('CarryWalk', walk.duration, [...walk.tracks.filter(t => !arm(t)), ...carry.tracks.filter(arm)]));
 }
+// Hats (content/wardrobe.mjs): head pieces from the owner's Willowmere, cut by art/tools/build-wear.mjs into wear.glb in
+// "head space" (origin on the top of the head, one unit = the head's width). A hat is bound rigidly to the head bone and
+// merged into the rig's geometry, so it is in the skinned actor, the baked crowd pose and the walk cycle alike, at no
+// extra draw call. A body in a hat is a rig of its own ("man+hat_straw"), made the first time someone wears it.
+let wearKit = null;
+const loadWear = () => (wearKit ??= loader.loadAsync(`${RIG_BASE}wear.glb`).then(g => { const m = new Map(); g.scene.updateMatrixWorld(true); g.scene.traverse(o => { if (o.isMesh) m.set(o.name, o); }); return m; }));
+export function wornRig(body, wear) {
+  if (!wear || !RIGS[body]?.tint) return body;
+  const name = `${body}+${wear}`; RIGS[name] ??= { ...RIGS[body], base: body, wear }; return name;
+}
+async function putOn(rig, id) {
+  const piece = (await loadWear()).get(id), skel = rig.mesh.skeleton, bone = skel.bones.findIndex(b => b.name === 'head'); if (!piece || bone < 0) return;
+  // the head as the model stands: the vertices the head bone moves most
+  const P = rig.geo.attributes.position, SI = rig.geo.attributes.skinIndex, SW = rig.geo.attributes.skinWeight, v = new THREE.Vector3(), box = new THREE.Box3();
+  for (let i = 0; i < P.count; i++) {
+    let best = 0; for (let c = 1; c < 4; c++) if (SW.getComponent(i, c) > SW.getComponent(i, best)) best = c;
+    if (SI.getComponent(i, best) === bone && SW.getComponent(i, best) > 0.6) box.expandByPoint(v.fromBufferAttribute(P, i).applyMatrix4(rig.mesh.bindMatrix));
+  }
+  if (box.isEmpty()) return;
+  const width = Math.min(box.max.x - box.min.x, box.max.z - box.min.z) * HEAD_FIT, top = new THREE.Vector3((box.min.x + box.max.x) / 2, box.max.y, (box.min.z + box.max.z) / 2);
+  const src = piece.geometry, n = src.attributes.position.count, C = src.attributes.color, N = src.attributes.normal;
+  const fit = new THREE.Matrix4().copy(rig.mesh.bindMatrixInverse).multiply(new THREE.Matrix4().makeTranslation(top.x, top.y, top.z)).multiply(new THREE.Matrix4().makeScale(width, width, width)).multiply(piece.matrixWorld);
+  const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 3), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4), nm = new THREE.Matrix3().getNormalMatrix(fit);
+  for (let i = 0; i < n; i++) {
+    v.fromBufferAttribute(src.attributes.position, i).applyMatrix4(fit); pos.set([v.x, v.y, v.z], i * 3);
+    v.fromBufferAttribute(N, i).applyMatrix3(nm).normalize(); nor.set([v.x, v.y, v.z], i * 3);
+    col.set(C ? [C.getX(i), C.getY(i), C.getZ(i)] : [1, 1, 1], i * 3); si[i * 4] = bone; sw[i * 4] = 1;
+  }
+  const hat = new THREE.BufferGeometry();
+  hat.setAttribute('position', new THREE.BufferAttribute(pos, 3)); hat.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  hat.setAttribute('color', new THREE.BufferAttribute(col, 3)); hat.setAttribute('aSlot', new THREE.BufferAttribute(new Float32Array(n), 1));
+  hat.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); hat.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4));
+  hat.setIndex(Array.from(src.index.array));
+  const merged = mergeGeometries([rig.geo, hat], false); if (!merged) return;
+  rig.geo = merged; rig.mesh.geometry = merged;
+}
+const HEAD_FIT = 1.0;   // a hat's size against the head it sits on
 const idle = () => new Promise(r => (globalThis.requestIdleCallback ?? (f => setTimeout(f, 16)))(() => r(), { timeout: 400 }));
 
 /** Load a rig once: merged skinned template, clips, baked crowd geometries and its scale on our map. */
 export function loadRig(name) {
   if (!rigs.has(name)) rigs.set(name, (async () => {
-    const def = RIGS[name], gltf = await loader.loadAsync(`${RIG_BASE}${def.file}.glb`), ms = [];
+    const def = RIGS[name], base = def.wear ? await loadRig(def.base) : null;   // a body in a hat stands as tall as the bare one
+    const gltf = await loader.loadAsync(`${RIG_BASE}${def.file}.glb`), ms = [];
     let t0 = performance.now();
     const rig = { name, def, clips: new Map(gltf.animations.map(c => [c.name, c])), ...mergeRig(def, gltf) };
+    if (def.wear) await putOn(rig, def.wear).catch(e => console.warn(`[cast] ${name}: ${e.message}`));
     ms.push(performance.now() - t0); await idle(); t0 = performance.now();
     const pose = bakePose(rig, def.bake), box = pose.boundingBox;
-    rig.k = def.height / Math.max(0.05, box.max.y - Math.min(0, box.min.y));
-    rig.lift = -Math.min(0, box.min.y) * rig.k;   // feet on the ground
+    rig.k = base?.k ?? def.height / Math.max(0.05, box.max.y - Math.min(0, box.min.y));
+    rig.lift = base?.lift ?? -Math.min(0, box.min.y) * rig.k;   // feet on the ground
     pose.scale(rig.k, rig.k, rig.k); pose.translate(0, rig.lift, 0); pose.computeBoundingBox(); pose.computeBoundingSphere();
     rig.tris = tris(rig.geo);
     ms.push(performance.now() - t0); await idle(); t0 = performance.now();

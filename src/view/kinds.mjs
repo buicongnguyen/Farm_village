@@ -12,8 +12,8 @@ export const KIND_MODELS = {
   feed_mill: { kit: 'farm-kit', node: 'feed_mill', authored: true, lod: 'static' },
   feed_mill_sails: { kit: 'farm-kit', node: 'feed_mill_sails', authored: true, lod: 'static', ao: 0 },
   bakery:    { kit: 'farm-kit', node: 'bakery', authored: true, lod: 'static' },
-  cherry_tree: { kit: 'farm-kit', node: 'cute_cherry', width: 3.2, lod: 'tree' },
-  'cherry_tree:bare': { kit: 'farm-kit', node: 'cute_cherry_bare', width: 3.2, lod: 'tree' },
+  cherry_tree: { kit: 'farm-kit', node: 'cute_cherry', width: 4.2, lod: 'tree' },
+  'cherry_tree:bare': { kit: 'farm-kit', node: 'cute_cherry_bare', width: 4.2, lod: 'tree' },
   fruit_stand: { kit: 'farm-kit', node: 'fruit_stand', authored: true, lod: 'static' },
   kennel: { kit: 'farm-kit', node: 'kennel', authored: true, lod: 'static' },
   clinic: { kit: 'town', node: 'hospital', width: 7.8, lod: 'static', late: true },
@@ -24,18 +24,18 @@ export const KIND_MODELS = {
   cypress: { kit: 'decor', node: 'tree2_cypress', height: 4.8, lod: 'tree', late: true },
   fir: { kit: 'decor', node: 'tree2_fir', height: 7.2, lod: 'tree', late: true },
   great_oak: { kit: 'decor', node: 'tree2_oak', width: 6.6, lod: 'tree', late: true },
-  lemon_tree: { kit: 'decor', node: 'tree2_lemon', width: 3.4, lod: 'tree', late: true },
-  'lemon_tree:bare': { kit: 'decor', node: 'tree2_lemon_bare', width: 3.4, lod: 'tree', late: true },
-  plum_tree: { kit: 'decor', node: 'tree2_plum', width: 3.4, lod: 'tree', late: true },
-  'plum_tree:bare': { kit: 'decor', node: 'tree2_plum_bare', width: 3.4, lod: 'tree', late: true },
-  mango_tree: { kit: 'decor', node: 'tree2_mango', width: 4.2, lod: 'tree', late: true },
-  'mango_tree:bare': { kit: 'decor', node: 'tree2_mango_bare', width: 4.2, lod: 'tree', late: true },
+  lemon_tree: { kit: 'decor', node: 'tree2_lemon', width: 4.4, lod: 'tree', late: true },
+  'lemon_tree:bare': { kit: 'decor', node: 'tree2_lemon_bare', width: 4.4, lod: 'tree', late: true },
+  plum_tree: { kit: 'decor', node: 'tree2_plum', width: 4.4, lod: 'tree', late: true },
+  'plum_tree:bare': { kit: 'decor', node: 'tree2_plum_bare', width: 4.4, lod: 'tree', late: true },
+  mango_tree: { kit: 'decor', node: 'tree2_mango', width: 4.8, lod: 'tree', late: true },
+  'mango_tree:bare': { kit: 'decor', node: 'tree2_mango_bare', width: 4.8, lod: 'tree', late: true },
   grape_arbor: { kit: 'decor', node: 'tree2_grape', width: 2.0, lod: 'static', late: true },
   'grape_arbor:bare': { kit: 'decor', node: 'tree2_grape_bare', width: 2.0, lod: 'static', late: true },
-  longan_tree: { kit: 'decor', node: 'tree2_longan', width: 3.6, lod: 'tree', late: true },
-  'longan_tree:bare': { kit: 'decor', node: 'tree2_longan_bare', width: 3.6, lod: 'tree', late: true },
-  lychee_tree: { kit: 'decor', node: 'tree2_lychee', width: 3.6, lod: 'tree', late: true },
-  'lychee_tree:bare': { kit: 'decor', node: 'tree2_lychee_bare', width: 3.6, lod: 'tree', late: true },
+  longan_tree: { kit: 'decor', node: 'tree2_longan', width: 4.4, lod: 'tree', late: true },
+  'longan_tree:bare': { kit: 'decor', node: 'tree2_longan_bare', width: 4.4, lod: 'tree', late: true },
+  lychee_tree: { kit: 'decor', node: 'tree2_lychee', width: 4.4, lod: 'tree', late: true },
+  'lychee_tree:bare': { kit: 'decor', node: 'tree2_lychee_bare', width: 4.4, lod: 'tree', late: true },
   // AR-013: the old potting bench's three stages (fixed site, learning-site.mjs); Codex maps stage -> model
   potting_bench_overgrown: { kit: 'decor', node: 'potting_bench_overgrown', authored: true, lod: 'static', late: true },
   potting_bench_repaired: { kit: 'decor', node: 'potting_bench_repaired', authored: true, lod: 'static', late: true },
@@ -111,12 +111,12 @@ export const KIND_MODELS = {
   hay_bale:     { kit: 'props', node: 'haybale', width: 1.5, lod: 'static', late: true },
   flowerpot:    { kit: 'props', node: 'flowerpot', width: 1.1, lod: 'static', late: true },
   street_lamp:  { kit: 'props', node: 'street_lamp', height: 3, lod: 'static', late: true },
-  apple_tree:   { kit: 'farm-kit', node: 'cute_apple', width: 3.6, lod: 'tree' },
-  'apple_tree:bare': { kit: 'farm-kit', node: 'cute_apple_bare', width: 3.6, lod: 'tree' },
-  peach_tree:   { kit: 'farm-kit', node: 'cute_peach', width: 3.6, lod: 'tree' },
-  'peach_tree:bare': { kit: 'farm-kit', node: 'cute_peach_bare', width: 3.6, lod: 'tree' },
-  orange_tree:  { kit: 'farm-kit', node: 'cute_orange', width: 3.6, lod: 'tree' },
-  'orange_tree:bare': { kit: 'farm-kit', node: 'cute_orange_bare', width: 3.6, lod: 'tree' },
+  apple_tree:   { kit: 'farm-kit', node: 'cute_apple', width: 4.4, lod: 'tree' },
+  'apple_tree:bare': { kit: 'farm-kit', node: 'cute_apple_bare', width: 4.4, lod: 'tree' },
+  peach_tree:   { kit: 'farm-kit', node: 'cute_peach', width: 4.4, lod: 'tree' },
+  'peach_tree:bare': { kit: 'farm-kit', node: 'cute_peach_bare', width: 4.4, lod: 'tree' },
+  orange_tree:  { kit: 'farm-kit', node: 'cute_orange', width: 4.4, lod: 'tree' },
+  'orange_tree:bare': { kit: 'farm-kit', node: 'cute_orange_bare', width: 4.4, lod: 'tree' },
   coconut_palm: { kit: 'farm-kit', node: 'cute_palm', height: 5.2, lod: 'tree' },
   'coconut_palm:bare': { kit: 'farm-kit', node: 'cute_palm_bare', height: 5.2, lod: 'tree' },
   willow:       { kit: 'farm-kit', node: 'cute_willow', width: 3.8, lod: 'tree' },
@@ -146,6 +146,10 @@ export const EARLY = {
 export const CROP_MODELS = ['wheat', 'carrot', 'corn', 'pumpkin', 'strawberry', 'herb', 'ginseng', 'tomato', 'potato', 'cabbage', 'onion', 'chili'];
 const LATE_CROPS = new Set(['tomato', 'potato', 'cabbage', 'onion', 'chili']);   // in the decor kit, after the first scene (carrot leaves stand in until then)
 export const CROP_STAGES = ['sprout', 'mid', 'ripe'];
+// A fruit tree in flower (half-way through its growing): <node>_bloom in the decor kit, at the tree's own size.
+for (const kind of ['apple_tree', 'peach_tree', 'orange_tree', 'cherry_tree', 'mango_tree', 'lemon_tree', 'plum_tree', 'longan_tree', 'lychee_tree']) {
+  const own = KIND_MODELS[kind]; KIND_MODELS[`${kind}:bloom`] = { kit: 'decor', node: `${own.node}_bloom`, ...(own.width ? { width: own.width } : { height: own.height }), lod: 'tree', late: true };
+}
 for (const c of CROP_MODELS) for (const st of CROP_STAGES) KIND_MODELS[`crop:${c}:${st}`] = LATE_CROPS.has(c) ? { kit: 'decor', node: `crop_${c}_${st}`, authored: true, lod: 'crop', late: true } : { kit: 'farm-kit', node: `crop_${c}_${st}`, authored: true, lod: 'crop' };
 for (const c of CROP_MODELS) KIND_MODELS[`crop:${c}`] = KIND_MODELS[`crop:${c}:ripe`];     // v0.1 names (life-view's cropStage)
 KIND_MODELS['crop:sprout'] = KIND_MODELS['crop:wheat:sprout'];

@@ -1,6 +1,8 @@
 import { normalizeFieldWork } from './field-work-state.mjs';
 import { normalizeOutput } from './output.mjs';
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
+import { normalizeSurprises } from './surprises.mjs';
+import { normalizeKnowhow } from './knowhow.mjs';
 import { START, START_RESTORE } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
 import { rng } from './rng.mjs';
@@ -156,6 +158,8 @@ export function withDefaults(s) {
   s.production = normalizeProduction(s);
   s.outputUp = normalizeOutput(s);
   s.fieldWork = normalizeFieldWork(s);
+  s.knowhow = normalizeKnowhow(s);
+  s.surprises = normalizeSurprises(s);
   s.shops = normalizeShops(s);
   s.supermarket = normalizeSupermarket(s);
   s.growth = normalizeGrowth(s);

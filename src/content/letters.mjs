@@ -13,6 +13,11 @@
 export const LETTERS = [
   { id: 'ellis-1', reward: { goods: { chicken_feed: 3 } }, from: 'ellis', when: { type: 'chapter', value: 1 },
     text: 'Sorry I was not at the gate. Gone fishing upriver. Back when the fish say so. Mind {person:ada:short}\'s knees and the hens\' feelings. — {person:ellis:display}' },
+  // two gifts (core/surprises.mjs letterGift): reading the letter is what gives them
+  { id: 'uncle-house', from: 'ada', when: { type: 'stat', key: 'playMs', value: 3_600_000 },
+    text: 'A lawyer’s letter came to me by mistake, dear, and it is for you. Your great-uncle Bao, the one who sent the postcards, has left you his narrow house in town with the blue door. A family rents it. The rent will come with your mail from now on. He would have liked what you have done here. Love, {person:ada:display}' },
+  { id: 'bea-truck', from: 'bea', when: { type: 'stat', key: 'trips', value: 100 },
+    text: 'One hundred trips to market, and I have counted every one of them twice. The company would like you to have a truck of ours. It is outside the market square with a ribbon on the mirror. Do not thank me, thank the ledger. {person:bea:display}' },
   { id: 'ada-1', reward: { coins: 20 }, from: 'ada', when: { type: 'stat', key: 'ordersFilled', value: 1 },
     text: 'You sold your first wheat today. I watched from the window and cried into the teapot. Silly old thing. Love, {person:ada:display}' },
   { id: 'mai-1', reward: { decor: 'flowers' }, from: 'mai', when: { type: 'chapter', value: 2 },

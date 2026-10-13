@@ -44,3 +44,27 @@ test('output upgrades: each doubles what an animal home or a workshop gives, fou
   if (pack && unpack) assert.deepEqual(unpack(pack(s)).outputUp, { cp: 4, fm: 1 });
   s.level = 1; s.outputUp.fm = 0; assert.match(outputPlan(s, 'fm').reason, /level/);
 });
+
+test('camera tilt: the setting is kept within its range and saved; the camera follows it and a drag still tracks the ground', async () => {
+  const { GameCamera, TILT, PITCH, clampTilt } = await import('../src/view/camera.mjs'), { act } = await import('../src/core/act.mjs'), { newGame } = await import('../src/core/state.mjs');
+  const s = newGame(1_800_000_000_000, 3, { restore: true }), T = 1_800_000_000_000;
+  assert.equal(act(s, 'setting', { key: 'cameraTilt', value: 0.4 }, T).ok, true); assert.equal(s.settings.cameraTilt, 40);
+  for (const bad of [0.1, 0.9, 'x', null]) assert.equal(act(s, 'setting', { key: 'cameraTilt', value: bad }, T).ok, false, String(bad)); assert.equal(s.settings.cameraTilt, 40);
+  assert.equal(clampTilt(5), TILT.min); assert.equal(clampTilt(90), TILT.max); assert.equal(clampTilt('x'), TILT.default);
+  const cam = new GameCamera({ x: 50, z: 50, span: 40, bounds: { x0: 0, x1: 200, z0: 0, z1: 200 } });
+  assert.equal(cam.pitch, PITCH); const flat = cam.pixelsToGround(0, 10), y0 = cam.camera.position.y;
+  cam.tilt(30); assert.ok(Math.abs(cam.pitch - 30 * Math.PI / 180) < 1e-9); assert.ok(cam.camera.position.y < y0, 'a lower look');
+  const low = cam.pixelsToGround(0, 10); assert.ok(Math.hypot(...low) > Math.hypot(...flat), 'the same drag covers more ground when the view is low');
+  assert.deepEqual([cam.x, cam.z], [50, 50], 'what is looked at stays in the middle');
+  cam.tilt(999); assert.ok(Math.abs(cam.pitch - TILT.max * Math.PI / 180) < 1e-9); cam.tilt(); assert.equal(cam.pitch, PITCH); cam.tilt(TILT.default); assert.equal(cam.pitch, PITCH);
+});
+
+test('the valley\u2019s value stays a readable number: deeds count up to a limit, and its name is worth some thousands of times its assets at most', async () => {
+  const { valueOf, assetsOf, goodwillOf, deedsOf } = await import('../src/core/valley.mjs'), { VALLEY } = await import('../src/content/economy.mjs'), { newGame } = await import('../src/core/state.mjs');
+  const s = newGame(1_800_000_000_000, 5, { restore: true }); s.coins = 2_000_000;
+  Object.assign(s.stats, { marketDays: 5000, cooperativeOrders: 5000, trains: 5000, harvestFestivals: 5000, fairs: 5000, guests: 1e9 });
+  assert.equal(deedsOf(s), VALLEY.deeds); const g = goodwillOf(s);
+  assert.ok(g >= 2000 && g <= 8000, `goodwill ${g}`); assert.equal(valueOf(s), Math.round(assetsOf(s).total * g));
+  assert.ok(valueOf(s) < 1e11, `a farm of two million coins is worth ${valueOf(s)}`);
+  assert.ok(valueOf(s) >= VALLEY.marks.lights, 'the last chapter can still be reached');
+});

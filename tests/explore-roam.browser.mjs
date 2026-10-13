@@ -282,7 +282,7 @@ await check('at home every piece of furniture does something: tea, the journal a
   expect(await page.evaluate(c => farm.state().settings.playerColor !== c, colour), 'the wardrobe did not change the shirt');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-wardrobe.png` });
   await visit('farmhouse_memory_shelf');
-  expect(await page.locator('.explore-log li').count() === 4, 'the memory shelf has no collection log');
+  expect(await page.locator('.explore-log li').count() === 6, 'the memory shelf has no collection log');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/home-shelf.png` });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'a home card overflows the phone');
   expect(!errors.length, errors.join(' | ')); await ctx.close();

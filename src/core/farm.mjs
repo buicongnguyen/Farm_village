@@ -1,4 +1,5 @@
 // Crop beds: plant (uses one crop from the barn, wheat is free), grow on real time, harvest two (DESIGN 5).
+import { sowFactor } from './knowhow.mjs';
 import { CROPS, TUTORIAL_FIRST_GROW_MS } from '../content/goods.mjs';
 import { XP, WATERED } from '../content/economy.mjs';
 import { wateredBed } from './grid.mjs';
@@ -9,7 +10,7 @@ export { cropOpen } from './learning-state.mjs';
 
 export const bedState = (s, id, now) => {
   const b = s.beds[id]; if (!b) return { state: 'empty' };
-  return b.doneAt <= now ? { state: 'ready', crop: b.crop } : { state: 'growing', crop: b.crop, leftMs: b.doneAt - now, progress: 1 - (b.doneAt - now) / CROPS[b.crop].growMs };
+  return b.doneAt <= now ? { state: 'ready', crop: b.crop } : { state: 'growing', crop: b.crop, leftMs: b.doneAt - now, progress: Math.max(0, 1 - (b.doneAt - now) / (b.growMs ?? CROPS[b.crop].growMs)) };
 };
 /** The price to plant a crop the player has none of (DESIGN 5 "never stuck"); 0 when it comes from the barn or is free. */
 export const plantPrice = (s, crop) => CROPS[crop].free || barn.free(s, crop, false) > 0 ? 0 : CROPS[crop].value;
@@ -23,6 +24,8 @@ export const actions = {
     if (s.level < c.level) return ctx.fail('Reach level {level} first', { level: c.level, crop, lock: 'level' });
     if (!cropOpen(s, crop)) return ctx.fail('Restore the potting bench to grow strawberries');
     let planted = 0;
+    // what grows where, for the beds' neighbours (worked out once for the whole sowing)
+    const crops = new Map(Object.entries(s.beds).map(([id, b]) => [`${s.placed[id]?.x},${s.placed[id]?.z}`, b.crop])), bedAt = (x, z) => crops.get(`${x},${z}`) ?? null;
     for (const bid of ids) {
       if (s.placed[bid]?.kind !== 'bed' || s.beds[bid]) continue;
       if (!c.free) {
@@ -31,7 +34,9 @@ export const actions = {
         else { if (!planted) return ctx.fail('Not enough coins'); break; }
       }
       const first = crop === 'wheat' && s.story.firstWheat, bed = s.placed[bid], watered = !first && wateredBed(s, bed.x, bed.z);   // a pond nearby waters it (chapter 7)
-      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : watered ? Math.round(c.growMs * WATERED.grow) : c.growMs), ...(watered ? { watered: true } : {}) };
+      const know = first ? 1 : sowFactor(s, crop, bed, bedAt);   // soaked seed, and a partner crop in the bed beside it (core/knowhow.mjs)
+      s.beds[bid] = { crop, doneAt: now + (first ? TUTORIAL_FIRST_GROW_MS : Math.round((watered ? c.growMs * WATERED.grow : c.growMs) * know)), ...(watered ? { watered: true } : {}), ...(know < 1 ? { growMs: Math.round((watered ? c.growMs * WATERED.grow : c.growMs) * know) } : {}) };
+      crops.set(`${bed.x},${bed.z}`, crop);
       if (watered) s.stats.watered = (s.stats.watered ?? 0) + 1;
       planted++;
     }

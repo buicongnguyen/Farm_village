@@ -166,6 +166,17 @@ export class Hud {
     if (e.type === 'canneryGreened') this.toast(t('The cannery is a green one now: the valley breathes again'), 'good', { icon: 'round_tree', to: 'valley' });
     if (e.type === 'valleyFounded') this.toast(t('The valley company is founded: {count} households hold a share', { count: e.shares }), 'good', { icon: 'company', to: 'valleyValue' });
     if (e.type === 'outputUpgraded') this.toast(t('{name} upgraded: it gives ×{n} now', { name: t(BUILDINGS[e.kind].name), n: e.times }), 'good', { icon: e.kind });
+    if (e.type === 'rareHen') this.toast(t(e.variant === 'rainbow' ? 'A rainbow hen! Nobody will believe it' : 'One of the chicks is a black hen!'), 'good', { icon: e.variant === 'rainbow' ? 'rainbow_egg' : 'black_egg', to: 'knowhow' });
+    if (e.type === 'herdGrew') this.toast(t(e.find === 'calf' ? 'A calf was born in the cow barn' : 'A goat walked out of the forest and stayed'), 'good', { icon: e.kind, to: 'knowhow' });
+    if (e.type === 'rushBegan') this.toast(t('Gold in the brook! Every room in the valley is let: rent is doubled while it lasts'), 'good', { icon: 'ui:coin', to: 'goldrush' });
+    if (e.type === 'rushEnded') this.toast(t('The brook runs clear again. The gold rush is over'), 'info', { icon: 'ui:coin' });
+    if (e.type === 'goldPanned') this.toast(t('Gold in the pan: +{coins}', { coins: num(e.coins) }), 'good', { icon: 'ui:coin', group: 'pan' });
+    if (e.type === 'houseInherited') this.toast(t('Uncle Bao’s house in town is yours: its rent comes with the mail'), 'good', { icon: 'cottage', to: 'knowhow' });
+    if (e.type === 'truckGiven') this.toast(t(e.truck ? 'A gift from the company: one more truck at the market' : 'A gift from the company: {coins} coins for your full fleet', { coins: num(e.coins) }), 'good', { icon: 'truck', to: 'market' });
+    if (e.type === 'trickReady') this.toast(t('Something to try in your farm notebook: {name}', { name: t(e.name) }), 'info', { icon: 'wheat', to: 'knowhow' });
+    if (e.type === 'trickFound') this.toast(t('You found something out: {name}', { name: t(e.name) }), 'good', { icon: 'wheat', to: 'knowhow' });
+    if (e.type === 'grafted') this.toast(t('A grafted {name} sapling is in your storage', { name: t(BUILDINGS[e.kind].name) }), 'good', { icon: e.kind });
+    if (e.type === 'crossed') this.toast(t('The mango branch took: this tree will bear Mango apples'), 'good', { icon: 'mango_apple' });
     if (e.type === 'chapterClosed') { const step = currentStep(this.game.s); if (step && e.id < 20) this.toast(t('Next in the story: {name}', { name: t(step.name) }), 'info', { icon: 'ui:projects', to: 'projects' }); }
     if (e.type === 'couponRedeemed') this.toast(t('Tester tools are on for this farm. They are at the bottom of Settings'), 'good', { icon: 'ui:xp', to: 'settings' });
     if (e.type === 'greenGoal') this.toast(`${t('A green goal reached: {name}', { name: t(e.name) })} · +${num(e.coins)}`, 'good', { icon: 'round_tree', to: 'valleyGreen' });

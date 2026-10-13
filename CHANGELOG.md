@@ -11,6 +11,67 @@
 - Consolidated animal care/quality, orchard groups, swipe-operated machinery and a northwest playground business in [the future implementation plan](docs/FARM-EXPANSION-IMPLEMENTATION-PLAN.md).
 - Recorded the owner's proposed 30-crop manual / 300-crop machine scale, with daily quotas distinguished from managed field capacity, plus map constraints, finite business accounting, story, save compatibility and delivery checks. No gameplay, prices or limits changed.
 
+## A calmer gold rush — 2026-10-13
+
+- The brook shows a few quiet glints during a gold rush (26 along its whole length, smaller when zoomed out); it had 90 and the whole brook glittered.
+
+## Trees in flower, and four more fruit trees — 2026-10-13
+
+- A fruit tree is bare while it grows, **in flower** for the second half of that time, and then carries its fruit. Each of the nine trees has its own blossom colour.
+- Four more fruit trees in the Build menu: **Plum** (level 6), **Lemon** (level 7), **Longan** (level 9) and **Lychee** (level 10), each a step dearer and slower than the orange. Their icons were rendered long ago and never used; their trees are new.
+
+## Fruit trees with leaves — 2026-10-13
+
+- The crowns of the apple, peach, orange, cherry and mango trees are made of leaves now: about ninety leaf blades over a dark core, light on top and dark below, with the fruit among them. They were smooth balls. About 1,340 to 1,480 triangles up close and 650 to 730 from the usual view.
+
+## Fruit trees at the usual zoom — 2026-10-13
+
+- The fuller fruit trees now look right from the usual, zoomed-out view too. Beyond a certain zoom the game drew an automatically simplified copy, which turned the round crown into shards and the fruit into slivers; each fruit tree has its own middle level now (six round puffs, fewer and bigger fruit, about 640 to 720 triangles).
+
+## Fewer repairs, smaller far badges, late crops — 2026-10-12
+
+- Buildings wear much more slowly: worn after a day of play and shabby after two (it was 3 and 9 hours).
+- Ready badges shrink as the view is zoomed out, so a far view is not covered by them.
+- A farm that already grows tomato, potato, cabbage, onion or chili no longer throws an error while their models load: carrot leaves stand in for that moment.
+- The valley's value no longer runs away into numbers with dozens of digits: deeds done together count up to a limit, so the valley's name is worth about 5,000 times its assets at most.
+- The juice press and the noodle factory have shingled roofs in two tones, like the bakery and the mill.
+
+## Fuller fruit trees — 2026-10-12
+
+- The apple, peach, orange, cherry and mango trees have a fuller, layered crown, dark below and light on top, and their fruit sits on the crown where it shows. About 1,000 to 1,150 triangles each (was about 650); the scenery's trees are unchanged.
+- The Black egg and the Rainbow egg have their own pictures.
+
+## Glossier icons — 2026-10-12
+
+- The 140 pictures of goods, buildings, animals and found objects are juicier: richer colour, light from the upper left, a wet highlight and a soft shadow under each (art/blender/icon_gloss.py, a pass over our own renders). Faces and interface symbols are unchanged.
+
+## Ready badges — 2026-10-12
+
+- What is ready shows itself: a round badge with the product's own picture floats over a ripe bed, a ripe tree, an animal home and a workshop (wheat over wheat, an egg over the coop). The gold coin is kept for money that waits: rent, the trucks' takings, the stalls, the pond's fees.
+
+## Surprises: lucky finds and events — 2026-10-12
+
+Things that happen to the farm by themselves. They only add, every roll is seeded and has a ceiling, and each is kept in "Lucky finds" at the foot of the farm notebook (docs/plan/96-surprises.md).
+
+- **Rare hens**: after a farm's first four, a hen bought may be black (1 in 8, certain by the twelfth) or rainbow (once, by the thirtieth). They look it in the pen and lay Black eggs (40) and Rainbow eggs (120).
+- **The herd grows**: a goat walks out of the forest and stays; two cows have a calf, small for its first ten minutes. Two extra animals per barn at most, also when it is full.
+- **Gold rush**: now and then, with a rented cottage, the brook carries gold for five minutes: cottage rent is doubled, the brook glints, and it can be panned twelve times.
+- **Two gifts by letter**: after an hour of play an uncle's house in town pays rent into the mailbox; the hundredth truck trip brings a truck from the company (coins when the fleet is full).
+
+## Camera tilt — 2026-10-12
+
+- Settings has a Camera tilt slider: from a low look across the valley (28°) to nearly straight down (68°). The view follows the slider while it is dragged; Reset returns to the usual 54°. Q and E still turn the view by a quarter.
+
+## The farm notebook: six things to find out — 2026-10-12
+
+Real growing techniques, each tried once when the farm has what it takes, each changing one rule for good. The notebook is in Village projects; a notice says once when something can be tried.
+
+- **Wake the old seeds** (seed soaking, level 2): every crop grows 15% faster.
+- **The stone in the fruit crate** (level 4): a new fruit tree, the Mango; the first one is in storage.
+- **Good neighbours in the beds** (companion planting, level 5): a bed beside its partner grows 20% faster (corn and pumpkin, carrot and onion, tomato and healing herb).
+- **A branch that becomes a tree** (grafting, level 6): a tree picked three times gives a free grafted sapling of its kind, which fruits much sooner and ripens 30% faster.
+- **Fewer, bigger fruit** (thinning, level 7): one more fruit from every pick.
+- **Two trees in one** (level 8): an apple tree takes a mango branch and bears Mango apples, a new fruit that sells for much more.
 
 ## Review of the supermarket and the walkable interiors — 2026-10-12
 

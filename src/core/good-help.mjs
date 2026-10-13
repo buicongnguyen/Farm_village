@@ -78,7 +78,7 @@ function cropSource(s, good, now, missing) {
 }
 
 function fruitSource(s, good, now) {
-  const fruit = FRUITS[good], ids = makers(s, fruit.tree).filter(id => s.trees?.[id]);
+  const fruit = FRUITS[good], ids = makers(s, fruit.tree).filter(id => s.trees?.[id] && (!fruit.cross || s.trees[id].cross));
   const ready = ids.filter(id => s.trees[id].doneAt <= now);
   const base = { type: 'fruit', at: fruit.tree, ready: ready.length * fruit.yield, queued: (ids.length - ready.length) * fruit.yield };
   // Picking ripe fruit is allowed by the tree rules regardless of condition; do not invent a repair gate.
