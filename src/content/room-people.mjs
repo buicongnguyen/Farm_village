@@ -111,5 +111,5 @@ export function withPeople(data, kind, clear, route) {
 export function talkNumbers(s, fishKinds) {
   const st = s.stats ?? {}, hens = Object.values(s.animals ?? {}).flat().filter(a => a.kind === 'hen').length;
   return { harvested: st.harvested ?? 0, produced: st.produced ?? 0, orders: st.ordersFilled ?? 0, coins: st.coinsEarned ?? 0, picked: st.picked ?? 0, cleared: st.cleared ?? 0,
-    level: s.level ?? 1, hens, fish: fishKinds, hours: Math.max(1, Math.round((st.playMs ?? 0) / 3_600_000)) };
+    level: s.level ?? 1, hens, fish: fishKinds, hours: Math.max(2, Math.round((st.playMs ?? 0) / 3_600_000)) };   // “about 2 hours” at the least: never “1 hours”
 }
