@@ -278,7 +278,7 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | Review of October orchard, surprises and home life | **Fixed and validated on the feature branch, not deployed (2026-10-13)**: preserved tree upgrades and graft credits, corrected lucky-event accounting, source guidance and home rewards. Latest main integrated through `73fa8f5`; validation recorded in [the review](plan/95-review.md). |
 | Review of farm reports and indoor life | **Fixed and validated on the feature branch (2026-10-13)**: safe growth history, honest earnings/source advice, stable indoor conversations and recoverable costumes with room cleanup. Includes main through `2b2e57c`; see [the review](plan/95-review.md). Not deployed. |
 
-| Review of cargo ships, machinery and wardrobe | **Review fixes on the feature branch (2026-10-14), not deployed**: main integrated through `d3ef6f1`; ship clock/save/payment guards, machine assignment and route safety, radio counts, paid-upgrade protection, fixed fruit durations and recoverable outdoor outfits. See [review and validation](plan/95-review.md). |
+| Review of cargo ships, machinery and wardrobe | **Fixed and validated on the feature branch (2026-10-14), not deployed**: main integrated through `d3ef6f1`; 795 unit tests, 47 browser suites and 50 smoke checks pass; ship clock/save/payment guards, machine assignment and route safety, radio counts, paid-upgrade protection, fixed fruit durations and recoverable outdoor outfits. See [review and validation](plan/95-review.md). |
 
 ### Picnic branch integration — 2026-10-12
 

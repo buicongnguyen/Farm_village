@@ -14,7 +14,7 @@ function hold(s, h, i) {
   return `<div class="coop-line${full ? ' full' : ''}" data-hold="${i}">${goodIcon(h.good)}
     <div class="coop-fill"><b>${t(GOODS[h.good].name)}</b>${full ? '' : goodHelpButton(h.good, left)}<i class="progress"><i style="width:${Math.round(h.have / h.need * 100)}%"></i></i>
       <small>${h.have} / ${h.need} · ${coinMark()}${num(full ? holdPays(h) : whenFull)} ${full ? '' : t('when full')}</small></div>
-    ${full ? `<span class="coop-done">${glyph('check', 'g')}</span>` : `<div class="coop-send"><button class="btn small" data-do="loadHold" data-hold="${i}" data-n="${Math.min(10, can)}" ${can ? '' : 'disabled'}>${t('Load')} ${Math.min(10, can) || ''}</button>
+    ${full ? `<span class="coop-done">${glyph('check', 'g')}</span>` : `<div class="coop-send"><button class="btn small" data-do="loadHold" data-hold="${i}" data-n="${Math.min(10, can)}" ${can ? '' : 'disabled'}>${can ? t('Load {count}', { count: Math.min(10, can) }) : t('Load cargo')}</button>
       <button class="btn primary small" data-do="loadHold" data-hold="${i}" ${can ? '' : 'disabled'}>${t('Load all')}</button></div>`}</div>`;
 }
 export function renderPort(s, now) {

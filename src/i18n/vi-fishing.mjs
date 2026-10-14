@@ -1186,4 +1186,6 @@ export const VI_FISHING = {
   "Adds up to 8 new-field beds per family round. Work-board assignments stay finite.": "Mỗi lượt gia đình có thể giúp thêm tối đa 8 luống ở đất mở rộng. Chỉ làm hết phần đã giao trên bảng công việc.",
   "Tractors can help with up to {count} extra beds on purchased expansion fields.": "Máy kéo có thể giúp thêm tối đa {count} luống trên phần đất mở rộng đã mua.",
   "A cargo ship calls with four holds. Full holds pay twice the base price; partial loads pay the base price. All four full holds earn a bonus.": "Tàu hàng ghé bến với bốn khoang. Khoang đầy được trả gấp đôi giá gốc; khoang chưa đầy được trả theo giá gốc. Đầy cả bốn khoang sẽ có thưởng thêm.",
+  "Load {count}": "Xếp {count}",
+  "Load cargo": "Xếp hàng",
 };

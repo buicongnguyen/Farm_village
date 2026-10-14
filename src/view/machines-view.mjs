@@ -28,10 +28,11 @@ export function safeLoop(s, beds) {
   if (!beds.length) return null;
   const xs = beds.map(b => b[0]), zs = beds.map(b => b[1]), m = CELL * 0.9;
   const loop = [Math.min(...xs) - m, Math.min(...zs) - m, Math.max(...xs) + m, Math.max(...zs) + m];
+  // The delivered tractor extends about 1.45 m from its origin (bonnet, wheels and hitch).
   const per = 2 * (loop[2] - loop[0] + loop[3] - loop[1]), previous = [];
   for (let u = 0; u <= per + 0.5; u += 0.5) {
     const [x, z] = onLoop(loop, Math.min(u, per)); let i = 0;
-    for (const dx of [-0.65, 0, 0.65]) for (const dz of [-0.65, 0, 0.65]) {
+    for (const dx of [-1.5, 0, 1.5]) for (const dz of [-1.5, 0, 1.5]) {
       const cell = [Math.floor((x + dx) / CELL), Math.floor((z + dz) / CELL)];
       if (landOf(s, ...cell) !== 'farm' || !stepCost(s, ...cell) || previous[i] && fenceBetween(s, previous[i], cell)) return null;
       previous[i++] = cell;
@@ -61,13 +62,13 @@ export async function installMachines(world, game) {
     tractors.forEach((m, i) => {
       const shed = p.sheds[i]; m.visible = !!shed; if (!shed) return;
       const loop = p.tractorLoop;
-      if (!loop) { m.position.set(shed[0], 0, shed[1] + CELL * 1.2); m.rotation.y = 0; return; }   // no beds to work: parked by its shed
+      if (!loop) { m.position.set(shed[0], 0, shed[1]); m.rotation.y = 0; return; }   // no beds to work: parked by its shed
       const per = 2 * (loop[2] - loop[0] + loop[3] - loop[1]), [x, z, yaw] = onLoop(loop, t * SPEED + i * per / 2);
       m.position.set(x, 0.04 * Math.abs(Math.sin(t * 9 + i)), z); m.rotation.y = yaw;   // a little rattle
     });
     ox.hidden = !p.pen;
     if (p.pen) {
-      if (!p.loop) Object.assign(ox, { x: p.pen[0], z: p.pen[1] + CELL * 1.3, rot: 0, clip: 'Idle' });
+      if (!p.loop) Object.assign(ox, { x: p.pen[0], z: p.pen[1], rot: 0, clip: 'Idle' });
       else { const [x, z, yaw] = onLoop(p.loop, -t * 1.0); Object.assign(ox, { x, z, rot: yaw + Math.PI, clip: 'Walk' }); }
     }
     drone.visible = !!p.pad; spray.visible = !!p.pad && !!p.orchard;

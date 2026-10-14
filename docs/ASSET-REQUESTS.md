@@ -712,3 +712,5 @@ Handoff: PR #111 contains the review fixes and lazy costume-fitting module. No s
 - 2026-10-14 — Codex also owns the `machines-view.mjs` route checks in this review: tractor loops use bought expansion fields and park when terrain, fences or buildings obstruct the route; the buffalo keeps its opening-field eligibility. Meshes, materials, speeds and effect colours are unchanged.
 
 - 2026-10-14 — Codex adjusts `PeopleView.redress`: keep the existing outdoor subject while the new rig loads; ignore superseded loads and permit retry. This preserves Claude's same-walker Explore fix without disappearing during download failures.
+
+- 2026-10-14 — Review handoff: current logic integration is validated on PR #111; 795 native tests, all 47 browser suites after the corrected Explore rerun, and 50 smoke checks pass. New cargo, food-workshop, machine and radio rules are covered; wardrobe/body/skirt fitting remains lazy. Production code is 1,296,531 / 1,300,000 bytes. Shared behavior edits are finished; no binary/generator files were edited by this review. PR remains unmerged.

@@ -9,7 +9,7 @@ import { HELP, FIELD_WORK } from '../src/content/economy.mjs';
 import { GOODS, FRUITS } from '../src/content/goods.mjs';
 import { goodHelp } from '../src/core/good-help.mjs';
 import { SUPERMARKET, SHOP_SECTIONS } from '../src/content/supermarket.mjs';
-import { basketPrice } from '../src/core/supermarket-state.mjs';
+import { basketPrice, supermarketBuildReason } from '../src/core/supermarket-state.mjs';
 import { animalYield } from '../src/core/output.mjs';
 import { familyBeds } from '../src/core/machines.mjs';
 import { workFieldRound, observeFieldWork } from '../src/core/field-work.mjs';
@@ -141,4 +141,14 @@ test('imported body choices cannot select inherited properties or non-string mod
     const s = farm(); s.settings.playerBody = value; assert.equal(bodyOf(unpack(pack(s))).id, 'man');
     const saved = pack(s); assert.equal(act(s, 'setting', { key: 'playerBody', value }, NOW).ok, false); assert.equal(pack(s), saved);
   }
+});
+
+test('new food workshops count toward opening the supermarket, but broken makers and duplicate kinds do not', () => {
+  const s = farm(); s.placed = {};
+  for (const kind of ['market', 'school', 'mushroom_house', 'fermentary']) put(s, kind, kind);
+  assert.equal(supermarketBuildReason(s), null);
+  s.cond.fermentary = { level: 3 }; assert.match(supermarketBuildReason(s), /two different/);
+  put(s, 'another', 'mushroom_house'); assert.match(supermarketBuildReason(s), /two different/);
+  put(s, 'feed_mill', 'feed_mill'); assert.match(supermarketBuildReason(s), /two different/);
+  put(s, 'fresh_kitchen', 'fresh_kitchen'); assert.equal(supermarketBuildReason(s), null);
 });

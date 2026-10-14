@@ -1,3 +1,4 @@
+import { BUILDINGS } from '../content/buildings.mjs';
 // Small eager save/reservation contract. Offers, dialogue and room code load with the shop panel.
 import { GOODS } from '../content/goods.mjs';
 import { SUPERMARKET, SHOP_SECTIONS, SHOP_MEMORY_IDS } from '../content/supermarket.mjs';
@@ -29,6 +30,6 @@ export const unreadSupermarket = s => { const r = normalizeSupermarket(s); retur
 export function supermarketBuildReason(s) {
   if (s.level < SUPERMARKET.level) return 'The village supermarket opens at level 14';
   if (!workingCount(s, 'market') || !workingCount(s, 'school')) return 'Keep the market square and school working first';
-  if (['bakery', 'juice_press', 'noodle_factory', 'dairy', 'cannery'].filter(kind => workingCount(s, kind)).length < 2) return 'Keep two different food factories working first';
+  if (Object.entries(BUILDINGS).filter(([kind, b]) => b.produces && kind !== 'feed_mill' && workingCount(s, kind)).length < 2) return 'Keep two different food factories working first';
   return null;
 }

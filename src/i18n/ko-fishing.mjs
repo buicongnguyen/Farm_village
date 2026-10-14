@@ -1186,4 +1186,6 @@ export const KO_FISHING = {
   "Adds up to 8 new-field beds per family round. Work-board assignments stay finite.": "가족이 한 차례 도울 때 확장한 밭의 두둑을 최대 8개 더 돌봐요. 작업 게시판에서 맡긴 만큼만 해요.",
   "Tractors can help with up to {count} extra beds on purchased expansion fields.": "트랙터는 구입한 확장 밭의 두둑을 최대 {count}개 더 돌볼 수 있어요.",
   "A cargo ship calls with four holds. Full holds pay twice the base price; partial loads pay the base price. All four full holds earn a bonus.": "화물선에는 네 개의 화물칸이 있어요. 가득 채우면 기본 가격의 두 배, 일부만 채우면 기본 가격을 받아요. 네 칸을 모두 채우면 보너스도 있어요.",
+  "Load {count}": "{count}개 싣기",
+  "Load cargo": "짐 싣기",
 };

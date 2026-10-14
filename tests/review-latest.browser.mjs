@@ -33,6 +33,7 @@ try {
     await page.evaluate(() => { farm.skipIntro(); farm.closeCards(); clearInterval(farm.game.timer); farm.panels.show('port'); });
     await page.locator('.coop-line').first().waitFor();
     assert.equal(await page.locator('.coop-line').count(), 4);
+    if (lang === 'vi') assert.equal(await page.locator('[data-do="loadHold"][data-hold="0"][data-n]').innerText(), 'Xếp 4');
     await page.screenshot({ path: `test-results/latest/ship-${lang}-${width}.png` });
     await page.locator('[data-do="loadHold"][data-hold="0"]:not([data-n])').click();
     await page.waitForFunction(() => farm.state().port.here.holds[0].have === 4);
@@ -77,6 +78,8 @@ try {
     }
     if (lang === 'en') {
       await page.waitForFunction(() => farm.radial.people?.walkers.has('you'));
+      await page.evaluate(() => { const w = farm.radial.people.walkers.get('you'); farm.focus(w.x / 2, w.z / 2, 20); });
+      await page.waitForFunction(() => farm.radial.people.walkers.get('you').subject.actor?.root.visible, null, { timeout: 60000 });
       const before = await page.evaluate(() => farm.radial.people.walkers.get('you').subject.rig);
       let attempts = 0;
       await page.route('**/costumes.glb', route => { attempts++; return route.abort('failed'); });
@@ -88,7 +91,9 @@ try {
       await page.waitForFunction(() => farm.radial.people.walkers.get('you').subject.rig.includes('kit:dz_star'), null, { timeout: 60000 });
       await page.evaluate(() => { farm.game.do('setting', { key: 'playerBody', value: 'girl' }); farm.game.do('setting', { key: 'playerSkirt', value: 3 }); farm.game.do('setting', { key: 'playerBody', value: 'woman' }); farm.game.do('setting', { key: 'playerBody', value: 'girl' }); });
       await page.waitForFunction(() => farm.radial.people.walkers.get('you').subject.rig === 'girl+kit:dz_star+skirt:3', null, { timeout: 60000 });
+      await page.waitForFunction(() => { const a = farm.radial.people.walkers.get('you').subject.actor; return a?.root.visible && a.rig.name === 'girl+kit:dz_star+skirt:3'; }, null, { timeout: 60000 });
       assert.ok(await page.evaluate(() => { const p = farm.radial.people; return p.cast.subjects.has(p.walkers.get('you').subject); }));
+      await page.screenshot({ path: 'test-results/latest/outfit-retry.png' });
     }
     assert.deepEqual(errors, []); console.log(`PASS latest review ${lang} ${width}: ship, source/back, work board, radio, food workshops, draw budget`);
     await context.close();

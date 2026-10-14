@@ -282,6 +282,7 @@ await check('at home every piece of furniture does something: tea, the journal a
   expect(await page.evaluate(c => farm.state().settings.playerColor !== c, colour), 'the wardrobe did not change the shirt');
   // changing clothes must not replace the character Explore is steering: you came out of the house invisible
   await page.evaluate(() => { farm.game.do('setting', { key: 'playerHat', value: 'hat_straw' }); farm.game.do('setting', { key: 'playerLook', value: 'farmhand' }); });
+  await page.waitForFunction(() => farm.radial.people.walkers.get('you')?.subject.rig.includes('hat_straw'), null, { timeout: 60000 });
   const kept = await page.evaluate(() => { const m = farm.world.exploreMode, you = farm.radial.people.walkers.get('you'); return { same: you === m.walker, drawn: farm.radial.people.cast.subjects.has(you.subject), rig: you.subject.rig }; });
   expect(kept.same && kept.drawn, `after changing clothes your character outdoors was replaced or is no longer drawn: ${JSON.stringify(kept)}`);
   expect(/hat_straw/.test(kept.rig), `your character outdoors does not wear what you chose: ${kept.rig}`);
