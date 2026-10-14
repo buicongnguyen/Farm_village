@@ -21,6 +21,7 @@ export const RIGS = {
   hen_black:   { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'black' },
   hen_rainbow: { file: 'chicken', height: 1.0, walk: 0.95, bake: 'Idle', paint: 'rainbow' },
   cow:    { file: 'cow', height: 2.05, walk: 1.0, bake: 'Idle' },
+  buffalo: { file: 'cow', height: 2.15, walk: 1.0, bake: 'Idle', paint: 'buffalo' },   // the cow's model in a slate hide (machines-view.mjs walks it round the beds)
   pig:    { file: 'pig', height: 1.1, walk: 1.0, bake: 'Idle' },
   goat:   { file: 'goat', height: 1.35, walk: 1.2, bake: 'Idle' },
   sheep:  { file: 'sheep', height: 1.3, walk: 1.1, bake: 'Idle' },
@@ -32,6 +33,7 @@ export const RIGS = {
   man:    { file: 'villager-man', height: 2.3, walk: 2.0, bake: 'Idle', tint: true },
   woman:  { file: 'villager-woman', height: 2.2, walk: 1.83, bake: 'Idle', tint: true },
   kid:    { file: 'villager-kid', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },
+  girl:   { file: 'villager-girl', height: 1.6, walk: 1.4, bake: 'Idle', tint: true },   // the mirror's girl (Starline's builder, kind 'girl'): the child's body with a bob, bunches and a skirt
   hana:   { file: 'hana', height: 2.1, walk: 1.98, bake: 'Idle', tint: true },
 };
 // Clothes slots that can be recoloured, by material name. Their vertices are baked white (keeping the shading), and the
@@ -54,6 +56,7 @@ const loaded = new Map();        // name → Rig, once ready
  *  The plumage is repainted; the red comb, the yellow beak and legs and the dark eyes keep their colour. */
 const plumage = ([r, g, b]) => !(r > 0.55 && g < 0.3 && b < 0.3) && !(r > 0.6 && g > 0.5 && b < 0.35) && Math.max(r, g, b) > 0.15;
 const PAINT = {
+  buffalo: (c) => { const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]; return c[0] > 0.75 && c[1] < 0.62 ? c : [0.06 + l * 0.13, 0.065 + l * 0.13, 0.085 + l * 0.15]; },   // dark slate all over; the pink of the nose and udder stays
   black: (c) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]; return [0.05 + l * 0.16, 0.05 + l * 0.17, 0.09 + l * 0.24]; },   // blue-black, shaded as the model is
   rainbow: (c, t) => { if (!plumage(c)) return c; const l = 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2], k = new THREE.Color().setHSL((0.98 - 0.86 * t + 1) % 1, 0.85, 0.34 + 0.4 * l); return [k.r, k.g, k.b]; },
 };

@@ -901,8 +901,8 @@ def fountain():
 piece('fountain', fountain(), decor)
 
 def dock():
-    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 3.8 m out over the
-    brook toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
+    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 2 m out over the
+    brook (it reached 3.8 m, to the middle of the water, and stood in front of the float when you fished) toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
     coil and a fish crate. Stands on y = 0; the water is just above it (0.05)."""
     p = []
     for i in range(9):   # the deck on the bank
@@ -913,19 +913,19 @@ def dock():
     for x in (-1.7, 1.7):
         for y in (-1.8, 1.8):
             p.append(bx('foot', .26, .26, .34, x, y, 0, 'woodd', bev=0.))
-    for i in range(9):   # the pier over the water
+    for i in range(5):   # the pier over the water
         y = -2.25 - i * .42
         p.append(bx('plank', 2.1, .38, .1, 0, y, .32, 'wood' if i % 3 else 'woodl', bev=0.))
     for x in (-.9, .9):
-        p.append(bx('beam', .18, 3.9, .2, x, -3.9, .12, 'woodd', bev=0.))
-        for y in (-2.6, -4.2, -5.7):
+        p.append(bx('beam', .18, 2.2, .2, x, -3.1, .12, 'woodd', bev=0.))
+        for y in (-2.6, -3.9):
             p.append(cl('pile', .13, 1.55, x * 1.2, y, -.9, 'wooddd', verts=7))
     for x in (-1.08, 1.08):   # mooring posts at the end, a rope between them
-        p.append(cl('post', .11, .62, x, -5.7, .6, 'woodd', verts=7))
-        p.append(ball('cap', .13, x, -5.7, 1.26, 'wood', sub=1))
-    p.append(st((-1.08, -5.7, 1.0), (1.08, -5.7, 1.0), .035, 'rope', sides=4, rt=.035))
+        p.append(cl('post', .11, .62, x, -4.1, .6, 'woodd', verts=7))
+        p.append(ball('cap', .13, x, -4.1, 1.26, 'wood', sub=1))
+    p.append(st((-1.08, -4.1, 1.0), (1.08, -4.1, 1.0), .035, 'rope', sides=4, rt=.035))
     # the rowing boat, moored at the pier's right side
-    bx0, by0 = 2.05, -4.0
+    bx0, by0 = 2.05, -3.1
     hull = lathe('hull', [(0, 0), (.7, .04), (1.0, .34), (1.0, .44), (.9, .44), (.86, .14), (0, .1)], (bx0, -by0, -.08), C['teal'], segments=14, smooth_angle=40)
     hull.scale = (.6, 1.45, 1)
     p.append(hull)
@@ -933,7 +933,7 @@ def dock():
     p.append(bx('thwart', 1.02, .24, .06, bx0, by0 + .5, .2, 'woodl', bev=0.))
     p.append(st((bx0 - .25, by0 - 1.0, .3), (bx0 + .3, by0 + 1.0, .42), .03, 'wood', sides=4, rt=.03))
     p.append(bx('blade', .16, .4, .04, bx0 + .33, by0 + 1.12, .4, 'woodl', bev=0.))
-    p.append(st((1.08, -5.7, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
+    p.append(st((1.08, -4.1, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
     # on the deck: a lantern post, a rope coil, a crate with the catch, a rod against the rail
     p.append(cl('lamppost', .07, 2.0, -1.6, 1.6, .42, 'iron', verts=6))
     p.append(bx('arm', .5, .07, .07, -1.36, 1.6, 2.36, 'iron', bev=0.))
@@ -2231,6 +2231,244 @@ def noodle_factory():
     p.append(bx('sacks', .6, .5, .5, 1.0, 1.2, .15, 'sack', bev=.12))
     return p
 piece('noodle_factory', noodle_factory(), decor)
+
+# ---- river life (2026-10-14): boats for the brook, and a court and a playground for the strand by the hotel.
+# Boats: nose to the front (+y here), the waterline at z = 0, no wider than 3 m (the water is 7 m across).
+def boat_row():
+    """A rowing boat, 3 m: a wooden hull, two thwarts, two oars out, a basket and a little flag."""
+    p = [bx('hull', 1.2, 3.0, .34, 0, 0, -.06, 'wood', bev=.12, seg=2), bx('inside', .9, 2.6, .1, 0, 0, .2, 'woodl', bev=.05),
+         bx('bow', .7, .5, .3, 0, 1.5, 0, 'woodd', bev=.12), bx('thwart', 1.0, .22, .06, 0, .5, .3, 'woodd', bev=.02), bx('thwart', 1.0, .22, .06, 0, -.6, .3, 'woodd', bev=.02),
+         bx('basket', .4, .4, .26, 0, -1.0, .3, 'hay', bev=.06), cl('flagpole', .025, .7, 0, -1.35, .3, 'woodd', verts=5), bx('flag', .3, .03, .18, .16, -1.35, .82, 'red', bev=0)]
+    for sx in (-1, 1):
+        p += [bx('oar', 1.5, .06, .05, sx * 1.1, .1, .36, 'woodl', bev=.01, rot=sx * .25), bx('blade', .4, .16, .03, sx * 1.9, .34 * 1.0, .34, 'cream', bev=.01, rot=sx * .25)]
+    return p
+piece('boat_row', boat_row(), decor)
+
+def boat_ferry():
+    """The river ferry, 7 m: a white hull with a blue band, an open deck with a rail and benches forward, a cabin with
+    windows and a red funnel aft, a lifebelt and a striped awning."""
+    p = [bx('hull', 2.5, 7.0, .7, 0, 0, -.2, 'white', bev=.25, seg=2), bx('band', 2.54, 7.04, .2, 0, 0, .12, 'sky', bev=.06), bx('deck', 2.2, 6.6, .08, 0, 0, .5, 'woodl', bev=.03),
+         bx('bow', 1.6, 1.0, .6, 0, 3.4, -.1, 'white', bev=.28), bx('cabin', 2.0, 2.4, 1.3, 0, -1.9, .58, 'cream', bev=.08), bx('cabinroof', 2.2, 2.6, .12, 0, -1.9, 1.88, 'teal', bev=.04),
+         cl('funnel', .26, .9, 0, -2.2, 2.0, 'red', verts=10), cl('funneltop', .29, .14, 0, -2.2, 2.9, 'charcoal', verts=10),
+         cl('lifebelt', .22, .08, 1.02, -1.2, 1.2, 'red', verts=12, rot=(0, math.pi / 2, 0))]
+    for k in range(3):
+        p += [bx('window', .5, .06, .5, -.6 + k * .6, -.69, 1.15, 'glassd', bev=.02), bx('sidewin', .06, .5, .5, 1.0, -1.4 - k * .6, 1.15, 'glassd', bev=.02), bx('sidewin', .06, .5, .5, -1.0, -1.4 - k * .6, 1.15, 'glassd', bev=.02)]
+    for sx in (-1, 1):
+        p.append(bx('rail', .05, 3.6, .05, sx * 1.08, 1.4, 1.05, 'white', bev=0))
+        for k in range(5):
+            p.append(bx('stanchion', .05, .05, .5, sx * 1.08, -.3 + k * .85, .56, 'white', bev=0))
+        p.append(bx('bench', .5, 2.2, .12, sx * .7, 1.2, .78, 'wood', bev=.03))
+    for k in range(5):
+        p.append(bx('awning', 2.2 / 5, 2.4, .05, -1.1 + (k + .5) * 2.2 / 5, 1.2, 1.9, 'red' if k % 2 else 'white', bev=.01))
+    for x, y in ((-1.0, .1), (1.0, .1), (-1.0, 2.3), (1.0, 2.3)):
+        p.append(bx('awnpost', .05, .05, 1.35, x, y, .56, 'white', bev=0))
+    return p
+piece('boat_ferry', boat_ferry(), decor)
+
+def boat_barge():
+    """A river barge, 8 m: a low dark hull with a red waterline, crates, sacks and barrels on the deck, a small wheelhouse
+    aft with a lamp."""
+    p = [bx('hull', 2.6, 8.0, .6, 0, 0, -.2, 'charcoal', bev=.2, seg=2), bx('line', 2.64, 8.04, .14, 0, 0, .02, 'redd', bev=.04), bx('deck', 2.3, 7.5, .08, 0, 0, .4, 'woodd', bev=.02),
+         bx('house', 1.6, 1.5, 1.2, 0, -2.9, .48, 'teal', bev=.08), bx('houseroof', 1.8, 1.7, .1, 0, -2.9, 1.68, 'cream', bev=.03), bx('housewin', 1.0, .06, .4, 0, -2.14, 1.1, 'glass', bev=.02),
+         cl('lamp', .08, .16, 0, -2.9, 1.78, 'lampglow', verts=6)]
+    for k, (x, y, mt) in enumerate(((-.6, 2.4, 'woodl'), (.6, 2.4, 'wood'), (-.6, 1.2, 'wood'), (.6, 1.2, 'woodl'), (0, 1.8, 'woodl'), (-.6, 0, 'wood'), (.6, -.1, 'woodl'))):
+        p.append(bx('crate', .9, .9, .7 if k != 4 else .6, x, y, .48 + (.7 if k == 4 else 0), mt, bev=.04))
+    for k in range(3):
+        p.append(ball('sack', .34, -.6 + k * .6, -1.2, .7, 'sack', sub=1, sc=(1.1, 1, .8)))
+    p += [cl('barrel', .3, .7, .75, -1.9, .48, 'wood', verts=10), cl('barrel', .3, .7, -.1, -1.95, .48, 'woodd', verts=10)]
+    return p
+piece('boat_barge', boat_barge(), decor)
+
+def cargo_ship():
+    """The cargo ship that calls at the quay, 15 m: a deep blue hull with a red waterline, rows of bright containers, a white
+    bridge with a funnel aft and a mast with a lamp. Narrow for a ship: the brook is no sea."""
+    p = [bx('hull', 3.2, 15.0, 1.2, 0, 0, -.4, 'poolwall', bev=.3, seg=2), bx('line', 3.24, 15.04, .2, 0, 0, 0, 'redd', bev=.05), bx('deck', 2.9, 14.4, .1, 0, 0, .8, 'stoned', bev=.02),
+         bx('bow', 2.0, 1.6, 1.1, 0, 7.4, -.2, 'poolwall', bev=.4), bx('bridge', 2.6, 2.6, 2.0, 0, -5.4, .9, 'white', bev=.1), bx('bridgewin', 2.3, .08, .5, 0, -4.08, 2.2, 'glassd', bev=.02),
+         bx('bridgeroof', 2.8, 2.8, .14, 0, -5.4, 2.9, 'sky', bev=.04), cl('funnel', .4, 1.2, 0, -6.0, 3.0, 'red', verts=10), cl('funnelband', .42, .2, 0, -6.0, 3.7, 'white', verts=10),
+         cl('mast', .06, 2.2, 0, 5.6, .9, 'iron', verts=6), cl('mastlamp', .1, .16, 0, 5.6, 3.1, 'lampglow', verts=6)]
+    box_c = ('red', 'sun', 'teal', 'sky', 'mint', 'roof', 'violet', 'cream')
+    for k in range(4):                                       # containers: four rows of two, and a second layer on three
+        for j, sx in enumerate((-.72, .72)):
+            p.append(bx('box', 1.36, 2.2, 1.0, sx, 4.2 - k * 2.4, .9, box_c[(k * 2 + j) % 8], bev=.04))
+            if (k + j) % 3 != 0:
+                p.append(bx('box', 1.36, 2.2, 1.0, sx, 4.2 - k * 2.4, 1.92, box_c[(k * 2 + j + 3) % 8], bev=.04))
+    return p
+piece('cargo_ship', cargo_ship(), decor)
+
+def tennis_court():
+    """A small tennis court for the strand by the hotel, 10 x 6 m: a green court on a red surround with white lines, a net
+    on two posts, a bench and an umbrella at the side."""
+    p = [bx('surround', 10.0, 6.0, .06, 0, 0, 0, 'brick', bev=.03), bx('court', 8.4, 4.4, .02, 0, 0, .06, 'leafd', bev=0)]
+    for y in (-2.2, 2.2, -1.6, 1.6):
+        p.append(bx('line', 8.4, .06, .01, 0, y, .082, 'white', bev=0))
+    for x in (-4.2, 4.2, -2.2, 2.2):
+        p.append(bx('line', .06, 4.4 if abs(x) > 3 else 3.2, .01, x, 0, .082, 'white', bev=0))
+    p.append(bx('line', 4.4, .06, .01, 0, 0, .082, 'white', bev=0))
+    p += [bx('net', .05, 4.8, .8, 0, 0, .1, 'white', bev=0), bx('netband', .07, 4.8, .08, 0, 0, .86, 'cream', bev=0),
+          cl('netpost', .06, 1.0, 0, -2.5, .06, 'iron', verts=6), cl('netpost', .06, 1.0, 0, 2.5, .06, 'iron', verts=6),
+          bx('bench', 1.6, .4, .1, -2.6, -2.75, .4, 'wood', bev=.03), bx('benchleg', .1, .4, .36, -3.3, -2.75, .06, 'woodd'), bx('benchleg', .1, .4, .36, -1.9, -2.75, .06, 'woodd'),
+          cl('umbpole', .04, 2.0, 2.8, -2.75, .06, 'woodd', verts=6), cl('umbrella', 1.1, .4, 2.8, -2.75, 1.9, 'sun', verts=10, rt=.05)]
+    return p
+piece('tennis_court', tennis_court(), decor)
+
+def playground():
+    """A playground for the strand by the hotel, 6 x 6 m: a sand floor in a timber edge, a slide, a frame with two swings
+    and a seesaw."""
+    p = [bx('edge', 6.0, 6.0, .14, 0, 0, 0, 'woodd', bev=.04), bx('sand', 5.6, 5.6, .06, 0, 0, .1, 'deck', bev=0)]
+    # the slide: a tower with a ladder and a red chute
+    p += [bx('tower', 1.0, 1.0, .1, -1.7, -1.6, 1.5, 'wood', bev=.03)]
+    for x, y in ((-2.15, -2.05), (-1.25, -2.05), (-2.15, -1.15), (-1.25, -1.15)):
+        p.append(bx('leg', .1, .1, 1.5, x, y, .1, 'woodd', bev=.01))
+    for k in range(4):
+        p.append(bx('rung', .7, .06, .06, -1.7, -2.12, .4 + k * .32, 'woodl', bev=0))
+    p.append(box('chute', (.8, 2.6, .1), (-1.7, .02, .92), C['red'], bev=.03, seg=1, rot=(.56, 0, 0)))
+    for sx in (-.42, .42):
+        p.append(box('chuteside', (.07, 2.6, .24), (-1.7 + sx, .02, 1.0), C['redd'], bev=.02, seg=1, rot=(.56, 0, 0)))
+    # the swings
+    p += [bx('beam', 3.0, .12, .12, 1.2, -1.7, 2.2, 'teal', bev=.02)]
+    for x in (-.25, 2.65):
+        p += [box('aframe', (.1, .1, 2.4), (x, 1.35, 1.15), C['teal'], bev=.01, seg=1, rot=(.3, 0, 0)), box('aframe', (.1, .1, 2.4), (x, 2.05, 1.15), C['teal'], bev=.01, seg=1, rot=(-.3, 0, 0))]
+    for x in (.7, 1.7):
+        p += [bx('rope', .03, .03, 1.5, x - .2, -1.7, .7, 'cream', bev=0), bx('rope', .03, .03, 1.5, x + .2, -1.7, .7, 'cream', bev=0), bx('seat', .5, .2, .05, x, -1.7, .66, 'sun', bev=.02)]
+    # the seesaw
+    p += [cl('pivot', .16, .44, 1.2, 1.4, .12, 'iron', verts=8), box('plank', (2.6, .26, .08), (1.2, -1.4, .62), C['sun'], bev=.03, seg=1, rot=(0, .12, 0)),
+          bx('grip', .05, .3, .2, .2, 1.4, .58, 'red', bev=.01), bx('grip', .05, .3, .2, 2.2, 1.4, .84, 'red', bev=.01)]
+    return p
+piece('playground', playground(), decor)
+
+def buffalo_pen():
+    """Buffalo pen (2 x 2 cells): a low thatched shelter on four posts at the back, a split-rail fence open at the front, a
+    wooden water trough, a heap of straw and a plough leaning on the rail. The buffalo itself walks the beds."""
+    p = [bx('ground', 3.8, 3.8, .08, 0, 0, 0, 'hayd', bev=.03)]
+    for x in (-1.5, 1.5):
+        for y in (-1.5, -.3):
+            p.append(bx('post', .16, .16, 1.7, x, y, .08, 'woodd', bev=.02))
+    p += [gable('thatch', 3.6, 1.9, .7, 0, -.9, 1.78, 'hayd', over=.16), *roof_rows(3.6, 1.9, .7, 0, -.9, 1.8, 'hay', 'hayd', rows=4, over=.24)]
+    for x in (-1.75, 1.75):                                # side rails, front open
+        for z in (.55, 1.0):
+            p.append(bx('rail', .08, 3.4, .1, x, 0, z, 'wood', bev=.02))
+        for y in (-1.7, 0, 1.7):
+            p.append(bx('railpost', .14, .14, 1.2, x, y, .08, 'woodd', bev=.02))
+    for z in (.55, 1.0):
+        p.append(bx('rail', 1.2, .08, .1, -1.15, 1.7, z, 'wood', bev=.02))
+    p += [bx('trough', 1.2, .5, .36, .7, -.9, .08, 'wood', bev=.04), bx('water', 1.0, .34, .04, .7, -.9, .42, 'water', bev=0),
+          ball('straw', .5, -.9, -.9, .3, 'hay', sub=1, sc=(1.3, 1, .6)), ball('straw', .34, -.5, -.6, .22, 'wheatl', sub=1, sc=(1.2, 1, .6)),
+          bx('plough', .1, 1.3, .1, 1.3, 1.2, .5, 'woodl', bev=.02, rot=.5), bx('share', .34, .1, .3, 1.55, .8, .1, 'iron', bev=.02, rot=.5)]
+    return p
+piece('buffalo_pen', buffalo_pen(), decor)
+
+def tractor_shed():
+    """Tractor shed (2 x 2 cells): an open-fronted timber garage with a red tin roof, a fuel drum, a stack of tyres and a
+    tool board. The tractor itself is its own piece and drives about (machines-view.mjs)."""
+    p = [bx('floor', 3.8, 3.8, .12, 0, 0, 0, 'stoned', bev=.04), bx('back', 3.4, .16, 2.2, 0, -1.6, .12, 'wood', bev=.03),
+         bx('side', .16, 3.0, 2.2, -1.62, -.1, .12, 'wood', bev=.03), bx('side', .16, 3.0, 2.2, 1.62, -.1, .12, 'wood', bev=.03),
+         bx('post', .18, .18, 2.2, -1.6, 1.4, .12, 'woodd', bev=.02), bx('post', .18, .18, 2.2, 1.6, 1.4, .12, 'woodd', bev=.02),
+         bx('lintel', 3.5, .2, .22, 0, 1.4, 2.2, 'woodd', bev=.02), gable('roof', 3.9, 3.5, .8, 0, -.1, 2.4, 'roofd', over=.14),
+         *roof_rows(3.9, 3.5, .8, 0, -.1, 2.42, 'roof', 'roofl', rows=5, over=.2),
+         cl('drum', .3, .8, -1.1, -1.1, .12, 'red', verts=10), cl('drumtop', .31, .05, -1.1, -1.1, .92, 'redd', verts=10),
+         bx('toolboard', 1.2, .06, .7, .6, -1.5, 1.1, 'woodl', bev=.02), bx('spanner', .5, .04, .08, .5, -1.46, 1.35, 'iron', bev=.01), bx('hammer', .08, .04, .4, .9, -1.46, 1.15, 'iron', bev=.01)]
+    for k in range(3):
+        p.append(cl('tyre', .34, .2, 1.15, -1.05, .12 + k * .2, 'charcoal', verts=12))
+    return p
+piece('tractor_shed', tractor_shed(), decor)
+
+def tractor():
+    """The tractor (its own piece: it drives round the beds): a chunky red tractor, nose to the front, two big rear wheels
+    and two small front ones, an exhaust, a yellow seat under a roll bar."""
+    p = [bx('chassis', .9, 2.2, .35, 0, 0, .45, 'charcoal', bev=.05), bx('bonnet', .8, 1.2, .6, 0, .55, .75, 'red', bev=.1),
+         bx('grille', .6, .06, .4, 0, 1.17, .85, 'iron', bev=.02), bx('lamp', .16, .06, .14, -.25, 1.19, 1.15, 'lampglow', bev=.02), bx('lamp', .16, .06, .14, .25, 1.19, 1.15, 'lampglow', bev=.02),
+         bx('cab', .9, .8, .5, 0, -.5, .75, 'redd', bev=.06), bx('seat', .5, .45, .14, 0, -.55, 1.25, 'sun', bev=.05), bx('seatback', .5, .12, .45, 0, -.82, 1.32, 'sun', bev=.05),
+         cl('exhaust', .06, .8, .28, .7, 1.3, 'charcoal', verts=7), cl('wheel', .07, .5, 0, .1, 1.45, 'charcoal', verts=7, rot=(math.pi / 2.6, 0, 0)),
+         bx('rollbar', .08, .08, .9, -.42, -.9, 1.0, 'iron', bev=.01), bx('rollbar', .08, .08, .9, .42, -.9, 1.0, 'iron', bev=.01), bx('rolltop', .92, .08, .08, 0, -.9, 1.88, 'iron', bev=.01),
+         bx('hitch', .3, .4, .1, 0, -1.25, .45, 'iron', bev=.02)]
+    for sx in (-1, 1):
+        p += [cl('rear', .62, .34, sx * .68, -.55, .62, 'charcoal', verts=14, rot=(0, math.pi / 2, 0)), cl('rearhub', .26, .36, sx * .68, -.55, .62, 'sun', verts=10, rot=(0, math.pi / 2, 0)),
+              cl('front', .36, .24, sx * .6, .85, .36, 'charcoal', verts=12, rot=(0, math.pi / 2, 0)), cl('fronthub', .15, .26, sx * .6, .85, .36, 'sun', verts=8, rot=(0, math.pi / 2, 0)),
+              bx('guard', .34, .9, .08, sx * .68, -.55, 1.28, 'red', bev=.03)]
+    return p
+piece('tractor', tractor(), decor)
+
+def drone_pad():
+    """Drone pad (1 x 1 cell): a round landing pad with a yellow ring, a short mast with a wind sock and a tank of spray."""
+    return [cl('pad', .85, .12, 0, 0, 0, 'stoned', verts=18), cl('ring', .7, .02, 0, 0, .12, 'sun', verts=18), cl('disc', .56, .025, 0, 0, .12, 'stone', verts=18),
+            bx('mark', .5, .1, .01, 0, 0, .15, 'sun', bev=0), bx('mark', .1, .5, .01, 0, 0, .15, 'sun', bev=0),
+            cl('mast', .04, 1.5, -.62, -.62, .12, 'iron', verts=6), bx('sock', .4, .1, .14, -.42, -.62, 1.5, 'red', bev=.03),
+            cl('tank', .2, .5, .6, -.6, .12, 'sky', verts=10), cl('tankcap', .1, .08, .6, -.6, .62, 'iron', verts=8)]
+piece('drone_pad', drone_pad(), decor)
+
+def spray_drone():
+    """The spray drone (its own piece: it flies over the orchard): a white body with a blue tank under it, four arms and
+    four rotor discs, two little skids."""
+    p = [bx('body', .5, .7, .2, 0, 0, .3, 'white', bev=.08), cl('tank', .2, .3, 0, 0, .0, 'sky', verts=10), bx('eye', .2, .06, .1, 0, .36, .34, 'charcoal', bev=.02),
+         bx('nozzle', 1.1, .05, .05, 0, -.05, .02, 'iron', bev=0)]
+    for sx in (-1, 1):
+        p.append(bx('skid', .06, .7, .05, sx * .28, 0, -.12, 'iron', bev=.01))
+        for sy in (-1, 1):
+            p += [bx('arm', .5, .07, .06, sx * .42, sy * .42, .36, 'iron', bev=.01, rot=sx * sy * .785), cl('motor', .08, .12, sx * .6, sy * .6, .38, 'charcoal', verts=8),
+                  cl('rotor', .34, .02, sx * .6, sy * .6, .52, 'glass', verts=14)]
+    return p
+piece('spray_drone', spray_drone(), decor)
+
+def mushroom_house():
+    """Mushroom house (3 x 2 cells): a low, dark timber shed with a mossy green roof and a round door, and outside it
+    logs and shelves where big red-capped mushrooms grow."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stoned', bev=.04), bx('walls', 3.8, 2.8, 1.9, -.8, -.3, .15, 'woodd', bev=.05),
+         bx('trim', 3.9, 2.9, .14, -.8, -.3, 2.0, 'wooddd', bev=.03), gable('roof', 4.1, 3.1, 1.2, -.8, -.3, 2.1, 'leafd', over=.14),
+         *roof_rows(4.1, 3.1, 1.2, -.8, -.3, 2.12, 'leaf', 'leafd', rows=5, over=.22),
+         cl('door', .55, .1, -.8, 1.12, .75, 'wooddd', verts=12, rot=(math.pi / 2, 0, 0)), cl('doorring', .62, .08, -.8, 1.1, .75, 'woodl', verts=12, rot=(math.pi / 2, 0, 0)),
+         bx('sign', 1.2, .08, .42, -.8, 1.16, 1.75, 'cream', bev=.03)]
+    def shroom(x, y, z, r, cap='red'):
+        return [cl('stem', r * .34, r * 1.1, x, y, z, 'cream', verts=7), ball('cap', r, x, y, z + r * 1.15, cap, sub=1, sc=(1, 1, .58)),
+                ball('dot', r * .2, x + r * .35, y + r * .2, z + r * 1.5, 'white', sub=0), ball('dot', r * .16, x - r * .4, y - r * .1, z + r * 1.45, 'white', sub=0)]
+    p += shroom(-.8, 1.22, 1.72, .14)                       # the sign's mushroom
+    for k, (x, y) in enumerate(((1.75, -1.1), (2.45, -.2), (1.8, .75))):   # logs lying outside, mushrooms on each
+        p.append(cl('log', .28, 1.5, x, y, .43, 'wood', verts=9, rot=(math.pi / 2, 0, .5 - k * .5)))
+        for j in range(3):
+            p += shroom(x - .35 + j * .35, y + (.12 if j % 2 else -.1), .62, .2 + .04 * ((j + k) % 2), 'red' if (j + k) % 3 else 'sun')
+    p += [bx('shelf', 1.2, .5, .08, .1, 1.3, .7, 'woodl', bev=.02), bx('shelfleg', .08, .5, .6, -.4, 1.3, .15, 'woodd'), bx('shelfleg', .08, .5, .6, .6, 1.3, .15, 'woodd')]
+    for j in range(3):
+        p += shroom(-.25 + j * .35, 1.3, .78, .15, 'cork' if j == 1 else 'red')
+    return p
+piece('mushroom_house', mushroom_house(), decor)
+
+def fermentary():
+    """Fermentary (3 x 2 cells): a plaster hall with a dark tiled roof and a red door, and rows of big brown clay jars
+    with lids standing in the yard, where kimchi and sauce take their time."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stone', bev=.04), bx('walls', 3.6, 2.9, 2.2, -.95, -.3, .15, 'plaster', bev=.05),
+         bx('beam', 3.7, 3.0, .16, -.95, -.3, 1.25, 'woodd', bev=.02), bx('trim', 3.7, 3.0, .15, -.95, -.3, 2.3, 'woodd', bev=.03),
+         gable('roof', 4.0, 3.3, 1.0, -.95, -.3, 2.4, 'charcoal', over=.16), *roof_rows(4.0, 3.3, 1.0, -.95, -.3, 2.42, 'iron', 'charcoal', rows=5, over=.24),
+         bx('door', .9, .1, 1.5, -.95, 1.18, .15, 'redd', bev=.03), bx('sign', 1.3, .08, .45, -.95, 1.2, 1.85, 'sun', bev=.03),
+         bx('window', .7, .08, .6, -2.2, 1.18, 1.3, 'glass', bev=.02), bx('wframe', .8, .07, .7, -2.2, 1.17, 1.25, 'woodd', bev=.02)]
+    def jar(x, y, r, lid='woodd'):
+        return [cl('jarfoot', r * .7, r * .5, x, y, .15, 'brickd', verts=10, rt=r), cl('jar', r, r * 1.0, x, y, .15 + r * .5, 'brickd', verts=10, rt=r * .78),
+                cl('jarneck', r * .78, r * .22, x, y, .15 + r * 1.5, 'wooddd', verts=10, rt=r * .7), cl('lid', r * .86, r * .14, x, y, .15 + r * 1.72, lid, verts=10, rt=r * .4)]
+    for k, (x, y, r) in enumerate(((1.35, -1.25, .42), (2.3, -1.2, .36), (1.4, -.2, .34), (2.35, -.15, .44), (1.45, .9, .4), (2.35, .95, .32), (.35, 1.3, .3))):
+        p += jar(x, y, r, 'woodd' if k % 2 else 'cork')
+    p += [cl('signjar', .16, .2, -.95, 1.27, 1.95, 'brickd', verts=8, rt=.12), ball('chili', .09, -.6, 1.27, 2.05, 'red', sub=0, sc=(1.8, .6, .6)),
+          bx('crate', .7, .5, .4, .3, -1.3, .15, 'woodl', bev=.03), ball('cab', .22, .15, -1.3, .68, 'leafl', sub=1), ball('cab', .2, .5, -1.25, .66, 'leaf', sub=1)]
+    return p
+piece('fermentary', fermentary(), decor)
+
+def fresh_kitchen():
+    """Fresh kitchen (3 x 2 cells): a bright white kitchen with a green striped awning over a serving hatch, crates of
+    vegetables at the side and a stack of packed lunch boxes on the counter."""
+    p = [bx('floor', 5.8, 3.8, .15, 0, 0, 0, 'stonel', bev=.04), bx('walls', 4.2, 2.8, 2.3, -.6, -.35, .15, 'white', bev=.05),
+         bx('skirting', 4.3, 2.9, .5, -.6, -.35, .15, 'mint', bev=.03), bx('trim', 4.3, 2.9, .15, -.6, -.35, 2.4, 'cream', bev=.03),
+         gable('roof', 4.5, 3.1, .9, -.6, -.35, 2.5, 'teald', over=.14), *roof_rows(4.5, 3.1, .9, -.6, -.35, 2.52, 'mint', 'teal', rows=5, over=.22),
+         bx('hatch', 2.0, .1, 1.0, -1.1, 1.08, 1.05, 'glassd', bev=.02), bx('counter', 2.3, .5, .12, -1.1, 1.3, .95, 'woodl', bev=.03),
+         bx('door', .8, .1, 1.5, .9, 1.08, .15, 'woodd', bev=.03), bx('sign', 1.4, .08, .4, -.6, 1.1, 2.15, 'sun', bev=.03)]
+    for k in range(6):                                       # the awning, striped
+        p.append(bx('awning', 2.5 / 6, .9, .06, -2.35 + (k + .5) * 2.5 / 6, 1.5, 1.98 - .0, 'leaf' if k % 2 else 'white', bev=.01))
+    for k in range(3):                                       # packed lunch boxes on the counter
+        p += [bx('box', .42, .3, .12, -1.7 + k * .5, 1.3, 1.07, 'sun' if k % 2 else 'red', bev=.03), bx('boxlid', .44, .32, .04, -1.7 + k * .5, 1.3, 1.19, 'white', bev=.02)]
+    p += [bx('box', .42, .3, .12, -1.45, 1.3, 1.23, 'mint', bev=.03), bx('boxlid', .44, .32, .04, -1.45, 1.3, 1.35, 'white', bev=.02)]
+    for k, (x, y) in enumerate(((2.2, -1.0), (2.25, .0), (2.2, 1.0))):   # crates of vegetables
+        p.append(bx('crate', .8, .6, .4, x, y, .15, 'woodl', bev=.03))
+        for j in range(3):
+            p.append(ball('veg', .16, x - .22 + j * .22, y + (.08 if j % 2 else -.08), .62, ('leafl', 'red', 'carrot')[(j + k) % 3], sub=1))
+    p += [cl('bowl', .2, .12, -.6, 1.2, 2.2, 'white', verts=10, rt=.28), ball('salad', .18, -.6, 1.2, 2.34, 'leafl', sub=1, sc=(1, 1, .5)), ball('tom', .06, -.52, 1.26, 2.4, 'red', sub=0)]
+    return p
+piece('fresh_kitchen', fresh_kitchen(), decor)
 
 # =================================================================== lucky finds (AR-009)
 # One-time keepsakes from the pond and a cleared rock, in their own kit, discovery-props.glb, which nothing loads

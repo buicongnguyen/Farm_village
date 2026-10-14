@@ -27,7 +27,27 @@ export function outputPlan(s, id) {
   const reason = !isWorking(s, id) ? 'It needs repairs first' : s.level < need ? 'Reach level {level} first' : s.coins < price ? 'Not enough coins' : null;
   return { ok: !reason, level, next: level + 1, times: 2 ** (level + 1), price, need, reason, params: reason === 'Reach level {level} first' ? { level: need } : null };
 }
+// Music in the barn: a radio for the cow barn or the goat barn, bought once. Calm animals give half as much again at
+// every collection (rounded up, so the first radio doubles a barn that has no output upgrade yet).
+export const MUSIC = { cow_barn: { cost: 900, level: 8 }, goat_barn: { cost: 900, level: 10 } };
+export const hasMusic = (s, id) => !!s.music?.[id] && !!MUSIC[s.placed?.[id]?.kind];
+/** What one ready animal gives at this home: the output upgrades, and the music on top. */
+export const animalYield = (s, id) => Math.round(outputTimes(s, id) * (hasMusic(s, id) ? 1.5 : 1));
+/** Can this home have music? null when it is not a barn for it; { has } once bought; else the price and what is missing. */
+export function musicPlan(s, id) {
+  const m = MUSIC[s.placed?.[id]?.kind]; if (!m) return null;
+  if (hasMusic(s, id)) return { has: true };
+  const reason = !isWorking(s, id) ? 'Repair it first' : s.level < m.level ? 'Reach level {level} first' : s.coins < m.cost ? 'Not enough coins' : null;
+  return { ok: !reason, price: m.cost, need: m.level, reason, params: { level: m.level } };
+}
 export const actions = {
+  /** A radio for the herd: { building }. */
+  buyMusic(ctx, { building } = {}) {
+    const { s } = ctx, plan = musicPlan(s, building); if (!plan || plan.has) return ctx.fail('There is nothing to add here');
+    if (!plan.ok) return ctx.fail(plan.reason, plan.params);
+    s.coins -= plan.price; (s.music ??= {})[building] = true;
+    ctx.emit('musicBought', { building, kind: s.placed[building].kind }); return { price: plan.price };
+  },
   /** Double what a building gives: { building }. */
   upgradeOutput(ctx, { building } = {}) {
     const { s } = ctx, plan = outputPlan(s, building); if (!plan.ok) return ctx.fail(plan.reason, plan.params ?? undefined);

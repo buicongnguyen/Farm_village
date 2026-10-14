@@ -4,13 +4,16 @@
 // is written in "head space": the origin on the top of the chibi head, one unit = that head's width, material colours
 // baked into the vertices. src/view/skinned.mjs sets a piece on a villager's own head by the same two measures.
 //
-//   node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> <hats.glb> <costumes.glb>
+//   blender -b --factory-startup --python art/blender/build_star_sailor.py -- <path to cute_game> <extra dir>/star-sailor.glb
+//   node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> <hats.glb> <costumes.glb> <extra dir>
 //   node art/blender/pack.mjs <hats.glb> public/assets/models/rigged/wear.glb
 //   node art/blender/pack.mjs <costumes.glb> public/assets/models/rigged/costumes.glb
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [src, out = 'wear-raw.glb', outCostumes = 'costumes-raw.glb'] = process.argv.slice(2);
+const [src, out = 'wear-raw.glb', outCostumes = 'costumes-raw.glb', extra = ''] = process.argv.slice(2);
+// extra: a folder of our own costume files (art/blender/build_star_sailor.py writes star-sailor.glb there)
+const locate = file => extra && existsSync(join(extra, `${file}.glb`)) ? join(extra, `${file}.glb`) : join(src, 'public', 'assets', 'models', `${file}.glb`);
 if (!src) { console.error('usage: node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> [out.glb]'); process.exit(2); }
 // the chibi head (hero.glb, node "head" at y 1.12, box x ±0.58, y −0.12…1.06): its top and its width
 const HEAD_TOP = [0, 2.18, 0], HEAD_WIDTH = 1.16;
@@ -55,7 +58,7 @@ function world(json, index) {
 const files = new Map();
 /** The nodes' triangles as one piece, colours baked; `place` maps a point of the chibi (world space) to where it is stored. */
 function collect(id, file, names, place) {
-  if (!files.has(file)) files.set(file, readGlb(join(src, 'public', 'assets', 'models', `${file}.glb`)));
+  if (!files.has(file)) files.set(file, readGlb(locate(file)));
   const glb = files.get(file), { json } = glb, pos = [], nor = [], col = [], idx = [];
   for (const name of names) {
     const ni = json.nodes.findIndex(n => n.name === name); if (ni < 0) throw Error(`${file}: no node ${name}`);
@@ -82,13 +85,16 @@ const hats = Object.entries(PIECES).map(([id, [file, names]]) => collect(id, fil
 // named <kit>__<part>__<n> (part: head, body, arm-left, arm-right, leg-left, leg-right). skinned.mjs re-fits each part
 // onto a villager's bones: the body over hips, spine and chest, a sleeve over the upper arm and forearm so it bends.
 export const KITS = { dz_aodai: 'disguises', dz_aodai_man: 'disguises', dz_army: 'disguises', dz_dino: 'disguises', dz_fairy: 'disguises', dz_knight: 'disguises', dz_mage: 'disguises', dz_mecha: 'disguises', dz_navy: 'disguises', dz_ninja: 'disguises', dz_pirate: 'disguises', dz_snowman: 'disguises', dz_superhero: 'disguises', dz_usa: 'disguises', dz_vampire: 'disguises', dz_vietnam: 'disguises',
-  armor_angel: 'gear-wear', armor_bone: 'gear-wear', armor_chef: 'gear-wear', armor_cloud: 'gear-wear', armor_hawaii: 'gear-wear', armor_hoodie: 'gear-wear', armor_kimono: 'gear-wear', armor_leaf: 'gear-wear', armor_leather: 'gear-wear', armor_santa: 'gear-wear', armor_space: 'gear-wear', armor_tux: 'gear-wear', armor_wings: 'gear-wear', armor_wolf: 'gear-wear' };
+  armor_angel: 'gear-wear', armor_bone: 'gear-wear', armor_chef: 'gear-wear', armor_cloud: 'gear-wear', armor_hawaii: 'gear-wear', armor_hoodie: 'gear-wear', armor_kimono: 'gear-wear', armor_leaf: 'gear-wear', armor_leather: 'gear-wear', armor_santa: 'gear-wear', armor_space: 'gear-wear', armor_tux: 'gear-wear', armor_wings: 'gear-wear', armor_wolf: 'gear-wear' ,
+  dz_star: 'star-sailor' };
 const costumes = [];
 for (const [kit, file] of Object.entries(KITS)) {
-  if (!files.has(file)) files.set(file, readGlb(join(src, 'public', 'assets', 'models', `${file}.glb`)));
+  if (!files.has(file)) files.set(file, readGlb(locate(file)));
   const { json } = files.get(file), root = json.nodes.find(n => n.name === kit); if (!root) throw Error(`${file}: no kit ${kit}`);
   const count = {};
-  for (const ci of root.children ?? []) { const name = json.nodes[ci].name, part = name.split('@')[1]; if (!part) continue; count[part] = (count[part] ?? 0) + 1; costumes.push(collect(`${kit}__${part}__${count[part]}`, file, [name], w => w)); }
+  for (const ci of root.children ?? []) { const name = json.nodes[ci].name, part = name.split('@')[1]; if (!part) continue; count[part] = (count[part] ?? 0) + 1; 
+    // buns and tails are hair: they take the wearer's own hair colour (skinned.mjs reads the "+hair" on the part)
+    costumes.push(collect(`${kit}__${part}${/_(buns|tails)@/.test(name) ? '+hair' : ''}__${count[part]}`, file, [name], w => w)); }
 }
 // one mesh node for each piece: POSITION, NORMAL, COLOR_0 (floats; pack.mjs quantizes), 32-bit indices
 function write(pieces, out) {

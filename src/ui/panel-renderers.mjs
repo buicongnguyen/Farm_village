@@ -54,6 +54,7 @@ import { renderCooperative } from './cooperative-panel.mjs';
 import { renderQuay } from './quay-panel.mjs';
 import { renderHotel } from './hotel-panel.mjs';
 import { renderTrain } from './train-panel.mjs';
+import { renderPort } from './port-panel.mjs';
 import { renderUpriver } from './upriver-panel.mjs';
 import { renderFair } from './fair-panel.mjs';
 import { renderValleyAlbum, albumEntry } from './valley-album.mjs';
@@ -138,6 +139,7 @@ export function renderPanel() {
     else if (o.kind === 'valleyValue') { title = t('The valley'); icon = 'company'; body = renderValley(s, now, 'value'); }
     else if (o.kind === 'fair') { title = t('The valley fair'); icon = 'ribbon_board'; body = renderFair(s, now); }
     else if (o.kind === 'upriver') { title = t('Where the brook begins'); icon = 'spring_water'; body = renderUpriver(s); }
+    else if (o.kind === 'port') { title = t('The cargo ship'); icon = 'dock'; body = renderPort(s, now); }
     else if (o.kind === 'train') { title = t('The railway halt'); icon = 'halt'; body = renderTrain(s, now); }
     else if (o.kind === 'hotel') { title = t('The hotel'); icon = 'hotel'; body = renderHotel(s, now); }
     else if (o.kind === 'quay') { title = t('The quay'); icon = 'quay'; body = renderQuay(s, now, o.arg); }

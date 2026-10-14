@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { loadKit, bake } from './models.mjs';
 import { Cast, loadRig, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { wearOf } from '../content/wardrobe.mjs';
+import { wearOf, bodyOf } from '../content/wardrobe.mjs';
 import { ROOM_PEOPLE } from '../content/room-people.mjs';
 import { HOME_FAMILY } from '../content/explore.mjs';
 import { roomRoute, roomClear } from '../core/explore-navigation.mjs';
@@ -35,9 +35,9 @@ export class ExploreRoom {
       const mesh = new THREE.Mesh(bake(extras[c.node], { center: false }), this.material); mesh.position.fromArray(c.position);
       this.scene.add(mesh); this.meshes.push(mesh);
     }
-    this.body = settings.playerBody === 'woman' ? 'woman' : 'man';
+    this.body = bodyOf({ settings }).rig; this.tall = bodyOf({ settings }).child ? 1.3 : 1.8;   // your height indoors, metres
     this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 + (data.people?.length ?? 0) + (data.site === 'farmhouse' ? HOME_FAMILY.length : 0) });
-    this.player = this.cast.add({ rig: wornRig(this.body, wearOf({ settings })), x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: 1.8 / RIGS[this.body].height,
+    this.player = this.cast.add({ rig: wornRig(this.body, wearOf({ settings })), x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: this.tall / RIGS[this.body].height,
       tint: outfitOf('you', { settings }), priority: 10 });
     // the people of the building (content/room-people.mjs): in their work clothes, turned to the spot you walk up to
     this.people = (data.people ?? []).map(w => this.cast.add({ who: w.id, rig: wornRig(w.body, wearOfPerson(w)), x: w.position[0], z: w.position[1], rot: Math.atan2(w.stand[0] - w.position[0], w.stand[1] - w.position[1]),
@@ -82,12 +82,13 @@ export class ExploreRoom {
   }
   /** Dress your character again (the wardrobe): a new hat is a new rig, shown once it has loaded; colours change at once. */
   async dress(settings) {
-    const rig = wornRig(this.body, wearOf({ settings })), tint = outfitOf('you', { settings });
+    const who = bodyOf({ settings }), rig = wornRig(who.rig, wearOf({ settings })), tint = outfitOf('you', { settings });
     if (rig !== this.player.rig) {
-      await loadRig(rig); if (this.gone || wornRig(this.body, wearOf({ settings })) !== rig) return;
-      const { actor, ...old } = this.player; this.cast.remove(this.player); this.player = this.cast.add({ ...old, rig }); this.cast.select();
+      await loadRig(rig); const now = bodyOf({ settings }); if (this.gone || wornRig(now.rig, wearOf({ settings })) !== rig) return;
+      const { actor, ...old } = this.player; this.cast.remove(this.player); this.body = who.rig; this.player = this.cast.add({ ...old, rig }); this.cast.select();
       releaseRig(old.rig);   // the hat you took off (kept while your character outdoors still wears it)
     }
+    this.tall = who.child ? 1.3 : 1.8; this.player.scale = this.tall / RIGS[who.rig].height;   // a child or a grown-up (the mirror)
     this.player.tint = tint;
     const u = this.player.actor?.uniforms; if (u) { u.uTop.value.set(tint.top); u.uBottom.value.set(tint.bottom); }
   }
@@ -119,7 +120,7 @@ export class ExploreRoom {
   frame(session, moving, dt, state) {
     for (const mesh of this.meshes) if (mesh.userData.memory) mesh.visible = state?.supermarket?.memories?.[mesh.userData.memory] != null;
     const seat = this.data.seats?.[0], p = session.seated ? [seat.position[0], seat.position[2]] : session.p;
-    const y = session.seated ? seat.cushionTop - seat.measured[this.body].hipHeight : 0;
+    const y = session.seated ? seat.cushionTop - (seat.measured[this.body] ?? seat.measured.man).hipHeight * this.tall / 1.8 : 0;
     Object.assign(this.player, { x: p[0], y, z: p[1], rot: session.seated ? Math.atan2(seat.facing[0], seat.facing[2]) : session.yaw, clip: session.seated ? 'Sit' : moving ? 'Walk' : 'Idle', speed: 1 });
     if (!this.quiet || this.family.some(f => f.route.length)) this.familyFrame(dt, p);
     for (const w of this.people) {   // they turn to you as you come near, wave once, and talk while you talk

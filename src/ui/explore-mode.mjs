@@ -2,7 +2,7 @@ import { t, onLanguageChange } from '../kit/i18n.mjs';
 import { modalOpen, onModal } from './modal.mjs';
 import { learningStatus } from '../core/learning.mjs';
 import { HOME_APPROACH, HOME_OBJECTS, HOME_MEMORY, HOME_THINGS, roomAtLevel } from '../content/explore.mjs';
-import { wardrobe, wearOf } from '../content/wardrobe.mjs';
+import { wardrobe, wearOf, bodyOf, BODIES, SKIRTS, skirtOf } from '../content/wardrobe.mjs';
 import { wornRig } from '../view/skinned.mjs';
 import { GOODS } from '../content/goods.mjs';
 import { PLAYER_COLORS } from '../core/today.mjs';
@@ -112,7 +112,7 @@ class ExploreMode {
     this.world.cam.stop(); this.savedCamera = { x: this.world.cam.x, z: this.world.cam.z, span: this.world.cam.span };
     document.body.classList.add('explore-active'); this.el.hidden = false; this.render();
     try {
-      const body = wornRig(this.state.settings.playerBody === 'woman' ? 'woman' : 'man', wearOf(this.state));
+      const body = wornRig(bodyOf(this.state).rig, wearOf(this.state));
       const assets = await loadHomeRoom(body, this.kind);
       if (!this.active || generation !== this.generation || this.game.s !== this.state) return;
       const people = this.radial.people; if (!people) throw Error('people loading'); people.sync();
@@ -339,6 +339,14 @@ class ExploreMode {
     }
     if (action.startsWith('answer:') && this.talk) { this.talk.answer = +action.slice(7) ? 1 : 0; this.render(); return; }
     if (action === 'another' && this.talk) { this.talk = { n: this.talk.n + 1, answer: null }; this.render(); return; }
+    if (action.startsWith('skirt:')) {   // the mirror: no skirt, or one of three lengths (a costume stays on)
+      const r = this.game.do('setting', { key: 'playerSkirt', value: +action.slice(6) }); this.said = r.ok ? null : t(r.reason);
+      this.room?.dress(this.state.settings).catch(() => {}); this.render(); return;
+    }
+    if (action.startsWith('body:')) {   // the mirror: a man, a woman, a boy or a girl
+      const r = this.game.do('setting', { key: 'playerBody', value: action.slice(5) }); this.said = r.ok ? null : t(r.reason);
+      this.room?.dress(this.state.settings).catch(() => {}); this.render(); return;
+    }
     if (action.startsWith('tab:')) { this.wardTab = action.slice(4); this.render(); return; }
     if (action.startsWith('use:') || action.startsWith('more:')) {
       const id = action.split(':')[1], r = this.game.do('useAtHome', { id, extra: action.startsWith('more:') });
@@ -363,9 +371,9 @@ class ExploreMode {
     else if (this.kind && this.objects[id]?.person) { this.card = id; this.talk = { n: (this.talkTurn = (this.talkTurn ?? 0) + 1), answer: null }; }
     else if (this.kind && this.objects[id]) { const o = this.objects[id]; if (o.panel) this.panels.show(o.panel, o.siteArg ? this.site : undefined); else this.card = id; }
     else if (id === 'farmhouse_sofa' && this.game.do('sitAtHome').ok) this.card = 'sofa';
-    else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; }
+    else if (['farmhouse_kitchen', 'farmhouse_desk', 'farmhouse_table', 'farmhouse_wardrobe'].includes(id)) { this.card = id.slice(10); this.said = null; if (id === 'farmhouse_wardrobe' && this.wardTab === 'body') this.wardTab = 'shirt'; }
     else if (id === 'farmhouse_memory_shelf' && this.game.do('readHomeMemory').ok) this.card = 'memory';
-    else if (HOME_OBJECTS[id]?.thing) { const th = HOME_THINGS[HOME_OBJECTS[id].thing]; this.said = null; if (th.panel) this.panels.show(th.panel); else this.card = th.card ?? th.id; }
+    else if (HOME_OBJECTS[id]?.thing) { const th = HOME_THINGS[HOME_OBJECTS[id].thing]; this.said = null; if (th.id === 'mirror') this.wardTab = 'body'; if (th.panel) this.panels.show(th.panel); else this.card = th.card ?? th.id; }
     this.render();
   }
   syncScene() {
@@ -497,11 +505,12 @@ class ExploreMode {
       card = `<h2>${esc(t('The day on the table'))}</h2>${rows.length ? `<ul>${rows.map(([n, text]) => `<li>${esc(t(text, { count: n }))}</li>`).join('')}</ul>` : `<p>${esc(t('Everything is in hand. Enjoy the quiet.'))}</p>`}${button('close', 'Farm view', 'primary')}${button('back', 'Back', 'ghost')}`;
     }
     if (this.card === 'wardrobe') {   // three short rows, one at a time, so your character stays in view while you try things on
-      const st = this.state.settings, w = wardrobe(this.state), tab = ['shirt', 'hat', 'look'].includes(this.wardTab) ? this.wardTab : 'shirt';
-      const tabs = [['shirt', 'Shirt'], ['hat', 'Hats'], ['look', 'Costumes']].map(([id, name]) => `<button type="button" class="tab${tab === id ? ' on' : ''}" data-explore="tab:${id}">${esc(t(name))}</button>`).join('');
+      const st = this.state.settings, w = wardrobe(this.state), tab = ['body', 'shirt', 'hat', 'look'].includes(this.wardTab) ? this.wardTab : 'shirt';
+      const tabs = [['body', 'You'], ['shirt', 'Shirt'], ['hat', 'Hats'], ['look', 'Costumes']].map(([id, name]) => `<button type="button" class="tab${tab === id ? ' on' : ''}" data-explore="tab:${id}">${esc(t(name))}</button>`).join('');
       const piece = (action, o, on, hat) => `<button type="button" class="wear${on ? ' on' : ''}${o.open ? '' : ' locked'}" data-explore="${action}:${o.id}" ${o.open ? '' : 'disabled'} title="${esc(t(o.name))}"><img src="./assets/icons/wear/${hat}.webp" alt="" loading="lazy" width="48" height="48"><span>${esc(o.open ? t(o.name) : t('Level {level}', { level: o.level }))}</span></button>`;
       const none = (action, on) => `<button type="button" class="wear none${on ? ' on' : ''}" data-explore="${action}:"><i></i><span>${esc(t('None'))}</span></button>`;
-      const row = tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
+      const row = tab === 'body' ? `<div class="explore-bodies">${Object.values(BODIES).map(b => `<button type="button" class="btn${bodyOf(this.state).id === b.id ? ' primary' : ' ghost'}" data-explore="body:${b.id}">${esc(t(b.name))}</button>`).join('')}</div><div class="explore-bodies">${SKIRTS.map((name, i) => `<button type="button" class="btn${skirtOf(this.state) === i ? ' primary' : ' ghost'}" data-explore="skirt:${i}">${esc(t(name))}</button>`).join('')}</div>`
+        : tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
         : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
           : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.kit ?? c.hat)).join('')}</div>`;
       card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat or costume arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;

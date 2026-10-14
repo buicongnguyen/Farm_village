@@ -422,4 +422,9 @@ export const JA_EXPLORE = {
   "Every trick in that notebook was a mistake first.": "あのノートのこつは、どれも最初は失敗だったんだよ。",
   "Sit, sit. You have earned a chair.": "お座り、お座り。椅子くらいの働きはしたよ。",
   "A tidy desk. Somebody in this house is hiding something.": "片づいた机だね。この家のだれかが何か隠しているよ。",
+  "Star sailor": "星のセーラー",
+  "No skirt": "スカートなし",
+  "Short skirt": "ミニスカート",
+  "Knee skirt": "ひざ丈スカート",
+  "Long skirt": "ロングスカート",
 };

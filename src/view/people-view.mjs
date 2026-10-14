@@ -24,7 +24,7 @@ import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { costumeOf, wearOf } from '../content/wardrobe.mjs';
+import { costumeOf, wearOf, bodyOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
@@ -119,7 +119,7 @@ export class PeopleView {
   /** Who should be around: Ada, the family, residents of arrived families, and Cora once the school is open. */
   residents() {
     const s = this.s, now = this.game.now, home = [FARMHOUSE.x + 5, FARMHOUSE.z];
-    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: s.settings?.playerBody ?? 'man', home, family: true, player: true }];
+    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: bodyOf(s).rig, size: bodyOf(s).size, home, family: true, player: true }];
     for (const [hid, h] of Object.entries(s.homes)) {
       if (!h.family || h.arrivesAt > now) continue;
       const p = s.placed[hid], door = p && doorCell(p.kind, p.x, p.z, p.rot), fam = FAMILIES.find(f => f.id === h.family);
@@ -170,9 +170,19 @@ export class PeopleView {
   }
   add(w) {
     Object.assign(w, { route: [], wait: Math.random() * 3, rot: Math.random() * 6.28, phase: Math.random() * 6, act: 'idle', clip: 'Idle' });
-    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, wearOf(this.s)) : w.body, x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
+    w.subject = this.cast.add({ rig: w.player ? wornRig(w.body, wearOf(this.s)) : w.body, ...(w.size && w.size !== 1 ? { scale: w.size } : {}), x: w.x, z: w.z, rot: w.rot, clip: 'Idle', tint: w.pet ? null : outfitOf(w.person ?? w.id, this.s), farHide: true, priority: w.family ? 4 : w.id === 'ada' ? 2 : 0 });
     if (w.player) { const before = this.wornBefore; this.wornBefore = w.subject.rig; if (before && before !== w.subject.rig) releaseRig(before); }   // the hat you took off
     this.walkers.set(w.id, w); return w;
+  }
+  /** Your character in its new look, where it stands: the same walker (Explore may be steering it, indoors or out)
+   *  with a new subject. Dropping the walker instead left Explore holding one that was no longer drawn, so you
+   *  came out of the house invisible after changing clothes. */
+  redress(w) {
+    const { actor, ...old } = w.subject, before = old.rig;
+    w.body = bodyOf(this.s).rig; w.size = bodyOf(this.s).size;
+    this.cast.remove(w.subject);
+    w.subject = this.cast.add({ ...old, rig: wornRig(w.body, wearOf(this.s)), scale: w.size, tint: outfitOf(w.person ?? w.id, this.s) });
+    this.wornBefore = w.subject.rig; if (before !== w.subject.rig) releaseRig(before);
   }
   drop(w) { this.releaseFishing(w); w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
   /** A neighbour walks in from their signpost to the order board and says something about the farm. */
@@ -585,7 +595,7 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
-    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.drop(me); }   // sync() draws you again in the new look
+    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook', 'playerSkirt'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.redress(me); }
 
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);

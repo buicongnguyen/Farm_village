@@ -27,6 +27,7 @@ export const COSTUMES = {
   cloud: { name: 'Cloud jumper', kit: 'armor_cloud', top: '#8fd0e8', bottom: '#4a5568', level: 6 },
   sailor: { name: 'Sailor', kit: 'dz_navy', top: '#f5f7fb', bottom: '#1f3a6b', level: 7 },
   ninja: { name: 'Ninja', kit: 'dz_ninja', top: '#1f2a5a', bottom: '#1f2a5a', level: 8 },
+  star: { name: 'Star sailor', kit: 'dz_star', top: '#fffdf7', bottom: '#5b4fe0', level: 9 },   // our own (art/blender/build_star_sailor.py)
   dino: { name: 'Dino suit', kit: 'dz_dino', top: '#3fbf3f', bottom: '#3fbf3f', level: 10 },
   winter: { name: 'Winter red', kit: 'armor_santa', hat: 'hat_santa', top: '#c8232c', bottom: '#4a3a3a' },
   hero: { name: 'Superhero', kit: 'dz_superhero', top: '#d8232a', bottom: '#d8232a', level: 12 },
@@ -51,12 +52,24 @@ export const COSTUMES = {
 };
 for (const [id, o] of [...Object.entries(HATS), ...Object.entries(COSTUMES)]) o.id = id;
 for (const c of Object.values(COSTUMES)) c.level ??= HATS[c.hat].level;
+/** Who you are (the mirror, and Settings): a man, a woman, a boy or a girl. `rig` is the model, `size` its size outdoors
+ *  against that model's own (1 for all four now that the girl has a model of her own), `child` gives a child's height indoors. */
+export const BODIES = {
+  man: { name: 'Man', rig: 'man', size: 1 }, woman: { name: 'Woman', rig: 'woman', size: 1 },
+  kid: { name: 'Boy', rig: 'kid', size: 1, child: true }, girl: { name: 'Girl', rig: 'girl', size: 1, child: true },
+};
+for (const [id, b] of Object.entries(BODIES)) b.id = id;
+export const bodyOf = s => BODIES[s?.settings?.playerBody] ?? BODIES.man;
 /** The costume you have on, or null. */
 export const costumeOf = s => typeof s?.settings?.playerLook === 'string' && Object.hasOwn(COSTUMES, s.settings.playerLook) ? COSTUMES[s.settings.playerLook] : null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */
 export const hatOf = s => { const c = costumeOf(s); return c ? c.hat ?? '' : typeof s?.settings?.playerHat === 'string' && Object.hasOwn(HATS, s.settings.playerHat) ? s.settings.playerHat : ''; };
 /** Everything your character has on, as the rig wants it (view/skinned.mjs wornRig): a costume's kit and hat, or your hat. */
-export const wearOf = s => { const c = costumeOf(s); return c ? [c.kit && `kit:${c.kit}`, c.hat].filter(Boolean).join('+') : hatOf(s); };
+export const wearOf = s => { const c = costumeOf(s); return [c ? c.kit && `kit:${c.kit}` : '', hatOf(s), skirtOf(s) && `skirt:${skirtOf(s)}`].filter(Boolean).join('+'); };   // (the skirt is your own choice: a costume keeps it)
+/** The skirt you chose at the mirror: 0 none, 1 short, 2 to the knee, 3 long (made in view/skinned.mjs, in the trousers' colour).
+ *  It is worn with a costume too: choosing a skirt used to take the costume off, which looked like the costume vanishing. */
+export const SKIRTS = ['No skirt', 'Short skirt', 'Knee skirt', 'Long skirt'];
+export const skirtOf = s => { const n = Number(s?.settings?.playerSkirt); return n >= 1 && n <= 3 ? Math.round(n) : 0; };
 /** Hats and costumes in the order they are earned, each with `open` for this farm. */
 export const wardrobe = s => ({
   hats: Object.values(HATS).sort((a, b) => a.level - b.level).map(h => ({ ...h, open: (s.level ?? 1) >= h.level })),

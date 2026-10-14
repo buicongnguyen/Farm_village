@@ -74,6 +74,13 @@ export const RECIPES = {
   apple_juice:  { name: 'Apple juice', at: 'juice_press', needs: { apple: 3 }, makes: 1, timeMs: 40_000, value: 40, level: 6, icon: '🧃' },
   carrot_juice: { name: 'Carrot juice', at: 'juice_press', needs: { carrot: 4 }, makes: 1, timeMs: 45_000, value: 26, level: 6, icon: '🥕' },
   orange_juice: { name: 'Orange juice', at: 'juice_press', needs: { orange: 3 }, makes: 1, timeMs: 60_000, value: 70, level: 6, icon: '🍊' },
+  // the mushroom house grows them on wheat straw; the fermentary and the fresh kitchen make the dearest food on the farm
+  mushroom:     { name: 'Mushrooms', at: 'mushroom_house', needs: { wheat: 3 }, makes: 2, timeMs: 90_000, value: 16, level: 9, icon: '🍄' },
+  kimchi:       { name: 'Kimchi', at: 'fermentary', needs: { cabbage: 2, chili: 1 }, makes: 1, timeMs: 3 * MIN, value: 120, level: 11, icon: '🥬' },
+  chili_sauce:  { name: 'Chili sauce', at: 'fermentary', needs: { chili: 2, tomato: 2 }, makes: 1, timeMs: 2.5 * MIN, value: 105, level: 11, icon: '🌶️' },
+  salad:        { name: 'Fresh salad', at: 'fresh_kitchen', needs: { cabbage: 1, tomato: 1, carrot: 1 }, makes: 1, timeMs: 60_000, value: 55, level: 12, icon: '🥗' },
+  mushroom_soup: { name: 'Mushroom soup', at: 'fresh_kitchen', needs: { mushroom: 3, milk: 1 }, makes: 1, timeMs: 3 * MIN, value: 150, level: 12, icon: '🍲' },
+  lunch_box:    { name: 'Lunch box', at: 'fresh_kitchen', needs: { bread: 1, egg: 1, salad: 1 }, makes: 1, timeMs: 2 * MIN, value: 190, level: 13, icon: '🍱' },
   noodles:      { name: 'Noodles', at: 'noodle_factory', needs: { wheat: 4, egg: 1 }, makes: 2, timeMs: 60_000, value: 30, level: 8, icon: '🍜' },
   instant_noodles: { name: 'Instant noodles', at: 'noodle_factory', needs: { noodles: 2, carrot: 1 }, makes: 1, timeMs: 2 * MIN, value: 95, level: 9, icon: '🍲' },
 };

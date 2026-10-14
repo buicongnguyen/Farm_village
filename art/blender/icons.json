@@ -490,28 +490,40 @@
   "id": "halt",
   "src": "raw:decor",
   "root": "halt",
-  "view": [-34, 26],
+  "view": [
+   -34,
+   26
+  ],
   "preset": "building"
  },
  {
   "id": "hotel",
   "src": "raw:decor",
   "root": "hotel",
-  "view": [-30, 20],
+  "view": [
+   -30,
+   20
+  ],
   "preset": "building"
  },
  {
   "id": "apartment",
   "src": "raw:decor",
   "root": "apartment",
-  "view": [-30, 20],
+  "view": [
+   -30,
+   20
+  ],
   "preset": "building"
  },
  {
   "id": "quay",
   "src": "raw:decor",
   "root": "quay_bollard",
-  "view": [-28, 18],
+  "view": [
+   -28,
+   18
+  ],
   "preset": "building"
  },
  {
@@ -529,7 +541,10 @@
   "id": "cooperative_board",
   "src": "raw:decor",
   "root": "cooperative_board",
-  "view": [-24, 14],
+  "view": [
+   -24,
+   14
+  ],
   "preset": "building"
  },
  {
@@ -558,14 +573,20 @@
   "id": "cannery",
   "src": "raw:decor",
   "root": "cannery",
-  "view": [-32, 24],
+  "view": [
+   -32,
+   24
+  ],
   "preset": "building"
  },
  {
   "id": "beehive",
   "src": "raw:decor",
   "root": "beehive",
-  "view": [-30, 20],
+  "view": [
+   -30,
+   20
+  ],
   "preset": "building"
  },
  {
@@ -607,7 +628,10 @@
   "id": "stage",
   "src": "raw:decor",
   "root": "stage",
-  "view": [-30, 22],
+  "view": [
+   -30,
+   22
+  ],
   "preset": "building"
  },
  {
@@ -625,7 +649,10 @@
   "id": "dock",
   "src": "raw:decor",
   "root": "dock",
-  "view": [-34, 30],
+  "view": [
+   -34,
+   30
+  ],
   "preset": "building"
  },
  {
@@ -1597,7 +1624,82 @@
   "id": "ribbon_board",
   "src": "raw:decor",
   "root": "ribbon_board",
-  "view": [-24, 14],
+  "view": [
+   -24,
+   14
+  ],
+  "preset": "building"
+ },
+ {
+  "id": "mushroom_house",
+  "src": "raw:decor",
+  "root": "mushroom_house",
+  "preset": "building"
+ },
+ {
+  "id": "fermentary",
+  "src": "raw:decor",
+  "root": "fermentary",
+  "preset": "building"
+ },
+ {
+  "id": "fresh_kitchen",
+  "src": "raw:decor",
+  "root": "fresh_kitchen",
+  "preset": "building"
+ },
+ {
+  "id": "mushroom",
+  "src": "raw:items",
+  "root": "mushroom",
+  "preset": "goods"
+ },
+ {
+  "id": "kimchi",
+  "src": "raw:items",
+  "root": "kimchi",
+  "preset": "goods"
+ },
+ {
+  "id": "chili_sauce",
+  "src": "raw:items",
+  "root": "chili_sauce",
+  "preset": "goods"
+ },
+ {
+  "id": "salad",
+  "src": "raw:items",
+  "root": "salad",
+  "preset": "goods"
+ },
+ {
+  "id": "mushroom_soup",
+  "src": "raw:items",
+  "root": "mushroom_soup",
+  "preset": "goods"
+ },
+ {
+  "id": "lunch_box",
+  "src": "raw:items",
+  "root": "lunch_box",
+  "preset": "goods"
+ },
+ {
+  "id": "tractor_shed",
+  "src": "raw:decor",
+  "root": "tractor_shed",
+  "preset": "building"
+ },
+ {
+  "id": "drone_pad",
+  "src": "raw:decor",
+  "root": "drone_pad",
+  "preset": "building"
+ },
+ {
+  "id": "buffalo_pen",
+  "src": "raw:decor",
+  "root": "buffalo_pen",
   "preset": "building"
  }
 ]

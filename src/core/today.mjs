@@ -1,7 +1,7 @@
 // The Today board (DESIGN 14): a daily gift on a 7-day rotation (no streak to lose), what happened while away, and the
 // streak garden: every game day you visit plants one more flower north of the farmhouse. Days are only ever added, the
 // flowers can't be moved, stored or lost, and missing a day just means no flower that day.
-import { HATS, COSTUMES } from '../content/wardrobe.mjs';
+import { HATS, COSTUMES, BODIES } from '../content/wardrobe.mjs';
 import { dayKey } from './clock.mjs';
 import * as barn from './barn.mjs';
 import { rentWaiting } from './homes.mjs';
@@ -58,7 +58,7 @@ export const actions = {
   /** Change a setting: { key, value } (DESIGN 17). */
   setting(ctx, { key, value }) {
     if (key === 'playerName') { const v = String(value ?? '').replace(/[<>"`\&]/g, '').trim().slice(0, 12); ctx.s.settings.playerName = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
-    const ok = { playerColor: PLAYER_COLORS, playerBody: ['man', 'woman'], daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
+    const ok = { playerColor: PLAYER_COLORS, playerBody: Object.keys(BODIES), daylight: ['real', 'always'], textSize: [1, 1.15, 1.3], reducedMotion: [true, false], quality: ['auto', 'low', 'high'] };
     // the camera's tilt, in degrees (view/camera.mjs TILT; the slider sends hundredths like the volumes)
     if (key === 'cameraTilt') { const v = Math.round(Number(value) * 100); if (!(v >= 28 && v <= 68)) return ctx.fail('Unknown setting'); ctx.s.settings.cameraTilt = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     if (key === 'playerHat' || key === 'playerLook') {   // the wardrobe (content/wardrobe.mjs): '' takes it off; each opens at its level
@@ -68,6 +68,7 @@ export const actions = {
       if (item && item.level > ctx.s.level) return ctx.fail('That is still locked');
       ctx.s.settings[key] = v; ctx.emit('settingChanged', { key, value: v }); return {};
     }
+    if (key === 'playerSkirt') { const v = Number(value); if (![0, 1, 2, 3].includes(v)) return ctx.fail('Unknown setting'); ctx.s.settings.playerSkirt = v; ctx.emit('settingChanged', { key, value: v }); return {}; }
     if (key === 'sound' || key === 'music') { const v = Number(value); if (!(v >= 0 && v <= 1)) return ctx.fail('Unknown setting'); ctx.s.settings[key] = v; return {}; }
     const v = key === 'textSize' ? Number(value) : key === 'reducedMotion' ? value === true || value === 'true' : value;
     if (!ok[key]?.includes(v)) return ctx.fail('Unknown setting');

@@ -173,6 +173,7 @@ export class Panels {
     else if (d.do === 'chooseEntry') g.do('chooseEntry', { cls: d.cls, good: d.good });
     else if (d.do === 'holdFair') g.do('holdFair');   // the panel stays: the judging is told on it, class by class
     else if (d.do === 'visitStop') { if (g.do('visitStop', { stop: d.stop }).ok) this.close(); }   // the stop's scene plays at once (a scene waits while a panel is open)
+    else if (d.do === 'loadHold') g.do('loadHold', { hold: Number(d.hold), n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'loadWagon') g.do('loadWagon', { wagon: Number(d.wagon), n: d.n ? Number(d.n) : undefined });
     else if (d.do === 'serveGuest') g.do('serveGuest', { room: Number(d.room) });
     else if (d.do === 'collectHotel' || d.do === 'upgradeHotel') g.do(d.do);

@@ -1,5 +1,6 @@
 // Settings and the album (DESIGN 13, 17), drawn into the shared sheet. Test builds add a Test section with the play
 // package's helpers; the public game shows it too when it was opened with ?tester (docs/plan/00-tester-tools.md).
+import { BODIES } from '../content/wardrobe.mjs';
 import { TILT } from '../view/camera.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { t, getLanguage, getLocale, LANGUAGES } from '../kit/i18n.mjs';
@@ -33,7 +34,7 @@ export function renderSettings(s, profile, { tester = false } = {}) {
     <button class="btn wide" data-do="album">${glyph('album', 'g')} ${t('Family album')}</button>
     ${(s.story.chapter ?? 0) >= 1 ? `<button class="btn wide" data-do="valleyAlbum">${glyph('album', 'g')} ${t('The valley album')}</button>` : ''}
     <div class="set-row"><b>${t('Language')}</b><div class="tabs">${LANGUAGES.map(lang => choice('lang', lang.id, getLanguage(), lang.label)).join('')}</div></div>
-    <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${esc(st.playerName)}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${choice('playerBody', 'man', st.playerBody ?? 'man', t('Man'))}${choice('playerBody', 'woman', st.playerBody ?? 'man', t('Woman'))}</div></div>
+    <div class="set-row"><b>${t('You')}</b><input class="name-input" data-name maxlength="12" value="${esc(st.playerName)}" placeholder="${t('Your name')}" aria-label="${t('Your name')}"><div class="tabs">${Object.values(BODIES).map(b => choice('playerBody', b.id, st.playerBody ?? 'man', t(b.name))).join('')}</div></div>
     <div class="set-row"><b>${t('Shirt')}</b><div class="tabs">${PLAYER_COLORS.map(c => `<button class="tab swatch${(st.playerColor ?? '#e63946') === c ? ' on' : ''}" style="background:${c}" data-do="setting" data-key="playerColor" data-value="${c}" aria-label="${c}"></button>`).join('')}</div></div>
     <div class="set-row"><b>${t('Sound')}</b><input type="range" min="0" max="100" value="${Math.round(st.sound * 100)}" data-range="sound" aria-label="${t('Sound')}"></div>
     <div class="set-row"><b>${t('Camera tilt')}</b><input type="range" min="${TILT.min}" max="${TILT.max}" value="${st.cameraTilt ?? TILT.default}" data-range="cameraTilt" aria-label="${t('Camera tilt')}">${(st.cameraTilt ?? TILT.default) !== TILT.default ? `<button class="btn ghost small-btn" data-do="tiltReset">${t('Reset')}</button>` : ''}</div>

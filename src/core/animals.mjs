@@ -7,7 +7,7 @@ import * as barn from './barn.mjs';
 import { gainXp } from './levels.mjs';
 import { penOf } from './grid.mjs';
 import { isWorking } from './working.mjs';
-import { outputTimes } from './output.mjs';
+import { outputTimes, animalYield } from './output.mjs';
 
 const homesOf = (s, kind) => Object.entries(s.placed).filter(([, p]) => BUILDINGS[p.kind].animals === kind).map(([id]) => id);
 export const animalCount = (s, kind) => homesOf(s, kind).reduce((n, id) => n + (s.animals[id]?.length ?? 0), 0);
@@ -57,7 +57,7 @@ export const actions = {
     const { s, now } = ctx; let got = 0, sold = 0;
     for (const id of home ? [home] : Object.keys(s.animals)) for (const an of s.animals[id] ?? []) {
       if (an.doneAt == null || an.doneAt > now) continue;
-      const good = produceOf(an); sold += barn.addOrSell(s, good, outputTimes(s, id));   // an upgraded home gives double, and double again
+      const good = produceOf(an); sold += barn.addOrSell(s, good, animalYield(s, id));   // an upgraded home gives double, and double again
       afterCollect(an, now); got++;
       ctx.emit('collected', { home: id, good });
     }

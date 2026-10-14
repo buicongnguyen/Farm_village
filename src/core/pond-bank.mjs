@@ -14,13 +14,16 @@ export const BANK = Object.freeze({
   pile: 12,        // fish shown on the grass at once
 });
 
+/** The dock's fishing water lies this far beyond the middle of the brook (metres, away from the dock): the float and a
+ *  leaping fish stay clear of the pier, which used to stand in front of them. */
+const DOCK_OUT = 1.0;
 /** Can you fish at this placed thing? A fish pond, or the boat dock on the brook (chapter 7). */
 export const fishable = p => p?.kind === 'pond' || p?.kind === 'dock';
 /** The water of a placed pond or dock as an ellipse in metres ({ x, z, rx, rz, surface, river? }), or null. The dock's
  *  water is the stretch of brook in front of it: `river` fish (core/fishing.mjs) bite there. */
 export function waterOf(p) {
   if (p?.kind === 'pond') return { x: (p.x + 2) * CELL - 0.3, z: (p.z + 2) * CELL, rx: 2.0, rz: 2.0, surface: 0.24 };
-  if (p?.kind === 'dock') return { x: (p.x + 1) * CELL, z: (brookCurve(p.x + 1) + 0.5) * CELL, rx: 4.6, rz: 3.2, surface: 0.05, river: true };
+  if (p?.kind === 'dock') return { x: (p.x + 1) * CELL, z: (brookCurve(p.x + 1) + 0.5) * CELL - DOCK_OUT, rx: 4.6, rz: 3.2, surface: 0.05, river: true };
   return null;
 }
 /** Where to stand to fish at a placed pond or dock, and which way to look: { spots: [[cx, cz]...], face: [cx, cz] } in cells. */

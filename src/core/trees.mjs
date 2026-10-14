@@ -1,5 +1,6 @@
 // Fruit trees (goods.mjs FRUITS): planted once with build mode, they fruit after a while and then again every few hours.
 // s.trees[id] = { doneAt }: the fruit is ripe from doneAt. Picking puts the fruit in the barn and starts the next crop.
+import { sprayFactor } from './machines.mjs';
 import { treeFactor, firstFactor, pickExtra } from './knowhow.mjs';
 import { FRUITS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -12,7 +13,7 @@ export const fruitId = (s, id) => s.trees?.[id]?.cross && s.placed[id]?.kind ===
 export const fruitOf = (s, id) => FRUITS[fruitId(s, id)] ?? null;
 export function treeDuration(s, id) {
   const t = s.trees?.[id], f = fruitOf(s, id);
-  return t && f ? Math.round((t.first ? f.firstMs * firstFactor(t.graft) : f.regrowMs) * treeFactor(t)) : 0;
+  return t && f ? Math.round((t.first ? f.firstMs * firstFactor(t.graft) : f.regrowMs * sprayFactor(s)) * treeFactor(t)) : 0;
 }
 /** { state: 'ripe' | 'growing', fruit, leftMs, progress } or null for a thing that is not a fruit tree. */
 export function treeState(s, id, now) {
@@ -65,7 +66,8 @@ export const actions = {
       const t = s.trees?.[tid], f = fruitOf(s, tid); if (!t || !f || t.doneAt > now) continue;
       const good = fruitId(s, tid), n = f.yield + pickExtra(s);   // thinned trees give one more (core/knowhow.mjs)
       const before = barn.stock(s, good), coins = barn.addOrSell(s, good, n), stored = barn.stock(s, good) - before;
-      sold += coins; t.doneAt = now + Math.round(f.regrowMs * treeFactor(t)); t.picked = (t.picked ?? 0) + 1; delete t.first; picked++; xp += XP.harvest * n;
+      // (a sprayed orchard bears sooner: core/machines.mjs)
+      sold += coins; t.doneAt = now + Math.round(f.regrowMs * treeFactor(t) * sprayFactor(s)); t.picked = (t.picked ?? 0) + 1; delete t.first; picked++; xp += XP.harvest * n;
       s.stats.picked = (s.stats.picked ?? 0) + n; (s.album ??= { fish: {}, fruit: {} }).fruit[good] = (s.album.fruit[good] ?? 0) + n;
       // count is the full harvest; only stored units entered the barn. Coins were already paid by addOrSell.
       ctx.emit('picked', { id: tid, good, count: n, stored, sold: n - stored, coins });

@@ -143,3 +143,30 @@ test('the family at home: every stop is a thing in the house they can walk to, w
     }
   }
 });
+
+test('the mirror: you can be a man, a woman, a boy or a girl, and each has a model, a size and a name in three languages', async () => {
+  const { BODIES, bodyOf } = await import('../src/content/wardrobe.mjs'), { RIGS } = await import('../src/view/skinned.mjs');
+  const packs = await Promise.all(['vi', 'ko', 'ja'].map(l => import(`../src/i18n/${l}-fishing.mjs`).then(m => Object.values(m)[0])));
+  const s = newGame(NOW, 4, { restore: true }); assert.equal(bodyOf(s).id, 'man');
+  for (const b of Object.values(BODIES)) {
+    assert.ok(act(s, 'setting', { key: 'playerBody', value: b.id }, NOW).ok, b.id); assert.equal(bodyOf(s), b);
+    assert.ok(RIGS[b.rig]?.tint, `${b.id}: no such model`); assert.ok(b.size > 0.5 && b.size <= 1);
+    assert.ok(b.name);
+  }
+  for (const name of ['Boy', 'Girl']) assert.ok(packs.every(p => p[name]?.length > 0), `missing: ${name}`);
+  assert.equal(act(s, 'setting', { key: 'playerBody', value: 'giant' }, NOW).ok, false);
+  s.settings.playerBody = 'nobody'; assert.equal(bodyOf(s).id, 'man', 'an unknown body in an old save');
+});
+
+test('the mirror: no skirt or one of three lengths, worn with your hat and with a costume, and named in three languages', async () => {
+  const { SKIRTS, skirtOf } = await import('../src/content/wardrobe.mjs');
+  const s = newGame(NOW, 6, { restore: true }); s.level = 5; assert.equal(skirtOf(s), 0); assert.equal(wearOf(s), '');
+  for (const n of [1, 2, 3]) { assert.ok(act(s, 'setting', { key: 'playerSkirt', value: n }, NOW).ok); assert.equal(skirtOf(s), n); assert.equal(wearOf(s), `skirt:${n}`); }
+  assert.ok(act(s, 'setting', { key: 'playerHat', value: 'hat_straw' }, NOW).ok); assert.equal(wearOf(s), 'hat_straw+skirt:3');
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'chef' }, NOW).ok); assert.equal(wearOf(s), 'kit:armor_chef+hat_chef+skirt:3', 'a costume and a skirt are worn together');
+  assert.ok(act(s, 'setting', { key: 'playerSkirt', value: 1 }, NOW).ok); assert.equal(costumeOf(s)?.id, 'chef', 'choosing a skirt took the costume off');
+  assert.equal(act(s, 'setting', { key: 'playerSkirt', value: 4 }, NOW).ok, false); assert.equal(act(s, 'setting', { key: 'playerSkirt', value: 'long' }, NOW).ok, false);
+  assert.ok(act(s, 'setting', { key: 'playerSkirt', value: 0 }, NOW).ok); assert.equal(skirtOf(s), 0);
+  s.settings.playerSkirt = 9; assert.equal(skirtOf(s), 0, 'a wrong length in an old save');
+  assert.equal(SKIRTS.length, 4); for (const name of SKIRTS) for (const pack of [VI_EXPLORE, KO_EXPLORE, JA_EXPLORE]) assert.ok(pack[name]?.length > 0, `missing: ${name}`);
+});

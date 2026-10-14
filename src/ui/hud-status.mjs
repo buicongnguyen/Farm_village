@@ -45,6 +45,8 @@ export function hudStatus(s, now, { project = false, canWork = false } = {}) {
   const dividend = dividendOf(s, now); if (dividend.payments * 2 >= VALLEY.cap && dividend.waiting > 0) rows.push({ act: 'dividend', icon: 'company', label: 'Dividend', coins: dividend.waiting, hot: true });
   // the evening train is at the halt (chapter 15): the time until it leaves (a tap opens its wagons)
   const train = trainOf(s, now); if (train.here) rows.push({ act: 'train', icon: 'halt', label: 'Train', ms: Math.max(0, train.leavesAt - now), lit: true });
+  // a cargo ship is at the quay (core/port.mjs, fetched later: read from the save here): the time until it sails
+  const ship = s.port?.here; if (ship && ship.until > now) rows.push({ act: 'port', icon: 'dock', label: 'Ship', ms: ship.until - now, lit: true });
   // a hotel guest's breakfast wish is in the barn (chapter 14): a tap opens the hotel
   const breakfast = breakfastReady(s); if (breakfast) rows.push({ act: 'hotel', icon: breakfast.wish, label: 'Breakfast', text: 'ready', hot: true });
   const line = s.fishing?.line;

@@ -5,7 +5,7 @@
 // its price and level with a gold outline of the land; the weekly cart and the mailbox open their panels.
 import { KNOWHOW } from '../content/knowhow.mjs';
 import { knows, graftPlan, crossPlan, pickExtra } from '../core/knowhow.mjs';
-import { outputPlan, outputTimes } from '../core/output.mjs';
+import { outputPlan, outputTimes, musicPlan } from '../core/output.mjs';
 import * as THREE from 'three';
 import { t, num } from '../kit/i18n.mjs';
 import { sfx } from '../kit/sound.mjs';
@@ -204,10 +204,13 @@ export class Radial {
       if (hungry) buttons.push({ act: 'feed', icon: iconHtml(a.eats), label: t('Feed ({count})', { count: hungry }) });
       if (list.length < a.perHome) buttons.push({ act: 'buyAnimal', icon: `${iconHtml(kind)}${glyph('plus', 'corner')}`, label: animalPrice(s, kind) ? `${coinMark()}${num(animalPrice(s, kind))}` : t('Free') });
       { const up = outputPlan(s, id); if (up.next) buttons.push({ act: 'upgradeOutput', icon: glyph('up', 'ic'), label: up.need > s.level ? t('Level {level}', { level: up.need }) : `×${up.times} · ${coinMark()}${num(up.price)}`, disabled: !up.ok }); }
+      { const mu = musicPlan(s, id); if (mu) buttons.push(mu.has ? { act: 'musicOn', icon: '<span class="ic note">♪</span>', label: t('Music is playing'), disabled: true }
+        : { act: 'buyMusic', icon: '<span class="ic note">♪</span>', label: mu.need > s.level ? t('Level {level}', { level: mu.need }) : `${t('Music')} · ${coinMark()}${num(mu.price)}`, disabled: !mu.ok }); }
       // how long the feed still lasts: the fewest collections any fed animal here has left
       const fedLeft = list.filter(x => x.doneAt != null).map(x => x.meals ?? 1), least = fedLeft.length ? Math.min(...fedLeft) : 0;
       info = `${t(a.name)} ${list.length}/${a.perHome}${outputTimes(s, id) > 1 ? ` · ×${outputTimes(s, id)}` : ''} · ${hungry || !least ? t('One feed lasts {n} collections', { n: FEED_MEALS }) : t('Fed for {n} more', { n: least })}`;
-    } else if (p) info = t(def?.name ?? '');
+    } else if (def?.machine) info = `${t(def.name)} · ${t(def.machine === 'tractor' ? 'harvests and sows 8 more beds at every round of help' : def.machine === 'buffalo' ? 'works 4 more beds at every round of help' : 'sprays the orchard: fruit comes a quarter sooner')}`;
+    else if (p) info = t(def?.name ?? '');
     else if ((land = buyableParcels(s).find(q => q.parcel === parcelOf(cell.x, cell.z)))) {
       if (s.mode === 'restore') { this.hide(); this.panels.show('land', land.parcel); return; }
       info = `${iconHtml('sale_sign', '', 'mini')} ${t(parcelNote(land.parcel))} · ${coinMark()} ${num(land.price)}${land.ok ? '' : ` · ${glyph('lock', 'g')} ${t(land.reason, land.params)}`}`;
@@ -283,6 +286,7 @@ export class Radial {
     else if (d.act === 'graftBranch') g.do('graftBranch', { id });
     else if (d.act === 'crossBranch') g.do('crossBranch', { id });
     else if (d.act === 'upgradeOutput') g.do('upgradeOutput', { building: id });
+    else if (d.act === 'buyMusic') g.do('buyMusic', { building: id });
     else if (d.act === 'explorePorch') this.panels.show('exploration', 'porch');
     else if (d.act === 'learning') this.panels.show('learning');
     else if (d.act === 'schoolActivity') this.panels.show('schoolActivity');
