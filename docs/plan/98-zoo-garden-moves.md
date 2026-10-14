@@ -68,7 +68,7 @@ around the farm's pacing.
 |---|---|
 | 1 Controls | the swing pad and Space (skill buttons come with step 4, when there are skills to put on them) |
 | 2 The swing | done with step 1 (one pull request: a pad with nothing to do would be no use) |
-| 3 Into the water | |
+| 3 Into the water | done: the brook and the village pond (built ponds are buildings and stay solid) |
 | 4 Disguise skills | |
 | 5 Skills and fish | |
 | 6 Shape at the mirror | |

@@ -21,6 +21,12 @@ body.panel-open .explore-ui, body:has(.modal) .explore-ui { visibility: hidden; 
   border-radius: 50%; border: 3px solid var(--edge, #5b3418); background: radial-gradient(circle at 50% 35%, #fff6d8, #f2c14e); box-shadow: 0 4px 0 #0003; font-size: 30px; line-height: 1; cursor: pointer; touch-action: none; }
 .explore-swing:active { transform: translateY(2px) scale(.96); box-shadow: 0 2px 0 #0003; }
 .explore-swing[hidden] { display: none; }
+/* breath while swimming (Zoo Garden's stamina ring): a ring that empties, red when it is nearly out */
+.explore-breath { position: fixed; z-index: 10; left: 50%; top: max(118px, calc(env(safe-area-inset-top) + 110px)); width: 46px; height: 46px; margin-left: -23px; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(#3fb7f0 calc(var(--left, 1) * 360deg), #ffffff55 0); box-shadow: 0 2px 6px #0003; }
+.explore-breath::after { content: '🫧'; position: absolute; inset: 6px; border-radius: 50%; background: var(--paper, #fff6dc); display: grid; place-items: center; font-size: 18px; }
+.explore-breath.low { background: conic-gradient(#ef3b3b calc(var(--left, 1) * 360deg), #ffffff55 0); }
+.explore-breath[hidden] { display: none; }
 body.panel-open .explore-swing, body:has(.modal) .explore-swing, body.fishing-active .explore-swing { visibility: hidden; }
 @media (max-width: 600px) { .explore-swing { bottom: max(184px, calc(env(safe-area-inset-bottom) + 176px)); right: max(16px, env(safe-area-inset-right)); } }
 body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden; }
