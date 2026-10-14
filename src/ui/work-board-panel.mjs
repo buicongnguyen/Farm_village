@@ -1,3 +1,4 @@
+import { MACHINES, buffalo, tractors } from '../core/machines.mjs';
 // Loaded with the existing panel-renderer chunk, never on first paint.
 import { t } from '../kit/i18n.mjs';
 import { CROPS } from '../content/goods.mjs';
@@ -23,7 +24,7 @@ export function renderWorkBoard(s, now, draft) {
   html += `<p>${t('One harvest, up to {count} beds. Replanting is yours.', { count: FIELD_WORK.max })}</p>
     <div class="actions"><button class="btn" data-do="workOwner" data-value="family" aria-pressed="${draft.owner === 'family'}">${t('Family help')} ${draft.owner === 'family' ? '✓' : ''}</button>
     ${s.hands?.field ? `<button class="btn" data-do="workOwner" data-value="field" aria-pressed="${draft.owner === 'field'}">${t('Field hand')} ${draft.owner === 'field' ? '✓' : ''}</button>` : ''}</div>
-    <p class="hint">${t('Family help: up to {count} beds every {seconds}s, with no wages.', { count: HELP.beds, seconds: HELP.everyMs / 1000 })}<br>${t('Field hand: up to {count} beds every {seconds}s.', { count: FIELD_WORK.batch, seconds: HANDS.everyMs / 1000 })}</p>
+    <p class="hint">${t('Family help: up to {count} beds every {seconds}s, with no wages.', { count: HELP.beds + MACHINES.ox * buffalo(s), seconds: HELP.everyMs / 1000 })}${tractors(s) ? `<br>${t('Tractors can help with up to {count} extra beds on purchased expansion fields.', { count: MACHINES.beds * tractors(s) })}` : ''}<br>${t('Field hand: up to {count} beds every {seconds}s.', { count: FIELD_WORK.batch, seconds: HANDS.everyMs / 1000 })}</p>
     <div class="actions"><button class="btn" data-do="workMode" data-value="pause" aria-pressed="${draft.mode === 'pause'}">${t('Help after a pause')} ${draft.mode === 'pause' ? '✓' : ''}</button>
     <button class="btn" data-do="workMode" data-value="ready" aria-pressed="${draft.mode === 'ready'}">${t('Harvest when ready')} ${draft.mode === 'ready' ? '✓' : ''}</button></div>
     <p class="hint">${t('Tap the beds to include. Unselected beds are left for you.')}</p>

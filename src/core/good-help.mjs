@@ -5,7 +5,7 @@ import { fruitId } from './trees.mjs';
 import { produceOf } from './surprises.mjs';
 import { HEN_EGGS, LUCKY_FINDS } from '../content/surprises.mjs';
 import { trickOf } from '../content/knowhow.mjs';
-import { outputTimes } from './output.mjs';
+import { outputTimes, animalYield } from './output.mjs';
 import { pickExtra, knows, crossPlan } from './knowhow.mjs';
 import { GOODS, CROPS, FRUITS, RECIPES, ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
@@ -105,7 +105,7 @@ function animalSource(s, good, now) {
   const [kind, animal] = Object.entries(ANIMALS).find(([k, a]) => variant ? k === 'hen' : a.gives === good);
   const ids = makers(s, animal.home), animals = ids.flatMap(id => (s.animals?.[id] ?? []).filter(a => a.kind === kind && produceOf(a) === good).map(a => ({ id, ...a })));
   const ready = animals.filter(a => a.doneAt != null && a.doneAt <= now), busy = animals.filter(a => a.doneAt > now);
-  const count = rows => rows.reduce((n, a) => n + outputTimes(s, a.id), 0);
+  const count = rows => rows.reduce((n, a) => n + animalYield(s, a.id), 0);
   const base = { type: 'animal', at: animal.home, animal: kind, feed: animal.eats, ready: count(ready), queued: count(busy) };
   if (variant && !animals.length) return { ...base, status: 'notebook', reason: LUCKY_FINDS.find(f => f.id === `${variant}_hen`).hint, target: { kind: 'knowhow' } };
   if (ready.length) return { ...base, status: 'ready', target: buildingTarget(ready[0].id, animal.home) };

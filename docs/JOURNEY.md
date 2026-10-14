@@ -274,9 +274,11 @@ Completed guidance follow-up: ingredient source/return guidance, one usable cove
 | 7. Over the hills | not started |
 | 8. The valley of plenty | not started |
 | Cross-stage proposal: farm variety, machinery and northwest playground | **Design only, 2026-10-12**: [combined implementation plan](FARM-EXPANSION-IMPLEMENTATION-PLAN.md), including the proposed 30/300 capacity model, animal care, orchards, a recreation business, story and validation phases. No new mechanics implemented. |
-| Cross-stage follow-up: farmhouse work board | First crop-assignment slice implemented and validated on `codex/helper-work-board`; awaiting review, not live. [Scope](WORK-BOARD-IMPLEMENTATION.md). Tractors, new fields and the playground remain planned. |
+| Cross-stage follow-up: farmhouse work board | First crop-assignment slice on `codex/helper-work-board`, not live. [Scope](WORK-BOARD-IMPLEMENTATION.md). The October 14 review integrates main's buffalo/tractors with finite family assignments and limits extra tractor beds to bought expansion fields. The larger 30/300 capacity system and playable northwest playground remain planned. |
 | Review of October orchard, surprises and home life | **Fixed and validated on the feature branch, not deployed (2026-10-13)**: preserved tree upgrades and graft credits, corrected lucky-event accounting, source guidance and home rewards. Latest main integrated through `73fa8f5`; validation recorded in [the review](plan/95-review.md). |
 | Review of farm reports and indoor life | **Fixed and validated on the feature branch (2026-10-13)**: safe growth history, honest earnings/source advice, stable indoor conversations and recoverable costumes with room cleanup. Includes main through `2b2e57c`; see [the review](plan/95-review.md). Not deployed. |
+
+| Review of cargo ships, machinery and wardrobe | **Review fixes on the feature branch (2026-10-14), not deployed**: main integrated through `d3ef6f1`; ship clock/save/payment guards, machine assignment and route safety, radio counts, paid-upgrade protection, fixed fruit durations and recoverable outdoor outfits. See [review and validation](plan/95-review.md). |
 
 ### Picnic branch integration — 2026-10-12
 

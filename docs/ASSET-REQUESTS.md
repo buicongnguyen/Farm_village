@@ -708,3 +708,7 @@ Completed writer: Codex on `codex/helper-work-board`, integration `f0131ee` (mai
 Handoff: PR #111 contains the review fixes and lazy costume-fitting module. No shared-view reservation remains after this handoff. Validation: 773 unit tests, all 46 browser suites, 50 full-game smoke checks, three final affected-suite repeats, and production English/Vietnamese boots pass. Final first load is 1,296,670 / 1,300,000 bytes. Main is unmodified by this review; see `docs/plan/95-review.md` for findings and limits.
 
 - 2026-10-14 — Codex reviews main through `d3ef6f1` on `codex/helper-work-board` (PR #111). Active writer: rules, UI, tests, and behavioral integration in `skinned.mjs` / `wear-rig.mjs`; retain Claude's new fitting, skirt and hair values inside the existing lazy loader. No model, icon or generator edits.
+
+- 2026-10-14 — Codex also owns the `machines-view.mjs` route checks in this review: tractor loops use bought expansion fields and park when terrain, fences or buildings obstruct the route; the buffalo keeps its opening-field eligibility. Meshes, materials, speeds and effect colours are unchanged.
+
+- 2026-10-14 — Codex adjusts `PeopleView.redress`: keep the existing outdoor subject while the new rig loads; ignore superseded loads and permit retry. This preserves Claude's same-walker Explore fix without disappearing during download failures.

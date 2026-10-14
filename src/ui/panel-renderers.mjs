@@ -1,3 +1,4 @@
+export { goodHelpTarget } from '../core/good-help.mjs';
 export { showLandMemory } from './land-panel.mjs';
 import { isWorking } from '../core/working.mjs';
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

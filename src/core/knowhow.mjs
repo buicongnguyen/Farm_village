@@ -109,7 +109,7 @@ export const actions = {
   /** Graft a mango branch onto an apple tree: it bears Mango apples from its next crop on. { id } */
   crossBranch(ctx, { id } = {}) {
     const { s, now } = ctx, plan = crossPlan(s, id); if (!plan.ok) return ctx.fail(plan.reason, plan.params);
-    const t = s.trees[id]; s.coins -= plan.price; t.cross = true; t.doneAt = Math.max(t.doneAt, now + Math.round(FRUITS.mango_apple.regrowMs * treeFactor(t)));
+    const t = s.trees[id]; s.coins -= plan.price; t.cross = true; t.doneAt = Math.max(t.doneAt, now + Math.round(FRUITS.mango_apple.regrowMs * treeFactor(t))); t.waitMs = t.doneAt - now;
     ctx.emit('crossed', { id });
     return { id };
   },

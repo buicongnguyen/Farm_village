@@ -116,9 +116,10 @@ test('fresh grafted saplings are used first without overwriting an improved stor
   s = unpack(pack(s)); const graft = place(s, 'apple_tree'); assert.equal(s.trees[graft].graft, true); assert.ok(!s.trees[graft].cross);
   const improved = place(s, 'apple_tree'); assert.equal(s.trees[improved].cross, true);
 });
-test('a backward clock caps an improved tree to its actual fruit and growth duration', () => {
+test('a backward clock caps a legacy improved tree to its actual fruit and growth duration', () => {
   const s = farm(), id = place(s, 'apple_tree');
   Object.assign(s.trees[id], { graft: true, cross: true, first: false, doneAt: T + 20 * MIN });
+  delete s.trees[id].waitMs; // legacy saves predate the fixed duration recorded for new crops
   s.lastSeen = T + HOUR; tick(s, T);
   assert.equal(s.trees[id].doneAt - T, Math.round(FRUITS.mango_apple.regrowMs * KNOWHOW.graft.regrow));
 });

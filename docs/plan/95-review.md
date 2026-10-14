@@ -156,3 +156,23 @@ Validation:
 - Optional WebKit was unavailable, so browser evidence covers Chromium desktop/phone emulation only.
 
 Limitations: browser coverage is Chromium desktop and phone emulation, not physical iPhone/Safari. This review does not rebalance the whole economy or add a new progression stage. Previously corrupted optional chart rows are discarded; coins, levels and ordinary game progress are preserved. PR #111 remains unmerged and the live game is unchanged by this review.
+
+
+## Cargo ship, machinery and wardrobe review — 2026-10-14 (PR #111, not deployed)
+
+Scope: Claude's PRs #127–#137, latest main `d3ef6f1`, integrated in `69fd986`. Models, icons, generator changes and art fitting values are kept from main. This review preserves the pending work-board and earlier review fixes in PR #111.
+
+Confirmed problems and corrections:
+
+- **P1 — Loading budget:** the initial integrated test build reached 1,303,888 bytes, over the fixed 1,300,000-byte cap. Ingredient-source lookup now travels with the existing deferred panel renderer; clicks remain synchronous once the source sheet is visible. No cap increase.
+- **P2 — Ship timetable:** the new optional tick lacked the backward-clock guard used by other timed activities. Arrival/departure waits are now bounded by their real duration. A paid cargo survives reload and pays once on departure. Invalid optional holds cannot crash the panel or create a four-full-hold bonus; valid cargo in the same manifest is retained. Normalization itself grants nothing.
+- **P2 — Ship requests and guidance:** the fallback inserted crops without checking whether the farm could grow them. Small manifests now repeat real sources when necessary, with only free starter wheat as the empty-farm fallback. Ship holds use the existing source/back flow and honor supermarket/project reserves. Copy states the actual base/double payment rule rather than promising the best sale in the valley.
+- **P2 — Machinery integration:** main added capacity only to the older family routine; adopting the finite board silently removed the benefit. Family assignments now share the capacity rules. The buffalo can help anywhere; extra tractor beds must be on purchased expansion parcels, following the user's confirmed land scope. Machinery does not harvest unassigned crops, bypass the observation pause, replant finite jobs or sell their overflow. The hired worker's separate wage/batch contract stays intact.
+- **P2 — Machine routing:** the old rectangle ignored ownership, obstacles and fences and covered opening beds too. Tractor presentation uses expanded fields and checks clearance around the whole route; an obstructed loop leaves the vehicle parked. Buffalo routes also respect obstacles. Models, materials, speeds and effect colours remain unchanged.
+- **P2 — Radio and paid upgrades:** ingredient help counted output upgrades but omitted the radio multiplier. Ready/queued milk now matches collection. Storing an empty upgraded home/workshop or undoing its old build entry discarded paid improvements; those actions now refuse atomically and direct the player to move it. Already-lost upgrade data cannot be reconstructed.
+- **P2 — Orchard clocks:** replanting a stored tree omitted the drone bonus, and timer progress/clock recovery recalculated an existing crop using the current drone ownership. New crops retain their quoted wait; a removed/new drone affects the next crop. Legacy saves still use the actual fruit/graft duration, and cross-branch actions refresh their duration.
+- **P2 — Outdoor outfits:** replacing the drawn subject before its asset loaded could make the character disappear on slow/failed downloads. Redressing now keeps the old subject until the new rig is ready, checks that the walker/save/choice is still current, and permits retry. It retains Claude's same-walker fix for Explore. Invalid imported body IDs cannot select inherited object properties.
+
+Regression coverage: `tests/review-latest.test.mjs` exercises ship timing, saved cargo and malformed holds, real-source requests, protected shop stock, finite machine assignments, radio counts, paid-upgrade preservation, orchard durations, obstructed machine routes and malformed body choices. `tests/review-latest.browser.mjs` exercises the ship/source/back controls, work-board guidance, radio source counts, all three new workshops, outdoor outfit failure/retry and rapid body/skirt choices, and render limits in English/Vietnamese/Korean/Japanese at 390/1280 px. The older orchard-clock fixture explicitly models a pre-duration save; the Explore wardrobe check waits for its outfit download.
+
+Validation: in progress; final results will be recorded before this review is pushed. No main merge or deployment is part of this request.

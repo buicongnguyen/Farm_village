@@ -8,7 +8,6 @@ import { GOODS } from '../content/goods.mjs';
 import { FRUIT_STAND } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
 import { STACK } from '../core/stall.mjs';
-import { goodHelpTarget } from '../core/good-help.mjs';
 import { showDiscovery } from './discovery-panels.mjs';
 import { showExplorationMemory } from './exploration-panels.mjs';
 // Advice cards load with the panel renderers (this.renderer), which also carries their three actions: an advice card
@@ -138,7 +137,7 @@ export class Panels {
     else if (d.do === 'contractMemory') { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); }
     else if (d.do === 'goodHelpSource') {
       const arg = this.open?.kind === 'goodHelp' ? this.open.arg : null;
-      const target = arg && goodHelpTarget(g.s, arg.good, g.now, arg);
+      const target = arg && this.renderer.goodHelpTarget(g.s, arg.good, g.now, arg);
       if (target) { this.close(); this.onGoodHelpSource?.(target); }
       else this.render();
     }

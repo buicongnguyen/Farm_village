@@ -59,7 +59,7 @@ export const BODIES = {
   kid: { name: 'Boy', rig: 'kid', size: 1, child: true }, girl: { name: 'Girl', rig: 'girl', size: 1, child: true },
 };
 for (const [id, b] of Object.entries(BODIES)) b.id = id;
-export const bodyOf = s => BODIES[s?.settings?.playerBody] ?? BODIES.man;
+export const bodyOf = s => typeof s?.settings?.playerBody === 'string' && Object.hasOwn(BODIES, s.settings.playerBody) ? BODIES[s.settings.playerBody] : BODIES.man;
 /** The costume you have on, or null. */
 export const costumeOf = s => typeof s?.settings?.playerLook === 'string' && Object.hasOwn(COSTUMES, s.settings.playerLook) ? COSTUMES[s.settings.playerLook] : null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */

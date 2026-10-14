@@ -13,6 +13,7 @@ export const fruitId = (s, id) => s.trees?.[id]?.cross && s.placed[id]?.kind ===
 export const fruitOf = (s, id) => FRUITS[fruitId(s, id)] ?? null;
 export function treeDuration(s, id) {
   const t = s.trees?.[id], f = fruitOf(s, id);
+  if (t && f && Number.isFinite(t.waitMs) && t.waitMs > 0) return t.waitMs;
   return t && f ? Math.round((t.first ? f.firstMs * firstFactor(t.graft) : f.regrowMs * sprayFactor(s)) * treeFactor(t)) : 0;
 }
 /** { state: 'ripe' | 'growing', fruit, leftMs, progress } or null for a thing that is not a fruit tree. */
@@ -53,8 +54,9 @@ export function plantTree(s, id, now, { regrow = false, graft = false, storedTre
   if (saved) (s.trees ??= {})[id] = saved;
   const f = fruitOf(s, id); if (!f) return;
   graft = saved?.graft ?? graft;
-  const first = !saved && (graft || !regrow), wait = first ? f.firstMs * firstFactor(graft) : f.regrowMs;
-  (s.trees ??= {})[id] = { picked: 0, ...saved, doneAt: now + Math.round(wait * (graft ? treeFactor({ graft }) : 1)), first, ...(graft ? { graft: true } : {}) };
+  const first = !saved && (graft || !regrow), wait = first ? f.firstMs * firstFactor(graft) : f.regrowMs * sprayFactor(s);
+  const waitMs = Math.round(wait * treeFactor(saved ?? { graft }));
+  (s.trees ??= {})[id] = { picked: 0, ...saved, doneAt: now + waitMs, waitMs, first, ...(graft ? { graft: true } : {}) };
 }
 export const ripeTrees = (s, now) => Object.keys(s.trees ?? {}).filter(id => s.placed[id] && s.trees[id].doneAt <= now);
 
@@ -67,7 +69,7 @@ export const actions = {
       const good = fruitId(s, tid), n = f.yield + pickExtra(s);   // thinned trees give one more (core/knowhow.mjs)
       const before = barn.stock(s, good), coins = barn.addOrSell(s, good, n), stored = barn.stock(s, good) - before;
       // (a sprayed orchard bears sooner: core/machines.mjs)
-      sold += coins; t.doneAt = now + Math.round(f.regrowMs * treeFactor(t) * sprayFactor(s)); t.picked = (t.picked ?? 0) + 1; delete t.first; picked++; xp += XP.harvest * n;
+      sold += coins; t.waitMs = Math.round(f.regrowMs * treeFactor(t) * sprayFactor(s)); t.doneAt = now + t.waitMs; t.picked = (t.picked ?? 0) + 1; delete t.first; picked++; xp += XP.harvest * n;
       s.stats.picked = (s.stats.picked ?? 0) + n; (s.album ??= { fish: {}, fruit: {} }).fruit[good] = (s.album.fruit[good] ?? 0) + n;
       // count is the full harvest; only stored units entered the barn. Coins were already paid by addOrSell.
       ctx.emit('picked', { id: tid, good, count: n, stored, sold: n - stored, coins });

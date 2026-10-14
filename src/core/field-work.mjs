@@ -1,4 +1,5 @@
 // Finite harvest assignments. Unassigned crops always belong to the player.
+import { familyBeds } from './machines.mjs';
 import { CROPS } from '../content/goods.mjs';
 import { HANDS, HELP, WEAR } from '../content/economy.mjs';
 import { actions as farm } from './farm.mjs';
@@ -59,11 +60,12 @@ export function workFieldRound(ctx, owner) {
   const { s, now } = ctx, j = s.fieldWork?.job;
   if (!j || j.owner !== owner) return { count: 0, at: null };
   let count = 0, at = null;
+  const ready = j.targets.filter(p => targetMatches(s, p) && p.doneAt <= now && p.ripeAt !== null && (j.mode === 'ready' || now - p.ripeAt >= FIELD_WORK.graceMs));
+  const allowed = new Set(owner === 'family' ? familyBeds(s, ready.map(p => p.id)) : ready.slice(0, FIELD_WORK.batch).map(p => p.id));
   const candidates = [...j.targets];
   for (const p of candidates) {
-    if (count >= (owner === 'family' ? HELP.beds : FIELD_WORK.batch)) break;
     if (!targetMatches(s, p)) { j.targets.splice(j.targets.indexOf(p), 1); j.skipped++; continue; }
-    if (p.doneAt > now || p.ripeAt === null || j.mode === 'pause' && now - p.ripeAt < FIELD_WORK.graceMs) continue;
+    if (!allowed.has(p.id)) continue;
     if (barn.space(s) < 2 || owner === 'field' && s.coins < HANDS.wage) break;
     const result = farm.harvest(ctx, { id: p.id });
     if (result?.ok === false || !result?.harvested) continue;

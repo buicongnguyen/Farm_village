@@ -1183,4 +1183,7 @@ export const JA_FISHING = {
   'No ship is at the quay': '岸壁に船がいません',
   'The ship has no such hold': 'その船倉はありません',
   'That hold is full': 'その船倉はいっぱいです',
+  "Adds up to 8 new-field beds per family round. Work-board assignments stay finite.": "家族のお手伝いで、広げた畑の畝を１回につき最大８つ追加で世話します。作業ボードで頼んだ分だけ行います。",
+  "Tractors can help with up to {count} extra beds on purchased expansion fields.": "トラクターは購入して広げた畑の畝を最大{count}個、追加で世話できます。",
+  "A cargo ship calls with four holds. Full holds pay twice the base price; partial loads pay the base price. All four full holds earn a bonus.": "貨物船には４つの船倉があります。満杯なら基本価格の２倍、途中までなら基本価格で買い取ります。４つとも満杯にするとボーナスもあります。",
 };

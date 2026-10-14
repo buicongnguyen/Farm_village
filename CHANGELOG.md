@@ -1,5 +1,15 @@
 # Changelog
 
+
+## Review of cargo ships, machinery and wardrobe - 2026-10-14 (unreleased)
+
+- Integrated Claude's PRs #127–#137 through `d3ef6f1`, retaining the finite work board and earlier review fixes. New skirt, hair and costume fitting stays inside the lazy outfit loader.
+- Cargo ships recover after a backward clock change, preserve valid loaded cargo in damaged optional manifests, and cannot award a full-ship bonus for missing holds. Small farms get requests from their real sources. Ship ingredient cards support source navigation and returning to the ship; payment guidance explains full and partial loads in all four languages.
+- Buffalo and tractor help also works with finite family assignments. Tractor bonus beds belong to purchased expansion fields; unassigned crops, the harvest pause and storage limits remain protected. Machine routes park when obstructed by terrain, buildings or fences.
+- Radio-enhanced milk guidance matches actual output. Empty buildings with paid radios/output upgrades must be moved rather than stored or undone, preserving those purchases. Newly started fruit crops retain their quoted duration, and replanted stored trees receive the drone bonus.
+- Outdoor wardrobe changes keep the current character visible until its replacement loads, can retry failures, and ignore superseded choices. Invalid imported body keys fall back safely.
+- Ingredient-source logic loads with the existing deferred panels; the first-load budget is unchanged. Added focused rules/browser regressions; detailed validation is recorded in `docs/plan/95-review.md`.
+
 ## Review of farm reports, indoor conversations and costumes - 2026-10-13 (unreleased)
 
 - Integrated the indoor people, fitted costumes, family movement and farm-report updates (PRs #123-#125), plus the pool model from #126. Existing work-board, orchard and lucky-event fixes remain on this branch.

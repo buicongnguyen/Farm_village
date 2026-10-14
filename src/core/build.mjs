@@ -41,6 +41,7 @@ export function storeWhy(s, id) {
   if (BUILDINGS[p.kind].garden) return 'The streak garden keeps its flowers';
   if (BUILDINGS[p.kind].lot) return 'Buildings on the quay stay where they are';
   if (s.homes[id]?.family) return 'A family lives here: move the cottage instead';
+  if (s.outputUp?.[id] || s.music?.[id]) return 'It is in use now: move it instead';
   if (s.beds[id]) return 'Harvest the crop first';
   if (s.animals[id]?.length) return 'The animals live here: move it instead';
   if (s.production[id]?.queue.length) return 'Collect what is being made first';
@@ -165,6 +166,7 @@ export const actions = {
         if (e.civicUsed || growth.sent > (stamp(e.growthSent) ? e.growthSent : 0)
           || (p.kind === 'company' && Object.values(growth.staff).some(Boolean))) return ctx.fail('It is in use now: move it instead');
       }
+      if (s.outputUp?.[e.id] || s.music?.[e.id]) return ctx.fail('It is in use now: move it instead');
       if (s.beds[e.id] || s.animals[e.id]?.length || s.production[e.id]?.queue.length || s.homes[e.id]?.arrived || (s.trees[e.id] && ((s.trees[e.id].picked ?? (s.trees[e.id].first ? 0 : 1)) > (e.storedTree?.picked ?? 0) || !!s.trees[e.id].cross !== !!e.storedTree?.cross || (s.trees[e.id].graftAt ?? 0) !== (e.storedTree?.graftAt ?? 0)))
         || (BUILDINGS[p.kind].fruitStand && (s.fruitStand.items.length || s.fruitStand.coins || s.stats.fruitSold > (e.fruitSold ?? 0)))) return ctx.fail('It is in use now: move it instead');
       if (BUILDINGS[p.kind].fruitStand) suspendFruitSales(ctx);
