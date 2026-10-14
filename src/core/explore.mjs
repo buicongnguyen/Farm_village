@@ -64,7 +64,8 @@ export function moveExplore(s, dx, dz, dt) {
   const goal = e.route[0]; let remaining = Infinity;
   if (!held && goal) { dx = goal[0] - before[0]; dz = goal[1] - before[1]; remaining = Math.hypot(dx, dz); }
   const length = Math.hypot(dx, dz); if (!length) { if (goal) e.route.shift(); return false; }
-  const step = Math.min(remaining, (outdoors ? OUTDOOR_SPEED * waterPace(depthAt(...before)) : 2.4) * dt);
+  const boost = e.boost > 0 ? (e.boost -= dt, e.boostBy ?? 1) : 1;   // a skill's dash or glide (core/moves.mjs, ui/explore-mode.mjs)
+  const step = Math.min(remaining, (outdoors ? OUTDOOR_SPEED * waterPace(depthAt(...before)) * boost : 2.4) * dt);
   const clear = outdoors ? p => outdoorClear(s, p, e.blocked) || (e.inWater && depthAt(...p) > 0) : p => roomClear(e.room, p);
   e.p = movePoint(before, [dx / length * step, dz / length * step], clear, e.location === 'outdoors' ? (a, b) => outdoorCrosses(s, a, b) : undefined);
   const moved = Math.hypot(e.p[0] - before[0], e.p[1] - before[1]);
