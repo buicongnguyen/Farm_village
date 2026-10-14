@@ -1156,4 +1156,7 @@ export const KO_FISHING = {
   'Drone pad': '드론 착륙장',
   'harvests and sows 8 more beds at every round of help': '도움을 줄 때마다 밭 8곳을 더 거두고 심어요',
   'sprays the orchard: fruit comes a quarter sooner': '과수원에 약을 뿌려요: 열매가 4분의 1 더 빨리 열려요',
+  'Buffalo pen': '물소 우리',
+  'works 4 more beds at every round of help': '도움을 줄 때마다 밭 4곳을 더 일해요',
+  'Buy more land first ({count} new fields)': '먼저 땅을 더 사세요 (새 밭 {count}곳)',
 };

@@ -110,3 +110,15 @@ test('machines: each working tractor shed adds eight beds to a round of help (tw
     for (let u = 0; u < per; u += per / 16) { const [x, z] = onLoop(p.loop, u); assert.ok(x >= p.loop[0] - 1e-6 && x <= p.loop[2] + 1e-6 && z >= p.loop[1] - 1e-6 && z <= p.loop[3] + 1e-6); }
   }
 });
+
+test('first a buffalo, then machines with new land: the pen opens early and adds four beds; a shed needs one new field, the pad two', async () => {
+  const { MACHINES, buffalo } = await import('../src/core/machines.mjs'), { mayBuild } = await import('../src/core/projects.mjs'), { BUILDINGS } = await import('../src/content/buildings.mjs');
+  const s = newGame(NOW, 41, { restore: true }); s.level = 20; s.coins = 99999;
+  assert.ok(BUILDINGS.buffalo_pen.level < BUILDINGS.tractor_shed.level && BUILDINGS.buffalo_pen.cost < BUILDINGS.tractor_shed.cost);
+  assert.equal(buffalo(s), 0); s.placed.ox = { kind: 'buffalo_pen', x: 60, z: 40, rot: 0 }; assert.equal(buffalo(s), 1); assert.ok(MACHINES.ox > 0 && MACHINES.ox < MACHINES.beds);
+  assert.equal(s.parcels.length, 1);
+  const shed = mayBuild(s, 'tractor_shed'); assert.equal(shed.ok, false); assert.equal(shed.params.lock, 'land'); assert.equal(shed.params.count, 1);
+  s.parcels.push('1,2'); assert.notEqual(mayBuild(s, 'tractor_shed').params?.lock, 'land', 'one new field did not open the tractor shed');
+  assert.equal(mayBuild(s, 'drone_pad').params?.lock, 'land'); s.parcels.push('1,1'); assert.notEqual(mayBuild(s, 'drone_pad').params?.lock, 'land');
+  assert.notEqual(mayBuild(newGame(NOW, 42, { restore: true }), 'buffalo_pen').params?.lock, 'land', 'the buffalo asks for land');
+});

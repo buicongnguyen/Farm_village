@@ -1156,4 +1156,7 @@ export const VI_FISHING = {
   'Drone pad': 'Bãi đáp máy bay phun',
   'harvests and sows 8 more beds at every round of help': 'thu hoạch và gieo thêm 8 luống mỗi lượt giúp việc',
   'sprays the orchard: fruit comes a quarter sooner': 'phun cho vườn cây: quả chín sớm hơn một phần tư',
+  'Buffalo pen': 'Chuồng trâu',
+  'works 4 more beds at every round of help': 'làm thêm 4 luống mỗi lượt giúp việc',
+  'Buy more land first ({count} new fields)': 'Hãy mua thêm đất trước ({count} thửa mới)',
 };

@@ -127,6 +127,7 @@ export const KIND_MODELS = {
   lake_kiosk_flowers: { kit: 'decor', node: 'lake_kiosk_flowers', authored: true, lod: 'static', late: true },
   lake_kiosk_snacks: { kit: 'decor', node: 'lake_kiosk_snacks', authored: true, lod: 'static', late: true },
   noodle_factory: { kit: 'decor', node: 'noodle_factory', authored: true, lod: 'static', late: true },
+  buffalo_pen: { kit: 'decor', node: 'buffalo_pen', authored: true, lod: 'static', late: true },
   tractor_shed: { kit: 'decor', node: 'tractor_shed', authored: true, lod: 'static', late: true },
   drone_pad: { kit: 'decor', node: 'drone_pad', authored: true, lod: 'static', late: true },
   mushroom_house: { kit: 'decor', node: 'mushroom_house', authored: true, lod: 'static', late: true },
