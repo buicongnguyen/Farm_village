@@ -1259,4 +1259,6 @@ export const KO_FISHING = {
   '{count} of your plants will be ready a little sooner': '작물 {count}개가 조금 더 빨리 준비돼요',
   'Skills': '기술',
   '1 2 3 4 or the round buttons, walking outdoors': '밖을 걸을 때 1 2 3 4 또는 둥근 버튼',
+  'A fish leapt out and landed at your feet: {fish}': '물고기가 튀어 올라 발치에 떨어졌어요: {fish}',
+  'That is not water': '거긴 물이 아니에요',
 };

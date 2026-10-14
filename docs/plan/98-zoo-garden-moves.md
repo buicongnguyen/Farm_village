@@ -70,5 +70,5 @@ around the farm's pacing.
 | 2 The swing | done with step 1 (one pull request: a pad with nothing to do would be no use) |
 | 3 Into the water | done: the brook and the village pond (built ponds are buildings and stay solid) |
 | 4 Disguise skills | done: 17 disguises x 4 skills, eight effects, buttons and keys 1-4 / J K L ; |
-| 5 Skills and fish | |
+| 5 Skills and fish | done: a swing or a splash skill on water makes fish leap; at most once every 5 min per water, 2 in 5 splashes land a fish for the barn and album |
 | 6 Shape at the mirror | |

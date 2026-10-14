@@ -1259,4 +1259,6 @@ export const VI_FISHING = {
   '{count} of your plants will be ready a little sooner': '{count} cây trồng của bạn sẽ xong sớm hơn một chút',
   'Skills': 'Kỹ năng',
   '1 2 3 4 or the round buttons, walking outdoors': 'phím 1 2 3 4 hoặc các nút tròn, khi đi dạo ngoài trời',
+  'A fish leapt out and landed at your feet: {fish}': 'Một con cá nhảy lên và rơi ngay chân bạn: {fish}',
+  'That is not water': 'Đó không phải là nước',
 };

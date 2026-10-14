@@ -9,6 +9,11 @@ import { CELL_TYPES } from './state.mjs';
 import { costumeOf } from '../content/wardrobe.mjs';
 import { skillsOf } from '../content/skills.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
+import { depthAt } from './swim.mjs';
+import { pick as pickFish } from './fishing.mjs';
+import { POND_WATER } from '../content/world.mjs';
+import { rng, hash } from './rng.mjs';
+import * as barn from './barn.mjs';
 
 const DAY = 86_400_000;
 export const MOVES = { reach: 1.6, knocks: 6, swingMs: 450 };
@@ -72,6 +77,24 @@ Object.assign(actions, {
     const helped = sk.effect === 'splash' ? help(s, now, SKILL.splashCells, cx, cz) : sk.effect === 'bloom' ? help(s, now, SKILL.bloomCells, cx, cz) : 0;
     ctx.emit('skillUsed', { kit, index, effect: sk.effect, helped });
     return { effect: sk.effect, name: sk.name, at, helped, readyAt: cd[key] };
+  },
+});
+// Fish (step 5, after Zoo Garden's pond splash): a swing or a skill that splashes the water makes fish leap; now and
+// then one lands at your feet, a catch for the barn: at most once every LEAP.everyMs in each water, LEAP.chance of the
+// splashes when it may. s.moves.leap = { pond | brook: the time the next may land }
+export const LEAP = { everyMs: 5 * 60_000, chance: 0.4 };
+const waterKey = (x, z) => Math.hypot((x - POND_WATER.x) / POND_WATER.rx, (z - POND_WATER.z) / POND_WATER.rz) < 1 ? 'pond' : 'brook';
+Object.assign(actions, {
+  /** Water splashed at (x, z) metres: { leap: true } and, now and then, { caught: fish } landed in the barn. */
+  splashWater(ctx, { x, z } = {}) {
+    const { s, now } = ctx; if (![x, z].every(Number.isFinite) || !(depthAt(x, z) > 0)) return ctx.fail('That is not water');
+    const key = waterKey(x, z), leap = ((s.moves ??= {}).leap ??= {});
+    if ((leap[key] ?? 0) > now || rng(hash(s.seed, 'leap', Math.floor(now / 1000)))() >= LEAP.chance) return { leap: true };
+    const fish = pickFish(hash(s.seed, 'leapfish', now), false, key === 'brook');
+    leap[key] = now + LEAP.everyMs;
+    const coins = barn.addOrSell(s, fish, 1); if (coins) ctx.emit('barnSold', { coins });
+    (s.album ??= { fish: {}, fruit: {} }).fish[fish] = (s.album.fish[fish] ?? 0) + 1; s.stats.fished = (s.stats.fished ?? 0) + 1;
+    ctx.emit('fishLeapt', { fish }); return { leap: true, caught: fish };
   },
 });
 export const installMoves = () => Object.assign(ACTIONS, actions);
