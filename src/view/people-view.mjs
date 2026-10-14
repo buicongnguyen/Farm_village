@@ -312,7 +312,7 @@ export class PeopleView {
       else if ((party || w.party) && !w.visitor && !w.controlled) this.liveParty(w, dt, party);   // the Harvest Festival: everyone is on the square
       else if (w.family) this.liveFamily(w, dt, night);
       else this.liveVillager(w, dt, night);
-      const sub = w.subject; sub.x = w.x; sub.z = w.z; sub.rot = w.rot; sub.clip = w.clip; sub.speed = w.speed ?? 1; sub.hidden = !!w.indoors;
+      const sub = w.subject; sub.x = w.x; sub.z = w.z; sub.rot = w.rot; sub.clip = w.clip; sub.speed = w.speed ?? 1; sub.hidden = !!w.indoors; sub.lift = -(w.sink ?? 0);
       sub.bob = w.clip === 'Walk' || w.clip === 'Run' ? Math.abs(Math.sin(this.time * 8 + w.phase)) * 0.06 : 0;
     }
     if ((this.greetClock += dt) > 0.5) { this.greetClock = 0; this.greet(); }

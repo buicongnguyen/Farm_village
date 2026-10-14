@@ -23,6 +23,7 @@ import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '.
 import { RIGS } from '../view/skinned.mjs';
 import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
 import { installMoves, MOVES } from '../core/moves.mjs';
+import { wetOf, SWIM } from '../core/swim.mjs';
 import { CELL as CELL_M } from '../content/world.mjs';
 import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
@@ -252,7 +253,7 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; this.padEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.padEl.hidden = true; if (this.breathEl) this.breathEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
@@ -272,7 +273,7 @@ class ExploreMode {
     else if (!e.repeat && k === 'escape') this.close();
   }
   /** Can you swing now? Walking freely outdoors, on foot, not fishing, no card or panel up. */
-  get canSwing() { return !!this.session && !this.inside && !this.busy && !this.loading && !this.error && this.own && !this.state.fishing?.line && !(this.rod?.cast); }
+  get canSwing() { return !!this.session && !this.inside && !this.busy && !this.loading && !this.error && this.own && !this.state.fishing?.line && !(this.rod?.cast) && !(this.session.wet > 0); }
   /** A swing (Zoo Garden's normal attack, made peaceful): the Hammer clip, crows near you fly off, a weed or a stone just
    *  ahead is knocked loose (core/moves.mjs, a few a day), water ahead splashes. */
   swing() {
@@ -284,6 +285,16 @@ class ExploreMode {
     const juice = this.world.juice, fx = x + Math.sin(yaw) * MOVES.reach, fz = z + Math.cos(yaw) * MOVES.reach;
     if (r.hit === 'water') this.splash(fx, fz); else if (!r.knocked) juice?.dust(fx, fz, 0.6);
     if (r.tired) this.hud.toast(t('That is enough weeding for today. The rest can wait for tomorrow.'), 'info');
+  }
+  /** In the water: rings round you as you go (and now and then standing still), and the breath ring while you swim. */
+  water(dt, wet, moving) {
+    const el = (this.breathEl ??= Object.assign(document.createElement('div'), { className: 'explore-breath', hidden: true }));
+    if (!el.parentElement) this.radial.el.parentElement.appendChild(el);
+    el.hidden = !wet.deep && wet.breath >= 1; if (!el.hidden) { el.style.setProperty('--left', wet.breath.toFixed(3)); el.classList.toggle('low', wet.breath < 0.3); }
+    if ((wet.depth > 0) !== !!this.wasWet) { this.wasWet = wet.depth > 0; this.render(); }   // the swing pad goes away in the water and comes back on land
+    if (wet.depth <= 0) return;
+    if ((this.rippleIn = (this.rippleIn ?? 0) - dt) > 0) return; this.rippleIn = moving ? 0.32 : 1.1;
+    const [x, z] = this.session.p; this.world.juice?.ground?.spawn({ x, y: 0.08, z, life: 1.1, size: 0.8, size1: wet.deep ? 2.6 : 2, shape: 2, flat: true, color: '#e6fbff', alpha: 0.7 });
   }
   /** Water thrown up where a swing (or a skill) lands: a ring on the water and a burst of drops. */
   splash(x, z) {
@@ -422,14 +433,16 @@ class ExploreMode {
     if (this.inside) { this.room.frame(this.session, moving, dt, this.state); this.positionPins(); this.positionSay(); }
     else {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
-      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED / (RIGS[this.walker.body]?.walk ?? 2.1) : 1 });
+      const wet = wetOf(e);
+      Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED * (wet.deep ? SWIM.swim : wet.depth > 0 ? SWIM.wade : 1) / (RIGS[this.walker.body]?.walk ?? 2.1) : 1, sink: wet.sink });
+      this.water(dt, wet, moving);
       // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
       const cam = this.world.cam, k = document.body.classList.contains('reduced-motion') ? 1 : 1 - Math.exp(-9 * dt);
       if (!this.busy && (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02 || cam.span !== this.span)) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, this.span);
       const view = this.world.fishingView;
       if (view && this.own) {   // near any pond the rod comes out (and goes away a little further off, so it never flickers)
         const bank = nearestPond(this.state, ...e.p), line = this.state.fishing?.line, rod = (this.rod ??= { cast: null, castAt: 0, landed: true });
-        const out = !e.seated && bank.d <= (view.angler ? BANK.leave : BANK.reach);
+        const out = !e.seated && !(e.wet > 0) && bank.d <= (view.angler ? BANK.leave : BANK.reach);   // (no rod in the water)
         // Near the water you only carry the rod. The line goes out when you cast, and it is wound in again as soon as you
         // walk on (or come to the bank with an old line still out): strolling round the pond never fishes by itself.
         if (line && (rod.cast ? !out || far(e.p, ...rod.from) > .8 : out)) { this.game.do('pullLine'); rod.cast = null; }

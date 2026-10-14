@@ -33,3 +33,28 @@ test('a swing at grass, at water or at nothing in particular changes nothing; ba
   assert.equal(act(s, 'swing', { x: 'a', z: 1, yaw: 0 }, NOW).ok, false); assert.equal(act(s, 'swing', {}, NOW).ok, false);
   assert.equal(swingTarget(s, 66, 22, 0).type, 'water', 'the brook is not water to a swing');
 });
+
+// Step 3: into the water (core/swim.mjs)
+import { installExplore, startExplore, exploreSession, moveExplore } from '../src/core/explore.mjs';
+import { SWIM, depthAt } from '../src/core/swim.mjs';
+import { POND_WATER, brookCurve } from '../src/content/world.mjs';
+installExplore();
+test('the water: the bank holds until you push on, then you wade slower and swim slower still, and tired you are carried back', () => {
+  const s = newGame(NOW, 63, { restore: true }); tick(s, NOW);
+  const bx = 120, mid = (brookCurve(bx / 2) + 0.5) * 2;   // a stretch of the brook in the east, away from the bridge
+  assert.ok(depthAt(bx, mid) > SWIM.shallow, 'the middle of the brook is not deep'); assert.equal(depthAt(bx, mid + 8), 0);
+  assert.ok(depthAt(POND_WATER.x, POND_WATER.z) > 0, 'the village pond is not water');
+  const shore = [bx, Math.round(mid + 5)]; assert.ok(startExplore(s, shore, { roomId: 'farmhouse_main', interactions: [], entry: { position: [0, 0, 0] } }, new Set()), 'no place to start');
+  const e = exploreSession(s); e.p = [...shore];
+  for (let i = 0; i < 3; i++) moveExplore(s, 0, -1, 0.1);   // a moment's push: still on the bank
+  assert.equal(depthAt(...e.p), 0, 'stepped in at once'); assert.ok(!e.inWater);
+  for (let i = 0; i < 30; i++) moveExplore(s, 0, -1, 0.1);   // keep pushing: in you go
+  assert.ok(e.inWater && depthAt(...e.p) > 0, 'never got into the water');
+  const a = [...e.p]; moveExplore(s, 0, -1, 0.1); const wadeStep = Math.hypot(e.p[0] - a[0], e.p[1] - a[1]);
+  assert.ok(wadeStep < 3.6 * 0.1 * 0.75 + 1e-6, 'walked through the water at land speed');
+  e.p = [bx, mid];   // out in the middle: tread water there until tired
+  for (let i = 0; i < 400 && !e.tired; i++) moveExplore(s, 0, 0, 0.1);
+  assert.ok(e.tired, 'never tired in the deep'); assert.ok(e.route.length, 'tired and no way back');
+  for (let i = 0; i < 400 && depthAt(...e.p) > 0; i++) moveExplore(s, 0, -1, 0.1);   // pushing deeper does nothing: carried back
+  assert.equal(depthAt(...e.p), 0, 'not carried back to the bank'); moveExplore(s, 0, 0, 0.1); assert.ok(!e.tired, 'still tired on dry land');
+});
