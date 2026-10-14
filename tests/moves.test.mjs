@@ -86,3 +86,18 @@ test('a skill needs its disguise, waits out its cooldown (kept in the save), and
   s.beds[bed] = { crop: 'wheat', doneAt: NOW + 212_000 }; assert.equal(act(s, 'useSkill', at, NOW + 12_000).helped, 1, 'a new growth could not be helped');
   assert.equal(act(s, 'useSkill', { index: 9, x: 1, z: 1, yaw: 0 }, NOW).ok, false); assert.equal(act(s, 'useSkill', { index: 1, x: 'x', z: 1, yaw: 0 }, NOW).ok, false);
 });
+
+// Step 5: fish (core/moves.mjs splashWater)
+import { LEAP } from '../src/core/moves.mjs';
+test('splashed water makes fish leap; now and then one lands in the barn, at most once in a while in each water', () => {
+  const s = newGame(NOW, 65, { restore: true }); tick(s, NOW);
+  assert.equal(act(s, 'splashWater', { x: 57, z: 118 }, NOW).ok, false, 'a road splashed like water');
+  const brook = [120, (brookCurve(60) + 0.5) * 2];
+  let caught = 0, first = null;
+  for (let i = 0; i < 40; i++) { const r = act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + i * 1000); assert.ok(r.ok && r.leap); if (r.caught) { caught++; first ??= r.caught; } }
+  assert.equal(caught, 1, 'more than one fish landed within the wait');
+  assert.equal(s.album.fish[first], 1); assert.equal(s.moves.leap.brook > NOW, true);
+  let later = 0; for (let i = 0; i < 40; i++) if (act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + LEAP.everyMs + 60_000 + i * 1000).caught) later++;
+  assert.equal(later, 1, 'no fish after the wait');
+  const pond = act(s, 'splashWater', { x: POND_WATER.x, z: POND_WATER.z }, NOW + 1000); assert.ok(pond.ok, 'the village pond is not water');
+});

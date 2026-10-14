@@ -1259,4 +1259,6 @@ export const JA_FISHING = {
   '{count} of your plants will be ready a little sooner': '{count}つの作物が少し早く育ちます',
   'Skills': '技',
   '1 2 3 4 or the round buttons, walking outdoors': '外を歩くとき、1 2 3 4 か丸いボタン',
+  'A fish leapt out and landed at your feet: {fish}': '魚がはねて足もとに落ちてきました:{fish}',
+  'That is not water': 'そこは水ではありません',
 };

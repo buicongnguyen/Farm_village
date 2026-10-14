@@ -26,7 +26,7 @@ import { installMoves, MOVES, skillsNow } from '../core/moves.mjs';
 import { EFFECTS } from '../content/skills.mjs';
 import { castOf } from '../view/skinned.mjs';
 import * as THREE from 'three';
-import { wetOf, SWIM } from '../core/swim.mjs';
+import { wetOf, SWIM, depthAt } from '../core/swim.mjs';
 import { CELL as CELL_M } from '../content/world.mjs';
 import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
@@ -292,7 +292,7 @@ class ExploreMode {
     const r = this.game.do('swing', { x, z, yaw }), [cx, cz] = r.cell ?? [Math.floor(x / CELL_M), Math.floor(z / CELL_M)];
     this.world.critters?.scare(cx, cz, 3);
     const juice = this.world.juice, fx = x + Math.sin(yaw) * MOVES.reach, fz = z + Math.cos(yaw) * MOVES.reach;
-    if (r.hit === 'water') this.splash(fx, fz); else if (!r.knocked) juice?.dust(fx, fz, 0.6);
+    if (r.hit === 'water' || depthAt(fx, fz) > 0) this.fishSplash(fx, fz); else if (!r.knocked) juice?.dust(fx, fz, 0.6);
     if (r.tired) this.hud.toast(t('That is enough weeding for today. The rest can wait for tomorrow.'), 'info');
   }
   /** A skill of the disguise you wear (content/skills.mjs): the rule (core/moves.mjs), then the move and the look. */
@@ -304,7 +304,7 @@ class ExploreMode {
     if (sub) sub.once = { clip: r.effect === 'show' ? 'Cheer' : r.effect === 'float' ? 'Jump' : r.effect === 'decoy' ? 'Wave' : 'Hammer' };
     if (r.effect === 'dash' || r.effect === 'float') { e.boost = r.effect === 'dash' ? 0.35 : 1.3; e.boostBy = r.effect === 'dash' ? 3.2 : 1.6; e.route = [[x + Math.sin(yaw) * (r.effect === 'dash' ? 4 : 5), z + Math.cos(yaw) * (r.effect === 'dash' ? 4 : 5)]]; }
     if (r.effect === 'shoo' || r.effect === 'decoy') this.world.critters?.scare(Math.floor(x / CELL_M), Math.floor(z / CELL_M), 6);
-    if (r.effect === 'splash') { this.splash(...r.at); }
+    if (r.effect === 'splash') { if (depthAt(...r.at) > 0) this.fishSplash(...r.at); else this.splash(...r.at); }
     const colours = { bloom: ['#ff8fb0', '#ffd23f', '#8fe06a'], show: ['#ffd23f', '#ff5a7a', '#5ab8ff', '#9b6bff'], light: ['#fff4a8'], shoo: ['#e8d4b0'], dash: ['#ffffff'], float: ['#bff3ff'], decoy: ['#ffd23f'], splash: ['#bff3ff'] }[r.effect];
     const n = r.effect === 'show' ? 26 : r.effect === 'bloom' ? 20 : 10;
     for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, ring = r.effect === 'bloom' ? 5 : 1;
@@ -347,6 +347,14 @@ class ExploreMode {
     if (wet.depth <= 0) return;
     if ((this.rippleIn = (this.rippleIn ?? 0) - dt) > 0) return; this.rippleIn = moving ? 0.32 : 1.1;
     const [x, z] = this.session.p; this.world.juice?.ground?.spawn({ x, y: 0.08, z, life: 1.1, size: 0.8, size1: wet.deep ? 2.6 : 2, shape: 2, flat: true, color: '#e6fbff', alpha: 0.7 });
+  }
+  /** Water splashed by a swing or a skill: the splash, fish leaping out and back (Zoo Garden's pond splash), and now and
+   *  then one landing at your feet for the barn (core/moves.mjs splashWater). */
+  fishSplash(x, z) {
+    this.splash(x, z); const view = this.world.fishingView, r = this.game.do('splashWater', { x, z }), [px, pz] = this.session.p;
+    if (!view?.landFor) return;
+    view.landFor({ x: x + Math.cos(this.time ?? 0) * 1.6, z: z + Math.sin(this.time ?? 0) * 1.6 }, { x, z }, 0.05);   // one leaps and falls back in
+    if (r.ok && r.caught) { view.landFor({ x: px, z: pz }, { x, z }, 0.05); this.hud.toast(t('A fish leapt out and landed at your feet: {fish}', { fish: t(GOODS[r.caught]?.name ?? r.caught) }), 'good', { icon: r.caught }); }
   }
   /** Water thrown up where a swing (or a skill) lands: a ring on the water and a burst of drops. */
   splash(x, z) {
