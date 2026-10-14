@@ -901,8 +901,8 @@ def fountain():
 piece('fountain', fountain(), decor)
 
 def dock():
-    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 3.8 m out over the
-    brook toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
+    """The boat dock (chapter 7): a plank deck on the bank (the 4 x 4 m footprint) and a pier reaching 2 m out over the
+    brook (it reached 3.8 m, to the middle of the water, and stood in front of the float when you fished) toward the plan's back (the game's north), with piles, mooring posts, a moored rowing boat, a lantern, a rope
     coil and a fish crate. Stands on y = 0; the water is just above it (0.05)."""
     p = []
     for i in range(9):   # the deck on the bank
@@ -913,19 +913,19 @@ def dock():
     for x in (-1.7, 1.7):
         for y in (-1.8, 1.8):
             p.append(bx('foot', .26, .26, .34, x, y, 0, 'woodd', bev=0.))
-    for i in range(9):   # the pier over the water
+    for i in range(5):   # the pier over the water
         y = -2.25 - i * .42
         p.append(bx('plank', 2.1, .38, .1, 0, y, .32, 'wood' if i % 3 else 'woodl', bev=0.))
     for x in (-.9, .9):
-        p.append(bx('beam', .18, 3.9, .2, x, -3.9, .12, 'woodd', bev=0.))
-        for y in (-2.6, -4.2, -5.7):
+        p.append(bx('beam', .18, 2.2, .2, x, -3.1, .12, 'woodd', bev=0.))
+        for y in (-2.6, -3.9):
             p.append(cl('pile', .13, 1.55, x * 1.2, y, -.9, 'wooddd', verts=7))
     for x in (-1.08, 1.08):   # mooring posts at the end, a rope between them
-        p.append(cl('post', .11, .62, x, -5.7, .6, 'woodd', verts=7))
-        p.append(ball('cap', .13, x, -5.7, 1.26, 'wood', sub=1))
-    p.append(st((-1.08, -5.7, 1.0), (1.08, -5.7, 1.0), .035, 'rope', sides=4, rt=.035))
+        p.append(cl('post', .11, .62, x, -4.1, .6, 'woodd', verts=7))
+        p.append(ball('cap', .13, x, -4.1, 1.26, 'wood', sub=1))
+    p.append(st((-1.08, -4.1, 1.0), (1.08, -4.1, 1.0), .035, 'rope', sides=4, rt=.035))
     # the rowing boat, moored at the pier's right side
-    bx0, by0 = 2.05, -4.0
+    bx0, by0 = 2.05, -3.1
     hull = lathe('hull', [(0, 0), (.7, .04), (1.0, .34), (1.0, .44), (.9, .44), (.86, .14), (0, .1)], (bx0, -by0, -.08), C['teal'], segments=14, smooth_angle=40)
     hull.scale = (.6, 1.45, 1)
     p.append(hull)
@@ -933,7 +933,7 @@ def dock():
     p.append(bx('thwart', 1.02, .24, .06, bx0, by0 + .5, .2, 'woodl', bev=0.))
     p.append(st((bx0 - .25, by0 - 1.0, .3), (bx0 + .3, by0 + 1.0, .42), .03, 'wood', sides=4, rt=.03))
     p.append(bx('blade', .16, .4, .04, bx0 + .33, by0 + 1.12, .4, 'woodl', bev=0.))
-    p.append(st((1.08, -5.7, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
+    p.append(st((1.08, -4.1, .9), (bx0 - .1, by0 - 1.35, .34), .025, 'rope', sides=3, rt=.025))
     # on the deck: a lantern post, a rope coil, a crate with the catch, a rod against the rail
     p.append(cl('lamppost', .07, 2.0, -1.6, 1.6, .42, 'iron', verts=6))
     p.append(bx('arm', .5, .07, .07, -1.36, 1.6, 2.36, 'iron', bev=0.))
