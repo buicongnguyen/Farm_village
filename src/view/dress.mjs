@@ -421,5 +421,6 @@ export async function dressWorld(world, game) {
   // after that: the village's heavier models and the windmill's rotor
   world.later = Promise.all([world.dressed.then(() => dressVillage(world, game)).then(() => fit(world.cam))
     .then(() => import('./old-mill.mjs')).then(({ OldMill }) => { world.oldMill = new OldMill(world, game); })
-    .then(() => import('./train-view.mjs')).then(({ TrainView }) => { world.train = new TrainView(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
+    .then(() => import('./train-view.mjs')).then(({ TrainView }) => { world.train = new TrainView(world, game); })
+    .then(() => import('./river-life.mjs')).then(({ RiverLife }) => { world.riverLife = new RiverLife(world, game); }), spinRotor(world)]).catch(e => console.warn('world dressing', e));
 }

@@ -122,3 +122,18 @@ test('first a buffalo, then machines with new land: the pen opens early and adds
   assert.equal(mayBuild(s, 'drone_pad').params?.lock, 'land'); s.parcels.push('1,1'); assert.notEqual(mayBuild(s, 'drone_pad').params?.lock, 'land');
   assert.notEqual(mayBuild(newGame(NOW, 42, { restore: true }), 'buffalo_pen').params?.lock, 'land', 'the buffalo asks for land');
 });
+
+test('river life: boats keep to the water east of the old mill, the ferry turns at both ends, and the court and playground stand clear on the strand', async () => {
+  const { afloat, ferryAt, COURT, PLAYGROUND } = await import('../src/view/river-life.mjs'), { brookCentre, WATER_HALF } = await import('../src/view/brook.mjs');
+  const { CELL, QUAY, LOTS, brookZ, BROOK_HALF, inQuay, inTowpath, OLD_MILL } = await import('../src/content/world.mjs');
+  for (let t = 0; t < 400; t += 3.7) {
+    const f = ferryAt(t), [x, z] = afloat(f.x, -1.1, f.dir);
+    assert.ok(Math.abs(z - brookCentre(f.x)) < WATER_HALF - 1.2, `the ferry is aground at ${f.x}`); assert.ok(f.x > (OLD_MILL.box.x1 + 1) * CELL, 'the ferry ran into the old mill'); assert.ok(Number.isFinite(x));
+  }
+  assert.equal(ferryAt(0).dir, 1); assert.ok(ferryAt(1e4).x >= (QUAY.x0 + 2) * CELL - 1e-6);
+  const dirs = new Set(); for (let t = 0; t < 300; t += 2) dirs.add(ferryAt(t).dir); assert.equal(dirs.size, 2, 'the ferry never comes back');
+  for (const [name, c, w, d] of [['court', COURT, 5, 3], ['playground', PLAYGROUND, 3, 3]]) for (let x = Math.ceil(c.x - w / 2); x < c.x + w / 2; x++) for (let z = Math.ceil(c.z - d / 2); z < c.z + d / 2; z++) {
+    assert.ok(!inQuay(x, z), `the ${name} is on the quay at ${x},${z}`); assert.ok(!inTowpath(x, z), `the ${name} is on the towpath at ${x},${z}`);
+    assert.ok(z < brookZ(x) - BROOK_HALF - 2, `the ${name} is in the water at ${x},${z}`); assert.ok(!LOTS.some(l => x >= l.x && x < l.x + l.w && z >= l.z && z < l.z + l.d));
+  }
+});
