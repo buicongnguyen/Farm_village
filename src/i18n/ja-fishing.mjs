@@ -1156,4 +1156,7 @@ export const JA_FISHING = {
   'Drone pad': 'ドローン発着場',
   'harvests and sows 8 more beds at every round of help': '手伝いのたびに、うねを8つ多く収穫して種まきします',
   'sprays the orchard: fruit comes a quarter sooner': '果樹園に散布します。実が四分の一早くなります',
+  'Buffalo pen': '水牛の囲い',
+  'works 4 more beds at every round of help': '手伝いのたびに、うねを4つ多く耕します',
+  'Buy more land first ({count} new fields)': 'まず土地を買い足しましょう(新しい畑{count}つ)',
 };

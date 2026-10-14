@@ -2232,6 +2232,27 @@ def noodle_factory():
     return p
 piece('noodle_factory', noodle_factory(), decor)
 
+def buffalo_pen():
+    """Buffalo pen (2 x 2 cells): a low thatched shelter on four posts at the back, a split-rail fence open at the front, a
+    wooden water trough, a heap of straw and a plough leaning on the rail. The buffalo itself walks the beds."""
+    p = [bx('ground', 3.8, 3.8, .08, 0, 0, 0, 'hayd', bev=.03)]
+    for x in (-1.5, 1.5):
+        for y in (-1.5, -.3):
+            p.append(bx('post', .16, .16, 1.7, x, y, .08, 'woodd', bev=.02))
+    p += [gable('thatch', 3.6, 1.9, .7, 0, -.9, 1.78, 'hayd', over=.16), *roof_rows(3.6, 1.9, .7, 0, -.9, 1.8, 'hay', 'hayd', rows=4, over=.24)]
+    for x in (-1.75, 1.75):                                # side rails, front open
+        for z in (.55, 1.0):
+            p.append(bx('rail', .08, 3.4, .1, x, 0, z, 'wood', bev=.02))
+        for y in (-1.7, 0, 1.7):
+            p.append(bx('railpost', .14, .14, 1.2, x, y, .08, 'woodd', bev=.02))
+    for z in (.55, 1.0):
+        p.append(bx('rail', 1.2, .08, .1, -1.15, 1.7, z, 'wood', bev=.02))
+    p += [bx('trough', 1.2, .5, .36, .7, -.9, .08, 'wood', bev=.04), bx('water', 1.0, .34, .04, .7, -.9, .42, 'water', bev=0),
+          ball('straw', .5, -.9, -.9, .3, 'hay', sub=1, sc=(1.3, 1, .6)), ball('straw', .34, -.5, -.6, .22, 'wheatl', sub=1, sc=(1.2, 1, .6)),
+          bx('plough', .1, 1.3, .1, 1.3, 1.2, .5, 'woodl', bev=.02, rot=.5), bx('share', .34, .1, .3, 1.55, .8, .1, 'iron', bev=.02, rot=.5)]
+    return p
+piece('buffalo_pen', buffalo_pen(), decor)
+
 def tractor_shed():
     """Tractor shed (2 x 2 cells): an open-fronted timber garage with a red tin roof, a fuel drum, a stack of tyres and a
     tool board. The tractor itself is its own piece and drives about (machines-view.mjs)."""

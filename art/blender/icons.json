@@ -1695,5 +1695,11 @@
   "src": "raw:decor",
   "root": "drone_pad",
   "preset": "building"
+ },
+ {
+  "id": "buffalo_pen",
+  "src": "raw:decor",
+  "root": "buffalo_pen",
+  "preset": "building"
  }
 ]
