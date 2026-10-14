@@ -1175,4 +1175,7 @@ export const KO_FISHING = {
   'No ship is at the quay': '부두에 배가 없어요',
   'The ship has no such hold': '그런 선창은 없어요',
   'That hold is full': '그 선창은 가득 찼어요',
+  'That is enough weeding for today. The rest can wait for tomorrow.': '오늘 김매기는 이만하면 충분해요. 나머지는 내일 해요.',
+  'Swing (Space)': '휘두르기 (스페이스)',
+  'Arrow keys or WASD to walk · E to interact · Space to swing': '방향키나 WASD로 걷기 · E로 상호작용 · 스페이스로 휘두르기',
 };

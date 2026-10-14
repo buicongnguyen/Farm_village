@@ -1175,4 +1175,7 @@ export const VI_FISHING = {
   'No ship is at the quay': 'Không có tàu nào ở bến',
   'The ship has no such hold': 'Tàu không có khoang đó',
   'That hold is full': 'Khoang đó đã đầy',
+  'That is enough weeding for today. The rest can wait for tomorrow.': 'Hôm nay nhổ cỏ thế là đủ rồi. Phần còn lại để mai nhé.',
+  'Swing (Space)': 'Vung (phím cách)',
+  'Arrow keys or WASD to walk · E to interact · Space to swing': 'Phím mũi tên hoặc WASD để đi · E để tương tác · Phím cách để vung',
 };

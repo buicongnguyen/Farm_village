@@ -22,6 +22,8 @@ import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
 import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
+import { installMoves, MOVES } from '../core/moves.mjs';
+import { CELL as CELL_M } from '../content/world.mjs';
 import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
@@ -45,7 +47,13 @@ const centre = c => c * 2 + 1, far = (p, x, z) => Math.hypot(p[0] - x, p[1] - z)
 class ExploreMode {
   constructor(radial) {
     Object.assign(this, { radial, game: radial.game, world: radial.world, panels: radial.panels, hud: radial.hud, generation: 0, keys: new Set(), stick: [0, 0] });
-    installExplore(); installCivicExplore(); this.world.exploreMode = this;
+    installExplore(); installCivicExplore(); installMoves(); this.world.exploreMode = this;
+    // the swing pad (Zoo Garden's attack pad): its own element, like the stick, answering on pointerdown so a second
+    // finger works while the first is on the stick (phones drop the click of a second finger)
+    const pad = this.padEl = document.createElement('button'); pad.type = 'button'; pad.className = 'explore-swing'; pad.hidden = true;
+    pad.innerHTML = '<span aria-hidden="true">🌾</span>'; radial.el.parentElement.appendChild(pad);
+    pad.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); this.swing(); });
+    pad.addEventListener('click', e => { if (e.detail === 0) this.swing(); });   // the keyboard's Enter on a focused pad
     this.el = document.createElement('section'); this.el.className = 'explore-ui'; this.el.hidden = true; this.el.setAttribute('aria-label', t('Explore'));
     radial.el.parentElement.appendChild(this.el);
     this.pinsEl = document.createElement('div'); this.pinsEl.className = 'home-pins'; this.pinsEl.hidden = true;
@@ -244,14 +252,14 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.padEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
   key(e, down) {
     if (!this.active || editing(e)) return;
     const k = e.key.toLowerCase();
-    if (!KEYS.has(k) && !['e', 'f', 'enter', 'escape', 'q', '+', '=', '-'].includes(k)) return;
+    if (!KEYS.has(k) && !['e', 'f', 'enter', 'escape', 'q', '+', '=', '-', ' '].includes(k)) return;
     // A focused button keeps its keyboard activation. Typing/IME always belongs to its field.
     if (k === 'enter' && e.target?.closest?.('button')) return;
     e.stopImmediatePropagation(); e.preventDefault();
@@ -260,7 +268,28 @@ class ExploreMode {
     if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
     else if (k === '+' || k === '=' || k === '-') this.zoom(k === '-' ? 1.12 : 1 / 1.12);
     else if (!e.repeat && (k === 'e' || k === 'f' || k === 'enter')) this.choose('interact');
+    else if (k === ' ') this.swing();   // Space: a swing (held, it swings again as soon as it can)
     else if (!e.repeat && k === 'escape') this.close();
+  }
+  /** Can you swing now? Walking freely outdoors, on foot, not fishing, no card or panel up. */
+  get canSwing() { return !!this.session && !this.inside && !this.busy && !this.loading && !this.error && this.own && !this.state.fishing?.line && !(this.rod?.cast); }
+  /** A swing (Zoo Garden's normal attack, made peaceful): the Hammer clip, crows near you fly off, a weed or a stone just
+   *  ahead is knocked loose (core/moves.mjs, a few a day), water ahead splashes. */
+  swing() {
+    if (!this.canSwing) return; const now = performance.now(); if (now < (this.swingAt ?? 0)) return; this.swingAt = now + MOVES.swingMs;
+    const e = this.session, [x, z] = e.p, yaw = e.yaw ?? 0;
+    if (this.walker?.subject) this.walker.subject.once = { clip: 'Hammer' };
+    const r = this.game.do('swing', { x, z, yaw }), [cx, cz] = r.cell ?? [Math.floor(x / CELL_M), Math.floor(z / CELL_M)];
+    this.world.critters?.scare(cx, cz, 3);
+    const juice = this.world.juice, fx = x + Math.sin(yaw) * MOVES.reach, fz = z + Math.cos(yaw) * MOVES.reach;
+    if (r.hit === 'water') this.splash(fx, fz); else if (!r.knocked) juice?.dust(fx, fz, 0.6);
+    if (r.tired) this.hud.toast(t('That is enough weeding for today. The rest can wait for tomorrow.'), 'info');
+  }
+  /** Water thrown up where a swing (or a skill) lands: a ring on the water and a burst of drops. */
+  splash(x, z) {
+    const juice = this.world.juice; if (!juice?.ground) return;
+    juice.ground.spawn({ x, y: 0.1, z, life: 0.7, size: 1.2, size1: 3.4, shape: 2, flat: true, color: '#e6fbff', alpha: 0.8 });
+    for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; juice.particles?.spawn({ x, y: 0.3, z, vx: Math.cos(a) * 1.6, vy: 3 + (i % 3), vz: Math.sin(a) * 1.6, gravity: 9, life: 0.7, size: 0.35, size1: 0.2, shape: 0, color: '#bff3ff', alpha: 0.9 }); }
   }
   pointer(e) {
     if (!this.active) return;
@@ -539,6 +568,7 @@ class ExploreMode {
     const who = this.walker && !this.own ? ` · ${this.radial.people.nameOf(this.walker)}` : '';
     const compact = (this.roam || this.inside) && !loading;
     const side = `${this.error ? button('retry', 'Try again', 'primary') : ''}${button('close', 'Farm view', 'ghost')}${this.inside && !card ? button('homeView', this.room.view === 'whole' ? 'Follow my character' : this.kind ? 'View the whole building' : 'View the whole house', 'ghost') : ''}${!loading && !card ? button('controls', control === 'tap' ? 'Use the thumb stick' : 'Use tap controls', 'ghost') : ''}`;
+    this.padEl.hidden = !!loading || !!card || !this.canSwing; this.padEl.setAttribute('aria-label', t('Swing (Space)')); this.padEl.title = t('Swing (Space)');
     this.joyEl.hidden = !!loading || !!card || control !== 'joystick'; this.joyEl.classList.toggle('raised', !compact); this.joyEl.setAttribute('aria-label', t('Movement controls'));
     if (this.joyEl.hidden && this.joy) this.joyReset();
     const interact = `<button type="button" class="btn primary" data-explore="interact" ${label ? '' : 'disabled'}>${esc(label ?? t('Walk closer to interact'))}</button>`;
@@ -546,7 +576,7 @@ class ExploreMode {
       <div class="explore-controls${compact ? ' compact' : ''}${control === 'joystick' ? ' joy' : ''}">${card || (compact && !this.notice && performance.now() > (this.hintUntil ?? 0)) ? '' : `<p role="status">${esc(loading || t(this.notice ?? (this.inside ? 'Tap the floor to walk. Tap the furniture to use it.' : this.roam ? 'Walk anywhere. Come close to people and places to do things.' : 'Walk to the door, then choose Go inside.')))}</p>`}
       ${!loading && !card ? `<div class="explore-actions">${interact}${this.inside && nearest !== this.session?.room.exit.id ? button('outside', 'Go outside', 'ghost') : ''}</div>` : ''}
       ${compact ? '' : `<div class="explore-actions">${side}</div>`}
-      ${!loading && !card && control !== 'joystick' ? `<small>${esc(t('Arrow keys or WASD to walk · E to interact'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
+      ${!loading && !card && control !== 'joystick' ? `<small>${esc(t(this.inside ? 'Arrow keys or WASD to walk · E to interact' : 'Arrow keys or WASD to walk · E to interact · Space to swing'))}</small>` : ''}</div>${compact ? `<div class="explore-actions explore-side">${side}</div>` : ''}
       `;
     if (this.html === html || (this.card && this.html?.replace(/data-wait="\w+">[^<]*/g, '') === html.replace(/data-wait="\w+">[^<]*/g, ''))) return;   // only a ticking wait differs
     this.html = html; this.el.innerHTML = html;
