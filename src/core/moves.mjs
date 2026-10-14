@@ -6,6 +6,9 @@ import { ACTIONS } from './act.mjs';
 import * as grid from './grid.mjs';
 import { N } from '../content/world.mjs';
 import { CELL_TYPES } from './state.mjs';
+import { costumeOf } from '../content/wardrobe.mjs';
+import { skillsOf } from '../content/skills.mjs';
+import { BUILDINGS } from '../content/buildings.mjs';
 
 const DAY = 86_400_000;
 export const MOVES = { reach: 1.6, knocks: 6, swingMs: 450 };
@@ -34,4 +37,41 @@ export const actions = {
     return { hit: hit.type, cell: hit.cell, knocked: true, left: knocksLeft(s, now) };
   },
 };
+// Skills (step 4): a disguise costume's four (content/skills.mjs). Cooldowns are kept in the save (s.moves.cd, by the
+// costume's kit and the slot) so leaving Explore or reloading never resets them. Two effects touch the farm, gently:
+// `splash` waters the beds where it lands, `bloom` the beds and fruit trees round you: each takes a quarter off what is
+// left of its wait, once per growth (s.moves.helped remembers the wait it gave), at most SKILL.beds at a time.
+export const SKILL = { splashAhead: 4, splashCells: 1, bloomCells: 3, sooner: 0.25, beds: 8 };
+/** The skills you can use now: [{ name, effect, cd, index, readyAt }] (empty unless a disguise costume is on). */
+export function skillsNow(s) {
+  const kit = costumeOf(s)?.kit, cd = s.moves?.cd ?? {};
+  return skillsOf(kit).map((sk, index) => ({ ...sk, index, readyAt: cd[`${kit}:${index}`] ?? 0 }));
+}
+function help(s, now, cells, cx, cz) {
+  const helped = ((s.moves ??= {}).helped ??= {}); let n = 0;
+  for (const [id, p] of Object.entries(s.placed ?? {})) {
+    if (n >= SKILL.beds || Math.max(Math.abs(p.x - cx), Math.abs(p.z - cz)) > cells) continue;
+    const it = p.kind === 'bed' ? s.beds?.[id] : BUILDINGS[p.kind]?.fruit ? s.trees?.[id] : null;
+    if (!it || !(it.doneAt > now) || helped[id] === it.doneAt) continue;
+    it.doneAt = now + Math.round((it.doneAt - now) * (1 - SKILL.sooner)); helped[id] = it.doneAt; n++;
+  }
+  for (const id of Object.keys(helped)) if (!s.placed?.[id]) delete helped[id];
+  return n;
+}
+Object.assign(actions, {
+  /** Use a skill of the costume you wear: { index, x, z, yaw } (where you stand, metres). */
+  useSkill(ctx, { index, x, z, yaw } = {}) {
+    const { s, now } = ctx, kit = costumeOf(s)?.kit, sk = skillsOf(kit)[index];
+    if (!sk || !Number.isSafeInteger(index)) return ctx.fail('Put on a disguise to use its skills');
+    if (![x, z, yaw].every(Number.isFinite)) return ctx.fail('Unknown place');
+    const key = `${kit}:${index}`, cd = ((s.moves ??= {}).cd ??= {});
+    if ((cd[key] ?? 0) > now) return ctx.fail('Not ready yet');
+    cd[key] = now + sk.cd * 1000;
+    const at = sk.effect === 'splash' ? [x + Math.sin(yaw) * SKILL.splashAhead, z + Math.cos(yaw) * SKILL.splashAhead] : [x, z];
+    const [cx, cz] = at.map(v => Math.floor(v / 2));
+    const helped = sk.effect === 'splash' ? help(s, now, SKILL.splashCells, cx, cz) : sk.effect === 'bloom' ? help(s, now, SKILL.bloomCells, cx, cz) : 0;
+    ctx.emit('skillUsed', { kit, index, effect: sk.effect, helped });
+    return { effect: sk.effect, name: sk.name, at, helped, readyAt: cd[key] };
+  },
+});
 export const installMoves = () => Object.assign(ACTIONS, actions);

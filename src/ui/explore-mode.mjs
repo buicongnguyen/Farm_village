@@ -22,7 +22,10 @@ import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
 import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
-import { installMoves, MOVES } from '../core/moves.mjs';
+import { installMoves, MOVES, skillsNow } from '../core/moves.mjs';
+import { EFFECTS } from '../content/skills.mjs';
+import { castOf } from '../view/skinned.mjs';
+import * as THREE from 'three';
 import { wetOf, SWIM } from '../core/swim.mjs';
 import { CELL as CELL_M } from '../content/world.mjs';
 import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
@@ -55,6 +58,10 @@ class ExploreMode {
     pad.innerHTML = '<span aria-hidden="true">🌾</span>'; radial.el.parentElement.appendChild(pad);
     pad.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); this.swing(); });
     pad.addEventListener('click', e => { if (e.detail === 0) this.swing(); });   // the keyboard's Enter on a focused pad
+    // the skill buttons (a disguise's four), above the swing pad, each with its cooldown as a ring
+    const sk = this.skillsEl = document.createElement('div'); sk.className = 'explore-skills'; sk.hidden = true; radial.el.parentElement.appendChild(sk);
+    sk.addEventListener('pointerdown', e => { const b = e.target.closest('[data-skill]'); if (!b) return; e.preventDefault(); e.stopPropagation(); this.skill(+b.dataset.skill); });
+    sk.addEventListener('click', e => { const b = e.target.closest('[data-skill]'); if (b && e.detail === 0) this.skill(+b.dataset.skill); });
     this.el = document.createElement('section'); this.el.className = 'explore-ui'; this.el.hidden = true; this.el.setAttribute('aria-label', t('Explore'));
     radial.el.parentElement.appendChild(this.el);
     this.pinsEl = document.createElement('div'); this.pinsEl.className = 'home-pins'; this.pinsEl.hidden = true;
@@ -253,14 +260,15 @@ class ExploreMode {
     if (this.walker && this.session && this.game.s === this.state) { this.walker.x = this.session.p[0]; this.walker.z = this.session.p[1]; }
     this.clear(); this.active = false; ++this.generation;
     if (this.walker) { this.walker.controlled = false; this.walker.indoors = false; this.radial.people.cancelTrip(this.walker); this.walker.stay = 30; }
-    this.joyEl.hidden = true; this.padEl.hidden = true; if (this.breathEl) this.breathEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
+    this.joyEl.hidden = true; this.padEl.hidden = true; this.skillsEl.hidden = true; if (this.glow) this.glow.visible = false; if (this.breathEl) this.breathEl.hidden = true; this.pinsEl.hidden = true; this.sayEl.hidden = true; if (this.world.fishingView) this.world.fishingView.angler = null; this.rod = null; endExplore(this.state); this.world.presentation = null; this.room?.dispose(); this.room = null; this.walker = null;
     document.body.classList.remove('explore-active', 'explore-inside'); this.el.hidden = true; this.el.replaceChildren(); this.html = null;
     if (this.savedCamera) this.world.cam.lookAt(this.savedCamera.x, this.savedCamera.z, this.savedCamera.span);
   }
   key(e, down) {
     if (!this.active || editing(e)) return;
     const k = e.key.toLowerCase();
-    if (!KEYS.has(k) && !['e', 'f', 'enter', 'escape', 'q', '+', '=', '-', ' '].includes(k)) return;
+    const slot = { 1: 0, 2: 1, 3: 2, 4: 3, j: 0, k: 1, l: 2, ';': 3 }[k];   // skills: 1 2 3 4, or J K L ; (Zoo Garden's second layout)
+    if (!KEYS.has(k) && slot === undefined && !['e', 'f', 'enter', 'escape', 'q', '+', '=', '-', ' '].includes(k)) return;
     // A focused button keeps its keyboard activation. Typing/IME always belongs to its field.
     if (k === 'enter' && e.target?.closest?.('button')) return;
     e.stopImmediatePropagation(); e.preventDefault();
@@ -269,7 +277,8 @@ class ExploreMode {
     if (KEYS.has(k)) { this.keys.add(k); this.target = null; this.actOnArrival = null; this.exitOnArrival = this.enterOnArrival = false; this.notice = null; }
     else if (k === '+' || k === '=' || k === '-') this.zoom(k === '-' ? 1.12 : 1 / 1.12);
     else if (!e.repeat && (k === 'e' || k === 'f' || k === 'enter')) this.choose('interact');
-    else if (k === ' ') this.swing();   // Space: a swing (held, it swings again as soon as it can)
+    else if (k === ' ') this.swing();
+    else if (slot !== undefined && !e.repeat) this.skill(slot);   // Space: a swing (held, it swings again as soon as it can)
     else if (!e.repeat && k === 'escape') this.close();
   }
   /** Can you swing now? Walking freely outdoors, on foot, not fishing, no card or panel up. */
@@ -285,6 +294,49 @@ class ExploreMode {
     const juice = this.world.juice, fx = x + Math.sin(yaw) * MOVES.reach, fz = z + Math.cos(yaw) * MOVES.reach;
     if (r.hit === 'water') this.splash(fx, fz); else if (!r.knocked) juice?.dust(fx, fz, 0.6);
     if (r.tired) this.hud.toast(t('That is enough weeding for today. The rest can wait for tomorrow.'), 'info');
+  }
+  /** A skill of the disguise you wear (content/skills.mjs): the rule (core/moves.mjs), then the move and the look. */
+  skill(i) {
+    if (!this.canSwing) return;
+    const e = this.session, [x, z] = e.p, yaw = e.yaw ?? 0, r = this.game.do('useSkill', { index: i, x, z, yaw });
+    if (!r.ok) { if (r.reason !== 'Not ready yet') this.hud.toast(t(r.reason), 'info'); return; }
+    const sub = this.walker?.subject, juice = this.world.juice, fx = (o) => juice?.particles?.spawn(o);
+    if (sub) sub.once = { clip: r.effect === 'show' ? 'Cheer' : r.effect === 'float' ? 'Jump' : r.effect === 'decoy' ? 'Wave' : 'Hammer' };
+    if (r.effect === 'dash' || r.effect === 'float') { e.boost = r.effect === 'dash' ? 0.35 : 1.3; e.boostBy = r.effect === 'dash' ? 3.2 : 1.6; e.route = [[x + Math.sin(yaw) * (r.effect === 'dash' ? 4 : 5), z + Math.cos(yaw) * (r.effect === 'dash' ? 4 : 5)]]; }
+    if (r.effect === 'shoo' || r.effect === 'decoy') this.world.critters?.scare(Math.floor(x / CELL_M), Math.floor(z / CELL_M), 6);
+    if (r.effect === 'splash') { this.splash(...r.at); }
+    const colours = { bloom: ['#ff8fb0', '#ffd23f', '#8fe06a'], show: ['#ffd23f', '#ff5a7a', '#5ab8ff', '#9b6bff'], light: ['#fff4a8'], shoo: ['#e8d4b0'], dash: ['#ffffff'], float: ['#bff3ff'], decoy: ['#ffd23f'], splash: ['#bff3ff'] }[r.effect];
+    const n = r.effect === 'show' ? 26 : r.effect === 'bloom' ? 20 : 10;
+    for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, ring = r.effect === 'bloom' ? 5 : 1;
+      fx({ x: x + Math.cos(a) * ring, y: r.effect === 'show' ? 3.2 : 0.6, z: z + Math.sin(a) * ring, vx: Math.cos(a) * (r.effect === 'show' ? 3 : 1), vy: r.effect === 'show' ? 2 + (k % 4) : 1.5, vz: Math.sin(a) * (r.effect === 'show' ? 3 : 1), gravity: r.effect === 'show' ? 3 : 1, life: 1.1, size: 0.5, size1: 0.2, shape: r.effect === 'bloom' ? 1 : 3, color: colours[k % colours.length], alpha: 0.95 }); }
+    juice?.ground?.spawn({ x, y: 0.08, z, life: 0.8, size: 1, size1: r.effect === 'shoo' ? 12 : 6, shape: 2, flat: true, color: colours[0], alpha: 0.6 });
+    if (r.effect === 'decoy') this.decoy(x, z, yaw);
+    if (r.effect === 'light') this.glowFor(20);
+    if (r.helped) this.hud.toast(t('{count} of your plants will be ready a little sooner', { count: r.helped }), 'good');
+    this.render();
+  }
+  /** A double of you stands a while (20 s) and keeps the crows off round it. */
+  decoy(x, z, yaw) {
+    const sub = this.walker?.subject; if (!sub) return;
+    const cast = castOf(this.world), twin = cast.add({ rig: sub.rig, x: x - Math.sin(yaw) * 1.4, z: z - Math.cos(yaw) * 1.4, rot: yaw, clip: 'Wave', tint: sub.tint, scale: sub.scale, priority: 6 });
+    let left = 20; const timer = setInterval(() => { left -= 2; this.world.critters?.scare(Math.floor(twin.x / CELL_M), Math.floor(twin.z / CELL_M), 7); if (left <= 0 || !this.active) { clearInterval(timer); cast.remove(twin); } }, 2000);
+  }
+  /** A soft glow that goes with you for a while. */
+  glowFor(seconds) {
+    if (!this.glow) {
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255,244,168,0.9)'); grad.addColorStop(1, 'rgba(255,244,168,0)'); g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+      this.glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); this.glow.scale.setScalar(4.5); this.world.scene.add(this.glow);
+    }
+    this.glowLeft = seconds; this.glow.visible = true;
+  }
+  /** The skill buttons: shown with a disguise on, walking outdoors; each with its cooldown ring (redrawn every frame). */
+  skillButtons() {
+    const list = this.canSwing ? skillsNow(this.state) : [], el = this.skillsEl, now = this.game.now;
+    el.hidden = !list.length; if (!list.length) return;
+    const key = list.map(s => s.name).join('|');
+    if (el.dataset.key !== key) { el.dataset.key = key; el.innerHTML = list.map(s => `<button type="button" data-skill="${s.index}" title="${esc(t(s.name))} (${s.index + 1}) · ${esc(t(EFFECTS[s.effect]))}" aria-label="${esc(t(s.name))}"><span class="sk-icon" aria-hidden="true">${{ dash: '💨', float: '🪶', shoo: '📣', splash: '💦', bloom: '🌸', decoy: '🧍', light: '✨', show: '🎆' }[s.effect]}</span><small>${esc(t(s.name))}</small><i class="sk-cd"></i><b>${s.index + 1}</b></button>`).join(''); }
+    for (const s of list) { const b = el.querySelector(`[data-skill="${s.index}"]`), left = Math.max(0, s.readyAt - now) / (s.cd * 1000); b.style.setProperty('--cd', left.toFixed(3)); b.classList.toggle('cooling', left > 0); }
   }
   /** In the water: rings round you as you go (and now and then standing still), and the breath ring while you swim. */
   water(dt, wet, moving) {
@@ -435,7 +487,8 @@ class ExploreMode {
       const e = this.session, seat = e.seated ? this.seat : (this.seat = null);
       const wet = wetOf(e);
       Object.assign(this.walker, seat ? { x: seat.x, z: seat.z, rot: seat.rot, clip: 'Sit' } : { x: e.p[0], z: e.p[1], rot: e.yaw, clip: moving ? 'Walk' : 'Idle' }, { indoors: false, speed: moving ? OUTDOOR_SPEED * (wet.deep ? SWIM.swim : wet.depth > 0 ? SWIM.wade : 1) / (RIGS[this.walker.body]?.walk ?? 2.1) : 1, sink: wet.sink });
-      this.water(dt, wet, moving);
+      this.water(dt, wet, moving); this.skillButtons();
+      if (this.glow?.visible) { this.glowLeft -= dt; this.glow.position.set(e.p[0], 1.6, e.p[1]); if (this.glowLeft <= 0) this.glow.visible = false; }
       // the camera glides after you (Zoo Garden's follow: 1 - exp(-9 dt)) instead of snapping each step
       const cam = this.world.cam, k = document.body.classList.contains('reduced-motion') ? 1 : 1 - Math.exp(-9 * dt);
       if (!this.busy && (Math.hypot(cam.x - e.p[0], cam.z - e.p[1]) > .02 || cam.span !== this.span)) cam.lookAt(cam.x + (e.p[0] - cam.x) * k, cam.z + (e.p[1] - cam.z) * k, this.span);
@@ -555,7 +608,8 @@ class ExploreMode {
         : tab === 'shirt' ? `<div class="explore-swatches">${PLAYER_COLORS.map(c => `<button type="button" class="btn${!st.playerLook && (st.playerColor ?? PLAYER_COLORS[0]) === c ? ' on' : ''}" data-explore="shirt:${c}" style="background:${c}" aria-label="${esc(t('Shirt'))} ${c}"></button>`).join('')}</div>`
         : tab === 'hat' ? `<div class="explore-wear">${none('hat', !st.playerLook && !st.playerHat)}${w.hats.map(h => piece('hat', h, !st.playerLook && st.playerHat === h.id, h.id)).join('')}</div>`
           : `<div class="explore-wear">${none('look', !st.playerLook)}${w.costumes.map(c => piece('look', c, st.playerLook === c.id, c.kit ?? c.hat)).join('')}</div>`;
-      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${said}<p class="explore-note">${esc(t('A new hat or costume arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
+      const skills = tab === 'look' && st.playerLook ? skillsNow(this.state) : [];
+      card = `<h2>${esc(t('The wardrobe'))}</h2><div class="tabs">${tabs}</div>${row}${skills.length ? `<p class="explore-note"><b>${esc(t('Skills'))}:</b> ${skills.map(s => esc(t(s.name))).join(' · ')} <small>(${esc(t('1 2 3 4 or the round buttons, walking outdoors'))})</small></p>` : ''}${said}<p class="explore-note">${esc(t('A new hat or costume arrives with every farm level.'))}</p>${button('back', 'Back', 'ghost')}`;
     }
     const thing = this.kind ? null : HOME_THINGS[this.card];
     if (thing) {

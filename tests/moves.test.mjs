@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { newGame } from '../src/core/state.mjs';
 import { act, tick } from '../src/core/act.mjs';
-import { pack } from '../src/kit/save.mjs';
+import { pack, unpack } from '../src/kit/save.mjs';
 import { cellType, landOf } from '../src/core/grid.mjs';
 import { installMoves, MOVES, swingCell, swingTarget, knocksLeft } from '../src/core/moves.mjs';
 import { N } from '../src/content/world.mjs';
@@ -57,4 +57,32 @@ test('the water: the bank holds until you push on, then you wade slower and swim
   assert.ok(e.tired, 'never tired in the deep'); assert.ok(e.route.length, 'tired and no way back');
   for (let i = 0; i < 400 && depthAt(...e.p) > 0; i++) moveExplore(s, 0, -1, 0.1);   // pushing deeper does nothing: carried back
   assert.equal(depthAt(...e.p), 0, 'not carried back to the bank'); moveExplore(s, 0, 0, 0.1); assert.ok(!e.tired, 'still tired on dry land');
+});
+
+// Step 4: disguise skills (content/skills.mjs, core/moves.mjs useSkill)
+import { SKILLS, EFFECTS } from '../src/content/skills.mjs';
+import { COSTUMES } from '../src/content/wardrobe.mjs';
+import { SKILL, skillsNow } from '../src/core/moves.mjs';
+test('every disguise costume has four skills with a known effect, a cooldown and words in three languages; others have none', async () => {
+  const packs = await Promise.all(['vi', 'ko', 'ja'].map(async l => Object.assign({}, ...Object.values(await import(`../src/i18n/${l}-fishing.mjs`)), ...Object.values(await import(`../src/i18n/${l}.mjs`)))));
+  for (const c of Object.values(COSTUMES)) {
+    const list = SKILLS[c.kit] ?? []; if (!c.kit?.startsWith('dz_')) { assert.equal(list.length, 0, `${c.id} is no disguise but has skills`); continue; }
+    assert.equal(list.length, 4, `${c.id} does not have four skills`);
+    for (const sk of list) { assert.ok(EFFECTS[sk.effect], `${sk.name}: no such effect`); assert.ok(sk.cd >= 3 && sk.cd <= 20); for (const p of packs) { assert.ok(p[sk.name], `missing: ${sk.name}`); assert.ok(p[EFFECTS[sk.effect]], `missing: ${EFFECTS[sk.effect]}`); } }
+  }
+});
+test('a skill needs its disguise, waits out its cooldown (kept in the save), and waters a bed once per growth', () => {
+  const s = newGame(NOW, 64, { restore: true }); tick(s, NOW); s.level = 30;
+  assert.equal(act(s, 'useSkill', { index: 0, x: 60, z: 60, yaw: 0 }, NOW).ok, false, 'a skill without a disguise');
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok); assert.equal(skillsNow(s).length, 4);
+  const bed = Object.keys(s.placed).find(id => s.placed[id].kind === 'bed'), p = s.placed[bed];
+  s.beds[bed] = { crop: 'wheat', doneAt: NOW + 100_000 };
+  const at = { index: 0, x: (p.x + 0.5) * 2, z: (p.z + 0.5) * 2 - SKILL.splashAhead, yaw: 0 };   // Lotus petals: a splash four metres ahead, on the bed
+  const r = act(s, 'useSkill', at, NOW); assert.ok(r.ok); assert.equal(r.effect, 'splash'); assert.equal(r.helped, 1);
+  assert.equal(s.beds[bed].doneAt, NOW + 75_000);
+  assert.equal(act(s, 'useSkill', at, NOW + 1000).ok, false, 'used again during its cooldown');
+  assert.equal(unpack(pack(s)).moves.cd['dz_aodai:0'], NOW + 6000, 'the cooldown was not saved');
+  const again = act(s, 'useSkill', at, NOW + 6000); assert.ok(again.ok); assert.equal(again.helped, 0, 'the same growth was helped twice'); assert.equal(s.beds[bed].doneAt, NOW + 75_000);
+  s.beds[bed] = { crop: 'wheat', doneAt: NOW + 212_000 }; assert.equal(act(s, 'useSkill', at, NOW + 12_000).helped, 1, 'a new growth could not be helped');
+  assert.equal(act(s, 'useSkill', { index: 9, x: 1, z: 1, yaw: 0 }, NOW).ok, false); assert.equal(act(s, 'useSkill', { index: 1, x: 'x', z: 1, yaw: 0 }, NOW).ok, false);
 });
