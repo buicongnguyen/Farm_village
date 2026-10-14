@@ -13,6 +13,7 @@ import { castOf } from './skinned.mjs';
 
 /** The strand is four cells deep here (the brook swings south): room for a court and a playground. Cells. */
 export const COURT = { x: 68.5, z: 9.5 }, PLAYGROUND = { x: 74.5, z: 9.5 };
+export const MOORING = 92 * CELL;   // where the cargo ship lies at the quay (core/port.mjs), metres
 const WEST = (QUAY.x0 + 2) * CELL, EAST = (QUAY.x1 + 10) * CELL;   // the ferry's two ends, metres (east of the old mill)
 /** A boat on the river at x metres, `side` metres off the centre line, heading east (dir 1) or west (-1): [x, z, yaw]. */
 export function afloat(x, side, dir) {
@@ -35,7 +36,7 @@ export class RiverLife {
   async load() {
     const kit = await loadKit('decor'), mat = decorMaterial(), world = this.world;
     const mesh = node => { if (!kit[node]) return null; const m = new THREE.Mesh(bake(kit[node], { center: false }), mat); m.visible = false; world.scene.add(m); return m; };
-    Object.assign(this, { row: mesh('boat_row'), ferry: mesh('boat_ferry'), barge: mesh('boat_barge'), court: mesh('tennis_court'), play: mesh('playground') });
+    Object.assign(this, { row: mesh('boat_row'), ferry: mesh('boat_ferry'), barge: mesh('boat_barge'), ship: mesh('cargo_ship'), court: mesh('tennis_court'), play: mesh('playground') });
     this.ball = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), new THREE.MeshBasicMaterial({ color: '#e8ff5a' })); this.ball.visible = false; world.scene.add(this.ball);
     if (this.court) this.court.position.set(COURT.x * CELL, 0.02, COURT.z * CELL);
     if (this.play) this.play.position.set(PLAYGROUND.x * CELL, 0.02, PLAYGROUND.z * CELL);
@@ -49,15 +50,18 @@ export class RiverLife {
   /** What stands, read from the save now and then: is the quay paved, where the hotel is, where the halt is. */
   look() {
     const s = this.game.s, placed = Object.values(s.placed ?? {}), mid = kind => { const p = placed.find(q => q.kind === kind); return p ? (p.x + 3) * CELL : null; };
-    this.state = { quay: !!s.firsts?.quay, hotel: mid('hotel'), halt: mid('halt') };
+    this.state = { quay: !!s.firsts?.quay, hotel: mid('hotel'), halt: mid('halt'), ship: !!s.port?.here && s.port.here.until > (this.game.now ?? Date.now()) };
   }
   frame(dt) {
     if (!this.ready) return; this.t += dt; const t = this.t;
     if ((this.again -= dt) <= 0) { this.look(); this.again = 2; }
-    const { quay, hotel, halt } = this.state, bob = a => 0.05 + 0.04 * Math.sin(t * 1.3 + a);
+    const { quay, hotel, halt, ship } = this.state, bob = a => 0.05 + 0.04 * Math.sin(t * 1.3 + a);
     const put = (m, x, side, dir, a, roll = 0) => { if (!m) return; const [bx, bz, yaw] = afloat(x, side, dir); m.position.set(bx, bob(a), bz); m.rotation.set(0, yaw, roll * Math.sin(t * 1.1 + a)); };
     if (this.row) { this.row.visible = true; const u = Math.sin(t * 0.07) * 26; put(this.row, 150 + u, 1.7, Math.cos(t * 0.07) >= 0 ? 1 : -1, 1, 0.05); }
-    if (this.ferry) { this.ferry.visible = quay; if (quay) { const f = ferryAt(t); put(this.ferry, f.x, -1.1, f.dir, 2, 0.02); } }
+    // the cargo ship comes in from the east when one is at the quay, lies along the north bank, and goes out the way it came
+    if (this.ship) { const far = MOORING + 230; this.shipX ??= far; const to = ship ? MOORING : far, step = 11 * dt; this.shipX += Math.sign(to - this.shipX) * Math.min(step, Math.abs(to - this.shipX));
+      this.ship.visible = this.shipX < far - 1; if (this.ship.visible) put(this.ship, this.shipX, -1.7, ship ? -1 : 1, 4, 0.008); }
+    if (this.ferry) { this.ferry.visible = quay; if (quay) { const f = ferryAt(t); put(this.ferry, f.x, this.ship?.visible ? 2.1 : -1.1, f.dir, 2, 0.02); } }   // (the ferry keeps to the south side while a ship is in)
     if (this.barge) { this.barge.visible = quay; if (quay) { const lap = 190, u = (t % lap) / lap; put(this.barge, 100 + u * 330, 1.3, 1, 3, 0.012); } }   // down the river and out of sight, then the next one
     const on = hotel != null;
     for (const m of [this.court, this.play]) if (m) m.visible = on;
