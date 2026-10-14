@@ -1175,4 +1175,7 @@ export const JA_FISHING = {
   'No ship is at the quay': '岸壁に船がいません',
   'The ship has no such hold': 'その船倉はありません',
   'That hold is full': 'その船倉はいっぱいです',
+  'That is enough weeding for today. The rest can wait for tomorrow.': '今日の草取りはここまで。残りは明日にしましょう。',
+  'Swing (Space)': 'ふる(スペース)',
+  'Arrow keys or WASD to walk · E to interact · Space to swing': '矢印キーかWASDで歩く・Eで調べる・スペースでふる',
 };
