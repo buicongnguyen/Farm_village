@@ -23,7 +23,7 @@ import { cellType, doorCell, occupant } from '../core/grid.mjs';
 import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
-import { castOf, RIGS, wornRig, releaseRig } from './skinned.mjs';
+import { castOf, RIGS, wornRig, releaseRig, rigReady, loadRig } from './skinned.mjs';
 import { costumeOf, wearOf, bodyOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
@@ -178,11 +178,18 @@ export class PeopleView {
    *  with a new subject. Dropping the walker instead left Explore holding one that was no longer drawn, so you
    *  came out of the house invisible after changing clothes. */
   redress(w) {
-    const { actor, ...old } = w.subject, before = old.rig;
-    w.body = bodyOf(this.s).rig; w.size = bodyOf(this.s).size;
-    this.cast.remove(w.subject);
-    w.subject = this.cast.add({ ...old, rig: wornRig(w.body, wearOf(this.s)), scale: w.size, tint: outfitOf(w.person ?? w.id, this.s) });
-    this.wornBefore = w.subject.rig; if (before !== w.subject.rig) releaseRig(before);
+    const state = this.s, who = bodyOf(state), rig = wornRig(who.rig, wearOf(state)), turn = w.dressTurn = (w.dressTurn ?? 0) + 1;
+    const apply = () => {
+      if (this.s !== state || this.walkers.get(w.id) !== w || w.dressTurn !== turn) {
+        if (wornRig(bodyOf(this.s).rig, wearOf(this.s)) !== rig) releaseRig(rig); return;
+      }
+      const { actor, ...old } = w.subject, before = old.rig;
+      w.body = who.rig; w.size = who.size; this.cast.remove(w.subject);
+      w.subject = this.cast.add({ ...old, rig, scale: w.size, tint: outfitOf(w.person ?? w.id, state) });
+      this.wornBefore = rig; if (before !== rig) releaseRig(before);
+    };
+    // Keep the current visible subject while downloading. A failed download can be retried by choosing the outfit again.
+    if (rigReady(rig)) apply(); else loadRig(rig).then(apply).catch(() => {});
   }
   drop(w) { this.releaseFishing(w); w.bubble?.remove(); this.cast.remove(w.subject); this.walkers.delete(w.id); }
   /** A neighbour walks in from their signpost to the order board and says something about the farm. */

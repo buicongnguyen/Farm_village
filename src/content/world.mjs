@@ -26,6 +26,8 @@ export const HOME_GARDEN = [
 /** Is this cell taken by something in the farmhouse garden at this house level? */
 export const homeGardenAt = (level, x, z) => HOME_GARDEN.some(g => g.block && level >= g.level && x >= g.block[0] && x <= g.block[2] && z >= g.block[1] && z <= g.block[3]);
 export const BARN = { x: 22, z: 72, model: 'barn', width: 8 };
+// A public work board by the farmhouse; the existing order-board art is a stand-in.
+export const WORK_BOARD = { x: 27, z: 68 };
 export const ORDER_BOARD = { x: 28, z: 58 };
 // Roads (2 cells wide) and the brook.
 // A ring road round the farm and the village (after Willowmere's county layout): west, south, east and north, with the

@@ -59,11 +59,11 @@ export const BODIES = {
   kid: { name: 'Boy', rig: 'kid', size: 1, child: true }, girl: { name: 'Girl', rig: 'girl', size: 1, child: true },
 };
 for (const [id, b] of Object.entries(BODIES)) b.id = id;
-export const bodyOf = s => BODIES[s?.settings?.playerBody] ?? BODIES.man;
+export const bodyOf = s => typeof s?.settings?.playerBody === 'string' && Object.hasOwn(BODIES, s.settings.playerBody) ? BODIES[s.settings.playerBody] : BODIES.man;
 /** The costume you have on, or null. */
-export const costumeOf = s => COSTUMES[s?.settings?.playerLook] ?? null;
+export const costumeOf = s => typeof s?.settings?.playerLook === 'string' && Object.hasOwn(COSTUMES, s.settings.playerLook) ? COSTUMES[s.settings.playerLook] : null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */
-export const hatOf = s => { const c = costumeOf(s); return c ? c.hat ?? '' : HATS[s?.settings?.playerHat] ? s.settings.playerHat : ''; };
+export const hatOf = s => { const c = costumeOf(s); return c ? c.hat ?? '' : typeof s?.settings?.playerHat === 'string' && Object.hasOwn(HATS, s.settings.playerHat) ? s.settings.playerHat : ''; };
 /** Everything your character has on, as the rig wants it (view/skinned.mjs wornRig): a costume's kit and hat, or your hat. */
 export const wearOf = s => { const c = costumeOf(s); return [c ? c.kit && `kit:${c.kit}` : '', hatOf(s), skirtOf(s) && `skirt:${skirtOf(s)}`].filter(Boolean).join('+'); };   // (the skirt is your own choice: a costume keeps it)
 /** The skirt you chose at the mirror: 0 none, 1 short, 2 to the knee, 3 long (made in view/skinned.mjs, in the trousers' colour).

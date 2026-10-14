@@ -1,6 +1,12 @@
 import { normalizeSupermarket, supermarketHeld } from './supermarket-state.mjs';
 import { companyKeep } from './village-growth.mjs';
 // Read-only ingredient guidance. These facts describe existing actions; navigation never performs them.
+import { fruitId } from './trees.mjs';
+import { produceOf } from './surprises.mjs';
+import { HEN_EGGS, LUCKY_FINDS } from '../content/surprises.mjs';
+import { trickOf } from '../content/knowhow.mjs';
+import { outputTimes, animalYield } from './output.mjs';
+import { pickExtra, knows, crossPlan } from './knowhow.mjs';
 import { GOODS, CROPS, FRUITS, RECIPES, ANIMALS } from '../content/goods.mjs';
 import { BUILDINGS } from '../content/buildings.mjs';
 import { SLOTS } from '../content/economy.mjs';
@@ -39,7 +45,8 @@ function recipeSource(s, good, now, missing) {
   const recipe = RECIPES[good], ids = makers(s, recipe.at);
   const jobs = ids.flatMap(id => queue(s, id).filter(job => job.recipe === good).map(job => ({ id, ...job })));
   const ready = jobs.filter(j => j.doneAt <= now), waiting = jobs.filter(j => j.doneAt > now);
-  const counts = { ready: ready.length * recipe.makes, queued: waiting.length * recipe.makes };
+  const count = jobs => jobs.reduce((n, j) => n + recipe.makes * outputTimes(s, j.id), 0);
+  const counts = { ready: count(ready), queued: count(waiting) };
   const ingredients = Object.entries(recipe.needs).map(([g, n]) => stock(s, g, n));
   const base = { type: 'recipe', at: recipe.at, makes: recipe.makes, duration: recipe.timeMs, ingredients, ...counts };
   // Finished output can be collected even if the building subsequently broke or the recipe was learned early.
@@ -78,27 +85,39 @@ function cropSource(s, good, now, missing) {
 }
 
 function fruitSource(s, good, now) {
-  const fruit = FRUITS[good], ids = makers(s, fruit.tree).filter(id => s.trees?.[id] && (!fruit.cross || s.trees[id].cross));
+  const fruit = FRUITS[good], ids = makers(s, fruit.tree).filter(id => s.trees?.[id] && fruitId(s, id) === good);
   const ready = ids.filter(id => s.trees[id].doneAt <= now);
-  const base = { type: 'fruit', at: fruit.tree, ready: ready.length * fruit.yield, queued: (ids.length - ready.length) * fruit.yield };
+  const amount = fruit.yield + pickExtra(s);
+  const base = { type: 'fruit', at: fruit.tree, ready: ready.length * amount, queued: (ids.length - ready.length) * amount };
   // Picking ripe fruit is allowed by the tree rules regardless of condition; do not invent a repair gate.
   if (ids.length) return { ...base, status: ready.length ? 'ready' : 'waiting', target: buildingTarget(ready[0] ?? ids[0], fruit.tree) };
+  if (fruit.cross) {
+    const reason = trickOf('cross').effect;
+    if (!knows(s, 'cross')) return { ...base, status: 'notebook', reason, target: { kind: 'knowhow' } };
+    const apples = makers(s, fruit.tree), id = apples.find(id => crossPlan(s, id).ok) ?? apples[0];
+    if (id) { const plan = crossPlan(s, id); return { ...base, status: 'notebook', reason: plan.reason ?? reason, params: plan.params, target: buildingTarget(id, fruit.tree) }; }
+  }
   return { ...base, ...missingMaker(s, fruit.tree) };
 }
 
 function animalSource(s, good, now) {
-  const [kind, animal] = Object.entries(ANIMALS).find(([, a]) => a.gives === good);
-  const ids = makers(s, animal.home), animals = ids.flatMap(id => (s.animals?.[id] ?? []).filter(a => a.kind === kind).map(a => ({ id, ...a })));
+  const variant = Object.keys(HEN_EGGS).find(v => HEN_EGGS[v] === good);
+  const [kind, animal] = Object.entries(ANIMALS).find(([k, a]) => variant ? k === 'hen' : a.gives === good);
+  const ids = makers(s, animal.home), animals = ids.flatMap(id => (s.animals?.[id] ?? []).filter(a => a.kind === kind && produceOf(a) === good).map(a => ({ id, ...a })));
   const ready = animals.filter(a => a.doneAt != null && a.doneAt <= now), busy = animals.filter(a => a.doneAt > now);
-  const base = { type: 'animal', at: animal.home, animal: kind, feed: animal.eats, ready: ready.length, queued: busy.length };
+  const count = rows => rows.reduce((n, a) => n + animalYield(s, a.id), 0);
+  const base = { type: 'animal', at: animal.home, animal: kind, feed: animal.eats, ready: count(ready), queued: count(busy) };
+  if (variant && !animals.length) return { ...base, status: 'notebook', reason: LUCKY_FINDS.find(f => f.id === `${variant}_hen`).hint, target: { kind: 'knowhow' } };
   if (ready.length) return { ...base, status: 'ready', target: buildingTarget(ready[0].id, animal.home) };
   if (busy.length) return { ...base, status: 'waiting', target: buildingTarget(busy[0].id, animal.home) };
+  if (variant && animals.length && !animals.some(a => isWorking(s, a.id))) return { ...base, ...repair(s, animals[0].id, animal.home) };
   if (!ids.length) return { ...base, ...missingMaker(s, animal.home) };
   const working = ids.find(id => isWorking(s, id));
   if (!working) return { ...base, ...repair(s, ids[0], animal.home) };
   const hungry = animals.find(a => a.doneAt == null && isWorking(s, a.id));
   if (hungry) return { ...base, status: 'feed', ingredients: [stock(s, animal.eats, 1, false)], target: buildingTarget(hungry.id, animal.home) };
-  return { ...base, status: 'animal', cost: animalPrice(s, kind), level: animal.level, target: buildingTarget(working, animal.home) };
+  const room = ids.find(id => isWorking(s, id) && (s.animals?.[id]?.length ?? 0) < animal.perHome);
+  return room ? { ...base, status: 'animal', cost: animalPrice(s, kind), level: animal.level, target: buildingTarget(room, animal.home) } : { ...base, ...missingMaker(s, animal.home) };
 }
 
 function usesOf(s, good, now) {
@@ -131,7 +150,7 @@ export function goodHelp(s, good, now = s.lastSeen, { needed = 1, shopRequest } 
   const incomingNeed = inventory.missing + Math.max(0, hold - inventory.stock);
   const source = own(RECIPES, good) ? recipeSource(s, good, now, incomingNeed)
     : own(CROPS, good) ? cropSource(s, good, now, incomingNeed) : own(FRUITS, good) ? fruitSource(s, good, now)
-      : GOODS[good].kind === 'produce' ? animalSource(s, good, now)
+      : ['produce', 'lucky'].includes(GOODS[good].kind) ? animalSource(s, good, now)
         : { type: 'fish', status: s.fishing?.line ? s.fishing.line.doneAt <= now ? 'fish-ready' : 'fish-waiting' : 'fish',
           ready: 0, queued: 0, target: { kind: 'pond' } };
   return { ...inventory, source, uses: usesOf(s, good, now) };

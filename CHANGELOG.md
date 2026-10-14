@@ -1,5 +1,43 @@
 # Changelog
 
+
+## Review of cargo ships, machinery and wardrobe - 2026-10-14 (unreleased)
+
+- Integrated Claude's PRs #127–#137 through `d3ef6f1`, retaining the finite work board and earlier review fixes. New skirt, hair and costume fitting stays inside the lazy outfit loader.
+- Cargo ships recover after a backward clock change, preserve valid loaded cargo in damaged optional manifests, and cannot award a full-ship bonus for missing holds. Small farms get requests from their real sources. Ship ingredient cards support source navigation and returning to the ship; payment guidance explains full and partial loads in all four languages.
+- Buffalo and tractor help also works with finite family assignments. Tractor bonus beds belong to purchased expansion fields; unassigned crops, the harvest pause and storage limits remain protected. Machine routes park when obstructed by terrain, buildings or fences.
+- All food workshops count toward the supermarket prerequisite, including the three new makers; broken buildings, feed mills and duplicate types do not satisfy it.
+- Radio-enhanced milk guidance matches actual output. Empty buildings with paid radios/output upgrades must be moved rather than stored or undone, preserving those purchases. Newly started fruit crops retain their quoted duration, and replanted stored trees receive the drone bonus.
+- Outdoor wardrobe changes keep the current character visible until its replacement loads, can retry failures, and ignore superseded choices. Invalid imported body keys fall back safely.
+- Ingredient-source logic loads with the existing deferred panels; the first-load budget is unchanged. Added focused rules/browser regressions; detailed validation is recorded in `docs/plan/95-review.md`.
+
+## Review of farm reports, indoor conversations and costumes - 2026-10-13 (unreleased)
+
+- Integrated the indoor people, fitted costumes, family movement and farm-report updates (PRs #123-#125), plus the pool model from #126. Existing work-board, orchard and lucky-event fixes remain on this branch.
+- Malformed optional growth history can no longer break level-ups or inject invalid chart values. Earnings trends use total elapsed time, so a short level cannot outweigh a long one.
+- Product maps use functioning ingredient chains and learned techniques. Profit estimates include purchased output upgrades and current production speed; free wheat includes both harvested grains. The report explains its pricing assumptions and uses gentler, accurate crop wording in all four languages.
+- Indoor conversations no longer invent hours of play and keep the same question and numbers until answered. Failed outfit downloads can be retried; leaving a room frees its character instances, cloned crowd geometry and spare actors.
+- Costume fitting loads on demand, and land-memory rendering travels with the existing deferred panels. The loading limit remains unchanged. Added seven rules regressions and a four-language browser suite; validation is recorded in `docs/plan/95-review.md`.
+
+## Review of orchard, lucky events and home life - 2026-10-13 (unreleased)
+
+- Integrated main through `73fa8f5` while retaining the finite farmhouse work board. Grafted saplings survive Undo; stored trees retain their growth bonus, special fruit and branch progress after reload. A branch cut prevents undoing the tree to cut the same branch again.
+- Lucky-event play time includes time spent clicking, excludes long absences and resumes after a backward clock correction. A later gold rush preserves uncollected bonus rent from earlier rushes, and long-running farms retain their saved rush counter beyond 278 hours of play.
+- Ingredient guidance distinguishes ordinary apples and eggs from Mango apples and rare eggs, includes thinning/output upgrades, and points to the notebook or the actual source. It no longer sends rare-egg searches to the fishing pond. New orders follow the actual produce and full recipe chain, and invalid wardrobe selections are refused safely.
+- Home activity cooldowns recover after a backward clock change. Knitting at the saved counter limit cannot repeatedly award the same scarf, and refused activities do not advance dialogue turns. Improved tree timers use the actual fruit and grafting duration during clock recovery.
+- Added focused rules and English/Vietnamese browser regressions for the integrated update. Review and validation details are in `docs/plan/95-review.md`.
+
+## Farmhouse work board - 2026-10-12 (unreleased)
+
+- Added a farmhouse work board with one-time crop assignments for family help or a hired field worker. Choose up to 12 beds, leave others untouched and keep ripe crops visible with an optional harvest pause. Manual harvesting takes priority without wages or replacement targets.
+- Helpers stop after the assignment, pause for full storage or unavailable wages, and preserve progress on reload. Cancellation records crops left for the player; backward clock changes cannot endlessly restart the harvest pause. Opening family help remains unchanged until players adopt board controls; existing hires and company progress are preserved.
+- Added four-language controls, save normalization and rules/browser checks. Hiring advice now explains wages instead of promising a guaranteed payback by supper. Machinery is planned exclusively for newly acquired and developed fields, following the owner's refinement.
+
+## Farm and playground expansion plan - 2026-10-12 (documentation only)
+
+- Consolidated animal care/quality, orchard groups, swipe-operated machinery and a northwest playground business in [the future implementation plan](docs/FARM-EXPANSION-IMPLEMENTATION-PLAN.md).
+- Recorded the owner's proposed 30-crop manual / 300-crop machine scale, with daily quotas distinguished from managed field capacity, plus map constraints, finite business accounting, story, save compatibility and delivery checks. No gameplay, prices or limits changed.
+
 ## A calmer gold rush — 2026-10-13
 
 - The brook shows a few quiet glints during a gold rush (26 along its whole length, smaller when zoomed out); it had 90 and the whole brook glittered.

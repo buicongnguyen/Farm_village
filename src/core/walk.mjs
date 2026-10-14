@@ -5,7 +5,7 @@
 // fences block; the brook blocks except where the road bridge and the stepping stones cross it. Every place someone
 // can be sent to (the pond dock, benches, doors, the project site, the order board) is reachable over this ground,
 // not only the cells that happen to touch a road (tests/walk.test.mjs).
-import { N, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside, isBrookBank, isEastVerge, inUpriverPath, SOLID_CELLS, FAIR_SPOTS, ALBRIGHT, AWARD_PLAQUE, POST_CELLS, COMPANY_FLAG_CELL, LOTS, quayLampCell, isQuayBollard, lotSignCell } from '../content/world.mjs';
+import { N, WORK_BOARD, FARMHOUSE, BARN, STEPPING_STONES, ROAD_SEGMENTS, isBrook, isRoad, isPondWater, isPondPath, isPondBank, parcelOf, nearHome, inVillage, ruinAt, homeGardenAt, isDockBank, inTowpath, COOPERATIVE_BOARD, FAIR_BOARD, FAIR_TABLE, inQuay, inRiverside, isBrookBank, isEastVerge, inUpriverPath, SOLID_CELLS, FAIR_SPOTS, ALBRIGHT, AWARD_PLAQUE, POST_CELLS, COMPANY_FLAG_CELL, LOTS, quayLampCell, isQuayBollard, lotSignCell } from '../content/world.mjs';
 import { cellType, inMap, occupant } from './grid.mjs';
 import { SHOP_SITES } from '../content/shops.mjs';
 
@@ -49,6 +49,7 @@ export function stepCost(s, x, z, blocked = null) {
   if (x === FAIR_BOARD.x && z === FAIR_BOARD.z && s.valley?.founded) return 0;   // the fair's ribbon board
   if (z === FAIR_TABLE.z && (x === FAIR_TABLE.x || x === FAIR_TABLE.x + 1) && s.fair?.n && s.fair.over !== s.fair.n) return 0;   // the judging table, until the fair's end is told
   const ruin = ruinAt(x, z); if (ruin && !(s.counts[ruin.kind] > 0) && !s.village?.cleared?.[ruin.kind]) return 0;   // an old ruin stands there
+  if (x === WORK_BOARD.x && z === WORK_BOARD.z && !occupant(s, x, z)) return 0;
   if (homeGardenAt(s.house?.level ?? 1, x, z)) return 0;   // the pool, the gazebo and the rest of the farmhouse garden
   const type = cellType(s, x, z); if (type === 'rock' || type === 'weeds') return 0;
   const id = occupant(s, x, z), kind = id ? s.placed[id]?.kind : null;

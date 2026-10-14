@@ -8,13 +8,11 @@ import { GOODS } from '../content/goods.mjs';
 import { FRUIT_STAND } from '../content/economy.mjs';
 import * as barn from '../core/barn.mjs';
 import { STACK } from '../core/stall.mjs';
-import { goodHelpTarget } from '../core/good-help.mjs';
 import { showDiscovery } from './discovery-panels.mjs';
 import { showExplorationMemory } from './exploration-panels.mjs';
 // Advice cards load with the panel renderers (this.renderer), which also carries their three actions: an advice card
 // can only be on screen once that chunk is in, so its buttons act at once.
 import { showLetter } from './bonds-panels.mjs';
-import { showLandMemory } from './land-panel.mjs';
 import { goodIcon, glyph, iconHtml } from './icon.mjs';
 import { onModal } from './modal.mjs';
 
@@ -56,6 +54,7 @@ export class Panels {
   }
   show(kind, arg) {
     const fresh = this.open?.kind !== kind || this.open?.arg !== arg;
+    if (kind === 'workBoard' && fresh) this.workDraft = { ids: [], owner: 'family', mode: 'pause' };
     this.open = { kind, arg }; this.el.hidden = false; this.el.dataset.kind = kind; this.render();
     if (fresh) { sfx('page'); this.el.scrollTop = 0; this.el.classList.remove('pop'); void this.el.offsetWidth; this.el.classList.add('pop'); }
   }
@@ -106,8 +105,8 @@ export class Panels {
     else if (d.do === 'goodHelpReturn') this.returnFromHelp();
     else if (d.do === 'landVisit') { this.close(); this.onLandVisit?.(d.parcel); }
     else if (d.do === 'landBuy') { if (g.do('buyParcel', { parcel: d.parcel }).ok) this.onLandVisit?.(d.parcel); }
-    else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) showLandMemory(g); }
-    else if (d.do === 'landMemory') showLandMemory(g);
+    else if (d.do === 'inspectLandDiscovery') { if (g.do('inspectLandDiscovery', { parcel: d.parcel }).ok) this.renderer.showLandMemory(g); }
+    else if (d.do === 'landMemory') this.renderer.showLandMemory(g);
     else if (d.do === 'contracts') this.show('contracts');
     else if (d.do === 'supermarket' || d.do === 'shopMemory') this.show(d.do, d.id);
     else if (d.do === 'shopBuild') { this.close(); this.onBuildKind?.('supermarket'); }
@@ -138,7 +137,7 @@ export class Panels {
     else if (d.do === 'contractMemory') { this.show('contractMemory', d.id); g.do('readContract', { id: d.id }); }
     else if (d.do === 'goodHelpSource') {
       const arg = this.open?.kind === 'goodHelp' ? this.open.arg : null;
-      const target = arg && goodHelpTarget(g.s, arg.good, g.now, arg);
+      const target = arg && this.renderer.goodHelpTarget(g.s, arg.good, g.now, arg);
       if (target) { this.close(); this.onGoodHelpSource?.(target); }
       else this.render();
     }
@@ -207,6 +206,8 @@ export class Panels {
       const feedback = this.el.querySelector('[data-reel-feedback]'); if (feedback) feedback.textContent = r.ok ? '' : t(r.reason);
       if (r.ok && d.start === '1') this.el.querySelector('[data-do="reelIn"]:not([data-steady]):not([data-start])')?.focus();
     }
+    else if (d.do === 'workBoard') this.show('workBoard');
+    else if (['workBed', 'workOwner', 'workMode', 'startFieldWork', 'cancelFieldWork', 'protectFieldCrops'].includes(d.do)) this.renderer?.workBoardClick(this, d);
     else if (d.do === 'hireHand' || d.do === 'releaseHand') g.do(d.do, { role: d.role });
     else if (d.do === 'collectFees') g.do('collectFees');
     else if (d.do === 'sendTruck') g.do('sendTruck');

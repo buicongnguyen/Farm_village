@@ -113,3 +113,7 @@ room), six hired hands, sixteen parcels, twelve crops, the look of each language
 
 These are testing numbers. Chapters 6 to 9 therefore span levels 6 to 15; later chapters should not ask for more than
 level 20 until the release pass rebalances levels.
+
+## Optional farm and leisure expansion - proposed 2026-10-12
+
+[Farm expansion implementation plan](../FARM-EXPANSION-IMPLEMENTATION-PLAN.md): animals and care, tree groups, swipe field planning, the proposed 30/300 machinery scale, and a northwest playground business. Design only; none of these additions is marked shipped. Follow its dependency slices alongside the release review without replacing completed chapters.

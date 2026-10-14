@@ -19,6 +19,7 @@ export function goodHelpButton(good, needed = 1) {
 function sourceText(source) {
   const building = t(BUILDINGS[source.at]?.name ?? 'Crop bed');
   switch (source.status) {
+    case 'notebook': return t(source.reason, tParams(source.params));
     case 'ready': return t('Ready to collect at the source.');
     case 'waiting': return t('Some supply is already growing or queued. Check the incoming amount before starting more.');
     case 'barn-full': return t('A finished batch is waiting. Make room in the barn before collecting it.');

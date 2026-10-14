@@ -1,6 +1,9 @@
+import { normalizeInsight } from './insight-state.mjs';
+import { normalizeFieldWork } from './field-work-state.mjs';
 import { normalizeOutput } from './output.mjs';
 // The game state: its shape, a new game, and save migrations (TECH-PLAN 4). Plain JSON, so saving is JSON.stringify.
 import { normalizeSurprises } from './surprises.mjs';
+import { normalizeTreeStore } from './trees.mjs';
 import { normalizeKnowhow } from './knowhow.mjs';
 import { START, START_RESTORE } from '../content/economy.mjs';
 import { N, START_PARCEL, parcelOrigin, PARCEL } from '../content/world.mjs';
@@ -33,6 +36,7 @@ export function newGame(now = Date.now(), seed = (now % 2147483647) | 1, { resto
     placed: {},                             // id → { kind, x, z, rot }
     fences: {},                             // "x,z,n" | "x,z,w" → 'fence' | 'gate'
     nextId: 1,
+    fieldWork: { enabled: false, job: null, last: null },
     beds: {},                               // bed id → { crop, doneAt } (empty bed: no entry)
     animals: {},                            // home id → [{ kind, doneAt | null }]  (doneAt null = hungry, <= now = ready)
     production: {},                         // building id → { slots, queue: [{ recipe, doneAt }] }
@@ -140,6 +144,7 @@ export function withDefaults(s) {
   s.today = { ...fresh.today, ...s.today }; s.today.days ??= 0;
   s.today.earnedBase ??= s.stats?.coinsEarned ?? 0;   // the evening report (core/report.mjs): an old save's day starts counting now
   s.stats = { ...fresh.stats, ...s.stats };
+  if (s.insight !== undefined) s.insight = normalizeInsight(s);
   s.stats.built ??= { ...(s.counts ?? {}) };   // build XP high-water marks (core/build.mjs): what a save already built has paid
   s.settings = { ...fresh.settings, ...s.settings };
   if (s.mode === 'restore' && s.barn && s.barn.cap < START_RESTORE.barnCap) s.barn.cap = START_RESTORE.barnCap;   // v0.3e: the restored village's barn starts bigger
@@ -155,7 +160,9 @@ export function withDefaults(s) {
   s.contracts = normalizeContracts(s);
   s.production = normalizeProduction(s);
   s.outputUp = normalizeOutput(s);
+  s.fieldWork = normalizeFieldWork(s);
   s.knowhow = normalizeKnowhow(s);
+  s.treeStore = normalizeTreeStore(s);
   s.surprises = normalizeSurprises(s);
   s.shops = normalizeShops(s);
   s.supermarket = normalizeSupermarket(s);

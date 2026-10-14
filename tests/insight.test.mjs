@@ -17,7 +17,7 @@ test('the product map: every good in a column after what it is made from, lines 
   const s = farm(12), map = productMap(s), col = {}; map.cols.forEach((c, i) => c.forEach(g => { col[g.id] = i; }));
   assert.ok(map.cols.length >= 3 && map.cols[0].length >= 5);
   for (const [a, b] of map.edges) { assert.ok(a in col && b in col, `${a} -> ${b} leaves the map`); assert.ok(col[a] < col[b], `${a} is not left of ${b}`); }
-  for (const g of map.cols.flat()) { assert.ok(makes()[g.id].level <= 14, `${g.id} is too far ahead to show`); assert.equal(g.open, makes()[g.id].level <= 12); }
+  for (const g of map.cols.flat()) { assert.ok(makes()[g.id].level <= 14, `${g.id} is too far ahead to show`); assert.equal(g.open, makes()[g.id].level <= 12 && !['strawberry', 'mango', 'mango_apple'].includes(g.id)); }
   assert.equal(col.wheat, 0); assert.ok(col.bread > col.wheat); assert.ok(col.egg > col.chicken_feed);
   const chain = chainOf(map, 'bread'); assert.ok(chain.has('wheat') && chain.has('bread')); assert.ok(!chain.has('carrot'));
   assert.ok(productMap(farm(1)).cols.flat().length < map.cols.flat().length, 'a new farm sees the whole map');

@@ -691,3 +691,26 @@ Historical log: the dated ownership and waiting-for-art notes below describe the
 - No gameplay waits for this artwork. Other product-specific shelf variants or additional workplace rooms are future proposals, not active file reservations.
 
 - Implementation handoff: `3cf877c`, [PR #109](https://github.com/buicongnguyen/Farm_village/pull/109). The source/furniture reuse and optional shop rules are complete; Codex is running release validation. After that PR merges, no shared implementation file remains reserved by this slice. The placeholder-icon replacement is the only active art follow-up.
+
+### 2026-10-12: Codex work-board first slice
+
+Completed writer: Codex on `codex/helper-work-board`, base `70fea6e`; implementation handoff commit `f5e160d`. Small shared-view change: LandView adds a farmhouse hiring/work board using the existing `order_board` model as a stand-in; no Blender, binary, icon or palette edits. Logic adds finite crop assignments and safe pauses. Exact art replacement is deferred; no AR number allocated. Handoff and verification will be recorded in the implementation document.
+
+Work-board placement review: use 27,68; the first candidate at 27,56 overlapped the market cart. Hide the stand-in when an older player object occupies the new cell; preserve the farmhouse/Friends menu route. Runtime notifications are owned by Codex for this slice and use existing effects unchanged.
+
+Handoff verification: 722 native tests, pace simulation, all 44 browser suites and the final 50-check smoke run pass. Relevant work-board/Explore checks were repeated during review. No art-lane files or binaries changed. See [implementation scope and validation](WORK-BOARD-IMPLEMENTATION.md). The branch awaits review; main has not been changed.
+
+
+### 2026-10-13: Codex review of PRs #123-#125
+
+Completed writer: Codex on `codex/helper-work-board`, integration `f0131ee` (main `438a568`), followed by pool-only main `2b2e57c` in `589ebf6`. Reviewing insight accounting, unlock guidance and safe save history. Shared-view scope: `src/view/skinned.mjs`, a lazily loaded costume-fitting module, and `src/view/explore-room.mjs` for failed-download recovery and disposal when leaving a room. Preserve Claude's geometry, fitting constants, palettes and assets exactly; no binary or generator changes. UI/story review includes truthful indoor statistics and browser coverage of the new panels and costumes.
+
+Handoff: PR #111 contains the review fixes and lazy costume-fitting module. No shared-view reservation remains after this handoff. Validation: 773 unit tests, all 46 browser suites, 50 full-game smoke checks, three final affected-suite repeats, and production English/Vietnamese boots pass. Final first load is 1,296,670 / 1,300,000 bytes. Main is unmodified by this review; see `docs/plan/95-review.md` for findings and limits.
+
+- 2026-10-14 — Codex reviews main through `d3ef6f1` on `codex/helper-work-board` (PR #111). Active writer: rules, UI, tests, and behavioral integration in `skinned.mjs` / `wear-rig.mjs`; retain Claude's new fitting, skirt and hair values inside the existing lazy loader. No model, icon or generator edits.
+
+- 2026-10-14 — Codex also owns the `machines-view.mjs` route checks in this review: tractor loops use bought expansion fields and park when terrain, fences or buildings obstruct the route; the buffalo keeps its opening-field eligibility. Meshes, materials, speeds and effect colours are unchanged.
+
+- 2026-10-14 — Codex adjusts `PeopleView.redress`: keep the existing outdoor subject while the new rig loads; ignore superseded loads and permit retry. This preserves Claude's same-walker Explore fix without disappearing during download failures.
+
+- 2026-10-14 — Review handoff: current logic integration is validated on PR #111; 795 native tests, all 47 browser suites after the corrected Explore rerun, and 50 smoke checks pass. New cargo, food-workshop, machine and radio rules are covered; wardrobe/body/skirt fitting remains lazy. Production code is 1,296,531 / 1,300,000 bytes. Shared behavior edits are finished; no binary/generator files were edited by this review. PR remains unmerged.

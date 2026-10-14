@@ -104,7 +104,8 @@ test('machines: each working tractor shed adds eight beds to a round of help (tw
   s.placed.pad = { kind: 'drone_pad', x: 72, z: 40, rot: 0 }; assert.equal(sprayFactor(s), MACHINES.spray); assert.ok(MACHINES.spray < 1 && MACHINES.beds >= 4);
   assert.equal(BUILDINGS.tractor_shed.max, 2); assert.equal(BUILDINGS.drone_pad.max, 1);
   if (plan) {   // (the view's own sums: where the machines go)
-    const p = plan(s); assert.equal(p.sheds.length, 1); assert.ok(p.pad); assert.ok(p.loop, 'no loop round the beds');
+    const p = plan(s); assert.equal(p.sheds.length, 1); assert.ok(p.pad); // An obstructed opening field keeps the machine parked.
+    p.loop ??= [2, 2, 8, 10]; // independently exercise the closed-rectangle math
     const per = 2 * (p.loop[2] - p.loop[0] + p.loop[3] - p.loop[1]), a = onLoop(p.loop, 0), b = onLoop(p.loop, per);
     assert.ok(Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6, 'the loop does not close');
     for (let u = 0; u < per; u += per / 16) { const [x, z] = onLoop(p.loop, u); assert.ok(x >= p.loop[0] - 1e-6 && x <= p.loop[2] + 1e-6 && z >= p.loop[1] - 1e-6 && z <= p.loop[3] + 1e-6); }

@@ -10,7 +10,7 @@ import { FISH_TABLE } from '../content/goods.mjs';
 import { LETTERS } from '../content/letters.mjs';
 import { fillable } from './panels.mjs';
 import { unread } from '../core/bonds.mjs';
-import { ORDER_BOARD, MAILBOX } from '../content/world.mjs';
+import { ORDER_BOARD, WORK_BOARD, MAILBOX } from '../content/world.mjs';
 import { installExplore, exploreState, exploreSession, startExplore, endExplore, homeOpen, routeExplore, moveExplore, atObject, homeCooldown, OUTDOOR_SPEED } from '../core/explore.mjs';
 import { BUILDINGS, footprint } from '../content/buildings.mjs';
 import { animalState } from '../core/animals.mjs';
@@ -22,7 +22,7 @@ import { CIVIC_INTERIORS } from '../content/civic-interiors.mjs';
 import { installCivicExplore, facilityKind, facilityDoor, facilityOpen } from '../core/civic-explore.mjs';
 import { RIGS } from '../view/skinned.mjs';
 import { xz, roomClear, roomRoute } from '../core/explore-navigation.mjs';
-import { ROOM_PEOPLE, withPeople, talkNumbers } from '../content/room-people.mjs';
+import { ROOM_PEOPLE, withPeople, roomConversation } from '../content/room-people.mjs';
 import { loadHomeRoom, ExploreRoom } from '../view/explore-room.mjs';
 import './explore.css';
 
@@ -152,6 +152,7 @@ class ExploreMode {
     if (this.own && this.site) add('home', far(p, ...HOME_APPROACH), 3, 'Go inside: {place}', { place: t('Farmhouse') }, HOME_APPROACH);
     if (this.own && !s.fishing?.line) { const bank = nearestPond(s, ...p); add('pond', Math.max(0, bank.d), BANK.reach + .01, 'Cast a line'); }   // anywhere round any pond
     for (const w of people.walkers.values()) if (w !== this.walker && !w.indoors && !w.player) add(`person:${w.id}`, far(p, w.x, w.z), 2.6, w.pet ? 'Pet {name}' : 'Talk to {name}', { name: people.nameOf(w) }, [w.x, w.z]);
+    if (this.world.batches.items.has('work_board')) add('workBoard', far(p, centre(WORK_BOARD.x), centre(WORK_BOARD.z)), 2.8, 'Farm work board', null, [centre(WORK_BOARD.x + 1), centre(WORK_BOARD.z)]);
     add('board', far(p, centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)), 2.8, 'Read the order board', null, [centre(ORDER_BOARD.x), centre(ORDER_BOARD.z)]);
     add('mail', far(p, centre(MAILBOX.x), centre(MAILBOX.z)), 2.4, 'Open the mailbox', null, [centre(MAILBOX.x), centre(MAILBOX.z)]);
     if (this.own && this.site !== 'barn' && facilityOpen(s, 'barn')) { const door = facilityDoor(s, 'barn'); add('facility:barn', far(p, ...door), 3, 'Go inside: {place}', { place: t('Barn') }, door); }
@@ -225,6 +226,7 @@ class ExploreMode {
     } else if (kind === 'facility' || kind === 'home') { this.close(); this.open({ site: kind === 'home' ? null : id }); }
     else if (kind === 'pond') this.cast(null);   // straight out from where you stand
     else if (kind === 'person') { const w = people.walkers.get(id); if (w) { e.yaw = Math.atan2(w.x - e.p[0], w.z - e.p[1]); this.world.cam.lookAt(...e.p, this.span); people.talk(w); } }
+    else if (kind === 'workBoard') this.panels.show('workBoard');
     else if (kind === 'board') this.panels.show('orders');
     else if (kind === 'mail') this.panels.show('mail');
     else if (kind === 'bench') {
@@ -482,11 +484,9 @@ class ExploreMode {
     const person = this.kind ? this.session?.room.people?.find(w => `person_${w.id}` === this.card) ?? null : null;   // (with where they stand: the card keeps off them)
     if (this.room) this.room.talking = person?.id ?? null;
     if (person && this.talk) {   // hello, one question about your own farm, two ways to answer, and what they make of it
-      const st = this.state, nums = talkNumbers(st, FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length), 
-        fair = person.asks.filter(a => [...a.q.matchAll(/\{(\w+)\}/g)].every(m => nums[m[1]] > 0)), asks = fair.length ? fair : person.asks,   // never “0 harvests”
-        ask = asks[this.talk.n % asks.length], said = this.talk.answer;
-      card = `<h2>${esc(t(person.role))}</h2>` + (said === null
-        ? `<p>${esc(t(person.hello[this.talk.n % person.hello.length]))}</p><p><b>${esc(t(ask.q, nums))}</b></p>${ask.a.map(([text], i) => button(`answer:${i}`, text, 'primary')).join('')}${button('back', 'Back', 'ghost')}`
+      const st = this.state, { nums, hello, ask } = this.talk.data ??= roomConversation(person, st, FISH_TABLE.filter(f => st.album?.fish?.[f.id] > 0).length, this.talk.n), said = this.talk.answer;
+      card = `<h2>${esc(t(person.role))}</h2>` + (!ask ? `<p>${esc(t(hello))}</p>${button('back', 'Back', 'ghost')}` : said === null
+        ? `<p>${esc(t(hello))}</p><p><b>${esc(t(ask.q, nums))}</b></p>${ask.a.map(([text], i) => button(`answer:${i}`, text, 'primary')).join('')}${button('back', 'Back', 'ghost')}`
         : `<p>${esc(t(ask.q, nums))}</p><p class="explore-you">${esc(t(ask.a[said][0]))}</p><p><b>${esc(t(ask.a[said][1]))}</b></p>${button('another', 'Another question', 'primary')}${button('back', 'Back', 'ghost')}`);
     }
     if (this.kind && this.objects[this.card]?.text) card = `<h2>${esc(t(this.objects[this.card].label))}</h2><p>${esc(t(this.objects[this.card].text))}</p>${button('back', 'Back', 'ghost')}`;

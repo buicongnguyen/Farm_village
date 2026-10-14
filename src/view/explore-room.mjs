@@ -148,7 +148,6 @@ export class ExploreRoom {
   dispose() {
     this.gone = true;
     for (const m of this.meshes) m.geometry.dispose(); this.material.dispose();
-    for (const a of this.cast.actors) { a.mixer.stopAllAction(); a.mesh.material.dispose(); a.mesh.skeleton.dispose(); }
     this.family = []; const worn = [this.player, ...this.people].map(s => s.rig); this.cast.retire(); for (const name of worn) releaseRig(name);
     this.scene.clear();
   }

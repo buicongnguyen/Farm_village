@@ -21,7 +21,10 @@ const holdNeed = (s, good) => { const n = Math.min(PORT.max, Math.max(PORT.min, 
 export function makeHolds(s, n) {
   const r = rng(hash(s.createdAt, 'ship', n)), all = orderable(s).filter(g => !['feed', 'fish'].includes(GOODS[g].kind)).sort();
   const made = all.filter(g => GOODS[g].kind === 'product'), pool = made.length >= PORT.holds ? made : [...made, ...all.filter(g => !made.includes(g))];
-  for (const g of ['wheat', 'carrot', 'corn', 'tomato']) if (pool.length < PORT.holds && !pool.includes(g)) pool.push(g);
+  // A small farm can get repeated holds; never invent a locked crop to fill the manifest.
+  if (!pool.length) pool.push('wheat'); // free starter beds and seed always let an empty farm restart
+  const repeat = [...pool];
+  while (pool.length < PORT.holds) pool.push(repeat[pool.length % repeat.length]);
   const out = [];
   while (out.length < PORT.holds && pool.length) { const good = pool.splice(r.int(pool.length), 1)[0]; out.push({ good, need: holdNeed(s, good), have: 0 }); }
   return out;
@@ -30,12 +33,23 @@ export const holdFull = h => h.have >= h.need;
 /** What a hold pays when the ship sails: full, its goods at PORT.pay; part-loaded, what is in it at barn value. */
 export const holdPays = h => holdFull(h) ? Math.round(h.need * GOODS[h.good].value * PORT.pay) : h.have * GOODS[h.good].value;
 export function shipPays(here) {
-  const full = here.holds.filter(holdFull).length, all = full === here.holds.length;
+  const full = here.holds.filter(holdFull).length, all = here.holds.length === PORT.holds && full === PORT.holds;
   return { coins: here.holds.reduce((sum, h) => sum + holdPays(h), 0) + (all ? PORT.bonus : 0), full, all };
+}
+const natural = n => Number.isSafeInteger(n) && n >= 0;
+const validHold = h => h && Object.hasOwn(GOODS, h.good) && natural(h.need) && h.need >= PORT.min && h.need <= PORT.max && natural(h.have) && h.have <= h.need;
+const validHere = h => h && natural(h.n) && natural(h.at) && natural(h.until) && h.until > h.at && h.until - h.at <= PORT.stopMs && Array.isArray(h.holds) && h.holds.length <= PORT.holds && h.holds.every(validHold);
+/** Repair only the optional timetable. Valid loaded cargo survives a damaged neighbouring hold. No reward on load. */
+export function normalizePort(raw, now) {
+  if (raw && natural(raw.n) && natural(raw.nextAt) && (raw.here === null || validHere(raw.here))) return raw;
+  const h = raw?.here, here = h && natural(h.n) && natural(h.at) && Array.isArray(h.holds)
+    ? { n: h.n, at: h.at, until: natural(h.until) && h.until > h.at ? Math.min(h.until, h.at + PORT.stopMs) : h.at + PORT.stopMs,
+      holds: h.holds.filter(validHold).slice(0, PORT.holds).map(row => ({ ...row })) } : null;
+  return { n: natural(raw?.n) ? raw.n : 0, nextAt: natural(raw?.nextAt) ? raw.nextAt : now + PORT.firstMs, here };
 }
 /** For the panel and the views: { open, here, holds, leavesAt, nextAt, pays, sent }. */
 export function portOf(s, now) {
-  const p = s.port, here = p?.here && p.here.until > now ? p.here : null;
+  const p = s.port, here = validHere(p?.here) && p.here.until > now ? p.here : null;
   return { open: portOpen(s), here: !!here, holds: here?.holds ?? [], leavesAt: here?.until ?? null, nextAt: here ? here.at + PORT.everyMs : p?.nextAt ?? null, pays: here ? shipPays(here) : null, sent: s.stats?.ships ?? 0 };
 }
 function arrive(ctx, p) {
@@ -52,7 +66,11 @@ function depart(ctx, p) {
 /** Called by tick(): the ship calls, waits and sails by its timetable. */
 export function tickPort(ctx) {
   const { s, now } = ctx; if (!portOpen(s)) return;
-  const p = (s.port ??= { nextAt: now + PORT.firstMs, n: 0, here: null });
+  const p = (s.port = normalizePort(s.port, now));
+  if (now < s.lastSeen) {
+    p.nextAt = Math.min(p.nextAt, now + (p.n === 0 && !p.here ? PORT.firstMs : PORT.everyMs));
+    if (p.here) { p.here.at = Math.min(p.here.at, now); p.here.until = Math.min(p.here.until, now + PORT.stopMs); }
+  }
   for (let guard = 0; guard < 8; guard++) {
     if (p.here) { if (p.here.until > now) return; depart(ctx, p); continue; }
     if (p.nextAt > now) return;
@@ -65,12 +83,13 @@ export const actions = {
   loadHold(ctx, { hold, n } = {}) {
     const { s, now } = ctx, here = s.port?.here;
     if (!portOpen(s)) return ctx.fail('No ship calls here yet');
-    if (!here || here.until <= now) return ctx.fail('No ship is at the quay');
+    if (!validHere(here) || here.at > now || here.until <= now) return ctx.fail('No ship is at the quay');
     const h = Number.isSafeInteger(hold) ? here.holds[hold] : null; if (!h) return ctx.fail('The ship has no such hold');
     if (n != null && !(Number.isSafeInteger(n) && n > 0)) return ctx.fail('Unknown amount');
     const left = h.need - h.have; if (left <= 0) return ctx.fail('That hold is full');
     const load = Math.min(n ?? left, left, barn.free(s, h.good)); if (load <= 0) return ctx.fail('Missing goods');
-    barn.take(s, { [h.good]: load }); h.have += load;
+    if (!barn.take(s, { [h.good]: load })) return ctx.fail('Missing goods');
+    h.have += load;
     ctx.emit('holdLoaded', { hold, good: h.good, n: load, full: holdFull(h) });
     return { loaded: load, full: holdFull(h) };
   },

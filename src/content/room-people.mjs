@@ -111,5 +111,12 @@ export function withPeople(data, kind, clear, route) {
 export function talkNumbers(s, fishKinds) {
   const st = s.stats ?? {}, hens = Object.values(s.animals ?? {}).flat().filter(a => a.kind === 'hen').length;
   return { harvested: st.harvested ?? 0, produced: st.produced ?? 0, orders: st.ordersFilled ?? 0, coins: st.coinsEarned ?? 0, picked: st.picked ?? 0, cleared: st.cleared ?? 0,
-    level: s.level ?? 1, hens, fish: fishKinds, hours: Math.max(2, Math.round((st.playMs ?? 0) / 3_600_000)) };   // “about 2 hours” at the least: never “1 hours”
+    level: s.level ?? 1, hens, fish: fishKinds, hours: Math.max(0, Math.floor((st.playMs ?? 0) / 3_600_000)) };
+}
+
+/** Keep a conversation on the question the player actually saw, with honest numbers and no invented history. */
+export function roomConversation(person, s, fishKinds, turn) {
+  const nums = talkNumbers(s, fishKinds);
+  const asks = person.asks.filter(a => [...a.q.matchAll(/\{(\w+)\}/g)].every(([, key]) => nums[key] >= (key === 'hours' ? 2 : 1)));
+  return { nums, hello: person.hello[turn % person.hello.length], ask: asks.length ? asks[turn % asks.length] : null };
 }

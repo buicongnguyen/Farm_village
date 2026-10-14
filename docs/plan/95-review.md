@@ -103,3 +103,85 @@ was fixed in this pass, and what is left, with the reason.
 
 - Locked rows that only name a level ("Reach level N") still do not say how to level up.
 - The farm gate's posts and the order board can be walked through (both stand where people must pass).
+
+
+## Integration review - 2026-10-13 (feature branch, not deployed)
+
+Reviewed main's notebook, surprises, fruit-tree and home-life updates through `73fa8f5` with the pending farmhouse work board (PR #111). Preserved both sets of action handlers, tick hooks and save normalization when resolving the integration conflicts. Art outputs are taken from main without modification.
+
+Reproduced and fixed:
+
+- **Trees:** Undo consumed grafted-sapling quality, and storage removed grafting, Mango-apple fruit and branch progress. Stored trees now keep those permanent properties in a bounded-by-inventory `treeStore` record; a replanted tree waits a full regrowth cycle. New grafted saplings retain priority when both types are in storage. Picking or cutting a branch after placement blocks Undo, including on a previously stored tree, so Undo cannot duplicate cuttings.
+- **Lucky events:** actions updated the same timestamp used for active play, so frequent clicks erased time toward discoveries. A dedicated saved tick timestamp includes that time, skips long absences and recovers when the clock moves back. The saved rush play-time counter also retains values beyond 1 billion milliseconds (about 278 hours), preventing repeated rolls on long-running farms. Successive gold rushes keep their pending rent windows until collection; windows are clipped to the rent cap and overlapping intervals cannot pay twice.
+- **Guidance:** apple requests could point to Mango-apple trees; rare eggs fell through to fishing advice. Cards now use the actual produce, explain discoveries/grafting and navigate to the notebook or a matching tree/hen. Counts include thinning and purchased animal/workshop output upgrades. A rare hen needing repair leads to its own coop. New random orders also require the actual fruit/egg and its complete recipe chain; special produce cannot stand in for ordinary ingredients.
+- **Home activities:** a future cooldown timestamp stayed in the future after clock rollback; it is now corrected once. At the knitting counter cap, the same last scarf was repeatedly treated as newly finished; only a new milestone gives that reward. Refused activities also leave session dialogue turns alone.
+- **Wardrobe:** rejected inherited object keys and non-string item IDs without changing settings; imported invalid selections safely render as no costume/hat.
+- **Tree clocks:** clock recovery now uses the tree's actual fruit, first-crop state and grafting bonus, matching the visible growth progress.
+
+Coverage: `tests/review-growth.test.mjs` contains 16 targeted cases; `tests/review-growth.browser.mjs` checks source navigation and storage/reload in English and Vietnamese at 390 and 1280 pixels. No new visible strings were introduced; source cards reuse the existing translated notebook and discovery text.
+
+Validation:
+
+- `npm test`: 757/757 passed, including the 16 new review regressions. `npm run sim` passes; steady play reaches school and clinic on day 3.
+- All 45 browser suites passed on the integrated build. After the final rule corrections, rebuilt and reran `review-growth`, `orchard`, `guidance-land-contracts`, `explore` and `explore-roam`; all passed. The work board passed its eight language/screen-size combinations in the full run.
+- Final `tests/browser.mjs`: 50/50 passed, including chapters 1-20. Simulated 4G first scene: 2,713 ms against the 3,500 ms target. Rendering remained within 120 draws and 300,000 triangles at every tested zoom.
+- Final test build: 1,296,452 first-load bytes; production build: 1,296,097 / 1,300,000 bytes (3,903 bytes headroom). Future additions still need the planned lazy-loading release pass.
+- Browser coverage is Chromium desktop and phone emulation. The optional WebKit engine is unavailable locally; physical iPhone/Safari behavior is unverified.
+
+No main merge or deployment is part of this review request. Previously lost upgrade metadata or overwritten rent windows cannot be reconstructed from old saves.
+
+
+## Farm reports and indoor life review - 2026-10-13 (PR #111, not deployed)
+
+Reviewed PRs #123-#125 from main `438a568`, integrated in `f0131ee`, against the pending work-board and prior orchard/lucky-event fixes. The pool-only PR #126 (`2b2e57c`) subsequently merged cleanly in `589ebf6`; its generator and model are kept together and unchanged.
+
+Reproduced and fixed:
+
+- **Level-up safety:** optional insight history was trusted on import. A string, non-array `levels`, or invalid rows could throw during the next XP award or produce invalid chart markup. History now keeps only bounded, ordered, nonnegative integer snapshots, both at save migration and level-up; chart reads are pure.
+- **Earnings comparisons:** averaging per-level rates gave a one-minute level as much weight as a 99-minute level. Equal overall earning rates could be reported as falling. Trends now divide each comparison period's total earnings by its actual elapsed time; zero-duration intervals are ignored.
+- **Production guidance:** a building's mere presence marked goods ready even when broken or missing its animals/feed chain. Reports share renewable-source validation with orders, include learned crops and early learned recipes, and distinguish missing ingredients, repairs and absent buildings. Recipe margins use output multipliers and current worker/sluice duration; crop estimates count both free wheat grains. Estimates explicitly exclude sale bonuses, wages and upstream production time.
+- **Dialogue:** the nurse credited even a new farm with at least two played hours. Progress questions now use actual numbers and omit inapplicable topics. An open conversation snapshots its selected greeting, question and numbers, preventing an intervening harvest from attaching the reply to a different question.
+- **Costume downloads:** failed fitting downloads were swallowed, caching an undressed body as a successfully fitted outfit. Failure now propagates and clears the failed rig/asset promises; choosing the outfit again can recover without a reload. Successful fitting still uses Claude's exact proportions and geometry.
+- **Room cleanup:** retiring a room cast previously forgot subjects without freeing its spare actors or tinted crowd copies. Retirement now removes and disposes owned instances, mixer bindings and geometry while preserving shared templates. Retired outfit gait work stops before creating more frames. Crowd resizing also releases its previous tinted geometry.
+- **Loading and UI:** costume fitting is optional; land-memory UI is supplied by the already deferred panel renderer. No budget was raised. Inherited product-map focus keys are rejected, and report copy avoids invented manual harvests and pressure about empty beds. New report strings have Vietnamese, Korean and Japanese translations.
+
+Regression evidence: the six initial new rules cases failed before the fixes; seven now pass in `tests/review-insight.test.mjs`. `tests/review-insight.browser.mjs` checks all four language editions at 390/1280 px, actual product-map readiness and chart values, a failed costume fetch followed by successful retry, wardrobe selection, room graphics disposal and a changing-stat conversation. The Vietnamese phone chart was visually inspected.
+
+Validation:
+
+- `npm test`: 773/773 passed, repeated after integrating the pool asset and final translated legend. `npm run sim` passes; steady school and clinic remain day 3.
+- All 46 browser suites passed. The full-game smoke run passed 50/50, including chapters 1-20; its simulated 4G first scene took 2,710 ms against the 3,500 ms target.
+- Rebuilt after the pool-only merge and final legend correction, then repeated `art-footprints`, `world` and `review-insight`; all passed. The four report languages, costume retry, room disposal and stable conversation were rechecked on this final test build. Rendering stays within 120 draws / 300,000 triangles at every tested zoom.
+- Final test first load: 1,297,028 bytes. Final production first load: 1,296,670 / 1,300,000 bytes (3,330 bytes headroom). Production menu/farm boots in English and Vietnamese with no page errors or test hook.
+- Optional WebKit was unavailable, so browser evidence covers Chromium desktop/phone emulation only.
+
+Limitations: browser coverage is Chromium desktop and phone emulation, not physical iPhone/Safari. This review does not rebalance the whole economy or add a new progression stage. Previously corrupted optional chart rows are discarded; coins, levels and ordinary game progress are preserved. PR #111 remains unmerged and the live game is unchanged by this review.
+
+
+## Cargo ship, machinery and wardrobe review — 2026-10-14 (PR #111, not deployed)
+
+Scope: Claude's PRs #127–#137, latest main `d3ef6f1`, integrated in `69fd986`. Models, icons, generator changes and art fitting values are kept from main. This review preserves the pending work-board and earlier review fixes in PR #111.
+
+Confirmed problems and corrections:
+
+- **P1 — Loading budget:** the initial integrated test build reached 1,303,888 bytes, over the fixed 1,300,000-byte cap. Ingredient-source lookup now travels with the existing deferred panel renderer; clicks remain synchronous once the source sheet is visible. No cap increase.
+- **P2 — Ship timetable:** the new optional tick lacked the backward-clock guard used by other timed activities. Arrival/departure waits are now bounded by their real duration. A paid cargo survives reload and pays once on departure. Invalid optional holds cannot crash the panel or create a four-full-hold bonus; valid cargo in the same manifest is retained. Normalization itself grants nothing.
+- **P2 — Ship requests and guidance:** the fallback inserted crops without checking whether the farm could grow them. Small manifests now repeat real sources when necessary, with only free starter wheat as the empty-farm fallback. Ship holds use the existing source/back flow and honor supermarket/project reserves. Copy states the actual base/double payment rule rather than promising the best sale in the valley. The Vietnamese loading button now uses the action “Xếp” instead of reusing the truck-summary noun “Hàng trên xe”; all editions have contextual cargo labels.
+- **P2 — Machinery integration:** main added capacity only to the older family routine; adopting the finite board silently removed the benefit. Family assignments now share the capacity rules. The buffalo can help anywhere; extra tractor beds must be on purchased expansion parcels, following the user's confirmed land scope. Machinery does not harvest unassigned crops, bypass the observation pause, replant finite jobs or sell their overflow. The hired worker's separate wage/batch contract stays intact.
+- **P2 — Machine routing:** the old rectangle ignored ownership, obstacles and fences and covered opening beds too. Tractor presentation uses expanded fields and checks clearance around the whole route; an obstructed loop leaves the vehicle parked. Buffalo routes also respect obstacles. Models, materials, speeds and effect colours remain unchanged.
+- **P2 — Workshop progression:** the supermarket prerequisite used a fixed list of five factories, omitting all three newly added food workshops. It now counts distinct working food-producing building kinds, excluding feed mills, while retaining the school/market and level requirements.
+- **P2 — Radio and paid upgrades:** ingredient help counted output upgrades but omitted the radio multiplier. Ready/queued milk now matches collection. Storing an empty upgraded home/workshop or undoing its old build entry discarded paid improvements; those actions now refuse atomically and direct the player to move it. Already-lost upgrade data cannot be reconstructed.
+- **P2 — Orchard clocks:** replanting a stored tree omitted the drone bonus, and timer progress/clock recovery recalculated an existing crop using the current drone ownership. New crops retain their quoted wait; a removed/new drone affects the next crop. Legacy saves still use the actual fruit/graft duration, and cross-branch actions refresh their duration.
+- **P2 — Outdoor outfits:** replacing the drawn subject before its asset loaded could make the character disappear on slow/failed downloads. Redressing now keeps the old subject until the new rig is ready, checks that the walker/save/choice is still current, and permits retry. It retains Claude's same-walker fix for Explore. Invalid imported body IDs cannot select inherited object properties.
+
+Regression coverage: `tests/review-latest.test.mjs` exercises ship timing, saved cargo and malformed holds, real-source requests, protected shop stock, finite machine assignments, radio counts, paid-upgrade preservation, orchard durations, obstructed machine routes and malformed body choices. `tests/review-latest.browser.mjs` exercises the ship/source/back controls, work-board guidance, radio source counts, all three new workshops, outdoor outfit failure/retry and rapid body/skirt choices, and render limits in English/Vietnamese/Korean/Japanese at 390/1280 px. The older orchard-clock fixture explicitly models a pre-duration save; the Explore wardrobe check waits for its outfit download.
+
+Validation:
+
+- `npm test`: **795/795 passed**, including 11 new rules regressions. `npm run sim` passes; steady play reaches school and clinic on day 3.
+- All **47 browser suites pass after rerunning the corrected Explore fixture**. The full run initially exposed its immediate-outfit assertion; the final build passes all 10 roaming checks. After the final body/route/prerequisite/translation corrections, rebuilt and reran `explore-roam`, `review-latest`, `supermarket` and `supermarket-navigation`; all passed. The ship suite covers all four languages, visible outfit failure/retry and rapid changes; screenshot inspection caught and verified the Vietnamese loading-label correction.
+- Full-game smoke: **50/50 passed**, including chapters 1–20. Simulated 4G first scene: 2,774 ms against the 3,500 ms target. The fully planted world stayed within 120 draws / 300,000 triangles at all tested zooms (widest: 70 draws / 157k triangles).
+- Final test build: **1,296,883** first-load bytes. Production build: **1,296,531 / 1,300,000** (3,469 bytes headroom). Production English/desktop and Vietnamese/phone menu-to-farm startup passes without a test hook or page errors.
+- Chromium desktop and phone emulation were tested. WebKit is unavailable locally; physical iPhone/Safari remains unverified.
+
+No main merge or deployment is part of this request. Machinery remains a finite helper-capacity feature; the larger 30/300 mechanized-field design, animal quality ladder and playable northwest recreation business are separate planned work.

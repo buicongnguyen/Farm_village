@@ -223,12 +223,14 @@ test('an older save gets the pond and the market square; the player can be named
   must(g, 'setting', { key: 'playerBody', value: 'woman' });
 });
 
-test('family helpers: while you play, June brings in a few ripe crops and sows them again, Pip fetches eggs; nothing while you are away', () => {
+test('family helpers harvest assigned crops once while you play; nothing while you are away', () => {
   const s = fresh(); s.level = 4; s.coins = 500; tick(s, T0);
   for (const b of Object.values(s.beds)) b.doneAt = T0 - 1;
+  must(s, 'startFieldWork', { ids: Object.keys(s.beds).slice(0, 4), owner: 'family', mode: 'ready' });
+  const cropCount = Object.keys(s.beds).length;
   tick(s, T0 + 100); const first = s.helpAt; assert.ok(first > T0);
   tick(s, first + 1000);
-  const sown = Object.values(s.beds).filter(b => b.doneAt > first).length; assert.ok(sown >= 1 && sown <= 4, `sown ${sown}`);
+  const harvested = cropCount - Object.keys(s.beds).length; assert.ok(harvested >= 1 && harvested <= 4);
   assert.ok(s.barn.items.wheat > 12, 'the crops were brought in');
   const beforeAway = s.barn.items.wheat; for (const b of Object.values(s.beds)) b.doneAt = 0;
   tick(s, s.helpAt + 3 * HOUR); assert.equal(s.barn.items.wheat, beforeAway, 'no helping while you are away');

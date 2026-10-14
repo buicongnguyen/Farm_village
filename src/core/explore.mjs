@@ -128,15 +128,16 @@ export const actions = {
   useAtHome(ctx, { id, extra = false }) {
     const th = HOME_THINGS[id], ses = sessions.get(ctx.s), list = extra ? th?.extra?.lines : th?.lines;
     if (!list?.length || !atObject(ctx.s, `farmhouse_${id}`)) return ctx.fail('Walk closer first');
-    ses.turns = (ses.turns ?? 0) + 1;
-    if (extra || !th.cooldownMs) return { line: list[ses.turns % list.length] };
+    const turn = (ses.turns ?? 0) + 1;
+    if (extra || !th.cooldownMs) { ses.turns = turn; return { line: list[turn % list.length] }; }
     if (!stamp(ctx.now)) return ctx.fail('The project clock is unavailable');
     if (homeCooldown(ctx.s, id, ctx.now) > 0) return ctx.fail('Not just yet. Try again a little later.');
-    const e = exploreState(ctx.s), out = { line: list[(th.count ? e.made[th.count] : ses.turns) % list.length], xp: th.xp };
+    ses.turns = turn;
+    const e = exploreState(ctx.s), before = th.count ? e.made[th.count] : 0, out = { line: list[(th.count ? e.made[th.count] : ses.turns) % list.length], xp: th.xp };
     e.used[id] = ctx.now;
     if (th.count) out.made = e.made[th.count] = Math.min(HOME_MADE[th.count], e.made[th.count] + 1);
     ctx.s.explore = e; gainXp(ctx, th.xp);
-    if (th.every && out.made % th.every === 0) {   // a finished scarf goes to the neighbour you know least
+    if (th.every && out.made > before && out.made % th.every === 0) {   // a finished scarf goes to the neighbour you know least
       const guest = residents(ctx.s, ctx.now).map(r => r.id).filter(p => heartsOf(ctx.s, p) < 10).sort((a, b) => heartsOf(ctx.s, a) - heartsOf(ctx.s, b) || (a < b ? -1 : 1))[0];
       out.finished = true; if (guest) { addHearts(ctx, guest, th.hearts, 'gift'); out.guest = guest; } else { gainXp(ctx, th.gift); out.xp += th.gift; }
     }

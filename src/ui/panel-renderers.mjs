@@ -1,3 +1,5 @@
+export { goodHelpTarget } from '../core/good-help.mjs';
+export { showLandMemory } from './land-panel.mjs';
 import { isWorking } from '../core/working.mjs';
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Sheet contents load on first use; the input/controller stays available at startup.
@@ -44,6 +46,8 @@ export { openAdvice, changeAdvice, followAdvice } from './advice-panels.mjs';   
 import { renderFriends, renderGift, renderMail, heartBar, PEOPLE, nameOf } from './bonds-panels.mjs';
 import { renderCart } from './cart-panel.mjs';
 import { goodIcon, faceHtml, glyph, coinMark, xpMark, iconHtml } from './icon.mjs';
+import { renderWorkBoard } from './work-board-panel.mjs';
+export { workBoardClick } from './work-board-panel.mjs';
 import { handsOpen, handHired, handWho } from '../core/helpers.mjs';
 import { renderReport } from './report-panel.mjs';
 import { renderValley } from './valley-panel.mjs';
@@ -185,6 +189,7 @@ export function renderPanel() {
     else if (o.kind === 'cottage') body = renderCottage(s, o.arg, now);
     else if (o.kind === 'cart') body = renderCart(s);
     else if (o.kind === 'mail') body = renderMail(s, now);
+    else if (o.kind === 'workBoard') { title = t('Farm work board'); icon = 'projects'; body = renderWorkBoard(s, now, this.workDraft ??= { ids: [], owner: 'family', mode: 'pause' }) + renderHands(s, false); }
     else if (o.kind === 'friends') body = renderHands(s) + renderFriends(s, now);
     else if (o.kind === 'gift') body = renderGift(s, o.arg, now);
     else if (o.kind === 'orders') body = contractEntry + `<div class="order-list">${readyFirst(s, s.orders.cards).map(c => renderOrderCard.call(this, c)).join('') || `<p class="empty">${t('New orders are on their way.')}</p>`}</div>`;
@@ -318,15 +323,16 @@ export function holdToSell(el) {
   el.addEventListener('click', e => { if (held && e.isTrusted) { held = false; e.stopPropagation(); e.preventDefault(); } }, true);   // letting go is not one more sale
 }
 
-/** Hired hands, at the top of Friends: each does half of the waiting work; the other half is yours. */
-const HAND_ROLES = { field: ['Field hand', 'Harvests half of the ripe beds and sows them again', 'wheat'], animals: ['Animal hand', 'Collects half of the eggs and milk and feeds half of the hungry animals', 'egg'],
+/** Hired hands at the work board and Friends; field work requires a finite assignment. */
+const HAND_ROLES = { field: ['Field hand', 'Harvests only the beds in your one-time assignment', 'wheat'], animals: ['Animal hand', 'Collects half of the eggs and milk and feeds half of the hungry animals', 'egg'],
   workshop: ['Workshop hand', 'Collects half of the finished goods and starts the same again', 'bread'],
   orchard: ['Orchard hand', 'Picks half of the ripe fruit trees', 'cherry'], driver: ['Truck driver', 'Collects the takings, loads idle trucks with spare goods and sends them', 'truck'],
   fisher: ['Fisher', 'Lands one fish a minute for the barn', 'perch'] };
-function renderHands(s) {
-  if (!handsOpen(s)) return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Build the school to hire farm hands.')}</p></section>`;
-  return `<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Hired neighbours do half of the work, a coin a task. Do the other half yourself to get more done.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => { const who = handWho(s, role), done = s.today?.hands?.[role] ?? 0;   // the villager who has the job, once hired (chapter 10)
+function renderHands(s, showBoard = true) {
+  const board = showBoard ? `<button class="btn wide" data-do="workBoard">${t('Farm work board')}</button>` : '';
+  if (!handsOpen(s)) return `${board}<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Build the school to hire farm hands.')}</p></section>`;
+  return `${board}<section class="hands"><h3>${t('Farm hands')}</h3><p class="hint">${t('Field work needs an assignment. Other helpers keep their usual roles. Wages: one coin per task.')}</p>${Object.entries(HAND_ROLES).map(([role, [name, what, icon]]) => { const who = handWho(s, role), done = s.today?.hands?.[role] ?? 0;   // the villager who has the job, once hired (chapter 10)
     return `<div class="hand${handHired(s, role) ? ' on' : ''}">${who ? faceHtml(who, 'hand-face') : goodIcon(icon)}<div><b>${who ? `${nameOf(who)} · ${t(name)}` : t(name)}</b><small>${t(what)}${done ? ` · ${t('{count} tasks today', { count: done })}` : ''}</small></div>${handHired(s, role)
-    ? `<button class="btn" data-do="releaseHand" data-role="${role}">${t('Let go')}</button>` : `<button class="btn orange" data-do="hireHand" data-role="${role}" ${s.coins >= HANDS.roles[role].fee ? '' : 'disabled'}>${t('Hire')} · ${coinMark()} ${num(HANDS.roles[role].fee)}</button>`}</div>`; }).join('')}
+    ? `<button class="btn" data-do="releaseHand" data-role="${role}">${t('Let go')}</button>` : `<button class="btn primary" data-do="hireHand" data-role="${role}" ${s.coins >= HANDS.roles[role].fee ? '' : 'disabled'}>${t('Hire')} · ${coinMark()} ${num(HANDS.roles[role].fee)}</button>`}</div>`; }).join('')}
     <button class="btn wide" data-do="report">${glyph('clock', 'g')} ${t('Today on the farm')}</button></section>`;
 }
