@@ -57,9 +57,9 @@ export class FishingView {
     }
   }
   /** A villager's catch: a small fish leaps from their float into their lap and is gone (their basket; your barn is not involved). */
-  landFor(w, from, water) {
+  landFor(w, from, water, fish) {
     this.splash(from.x, water, from.z, 14, true);
-    const def = FISH_TABLE[Math.floor(Math.random() * 4)];   // the four common kinds
+    const def = FISH_TABLE.find(f => f.id === fish) ?? FISH_TABLE[Math.floor(Math.random() * 4)];   // the fish caught, or one of the four common kinds
     loadKitLater('fish').then(kit => {
       const src = kit[`fish_${def.model}`]; if (!src) return;
       const o = src.clone(true), box = new THREE.Box3().setFromObject(o);
