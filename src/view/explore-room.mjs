@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { loadKit, bake } from './models.mjs';
 import { Cast, loadRig, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { wearOf, bodyOf } from '../content/wardrobe.mjs';
+import { wearOf, bodyOf, heightOf } from '../content/wardrobe.mjs';
 import { ROOM_PEOPLE } from '../content/room-people.mjs';
 import { HOME_FAMILY } from '../content/explore.mjs';
 import { roomRoute, roomClear } from '../core/explore-navigation.mjs';
@@ -35,7 +35,7 @@ export class ExploreRoom {
       const mesh = new THREE.Mesh(bake(extras[c.node], { center: false }), this.material); mesh.position.fromArray(c.position);
       this.scene.add(mesh); this.meshes.push(mesh);
     }
-    this.body = bodyOf({ settings }).rig; this.tall = bodyOf({ settings }).child ? 1.3 : 1.8;   // your height indoors, metres
+    this.body = bodyOf({ settings }).rig; this.tall = (bodyOf({ settings }).child ? 1.3 : 1.8) * heightOf({ settings });   // your height indoors, metres (the mirror's height row)
     this.cast = new Cast({ scene: this.scene, cam: { lod: 0, x: 0, z: 0, camera: this.camera }, onFrame: f => { this.actorFrame = f; } }, { max: 1 + (data.people?.length ?? 0) + (data.site === 'farmhouse' ? HOME_FAMILY.length : 0) });
     this.player = this.cast.add({ rig: wornRig(this.body, wearOf({ settings })), x: data.entry.position[0], z: data.entry.position[2], rot: Math.PI, clip: 'Idle', scale: this.tall / RIGS[this.body].height,
       tint: outfitOf('you', { settings }), priority: 10 });
@@ -88,7 +88,7 @@ export class ExploreRoom {
       const { actor, ...old } = this.player; this.cast.remove(this.player); this.body = who.rig; this.player = this.cast.add({ ...old, rig }); this.cast.select();
       releaseRig(old.rig);   // the hat you took off (kept while your character outdoors still wears it)
     }
-    this.tall = who.child ? 1.3 : 1.8; this.player.scale = this.tall / RIGS[who.rig].height;   // a child or a grown-up (the mirror)
+    this.tall = (who.child ? 1.3 : 1.8) * heightOf({ settings }); this.player.scale = this.tall / RIGS[who.rig].height;   // a child or a grown-up (the mirror)
     this.player.tint = tint;
     const u = this.player.actor?.uniforms; if (u) { u.uTop.value.set(tint.top); u.uBottom.value.set(tint.bottom); }
   }

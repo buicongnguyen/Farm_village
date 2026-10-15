@@ -24,7 +24,7 @@ import { findRoute, stepCost, fenceBetween } from '../core/walk.mjs';
 import { remarkOf } from '../core/hotel.mjs';
 import { t, tParams, onLanguageChange, getLanguage } from '../kit/i18n.mjs';
 import { castOf, RIGS, wornRig, releaseRig } from './skinned.mjs';
-import { costumeOf, wearOf, bodyOf } from '../content/wardrobe.mjs';
+import { costumeOf, wearOf, bodyOf, heightOf } from '../content/wardrobe.mjs';
 import { isNight } from './life-view.mjs';
 import { CHATTER, partOfDay } from '../content/chatter.mjs';
 
@@ -119,7 +119,7 @@ export class PeopleView {
   /** Who should be around: Ada, the family, residents of arrived families, and Cora once the school is open. */
   residents() {
     const s = this.s, now = this.game.now, home = [FARMHOUSE.x + 5, FARMHOUSE.z];
-    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: bodyOf(s).rig, size: bodyOf(s).size, home, family: true, player: true }];
+    const out = [{ id: 'ada', body: 'hana', home }, { id: 'june', body: 'woman', home, family: true }, { id: 'pip', body: 'kid', home, family: true }, { id: 'dog', body: 'dog', home, family: true, pet: true }, { id: 'you', body: bodyOf(s).rig, size: bodyOf(s).size * heightOf(s), home, family: true, player: true }];
     for (const [hid, h] of Object.entries(s.homes)) {
       if (!h.family || h.arrivesAt > now) continue;
       const p = s.placed[hid], door = p && doorCell(p.kind, p.x, p.z, p.rot), fam = FAMILIES.find(f => f.id === h.family);
@@ -179,7 +179,7 @@ export class PeopleView {
    *  came out of the house invisible after changing clothes. */
   redress(w) {
     const { actor, ...old } = w.subject, before = old.rig;
-    w.body = bodyOf(this.s).rig; w.size = bodyOf(this.s).size;
+    w.body = bodyOf(this.s).rig; w.size = bodyOf(this.s).size * heightOf(this.s);
     this.cast.remove(w.subject);
     w.subject = this.cast.add({ ...old, rig: wornRig(w.body, wearOf(this.s)), scale: w.size, tint: outfitOf(w.person ?? w.id, this.s) });
     this.wornBefore = w.subject.rig; if (before !== w.subject.rig) releaseRig(before);
@@ -595,7 +595,7 @@ export class PeopleView {
   }
   /** Things that happen: Pip comments, people cheer, the one who ordered carries it home, Ada bakes. */
   react(e) {
-    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook', 'playerSkirt'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.redress(me); }
+    if (e.type === 'settingChanged' && ['playerColor', 'playerBody', 'playerHat', 'playerLook', 'playerSkirt', 'playerHeight'].includes(e.key)) { const me = this.walkers.get('you'); if (me) this.redress(me); }
 
     if (e.type === 'neighbourVisit') { this.visit(e.id, e.comment, e.params, e.visit); return; }
     if (e.type === 'projectDone') for (const w of this.walkers.values()) if (!w.indoors && !w.pet) this.once(w, 'Cheer', 2.2);

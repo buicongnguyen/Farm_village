@@ -50,6 +50,10 @@ export const COSTUMES = {
   angel: { name: 'Angel', kit: 'armor_angel', hat: 'hat_halo', top: '#fff4e2', bottom: '#2f5aa8' },
   royal: { name: 'Royal robes', hat: 'crown', top: '#7a2a8a', bottom: '#f2c21a' },
 };
+// Zoo Garden's ears and animal hoods (the owner's cute_game, hero-parts.glb), worn as hats: the ears at level 1, a hood
+// at every second level from 2 (docs/plan/98-zoo-garden-moves.md step 6)
+['Cat ears', 'Bunny ears', 'Bear hood', 'Panda hood', 'Fox hood', 'Kitty hood', 'Frog hood', 'Piggy hood', 'Chick hood', 'Koala hood', 'Tiger hood', 'Penguin hood', 'Monkey hood', 'Owl hood']
+  .forEach((name, i) => { HATS[`${i < 2 ? 'ears' : 'hood'}_${name.split(' ')[0].toLowerCase()}`] = { name, level: i < 2 ? 1 : 2 * i - 2 }; });
 for (const [id, o] of [...Object.entries(HATS), ...Object.entries(COSTUMES)]) o.id = id;
 for (const c of Object.values(COSTUMES)) c.level ??= HATS[c.hat].level;
 /** Who you are (the mirror, and Settings): a man, a woman, a boy or a girl. `rig` is the model, `size` its size outdoors
@@ -60,6 +64,10 @@ export const BODIES = {
 };
 for (const [id, b] of Object.entries(BODIES)) b.id = id;
 export const bodyOf = s => BODIES[s?.settings?.playerBody] ?? BODIES.man;
+/** Your height at the mirror, after Zoo Garden's height row: the whole dressed character a little smaller or taller
+ *  (so hats and costumes still fit), indoors and out. Looks only. settings.playerHeight is the index; 2 is usual. */
+export const HEIGHTS = [{ name: 'Shorter', k: 0.88 }, { name: 'Short', k: 0.94 }, { name: 'Usual', k: 1 }, { name: 'Tall', k: 1.06 }, { name: 'Taller', k: 1.12 }];
+export const heightOf = s => HEIGHTS[s?.settings?.playerHeight]?.k ?? 1;
 /** The costume you have on, or null. */
 export const costumeOf = s => COSTUMES[s?.settings?.playerLook] ?? null;
 /** The hat on your head: the costume's, else the one you picked ('' = none). */

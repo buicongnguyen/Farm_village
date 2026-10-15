@@ -149,6 +149,7 @@ def import_piece(src, root=None, drop=(), table=None, x=0.0):
         keepset |= {r, *r.children_recursive}
     for o in new:
         if o not in keepset or any(o.name.split('.')[0] == d for d in drop):
+            keepset.discard(o)   # a dropped child of a kept root: forget it before it is removed
             bpy.data.objects.remove(o, do_unlink=True)
     shapes = {pb.custom_shape for a in bpy.data.objects if a.type == 'ARMATURE' for pb in a.pose.bones if pb.custom_shape}
     meshes = [o for o in keepset if o.name in bpy.data.objects and o.type == 'MESH' and o not in shapes]
