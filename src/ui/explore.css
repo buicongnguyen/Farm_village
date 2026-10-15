@@ -60,7 +60,7 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 /* with the full panel (indoors, or walking to the door) the stick keeps clear of it: above it on a narrow screen, and
    beside it on a short landscape one, where the panel moves to the right */
 @media (max-width: 600px) { .explore-joy.raised { bottom: 240px; } }
-@media (max-height: 520px) and (min-width: 601px) { .explore-controls.joy:not(.compact) { left: auto; right: max(12px, env(safe-area-inset-right)); transform: none; width: min(58%, 520px); } }
+@media (max-height: 520px) and (min-width: 601px) { .explore-controls.joy:not(.compact) { left: auto; right: max(96px, calc(env(safe-area-inset-right) + 88px)); transform: none; width: min(54%, 480px); } }   /* clear of the swing pad's column */
 /* home activity cards */
 .explore-card ul { margin: 6px 0 10px; padding-left: 20px; text-align: left; } .explore-card h3 { margin: 12px 0 4px; font-size: 1em; }
 .explore-log { list-style: none; padding-left: 0 !important; display: grid; gap: 3px; } .explore-log li { display: flex; justify-content: space-between; gap: 12px; }

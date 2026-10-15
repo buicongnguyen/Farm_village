@@ -46,8 +46,10 @@ test('the water: the bank holds until you push on, then you wade slower and swim
   assert.ok(depthAt(POND_WATER.x, POND_WATER.z) > 0, 'the village pond is not water');
   const shore = [bx, Math.round(mid + 5)]; assert.ok(startExplore(s, shore, { roomId: 'farmhouse_main', interactions: [], entry: { position: [0, 0, 0] } }, new Set()), 'no place to start');
   const e = exploreSession(s); e.p = [...shore];
-  for (let i = 0; i < 3; i++) moveExplore(s, 0, -1, 0.1);   // a moment's push: still on the bank
-  assert.equal(depthAt(...e.p), 0, 'stepped in at once'); assert.ok(!e.inWater);
+  let stop = 0; for (let i = 0; i < 40 && !stop; i++) { const a = [...e.p]; moveExplore(s, 0, -1, 0.1); if (Math.hypot(e.p[0] - a[0], e.p[1] - a[1]) < 1e-3) stop = i; }
+  assert.ok(stop, 'walked on into the water without stopping at the bank'); assert.ok(!e.inWater, 'in the water without a push');
+  assert.ok(depthAt(...e.p) <= SWIM.edge && depthAt(...e.p) > 0, `stopped ${depthAt(...e.p).toFixed(2)} m deep, not at the water's edge`);
+  assert.equal(e.wet, 0, 'wet on the bank'); moveExplore(s, 0, -1, 0.1); assert.ok(!e.inWater, 'a moment at the edge is not a push');
   for (let i = 0; i < 30; i++) moveExplore(s, 0, -1, 0.1);   // keep pushing: in you go
   assert.ok(e.inWater && depthAt(...e.p) > 0, 'never got into the water');
   const a = [...e.p]; moveExplore(s, 0, -1, 0.1); const wadeStep = Math.hypot(e.p[0] - a[0], e.p[1] - a[1]);
@@ -97,7 +99,54 @@ test('splashed water makes fish leap; now and then one lands in the barn, at mos
   for (let i = 0; i < 40; i++) { const r = act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + i * 1000); assert.ok(r.ok && r.leap); if (r.caught) { caught++; first ??= r.caught; } }
   assert.equal(caught, 1, 'more than one fish landed within the wait');
   assert.equal(s.album.fish[first], 1); assert.equal(s.moves.leap.brook > NOW, true);
-  let later = 0; for (let i = 0; i < 40; i++) if (act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + LEAP.everyMs + 60_000 + i * 1000).caught) later++;
+  let later = 0; for (let i = 0; i < 40; i++) if (act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + 2 * LEAP.everyMs + 60_000 + i * 1000).caught) later++;
   assert.equal(later, 1, 'no fish after the wait');
   const pond = act(s, 'splashWater', { x: POND_WATER.x, z: POND_WATER.z }, NOW + 1000); assert.ok(pond.ok, 'the village pond is not water');
+});
+
+// The review of steps 1-5 (2026-10-15)
+import { dayKey } from '../src/core/clock.mjs';
+import { waterCell } from '../src/core/swim.mjs';
+import { dryPlace } from '../src/core/explore.mjs';
+test("a knock keeps the skills' waits and the fish wait; the knocks come back with the farm's day", () => {
+  const s = newGame(NOW, 67, { restore: true }); tick(s, NOW); s.level = 30;
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok);
+  const brook = [120, (brookCurve(60) + 0.5) * 2];
+  assert.ok(act(s, 'useSkill', { index: 0, x: 10, z: 10, yaw: 0 }, NOW).ok); act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW);
+  const before = JSON.stringify({ cd: s.moves.cd, leap: s.moves.leap });
+  const [cx, cz] = weedsOnFarm(s)[0]; assert.ok(act(s, 'swing', faceCell([cx, cz]), NOW + 100).knocked, 'no weed knocked');
+  assert.equal(JSON.stringify({ cd: s.moves.cd, leap: s.moves.leap }), before, 'a knock forgot the waits');
+  assert.equal(act(s, 'useSkill', { index: 0, x: 10, z: 10, yaw: 0 }, NOW + 200).reason, 'Not ready yet', 'a knock reset a skill');
+  // the farm's day starts at 04:00 local: one knock is still counted a minute before, and gone a minute after
+  let t = NOW; while (dayKey(t) === dayKey(NOW)) t += 60_000;
+  assert.equal(knocksLeft(s, t - 120_000), MOVES.knocks - 1); assert.equal(knocksLeft(s, t + 60_000), MOVES.knocks);
+  assert.equal(knocksLeft(s, NOW - 3 * 86_400_000), MOVES.knocks - 1, 'a clock set back gave the knocks again');
+});
+test('waits saved with a clock that ran fast are never longer than the wait itself', () => {
+  const s = newGame(NOW, 68, { restore: true }); tick(s, NOW); s.level = 30;
+  assert.ok(act(s, 'setting', { key: 'playerLook', value: 'aodai' }, NOW).ok);
+  const brook = [120, (brookCurve(60) + 0.5) * 2], ahead = NOW + 3 * 86_400_000;
+  assert.ok(act(s, 'useSkill', { index: 0, x: 10, z: 10, yaw: 0 }, ahead).ok); act(s, 'splashWater', { x: brook[0], z: brook[1] }, ahead);
+  const cd = SKILLS.dz_aodai[0].cd * 1000; tick(s, NOW);   // the clock put right
+  assert.ok(skillsNow(s, NOW)[0].readyAt <= NOW + cd, 'the button shows a wait of days');
+  assert.ok(act(s, 'useSkill', { index: 0, x: 10, z: 10, yaw: 0 }, NOW + cd + 1).ok, 'the skill stayed locked after the clock was put right');
+  let caught = 0; for (let i = 0; i < 5; i++) if (act(s, 'splashWater', { x: brook[0], z: brook[1] }, NOW + 2 * LEAP.everyMs + 1000 + i * 1000).caught) caught++;
+  assert.equal(caught, 1, 'no fish for days after the clock was put right');
+});
+test('a tired swimmer always ends on the bank: every deep spot of the brook and the pond, even when the way back is wiped', () => {
+  const s = newGame(NOW, 69, { restore: true }); tick(s, NOW);
+  const room = { roomId: 'farmhouse_main', interactions: [], entry: { position: [0, 0, 0] } }, starts = [];
+  for (let x = POND_WATER.x - POND_WATER.rx; x <= POND_WATER.x + POND_WATER.rx; x += 1.5) for (let z = POND_WATER.z - POND_WATER.rz; z <= POND_WATER.z + POND_WATER.rz; z += 1.5) if (depthAt(x, z) >= SWIM.shallow) starts.push([x, z]);
+  const pond = starts.length; assert.ok(pond > 3, 'the pond has no deep water');
+  for (let x = 1; x < 2 * 96; x += 3.3) { const z = (brookCurve(x / 2) + 0.5) * 2; if (depthAt(x, z) >= SWIM.shallow) starts.push([x, z]); }
+  assert.ok(starts.length - pond > 20, 'the brook has no deep water');
+  const stranded = [];
+  for (const [i, p] of starts.entries()) {
+    assert.ok(startExplore(s, [57, 118], room, new Set())); const e = exploreSession(s);
+    Object.assign(e, { p: [...p], inWater: true, breath: 0.05, route: [], tired: false });
+    let n = 0; for (; n < 260 && (e.tired || !n); n++) { if (n % 9 === 4 && i % 2) e.route = []; moveExplore(s, 0, i % 3 ? -1 : 0, 0.1); }   // (pushing the stick does nothing while tired)
+    if (e.tired || !(depthAt(...e.p) <= SWIM.edge) || waterCell(...e.p.map(v => Math.floor(v / 2)))) stranded.push([p.map(v => +v.toFixed(1)), e.p.map(v => +v.toFixed(2)), n]);
+    assert.ok(dryPlace(s).every(Number.isFinite));
+  }
+  assert.deepEqual(stranded, [], 'left in the water');
 });

@@ -6,7 +6,7 @@ import { HOME_APPROACH, HOME_MEMORY, HOME_ACTIVITIES, HOME_THINGS, HOME_MADE } f
 import { residents, heartsOf, addHearts } from './bonds.mjs';
 import { gainXp } from './levels.mjs';
 import { roomClear, roomRoute, movePoint, xz } from './explore-navigation.mjs';
-import { depthAt, waterPace, tickSwim } from './swim.mjs';
+import { depthAt, waterPace, tickSwim, waterCell, SWIM } from './swim.mjs';
 
 // Pose, routes, and held controls are never serialized. Old saves need no eager Explore module.
 const sessions = new WeakMap();
@@ -57,35 +57,49 @@ export function routeExplore(s, to) {
 }
 export function moveExplore(s, dx, dz, dt) {
   const e = sessions.get(s); if (!e || ![dx, dz, dt].every(Number.isFinite)) return;
-  dt = Math.max(0, Math.min(.1, dt)); const before = e.p, outdoors = e.location === 'outdoors';
-  if (outdoors) tickSwim(e, dt, e.pushing, p => landNear(s, p, e.blocked)); e.pushing = false;   // the water (core/swim.mjs)
+  dt = Math.max(0, Math.min(.1, dt)); const outdoors = e.location === 'outdoors';
+  if (outdoors) tickSwim(e, dt, e.pushing, (p, any) => landNear(s, p, e.blocked, any) ?? (any ? safeHome(s, e.blocked) : null)); e.pushing = false;   // the water (core/swim.mjs)
+  if (e.boost > 0) e.boost -= dt;   // a skill's dash or glide wears off with time, moving or not
+  const before = e.p;   // (after the water: a tired swimmer may just have been set on the bank)
   const held = Math.hypot(dx, dz) > 0 && !e.tired;   // tired in the water: you are carried to the bank, whatever the stick says
   if (held) { e.route = []; e.seated = false; }
   const goal = e.route[0]; let remaining = Infinity;
   if (!held && goal) { dx = goal[0] - before[0]; dz = goal[1] - before[1]; remaining = Math.hypot(dx, dz); }
   const length = Math.hypot(dx, dz); if (!length) { if (goal) e.route.shift(); return false; }
-  const boost = e.boost > 0 ? (e.boost -= dt, e.boostBy ?? 1) : 1;   // a skill's dash or glide (core/moves.mjs, ui/explore-mode.mjs)
+  const boost = e.boost > 0 ? e.boostBy ?? 1 : 1;   // a skill's dash or glide (core/moves.mjs, ui/explore-mode.mjs)
   const step = Math.min(remaining, (outdoors ? OUTDOOR_SPEED * waterPace(depthAt(...before)) * boost : 2.4) * dt);
-  const clear = outdoors ? p => outdoorClear(s, p, e.blocked) || (e.inWater && depthAt(...p) > 0) : p => roomClear(e.room, p);
+  // in the water: the water and the cells it fills; on land: the bank holds where the water gets SWIM.edge deep (and
+  // never deeper than where you stand, so a start on the water's edge can always walk out)
+  const edge = Math.max(SWIM.edge, depthAt(...before));
+  const clear = !outdoors ? p => roomClear(e.room, p) : e.inWater ? p => depthAt(...p) > 0 || swimClear(s, p, e.blocked) : p => outdoorClear(s, p, e.blocked) && depthAt(...p) <= edge;
   e.p = movePoint(before, [dx / length * step, dz / length * step], clear, e.location === 'outdoors' ? (a, b) => outdoorCrosses(s, a, b) : undefined);
   const moved = Math.hypot(e.p[0] - before[0], e.p[1] - before[1]);
-  // pressing at the water's edge: the water ahead is deeper than where you stand, and this step took you no deeper
+  // pressing at the water's edge: you stand where the bank stops you (SWIM.edge deep) and the water ahead is deeper
   // (sliding along the bank counts as pressing: the bank only lets you go along it)
-  if (outdoors && held) { const now = depthAt(...e.p); e.pushing = depthAt(e.p[0] + dx / length * 0.8, e.p[1] + dz / length * 0.8) > now + 0.05 && now <= depthAt(...before) + 0.005; }
+  if (outdoors && held && !e.inWater) { const now = depthAt(...e.p); e.pushing = now >= edge - 0.08 && depthAt(e.p[0] + dx / length * 0.8, e.p[1] + dz / length * 0.8) > now + 0.05; }
   if (moved > .001) e.yaw = Math.atan2(e.p[0] - before[0], e.p[1] - before[1]);
   if (goal && Math.hypot(e.p[0] - goal[0], e.p[1] - goal[1]) < .025) e.route.shift();
-  else if (goal && moved < .001) e.route = [];
+  else if (goal && moved < .001) { e.route = []; if (e.tired) e.stuck = true; }   // (a tired swimmer is then set on the bank)
   return moved > .001;
 }
 export const OUTDOOR_SPEED = 3.6;
-/** The nearest dry place you can stand, by rings of cells round a point (metres), or null. */
-function landNear(s, p, blocked) {
+/** Can a swimmer be here: every corner over a walkable cell or a cell the water fills. */
+const swimClear = (s, p, blocked) => p.every(Number.isFinite) && [[0, 0], [-.3, 0], [.3, 0], [0, -.3], [0, .3]].every(d => { const c = cell(p.map((v, i) => v + d[i])); return stepCost(s, ...c, blocked) || waterCell(...c); });
+/** The nearest dry place you can stand, by rings of cells round a point (metres), that a swimmer can reach in a straight
+ *  line; with `any`, the nearest dry place at all. Null if there is none within 16 m. */
+function landNear(s, p, blocked, any = false) {
   const cx = Math.floor(p[0] / 2), cz = Math.floor(p[1] / 2);
+  const straight = q => { const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / 0.4); for (let i = 1; i < n; i++) { const t = i / n, a = [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; if (!(depthAt(...a) > 0 || swimClear(s, a, blocked))) return false; } return true; };
   for (let r = 1; r <= 8; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
     if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
-    const q = [(cx + dx) * 2 + 1, (cz + dz) * 2 + 1]; if (depthAt(...q) <= 0 && outdoorClear(s, q, blocked)) return q;
+    const q = [(cx + dx) * 2 + 1, (cz + dz) * 2 + 1]; if (depthAt(...q) <= 0 && outdoorClear(s, q, blocked) && (any || straight(q))) return q;
   }
   return null;
+}
+/** Where your character can stand after Explore: where you are, or the nearest bank if you are in the water. */
+export function dryPlace(s) {
+  const e = sessions.get(s); if (!e) return null;
+  return e.location === 'outdoors' && (e.inWater || depthAt(...e.p) > SWIM.edge) ? landNear(s, e.p, e.blocked, true) ?? safeHome(s, e.blocked) ?? e.p : e.p;
 }
 const near = (e, p) => e && Math.hypot(e.p[0] - p[0], e.p[1] - p[1]) <= .35;
 export const atObject = (s, id) => {
