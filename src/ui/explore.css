@@ -80,7 +80,8 @@ body.panel-open .explore-joy, body:has(.modal) .explore-joy { visibility: hidden
 @media (max-width: 600px) { .explore-card.high { top: max(112px, calc(env(safe-area-inset-top) + 104px)); } }
 .explore-you { font-style: italic; opacity: .8; margin: 2px 0 6px; } .explore-you::before { content: '— '; }
 .explore-bodies { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; } .explore-bodies .btn { flex: 1 1 20%; min-width: 0; min-height: 40px; margin: 0; padding: 4px 6px; font-size: .88em; }
-.explore-bodies + .explore-bodies .btn { flex-basis: 40%; }   /* the skirt row: two and two */
+.explore-bodies.skirts .btn { flex-basis: 40%; }   /* the skirt row: two and two */
+.explore-bodies.heights .btn { flex-basis: 15%; padding: 4px 2px; }   /* the height row: five in one line */
 .explore-note { font-size: .82em; opacity: .8; margin: 4px 0; }
 /* with a line out the round Reel button is the action: the pill steps aside */
 body.fishing-active .explore-controls.compact [data-explore="interact"] { display: none; }

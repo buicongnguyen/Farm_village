@@ -169,6 +169,11 @@ onto a villager's bones (body over hips, spine and chest; sleeves and legs blend
 in `src/content/wardrobe.mjs` is real clothes, usually with a hat. The house activities in `src/content/explore.mjs`
 (`HOME_THINGS`) follow Willowmere's `house-rules.mjs` in idea only; the words and rules are Hollowbrook's.
 
+**Ears and animal hoods** (2026-10-15): `ears_*` and `hood_*` in `rigged/wear.glb` are Zoo Garden's own ears and hoods
+(the owner's `cute_game`, `public/assets/models/hero-parts.glb`, not changed), cut into head space by `art/tools/build-wear.mjs`
+like the other hats; their wardrobe pictures (`icons/wear/ears_*.webp`, `hood_*.webp`) are rendered from the same file with
+`art/blender/render_icons.py -- art/blender/wear-icons.json` and scaled to 96 px.
+
 The **Star sailor** costume (`dz_star`, 2026-10-14) is our own: `art/blender/build_star_sailor.py` authors it with Zoo
 Garden's costume tools (imported from the owner's `cute_game`, which is not changed) as an original magical-girl sailor
 outfit, not a copy of any one character. Its buns and tails are marked as hair, so they take the wearer's hair colour.

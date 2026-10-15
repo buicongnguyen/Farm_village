@@ -150,3 +150,21 @@ test('a tired swimmer always ends on the bank: every deep spot of the brook and 
   }
   assert.deepEqual(stranded, [], 'left in the water');
 });
+
+// Step 6: shape at the mirror (content/wardrobe.mjs HEIGHTS, the ears and hoods)
+import { HATS, HEIGHTS, heightOf } from '../src/content/wardrobe.mjs';
+import { readFileSync } from 'node:fs';
+test('the mirror sets a height (looks only), and the ears and hoods are hats with a model and a picture', () => {
+  const s = newGame(NOW, 66, { restore: true });
+  assert.equal(heightOf(s), 1, 'a new farmer is not of usual height');
+  for (const [i, h] of HEIGHTS.entries()) { assert.ok(act(s, 'setting', { key: 'playerHeight', value: i }, NOW).ok); assert.equal(heightOf(s), h.k); }
+  for (const bad of [5, -1, 2.5, 'x', '__proto__']) assert.equal(act(s, 'setting', { key: 'playerHeight', value: bad }, NOW).ok, false, `height ${bad} taken`);
+  assert.ok(act(s, 'setting', { key: 'playerHeight', value: '1' }, NOW).ok, 'the mirror sends the index as text'); assert.equal(heightOf(s), HEIGHTS[1].k);
+  assert.equal(heightOf(unpack(pack(s))), HEIGHTS[1].k, 'the height is not saved');
+  const glb = readFileSync(new URL('../public/assets/models/rigged/wear.glb', import.meta.url));
+  const nodes = new Set(JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString()).nodes.map(n => n.name));
+  const zoo = Object.keys(HATS).filter(id => /^(ears|hood)_/.test(id));
+  assert.equal(zoo.length, 14);
+  for (const id of Object.keys(HATS)) assert.ok(nodes.has(id), `no model for ${id} in wear.glb`);
+  for (const id of zoo) assert.ok(HATS[id].level >= 1 && HATS[id].level <= 24);
+});

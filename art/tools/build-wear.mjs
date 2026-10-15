@@ -13,7 +13,9 @@ import { join } from 'node:path';
 
 const [src, out = 'wear-raw.glb', outCostumes = 'costumes-raw.glb', extra = ''] = process.argv.slice(2);
 // extra: a folder of our own costume files (art/blender/build_star_sailor.py writes star-sailor.glb there)
-const locate = file => extra && existsSync(join(extra, `${file}.glb`)) ? join(extra, `${file}.glb`) : join(src, 'public', 'assets', 'models', `${file}.glb`);
+// hero-parts (Zoo Garden's ears and animal hoods) comes from the owner's cute_game, beside 3d_farmer_fish_sell
+const locate = file => extra && existsSync(join(extra, `${file}.glb`)) ? join(extra, `${file}.glb`)
+  : join(file === 'hero-parts' ? join(src, '..', 'cute_game') : src, 'public', 'assets', 'models', `${file}.glb`);
 if (!src) { console.error('usage: node art/tools/build-wear.mjs <path to 3d_farmer_fish_sell> [out.glb]'); process.exit(2); }
 // the chibi head (hero.glb, node "head" at y 1.12, box x ±0.58, y −0.12…1.06): its top and its width
 const HEAD_TOP = [0, 2.18, 0], HEAD_WIDTH = 1.16;
@@ -29,6 +31,8 @@ export const PIECES = {
   hat_conical: ['disguises', ['dz_aodai_hat@head']], hat_turban: ['disguises', ['dz_aodai_man_turban@head']], hat_navy: ['disguises', ['dz_navy_cap@head']],
   hat_army: ['disguises', ['dz_army_helmet@head']], hat_knight: ['disguises', ['dz_knight_helmet@head']], hat_fairy: ['disguises', ['dz_fairy_crown@head']],
   hat_stars: ['disguises', ['dz_usa_hat@head']], hat_band: ['disguises', ['dz_vietnam_band@head']],
+  ...Object.fromEntries(['cat', 'bunny'].map(k => [`ears_${k}`, ['hero-parts', [`ears-${k}`]]])),
+  ...Object.fromEntries(['bear', 'panda', 'fox', 'kitty', 'frog', 'piggy', 'chick', 'koala', 'tiger', 'penguin', 'monkey', 'owl'].map(k => [`hood_${k}`, ['hero-parts', [`deco-${k}`]]])),
 };
 
 function readGlb(file) {

@@ -1,0 +1,380 @@
+[
+ {
+  "id": "hood_bear",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_panda",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_fox",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_kitty",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_frog",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_piggy",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_chick",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_koala",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_tiger",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_penguin",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_monkey",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-owl",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "hood_owl",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "ears-cat",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "ears_cat",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-bunny",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ },
+ {
+  "id": "ears_bunny",
+  "src": "cute_game/public/assets/models/hero-parts.glb",
+  "root": "hero-parts",
+  "drop": [
+   "deco-bear",
+   "deco-panda",
+   "deco-fox",
+   "deco-kitty",
+   "deco-frog",
+   "deco-piggy",
+   "deco-chick",
+   "deco-koala",
+   "deco-tiger",
+   "deco-penguin",
+   "deco-monkey",
+   "deco-owl",
+   "ears-cat",
+   "tail-cat",
+   "tail-bunny"
+  ],
+  "view": [
+   -30,
+   18
+  ],
+  "margin": 1.12
+ }
+]
