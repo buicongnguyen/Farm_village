@@ -149,6 +149,8 @@ test('a tired swimmer always ends on the bank: every deep spot of the brook and 
     assert.ok(dryPlace(s).every(Number.isFinite));
   }
   assert.deepEqual(stranded, [], 'left in the water');
+});
+
 // Step 6: shape at the mirror (content/wardrobe.mjs HEIGHTS, the ears and hoods)
 import { HATS, HEIGHTS, heightOf } from '../src/content/wardrobe.mjs';
 import { readFileSync } from 'node:fs';
