@@ -118,7 +118,8 @@ the PR or an integration branch before a production merge; verify production aft
 
 ## 6. Art lane tools
 
-- Blender 4.5.9, run headless with a portable copy (never a Blender window or session that is already open):
+- Blender 5.2.5 LTS, run headless with the shared install `C:/tools/blender/blender-5.2.5-windows-x64/blender.exe`
+  (never a Blender window or session that is already open):
   `blender --background --factory-startup --python art/blender/build_farm_kit.py`.
 - Icons: `blender -b --factory-startup --python art/blender/render_icons.py -- <ids>`, with jobs listed in
   `art/blender/icons.json`.

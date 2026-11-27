@@ -362,7 +362,7 @@ These go in separate PRs after the items. Each must keep 120 draws or fewer and 
 
 1. `blender -b --factory-startup --python art/blender/build_items.py`
    - prints triangles per root and fails on any root over 1,200
-   - Blender is `3D_claudeopus55\.tools\blender-4.5.9-windows-x64\blender.exe`
+   - Blender is `C:\tools\blender\blender-5.2.5-windows-x64\blender.exe` (5.2.5 LTS, shared install)
 2. `blender -b --factory-startup --python art/blender/render_icons.py -- [ids] [--engine eevee for drafts]`
    - prints `STAT` per icon; `WARN` lines must be zero for goods, tools and UI, or each one justified in the PR
 3. **Before and after sheets.** `icon_post.py` gets `--compare <before_dir> <after_dir> [ids]`. It writes:
